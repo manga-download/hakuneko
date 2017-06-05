@@ -1,0 +1,29 @@
+{
+  "entrypoint": "index.html",
+  "shell": "lib/hakuneko/app.html",
+  "fragments": [],
+  "sources": [
+    "js/*",
+    "img/*",
+    "css/*"
+  ],
+  "extraDependencies": [
+    "lib/webcomponentsjs/*-*.js",
+    "lib/hakuneko/engine/*.js"
+  ],
+  "builds": [
+    {
+      "name": "../../cloud/htdocs",
+      "bundle": true,
+      "js": {
+        "minify": true
+      },
+      "css": {
+        "minify": true
+      },
+      "html": {
+        "minify": true
+      }
+    }
+  ]
+}

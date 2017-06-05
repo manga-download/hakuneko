@@ -1,0 +1,83 @@
+<link rel="import" href="enums.html">
+
+<script>
+
+    /**
+     * Base class for engine dependent DownloadManager class implementation
+     */
+    class SettingsBase {
+
+        /**
+         * Declare all settings that will be available for all engines
+         */
+        constructor() {
+            this.compressChapters = {
+                label: 'Compress Chapters',
+                description: 'Compress chapters to comic book archives',
+                input: Input.checkbox,
+                value: true
+            };
+        }
+/*
+        // expose property iterator through a generator function
+        static *[Symbol.iterator]() {
+            for( let property in this) {
+                yield this[property];
+            }
+        }
+*/
+        /**
+         * Load and apply the settings and configurations from the given profile.
+         * Callback will be executed after the data has been loaded.
+         * Callback will be provided with an error (or null if no error).
+         */
+        loadProfile( profile, callback ) {
+            Engine.Storage.loadFromDB( 'settings', profile, ( data, error) => {
+                // apply general settings
+                for( let property in this) {
+                    if( data && property in data ) {
+                        this[property].value = data[property];
+                    }
+                }
+                // apply settings to each connector
+                Engine.Connectors.list.forEach( ( connector ) => {
+                    for( let property in connector.config ) {
+                        if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
+                            connector.config[property].value = data.connectors[connector.id][property];
+                        }
+                    }
+                });
+                ( callback ? callback( error ) : undefined );
+            });
+        }
+
+        /**
+         * Save the current settings and configurations for the given profile.
+         * Callback will be executed after the data has been saved.
+         * Callback will be provided with an error (or null if no error).
+         */
+        saveProfile( profile, callback ) {
+            let data = {
+                connectors: []
+            };
+            // gather general settings
+            for( let property in this) {
+                //this[property] = ( property in data ? data[property] : this[property] );
+                data[property] = this[property].value;
+            }
+            // gather settings from each connector
+            Engine.Connectors.list.forEach( ( connector ) => {
+                data.connectors[connector.id] = {};
+                for( let property in connector.config ) {
+                    data.connectors[connector.id][property] = connector.config[property].value;
+                }
+            });
+            Engine.Storage.saveToDB( 'settings', profile, data, ( error) => {
+                (callback ? callback( error ) : undefined );
+            });
+
+        }
+    }
+    SettingsBase; // reference the class to prevent removal of the class through js-minify
+
+</script>

@@ -1,0 +1,92 @@
+<script>
+
+    /**
+     * Base class for engine dependent Storage class implementation
+     */
+    class StorageBase {
+
+        /**
+         *
+         */
+        constructor() {
+            //
+        }
+
+        /**
+         * Convenience function wrapping key value saving for mangas collection
+         */
+        saveMangaList( connectorID, mangas, callback ) {
+            this.saveToDB( 'mangas', connectorID, mangas, callback );
+        }
+
+        /**
+         * Convenience function wrapping key value loading for mangas collection
+         */
+        loadMangaList( connectorID, callback ) {
+            this.loadFromDB( 'mangas', connectorID, callback );
+        }
+
+        /**
+         * Helper function to create scheme for IndexedDB if not exist.
+         */
+        createIndexedDBScheme( event ) {
+            event.target.result.createObjectStore( 'mangas' );
+            event.target.result.createObjectStore( 'settings' );
+            event.target.result.createObjectStore( 'bookmarks', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id'] )*/;
+            event.target.result.createObjectStore( 'downloads', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id', 'chapter.id'] )*/;
+        }
+
+        /**
+         * Provides access to save data in the browser's indexedDB
+         * Callback will be executed after the data has been saved.
+         * Callback will be provided with an error (or null if no error).
+         *
+         * https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
+         */
+        saveToDB( collection, key, value, callback ) {
+            // https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko' );
+            scheme.onupgradeneeded = this.createIndexedDBScheme;
+            scheme.onsuccess = function( event ) {
+                let db = event.target.result;
+                let tx = db.transaction( collection, 'readwrite' );
+                tx.objectStore( collection ).put( value, key );
+                tx.oncomplete = function() {
+                    db.close();
+                };
+                if( callback ) {
+                    callback( null );
+                }
+            }
+        }
+
+        /**
+         * Provides access to load data from the browser's indexedDB.
+         * Callback will be executed after the data has been loaded.
+         * Callback will be provided with the data from the given collection for the given key and an error (or null if no error).
+         *
+         * https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
+         */
+        loadFromDB( collection, key, callback ) {
+            // https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko' );
+            scheme.onupgradeneeded = this.createIndexedDBScheme;
+            scheme.onsuccess = function( event ) {
+                let db = event.target.result;
+                let tx = db.transaction( collection, 'readonly' );
+                tx.objectStore( collection ).get( key ).onsuccess = function( event ) {
+                    if( event.target.result ) {
+                        callback( event.target.result, null );
+                    } else {
+                        callback( undefined, new Error( 'Value for <' + key + '> not found in IndexedDB' ) );
+                    }
+                };
+                tx.oncomplete = function() {
+                    db.close();
+                };
+            }
+        }
+    }
+    StorageBase; // reference the class to prevent removal of the class through js-minify
+
+</script>

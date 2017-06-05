@@ -1,0 +1,57 @@
+<link rel="import" href="../base/storage.html">
+
+<script>
+
+    /**
+     *
+     */
+    class StorageElectron extends StorageBase {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            this.electron = require( 'electron' );
+        }
+
+        /**
+         * https://github.com/electron/electron/blob/master/docs/api/dialog.md
+         */
+        folderBrowser( rootPath ) {
+            let path = this.electron.remote.dialog.showOpenDialog( {
+                title: 'Download Directory for Mangas',
+                //message: 'MESSAGE',
+                defaultPath: rootPath,
+                properties: ['openDirectory']
+            });
+            return ( path && path.length > 0 ? path[0] : rootPath );
+        }
+
+        /**
+         * Determine status for each manga in the given list and add a field to the manga with the corresponding status
+         */
+        applyMangaStatus( connector, mangas ) {
+            mangas.forEach( ( manga ) => {
+                manga['status'] = DownloadStatus.available;
+            });
+        }
+
+        /**
+         *
+         */
+        applyChapterStatus( connector, manga, chapters ) {
+            chapters.forEach( ( chapter ) => {
+                chapter['status'] = DownloadStatus.available;
+            });
+        }
+
+        /**
+         *
+         */
+        saveChapter( connector, manga, chapter ) {
+            console.log( 'Storage::saveChapter', connector.label, manga.title, chapter.title );
+        }
+    }
+
+</script>

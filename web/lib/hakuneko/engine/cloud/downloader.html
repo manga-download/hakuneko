@@ -1,0 +1,40 @@
+<link rel="import" href="../base/downloader.html">
+
+<script>
+
+    /**
+     *
+     */
+    class DownloadManagerCloud extends DownloadManagerBase {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            this.worker = new Worker('/lib/hakuneko/engine/cloud/worker.js');
+            this.worker.onmessage = this.serviceReceive;
+        }
+
+        serviceReceive( e ) {
+            // determine opcode from e.data.status ?
+            //let opcode = 'DOWNLOAD_ADDED';
+            //
+            let job = e.data;
+            if( job.status === DownloadStatus.queued ) {
+                Engine.DownloadManager.onDownloadAdded( job );
+            }
+            if( job.status === DownloadStatus.downloading ) {
+                Engine.DownloadManager.onDownloadUpdated( job );
+            }
+            if( job.status === DownloadStatus.completed ) {
+                Engine.DownloadManager.onDownloadRemoved( job );
+            }
+        }
+
+        serviceSend( opcode, data ) {
+            this.worker.postMessage( data );
+        }
+    }
+
+</script>

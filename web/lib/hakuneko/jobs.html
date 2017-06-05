@@ -1,0 +1,120 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-jobs">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                background-color: var(--job-control-background-color);
+            }
+            .bar {
+                display: flex;
+                flex-direction: row;
+                padding: 0.25em;
+            }
+            .button {
+                flex: 0;
+            }
+            .status {
+                flex: 1;
+                text-align: right;
+                padding: 0.25em;
+            }
+            .item {
+                cursor: pointer;
+                padding: 0.25em;
+            }
+            .list {
+                padding: 0.5em;
+                background-color: var(--job-list-background-color);
+            }
+            .show {
+                display: block ;
+            }
+            .hide {
+                display: none;
+            }
+        </style>
+        <div class$="list [[ getListClass(popupVisibility) ]]">
+            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 001<br>
+            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 002<br>
+            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 003<br>
+            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 004<br>
+            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 005<br>
+            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 006<br>
+        </div>
+        <div class="bar">
+            <div class="button">
+                <i class="fa fa-bar-chart item" title="Toggle download manager" on-click="togglePopup"></i>
+                <!-- <i class="fa fa-tasks item" title="Toggle download manager" on-click="togglePopup"></i> -->
+            </div>
+            <div class="button">
+                <i class$="fa [[ getButtonClass(popupVisibility) ]] item" title="Toggle download manager" on-click="togglePopup"></i>
+            </div>
+            <div class="status">12/34 jobs in queue completed ... ~789 KB/s</div>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoJobs extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-jobs';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    settings: {
+                        type: Object,
+                        value: undefined,
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                        //observer: 'onSelectedMangaChanged'
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.popupVisibility = true;
+            }
+
+            /**
+             *
+             */
+            togglePopup() {
+                this.set( 'popupVisibility', !this.popupVisibility );
+            }
+
+            /**
+             *
+             */
+            getListClass( visibility ) {
+                return (visibility ? 'show' : 'hide');
+            }
+
+            /**
+             *
+             */
+            getButtonClass( visibility ) {
+                //return (visibility ? 'fa-angle-double-up' : 'fa-angle-double-right');
+                //return (visibility ? 'fa-chevron-circle-up' : 'fa-chevron-circle-right');
+                //return (visibility ? 'fa-toggle-on' : 'fa-toggle-off');
+                return (visibility ? 'fa-eye' : 'fa-eye-slash');
+            }
+        }
+        window.customElements.define(HakunekoJobs.is, HakunekoJobs);
+    </script>
+
+</dom-module>

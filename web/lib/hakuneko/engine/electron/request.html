@@ -1,0 +1,64 @@
+<link rel="import" href="../base/request.html">
+
+<script>
+
+    /**
+     *
+     */
+    class RequestElectron extends RequestBase {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            let req = require( 'electron' ).remote.require( 'request' );
+            this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
+        }
+
+        /**
+         * Electron specific implementation of the get method for the request engine.
+         * Callback arguments:
+         *   content => the content of the requested url
+         *   status => http status code of the request
+         */
+        get( href, referer, agent, callback ) {
+            let options = {
+                method: 'GET',
+                url: href,
+                headers: {
+                    'User-Agent': agent || this.agent,
+                    'Referer': referer || href
+                },
+                gzip: true,
+                //realEncoding: 'utf8',
+                encoding: null // keep content in binary presentation and do not convert
+            };
+            let requestCallback = ( error, response, content ) => {
+                // no need to process cookies, they are handled automatically by JAR
+
+                if( error || !response || !content ) {
+                    console.error( 'Get request failed', error.code );
+                    response = response || {};
+                    content = content || '';
+                    if( error.code === 'ETIMEDOUT' ) {
+                        // FIXME: dangerous because of infinite loop ...
+                        this.request.get( options, requestCallback.bind( this ) );
+                        return;
+                        //response['statusCode'] = 408;
+                    }
+                }
+
+                let contentType = ( response.headers && response.headers['content-type'] ? response.headers['content-type'].toLowerCase() : '' );
+                if( contentType.indexOf( 'charset=utf-8' ) > -1 ) {
+                    content = content.toString( 'utf8' );
+                } else {
+                    content = content.toString();
+                }
+                callback( content, response.statusCode );
+            };
+            this.request.get( options, requestCallback.bind( this ) );
+        }
+    }
+
+</script>

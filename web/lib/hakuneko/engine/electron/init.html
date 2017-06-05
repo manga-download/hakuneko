@@ -1,0 +1,7 @@
+<script>
+    document.addEventListener( 'keydown', ( e ) => {
+        if( !e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 123 ) {
+            require( 'electron' ).remote.getCurrentWindow().toggleDevTools();
+        }
+    });
+</script>

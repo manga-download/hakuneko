@@ -1,0 +1,62 @@
+<link rel="import" href="enums.html">
+
+<script>
+
+    /**
+     * Base class for engine dependent DownloadManager class implementation
+     */
+    class DownloadManagerBase {
+
+        /**
+         *
+         */
+        constructor() {
+            // ui callback functions
+            this.onDownloadAdded = undefined;
+            this.onDownloadUpdated = undefined;
+            this.onDownloadRemoved = undefined;
+        }
+
+        /**
+         *
+         */
+        createDownloadJob ( connector, manga, chapter, directory, compress ) {
+            return {
+                id: {
+                    connector: connector.id,
+                    manga: manga.id,
+                    chapter: chapter.id
+                },
+                label: {
+                    connector: connector.label,
+                    manga: manga.title,
+                    chapter: chapter.title
+                },
+                output: {
+                    directory: directory,
+                    compress: compress
+                },
+                pages: chapter.pages,
+                status: DownloadStatus.queued,
+                progress: 0
+            };
+        }
+
+        /**
+         *
+         */
+        getDownloads() {
+            //return this.queue;
+        }
+
+        /**
+         *
+         */
+        addDownload( connector, manga, chapter, directory, compress ) {
+            let job = this.createDownloadJob( connector, manga, chapter, directory, compress );
+            this.serviceSend( 'ADD_DOWNLOAD', job );
+        }
+    }
+    DownloadManagerBase; // reference the class to prevent removal of the class through js-minify
+
+</script>

@@ -1,0 +1,155 @@
+<script>
+
+    /**
+     *
+     */
+    class MangaFox {
+
+        /**
+         *
+         */
+        constructor() {
+            // Public members for usage in UI (mandatory)
+            this.id             = 'mangafox';
+            this.label          = 'MangaFox';
+            // Private members for internal usage only (convenience)
+            this.url            = 'http://mangafox.me';
+            //this.referer        = 'http://mangafox.me';
+            //this.agent          = 'Mozilla/5.0';
+            this.pageLoadDelay  = 50; // 25;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        getMangaList( callback ) {
+            Engine.Request.get( this.url + '/manga', undefined, this.agent, ( content, status ) => {
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                let mangaList = [...dom.querySelectorAll( '.manga_list ul li a' )].map(  ( element ) => {
+                    return {
+                        // as mentioned before, the eventually added host prefix must be removed
+                        // for full qualified domain name, the host (mangafox) can also be removed
+                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        title: element.text.trim()
+                    };
+                });
+                callback( mangaList );
+            });
+        }
+
+        /**
+         *
+         */
+        getChapterList( manga, callback ) {
+            Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                let chapterList = [...dom.querySelectorAll( '.tips' )].map(  ( element ) => {
+                    return {
+                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'en'
+                    };
+                });
+                callback( chapterList );
+            });
+        }
+
+        /**
+         *
+         */
+        getPages( manga, chapter, callback ) {
+            Engine.Request.get( ( this.url + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), undefined, undefined, ( content, status ) => {
+                // FIXME: very dangerous, might end up in endless recursion !!!
+                if( status === 503 ) {
+                    setTimeout( () => {
+                        this.getPages( manga, chapter, callback );
+                    }, this.pageLoadDelay );
+                    return;
+                }
+                // FIXME: MangaFox has request limit, to many requests / second => 503 (service unavailable)
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                if( dom.querySelector('.alsotitle') ) {
+                    console.error( manga.title, 'is licensed in your country!' );
+                }
+                let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {
+                    return ( element.dataset.original );
+                });
+                callback( pageList );
+                /*
+                // FIXME: MangaFox has request limit, to many requests / second => 503 (service unavailable)
+                let counter = pageList.length;
+                pageList.forEach( ( page, index ) => {
+                    Request.get( page, undefined, undefined, ( content ) => {
+                        let doc = document.createElement( 'html' );
+                        doc.innerHTML = content;
+                        let element = doc.querySelector( '#image' );
+                        pageList[ index ] = ( element ? doc.querySelector( '#image' ).src : undefined );
+                        counter--;
+                        console.log( pageList[ index ] );
+                        if( counter === 0 ) {
+                            console.log( 'COMPLETED', pageList );
+                            // TODO: remove undefined pages from array
+                            callback( pageList );
+                        }
+                    });
+                });
+                */
+                //this.pageSraper( chapter, pageList, 0, callback );
+            });
+        }
+
+        /**
+         * Helper function to process each page sequential (instead of async).
+         * Add a delay after the next page will be processed to prevent MangaFox anti scraper protection.
+         */
+        pageSraper( chapter, pageList, index, callback ) {
+            // page request for chapter has been canceled => abort
+//console.log( 'Get Page', index, pageList.length, pageList[index] );
+            if( !chapter.pageProcess ) {
+//console.log( 'ABORTED', chapter.title );
+                callback( undefined );
+                return;
+            }
+            if( index >= pageList.length ) {
+                while( pageList.length > 0 && !pageList[pageList.length-1] ) {
+                    pageList.pop();
+                }
+                callback( pageList );
+                return;
+            }
+            Engine.Request.get( pageList[index], undefined, undefined, ( content, status ) => {
+                // FIXME: very dangerous, might end up in endless recursion !!!
+                if( status === 503 ) {
+//console.log( '503 REPEAT' );
+                    setTimeout( () => {
+                        this.pageSraper( chapter, pageList, index, callback );
+                    }, this.pageLoadDelay );
+                    return;
+                }
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                let element = dom.querySelector( '#image' );
+                pageList[index] = ( element ? dom.querySelector( '#image' ).src : undefined );
+console.log( index, pageList.length, pageList[index] );
+                setTimeout( () => {
+                    this.pageSraper( chapter, pageList, index+1, callback );
+                }, this.pageLoadDelay );
+            });
+        }
+    }
+    MangaFox; // reference the class to prevent removal of the class through js-minify
+
+</script>

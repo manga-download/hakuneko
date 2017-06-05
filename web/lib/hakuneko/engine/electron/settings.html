@@ -1,0 +1,30 @@
+<link rel="import" href="../base/settings.html">
+
+<script>
+
+    /**
+     *
+     */
+    class SettingsElectron extends SettingsBase {
+
+        /**
+         * Declare settings unique to the electron engine
+         */
+        constructor() {
+            super();
+            this.baseDirectory = {
+                label: 'Manga Directory',
+                description: 'The base directory where all downloaded mangas will be stored',
+                input: Input.directory,
+                value: ''
+            };
+            this.useSubdirectory = {
+                label: 'Use Sub-Directories',
+                description: 'Create sub-directories for each connector (e.g. "/manga/kissmanga/...")',
+                input: Input.checkbox,
+                value: false
+            };
+        }
+    }
+
+</script>

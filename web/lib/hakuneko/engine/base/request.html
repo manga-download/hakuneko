@@ -1,0 +1,45 @@
+<script>
+
+    /**
+     * Base class for engine dependent RequestBase class implementation
+     */
+    class RequestBase {
+
+        /**
+         *
+         */
+        constructor() {
+            // default agent used for requests
+            this.agent = 'Mozilla/5.0 (Windows NT 6.3; rv:53.0) Gecko/20100101 Firefox/53.0';
+        }
+
+        /**
+         * Cloudflare wrapper, detect and solve cloudflare protected content.
+         */
+        cfGet( href, referer, agent, callback ) {
+            agent = agent || this.agent;
+            referer = referer || href;
+            this.get( href, referer, agent, ( content, status ) => {
+                if ( content.indexOf( 'document.getElementById(\'jschl-answer\');' ) > -1 ) {
+                    setTimeout( function() {
+                        let url = new URL( href );
+                        let challenge = content.match( /getElementById\('cf-content'\)[\s\S]+?setTimeout.+?\r?\n([\s\S]+?a\.value =.+?)\r?\n/i )[1];
+                        challenge = challenge.replace( /a\.value =(.+?) \+ .+?;/i, '$1' );
+                        challenge = challenge.replace( /\s{3,}[a-z](?: = |\.).+/g, '' );
+                        challenge = challenge.replace( /'; \d+'/g, '' );
+                        url.pathname = content.match( /id="challenge-form" action="(.+?)"/ )[1];
+                        url.search = '';
+                        url.search += '?jschl_vc=' + content.match( /name="jschl_vc" value="(.+?)"/ )[1];
+                        url.search += '&jschl_answer=' + ( eval(challenge) + url.host.length );
+                        url.search += '&pass=' + content.match( /name="pass" value="(.+?)"/ )[1];
+                        this.cfGet( url.href, referer, agent, callback );
+                    }.bind( this ), 4000);
+                } else {
+                    callback( content, status );
+                }
+            });
+        }
+    }
+    RequestBase; // reference the class to prevent removal of the class through js-minify
+
+</script>

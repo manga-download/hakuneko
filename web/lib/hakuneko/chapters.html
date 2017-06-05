@@ -1,0 +1,303 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="engine/loader.html">
+<link rel="import" href="status.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-chapters">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                display: flex;
+                flex-direction: column;
+                padding: 0.5em;
+                background-color: var(--chapter-control-background-color);
+            }
+            .separator {
+                border-bottom: var(--chapter-control-separator);
+            }
+            .header {
+                flex: 0;
+                font-weight: bold;
+                font-size: 1.25em;
+                padding: 0.25em;
+            }
+            .filter {
+                flex: 0;
+                width: 100%;
+            }
+            .list {
+                flex: 1;
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+                border: var(--chapter-list-border);
+                background-color: var(--chapter-list-background-color);
+                overflow-y: scroll;
+                white-space: nowrap;
+                list-style-type: none;
+                padding: 0.25em;
+            }
+            .list li {
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+            }
+            .list li:hover {
+                background-color: var(--chapter-list-highlighted);
+            }
+            .focus {
+                background-color: var(--chapter-list-selected) !important;
+            }
+            .button {
+                cursor: pointer;
+            }
+            .footer {
+                flex: 0;
+            }
+        </style>
+        <div class="header separator">Chapter List</div>
+        <table class="filter separator">
+            <tr>
+                <td>
+                    <i class="fa fa-fw fa-language" title="Select a language to filter the chapter list"></i>
+                </td>
+                <td>
+                    <select id="languageSelection" value="{{ searchLanguage::change }}">
+                        <option value="">*</option>
+                        <option value="en">English</option>
+                        <option value="es">Spanish</option>
+                    </select>
+                </td>
+                <td></td>
+            </tr>
+            <tr>
+                <td>
+                    <i class="fa fa-fw fa-search" title="Enter a pattern to filter the chapter list by their titles"></i>
+                </td>
+                <td style="width: 100%;">
+                    <input type="text" value="{{ searchPattern::input }}"/>
+                </td>
+                <td></td>
+            </tr>
+        </table>
+        <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
+        <ul class="list" >
+            <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
+                <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
+                    <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="processChapter" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
+                    <i class="fa fa-fw fa-picture-o button" on-click="showPages" title="Show preview of chapter's pages"></i>
+                    <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
+                </li>
+            </template>
+        </ul>
+        <div class="footer">
+            <hakuneko-status id="status" message="Chapters: [[ chapterFilteredCount ]] / [[ chapterList.length ]]"></hakuneko-status>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoChapters extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-chapters';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    selectedConnector: {
+                        type: Object,
+                        value: undefined,
+                        observer: 'onSelectedConnectorChanged'
+                    },
+                    selectedManga: {
+                        type: Object,
+                        value: undefined,
+                        observer: 'onSelectedMangaChanged'
+                    },
+                    selectedChapter: {
+                        type: Object,
+                        notify: true,
+                        value: undefined,
+                        observer: 'onSelectedChapterChanged'
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                // list of all available chapters
+                this.chapterList = undefined;
+            }
+
+            /**
+             * Observer will be executed, whenever the 'selectedConnector' is changed.
+             */
+            onSelectedConnectorChanged( connector ) {
+                //console.log( connector.id );
+                this.set( 'selectedChapter', undefined );
+            }
+
+            /**
+             * Observer will be executed, whenever the 'selectedConnector' is changed.
+             */
+            onSelectedMangaChanged( manga ) {
+                this.set( 'selectedChapter', undefined );
+                if( !this.selectedConnector || !manga ) {
+                    this.set( 'chapterList', undefined );
+                    return;
+                }
+                let queueID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
+                // could use selectedConnector.getChapterList(...), but call through Connector.getChapterList(...) will directly add status to each chapter
+                Engine.Connectors.getChapterList( this.selectedConnector, manga, ( newChapterList ) => {
+                    //this.chapterList = newChapterList;
+                    this.set( 'chapterList', newChapterList );
+                    this.$.status.removeFromQueue( queueID );
+                });
+            }
+
+            /**
+             *
+             */
+            getChapterClass( selectedChapter, id ) {
+                return ( !selectedChapter || selectedChapter.id !== id ? '' : 'focus' );
+            }
+
+            /**
+             *
+             */
+            getChapterDownloadTooltip( status ) {
+                switch ( status ) {
+                    case DownloadStatus.unavailable:
+                        return 'Chapter is not available';
+                    case DownloadStatus.available:
+                        return 'Chapter can be downloaded\nClick to add chapter to download manager';
+                    case DownloadStatus.queued:
+                        return 'Chapter is queued in download manager\nClick to remove chapter from download manager';
+                    case DownloadStatus.downloading:
+                        return 'Chapter is beeing downloaded\nClick to abort chapter download';
+                    case DownloadStatus.completed:
+                        return 'Chapter has been downloaded to the device\nClick to delete chapter from device';
+                    default:
+                        return 'No tooltip available!';
+                }
+            }
+
+            /**
+             *
+             */
+            getChapterDownloadClass( status ) {
+                switch ( status ) {
+                    case DownloadStatus.unavailable:
+                        return 'fa-exclamation-triangle';
+                    case DownloadStatus.available:
+                        return 'fa-cloud';
+                    case DownloadStatus.queued:
+                        return 'fa-cloud-download';
+                    case DownloadStatus.downloading:
+                        return 'fa-cloud-download';
+                    case DownloadStatus.completed:
+                        return 'fa-folder';
+                    default:
+                        return '';
+                }
+            }
+
+            /**
+             *
+             */
+            processChapter( e ) {
+                switch ( e.model.item.status ) {
+                    case DownloadStatus.unavailable:
+                        alert( 'No action available!' );
+                        break;
+                    case DownloadStatus.available:
+                        alert( 'TODO: Starting download ...' );
+                        break;
+                    case DownloadStatus.queued:
+                        alert( 'TODO: Remove from queue ...' );
+                        break;
+                    case DownloadStatus.downloading:
+                        alert( 'TODO: Abort download ...' );
+                        break;
+                    case DownloadStatus.completed:
+                        if( confirm( 'Delete from device?' ) ) {
+                            alert( 'TODO: Delete from device ...' );
+                        }
+                        break;
+                    default:
+                        alert( 'No action available!' );
+                        break;
+                }
+            }
+
+            /**
+             *
+             */
+            showPages( e ) {
+                if( !e.model || !e.model.item ) {
+                    return;
+                }
+                let chapter = e.model.item;
+                if( this.selectedChapter === chapter ) {
+                    if( this.selectedChapter.pageProcess ) {
+                        return;
+                    }
+                } else {
+                    if( this.selectedChapter && this.selectedChapter.pageProcess ) {
+                        // abort pending page request of currently selected chapter
+                        this.$.status.removeFromQueue( this.selectedChapter.pageProcess );
+                        this.selectedChapter.pageProcess = false;
+return;
+                    }
+                }
+                this.set( 'selectedChapter', chapter );
+                chapter.pageProcess = this.$.status.addToQueue( 'Loading pages (chapter: "' + chapter.title + '")' );
+                // could use selectedConnector.getChapterList(...), but call through Connector.getChapterList(...) will ...
+                Engine.Connectors.getPages( this.selectedConnector, this.selectedManga, chapter, ( newPages ) => {
+//console.log( 'Loading pages completed', chapter );
+                    this.$.status.removeFromQueue( chapter.pageProcess );
+                    chapter.pageProcess = false;
+                    if( chapter === this.selectedChapter ) {
+                        //this.selectedChapter = newPages;
+                        this.set( 'selectedChapter.pages', newPages );
+                    }
+                });
+            }
+
+            /**
+             * Observer will be executed, whenever the 'selectedChapter' is changed.
+             */
+            onSelectedChapterChanged( chapter ) {
+                // TODO: abort any pending page request (maybe store current chapter in global variable?)
+                // previous selected chapter is no longer available here
+console.warn( 'TODO: determine how to abort any pending page request for selected chapter ...' );
+            }
+
+            /**
+             *
+             */
+            filterChapters( pattern, language ) {
+                if( ( !pattern || pattern.length < 1 ) && ( !language || language.length < 1 ) ) {
+                    return null;
+                }
+                return ( chapter ) => {
+                    let matchTitle = !pattern || ( chapter.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                    let matchLanguage = !language || ( chapter.language.toLowerCase().indexOf( language.toLowerCase() ) > -1 );
+                    return ( matchTitle && matchLanguage );
+                };
+            }
+        }
+        window.customElements.define( HakunekoChapters.is, HakunekoChapters );
+    </script>
+
+</dom-module>

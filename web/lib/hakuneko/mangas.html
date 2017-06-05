@@ -1,0 +1,286 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="engine/loader.html">
+<link rel="import" href="status.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-mangas">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                display: flex;
+                flex-direction: column;
+                padding: 0.5em;
+                background-color: var(--manga-control-background-color);
+            }
+            .separator {
+                border-bottom: var(--manga-control-separator);
+            }
+            .header {
+                flex: 0;
+                font-weight: bold;
+                font-size: 1.25em;
+                padding: 0.25em;
+            }
+            .filter {
+                flex: 0;
+                width: 100%;
+            }
+            .list {
+                flex: 1;
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+                border: var(--manga-list-border);
+                background-color: var(--manga-list-background-color);
+                overflow-y: scroll;
+                white-space: nowrap;
+                list-style-type: none;
+                padding: 0.25em;
+            }
+            .list li {
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                cursor: pointer;
+            }
+            .list li:hover {
+                background-color: var(--manga-list-highlighted);
+            }
+            .focus {
+                background-color: var(--manga-list-selected) !important;
+            }
+            .refresh {
+                cursor: pointer;
+                color: var(--manga-refresh-button-color);
+                text-shadow: var(--manga-refresh-button-shadow);
+            }
+            .bookmark {
+                cursor: pointer;
+                color: var(--manga-bookmark-button-color);
+                text-shadow: var(--manga-bookmark-button-shadow);
+            }
+            .disabled {
+                color: var(--manga-button-disabled-color);
+                cursor: progress !important; /* wait */
+            }
+            .footer {
+                flex: 0;
+            }
+        </style>
+        <div class="header separator">Manga List</div>
+        <table class="filter separator">
+            <tr>
+                <td>
+                    <!-- <i class="fa fa-server" title="Select an origin from which mangas/animes should be shown"></i> -->
+                    <i class="fa fa-fw fa-plug fa-flip-horizontal" title="Select an origin from which the manga list should be shown"></i>
+                    <!-- <i class="fa fa-link" title="Select a connector to show its locally stored manga list"></i> -->
+                </td>
+                <td style="width: 100%;">
+                    <select id="connectorSelection" on-change="onSelectedConnectorIDChanged">
+                        <option value="">&lt; Select Connector &gt;</option>
+                        <template is="dom-repeat" items="[[ connectorList ]]">
+                            <option value$="[[ item.id ]]">[[ item.label ]]</option>
+                        </template>
+                    </select>
+                </td>
+                <td>
+                    <i class$="fa fa-fw fa-refresh [[ getRefreshClass(selectedConnector.updateProcess) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <i class="fa fa-fw fa-search" title="Enter a pattern to filter the manga list by their titles"></i>
+                </td>
+                <td>
+                    <input type="text" value="{{ searchPattern::input }}"/>
+                </td>
+                <td>
+                    <i class$="fa fa-fw [[ getBookmarkClass(selectedConnector,selectedManga) ]] bookmark" title="Add/Remove Bookmark:&#10;&#10;&lt;[[ selectedConnector.label ]]&gt;&#10;[[ selectedManga.title ]]"></i>
+                </td>
+            </tr>
+        </table>
+        <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
+        <ul class="list" >
+            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}" initial-count="500" target-framerate="5">
+                <li class$="[[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+            </template>
+        </ul>
+        <div class="footer">
+            <hakuneko-status id="status" message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"></hakuneko-status>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoMangas extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-mangas';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    selectedConnector: {
+                        type: Object,
+                        value: undefined,
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                        observer: 'onSelectedConnectorChanged'
+                    },
+                    selectedManga: {
+                        type: Object,
+                        value: undefined,
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                        observer: 'onSelectedMangaChanged'
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            static get observers() {
+                return [
+                    '_selectedConnectorIDChanged(_selectedConnectorID)',
+                    '_selectedMangaIDChanged(_selectedMangID)'
+                ]
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                // list of all available connectors
+                this.connectorList = [];
+                // currently active manga list
+                this.mangaList = undefined;
+                // load connectors
+                this.set( 'connectorList', Engine.Connectors.list );
+            }
+
+            /**
+             * Event listener attached to the corresponding <select> element.
+             * When the index of the selected connector is changed, the corresponding connector from 'connectorList' will be assigned to 'selectedConnector'.
+             */
+            onSelectedConnectorIDChanged( e ) {
+                let id = e.target.value;
+                let connector = this.connectorList.find( ( item ) => {
+                    return ( item.id === id );
+                });
+                this.set( 'selectedConnector', connector );
+            }
+
+            /**
+             * Observer will be executed, whenever the 'selectedConnector' is changed.
+             */
+            onSelectedConnectorChanged( connector ) {
+                this.set( 'selectedManga', undefined );
+                if( !connector ) {
+                    this.$.connectorSelection.value = '';
+                    this.set( 'mangaList', undefined );
+                    return;
+                }
+                if( connector.id.toString() !== this.$.connectorSelection.value ) {
+                    this.$.connectorSelection.value = connector.id;
+                }
+                let queueID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
+                // could use connector.mangaList, but call through Connector.getMangaList(...) ensures it will be loaded from local store if not yet cached
+                Engine.Connectors.getMangaList( connector, () => {
+                    if( connector === this.selectedConnector ) {
+                        this.set( 'mangaList', connector.mangaList );
+                    }
+                    this.$.status.removeFromQueue( queueID );
+                });
+            }
+
+            /**
+             * Event listener attached to the corresponding refresh button element.
+             */
+            onUpdateMangaListClick( e ) {
+                let connector = this.selectedConnector;
+                if( !connector || connector.updateProcess ) {
+                    return;
+                }
+                // create and register an update process number to prevent multiple update processes
+                connector.updateProcess = this.$.status.addToQueue( 'Updating manga list (' + connector.label + ')' );
+                if( connector === this.selectedConnector ) {
+                    // trigger update for refresh button style
+                    this.notifyPath( 'selectedConnector.updateProcess' );
+                }
+                Engine.Connectors.updateMangalist( connector, () => {
+                    this.$.status.removeFromQueue( connector.updateProcess );
+                    connector.updateProcess = false;
+                    // check if updated connector currently selected (visible)
+                    if( connector === this.selectedConnector ) {
+                        //this.mangaList = connector.mangaList;
+                        this.set( 'mangaList', connector.mangaList );
+                        // trigger update for refresh button style
+                        this.notifyPath( 'selectedConnector.updateProcess' );
+                    }
+                });
+            }
+
+            /**
+             * Event listener attached to the corresponding <li> element.
+             * When the element is clicked, the corresponding manga from 'mangaList' will be assigned to 'selectedManga'.
+             */
+            onMangaClicked( e ) {
+                this.set( 'selectedManga', e.model.item );
+            }
+
+            /**
+             * Observer will be executed, whenever the 'selectedManga' is changed.
+             */
+            onSelectedMangaChanged( manga ) {
+                //
+            }
+
+            /**
+             *
+             */
+           getMangaClass( selectedManga, id ) {
+                return ( !selectedManga || selectedManga.id !== id ? '' : 'focus' );
+            }
+
+            /**
+             *
+             */
+            getRefreshClass( updateProcess ) {
+                return ( updateProcess ? 'fa-pulse disabled' : '' );
+            }
+
+            /**
+             *
+             */
+            getBookmarkClass( connector, manga ) {
+                if( !connector || !manga ) {
+                    return '';
+                }
+                //return 'fa-star-o';
+                return 'fa-star';
+            }
+
+            /**
+             *
+             */
+            filterMangas( pattern ) {
+                if( !pattern || pattern.length < 1 ) {
+                    return null;
+                }
+                return ( manga ) => {
+                    return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                };
+            }
+        }
+        window.customElements.define( HakunekoMangas.is, HakunekoMangas );
+    </script>
+
+</dom-module>

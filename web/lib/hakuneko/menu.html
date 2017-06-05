@@ -1,0 +1,300 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="engine/loader.html">
+<link rel="import" href="input.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-menu">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                background-color: var(--menu-control-background-color);
+            }
+            .item {
+                margin: 0.25em;
+                cursor: pointer;
+            }
+            .title {
+                font-weight: bold;
+                font-size: 1.5em;
+                color: var(--menu-control-title-color);
+            }
+            .popup {
+                flex-direction: column;
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                border: var(--menu-control-border);
+                background-color: var(--menu-control-background-color);
+                padding: 0em;
+                margin: 0.5em;
+                border-radius: 0em;
+                -webkit-box-shadow: var(--menu-control-shadow);
+                   -moz-box-shadow: var(--menu-control-shadow);
+                        box-shadow: var(--menu-control-shadow);
+                z-index: 1;
+            }
+            .show {
+                display: flex;
+            }
+            .hide {
+                display: none;
+            }
+            .separator {
+                font-weight: bold;
+                color: var(--menu-control-category-color);
+                border-bottom: var(--menu-control-separator);
+                /*margin-bottom: 0.5em;*/
+                padding-left: 0.5em;
+                padding-top: 0.5em;
+                padding-bottom: 0.25em;
+                text-transform: uppercase;
+            }
+            .about {
+                display: flex;
+                margin: 0.5em;
+            }
+            .logo {
+                flex: 0;
+            }
+            .logo img {
+                border: var(--menu-control-border);
+            }
+            .info {
+                margin-left: 0.5em;
+            }
+            .credits {
+                background-color: var(--menu-credits-background-color);
+                padding: 0.5em;
+                border: var(--menu-control-border);
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+            }
+            .settings {
+                flex: 1;
+                overflow-y: scroll;
+                background-color: var(--menu-settings-background-color);
+                padding: 0.5em;
+            }
+            td {
+                white-space: nowrap;
+                overflow-x: hidden;
+                border-bottom: var(--menu-settings-row-border);
+            }
+            .group {
+                font-weight: bold;
+                color: var(--menu-control-category-color);
+                padding: 0.5em;
+                text-align: center;
+                text-transform: uppercase;
+            }
+            .buttons {
+                text-align: right;
+            }
+        </style>
+        <i class="fa fa-fw fa-bars fa-2x item" title="Toggle menu" on-click="togglePopup"></i>
+        <span class="title">HakuNeko S</span>
+        <div class$="popup [[ getPopupClass(popupVisibility) ]]">
+            <div class="separator">
+                <label>About</label>
+            </div>
+            <div class="about">
+                <div class="logo">
+                    <img src="/img/logo_m.png"/>
+                </div>
+                <div class="info">
+                    <div>A simple and easy Manga Downloader&hellip;</div>
+                    <div class="credits">
+                        <div><a href="#">Ronny Wegener</a> (Application)</div>
+                        <div><a href="#">mytenmo</a> (Connectors)</div>
+                        <div><a href="#">Neogeek</a> (Connectors)</div>
+                        <div><a href="http://hakuneko3kune.deviantart.com/" target="_blank">HakuNeko3Kune</a> (Artwork)</div>
+                    </div>
+                    <div>
+                        &copy; 2017
+                        <a href="https://sourceforge.net/projects/hakuneko/" target="_blank">hakuneko.sf.net</a>
+                    </div>
+                </div>
+            </div>
+            <div class="separator">
+                <label>Settings</label>
+            </div>
+            <div class="settings">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td colspan="2" class="group">
+                            <label>General</label>
+                        </td>
+                    </tr>
+                    <template is="dom-repeat" items="[[ settingsGeneral ]]">
+                        <tr>
+                            <td width="1"><label title="[[ item.description ]]">[[ item.label ]]:</label></td>
+                            <td>
+                                <hakuneko-input item="{{ item }}"></hakuneko-input>
+                            </td>
+                        </tr>
+                    </template>
+                    <template is="dom-repeat" items="[[ settingsConnectors ]]">
+                        <tr>
+                            <td colspan="2" class="group">
+                                <label>[[ item.label ]]</label>
+                            </td>
+                        </tr>
+                        <template is="dom-repeat" items="[[ item.properties ]]">
+                            <tr>
+                                <td width="1"><label title="[[ item.description ]]">[[ item.label ]]:</label></td>
+                                <td>
+                                    <hakuneko-input item="{{ item }}"></hakuneko-input>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </table>
+            </div>
+            <div class="buttons">
+                <i class="fa fa-check-circle fa-2x item" title="Save settings and close menu" on-click="saveSettings"></i><i class="fa fa-times-circle fa-2x item" title="Close menu without saving settings" on-click="closePopup"></i>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoMenu extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-menu';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {};
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.popupVisibility = false;
+                // cannot directly access settings and connector configurations through binding, because of save/cancel staging
+                this.settingsGeneral = [];
+                this.settingsConnectors = [];
+            }
+
+            /**
+             *
+             */
+            getPopupClass( visibility ) {
+                return (visibility ? 'show' : 'hide');
+            }
+
+            /**
+             *
+             */
+            togglePopup() {
+                this.revertSettings();
+                this.set( 'popupVisibility', !this.popupVisibility );
+            }
+
+            /**
+             *
+             */
+            closePopup() {
+                this.revertSettings();
+                this.set( 'popupVisibility', false );
+            }
+
+            /**
+             * Transfer the current settings and configurations from the data layer to the binding model for the UI.
+             */
+            revertSettings() {
+                //
+                this.settingsGeneral = [];
+                for( let property in Engine.Settings ) {
+                    this.settingsGeneral.push( {
+                        id: property,
+                        label: Engine.Settings[property].label,
+                        description: Engine.Settings[property].description,
+                        input: Engine.Settings[property].input,
+                        value: Engine.Settings[property].value
+                    });
+                }
+                this.notifyPath( 'settingsGeneral' );
+
+                //
+                this.settingsConnectors = [];
+                for( let connector of Engine.Connectors.list ) {
+                    let config = {
+                        id: connector.id,
+                        label: connector.label,
+                        properties: []
+                    };
+                    for( let property in connector.config ) {
+                        config.properties.push( {
+                            id: property,
+                            label: connector.config[property].label,
+                            description: connector.config[property].description,
+                            input: connector.config[property].input,
+                            value: connector.config[property].value
+                        });
+                    }
+                    if( config.properties.length > 0 ) {
+                        this.settingsConnectors.push( config );
+                    }
+                }
+                this.notifyPath( 'settingsConnectors' );
+            }
+
+            /**
+             * Transfer the current settings and configurations from the binding model for the UI to the data layer.
+             */
+            applySettings() {
+                //
+                for( let property in Engine.Settings ) {
+                    let setting = this.settingsGeneral.find( ( setting ) => {
+                        return ( property === setting.id );
+                    });
+                    if( setting ) {
+                    console.log( setting );
+                        Engine.Settings[property].value = setting.value;
+                    }
+                }
+
+                //
+                for( let connector of Engine.Connectors.list ) {
+                    let config = this.settingsConnectors.find( ( config ) => {
+                        return ( connector.id === config.id );
+                    });
+                    for( let property in connector.config ) {
+                        let setting = config.properties.find( ( setting ) => {
+                            return ( property === setting.id );
+                        });
+                        if( setting ) {
+                            connector.config[property].value = setting.value;
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Save the current settings and configurations of the data layer.
+             */
+            saveSettings() {
+                this.applySettings();
+                Engine.Settings.saveProfile( 'default', ( error ) => {
+                    this.popupVisibility = false;
+                });
+            }
+        }
+        window.customElements.define(HakunekoMenu.is, HakunekoMenu);
+    </script>
+
+</dom-module>

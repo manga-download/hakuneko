@@ -1,0 +1,109 @@
+<link rel="import" href="cloud.html">
+<link rel="import" href="daemon.html">
+<link rel="import" href="electron.html">
+<link rel="import" href="base/connectors.html">
+
+<script>
+
+    /**
+     * Inverse of control container providing instances of all important engine modules.
+     * Each module may depend on the corresponding underlying platform.
+     */
+    class Engine {
+
+        /**
+         *
+         */
+        static get Connectors() {
+            if( !this._instanceConnectors ) {
+                this._instanceConnectors = this.CreateInstance( Connectors, Connectors, undefined );
+            }
+            return this._instanceConnectors;
+        }
+
+        /**
+         *
+         */
+        static get DownloadManager() {
+            if( !this._instanceDownloadManager ) {
+                this._instanceDownloadManager = this.CreateInstance( DownloadManagerCloud, DownloadManagerElectron, undefined );
+            }
+            return this._instanceDownloadManager;
+        }
+
+        /**
+         *
+         */
+        static get Request() {
+            if( !this._instanceRequest ) {
+                this._instanceRequest = this.CreateInstance( RequestCloud, RequestElectron, undefined );
+            }
+            return this._instanceRequest;
+        }
+
+        /**
+         *
+         */
+        static get Settings() {
+            if( !this._instanceSettings ) {
+                this._instanceSettings = this.CreateInstance( SettingsCloud, SettingsElectron, undefined );
+            }
+            return this._instanceSettings;
+        }
+
+        /**
+         *
+         */
+        static get Storage() {
+            if( !this._instanceStorage ) {
+                this._instanceStorage = this.CreateInstance( StorageCloud, StorageElectron, undefined );
+            }
+            return this._instanceStorage;
+        }
+
+        /**
+         * Determine the underlying platform and return the corresponding type
+         */
+        static CreateInstance( TypeCloud, TypeElectron, TypeDaemon ) {
+            if( typeof(process) !== 'undefined' && process.versions && process.versions.electron ) {
+                return ( new TypeElectron() );
+            } else {
+                return ( new TypeCloud() );
+            }
+        }
+    }
+
+    Engine.Settings.loadProfile( 'default', undefined );
+
+
+
+/*
+// cloudflare testing area
+Engine.Request.get( 'http://kissmanga.com/MangaList?page=1', 'kissmanga.com', 'Mozilla/5.0', ( content, status ) => {
+    let dom = document.createElement( 'html' );
+    dom.innerHTML = content;
+    let script = dom.querySelector( 'script' ).innerHTML.replace( /\n/g, '' ).replace(/document\./g, 'dom\.');
+    console.log( script );
+    script = script.match( /setTimeout\s*\(\s*function\s*\(\s*\)\s*\{\s*(.+)\s*[a-z]\s*\.\s*submit\s*\(\s*\)\s*;/g );
+    console.log( script );
+    eval( script[0] );
+    console.log( '++++++++', status, dom.querySelector('#challenge-form') );
+    setTimeout( () => {
+        console.log( '++++++++', dom.querySelector('#challenge-form') );
+    }, 7500 );
+});
+*/
+
+var dbg = Engine.Request;
+
+Engine.DownloadManager.onDownloadAdded = ( e ) => { console.log( 'EVENT LISTENER => DOWNLAOD ADDED', e.status, e.progress, e ); };
+Engine.DownloadManager.onDownloadUpdated = ( e ) => { console.log( 'EVENT LISTENER => DOWNLOAD UPDATED', e.status, e.progress, e ); };
+Engine.DownloadManager.onDownloadRemoved = ( e ) => { console.log( 'EVENT LISTENER => DOWNLOAD REMOVED', e.status, e.progress, e ); };
+
+//Engine.DownloadManager.addDownload( Engine.Connectors.list[0], {id: '/manga_001', title: 'Manga Nr. 1'}, {id: '/manga_001/chapter_001', title: 'Chapter Nr. 1', pages: ['http://image_001.jpg']}, '/tmp', true );
+//Engine.DownloadManager.addDownload( Engine.Connectors.list[1], {id: 'manga 002'}, {id: 'chapter 001'} );
+//Engine.DownloadManager.addDownload( Engine.Connectors.list[1], {id: 'manga 003'}, {id: 'chapter 001'} );
+//Engine.DownloadManager.addDownload( Engine.Connectors.list[1], {id: 'manga 004'}, {id: 'chapter 001'} );
+//Engine.DownloadManager.addDownload( Engine.Connectors.list[2], {id: 'manga 005'}, {id: 'chapter 001'} );
+
+</script>

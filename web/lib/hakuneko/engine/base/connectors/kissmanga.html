@@ -1,0 +1,227 @@
+<script>
+
+    /**
+     *
+     */
+    class KissManga {
+
+        /**
+         *
+         */
+        constructor() {
+            // Public members for usage in UI (mandatory)
+            this.id             = 'kissmanga';
+            this.label          = 'KissManga';
+            // Private members for internal usage only (convenience)
+            this.url            = 'http://kissmanga.com';
+            //this.referer        = 'http://kissmanga.com';
+            //this.agent          = 'Mozilla/5.0';
+            this.sandbox        = new Worker( '/js/sandbox.js' );
+            this.initialized    = false;
+            this.lock           = false;
+            this.pageLoadDelay  = 5000;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config  = undefined;
+
+            // initialization: bypass cloudflare and get encryption scripts
+            // FIXME: use script hosted by hakuneko to prevent injection attacks
+            Engine.Request.cfGet( this.url + '/Scripts/ca.js', undefined, undefined, ( content, status ) => {
+            //Engine.Request.cfGet( '/js/kissmanga/ca.js', undefined, undefined, ( content, status ) => {
+                if( status === 200 ) {
+                    let script = content + ';';
+                    // FIXME: use script hosted by hakuneko to prevent injection attacks
+                    Engine.Request.cfGet( this.url + '/Scripts/lo.js', undefined, undefined, ( content, status ) => {
+                    //Engine.Request.cfGet( '/js/kissmanga/lo.js', undefined, undefined, ( content, status ) => {
+                        if( status === 200 ) {
+                            script += content + ';';
+                            this.sandbox.postMessage( { id: 1, content: script, return: [] } );
+                            this.initialized = true;
+                        } else {
+                            console.error( '[ERROR: Failed to load KissManga script]', this.url + '/Scripts/lo.js' );
+                        }
+                    });
+                } else {
+                    console.error( '[ERROR: Failed to load CryptoJS script]', this.url + '/Scripts/ca.js' );
+                }
+            });
+        }
+
+        /**
+         * Helper function to decrypt the protected email within the given DOM element.
+         */
+        cfMailDecrypt( element ) {
+            let span = element.querySelector( 'span[data-cfemail]' );
+            let script = element.querySelector( 'script[data-cfhash]' );
+            if( span && script ) {
+                let mail = span.getAttribute( 'data-cfemail' );
+                let hash = element.removeChild( script ).getAttribute( 'data-cfhash' );
+                // remove script
+                if( mail && hash ) {
+                    // decrypt mail
+                    let decrypted = '';
+                    let key = '0x' + mail.substr( 0, 2 ) | 0;
+                    for ( let i=2; i<mail.length; i+=2 ) {
+                        decrypted += '%' + ( '0' + ( '0x' + mail.substr( i, 2 ) ^ key ).toString( 16 ) ).slice( -2 );
+                    }
+                    element.replaceChild( document.createTextNode( decodeURIComponent( decrypted ) ), span );
+                }
+            }
+        }
+
+        /**
+         * Parameters mangalist, pageFrom and pageTo should never be relayed from external calls.
+         */
+        getMangaList( callback, mangaList, pageFrom, pageTo ) {
+            // connector initialization failed or not yet finished
+            if( !this.initialized ) {
+                callback( undefined );
+                return;
+            }
+            // set default values for arguments
+            mangaList = mangaList || [];
+            pageFrom = pageFrom || 1;
+            pageTo = pageTo || 9999;
+            // abort condition for recursive call
+            if( pageFrom > pageTo ) {
+                callback( mangaList );
+                return;
+            }
+            Engine.Request.cfGet( this.url + '/MangaList?page=' + pageFrom, undefined, undefined, ( content, status ) => {
+                // on captcha request => retry after 60 seconds
+                if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
+                    console.error( '[ERROR: CAPTCHA required]', settings.url );
+                    callback( mangaList );
+                    return;
+                }
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                if( dom.querySelectorAll( 'li.current' ).length < 1 ) {
+                    callback( mangaList );
+                    return;
+                }
+                [...dom.querySelectorAll( 'table.listing tr' )].forEach(  ( element ) => {
+                    let td = element.querySelector( 'td' );
+                    if( td ) {
+                        let a = td.querySelector( 'a' );
+                        if( a && a.href ) {
+                            // clean cfmail
+                            this.cfMailDecrypt( a );
+                            mangaList.push( {
+                                // as mentioned before, the eventually added host prefix must be removed
+                                // for full qualified domain name, the host (kissmanga) can also be removed
+                                id: encodeURI( a.href.trim().replace( /\s+/, '' ).replace( this.url, '' ).replace( window.location.origin, '' ) ),
+                                title: a.text.trim()
+                            });
+                        }
+                    }
+                });
+                // recursive call to process next page
+                this.getMangaList( callback, mangaList, pageFrom + 1, pageTo );
+            });
+        }
+
+        /**
+         *
+         */
+        getChapterList( manga, callback ) {
+            // connector initialization failed or not yet finished
+            if( !this.initialized ) {
+                callback( undefined );
+                return;
+            }
+            Engine.Request.cfGet( this.url + manga.id, undefined, undefined, ( content, status ) => {
+                let chapterList = [];
+                // on captcha request => retry after 60 seconds
+                if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
+                    console.error( '[ERROR: CAPTCHA required]', settings.url );
+                    callback( chapterList );
+                    return;
+                }
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                [...dom.querySelectorAll( 'table.listing tr' )].forEach(  ( element ) => {
+                    let td = element.querySelector( 'td' );
+                    if( td ) {
+                        let a = td.querySelector( 'a' );
+                        if( a && a.href ) {
+                            // clean cfmail
+                            this.cfMailDecrypt( a );
+                            chapterList.push( {
+                                // as mentioned before, the eventually added host prefix must be removed
+                                // for full qualified domain name, the host (kissmanga) can also be removed
+                                id: encodeURI( a.href.trim().replace( /\s+/, '' ).replace( this.url, '' ).replace( window.location.origin, '' ) ),
+                                title: a.text.replace( /read online/i, '' ).replace( manga.title, '' ).trim(),
+                                language: 'en'
+                            });
+                        }
+                    }
+                });
+                callback( chapterList );
+            });
+        }
+
+        /**
+         *
+         */
+        getPages( manga, chapter, callback ) {
+            if( this.lock ) {
+                callback( undefined );
+                return;
+            }
+            this.lock = true;
+            setTimeout( () => { this.lock = false; }, this.pageLoadDelay );
+            Engine.Request.cfGet( this.url + chapter.id, undefined, undefined, ( content, status ) => {
+                let pageList = [];
+                // on captcha request => retry after 60 seconds
+                if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
+                    console.error( '[ERROR: CAPTCHA required]', settings.url );
+                    callback( pageList );
+                    return;
+                }
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                [...dom.querySelectorAll( 'script' )].forEach(  ( element ) => {
+                    let script = element.innerHTML;
+                    // evaluate scripts related to the link encryption key
+                    if( script && script.indexOf( 'chko' ) > -1 && script.indexOf( 'key' ) > -1 && script.indexOf( 'CryptoJS' ) > -1 && script.indexOf( '$' ) < 0 ) {
+                        this.sandbox.postMessage( { id: 1, content: script, return: [] } );
+                    }
+                    // evaluate script lines to decrypt image links
+                    if( script && script.indexOf( 'lstImages.push' ) > -1 ) {
+                        let re = /(lstImages\.push\s*?\(.*\))/g;
+                        let match;
+                        let code = 'var lstImages = [];';
+                        while( match = re.exec( script ) ) {
+                            code += match[1] + ';';
+                        }
+                        let messageID = Math.random();
+                        let eventListener = ( e ) => {
+                            if( e.data.id === messageID ) {
+                                this.sandbox.removeEventListener( 'message', eventListener );
+                                callback( e.data.content[ 'lstImages' ] );
+                            }
+                        };
+                        this.sandbox.addEventListener( 'message', eventListener, false );
+                        this.sandbox.postMessage( { id: messageID, content: code, return: ['lstImages'] } );
+                        return;
+                    }
+                });
+                callback( pageList );
+            });
+        }
+    }
+    KissManga; // reference the class to prevent removal of the class through js-minify
+
+</script>

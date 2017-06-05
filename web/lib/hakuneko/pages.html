@@ -1,0 +1,202 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-pages">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            #container {
+                width: calc(100% - 2em);
+                height: calc(100% - 2em);
+                padding: 1em;
+                overflow-y: scroll;
+                background-color: var(--page-control-background-color);
+                background-image: url(/img/background.png);
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: left top;
+            }
+            .thumbnail {
+                display: inline-block;
+                border: var(--page-thumbnail-border);
+                background-color: var(--page-thumbnail-background-color);
+                background-position: center;
+                background-size: contain;
+                background-repeat: no-repeat;
+                border-radius: 1em;
+                margin: 0.5em;
+                width: 16em;
+                height: 16em;
+                cursor: pointer;
+                -webkit-box-shadow: var(--page-thumbnail-shadow);
+                   -moz-box-shadow: var(--page-thumbnail-shadow);
+                        box-shadow: var(--page-thumbnail-shadow);
+            }
+            .viewer {
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                background-color: var(--page-viewer-background-color);
+                cursor: crosshair;
+                overflow-y: scroll;
+                overflow-x: hidden;
+                z-index: 9999;
+            }
+            .show {
+                display: block ;
+            }
+            .hide {
+                display: none;
+            }
+            .image {
+                display: block;
+                margin: 2em;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            .buttons {
+                position: fixed;
+                top: 0;
+                right: 2em;
+            }
+            .button {
+                cursor: pointer;
+                margin: 0.25em;
+            }
+        </style>
+        <div id="container" style$="background-color: [[ getContainerColor(selectedPage) ]];">
+            <template is="dom-if" if="[[ !pageViewMode(selectedPage) ]]">
+                <template is="dom-repeat" items="[[ pages ]]">
+                    <div class="thumbnail" style$="background-image: url('[[ item ]]');" on-click="showViewer" title$="Page [[ index ]]"></div>
+                </template>
+            </template>
+            <template is="dom-if" if="[[ pageViewMode(selectedPage) ]]">
+                <div class="buttons">
+                    <i class="fa fa-search-plus fa-2x button" title$="Zoom In" on-click="zoomIn"></i><i class="fa fa-search-minus fa-2x button" title$="Zoom Out" on-click="zoomOut"></i><i class="fa fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
+                </div>
+                <template is="dom-repeat" items="[[ pages ]]">
+                    <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="height: [[ imageHeight ]]%;"></div>
+                </template>
+            </template>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoPages extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-pages';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    pages: {
+                        type: Array,
+                        value: [],
+                        observer: 'onPagesChanged'
+                    },
+                    selectedPage: {
+                        type: Number,
+                        value: -1,
+                        notify: true // enable upward data flow
+                        //readOnly: true // prevent downward data flow
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.selectedPage = -1;
+                this.imageHeight = 100;
+            }
+
+            /**
+             * Observer will be executed, whenever the 'pages' are changed.
+             */
+            onPagesChanged( chapter ) {
+                //
+            }
+
+            /**
+             *
+             */
+            showViewer( e ) {
+                this.set( 'selectedPage', e.model.index);
+                this.set( 'viewerStyle.bgImage', this.pages[this.selectedPage] );
+                // embed in timeout function to ensure image layout is updated before adjusting scroll offsetTop
+                setTimeout( function(){
+                    // find offset for image with id=selectedPage and scroll to page
+                    this.$.container.scrollTop = this.$.container.querySelector('#page_' + this.selectedPage).offsetTop;
+                }.bind( this ), 0 );
+            }
+
+            /**
+             *
+             */
+            hideViewer( e ) {
+                this.set( 'selectedPage', -1 );
+                this.$.container.scrollTop = 0;
+            }
+
+            /**
+             *
+             */
+            getContainerColor(selectedPage) {
+                return ( this.pageViewMode( selectedPage ) ? '#202020' : '#a0a0a0' );
+            }
+
+            /**
+             *
+             */
+            pageViewMode( selectedPage ) {
+                return ( selectedPage > -1 );
+            }
+
+            /**
+             *
+             */
+            zoomIn( e ) {
+                let scale = this.imageHeight + 15;
+                this.zoom( ( scale > 400 ? 400 : scale ) );
+            }
+
+            /**
+             *
+             */
+            zoomOut( e ) {
+                let scale = this.imageHeight - 15;
+                this.zoom( ( scale < 25 ? 25 : scale ) );
+            }
+
+            /**
+             *
+             */
+            zoom( scale ) {
+                let previousHeight = this.$.container.scrollHeight;
+                let previousOffset = this.$.container.scrollTop;
+                this.set( 'imageHeight', scale );
+                // embed in timeout function to ensure layout is updated before adjusting offsetY
+                //setTimeout( function() {
+                    // adjust new offsetY depending on height changed ratio of container after scaling images
+                    this.$.container.scrollTop = previousOffset * this.$.container.scrollHeight / previousHeight;
+                //}.bind( this ), 0 );
+            }
+        }
+        window.customElements.define( HakunekoPages.is, HakunekoPages );
+    </script>
+
+</dom-module>
