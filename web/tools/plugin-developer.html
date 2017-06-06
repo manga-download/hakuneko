@@ -124,8 +124,7 @@
 ++++++++++++++ [BEGIN] PLUGIN CODE ++++++++++++++++++++++++++++
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -->
-<div id="script" style="flex: 2;">
-/**
+<div id="script" style="flex: 2;">/**
  *
  */
 class MangaFox {
@@ -139,8 +138,8 @@ class MangaFox {
         this.label          = 'MangaFox';
         // Private members for internal usage only (convenience)
         this.url            = 'http://mangafox.me';
-        //this.referer        = 'http://mangafox.me';
-        //this.agent          = 'Mozilla/5.0';
+        this.referer        = undefined; // 'http://mangafox.me';
+        this.agent          = undefined; // 'Mozilla/5.0';
         this.pageLoadDelay  = 50; // 25;
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = undefined;
@@ -150,7 +149,7 @@ class MangaFox {
      *
      */
     getMangaList( callback ) {
-        Engine.Request.get( this.url + '/manga', undefined, this.agent, ( content, status ) => {
+        Engine.Request.get( this.url + '/manga', this.referer, this.agent, ( content, status ) => {
             // prevent images and iframes from loading
             content = content.replace( /&lt;img[^&lt;]*?&gt;/g, '&lt;img&gt;');
             content = content.replace( /&lt;iframe[^&lt;]*?&gt;/g, '&lt;iframe&gt;');
@@ -173,7 +172,7 @@ class MangaFox {
      *
      */
     getChapterList( manga, callback ) {
-        Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
+        Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( content, status ) => {
             // prevent images and iframes from loading
             content = content.replace( /&lt;img[^&lt;]*?&gt;/g, '&lt;img&gt;');
             content = content.replace( /&lt;iframe[^&lt;]*?&gt;/g, '&lt;iframe&gt;');
@@ -195,7 +194,7 @@ class MangaFox {
      *
      */
     getPages( manga, chapter, callback ) {
-        Engine.Request.get( ( this.url + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), undefined, undefined, ( content, status ) => {
+        Engine.Request.get( ( this.url + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), this.referer, this.agent, ( content, status ) => {
             // FIXME: very dangerous, might end up in endless recursion !!!
             if( status === 503 ) {
                 setTimeout( () => {
@@ -216,8 +215,7 @@ class MangaFox {
         });
     }
 }
-MangaFox; // reference the class to prevent removal of the class through js-minify
-</div>
+MangaFox; // reference the class to prevent removal of the class through js-minify</div>
 <!--
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ++++++++++++++ [END] PLUGIN CODE ++++++++++++++++++++++++++++++
@@ -227,7 +225,7 @@ MangaFox; // reference the class to prevent removal of the class through js-mini
     <div style="flex: 1; padding: 1em;">
         <div>
             <hr>
-            <button onclick="getMangaList()" title="Connector.getMangaList()[0]">1. Get first Manga</button>
+            <button onclick="getMangaList()" title="Run 'Connector.getMangaList()'' and show the first manga entry">1. Get first Manga</button>
             <strong id="mangaStatus"></strong>
         </div>
         <div>
@@ -235,7 +233,7 @@ MangaFox; // reference the class to prevent removal of the class through js-mini
         </div>
         <div>
             <hr>
-            <button onclick="getChapterList()" title="Connector.getChapterList( manga )[0]">2. Get first Chapter</button>
+            <button onclick="getChapterList()" title="Run 'Connector.getChapterList( manga )' with the output from 'getMangaList()' and show the first chapter entry">2. Get first Chapter</button>
             <strong id="chapterStatus"></strong>
         </div>
         <div>
@@ -243,7 +241,7 @@ MangaFox; // reference the class to prevent removal of the class through js-mini
         </div>
         <div>
             <hr>
-            <button onclick="getPageList()" title="Connector.getPageList( chapter )">3. Get all Pages</button>
+            <button onclick="getPageList()" title="Run 'Connector.getPageList( chapter )' with the output from 'getChapterList()' and show all page links'">3. Get all Pages</button>
             <strong id="pageStatus"></strong>
         </div>
         <div>
@@ -253,5 +251,3 @@ MangaFox; // reference the class to prevent removal of the class through js-mini
 </body>
 
 </html>
-
-
