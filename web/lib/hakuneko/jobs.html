@@ -33,15 +33,6 @@
                 background-color: var(--job-list-background-color);
                 overflow-y: scroll;
             }
-            .list table {
-                /*
-                padding-top: 0.25em;
-                padding-bottom: 0.25em;
-                */
-            }
-            .list tr {
-                border-top: 1px solid red;
-            }
             .list td {
                 padding-left: 0.25em;
                 padding-right: 0.25em;
@@ -56,14 +47,14 @@
             }
         </style>
         <div class$="list [[ getListClass(popupVisibility) ]]">
-            <table style="display: block; max-width: 100%;">
+            <table style="width: 100%;">
                 <template is="dom-repeat" items="[[ jobList ]]" initial-count="500" target-framerate="5">
                     <tr>
                         <td>[[ item.labels.connector ]]</td>
                         <td>[[ item.labels.manga ]]</td>
                         <td>[[ item.labels.chapter ]]</td>
                         <td>[[ item.status ]]</td>
-                        <td>[[ item.progress ]]</td>
+                        <td width="50px"><div style$="display: inline-block; width: [[ item.progress ]]px; height: 8px; background-color: #00f000;"></div></td>
                     </tr>
                 </template>
             </table>
@@ -152,32 +143,28 @@
              * 
              */
             onDownloadAdded( e ) {
-                console.log( 'A', e.detail.id );
-                let job = e.detail;
-                this.push( 'jobList', job );
-                console.log( 'EVENT LISTENER => JOB ADDED', job.status, job.progress );
+                this.push( 'jobList', e.detail );
             }
 
             /**
              * 
              */
             onDownloadUpdated( e ) {
-                console.log( 'B', e.detail.id );
                 let job = e.detail;
                 let index = this.jobList.indexOf( job );
                 // force an UI update of the changed job
-                this.jobList[index] = undefined;
-                this.set( 'jobList.' + index, job );
+                this.notifyPath( 'jobList.' + index + '.status' );
+                this.notifyPath( 'jobList.' + index + '.progress' );
             }
 
             /**
              * 
              */
             onDownloadRemoved( e ) {
-                console.log( 'C', e.detail.id );
-                let job = e.detail;
-                let index = this.jobList.indexOf( job );
-                this.splice( index, 1 );
+                let index = this.jobList.indexOf( e.detail );
+                if( index > -1 )  {
+                    this.splice( 'jobList', index, 1 );
+                }
             }
         }
         window.customElements.define(HakunekoJobs.is, HakunekoJobs);
