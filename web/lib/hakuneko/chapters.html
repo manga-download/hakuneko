@@ -1,6 +1,5 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
-<link rel="import" href="engine/loader.html">
 <link rel="import" href="status.html">
 <link rel="import" href="theme.html">
 
@@ -51,6 +50,18 @@
             }
             .button {
                 cursor: pointer;
+            }
+            .buttonAvailable {
+                color: var(--chapter-available-button-color);
+            }
+            .buttonQueued {
+                color: var(--chapter-queued-button-color);
+            }
+            .buttonDownloading {
+                color: var(--chapter-downloading-button-color);
+            }
+            .buttonCompleted {
+                color: var(--chapter-completed-button-color);
             }
             .footer {
                 flex: 0;
@@ -137,6 +148,10 @@
                 super.ready();
                 // list of all available chapters
                 this.chapterList = undefined;
+                // register callbacks for events published by download manager
+                document.addEventListener( EventListener.onDownloadAdded, this.onDownloadUpdated.bind( this ) );
+                document.addEventListener( EventListener.onDownloadUpdated, this.onDownloadUpdated.bind( this ) );
+                document.addEventListener( EventListener.onDownloadRemoved, this.onDownloadUpdated.bind( this ) );
             }
 
             /**
@@ -180,13 +195,13 @@
                     case DownloadStatus.unavailable:
                         return 'Chapter is not available';
                     case DownloadStatus.available:
-                        return 'Chapter can be downloaded\nClick to add chapter to download manager';
+                        return 'AVAILABLE\nClick to add chapter to download manager';
                     case DownloadStatus.queued:
-                        return 'Chapter is queued in download manager\nClick to remove chapter from download manager';
+                        return 'QUEUED\nClick to remove chapter from download manager';
                     case DownloadStatus.downloading:
-                        return 'Chapter is beeing downloaded\nClick to abort chapter download';
+                        return 'DOWNLOADING';
                     case DownloadStatus.completed:
-                        return 'Chapter has been downloaded to the device\nClick to delete chapter from device';
+                        return 'DOWNLOADED\nClick to delete and re-download chapter';
                     default:
                         return 'No tooltip available!';
                 }
@@ -200,13 +215,13 @@
                     case DownloadStatus.unavailable:
                         return 'fa-exclamation-triangle';
                     case DownloadStatus.available:
-                        return 'fa-cloud';
+                        return 'fa-cloud buttonAvailable';
                     case DownloadStatus.queued:
-                        return 'fa-cloud-download';
+                        return 'fa-cloud-download buttonQueued';
                     case DownloadStatus.downloading:
-                        return 'fa-cloud-download';
+                        return 'fa-cloud-download buttonDownloading';
                     case DownloadStatus.completed:
-                        return 'fa-folder';
+                        return 'fa-folder-open buttonCompleted';
                     default:
                         return '';
                 }
@@ -221,17 +236,11 @@
                         alert( 'No action available!' );
                         break;
                     case DownloadStatus.available:
-                        alert( 'TODO: Starting download ...' );
-                        break;
-                    case DownloadStatus.queued:
-                        alert( 'TODO: Remove from queue ...' );
-                        break;
-                    case DownloadStatus.downloading:
-                        alert( 'TODO: Abort download ...' );
+                        Engine.DownloadManager.addDownload( this.selectedConnector, this.selectedManga, e.model.item );
                         break;
                     case DownloadStatus.completed:
-                        if( confirm( 'Delete from device?' ) ) {
-                            alert( 'TODO: Delete from device ...' );
+                        if( confirm( 'Re-Download?' ) ) {
+                            alert( 'TODO: ...' );
                         }
                         break;
                     default:
@@ -295,6 +304,17 @@ console.warn( 'TODO: determine how to abort any pending page request for selecte
                     let matchLanguage = !language || ( chapter.language.toLowerCase().indexOf( language.toLowerCase() ) > -1 );
                     return ( matchTitle && matchLanguage );
                 };
+            }
+
+            /**
+             * 
+             */
+            onDownloadUpdated( e ) {
+                let job = e.detail;
+                let index = this.chapterList.findIndex( ( item ) => { return ( item.id === job.keys.chapter ); } );
+                if( index > -1 ) {
+                    this.set( 'chapterList.' + index + '.status', job.status );
+                }
             }
         }
         window.customElements.define( HakunekoChapters.is, HakunekoChapters );

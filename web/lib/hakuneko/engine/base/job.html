@@ -1,0 +1,55 @@
+<link rel="import" href="enums.html">
+
+<script>
+
+    /**
+     *
+     */
+    class DownloadJob {
+
+        /**
+         *
+         */
+        constructor( connector, manga, chapter ) {
+            this.id = Symbol( connector.id + ';' + manga.id + ';' + chapter.id );
+            this.keys = {
+                connector: connector.id,
+                manga: manga.id,
+                chapter: chapter.id
+            };
+            this.labels = {
+                connector: connector.label,
+                manga: manga.title,
+                chapter: chapter.title
+            };
+            this.status = DownloadStatus.queued;
+            this.progress = 0.0;
+        }
+
+        /**
+         *
+         */
+        downloadPages( directory, compress, callback ) {
+            this.status = DownloadStatus.downloading;
+            document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+
+            // emulate download process
+            this.progress = 0.0;
+            for( let t=750; t<5000; t+=750) {
+                setTimeout( ( () => {
+                    this.progress += 1.0/6.0;
+                    document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+                } ).bind( this ), t );
+            }
+            // emulate download finished
+            setTimeout( ( () => {
+                this.progress = 1.0;
+                this.status = DownloadStatus.completed;
+                document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+                callback();
+            } ).bind( this ), 5500 );
+        }
+    }
+    DownloadJob; // reference the class to prevent removal of the class through js-minify
+
+</script>

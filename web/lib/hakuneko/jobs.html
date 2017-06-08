@@ -27,8 +27,24 @@
                 padding: 0.25em;
             }
             .list {
-                padding: 0.5em;
+                padding: 0.25em;
                 background-color: var(--job-list-background-color);
+                overflow-y: scroll;
+            }
+            .list table {
+                /*
+                padding-top: 0.25em;
+                padding-bottom: 0.25em;
+                */
+            }
+            .list tr {
+                border-top: 1px solid red;
+            }
+            .list td {
+                padding-left: 0.25em;
+                padding-right: 0.25em;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
             .show {
                 display: block ;
@@ -38,22 +54,31 @@
             }
         </style>
         <div class$="list [[ getListClass(popupVisibility) ]]">
+            <table style="display: block; max-width: 100%;">
+                <template is="dom-repeat" items="[[ jobList ]]" initial-count="500" target-framerate="5">
+                    <tr>
+                        <td>[[ item.labels.connector ]]</td>
+                        <td>[[ item.labels.manga ]]</td>
+                        <td>[[ item.labels.chapter ]]</td>
+                        <td>[[ item.status ]]</td>
+                        <td>[[ item.progress ]]</td>
+                    </tr>
+                </template>
+            </table>
+            <!--
             <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 001<br>
             <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 002<br>
-            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 003<br>
-            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 004<br>
-            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 005<br>
-            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 006<br>
+            -->
         </div>
         <div class="bar">
             <div class="button">
-                <i class="fa fa-bar-chart item" title="Toggle download manager" on-click="togglePopup"></i>
-                <!-- <i class="fa fa-tasks item" title="Toggle download manager" on-click="togglePopup"></i> -->
+                <i class="fa fa-bar-chart item" title="Toggle download manager" on-click="toggleJobList"></i>
+                <!-- <i class="fa fa-tasks item" title="Toggle download manager" on-click="toggleJobList"></i> -->
             </div>
             <div class="button">
-                <i class$="fa [[ getButtonClass(popupVisibility) ]] item" title="Toggle download manager" on-click="togglePopup"></i>
+                <i class$="fa [[ getButtonClass(popupVisibility) ]] item" title="Toggle download manager" on-click="toggleJobList"></i>
             </div>
-            <div class="status">12/34 jobs in queue completed ... ~789 KB/s</div>
+            <div class="status">[[ jobList.length ]] Download(s)</div>
         </div>
     </template>
 
@@ -88,30 +113,69 @@
             ready() {
                 super.ready();
                 this.popupVisibility = true;
+                this.jobList = [];
+                // register callbacks for events published by download manager
+                document.addEventListener( EventListener.onDownloadAdded, this.onDownloadAdded.bind( this ) );
+                document.addEventListener( EventListener.onDownloadUpdated, this.onDownloadUpdated.bind( this ) );
+                document.addEventListener( EventListener.onDownloadRemoved, this.onDownloadRemoved.bind( this ) );
             }
 
             /**
              *
              */
-            togglePopup() {
+            toggleJobList() {
                 this.set( 'popupVisibility', !this.popupVisibility );
             }
 
             /**
-             *
+             * CSS class for the job list.
+             * The CSS class depends on the current visibility state.
              */
             getListClass( visibility ) {
                 return (visibility ? 'show' : 'hide');
             }
 
             /**
-             *
+             * CSS class for the show/hide button of the job list.
+             * The CSS class depends on the current visibility state.
              */
             getButtonClass( visibility ) {
                 //return (visibility ? 'fa-angle-double-up' : 'fa-angle-double-right');
                 //return (visibility ? 'fa-chevron-circle-up' : 'fa-chevron-circle-right');
                 //return (visibility ? 'fa-toggle-on' : 'fa-toggle-off');
                 return (visibility ? 'fa-eye' : 'fa-eye-slash');
+            }
+
+            /**
+             * 
+             */
+            onDownloadAdded( e ) {
+                console.log( 'A', e.detail.id );
+                let job = e.detail;
+                this.push( 'jobList', job );
+                console.log( 'EVENT LISTENER => JOB ADDED', job.status, job.progress );
+            }
+
+            /**
+             * 
+             */
+            onDownloadUpdated( e ) {
+                console.log( 'B', e.detail.id );
+                let job = e.detail;
+                let index = this.jobList.indexOf( job );
+                // force an UI update of the changed job
+                this.jobList[index] = undefined;
+                this.set( 'jobList.' + index, job );
+            }
+
+            /**
+             * 
+             */
+            onDownloadRemoved( e ) {
+                console.log( 'C', e.detail.id );
+                let job = e.detail;
+                let index = this.jobList.indexOf( job );
+                this.splice( index, 1 );
             }
         }
         window.customElements.define(HakunekoJobs.is, HakunekoJobs);

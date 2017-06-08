@@ -1,8 +1,8 @@
 <script>
 
     /**
-    * Enumeration of available input types for editing values.
-    */
+     * Enumeration of available input types for editing values.
+     */
     const Input = {
         text:      Symbol( 'text' ),
         numeric:   Symbol( 'number' ),
@@ -13,14 +13,23 @@
     }
 
     /**
-    * Enumeration of available stauses used at various places.
-    */
+     * Enumeration of available stauses used at various places.
+     */
     const DownloadStatus = {
         unavailable: 'unavailable', // chapter/manga that cannot be downloaded
         available:   'available',   // chapter/manga that can be added to the download list
         queued:      'queued',      // chapter/manga that is queued for download to the users device
         downloading: 'downloading', // chapter/manga that is currently downloaded to the users device
         completed:   'completed'    // chapter/manga that already exist on the users device
+    }
+
+    /**
+     * Enumeration of available UI event listeners that can be used to register/dispatch events in document.
+     */
+    const EventListener = {
+        onDownloadAdded:   'onDownloadAdded',   // ...
+        onDownloadUpdated: 'onDownloadUpdated', // ...
+        onDownloadRemoved: 'onDownloadRemoved', // ...
     }
 
 </script>

@@ -1,4 +1,5 @@
 <link rel="import" href="enums.html">
+<link rel="import" href="job.html">
 
 <script>
 
@@ -11,50 +12,66 @@
          *
          */
         constructor() {
-            // ui callback functions
-            this.onDownloadAdded = undefined;
-            this.onDownloadUpdated = undefined;
-            this.onDownloadRemoved = undefined;
+            // TODO: load last queue from indexDB
+            this.queue = [];
+            this.worker = setInterval( this.processQueue.bind( this ), 500 );
         }
 
         /**
-         *
+         * Add a new job to the download queue.
+         * Execute the registered callback event when the job was added successfully.
          */
-        createDownloadJob ( connector, manga, chapter, directory, compress ) {
-            return {
-                id: {
-                    connector: connector.id,
-                    manga: manga.id,
-                    chapter: chapter.id
-                },
-                label: {
-                    connector: connector.label,
-                    manga: manga.title,
-                    chapter: chapter.title
-                },
-                output: {
-                    directory: directory,
-                    compress: compress
-                },
-                pages: chapter.pages,
-                status: DownloadStatus.queued,
-                progress: 0
-            };
+        addDownload( connector, manga, chapter ) {
+            if( !this.queue[connector.id] ) {
+                this.queue[connector.id] = [];
+            }
+            // check if job exist
+            let job = this.queue[connector.id].find( ( item ) => {
+                return ( item.keys.connector === connector.id && item.keys.manga === manga.id && item.keys.chapter === chapter.id );
+            });
+            if( job ) {
+                return;
+            }
+            job = new DownloadJob( connector, manga, chapter );
+            this.queue[connector.id].push( job );
+            document.dispatchEvent( new CustomEvent( EventListener.onDownloadAdded, { detail: job } ) );
         }
 
         /**
-         *
+         * Remove an existing job from the download queue.
+         * Execute the registered callback event when the job was removed successfully.
          */
-        getDownloads() {
-            //return this.queue;
+        removeDownload( connector, manga, chapter ) {
+            if( !this.queue[connector.id] ) {
+                return;
+            }
+            // check if job exist
+            let index = this.queue[connector.id].findIndex( ( item ) => {
+                return ( item.keys.connector === connector.id && item.keys.manga === manga.id && item.keys.chapter === chapter.id );
+            });
+            if( index < 0 ) {
+                return;
+            }
+            let job = this.queue[connector.id].splice( index, 1 )[0];
+            job.status = DownloadStatus.available;
+            document.dispatchEvent( new CustomEvent( EventListener.onDownloadRemoved, { detail: job } ) );
         }
 
         /**
-         *
+         * 
          */
-        addDownload( connector, manga, chapter, directory, compress ) {
-            let job = this.createDownloadJob( connector, manga, chapter, directory, compress );
-            this.serviceSend( 'ADD_DOWNLOAD', job );
+        processQueue() {
+            // find a connector in queue that has downloads available and is not locked
+            for( let connectorID in this.queue ) {
+                // check if queue is not empty
+                if( this.queue[connectorID].length > 0 && !this.queue[connectorID].isLocked ) {
+                    let job = this.queue[connectorID].shift();
+                    job.downloadPages( '', false, () => {
+                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadRemoved, { detail: job } ) );
+                        this.queue[connectorID].isLocked = false;
+                    });
+                }
+            }
         }
     }
     DownloadManagerBase; // reference the class to prevent removal of the class through js-minify

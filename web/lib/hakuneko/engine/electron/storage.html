@@ -12,24 +12,28 @@
          */
         constructor() {
             super();
-            this.electron = require( 'electron' );
+            let electron = require( 'electron' );
+            this.dialog = electron.remote.dialog;
+            this.fs = electron.remote.require( 'fs' );
+            this.path = electron.remote.require( 'path' );
+            this.archiver = electron.remote.require( 'archiver' );
         }
 
         /**
          * https://github.com/electron/electron/blob/master/docs/api/dialog.md
          */
         folderBrowser( rootPath ) {
-            let path = this.electron.remote.dialog.showOpenDialog( {
+            let directory = this.dialog.showOpenDialog( {
                 title: 'Download Directory for Mangas',
                 //message: 'MESSAGE',
                 defaultPath: rootPath,
                 properties: ['openDirectory']
             });
-            return ( path && path.length > 0 ? path[0] : rootPath );
+            return ( directory && directory.length > 0 ? directory[0] : rootPath );
         }
 
         /**
-         * Determine status for each manga in the given list and add a field to the manga with the corresponding status
+         * Determine status for each manga in the given list and add a field to the manga with the corresponding status.
          */
         applyMangaStatus( connector, mangas ) {
             mangas.forEach( ( manga ) => {
@@ -38,7 +42,7 @@
         }
 
         /**
-         *
+         * Determine status for each chapter in the given list and add a field to the chapter with the corresponding status.
          */
         applyChapterStatus( connector, manga, chapters ) {
             chapters.forEach( ( chapter ) => {
@@ -47,10 +51,23 @@
         }
 
         /**
-         *
+         * 
          */
-        saveChapter( connector, manga, chapter ) {
-            console.log( 'Storage::saveChapter', connector.label, manga.title, chapter.title );
+        saveFile( file, content, callback ) {
+            //
+        }
+
+        /**
+         * 
+         */
+        createZip( file ) {
+            let zip = archiver( 'zip', {
+                zlib: {
+                    level: 0
+                }
+            });
+            zip.pipe( fs.createWriteStream( directory + '.cbz' ) );
+            return zip;
         }
     }
 
