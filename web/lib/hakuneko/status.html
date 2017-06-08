@@ -89,14 +89,7 @@
              *
              */
             addToQueue( text ) {
-                let id;
-                do {
-                    id = Math.floor( Math.random() * 1000 );
-                }
-                while ( this.queue.find( ( item ) => {
-                        return ( id === item.id );
-                    })
-                );
+                let id = Symbol( text );
                 this.push( 'queue', { id: id, text: text } );
                 return id;
             }
