@@ -34,17 +34,6 @@ function activateWindow() {
         win.loadURL( 'http://hakuneko.ovh' );
     }
 
-    // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
-    electron.session.defaultSession.webRequest.onBeforeSendHeaders(['http*://*'], ( details, callback ) => {
-        console.log( details );
-        // TODO: only use origin of url => (new URL(details.url)).origin
-        details.requestHeaders['Referer'] = details.url;
-        callback({
-            cancel: false,
-            requestHeaders: details.requestHeaders
-        });
-    });
-
     win.on( 'closed', () => {
         win = null;
     });
