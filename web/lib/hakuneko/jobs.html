@@ -9,6 +9,7 @@
         <style include="theme"></style>
         <style>
             :host {
+                width: 100%;
                 background-color: var(--job-control-background-color);
             }
             .bar {
@@ -29,15 +30,29 @@
                 padding: 0.25em;
             }
             .list {
-                padding: 0.25em;
+                height: 8em;
                 background-color: var(--job-list-background-color);
                 overflow-y: scroll;
             }
+            .list table {
+                width: 100%;
+                table-layout: fixed;
+                border-spacing: 0;
+                border-collapse: collapse;
+            }
             .list td {
+                cursor: default;
+                border-bottom: var(--job-list-row-border);
+            }
+            .cell {
                 padding-left: 0.25em;
                 padding-right: 0.25em;
+                overflow: hidden;
                 white-space: nowrap;
                 text-overflow: ellipsis;
+            }
+            .progress {
+                width: 4em;
             }
             .show {
                 display: block ;
@@ -47,29 +62,21 @@
             }
         </style>
         <div class$="list [[ getListClass(popupVisibility) ]]">
-            <table style="width: 100%;">
+            <table cellpadding="0">
                 <template is="dom-repeat" items="[[ jobList ]]" initial-count="500" target-framerate="5">
-                    <tr>
-                        <td>[[ item.labels.connector ]]</td>
-                        <td>[[ item.labels.manga ]]</td>
-                        <td>[[ item.labels.chapter ]]</td>
-                        <td>[[ item.status ]]</td>
-                        <td width="50px"><div style$="display: inline-block; width: [[ item.progress ]]px; height: 8px; background-color: #00f000;"></div></td>
+                    <tr title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]">
+                        <td class="fa-fw"><i class$="fa [[ getStatusClass(item.status) ]] fa-fw"></i></td>
+                        <td class="cell">[[ item.labels.connector ]]</td>
+                        <td class="cell">[[ item.labels.manga ]]</td>
+                        <td class="cell">[[ item.labels.chapter ]]</td>
+                        <td class="progress" style$="background: linear-gradient(90deg, var(--job-list-progress-color) [[ item.progress ]]%, var(--job-list-progress-background-color) 0%);"></td>
                     </tr>
                 </template>
             </table>
-            <!--
-            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 001<br>
-            <i class="fa fa-play"></i> <i class="fa fa-pause"></i> Download Job 002<br>
-            -->
         </div>
         <div class="bar">
             <div class="button">
-                <i class="fa fa-bar-chart item" title="Toggle download manager" on-click="toggleJobList"></i>
-                <!-- <i class="fa fa-tasks item" title="Toggle download manager" on-click="toggleJobList"></i> -->
-            </div>
-            <div class="button">
-                <i class$="fa [[ getButtonClass(popupVisibility) ]] item" title="Toggle download manager" on-click="toggleJobList"></i>
+                <i class$="fa [[ getButtonClass(popupVisibility) ]] item" title="Toggle download list" on-click="toggleJobList"></i>
             </div>
             <div class="status">[[ jobList.length ]] Download(s)</div>
         </div>
@@ -105,7 +112,7 @@
              */
             ready() {
                 super.ready();
-                this.popupVisibility = true;
+                this.popupVisibility = false;
                 this.jobList = [];
                 // register callbacks for events published by download manager
                 document.addEventListener( EventListener.onDownloadAdded, this.onDownloadAdded.bind( this ) );
@@ -133,10 +140,28 @@
              * The CSS class depends on the current visibility state.
              */
             getButtonClass( visibility ) {
-                //return (visibility ? 'fa-angle-double-up' : 'fa-angle-double-right');
-                //return (visibility ? 'fa-chevron-circle-up' : 'fa-chevron-circle-right');
-                //return (visibility ? 'fa-toggle-on' : 'fa-toggle-off');
-                return (visibility ? 'fa-eye' : 'fa-eye-slash');
+                return (visibility ? 'fa-window-close-o' : 'fa-bar-chart');
+            }
+
+            /**
+             * CSS class for the status of a job in the job list.
+             * The CSS class depends on the curent status of the job.
+             */
+            getStatusClass( status ) {
+                switch ( status ) {
+                    //case DownloadStatus.unavailable:
+                    //    return 'fa-exclamation-triangle';
+                    //case DownloadStatus.available:
+                    //    return 'fa-cloud';
+                    case DownloadStatus.queued:
+                        return 'fa-clock-o';
+                    case DownloadStatus.downloading:
+                        return 'fa-exchange';
+                    case DownloadStatus.completed:
+                        return 'fa-check';
+                    default:
+                        return '';
+                }
             }
 
             /**

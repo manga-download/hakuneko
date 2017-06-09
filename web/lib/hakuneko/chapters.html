@@ -313,6 +313,9 @@ console.warn( 'TODO: determine how to abort any pending page request for selecte
              */
             onDownloadUpdated( e ) {
                 let job = e.detail;
+                if( !this.chapterList || this.selectedConnector.id !== job.keys.connector || this.selectedManga.id !== job.keys.manga ) {
+                    return;
+                }
                 let index = this.chapterList.findIndex( ( item ) => { return ( item.id === job.keys.chapter ); } );
                 if( index > -1 ) {
                     this.set( 'chapterList.' + index + '.status', job.status );

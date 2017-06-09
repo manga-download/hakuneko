@@ -34,16 +34,16 @@
             document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
 
             // emulate download process
-            this.progress = 0.0;
+            this.progress = 0;
             for( let t=750; t<5000; t+=750) {
                 setTimeout( ( () => {
-                    this.progress += 100.0/6.0;
+                    this.progress += 100/6;
                     document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
                 } ).bind( this ), t );
             }
             // emulate download finished
             setTimeout( ( () => {
-                this.progress = 100.0;
+                this.progress = 100;
                 this.status = DownloadStatus.completed;
                 document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
                 callback();

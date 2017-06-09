@@ -65,6 +65,7 @@
             for( let connectorID in this.queue ) {
                 // check if queue is not empty
                 if( this.queue[connectorID].length > 0 && !this.queue[connectorID].isLocked ) {
+                    this.queue[connectorID].isLocked = true;
                     let job = this.queue[connectorID].shift();
                     job.downloadPages( '', false, () => {
                         document.dispatchEvent( new CustomEvent( EventListener.onDownloadRemoved, { detail: job } ) );
