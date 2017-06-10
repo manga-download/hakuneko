@@ -1,3 +1,5 @@
+<link rel="import" href="../promise.html">
+
 <script>
 
     /**
@@ -22,23 +24,29 @@
          *
          */
         getMangaList( callback ) {
-            Engine.Request.get( this.url + '/series', undefined, undefined, ( content, status ) => {
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                //console.log(dom.innerHTML);
-                let mangaList = [...dom.querySelectorAll( '.tag-list dd a' )].map(  ( element ) => {
-                    return {
-                        // as mentioned before, the eventually added host prefix must be removed
-                        // for full qualified domain name, the host (dynasty-scans) can also be removed
-                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
-                        title: element.text.trim()
-                    };
+            let mangaList = [];
+            let prms = new Promise(() => {
+                callback(mangaList);
+            });
+            ['/series', '/anthologies', '/issues'].forEach((page) => {
+                let key = prms.defer();
+                Engine.Request.get( this.url + page, undefined, undefined, ( content, status ) => {
+                    // prevent images and iframes from loading
+                    content = content.replace( /<img[^<]*?>/g, '<img>');
+                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                    let dom = document.createElement( 'html' );
+                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                    dom.innerHTML = content;
+                    mangaList = mangaList.concat([...dom.querySelectorAll( '.tag-list dd a' )].map(  ( element ) => {
+                        return {
+                            // as mentioned before, the eventually added host prefix must be removed
+                            // for full qualified domain name, the host (dynasty-scans) can also be removed
+                            id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                            title: element.text.trim()
+                        };
+                    }));
+                    prms.resolve( key );
                 });
-                callback( mangaList );
             });
         }
 
@@ -69,13 +77,14 @@
          */
         getPages( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( content, status ) => {
-                let img_data_list = new RegExp("var pages =.*").exec(content)[0];	//Get raw data
+                let img_data_list = new RegExp("var pages =.*").exec(content)[0];    //Get raw data
+                content = '';
                 let img_url_rgx = /"image":"([^"]+)",/g
                 let img_url_list = [];
                 let mtch;
-              	while((mtch = img_url_rgx.exec(img_data_list))){	//Get all matching string
-              		img_url_list.push(this.url + mtch[1]);			//Keep only url group
-              	}
+                while((mtch = img_url_rgx.exec(img_data_list))){   //Get all matching string
+                    img_url_list.push(this.url + mtch[1]);         //Keep only url group
+                }
                 callback( img_url_list );
             });
         }
