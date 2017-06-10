@@ -1,17 +1,20 @@
+<link rel="import" href="../connector.html">
+
 <script>
 
     /**
      *
      */
-    class KissManga {
+    class KissManga extends Connector {
 
         /**
          *
          */
         constructor() {
+            super();
             // Public members for usage in UI (mandatory)
-            this.id             = 'kissmanga';
-            this.label          = 'KissManga';
+            super.id             = 'kissmanga';
+            super.label          = 'KissManga';
             // Private members for internal usage only (convenience)
             this.url            = 'http://kissmanga.com';
             //this.referer        = 'http://kissmanga.com';
@@ -71,7 +74,7 @@
         /**
          * Parameters mangalist, pageFrom and pageTo should never be relayed from external calls.
          */
-        getMangaList( callback, mangaList, pageFrom, pageTo ) {
+        _getMangaList( callback, mangaList, pageFrom, pageTo ) {
             // connector initialization failed or not yet finished
             if( !this.initialized ) {
                 callback( undefined );
@@ -127,7 +130,7 @@
         /**
          *
          */
-        getChapterList( manga, callback ) {
+        _getChapterList( manga, callback ) {
             // connector initialization failed or not yet finished
             if( !this.initialized ) {
                 callback( undefined );
@@ -171,7 +174,7 @@
         /**
          *
          */
-        getPages( manga, chapter, callback ) {
+        _getPageList( manga, chapter, callback ) {
             if( this.lock ) {
                 callback( undefined );
                 return;
@@ -222,6 +225,5 @@
             });
         }
     }
-    KissManga; // reference the class to prevent removal of the class through js-minify
 
 </script>

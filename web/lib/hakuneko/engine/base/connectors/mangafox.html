@@ -1,17 +1,20 @@
+<link rel="import" href="../connector.html">
+
 <script>
 
     /**
      *
      */
-    class MangaFox {
+    class MangaFox extends Connector {
 
         /**
          *
          */
         constructor() {
+            super();
             // Public members for usage in UI (mandatory)
-            this.id             = 'mangafox';
-            this.label          = 'MangaFox';
+            super.id             = 'mangafox';
+            super.label          = 'MangaFox';
             // Private members for internal usage only (convenience)
             this.url            = 'http://mangafox.me';
             //this.referer        = 'http://mangafox.me';
@@ -24,7 +27,7 @@
         /**
          *
          */
-        getMangaList( callback ) {
+        _getMangaList( callback ) {
             Engine.Request.get( this.url + '/manga', undefined, this.agent, ( content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
@@ -47,7 +50,7 @@
         /**
          *
          */
-        getChapterList( manga, callback ) {
+        _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
@@ -69,7 +72,7 @@
         /**
          *
          */
-        getPages( manga, chapter, callback ) {
+        _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), undefined, undefined, ( content, status ) => {
                 // FIXME: very dangerous, might end up in endless recursion !!!
                 if( status === 503 ) {
@@ -150,6 +153,5 @@ console.log( index, pageList.length, pageList[index] );
             });
         }
     }
-    MangaFox; // reference the class to prevent removal of the class through js-minify
 
 </script>
