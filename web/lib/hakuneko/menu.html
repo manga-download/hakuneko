@@ -231,7 +231,7 @@
 
                 //
                 this.settingsConnectors = [];
-                for( let connector of Engine.Connectors.list ) {
+                for( let connector of Engine.Connectors ) {
                     let config = {
                         id: connector.id,
                         label: connector.label,
@@ -269,7 +269,7 @@
                 }
 
                 //
-                for( let connector of Engine.Connectors.list ) {
+                for( let connector of Engine.Connectors ) {
                     let config = this.settingsConnectors.find( ( config ) => {
                         return ( connector.id === config.id );
                     });

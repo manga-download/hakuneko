@@ -10,16 +10,12 @@
         /**
          *
          */
-        constructor( connector, manga, chapter ) {
-            this.id = Symbol( connector.id + ';' + manga.id + ';' + chapter.id );
-            this.keys = {
-                connector: connector.id,
-                manga: manga.id,
-                chapter: chapter.id
-            };
+        constructor( chapter ) {
+            this.id = Symbol();
+            this.chapter = chapter;
             this.labels = {
-                connector: connector.label,
-                manga: manga.title,
+                connector: chapter.manga.connector.label,
+                manga: chapter.manga.title,
                 chapter: chapter.title
             };
             this.status = DownloadStatus.queued;
@@ -33,21 +29,33 @@
             this.status = DownloadStatus.downloading;
             document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
 
-            // emulate download process
-            this.progress = 0;
-            for( let t=750; t<5000; t+=750) {
+            this.chapter.getPages( ( pages ) => {
+                /*
+                this.$.status.removeFromQueue( chapter.pageProcess );
+                chapter.pageProcess = false;
+                if( chapter === this.selectedChapter ) {
+                    this.set( 'selectedChapter.pages', newPages );
+                }
+                */
+
+                console.log( pages.length );
+
+                // emulate download process
+                this.progress = 0;
+                for( let t=750; t<5000; t+=750) {
+                    setTimeout( ( () => {
+                        this.progress += 100/6;
+                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+                    } ).bind( this ), t );
+                }
+                // emulate download finished
                 setTimeout( ( () => {
-                    this.progress += 100/6;
+                    this.progress = 100;
+                    this.status = DownloadStatus.completed;
                     document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
-                } ).bind( this ), t );
-            }
-            // emulate download finished
-            setTimeout( ( () => {
-                this.progress = 100;
-                this.status = DownloadStatus.completed;
-                document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
-                callback();
-            } ).bind( this ), 5500 );
+                    callback();
+                } ).bind( this ), 5500 );
+            });
         }
     }
     DownloadJob; // reference the class to prevent removal of the class through js-minify

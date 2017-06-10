@@ -22,24 +22,6 @@
         }
 
         /**
-         * Determine status for each manga in the given list and add a field to the manga with the corresponding status.
-         */
-        applyMangaStatus( connector, mangas ) {
-            mangas.forEach( ( manga ) => {
-                manga['status'] = DownloadStatus.available;
-            });
-        }
-
-        /**
-         * Determine status for each chapter in the given list and add a field to the chapter with the corresponding status.
-         */
-        applyChapterStatus( connector, manga, chapters ) {
-            chapters.forEach( ( chapter ) => {
-                chapter['status'] = DownloadStatus.available;
-            });
-        }
-
-        /**
          *
          */
         saveChapter( connector, manga, chapter ) {

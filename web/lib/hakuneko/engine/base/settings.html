@@ -40,7 +40,7 @@
                     }
                 }
                 // apply settings to each connector
-                Engine.Connectors.list.forEach( ( connector ) => {
+                Engine.Connectors.forEach( ( connector ) => {
                     for( let property in connector.config ) {
                         if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
                             connector.config[property].value = data.connectors[connector.id][property];
@@ -66,7 +66,7 @@
                 data[property] = this[property].value;
             }
             // gather settings from each connector
-            Engine.Connectors.list.forEach( ( connector ) => {
+            Engine.Connectors.forEach( ( connector ) => {
                 data.connectors[connector.id] = {};
                 for( let property in connector.config ) {
                     data.connectors[connector.id][property] = connector.config[property].value;
