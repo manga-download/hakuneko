@@ -19,7 +19,7 @@
         cfGet( href, referer, agent, callback ) {
             agent = agent || this.agent;
             referer = referer || href;
-            this.get( href, referer, agent, ( content, status ) => {
+            this.get( href, referer, agent, ( content, status, headers ) => {
                 if ( content.indexOf( 'document.getElementById(\'jschl-answer\');' ) > -1 ) {
                     setTimeout( function() {
                         let url = new URL( href );
@@ -35,7 +35,7 @@
                         this.cfGet( url.href, referer, agent, callback );
                     }.bind( this ), 4000);
                 } else {
-                    callback( content, status );
+                    callback( content, status, headers );
                 }
             });
         }
