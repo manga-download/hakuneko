@@ -16,7 +16,7 @@
          */
         static get Connectors() {
             if( !this._instanceConnectors ) {
-                this._instanceConnectors = this.CreateInstance( Connectors, Connectors, undefined );
+                this._instanceConnectors = this.CreateInstance( Connectors, Connectors, undefined ).list;
             }
             return this._instanceConnectors;
         }

@@ -86,7 +86,7 @@
                     </select>
                 </td>
                 <td>
-                    <i class$="fa fa-fw fa-refresh [[ getRefreshClass(selectedConnector.updateProcess) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
+                    <i class$="fa fa-fw fa-refresh [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
                 </td>
             </tr>
             <tr>
@@ -164,7 +164,7 @@
                 // currently active manga list
                 this.mangaList = undefined;
                 // load connectors
-                this.set( 'connectorList', Engine.Connectors.list );
+                this.set( 'connectorList', Engine.Connectors );
             }
 
             /**
@@ -192,13 +192,13 @@
                 if( connector.id.toString() !== this.$.connectorSelection.value ) {
                     this.$.connectorSelection.value = connector.id;
                 }
-                let queueID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
-                // could use connector.mangaList, but call through Connector.getMangaList(...) ensures it will be loaded from local store if not yet cached
-                Engine.Connectors.getMangaList( connector, () => {
+                let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
+                connector.getMangas( ( mangas ) => {
+                    // check if executing connector is still the selected connector (visible)
                     if( connector === this.selectedConnector ) {
-                        this.set( 'mangaList', connector.mangaList );
+                        this.set( 'mangaList', mangas );
                     }
-                    this.$.status.removeFromQueue( queueID );
+                    this.$.status.removeFromQueue( statusID );
                 });
             }
 
@@ -207,26 +207,21 @@
              */
             onUpdateMangaListClick( e ) {
                 let connector = this.selectedConnector;
-                if( !connector || connector.updateProcess ) {
+                if( !connector ) {
                     return;
                 }
-                // create and register an update process number to prevent multiple update processes
-                connector.updateProcess = this.$.status.addToQueue( 'Updating manga list (' + connector.label + ')' );
-                if( connector === this.selectedConnector ) {
-                    // trigger update for refresh button style
-                    this.notifyPath( 'selectedConnector.updateProcess' );
-                }
-                Engine.Connectors.updateMangalist( connector, () => {
-                    this.$.status.removeFromQueue( connector.updateProcess );
-                    connector.updateProcess = false;
-                    // check if updated connector currently selected (visible)
+                let statusID = this.$.status.addToQueue( 'Updating manga list (' + connector.label + ')' );
+                connector.updateMangas( ( mangas ) => {
+                    // check if executing connector is still the selected connector (visible)
                     if( connector === this.selectedConnector ) {
-                        //this.mangaList = connector.mangaList;
-                        this.set( 'mangaList', connector.mangaList );
-                        // trigger update for refresh button style
-                        this.notifyPath( 'selectedConnector.updateProcess' );
+                        this.set( 'mangaList', mangas );
+                        // trigger update for refresh button style (update completed)
+                        this.notifyPath( 'selectedConnector.isUpdating' );
                     }
+                    this.$.status.removeFromQueue( statusID );
                 });
+                // trigger update for refresh button style (update started)
+                this.notifyPath( 'selectedConnector.isUpdating' );
             }
 
             /**
@@ -254,8 +249,8 @@
             /**
              *
              */
-            getRefreshClass( updateProcess ) {
-                return ( updateProcess ? 'fa-pulse disabled' : '' );
+            getRefreshClass( isUpdating ) {
+                return ( isUpdating ? 'fa-pulse disabled' : '' );
             }
 
             /**

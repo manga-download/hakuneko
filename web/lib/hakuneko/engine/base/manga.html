@@ -1,0 +1,59 @@
+<link rel="import" href="chapter.html">
+
+<script>
+
+    /**
+     *
+     */
+    class Manga {
+
+        /**
+         *
+         */
+        constructor( connector, id, title ) {
+            this.connector = connector;
+            this.id = id;
+            this.title = title;
+            this.status = undefined;
+            this.chapterCache = undefined;
+            this.updateStatus();
+        }
+
+        /**
+         * 
+         */
+        updateStatus( callback ) {
+            // TODO: get status from download manager
+            this.status = Engine.Storage.getMangaStatus( this );
+            if( callback ) {
+                callback();
+            }
+        }
+
+        /**
+         * Get all chapters for the manga.
+         * Callback will be executed after completion and provided with a reference to the chapter list (empty on error).
+         */
+        getChapters( callback ) {
+            // check if chapter list is cached
+            if( this.chapterCache ) {
+                this.chapterCache.forEach( ( chapter ) => {
+                    chapter.updateStatus();
+                });
+                callback( this.chapterCache );
+                return;
+            }
+            // get chapter list directly from the connector interface and cache them
+            this.connector._getChapterList( this, ( chapters ) => {
+                // de-serialize chapters into objects
+                this.chapterCache = chapters.map( ( chapter ) => {
+                    return new Chapter( this, chapter.id, chapter.title, chapter.language );
+                });
+                callback( this.chapterCache );
+            });
+        }
+
+    }
+    Manga; // reference the class to prevent removal of the class through js-minify
+
+</script>

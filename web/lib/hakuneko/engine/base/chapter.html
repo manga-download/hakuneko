@@ -1,0 +1,53 @@
+<script>
+
+    /**
+     *
+     */
+    class Chapter {
+
+        /**
+         *
+         */
+        constructor( manga, id, title, language ) {
+            this.manga = manga;
+            this.id = id;
+            this.title = title;
+            this.language =language;
+            this.status = undefined;
+            this.pageProcess = false;
+            this.pageCache = undefined;
+            this.updateStatus();
+        }
+
+        /**
+         * 
+         */
+        updateStatus( callback ) {
+            // TODO: get status from download manager
+            this.status = Engine.Storage.getChapterStatus( this );
+            if( callback ) {
+                callback();
+            }
+        }
+
+        /**
+         * Get all pages for the chapter.
+         * Callback will be executed after completion and provided with a reference to the page list (undefined on error).
+         */
+        getPages( callback ) {
+            // check if page list is cached
+            if( this.pageCache ) {
+                callback( this.pageCache );
+                return;
+            }
+            // get page list directly from the connector interface and cache them
+            this.manga.connector._getPageList( this.manga, this, ( pages ) => {
+                this.pageCache = pages;
+                callback( this.pageCache );
+            });
+        }
+
+    }
+    Chapter; // reference the class to prevent removal of the class through js-minify
+
+</script>

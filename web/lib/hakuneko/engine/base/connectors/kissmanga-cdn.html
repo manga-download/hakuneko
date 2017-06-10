@@ -1,17 +1,20 @@
+<link rel="import" href="../connector.html">
+
 <script>
 
     /**
      *
      */
-    class KissMangaCDN {
+    class KissMangaCDN extends Connector {
 
         /**
          *
          */
         constructor() {
+            super();
             // Public members for usage in UI (mandatory)
-            this.id      = 'kissmanga-cdn';
-            this.label   = 'KissManga (CDN)';
+            super.id      = 'kissmanga-cdn';
+            super.label   = 'KissManga (CDN)';
             // Private members for internal usage only (convenience)
             this.url     = 'http://hakuneko.ovh/db/connectors/5649391675244544';
             this.referer = 'http://kissmanga.com';
@@ -23,7 +26,7 @@
         /**
          *
          */
-        getMangaList( callback ) {
+        _getMangaList( callback ) {
             Engine.Request.get( this.url + '/mangas', this.referer, this.agent, ( content, status ) => {
                 callback( (content ? JSON.parse( content ) : undefined ) );
             });
@@ -32,7 +35,7 @@
         /**
          *
          */
-        getChapterList( manga, callback ) {
+        _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters', this.referer, this.agent, ( content, status ) => {
                 callback( (content ? JSON.parse( content ).reverse() : undefined ) );
             });
@@ -41,12 +44,11 @@
         /**
          *
          */
-        getPages( manga, chapter, callback ) {
+        _getPageList( manga, chapter, callback ) {
             Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters/' + chapter.id, this.referer, this.agent, ( content, status ) => {
                 callback( (content ? JSON.parse( content ).pages : undefined ) );
             });
         }
     }
-    KissMangaCDN; // reference the class to prevent removal of the class through js-minify
 
 </script>

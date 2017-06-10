@@ -35,115 +35,12 @@
             if( this.list.find( ( c ) => { return ( c.id === connector.id ); } ) ) {
                 return;
             }
-            // attach a property to track the process number of update action, may be used externally to prevent multiple updates at the same time
-            // TODO: use symbols instead of magic strings
-            connector['updateProcess'] = false;
-            connector['mangaList'] = undefined;
-            connector['locked'] = false;
             this.list.push( connector );
-            this.list.sort( this.compareLabelTitle );
-        }
-
-        /**
-         * Synchronize local stored manga list for the connector and update the manga list in the current connector's cache.
-         * Callback will be executed after the manga list within the connector has been updated.
-         */
-        updateMangalist( connector, callback ) {
-            connector.getMangaList( ( newMangaList ) => {
-                if( !newMangaList ) {
-                    callback();
-                    return;
-                }
-                newMangaList.sort( this.compareLabelTitle );
-                // save manga list to local storage
-                Engine.Storage.saveMangaList( connector.id, newMangaList, ( error ) => {
-                    if( !error ) {
-                        // add status for each manga (none, queued, stored, ...)
-                        Engine.Storage.applyMangaStatus( connector, newMangaList );
-                        // update cahed manga list with the new list
-                        connector.mangaList = newMangaList;
-                    } else {
-                        console.error( error.message );
-                        connector.mangaList = undefined;
-                    }
-                    callback();
-                });
+            this.list.sort( ( a, b ) => {
+                return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
             });
         }
 
-        /**
-         * Load the manga list for the given connector from the local storage into the given connector's cache (if not already loaded).
-         * Callback will be executed after the manga list within the connector has been loaded.
-         */
-        getMangaList( connector, callback ) {
-            // check if manga list is cached
-            if( connector.mangaList ) {
-                callback();
-                return;
-            }
-            // load manga list from local storage
-            Engine.Storage.loadMangaList( connector.id, ( newMangaList, error ) => {
-                if( !error ) {
-                    if( newMangaList ) {
-                        // add status for each manga (none, queued, stored, ...)
-                        Engine.Storage.applyMangaStatus( connector, newMangaList );
-                        // update cached manga list with the new list
-                        connector.mangaList = newMangaList;
-                    }
-                } else {
-                    console.error( error.message );
-                    connector.mangaList = undefined;
-                }
-                callback();
-            });
-        }
-
-        /**
-         * Get the chapter list directly from the web for the given connector and manga.
-         * Callback will be executed after completion and provided with a reference to the chapter list (empty on error).
-         */
-        getChapterList( connector, manga, callback ) {
-            connector.getChapterList( manga, ( newChapterList ) => {
-                if( newChapterList ) {
-                    Engine.Storage.applyChapterStatus( connector, manga, newChapterList );
-                } else {
-                    newChapterList = [];
-                }
-                // attach properties for internal processing, caching, ...
-                newChapterList.forEach( ( chapter ) => {
-                    // attach a property to track the process number of page request action, may be used externally to prevent multiple page requests at the same time
-                    // TODO: use symbols instead of magic strings
-                    chapter['pageProcess'] = false;
-                    chapter['pages'] = undefined;
-                });
-                callback( newChapterList );
-            });
-        }
-
-        /**
-         * Get the full chapter including pages directly from the web for the given connector, manga and chapter.
-         * Callback will be executed after completion and provided with a reference to the complete chapter and an error (or null if no error occured).
-         */
-        getPages( connector, manga, chapter, callback ) {
-            // check if pages are cached
-            if( chapter.pages ) {
-                callback( chapter.pages );
-                return;
-            }
-            connector.getPages( manga, chapter, ( pages ) => {
-                // nothing to be done here ...
-                callback( pages );
-            });
-        }
-
-        /**
-         * Helper function for sorting by label/title (ascending)
-         */
-        compareLabelTitle( a, b ) {
-            let textA = (a.label ? a.label : a.title).toLowerCase();
-            let textB = (b.label ? b.label : b.title).toLowerCase();
-            return ( textA < textB ? -1 : 1 );
-        }
     }
     Connectors; // reference the class to prevent removal of the class through js-minify
 

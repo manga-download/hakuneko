@@ -1,21 +1,24 @@
+<link rel="import" href="../connector.html">
+
 <script>
 
     /**
      *
      */
-    class Batoto {
+    class Batoto extends Connector {
 
         /**
          *
          */
         constructor() {
+            super();
             // Public members for usage in UI (mandatory)
-            this.id      = 'batoto';
-            this.label   = 'Batoto';
+            super.id      = 'batoto';
+            super.label   = 'Batoto';
             // Private members for internal usage only (convenience)
-            this.url     = 'http://6a956ok.x.incapdns.net/db/connectors/5649391675244544';
-            this.referer = 'http://kissmanga.com';
-            this.agent   = 'Mozilla/5.0';
+            this.url     = 'http://bato.to';
+            //this.referer = 'http://bato.to';
+            //this.agent   = 'Mozilla/5.0';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 username: {
@@ -37,29 +40,22 @@
          *
          */
         getMangaList( callback ) {
-            Engine.Request.get( this.url + '/mangas', this.referer, this.agent, ( content, status ) => {
-                callback( (content ? JSON.parse( content ) : undefined ) );
-            });
+            callback( [] );
         }
 
         /**
          *
          */
         getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters', this.referer, this.agent, ( content, status ) => {
-                callback( (content ? JSON.parse( content ).reverse() : undefined ) );
-            });
+            callback( [] );
         }
 
         /**
          *
          */
         getPages( manga, chapter, callback ) {
-            Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters/' + chapter.id, this.referer, this.agent, ( content, status ) => {
-                callback( (content ? JSON.parse( content ).pages : undefined ) );
-            });
+            callback( [] );
         }
     }
-    Batoto; // reference the class to prevent removal of the class through js-minify
 
 </script>

@@ -1,0 +1,89 @@
+<link rel="import" href="enums.html">
+<link rel="import" href="manga.html">
+
+<script>
+
+    /**
+     * Base class for connector plugins
+     */
+    class Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            this.id = Symbol();
+            this.label = '';
+            this.isUpdating = false;
+            this.mangaCache = undefined;
+            this.locked = false;
+        }
+
+        /**
+         * Update the manga list in the local storage.
+         * Callback will be executed after completion and provided with a reference to the manga list (undefined on error).
+         */
+        updateMangas( callback ) {
+            if( this.isUpdating ) {
+                return;
+            }
+            this.isUpdating = true;
+            this._getMangaList( ( mangas ) => {
+                if( !mangas ) {
+                    callback( undefined );
+                    return;
+                }
+                mangas.sort( ( a, b ) => {
+                    return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
+                });
+                // save manga list to local storage
+                Engine.Storage.saveMangaList( this.id, mangas, ( error ) => {
+                    // callback function may access update status, so set it before executing callback
+                    this.isUpdating = false;
+                    if( error ) {
+                        // update failed
+                        console.error( error.message );
+                        this.mangaCache = undefined;
+                        callback( undefined );
+                    } else {
+                        // de-serialize manga list from local storage
+                        this.getMangas( callback );
+                    }
+                });
+            });
+        }
+
+        /**
+         * Get all mangas for the connector.
+         * Callback will be executed after completion and provided with a reference to the manga list (undefined on error).
+         */
+        getMangas( callback ) {
+            // check if manga list is cached
+            if( this.mangaCache ) {
+                this.mangaCache.forEach( ( manga ) => {
+                    manga.updateStatus();
+                });
+                callback( this.mangaCache );
+                return;
+            }
+            // get manga list from the local storage and cache them
+            Engine.Storage.loadMangaList( this.id, ( mangas, error ) => {
+                if( !error ) {
+                    if( mangas ) {
+                        // de-serialize mangas into objects
+                        this.mangaCache = mangas.map( ( manga ) => {
+                            return new Manga( this, manga.id, manga.title );
+                        });
+                    }
+                } else {
+                    console.error( error.message );
+                    this.mangaCache = undefined;
+                }
+                callback( this.mangaCache );
+            });
+        }
+
+    }
+    Connector; // reference the class to prevent removal of the class through js-minify
+
+</script>

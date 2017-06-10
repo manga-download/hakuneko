@@ -173,12 +173,10 @@
                     this.set( 'chapterList', undefined );
                     return;
                 }
-                let queueID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
-                // could use selectedConnector.getChapterList(...), but call through Connector.getChapterList(...) will directly add status to each chapter
-                Engine.Connectors.getChapterList( this.selectedConnector, manga, ( newChapterList ) => {
-                    //this.chapterList = newChapterList;
-                    this.set( 'chapterList', newChapterList );
-                    this.$.status.removeFromQueue( queueID );
+                let statusID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
+                manga.getChapters( ( chapters ) => {
+                    this.set( 'chapterList', chapters );
+                    this.$.status.removeFromQueue( statusID );
                 });
             }
 
@@ -197,7 +195,7 @@
                     case DownloadStatus.unavailable:
                         return 'Chapter is not available';
                     case DownloadStatus.available:
-                        return 'AVAILABLE\nClick to add chapter to download manager';
+                        return 'AVAILABLE\nClick to download chapter';
                     case DownloadStatus.queued:
                         return 'QUEUED\nClick to remove chapter from download manager';
                     case DownloadStatus.downloading:
@@ -233,12 +231,13 @@
              *
              */
             processChapter( e ) {
-                switch ( e.model.item.status ) {
+                let chapter = e.model.item;
+                switch ( chapter.status ) {
                     case DownloadStatus.unavailable:
                         alert( 'No action available!' );
                         break;
                     case DownloadStatus.available:
-                        Engine.DownloadManager.addDownload( this.selectedConnector, this.selectedManga, e.model.item );
+                        Engine.DownloadManager.addDownload( chapter );
                         break;
                     case DownloadStatus.completed:
                         if( confirm( 'Re-Download?' ) ) {
@@ -259,6 +258,15 @@
                     return;
                 }
                 let chapter = e.model.item;
+                this.set( 'selectedChapter', chapter );
+                let statusID = this.$.status.addToQueue( 'Loading pages (chapter: "' + chapter.title + '")' );
+                chapter.getPages( ( pages ) => {
+                    if( chapter === this.selectedChapter ) {
+                        this.set( 'selectedChapter.pages', pages );
+                    }
+                    this.$.status.removeFromQueue( statusID );
+                });
+                /*
                 if( this.selectedChapter === chapter ) {
                     if( this.selectedChapter.pageProcess ) {
                         return;
@@ -283,6 +291,7 @@ return;
                         this.set( 'selectedChapter.pages', newPages );
                     }
                 });
+                */
             }
 
             /**
@@ -313,10 +322,10 @@ console.warn( 'TODO: determine how to abort any pending page request for selecte
              */
             onDownloadUpdated( e ) {
                 let job = e.detail;
-                if( !this.chapterList || this.selectedConnector.id !== job.keys.connector || this.selectedManga.id !== job.keys.manga ) {
+                if( !this.chapterList || this.selectedConnector.id !== job.chapter.manga.connector.id || this.selectedManga.id !== job.chapter.manga.id ) {
                     return;
                 }
-                let index = this.chapterList.findIndex( ( item ) => { return ( item.id === job.keys.chapter ); } );
+                let index = this.chapterList.findIndex( ( item ) => { return ( item.id === job.chapter.id ); } );
                 if( index > -1 ) {
                     this.set( 'chapterList.' + index + '.status', job.status );
                 }
