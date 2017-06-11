@@ -4,15 +4,6 @@ const electron = require( 'electron' );
 var win = null;
 
 /**
- * A default (no-operation) function that can be attached to the onBeforeSendHeaders event listener.
- */
-global.beforeSendHeaders = ( details, callback ) => {
-    callback({
-        cancel: false
-    });
-}
-
-/**
  *
  */
 function activateWindow() {
@@ -26,7 +17,7 @@ function activateWindow() {
         height: 680,
         webPreferences: {
             nodeIntegration: true,
-            webSecurity: true
+            webSecurity: false // required to open local images in browser
         }
     });
     win.setMenu( null );

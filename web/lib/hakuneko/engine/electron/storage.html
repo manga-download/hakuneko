@@ -13,12 +13,16 @@
         constructor() {
             super();
             let electron = require( 'electron' );
+            let hakuneko = electron.remote.require( './hakuneko' );
+            this.fs = require( 'fs' );
+            this.path = require( 'path' );
             this.dialog = electron.remote.dialog;
-            this.fs = electron.remote.require( 'fs' );
-            this.path = electron.remote.require( 'path' );
+            this.platform = electron.remote.process.platform;
             this.archiver = electron.remote.require( 'archiver' );
-            this.admzip = electron.remote.require( 'adm-zip' );
-            this.platform = require( 'electron' ).remote.process.platform;
+            // extracting in context of render process is very slow => use function in main process context
+            this._loadChapterPagesCBZ = hakuneko.loadChapterPagesCBZ;
+            // loading in context of render process is very slow => use function in main process context
+            this._loadChapterPagesFolder = hakuneko.loadChapterPagesFolder;
         }
 
         /**
@@ -83,46 +87,6 @@
         }
 
         /**
-         * 
-         */
-        _loadChapterPagesCBZ( archive, callback ) {
-            setTimeout( () => {
-                let zip = new this.admzip( archive );
-                let pages = zip.getEntries().map( ( entry ) => {
-                    // TODO: entry.getData() is very slow
-                    return 'data:' + this._pageFileMime( entry.entryName ) + ';base64,' + entry.getData().toString( 'base64' );
-                });
-                callback( pages );
-            }, 0 );
-        }
-
-        /**
-         * 
-         */
-        _loadChapterPagesFolder( directory, callback ) {
-
-            this.fs.readdir( directory, ( error, files ) => {
-                let pages = files.map( ( file ) => {
-                    file = this.path.join( directory, file );
-                    return 'data:' + this._pageFileMime( file ) + ';base64,' + this.fs.readFileSync( file ).toString( 'base64' );
-                });
-                callback( pages );
-                /*
-                files.forEach( ( file ) => {
-                    let file = this.path.join( directory, file );
-                    setTimeout( () => {
-                        console.log( file );
-                    }, Math.random()*250 );
-                });
-                setTimeout( () => {
-                    console.log( files );
-                    callback( files );
-                }, 300 );
-                */
-            });
-        }
-
-        /**
          * Save the pages of the given chapter.
          * The given content is a list of raw data for each corresponding page in the chapter.
          * The storage decides depending on the engine and available settings where the pages will be stored!
@@ -164,6 +128,7 @@
             callback();
 
             /*
+            // adm-zip code, creates broken archive
 	        var zip = new this.zipper();
             pageData.forEach( ( page ) => {
                 zip.addFile( page.name, page.data );
@@ -264,29 +229,6 @@
                 return fileName + '.img';
             }
             return fileName + '.bin';
-        }
-
-        /**
-         * Helper function to get the mime time depending on the file extension of the gicen file name.
-         */
-        _pageFileMime( file ) {
-            let extension = this.path.extname( file );
-            if( extension === '.jpg' ) {
-                return 'image/jpeg';
-            }
-            if( extension === '.png' ) {
-                return 'image/png';
-            }
-            if( extension === '.gif' ) {
-                return 'image/gif';
-            }
-            if( extension === '.bmp' ) {
-                return 'image/bmp';
-            }
-            if( extension === '.img' ) {
-                return 'image/';
-            }
-            return 'application/octet-stream';
         }
     }
 
