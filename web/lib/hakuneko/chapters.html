@@ -99,7 +99,7 @@
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="processChapter" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
-                    <i class="fa fa-fw fa-picture-o button" on-click="showPages" title="Show preview of chapter's pages"></i>
+                    <i class="fa fa-fw fa-picture-o button" on-click="selectChapter" title="Show preview of chapter's pages"></i>
                     <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
                 </li>
             </template>
@@ -251,56 +251,20 @@
             }
 
             /**
-             *
+             * Select a chapter => this will trigger the pages to be viewed.
              */
-            showPages( e ) {
+            selectChapter( e ) {
                 if( !e.model || !e.model.item ) {
                     return;
                 }
-                let chapter = e.model.item;
-                this.set( 'selectedChapter', chapter );
-                let statusID = this.$.status.addToQueue( 'Loading pages (chapter: "' + chapter.title + '")' );
-                chapter.getPages( ( pages ) => {
-                    if( chapter === this.selectedChapter ) {
-                        this.set( 'selectedChapter.pages', pages );
-                    }
-                    this.$.status.removeFromQueue( statusID );
-                });
-                /*
-                if( this.selectedChapter === chapter ) {
-                    if( this.selectedChapter.pageProcess ) {
-                        return;
-                    }
-                } else {
-                    if( this.selectedChapter && this.selectedChapter.pageProcess ) {
-                        // abort pending page request of currently selected chapter
-                        this.$.status.removeFromQueue( this.selectedChapter.pageProcess );
-                        this.selectedChapter.pageProcess = false;
-return;
-                    }
-                }
-                this.set( 'selectedChapter', chapter );
-                chapter.pageProcess = this.$.status.addToQueue( 'Loading pages (chapter: "' + chapter.title + '")' );
-                // could use selectedConnector.getChapterList(...), but call through Connector.getChapterList(...) will ...
-                Engine.Connectors.getPages( this.selectedConnector, this.selectedManga, chapter, ( newPages ) => {
-//console.log( 'Loading pages completed', chapter );
-                    this.$.status.removeFromQueue( chapter.pageProcess );
-                    chapter.pageProcess = false;
-                    if( chapter === this.selectedChapter ) {
-                        //this.selectedChapter = newPages;
-                        this.set( 'selectedChapter.pages', newPages );
-                    }
-                });
-                */
+                this.set( 'selectedChapter', e.model.item );
             }
 
             /**
              * Observer will be executed, whenever the 'selectedChapter' is changed.
              */
             onSelectedChapterChanged( chapter ) {
-                // TODO: abort any pending page request (maybe store current chapter in global variable?)
-                // previous selected chapter is no longer available here
-console.warn( 'TODO: determine how to abort any pending page request for selected chapter ...' );
+                //
             }
 
             /**
