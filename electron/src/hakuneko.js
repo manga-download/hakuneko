@@ -19,7 +19,6 @@ hakuneko.loadChapterPagesCBZ = ( archive, callback ) => {
     let pages = zip.getEntries().map( ( entry ) => {
         // TODO: extract files to temp folder and provide direct file links instead of base64 data
         // return 'file://' + entry.entryName;
-        console.log( pageFileMime( entry.entryName ) );
         return 'data:' + pageFileMime( entry.entryName ) + ';base64,' + entry.getData().toString('base64');
     });
     callback( pages );
