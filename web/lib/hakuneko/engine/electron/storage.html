@@ -36,6 +36,13 @@
          * 
          */
         getMangaStatus( manga ) {
+            // TODO: high performance impact on large lists... maybe updating existing manga status async?
+            /*
+            let path = this._mangaOutputPath( manga );
+            if( this.fs.existsSync( path ) ) {
+                return DownloadStatus.completed;
+            }
+            */
             return DownloadStatus.available;
         }
 
@@ -43,6 +50,10 @@
          * 
          */
         getChapterStatus( chapter ) {
+            let path = this._chapterOutputPath( chapter );
+            if( this.fs.existsSync( path ) || this.fs.existsSync( path + '.cbz' ) ) {
+                return DownloadStatus.completed;
+            }
             return DownloadStatus.available;
         }
 
@@ -62,6 +73,7 @@
             let output = this._chapterOutputPath( chapter );
 
             if( Engine.Settings.compressChapters.value ) {
+                output += '.cbz';
                 this._createDirectoryChain( this.path.dirname( output ) );
                 this._saveChapterPagesCBZ( output, pageData, callback );
             } else {
@@ -101,7 +113,7 @@
         }
 
         /**
-         * Helper function to generate the path where the chapter pages should be stored.
+         * Helper function to generate the path where the chapter pages are stored.
          */
         _chapterOutputPath( chapter ) {
             let output = Engine.Settings.baseDirectory.value;
@@ -110,9 +122,18 @@
             }
             output = this.path.join( output, this._sanatizePath( chapter.manga.title ) );
             output = this.path.join( output, this._sanatizePath( chapter.title ) );
-            if( Engine.Settings.compressChapters.value ) {
-                output += '.cbz';
+            return output;
+        }
+
+        /**
+         * Helper function to generate the path where the manga chapters are stored.
+         */
+        _mangaOutputPath( manga ) {
+            let output = Engine.Settings.baseDirectory.value;
+            if( Engine.Settings.useSubdirectory.value ) {
+                output = this.path.join( output, this._sanatizePath( manga.connector.label ) );
             }
+            output = this.path.join( output, this._sanatizePath( manga.title ) );
             return output;
         }
 
