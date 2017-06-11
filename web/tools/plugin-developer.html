@@ -9,6 +9,12 @@
     <script>
 
         // emulator for the request engine of HakuNeko web-app
+        class Connector {
+            constructor() {
+                this.id = Symbol();
+                this.label = '';
+            }
+        }
         var Engine = {
             Request: {
                 get: function( url, referer, agent, callback ) {
@@ -42,14 +48,14 @@
         }
 
         // instanciate the connector that should be tested
-        //var Connector = new MangaFox();
+        //var _connector = new MangaFox();
 
         function runScript() {
             let script = editor.getSession().getValue();
             let start = script.indexOf( 'class' ) + 5;
-            let end = script.indexOf( '{', start );
+            let end = script.indexOf( 'extends', start );
             let connector = script.substring( start, end ).trim();
-            script += '\nConnector = new ' + connector + '();';
+            script += '\n_connector = new ' + connector + '();';
             eval( script );
         }
 
@@ -58,7 +64,7 @@
             runScript();
             document.querySelector( '#mangaStatus' ).innerHTML = 'Processing &hellip;';
             document.querySelector( '#manga' ).value = '';
-            Connector.getMangaList( ( list ) => {
+            _connector._getMangaList( ( list ) => {
                 //console.log( 'MANGA SAMPLE', list.length, list[0] );
                 document.querySelector( '#manga' ).value = JSON.stringify( list[0], undefined, 2 );
                 document.querySelector( '#mangaStatus' ).innerHTML = 'Manga Count: ' + list.length;
@@ -71,7 +77,7 @@
             document.querySelector( '#chapterStatus' ).innerHTML = 'Processing &hellip;';
             document.querySelector( '#chapter' ).value = '';
             let manga = JSON.parse( document.querySelector( '#manga' ).value );
-            Connector.getChapterList( manga, ( list ) => {
+            _connector._getChapterList( manga, ( list ) => {
                 //console.log( 'CHAPTER SAMPLE', list.length, list[0] );
                 document.querySelector( '#chapter' ).value = JSON.stringify( list[0], undefined, 2 );
                 document.querySelector( '#chapterStatus' ).innerHTML = 'Chapter Count: ' + list.length;
@@ -86,7 +92,7 @@
             let manga = JSON.parse( document.querySelector( '#manga' ).value );
             let chapter = JSON.parse( document.querySelector( '#chapter' ).value );
             chapter['pageProcess'] = true;
-            Connector.getPages( manga, chapter, ( list ) => {
+            _connector._getPageList( manga, chapter, ( list ) => {
                 //console.log( 'PAGE SAMPLE', list );
                 document.querySelector( '#pages' ).value = JSON.stringify( list, undefined, 2 );
                 document.querySelector( '#pageStatus' ).innerHTML = 'Page Count: ' + list.length;
@@ -127,15 +133,16 @@
 <div id="script" style="flex: 2;">/**
  *
  */
-class MangaFox {
+class MangaFox extends Connector {
 
     /**
      *
      */
     constructor() {
+        super();
         // Public members for usage in UI (mandatory)
-        this.id             = 'mangafox';
-        this.label          = 'MangaFox';
+        super.id             = 'mangafox';
+        super.label          = 'MangaFox';
         // Private members for internal usage only (convenience)
         this.url            = 'http://mangafox.me';
         this.referer        = undefined; // 'http://mangafox.me';
@@ -148,7 +155,7 @@ class MangaFox {
     /**
      *
      */
-    getMangaList( callback ) {
+    _getMangaList( callback ) {
         Engine.Request.get( this.url + '/manga', this.referer, this.agent, ( content, status ) => {
             // prevent images and iframes from loading
             content = content.replace( /&lt;img[^&lt;]*?&gt;/g, '&lt;img&gt;');
@@ -171,7 +178,7 @@ class MangaFox {
     /**
      *
      */
-    getChapterList( manga, callback ) {
+    _getChapterList( manga, callback ) {
         Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( content, status ) => {
             // prevent images and iframes from loading
             content = content.replace( /&lt;img[^&lt;]*?&gt;/g, '&lt;img&gt;');
@@ -193,7 +200,7 @@ class MangaFox {
     /**
      *
      */
-    getPages( manga, chapter, callback ) {
+    _getPageList( manga, chapter, callback ) {
         Engine.Request.get( ( this.url + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), this.referer, this.agent, ( content, status ) => {
             // FIXME: very dangerous, might end up in endless recursion !!!
             if( status === 503 ) {
@@ -214,8 +221,7 @@ class MangaFox {
             callback( pageList );
         });
     }
-}
-MangaFox; // reference the class to prevent removal of the class through js-minify</div>
+}</div>
 <!--
 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ++++++++++++++ [END] PLUGIN CODE ++++++++++++++++++++++++++++++

@@ -1,4 +1,5 @@
 <link rel="import" href="enums.html">
+<link rel="import" href="promise.html">
 
 <script>
 
@@ -30,31 +31,30 @@
             document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
 
             this.chapter.getPages( ( pages ) => {
-                /*
-                this.$.status.removeFromQueue( chapter.pageProcess );
-                chapter.pageProcess = false;
-                if( chapter === this.selectedChapter ) {
-                    this.set( 'selectedChapter.pages', newPages );
-                }
-                */
-
-                console.log( pages.length );
-
-                // emulate download process
-                this.progress = 0;
-                for( let t=750; t<5000; t+=750) {
-                    setTimeout( ( () => {
-                        this.progress += 100/6;
+                let pageData = [];
+                // save pages when all promises fulfilled
+                let promise = new Promise( () => {
+                    Engine.Storage.saveChapterPages( this.chapter, pageData, () => {
+                        this.progress = 100;
+                        this.status = DownloadStatus.completed;
                         document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
-                    } ).bind( this ), t );
-                }
-                // emulate download finished
-                setTimeout( ( () => {
-                    this.progress = 100;
-                    this.status = DownloadStatus.completed;
-                    document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
-                    callback();
-                } ).bind( this ), 5500 );
+                        callback();
+                    });
+                });
+
+                // get data for all pages of chapter
+                pages.forEach( ( page, index ) => {
+                    let key = promise.defer();
+                    Engine.Request.get( page, undefined, undefined, ( content, status, headers ) => {
+                        pageData[index] = {
+                            type:  headers['content-type'],
+                            data: content
+                        };
+                        this.progress += 100/pages.length;
+                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+                        promise.resolve( key );
+                    });
+                });
             });
         }
     }
