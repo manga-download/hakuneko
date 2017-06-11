@@ -24,10 +24,12 @@
          */
         updateStatus( callback ) {
             // TODO: get status from download manager
-            this.status = Engine.Storage.getMangaStatus( this );
-            if( callback ) {
-                callback();
-            }
+            Engine.Storage.getMangaStatus( this, ( status ) => {
+                this.status = status;
+                if( callback ) {
+                    callback();
+                }
+            });
         }
 
         /**

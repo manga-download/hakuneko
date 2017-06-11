@@ -40,11 +40,15 @@
                 callback( this.pageCache );
                 return;
             }
-            // get page list directly from the connector interface and cache them
-            this.manga.connector._getPageList( this.manga, this, ( pages ) => {
-                this.pageCache = pages;
-                callback( this.pageCache );
-            });
+            if( this.status === DownloadStatus.completed ) {
+                Engine.Storage.loadChapterPages( this, callback );
+            } else {
+                // get page list directly from the connector interface and cache them
+                this.manga.connector._getPageList( this.manga, this, ( pages ) => {
+                    this.pageCache = pages;
+                    callback( this.pageCache );
+                });
+            }
         }
 
     }
