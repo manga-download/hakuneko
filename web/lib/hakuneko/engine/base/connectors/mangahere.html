@@ -92,7 +92,7 @@
                     Engine.Request.get( page, undefined, undefined, ( content, status ) => {
                         // prevent images and iframes from loading
                         content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                         content = content.replace( 'onload="loadImg(this)"', '');
+                        content = content.replace( 'onload="loadImg(this)"', '');
                         let dom = document.createElement( 'html' );
                         dom.innerHTML = content;
                         content = '';
