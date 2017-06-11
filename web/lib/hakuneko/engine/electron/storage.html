@@ -13,16 +13,16 @@
         constructor() {
             super();
             let electron = require( 'electron' );
-            let hakuneko = electron.remote.require( './hakuneko' );
+            this.hakuneko = electron.remote.require( './hakuneko' );
             this.fs = require( 'fs' );
             this.path = require( 'path' );
             this.dialog = electron.remote.dialog;
             this.platform = electron.remote.process.platform;
             this.archiver = electron.remote.require( 'archiver' );
             // extracting in context of render process is very slow => use function in main process context
-            this._loadChapterPagesCBZ = hakuneko.loadChapterPagesCBZ;
+            //this._loadChapterPagesCBZ = this.hakuneko.loadChapterPagesCBZ;
             // loading in context of render process is very slow => use function in main process context
-            this._loadChapterPagesFolder = hakuneko.loadChapterPagesFolder;
+            //this._loadChapterPagesFolder = this.hakuneko.loadChapterPagesFolder;
         }
 
         /**
@@ -42,17 +42,13 @@
          * 
          */
         getMangaStatus( manga, callback ) {
-            // wrap in timeout to prevent from blocking
-            setTimeout( () => {
-                this.fs.access( this._mangaOutputPath( manga ), /*this.fs.constants.F_OK,*/ ( error ) => {
-                    if( error ) {
-                        callback( DownloadStatus.available );
-                    } else {
-                        console.log( manga.title );
-                        callback( DownloadStatus.completed );
-                    }
-                });
-            }, 0);
+            this.fs.access( this._mangaOutputPath( manga ), ( error ) => {
+                if( error ) {
+                    callback( DownloadStatus.available );
+                } else {
+                    callback( DownloadStatus.completed );
+                }
+            });
         }
 
         /**
@@ -74,12 +70,12 @@
             // try loading from directory
             this.fs.access( path, ( error ) => {
                 if( !error ) {
-                    this._loadChapterPagesFolder( path, callback );
+                    this.hakuneko.loadChapterPagesFolder( path, callback );
                 } else {
                     // try loading from CBZ archive
                     this.fs.access( path + '.cbz', ( error ) => {
                         if( !error ) {
-                            this._loadChapterPagesCBZ( path + '.cbz', callback );
+                            this.hakuneko.loadChapterPagesCBZ( path + '.cbz', callback );
                         }
                     });
                 }
