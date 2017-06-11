@@ -131,6 +131,7 @@
              */
             onSelectedChapterChanged( chapter ) {
                 if( !chapter ) {
+                    this.set( 'pages', undefined );
                     return;
                 }
                 // TODO: abort any pending page request (maybe store current request in global variable?)
