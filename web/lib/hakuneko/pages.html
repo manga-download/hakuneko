@@ -130,6 +130,9 @@
              * Observer will be executed, whenever the 'selectedChapter' is changed.
              */
             onSelectedChapterChanged( chapter ) {
+                if( !chapter ) {
+                    return;
+                }
                 // TODO: abort any pending page request (maybe store current request in global variable?)
                 chapter.getPages( ( pages ) => {
                     if( chapter === this.selectedChapter ) {
