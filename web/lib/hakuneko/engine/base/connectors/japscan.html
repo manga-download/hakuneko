@@ -1,0 +1,97 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * @author Neogeek
+     */
+    class JapScan extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id             = 'japscan';
+            super.label          = 'JapScan';
+            // Private members for internal usage only (convenience)
+            this.url            = 'http://www.japscan.com/';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Engine.Request.get( this.url + '/mangas/', undefined, undefined, ( content, status ) => {
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                //console.log(dom.innerHTML);
+                let mangaList = [...dom.querySelectorAll( '#liste_mangas div.row div:first-of-type a' )].map(  ( element ) => {
+                    return {
+                        // as mentioned before, the eventually added host prefix must be removed
+                        // for full qualified domain name, the host (dynasty-scans) can also be removed
+                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        title: element.text.trim()
+                    };
+                });
+                callback( mangaList );
+            });
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                let chapterList = [...dom.querySelectorAll( '#liste_chapitres ul li a' )].map(  ( element ) => {
+                    element.text = element.text.replace( 'Scan', '' ).replace( 'VF', '' );
+                    return {
+                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'fr'
+                    };
+                });
+                callback( chapterList );
+            });
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( content, status ) => {
+                // prevent images and iframes from loading
+                //content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                content = '';
+                let baseUrl = dom.querySelector( '#image' ).src;
+                let imageList = [...dom.querySelectorAll( '#pages option' )].map(  ( element ) => {
+                    return element.getAttribute( 'data-img' );
+                });
+                imageList.splice(2, 1);  //Remove 2nd and last images
+                imageList.splice(-1, 1);
+                baseUrl = baseUrl.replace(imageList[0], '');
+                imageList = imageList.map( (element) => {
+                    return baseUrl + element;
+                });
+                callback( imageList );
+            });
+        }
+    }
+
+</script>
