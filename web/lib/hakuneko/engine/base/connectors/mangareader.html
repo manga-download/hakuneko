@@ -1,18 +1,21 @@
+<link rel="import" href="../connector.html">
 <link rel="import" href="../promise.html">
+
 <script>
 
     /**
      * @author Neogeek
      */
-    class MangaReader {
+    class MangaReader extends Connector {
 
         /**
          *
          */
         constructor() {
+            super();
             // Public members for usage in UI (mandatory)
-            this.id             = 'mangareader';
-            this.label          = 'MangaReader';
+            super.id             = 'mangareader';
+            super.label          = 'MangaReader';
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.mangareader.net';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
@@ -22,7 +25,7 @@
         /**
          *
          */
-        getMangaList( callback ) {
+        _getMangaList( callback ) {
             Engine.Request.get( this.url + '/alphabetical', undefined, undefined, ( content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
@@ -46,7 +49,7 @@
         /**
          *
          */
-        getChapterList( manga, callback ) {
+        _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
@@ -68,7 +71,7 @@
         /**
          *
          */
-        getPages( manga, chapter, callback ) {
+        _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
@@ -99,6 +102,5 @@
             });
         }
     }
-    MangaReader; // reference the class to prevent removal of the class through js-minify
 
 </script>
