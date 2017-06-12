@@ -7,11 +7,11 @@ function build {
     rm -f "build/$1/LICENSE"*
     rm -r -f "build/$1/locales"
     rm -r -f "build/$1/resources/default_app.asar"
-    if [[ $string =~ linux.* ]]
+    if [[ $1 =~ linux.* ]]
     then
         mv "build/$1/electron" "build/$1/hakuneko"
     fi
-    if [[ $string =~ win32.* ]]
+    if [[ $1 =~ win32.* ]]
     then
         mv "build/$1/electron.exe" "build/$1/hakuneko.exe"
     fi
