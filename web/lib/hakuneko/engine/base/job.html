@@ -38,7 +38,9 @@
                     Engine.Storage.saveChapterPages( this.chapter, pageData, () => {
                         this.progress = 100;
                         this.status = DownloadStatus.completed;
-                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+                        this.chapter.updateStatus();
+                        this.chapter.manga.updateStatus();
+                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadCompleted, { detail: this } ) );
                         callback();
                     });
                 });

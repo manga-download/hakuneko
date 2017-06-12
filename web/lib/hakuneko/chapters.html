@@ -150,10 +150,9 @@
                 super.ready();
                 // list of all available chapters
                 this.chapterList = undefined;
-                // register callbacks for events published by download manager
-                document.addEventListener( EventListener.onDownloadAdded, this.onDownloadUpdated.bind( this ) );
-                document.addEventListener( EventListener.onDownloadUpdated, this.onDownloadUpdated.bind( this ) );
-                document.addEventListener( EventListener.onDownloadRemoved, this.onDownloadUpdated.bind( this ) );
+                // register callbacks for published events
+                document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
+                document.addEventListener( EventListener.onDownloadAdded, this.onDownloadAdded.bind( this ) );
             }
 
             /**
@@ -284,7 +283,28 @@
             /**
              * 
              */
-            onDownloadUpdated( e ) {
+            onChapterStatusChanged( e ) {
+                let chapter = e.detail;
+                if( !this.chapterList ) {
+                    return;
+                }
+                let index = this.chapterList.findIndex( ( item ) => {
+                    // chapters may be different objects (reloading chapter list) but still be the equivalent
+                    // => comparing ids instead of comparing the objects directly
+                    return ( item.id === chapter.id
+                             && item.manga.id === chapter.manga.id
+                             && item.manga.connector.id === chapter.manga.connector.id
+                    );
+                });
+                if( index > -1 ) {
+                    this.notifyPath( 'chapterList.' + index + '.status' );
+                }
+            }
+
+            /**
+             * 
+             */
+            onDownloadAdded( e ) {
                 let job = e.detail;
                 if( !this.chapterList || this.selectedConnector.id !== job.chapter.manga.connector.id || this.selectedManga.id !== job.chapter.manga.id ) {
                     return;

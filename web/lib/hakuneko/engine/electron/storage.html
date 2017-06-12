@@ -13,16 +13,13 @@
         constructor() {
             super();
             let electron = require( 'electron' );
-            this.hakuneko = electron.remote.require( './hakuneko' );
-            this.fs = require( 'fs' );
-            this.path = require( 'path' );
             this.dialog = electron.remote.dialog;
             this.platform = electron.remote.process.platform;
-            this.archiver = electron.remote.require( 'archiver' );
-            // extracting in context of render process is very slow => use function in main process context
-            //this._loadChapterPagesCBZ = this.hakuneko.loadChapterPagesCBZ;
-            // loading in context of render process is very slow => use function in main process context
-            //this._loadChapterPagesFolder = this.hakuneko.loadChapterPagesFolder;
+            this.jszip = electron.remote.require( 'jszip' );
+            this.fs = require( 'fs' );
+            this.path = require( 'path' );
+            this.temp = this.path.join( require('os').tmpdir(), 'hakuneko' );
+            this._createDirectoryChain( this.temp );
         }
 
         /**
@@ -54,12 +51,14 @@
         /**
          * 
          */
-        getChapterStatus( chapter ) {
-            let path = this._chapterOutputPath( chapter );
-            if( this.fs.existsSync( path ) || this.fs.existsSync( path + '.cbz' ) ) {
-                return DownloadStatus.completed;
-            }
-            return DownloadStatus.available;
+        getChapterStatus( chapter, callback ) {
+            this.fs.access( this._chapterOutputPath( chapter ), ( error ) => {
+                if( error ) {
+                    callback( DownloadStatus.available );
+                } else {
+                    callback( DownloadStatus.completed );
+                }
+            });
         }
 
         /**
@@ -67,18 +66,69 @@
          */
         loadChapterPages( chapter, callback ) {
             let path = this._chapterOutputPath( chapter );
-            // try loading from directory
-            this.fs.access( path, ( error ) => {
-                if( !error ) {
-                    this.hakuneko.loadChapterPagesFolder( path, callback );
-                } else {
-                    // try loading from CBZ archive
-                    this.fs.access( path + '.cbz', ( error ) => {
-                        if( !error ) {
-                            this.hakuneko.loadChapterPagesCBZ( path + '.cbz', callback );
-                        }
+            if( Engine.Settings.compressChapters.value ) {
+                this._loadChapterPagesCBZ( path, ( error, pages ) => {
+                    if( error ) {
+                        console.error( error );
+                        callback( undefined );
+                    } else {
+                        callback( pages );
+                    }
+                });
+            } else {
+                this._loadChapterPagesFolder( path, ( error, pages ) => {
+                    if( error ) {
+                        console.error( error );
+                        callback( undefined );
+                    } else {
+                        callback( pages );
+                    }
+                });
+            }
+        }
+
+        /**
+         * Read image data from CBZ archive.
+         */
+        _loadChapterPagesCBZ( archive, callback ) {
+            this.fs.readFile( archive, ( function ( error, data ) {
+                let zip = new this.jszip();
+                zip.loadAsync( data, {} ).then( ( unzip ) => {
+                    let pages = [];
+                    let timestamp = Date.now();
+                    let promise = new Promise( () => {
+                        callback( null, pages.sort() );
                     });
+                    unzip.forEach( ( name, entry ) => {
+                        let key = promise.defer();
+                        name = this.path.join( this.temp, name );
+                        entry.async( 'uint8array' ).then( ( data ) => {
+                            this.fs.writeFile( name, data, function( error ) {
+                                // attach timestamp to force reload of already existing, but overwritten temp files
+                                pages.push( 'file://' + name + '?ts=' + timestamp );
+                                promise.resolve( key );
+                            });
+                        });
+                    });
+                });
+            }).bind( this ) );
+        }
+
+        /**
+         * Read image data from directory.
+         */
+        _loadChapterPagesFolder( directory, callback ) {
+            this.fs.readdir( directory, ( error, files ) => {
+                if( error ) {
+                    return callback( error, undefined );
                 }
+                let pages = files.map( ( file ) => {
+                    file = this.path.join( directory, file );
+                    // websecurity is disabled => direct access to file links
+                    return 'file://' + file;
+                    //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
+                });
+                callback( null, pages );
             });
         }
 
@@ -96,9 +146,7 @@
             });
 
             let output = this._chapterOutputPath( chapter );
-
             if( Engine.Settings.compressChapters.value ) {
-                output += '.cbz';
                 this._createDirectoryChain( this.path.dirname( output ) );
                 this._saveChapterPagesCBZ( output, pageData, callback );
             } else {
@@ -111,27 +159,15 @@
          * Create and save pages to the given archive file.
          */
         _saveChapterPagesCBZ( archive, pageData, callback ) {
-            let zip = this.archiver( 'zip', {
-                zlib: {
-                    level: 0
-                }
-            });
-            zip.pipe( this.fs.createWriteStream( archive ) );
+            let zip = new this.jszip();
             pageData.forEach( ( page ) => {
-                zip.append( page.data, { name: page.name } );
+                zip.file( page.name, page.data );
             });
-            zip.finalize();
-            callback();
-
-            /*
-            // adm-zip code, creates broken archive
-	        var zip = new this.zipper();
-            pageData.forEach( ( page ) => {
-                zip.addFile( page.name, page.data );
+            zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
+                this.fs.writeFile( archive, data, function( error ) {
+                    callback();
+                });
             });
-            zip.writeZip( archive );
-            callback();
-            */
         }
 
         /**
@@ -157,6 +193,9 @@
             }
             output = this.path.join( output, this._sanatizePath( chapter.manga.title ) );
             output = this.path.join( output, this._sanatizePath( chapter.title ) );
+            if( Engine.Settings.compressChapters.value ) {
+                output += '.cbz';
+            }
             return output;
         }
 
@@ -225,6 +264,29 @@
                 return fileName + '.img';
             }
             return fileName + '.bin';
+        }
+
+        /**
+         * Helper function to get the mime type depending on the file extension of the given file name.
+         */
+        _pageFileMime( file ) {
+            let extension = this.path.extname( file );
+            if( extension === '.jpg' ) {
+                return 'image/jpeg';
+            }
+            if( extension === '.png' ) {
+                return 'image/png';
+            }
+            if( extension === '.gif' ) {
+                return 'image/gif';
+            }
+            if( extension === '.bmp' ) {
+                return 'image/bmp';
+            }
+            if( extension === '.img' ) {
+                return 'image/';
+            }
+            return 'application/octet-stream';
         }
     }
 
