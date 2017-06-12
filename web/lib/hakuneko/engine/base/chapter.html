@@ -38,14 +38,14 @@
          * Callback will be executed after completion and provided with a reference to the page list (undefined on error).
          */
         getPages( callback ) {
-            // check if page list is cached
-            if( this.pageCache ) {
-                callback( this.pageCache );
-                return;
-            }
             if( this.status === DownloadStatus.completed ) {
                 Engine.Storage.loadChapterPages( this, callback );
             } else {
+            // check if page list is cached
+                if( this.pageCache ) {
+                    callback( this.pageCache );
+                    return;
+                }
                 // get page list directly from the connector interface and cache them
                 this.manga.connector._getPageList( this.manga, this, ( pages ) => {
                     this.pageCache = pages;
