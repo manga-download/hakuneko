@@ -30,6 +30,9 @@ hakuneko.loadChapterPagesCBZ = ( archive, callback ) => {
  */
 hakuneko.loadChapterPagesFolder = ( directory, callback ) => {
     fs.readdir( directory, ( error, files ) => {
+        if( error ) {
+            throw error;
+        }
         let pages = files.map( ( file ) => {
             file = path.join( directory, file );
             // websecurity is disabled => direct access to file links
