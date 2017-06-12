@@ -15,13 +15,17 @@ var hakuneko = {};
  * Declaration in main process because of performance, usage in render process.
  */
 hakuneko.loadChapterPagesCBZ = ( archive, callback ) => {
-    let zip = new admzip( archive );
-    let pages = zip.getEntries().map( ( entry ) => {
-        // TODO: extract files to temp folder and provide direct file links instead of base64 data
-        // return 'file://' + entry.entryName;
-        return 'data:' + pageFileMime( entry.entryName ) + ';base64,' + entry.getData().toString('base64');
-    });
-    callback( pages );
+    try {
+        let zip = new admzip( archive );
+        let pages = zip.getEntries().map( ( entry ) => {
+            // TODO: extract files to temp folder and provide direct file links instead of base64 data
+            // return 'file://' + entry.entryName;
+            return 'data:' + pageFileMime( entry.entryName ) + ';base64,' + entry.getData().toString( 'base64' );
+        });
+        callback( null, pages );
+    } catch ( error ) {
+        callback( error, undefined );
+    }
 }
 
 /**
@@ -31,7 +35,7 @@ hakuneko.loadChapterPagesCBZ = ( archive, callback ) => {
 hakuneko.loadChapterPagesFolder = ( directory, callback ) => {
     fs.readdir( directory, ( error, files ) => {
         if( error ) {
-            throw error;
+            return callback( error, undefined );
         }
         let pages = files.map( ( file ) => {
             file = path.join( directory, file );
@@ -39,12 +43,12 @@ hakuneko.loadChapterPagesFolder = ( directory, callback ) => {
             return 'file://' + file;
             //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
         });
-        callback( pages );
+        callback( null, pages );
     });
 }
 
 /**
- * Helper function to get the mime time depending on the file extension of the gicen file name.
+ * Helper function to get the mime type depending on the file extension of the given file name.
  */
 function pageFileMime( file ) {
     let extension = path.extname( file );
