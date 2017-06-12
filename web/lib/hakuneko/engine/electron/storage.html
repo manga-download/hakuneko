@@ -105,7 +105,7 @@
                         entry.async( 'uint8array' ).then( ( data ) => {
                             this.fs.writeFile( name, data, function( error ) {
                                 // attach timestamp to force reload of already existing, but overwritten temp files
-                                pages.push( 'file://' + name + '?ts=' + timestamp );
+                                pages.push( encodeURI( 'file://' + name.replace(/\\/g, '/') + '?ts=' + timestamp ) );
                                 promise.resolve( key );
                             });
                         });
@@ -125,7 +125,7 @@
                 let pages = files.map( ( file ) => {
                     file = this.path.join( directory, file );
                     // websecurity is disabled => direct access to file links
-                    return 'file://' + file;
+                    return encodeURI( 'file://' + file.replace(/\\/g, '/') );
                     //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
                 });
                 callback( null, pages );
