@@ -15,7 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id            = 'kissmanga';
             super.label         = 'KissManga';
-            this.isLocked       = false;
+            super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'http://kissmanga.com';
             this.referer        = undefined; //'http://kissmanga.com';
@@ -27,14 +27,10 @@
             this.config  = undefined;
 
             // initialization: bypass cloudflare and get encryption scripts
-            // FIXME: use script hosted by hakuneko to prevent injection attacks
             Engine.Request.cfGet( this.url + '/Scripts/ca.js', this.referer, this.agent, ( content, status ) => {
-            //Engine.Request.cfGet( '/js/kissmanga/ca.js', undefined, undefined, ( content, status ) => {
                 if( status === 200 ) {
                     let script = content + ';';
-                    // FIXME: use script hosted by hakuneko to prevent injection attacks
                     Engine.Request.cfGet( this.url + '/Scripts/lo.js', this.referer, this.agent, ( content, status ) => {
-                    //Engine.Request.cfGet( '/js/kissmanga/lo.js', undefined, undefined, ( content, status ) => {
                         if( status === 200 ) {
                             script += content + ';';
                             this.sandbox.postMessage( { id: 1, content: script, return: [] } );
@@ -72,7 +68,7 @@
         }
 
         /**
-         * Parameters mangalist, pageFrom and pageTo should never be relayed from external calls.
+         * Parameters mangalist, pageFrom and pageTo should never be used by external calls.
          */
         _getMangaList( callback, mangaList, pageFrom, pageTo ) {
             // connector initialization failed or not yet finished
@@ -90,7 +86,7 @@
                 return;
             }
             Engine.Request.cfGet( this.url + '/MangaList?page=' + pageFrom, this.referer, this.agent, ( content, status ) => {
-                // on captcha request => retry after 60 seconds
+                // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
                     callback( mangaList );
@@ -138,7 +134,7 @@
             }
             Engine.Request.cfGet( this.url + manga.id, this.referer, this.agent, ( content, status ) => {
                 let chapterList = [];
-                // on captcha request => retry after 60 seconds
+                // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
                     callback( chapterList );
@@ -186,7 +182,7 @@
             }, this.pageLoadDelay );
             Engine.Request.cfGet( this.url + chapter.id, this.referer, this.agent, ( content, status ) => {
                 let pageList = [];
-                // on captcha request => retry after 60 seconds
+                // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
                     callback( pageList );
