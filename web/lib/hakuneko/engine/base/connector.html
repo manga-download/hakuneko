@@ -14,9 +14,13 @@
         constructor() {
             this.id = Symbol();
             this.label = '';
+            // READONLY: lock state may used to prevent to many concurrent requests per second
+            // do not set directly, use lock() and unlock()
+            this.isLocked = false;
+            //
             this.isUpdating = false;
+            //
             this.mangaCache = undefined;
-            this.locked = false;
         }
 
         /**
@@ -83,6 +87,29 @@
             });
         }
 
+        /**
+         * Switch the connector to lock mode.
+         * In lock mode the connector may limit concurrent access.
+         * The limitation depends on the connector implementation.
+         * Returns a key required to unlock the connector (only the owner with the key can unlock the connector)
+         * or null if the connector is already locked by a different owner.
+         */
+        lock() {
+            if( this.isLocked ) {
+                return null;
+            }
+            this.isLocked = Symbol();
+            return this.isLocked;
+        }
+
+        /**
+         *
+         */
+        unlock( key ) {
+            if( this.isLocked === key ) {
+                this.isLocked = false;
+            }
+        }
     }
     Connector; // reference the class to prevent removal of the class through js-minify
 
