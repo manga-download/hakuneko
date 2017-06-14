@@ -40,7 +40,11 @@
                         this.status = DownloadStatus.completed;
                         this.chapter.updateStatus();
                         this.chapter.manga.updateStatus();
-                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadCompleted, { detail: this } ) );
+                        if( this.errors && this.errors.length > -1 ) {
+                            document.dispatchEvent( new CustomEvent( EventListener.onDownloadFailed, { detail: this } ) );
+                        } else {
+                            document.dispatchEvent( new CustomEvent( EventListener.onDownloadCompleted, { detail: this } ) );
+                        }
                         callback();
                     });
                 });

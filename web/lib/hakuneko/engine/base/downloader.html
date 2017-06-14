@@ -75,7 +75,6 @@
                     let job = this.queue[connectorID].shift();
                     job.downloadPages( '', false, () => {
                         this.queue[connectorID].activeCount--;
-                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadRemoved, { detail: job } ) );
                     });
                 }
             }
