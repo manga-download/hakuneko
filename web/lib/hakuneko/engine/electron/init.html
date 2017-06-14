@@ -1,26 +1,30 @@
 <script>
 
-    let electronRemote = require( 'electron' ).remote;
+    if( typeof(process) !== 'undefined' && process.versions && process.versions.electron ) {
 
-    /**
-     * Register event listener to open developer console with F12 key.
-     */
-    window.addEventListener( 'keydown', ( e ) => {
-        if( !e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 123 ) {
-            electronRemote.getCurrentWindow().openDevTools();
-        }
-    });
+        let electronRemote = require( 'electron' ).remote;
 
-    /**
-     * some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
-     */
-    electronRemote.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-        // TODO: only use origin of url => (new URL(details.url)).origin
-        details.requestHeaders['Referer'] = details.url;
-        callback({
-            cancel: false,
-            requestHeaders: details.requestHeaders
+        /**
+        * Register event listener to open developer console with F12 key.
+        */
+        window.addEventListener( 'keydown', ( e ) => {
+            if( !e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 123 ) {
+                electronRemote.getCurrentWindow().openDevTools();
+            }
         });
-    });
+
+        /**
+        * some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
+        */
+        electronRemote.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
+            // TODO: only use origin of url => (new URL(details.url)).origin
+            details.requestHeaders['Referer'] = details.url;
+            callback({
+                cancel: false,
+                requestHeaders: details.requestHeaders
+            });
+        });
+
+    }
 
 </script>
