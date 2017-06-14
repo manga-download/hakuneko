@@ -15,27 +15,26 @@
             this.connector = connector;
             this.id = id;
             this.title = title;
-            this.status = DownloadStatus.available;
+            this.status = undefined;
             this.chapterCache = undefined;
             this.updateStatus();
+        }
+
+        /**
+         *
+         */
+        setStatus( status ) {
+            if( this.status !== status ) {
+                this.status = status;
+                document.dispatchEvent( new CustomEvent( EventListener.onMangaStatusChanged, { detail: this } ) );
+            }
         }
 
         /**
          * 
          */
         updateStatus() {
-            Engine.Storage.getMangaStatus( this, ( status ) => {
-                if( status === DownloadStatus.completed ) {
-                    // only dispatch event when status has been changed
-                    if( this.status !== status ) {
-                        this.status = status;
-                        document.dispatchEvent( new CustomEvent( EventListener.onMangaStatusChanged, { detail: this } ) );
-                    }
-                } else {
-                    // TODO: check online connection
-                    // TODO: get status from download manager
-                }
-            });
+            Engine.Storage.getMangaStatus( this, this.setStatus.bind( this ) );
         }
 
         /**

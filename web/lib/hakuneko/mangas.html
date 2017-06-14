@@ -283,15 +283,16 @@
              */
             onMangaStatusChanged( e ) {
                 let manga = e.detail;
-                if( !this.mangaList ) {
+                if( !this.mangaList
+                    || !this.selectedConnector
+                    || this.selectedConnector.id !== manga.connector.id
+                ) {
                     return;
                 }
                 let index = this.mangaList.findIndex( ( item ) => {
                     // mangas may be different objects (synchronizing connector list) but still be equivalent
                     // => comparing ids instead of comparing the objects directly
-                    return ( item.id === manga.id
-                             && item.connector.id === manga.connector.id
-                    );
+                    return ( item.id === manga.id );
                 });
                 if( index > -1 ) {
                     this.notifyPath( 'mangaList.' + index + '.status' );

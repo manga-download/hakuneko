@@ -18,7 +18,6 @@
 
         /**
          * Add a new job to the download queue.
-         * Execute the registered callback event when the job was added successfully.
          */
         addDownload( chapter ) {
             let manga = chapter.manga;
@@ -32,35 +31,13 @@
             let job = this.queue[connector.id].find( ( item ) => {
                 return ( item.chapter === chapter );
             });
+            // check if a job exist or a new job will be added
             if( job ) {
                 return;
             }
             job = new DownloadJob( chapter );
             this.queue[connector.id].push( job );
-            document.dispatchEvent( new CustomEvent( EventListener.onDownloadAdded, { detail: job } ) );
-        }
-
-        /**
-         * Remove an existing job from the download queue.
-         * Execute the registered callback event when the job was removed successfully.
-         */
-        removeDownload( chapter ) {
-            let manga = chapter.manga;
-            let connector = manga.connector;
-
-            if( !this.queue[connector.id] ) {
-                return;
-            }
-            // check if job exist
-            let index = this.queue[connector.id].findIndex( ( item ) => {
-                return ( item.chapter === chapter );
-            });
-            if( index < 0 ) {
-                return;
-            }
-            let job = this.queue[connector.id].splice( index, 1 )[0];
-            job.status = DownloadStatus.available;
-            document.dispatchEvent( new CustomEvent( EventListener.onDownloadRemoved, { detail: job } ) );
+            job.setStatus( DownloadStatus.queued );
         }
 
         /**

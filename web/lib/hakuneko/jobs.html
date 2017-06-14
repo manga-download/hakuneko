@@ -17,17 +17,29 @@
                 flex-direction: row;
                 padding: 0.25em;
             }
-            .button {
+            .expander {
                 flex: 0;
+                padding: 0.25em;
             }
             .status {
                 flex: 1;
                 text-align: right;
                 padding: 0.25em;
             }
-            .item {
+            .button {
                 cursor: pointer;
-                padding: 0.25em;
+            }
+            .buttonQueued {
+                color: var(--job-list-button-queued-color);
+            }
+            .buttonDownloading {
+                color: var(--job-list-button-downloading-color);
+            }
+            .buttonCompleted {
+                color: var(--job-list-button-completed-color);
+            }
+            .buttonFailed {
+                color: var(--job-list-button-failed-color);
             }
             .list {
                 height: 8em;
@@ -65,7 +77,7 @@
             <table cellpadding="0">
                 <template is="dom-repeat" items="[[ jobList ]]" initial-count="500" target-framerate="5">
                     <tr title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]">
-                        <td class="fa-fw"><i class$="fa [[ getStatusClass(item.status) ]] fa-fw"></i></td>
+                        <td class="fa-fw"><i class$="fa [[ getStatusClass(item.status) ]] fa-fw" title$="[[ getErrorTitle(item.errors) ]]" on-click="restartDownload"></i></td>
                         <td class="cell">[[ item.labels.connector ]]</td>
                         <td class="cell">[[ item.labels.manga ]]</td>
                         <td class="cell">[[ item.labels.chapter ]]</td>
@@ -75,8 +87,8 @@
             </table>
         </div>
         <div class="bar">
-            <div class="button">
-                <i class$="fa [[ getButtonClass(popupVisibility) ]] item" title="Toggle download list" on-click="toggleJobList"></i>
+            <div class="expander">
+                <i class$="fa [[ getButtonClass(popupVisibility) ]] button" title="Toggle download list" on-click="toggleJobList"></i>
             </div>
             <div class="status">[[ jobList.length ]] Download(s)</div>
         </div>
@@ -115,9 +127,7 @@
                 this.popupVisibility = false;
                 this.jobList = [];
                 // register callbacks for events published by download manager
-                document.addEventListener( EventListener.onDownloadAdded, this.onDownloadAdded.bind( this ) );
-                document.addEventListener( EventListener.onDownloadUpdated, this.onDownloadUpdated.bind( this ) );
-                document.addEventListener( EventListener.onDownloadRemoved, this.onDownloadRemoved.bind( this ) );
+                document.addEventListener( EventListener.onDownloadStatusUpdated, this.onDownloadStatusUpdated.bind( this ) );
             }
 
             /**
@@ -154,41 +164,59 @@
                     //case DownloadStatus.available:
                     //    return 'fa-cloud';
                     case DownloadStatus.queued:
-                        return 'fa-clock-o';
+                        return 'fa-clock-o buttonQueued';
                     case DownloadStatus.downloading:
-                        return 'fa-exchange';
+                        return 'fa-exchange buttonDownloading';
                     case DownloadStatus.completed:
-                        return 'fa-check';
+                        return 'fa-check button buttonCompleted';
+                    case DownloadStatus.failed:
+                        return 'fa-exclamation-triangle button buttonFailed';
                     default:
                         return '';
                 }
             }
 
             /**
-             * 
+             *
              */
-            onDownloadAdded( e ) {
-                this.push( 'jobList', e.detail );
+            getErrorTitle( errors ) {
+                return ( errors && errors.length > 0 ? 'Click to re-download\n' : '' ) + errors.map( ( error ) => {
+                    return error.toString();
+                }).join( '\n' );
+            }
+
+            /**
+             *
+             */
+            restartDownload( e ) {
+                let job = e.model.item;
+                if( job.status === DownloadStatus.failed || job.status === DownloadStatus.completed ) {
+                    Engine.DownloadManager.addDownload( job.chapter );
+                    this.splice( 'jobList', e.model.index, 1 );
+                }
             }
 
             /**
              * 
              */
-            onDownloadUpdated( e ) {
+            onDownloadStatusUpdated( e ) {
                 let job = e.detail;
                 let index = this.jobList.indexOf( job );
-                // force an UI update of the changed job
-                this.notifyPath( 'jobList.' + index + '.status' );
-                this.notifyPath( 'jobList.' + index + '.progress' );
-            }
-
-            /**
-             * 
-             */
-            onDownloadRemoved( e ) {
-                let index = this.jobList.indexOf( e.detail );
                 if( index > -1 )  {
-                    this.splice( 'jobList', index, 1 );
+                    // force an UI update of the changed job
+                    this.notifyPath( 'jobList.' + index + '.status' );
+                    this.notifyPath( 'jobList.' + index + '.progress' );
+                    if( job.status === DownloadStatus.completed ) {
+                        this.splice( 'jobList', index, 1 );
+                    }
+                    if( job.status === DownloadStatus.failed && job.errors && job.errors.length > 0 ) {
+                        this.notifyPath( 'jobList.' + index + '.errors' );
+                    }
+                } else {
+                    // add job
+                    if( job.status === DownloadStatus.queued || job.status === DownloadStatus.downloading ) {
+                        this.push( 'jobList', job );
+                    }
                 }
             }
         }

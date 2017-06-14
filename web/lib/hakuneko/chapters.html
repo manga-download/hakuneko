@@ -54,16 +54,19 @@
                 cursor: pointer;
             }
             .buttonAvailable {
-                color: var(--chapter-available-button-color);
+                color: var(--chapter-button-available-color);
             }
             .buttonQueued {
-                color: var(--chapter-queued-button-color);
+                color: var(--chapter-button-queued-color);
             }
             .buttonDownloading {
-                color: var(--chapter-downloading-button-color);
+                color: var(--chapter-button-downloading-color);
             }
             .buttonCompleted {
-                color: var(--chapter-completed-button-color);
+                color: var(--chapter-button-completed-color);
+            }
+            .buttonFailed {
+                color: var(--chapter-button-failed-color);
             }
             .footer {
                 flex: 0;
@@ -152,7 +155,6 @@
                 this.chapterList = undefined;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
-                document.addEventListener( EventListener.onDownloadAdded, this.onDownloadAdded.bind( this ) );
             }
 
             /**
@@ -204,6 +206,8 @@
                         return 'DOWNLOADING';
                     case DownloadStatus.completed:
                         return 'DOWNLOADED\nClick to delete and re-download chapter';
+                    case DownloadStatus.failed:
+                        return 'DOWNLOAD FAILED\nClick to delete and re-download chapter';
                     default:
                         return 'No tooltip available!';
                 }
@@ -224,6 +228,8 @@
                         return 'fa-cloud-download buttonDownloading';
                     case DownloadStatus.completed:
                         return 'fa-folder-open buttonCompleted';
+                    case DownloadStatus.failed:
+                        return 'fa-exclamation-triangle buttonFailed';
                     default:
                         return '';
                 }
@@ -243,8 +249,16 @@
                         break;
                     case DownloadStatus.completed:
                         if( confirm( 'Re-Download?' ) ) {
+                            Engine.DownloadManager.addDownload( chapter );
+                        }
+                        break;
+                    case DownloadStatus.failed:
+                        alert( 'No action available!' );
+                        /*
+                        if( confirm( 'Re-Download?' ) ) {
                             alert( 'TODO: ...' );
                         }
+                        */
                         break;
                     default:
                         alert( 'No action available!' );
@@ -288,33 +302,21 @@
              */
             onChapterStatusChanged( e ) {
                 let chapter = e.detail;
-                if( !this.chapterList ) {
+                if( !this.chapterList
+                    || !this.selectedManga
+                    || !this.selectedConnector
+                    || this.selectedManga.id !== chapter.manga.id
+                    || this.selectedConnector.id !== chapter.manga.connector.id
+                ) {
                     return;
                 }
                 let index = this.chapterList.findIndex( ( item ) => {
                     // chapters may be different objects (reloading chapter list) but still be the equivalent
                     // => comparing ids instead of comparing the objects directly
-                    return ( item.id === chapter.id
-                             && item.manga.id === chapter.manga.id
-                             && item.manga.connector.id === chapter.manga.connector.id
-                    );
+                    return ( item.id === chapter.id );
                 });
                 if( index > -1 ) {
                     this.notifyPath( 'chapterList.' + index + '.status' );
-                }
-            }
-
-            /**
-             * 
-             */
-            onDownloadAdded( e ) {
-                let job = e.detail;
-                if( !this.chapterList || this.selectedConnector.id !== job.chapter.manga.connector.id || this.selectedManga.id !== job.chapter.manga.id ) {
-                    return;
-                }
-                let index = this.chapterList.findIndex( ( item ) => { return ( item.id === job.chapter.id ); } );
-                if( index > -1 ) {
-                    this.set( 'chapterList.' + index + '.status', job.status );
                 }
             }
         }
