@@ -73,7 +73,7 @@
         _getMangaList( callback, mangaList, pageFrom, pageTo ) {
             // connector initialization failed or not yet finished
             if( !this.initialized ) {
-                callback( undefined );
+                callback( null, undefined );
                 return;
             }
             // set default values for arguments
@@ -82,14 +82,14 @@
             pageTo = pageTo || 9999;
             // abort condition for recursive call
             if( pageFrom > pageTo ) {
-                callback( mangaList );
+                callback( null, mangaList );
                 return;
             }
             Engine.Request.cfGet( this.url + '/MangaList?page=' + pageFrom, this.referer, this.agent, ( content, status ) => {
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
-                    callback( mangaList );
+                    callback( null, mangaList );
                     return;
                 }
                 // prevent images and iframes from loading
@@ -99,7 +99,7 @@
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
                 if( dom.querySelectorAll( 'li.current' ).length < 1 ) {
-                    callback( mangaList );
+                    callback( null, mangaList );
                     return;
                 }
                 [...dom.querySelectorAll( 'table.listing tr' )].forEach(  ( element ) => {
@@ -129,7 +129,7 @@
         _getChapterList( manga, callback ) {
             // connector initialization failed or not yet finished
             if( !this.initialized ) {
-                callback( undefined );
+                callback( null, undefined );
                 return;
             }
             Engine.Request.cfGet( this.url + manga.id, this.referer, this.agent, ( content, status ) => {
@@ -137,7 +137,7 @@
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
-                    callback( chapterList );
+                    callback( null, chapterList );
                     return;
                 }
                 // prevent images and iframes from loading
@@ -163,7 +163,7 @@
                         }
                     }
                 });
-                callback( chapterList );
+                callback( null, chapterList );
             });
         }
 
@@ -173,7 +173,7 @@
         _getPageList( manga, chapter, callback ) {
             if( this.isLocked ) {
                 console.warn( '[WARN: KissManga, too many requests]' );
-                callback( undefined );
+                callback( null, undefined );
                 return;
             }
             let key = this.lock();
@@ -185,7 +185,7 @@
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
-                    callback( pageList );
+                    callback( null, pageList );
                     return;
                 }
                 // prevent images and iframes from loading
@@ -212,7 +212,7 @@
                         let eventListener = ( e ) => {
                             if( e.data.id === messageID ) {
                                 this.sandbox.removeEventListener( 'message', eventListener );
-                                callback( e.data.content[ 'lstImages' ] );
+                                callback( null, e.data.content[ 'lstImages' ] );
                             }
                         };
                         this.sandbox.addEventListener( 'message', eventListener, false );
@@ -220,7 +220,7 @@
                         return;
                     }
                 });
-                callback( pageList );
+                callback( null, pageList );
             });
         }
     }

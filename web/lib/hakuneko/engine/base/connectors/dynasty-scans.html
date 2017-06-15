@@ -29,7 +29,7 @@
         _getMangaList( callback ) {
             let mangaList = [];
             let prms = new Promise(() => {
-                callback(mangaList);
+                callback(null, mangaList);
             });
             ['/series', '/anthologies', '/issues'].forEach((page) => {
                 let key = prms.defer();
@@ -71,7 +71,7 @@
                         language: 'en'
                     };
                 });
-                callback( chapterList );
+                callback( null, chapterList );
             });
         }
 
@@ -88,7 +88,7 @@
                 while((mtch = img_url_rgx.exec(img_data_list))){   //Get all matching string
                     img_url_list.push(this.url + mtch[1]);         //Keep only url group
                 }
-                callback( img_url_list );
+                callback( null, img_url_list );
             });
         }
     }

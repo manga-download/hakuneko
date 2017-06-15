@@ -90,7 +90,7 @@
                 let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {
                     return ( element.dataset.original );
                 });
-                callback( pageList );
+                callback( error, pageList );
             });
         }
     }
