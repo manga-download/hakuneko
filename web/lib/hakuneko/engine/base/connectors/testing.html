@@ -1,0 +1,49 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class Testing extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id       = 'testing';
+            super.label    = '- TESTING -';
+            super.isLocked = false;
+            // Private members for internal usage only (convenience)
+            this.url       = undefined;
+            this.referer   = undefined;
+            this.agent     = undefined;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            callback( null, [ { id: '00001', title: 'Manga 00001' } ] );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            callback( null, [ { id: 1, title: 'Chapter 001', language: 'en'} ] );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            callback( null, [ 'file://d:/Mabinogi%20Nao.png' ] );
+        }
+    }
+
+</script>
