@@ -51,7 +51,7 @@
                 return;
             }
             // get chapter list directly from the connector interface and cache them
-            this.connector._getChapterList( this, ( chapters ) => {
+            this.connector._getChapterList( this, ( error, chapters ) => {
                 // de-serialize chapters into objects
                 this.chapterCache = chapters.map( ( chapter ) => {
                     return new Chapter( this, chapter.id, chapter.title, chapter.language );
