@@ -50,13 +50,13 @@
             } else {
             // check if page list is cached
                 if( this.pageCache ) {
-                    callback( this.pageCache );
+                    callback( null, this.pageCache );
                     return;
                 }
                 // get page list directly from the connector interface and cache them
                 this.manga.connector._getPageList( this.manga, this, ( error, pages ) => {
                     this.pageCache = pages;
-                    callback( this.pageCache );
+                    callback( error, this.pageCache );
                 });
             }
         }

@@ -32,9 +32,9 @@
                 return;
             }
             this.isUpdating = true;
-            this._getMangaList( ( mangas ) => {
+            this._getMangaList( ( error, mangas ) => {
                 if( !mangas ) {
-                    callback( undefined );
+                    callback( null, undefined );
                     return;
                 }
                 mangas.sort( ( a, b ) => {
@@ -48,7 +48,7 @@
                         // update failed
                         console.error( error.message );
                         this.mangaCache = undefined;
-                        callback( undefined );
+                        callback( null, undefined );
                     } else {
                         // de-serialize manga list from local storage
                         this.getMangas( callback );
@@ -67,7 +67,7 @@
                 this.mangaCache.forEach( ( manga ) => {
                     manga.updateStatus();
                 });
-                callback( this.mangaCache );
+                callback( null, this.mangaCache );
                 return;
             }
             // get manga list from the local storage and cache them
@@ -83,7 +83,7 @@
                     console.error( error.message );
                     this.mangaCache = undefined;
                 }
-                callback( this.mangaCache );
+                callback( null, this.mangaCache );
             });
         }
 
