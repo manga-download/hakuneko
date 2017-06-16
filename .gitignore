@@ -1,4 +1,5 @@
 /cloud
 /daemon
 /electron/build
+/electron/redist/*.zip
 /web/build

@@ -19,25 +19,55 @@
                 manga: chapter.manga.title,
                 chapter: chapter.title
             };
-            this.status = DownloadStatus.queued;
-            this.progress = 0.0;
+            this.status = undefined;
+            this.progress = 0;
+            this.errors = [];
+        }
+
+        /**
+         * Apply a new status for the job and publish the corresponding event.
+         */
+        setStatus( status ) {
+            if( status !== this.status ) {
+                this.status = status;
+                this.chapter.setStatus( status );
+                this.chapter.manga.updateStatus();
+                document.dispatchEvent( new CustomEvent( EventListener.onDownloadStatusUpdated, { detail: this } ) );
+            }
+        }
+
+        /**
+         * Apply a new status for the job and publish the corresponding event.
+         */
+        setProgress( progress ) {
+            if( progress !== this.progress ) {
+                this.progress = progress;
+                document.dispatchEvent( new CustomEvent( EventListener.onDownloadStatusUpdated, { detail: this } ) );
+            }
         }
 
         /**
          *
          */
         downloadPages( directory, compress, callback ) {
-            this.status = DownloadStatus.downloading;
-            document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
-
+            this.setStatus( DownloadStatus.downloading );
             this.chapter.getPages( ( pages ) => {
                 let pageData = [];
                 // save pages when all promises fulfilled
                 let promise = new Promise( () => {
+/*
+if( Math.random() > 0.5 ) {
+    this.errors.push( new Error( 'Testing Error 1 ...' ) );
+    this.errors.push( new Error( 'Testing Error 2 ...' ) );
+}
+*/
                     Engine.Storage.saveChapterPages( this.chapter, pageData, () => {
-                        this.progress = 100;
-                        this.status = DownloadStatus.completed;
-                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+                        this.setProgress( 100 );
+                        if( this.errors && this.errors.length > 0 ) {
+                            this.setStatus( DownloadStatus.failed );
+                        } else {
+                            this.setStatus( DownloadStatus.completed );
+                        }
                         callback();
                     });
                 });
@@ -50,8 +80,7 @@
                             type:  headers['content-type'],
                             data: content
                         };
-                        this.progress += 100/pages.length;
-                        document.dispatchEvent( new CustomEvent( EventListener.onDownloadUpdated, { detail: this } ) );
+                        this.setProgress( this.progress + 100/pages.length );
                         promise.resolve( key );
                     });
                 });

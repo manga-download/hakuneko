@@ -102,10 +102,10 @@
              */
             static get properties() {
                 return {
-                    pages: {
-                        type: Array,
-                        value: [],
-                        observer: 'onPagesChanged'
+                    selectedChapter: {
+                        type: Object,
+                        value: undefined,
+                        observer: 'onSelectedChapterChanged'
                     },
                     selectedPage: {
                         type: Number,
@@ -121,15 +121,40 @@
              */
             ready() {
                 super.ready();
+                this.pages = undefined;
                 this.selectedPage = -1;
                 this.imageHeight = 100;
             }
 
             /**
-             * Observer will be executed, whenever the 'pages' are changed.
+             * Observer will be executed, whenever the 'selectedChapter' is changed.
              */
-            onPagesChanged( chapter ) {
-                //
+            onSelectedChapterChanged( chapter ) {
+                if( !chapter ) {
+                    this.set( 'pages', undefined );
+                    return;
+                }
+                // TODO: abort any pending page request (maybe store current request in global variable?)
+                chapter.getPages( ( pages ) => {
+                    if( chapter === this.selectedChapter ) {
+                        this.set( 'pages', pages );
+                    }
+                });
+                /*
+                if( this.selectedChapter === chapter ) {
+                    if( this.selectedChapter.pageProcess ) {
+                        return;
+                    }
+                } else {
+                    if( this.selectedChapter && this.selectedChapter.pageProcess ) {
+                        // abort pending page request of currently selected chapter
+                        this.$.status.removeFromQueue( this.selectedChapter.pageProcess );
+                        this.selectedChapter.pageProcess = false;
+return;
+                    }
+                }
+                ...
+                */
             }
 
             /**
@@ -156,7 +181,7 @@
             /**
              *
              */
-            getContainerColor(selectedPage) {
+            getContainerColor( selectedPage ) {
                 return ( this.pageViewMode( selectedPage ) ? '#202020' : '#a0a0a0' );
             }
 

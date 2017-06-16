@@ -1,3 +1,4 @@
+<link rel="import" href="enums.html">
 <link rel="import" href="chapter.html">
 
 <script>
@@ -20,14 +21,20 @@
         }
 
         /**
+         *
+         */
+        setStatus( status ) {
+            if( this.status !== status ) {
+                this.status = status;
+                document.dispatchEvent( new CustomEvent( EventListener.onMangaStatusChanged, { detail: this } ) );
+            }
+        }
+
+        /**
          * 
          */
-        updateStatus( callback ) {
-            // TODO: get status from download manager
-            this.status = Engine.Storage.getMangaStatus( this );
-            if( callback ) {
-                callback();
-            }
+        updateStatus() {
+            Engine.Storage.getMangaStatus( this, this.setStatus.bind( this ) );
         }
 
         /**

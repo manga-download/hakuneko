@@ -165,7 +165,9 @@
                 this.mangaList = undefined;
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors );
-            }
+                // register callbacks for published events
+                document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
+            }          
 
             /**
              * Event listener attached to the corresponding <select> element.
@@ -275,6 +277,27 @@
                     return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
                 };
             }
+
+            /**
+             * 
+             */
+            onMangaStatusChanged( e ) {
+                let manga = e.detail;
+                if( !this.mangaList
+                    || !this.selectedConnector
+                    || this.selectedConnector.id !== manga.connector.id
+                ) {
+                    return;
+                }
+                let index = this.mangaList.findIndex( ( item ) => {
+                    // mangas may be different objects (synchronizing connector list) but still be equivalent
+                    // => comparing ids instead of comparing the objects directly
+                    return ( item.id === manga.id );
+                });
+                if( index > -1 ) {
+                    this.notifyPath( 'mangaList.' + index + '.status' );
+                }
+            }  
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );
     </script>

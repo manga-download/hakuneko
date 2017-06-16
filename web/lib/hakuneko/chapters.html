@@ -54,16 +54,19 @@
                 cursor: pointer;
             }
             .buttonAvailable {
-                color: var(--chapter-available-button-color);
+                color: var(--chapter-button-available-color);
             }
             .buttonQueued {
-                color: var(--chapter-queued-button-color);
+                color: var(--chapter-button-queued-color);
             }
             .buttonDownloading {
-                color: var(--chapter-downloading-button-color);
+                color: var(--chapter-button-downloading-color);
             }
             .buttonCompleted {
-                color: var(--chapter-completed-button-color);
+                color: var(--chapter-button-completed-color);
+            }
+            .buttonFailed {
+                color: var(--chapter-button-failed-color);
             }
             .footer {
                 flex: 0;
@@ -100,7 +103,7 @@
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="processChapter" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
-                    <i class="fa fa-fw fa-picture-o button" on-click="showPages" title="Show preview of chapter's pages"></i>
+                    <i class="fa fa-fw fa-picture-o button" on-click="selectChapter" title="Show preview of chapter's pages"></i>
                     <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
                 </li>
             </template>
@@ -151,10 +154,8 @@
                 super.ready();
                 // list of all available chapters
                 this.chapterList = undefined;
-                // register callbacks for events published by download manager
-                document.addEventListener( EventListener.onDownloadAdded, this.onDownloadUpdated.bind( this ) );
-                document.addEventListener( EventListener.onDownloadUpdated, this.onDownloadUpdated.bind( this ) );
-                document.addEventListener( EventListener.onDownloadRemoved, this.onDownloadUpdated.bind( this ) );
+                // register callbacks for published events
+                document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
             }
 
             /**
@@ -176,7 +177,10 @@
                 }
                 let statusID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
                 manga.getChapters( ( chapters ) => {
-                    this.set( 'chapterList', chapters );
+                    // only apply chapters when selected manga has not changed
+                    if( manga === this.selectedManga ) {
+                        this.set( 'chapterList', chapters );
+                    }
                     this.$.status.removeFromQueue( statusID );
                 });
             }
@@ -203,6 +207,8 @@
                         return 'DOWNLOADING';
                     case DownloadStatus.completed:
                         return 'DOWNLOADED\nClick to delete and re-download chapter';
+                    case DownloadStatus.failed:
+                        return 'DOWNLOAD FAILED\nClick to delete and re-download chapter';
                     default:
                         return 'No tooltip available!';
                 }
@@ -223,6 +229,8 @@
                         return 'fa-cloud-download buttonDownloading';
                     case DownloadStatus.completed:
                         return 'fa-folder-open buttonCompleted';
+                    case DownloadStatus.failed:
+                        return 'fa-exclamation-triangle buttonFailed';
                     default:
                         return '';
                 }
@@ -242,8 +250,16 @@
                         break;
                     case DownloadStatus.completed:
                         if( confirm( 'Re-Download?' ) ) {
+                            Engine.DownloadManager.addDownload( chapter );
+                        }
+                        break;
+                    case DownloadStatus.failed:
+                        alert( 'No action available!' );
+                        /*
+                        if( confirm( 'Re-Download?' ) ) {
                             alert( 'TODO: ...' );
                         }
+                        */
                         break;
                     default:
                         alert( 'No action available!' );
@@ -252,56 +268,20 @@
             }
 
             /**
-             *
+             * Select a chapter => this will trigger the pages to be viewed.
              */
-            showPages( e ) {
+            selectChapter( e ) {
                 if( !e.model || !e.model.item ) {
                     return;
                 }
-                let chapter = e.model.item;
-                this.set( 'selectedChapter', chapter );
-                let statusID = this.$.status.addToQueue( 'Loading pages (chapter: "' + chapter.title + '")' );
-                chapter.getPages( ( pages ) => {
-                    if( chapter === this.selectedChapter ) {
-                        this.set( 'selectedChapter.pages', pages );
-                    }
-                    this.$.status.removeFromQueue( statusID );
-                });
-                /*
-                if( this.selectedChapter === chapter ) {
-                    if( this.selectedChapter.pageProcess ) {
-                        return;
-                    }
-                } else {
-                    if( this.selectedChapter && this.selectedChapter.pageProcess ) {
-                        // abort pending page request of currently selected chapter
-                        this.$.status.removeFromQueue( this.selectedChapter.pageProcess );
-                        this.selectedChapter.pageProcess = false;
-return;
-                    }
-                }
-                this.set( 'selectedChapter', chapter );
-                chapter.pageProcess = this.$.status.addToQueue( 'Loading pages (chapter: "' + chapter.title + '")' );
-                // could use selectedConnector.getChapterList(...), but call through Connector.getChapterList(...) will ...
-                Engine.Connectors.getPages( this.selectedConnector, this.selectedManga, chapter, ( newPages ) => {
-//console.log( 'Loading pages completed', chapter );
-                    this.$.status.removeFromQueue( chapter.pageProcess );
-                    chapter.pageProcess = false;
-                    if( chapter === this.selectedChapter ) {
-                        //this.selectedChapter = newPages;
-                        this.set( 'selectedChapter.pages', newPages );
-                    }
-                });
-                */
+                this.set( 'selectedChapter', e.model.item );
             }
 
             /**
              * Observer will be executed, whenever the 'selectedChapter' is changed.
              */
             onSelectedChapterChanged( chapter ) {
-                // TODO: abort any pending page request (maybe store current chapter in global variable?)
-                // previous selected chapter is no longer available here
-console.warn( 'TODO: determine how to abort any pending page request for selected chapter ...' );
+                //
             }
 
             /**
@@ -321,14 +301,23 @@ console.warn( 'TODO: determine how to abort any pending page request for selecte
             /**
              * 
              */
-            onDownloadUpdated( e ) {
-                let job = e.detail;
-                if( !this.chapterList || this.selectedConnector.id !== job.chapter.manga.connector.id || this.selectedManga.id !== job.chapter.manga.id ) {
+            onChapterStatusChanged( e ) {
+                let chapter = e.detail;
+                if( !this.chapterList
+                    || !this.selectedManga
+                    || !this.selectedConnector
+                    || this.selectedManga.id !== chapter.manga.id
+                    || this.selectedConnector.id !== chapter.manga.connector.id
+                ) {
                     return;
                 }
-                let index = this.chapterList.findIndex( ( item ) => { return ( item.id === job.chapter.id ); } );
+                let index = this.chapterList.findIndex( ( item ) => {
+                    // chapters may be different objects (reloading chapter list) but still be the equivalent
+                    // => comparing ids instead of comparing the objects directly
+                    return ( item.id === chapter.id );
+                });
                 if( index > -1 ) {
-                    this.set( 'chapterList.' + index + '.status', job.status );
+                    this.notifyPath( 'chapterList.' + index + '.status' );
                 }
             }
         }

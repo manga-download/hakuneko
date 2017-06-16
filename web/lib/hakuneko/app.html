@@ -62,7 +62,7 @@
                 overflow-x: hidden;
             }
         </style>
-        <div class$="control [[ getControlClass(selectedPage) ]]">
+        <div class$="control [[ getControlClass(page) ]]">
             <hakuneko-menu ></hakuneko-menu>
             <div class="mangas">
                 <hakuneko-mangas selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
@@ -70,7 +70,7 @@
             </div>
             <hakuneko-jobs></hakuneko-jobs>
         </div>
-        <hakuneko-pages pages="[[ chapter.pages ]]" selected-page="{{ selectedPage }}"></hakuneko-pages>
+        <hakuneko-pages selected-chapter="[[ chapter ]]" selected-page="{{ page }}"></hakuneko-pages>
     </template>
 
     <script>
