@@ -118,7 +118,7 @@
         _loadChapterPagesFolder( directory, callback ) {
             this.fs.readdir( directory, ( error, files ) => {
                 if( error ) {
-                    return callback( [error], undefined );
+                    return callback( error, undefined );
                 }
                 let pages = files.map( ( file ) => {
                     file = this.path.join( directory, file );
@@ -126,7 +126,7 @@
                     return encodeURI( 'file://' + file.replace(/\\/g, '/') );
                     //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
                 });
-                callback( [], pages );
+                callback( null, pages );
             });
         }
 
@@ -165,7 +165,7 @@
             });
             zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
                 this.fs.writeFile( archive, data, function( error ) {
-                    callback( [error] );
+                    callback( error );
                 });
             });
         }
@@ -175,15 +175,19 @@
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
         _saveChapterPagesFolder( directory, pageData, callback ) {
-            let errors = [];
+            let error = null;
             let promise = new Promise( () => {
-                callback( errors );
+                callback( error );
             });
             pageData.forEach( ( page ) => {
                 let key = promise.defer();
-                this.fs.writeFile( this.path.join( directory, page.name ), page.data, function( error ) {
-                    if( error ) {
-                        errors.push( error );
+                this.fs.writeFile( this.path.join( directory, page.name ), page.data, function( writingError ) {
+                    if( writingError ) {
+                        if( error ) {
+                            error = new Error( error.message + '\n' + writingError.message);
+                        } else {
+                            error = writingError;
+                        }
                     }
                     promise.resolve( key );
                 });
