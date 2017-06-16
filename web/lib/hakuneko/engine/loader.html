@@ -26,7 +26,7 @@
          */
         static get DownloadManager() {
             if( !this._instanceDownloadManager ) {
-                this._instanceDownloadManager = this.CreateInstance( DownloadManagerCloud, DownloadManagerElectron, undefined );
+                this._instanceDownloadManager = new DownloadManager();
             }
             return this._instanceDownloadManager;
         }
