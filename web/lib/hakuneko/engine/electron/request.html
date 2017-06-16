@@ -56,7 +56,7 @@
                         content = content.toString();
                     }
                 }
-                callback( content, response.statusCode, response.headers );
+                callback( null, content, response.statusCode, response.headers );
             };
             this.request.get( options, requestCallback.bind( this ) );
         }

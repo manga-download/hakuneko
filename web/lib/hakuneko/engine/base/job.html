@@ -81,7 +81,7 @@ if( Math.random() > 0.5 ) {
                 // get data for all pages of chapter
                 pages.forEach( ( page, index ) => {
                     let key = promise.defer();
-                    Engine.Request.get( page, undefined, undefined, ( content, status, headers ) => {
+                    Engine.Request.get( page, undefined, undefined, ( error, content, status, headers ) => {
                         pageData[index] = {
                             type: headers['content-type'],
                             data: content

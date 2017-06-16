@@ -33,7 +33,7 @@
             });
             ['/series', '/anthologies', '/issues'].forEach((page) => {
                 let key = prms.defer();
-                Engine.Request.get( this.url + page, undefined, undefined, ( content, status ) => {
+                Engine.Request.get( this.url + page, undefined, undefined, ( error, content, status ) => {
                     // prevent images and iframes from loading
                     content = content.replace( /<img[^<]*?>/g, '<img>');
                     content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -57,7 +57,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
+            Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -79,7 +79,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( content, status ) => {
+            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
                 let img_data_list = new RegExp("var pages =.*").exec(content)[0];    //Get raw data
                 content = '';
                 let img_url_rgx = /"image":"([^"]+)",/g
