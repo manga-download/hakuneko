@@ -51,7 +51,7 @@
          */
         downloadPages( directory, compress, callback ) {
             this.setStatus( DownloadStatus.downloading );
-            this.chapter.getPages( ( pages ) => {
+            this.chapter.getPages( ( pageErrors, pages ) => {
                 let pageData = [];
                 // save pages when all promises fulfilled
                 let promise = new Promise( () => {
@@ -61,7 +61,7 @@ if( Math.random() > 0.5 ) {
     this.errors.push( new Error( 'Testing Error 2 ...' ) );
 }
 */
-                    Engine.Storage.saveChapterPages( this.chapter, pageData, () => {
+                    Engine.Storage.saveChapterPages( this.chapter, pageData, ( storageErrors ) => {
                         this.setProgress( 100 );
                         if( this.errors && this.errors.length > 0 ) {
                             this.setStatus( DownloadStatus.failed );
