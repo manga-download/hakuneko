@@ -40,6 +40,7 @@
                     let dom = document.createElement( 'html' );
                     // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                     dom.innerHTML = content;
+                    content = '';
                     mangaList = mangaList.concat([...dom.querySelectorAll( '.tag-list dd a' )].map(  ( element ) => {
                         return {
                             // as mentioned before, the eventually added host prefix must be removed
