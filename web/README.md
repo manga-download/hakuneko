@@ -14,6 +14,8 @@ Installation process:
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 # install nodejs and npm
 sudo apt-get install -y nodejs
+# install git (if not yet installed ...)
+sudo apt-get install -y git
 # install polymer-cli package
 sudo npm install -g polymer-cli
 # optional: create symbolic link if polymer command did not work
