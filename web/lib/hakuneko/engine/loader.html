@@ -2,6 +2,7 @@
 <link rel="import" href="daemon.html">
 <link rel="import" href="electron.html">
 <link rel="import" href="base/connectors.html">
+<link rel="import" href="base/bookmarks.html">
 
 <script>
 
@@ -29,6 +30,16 @@
                 this._instanceDownloadManager = this.CreateInstance( DownloadManagerCloud, DownloadManagerElectron, undefined );
             }
             return this._instanceDownloadManager;
+        }
+
+        /**
+         *
+         */
+        static get BookmarkManager() {
+            if( !this._instanceBookmarkManager ) {
+                this._instanceBookmarkManager = new BookmarkManager();
+            }
+            return this._instanceBookmarkManager;
         }
 
         /**
