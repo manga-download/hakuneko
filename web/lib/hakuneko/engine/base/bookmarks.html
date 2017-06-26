@@ -1,3 +1,5 @@
+<link rel="import" href="bookmark.html">
+
 <script>
 
     /**
@@ -5,17 +7,36 @@
      */
     class BookmarkManager {
 
-        /**
-         *
-         */
         constructor() {
             //this.x = undefined;
         }
 
-        /**
-         * 
-         */
-        f() {
+        load() {
+            let manga = {
+                id: 1,
+                title: 'xxx',
+                connector: {
+                    id: 1,
+                    label: 'KissManga'
+                }
+            };
+            let bookmarks = [];
+            bookmarks.push( new Bookmark( manga ) );
+            manga.id++;
+            manga.connector.label = 'Batoto';
+            bookmarks.push( new Bookmark( manga ) );
+            return bookmarks;
+        }
+
+        save() {
+            //
+        }
+
+        add() {
+            //
+        }
+
+        delete() {
             //
         }
     }

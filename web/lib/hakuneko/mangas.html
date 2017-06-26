@@ -2,6 +2,7 @@
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="engine/base/enums.html">
 <link rel="import" href="engine/loader.html">
+<link rel="import" href="bookmarks.html">
 <link rel="import" href="status.html">
 <link rel="import" href="theme.html">
 
@@ -56,11 +57,6 @@
                 color: var(--manga-refresh-button-color);
                 text-shadow: var(--manga-refresh-button-shadow);
             }
-            .bookmark {
-                cursor: pointer;
-                color: var(--manga-bookmark-button-color);
-                text-shadow: var(--manga-bookmark-button-shadow);
-            }
             .disabled {
                 color: var(--manga-button-disabled-color);
                 cursor: progress !important; /* wait */
@@ -97,7 +93,7 @@
                     <input type="text" value="{{ searchPattern::input }}"/>
                 </td>
                 <td>
-                    <i class$="fa fa-fw [[ getBookmarkClass(selectedConnector,selectedManga) ]] bookmark" title="Add/Remove Bookmark:&#10;&#10;&lt;[[ selectedConnector.label ]]&gt;&#10;[[ selectedManga.title ]]"></i>
+                    <hakuneko-bookmarks selected-connector="{{ selectedConnector }}" selected-manga="{{ selectedManga }}"></hakuneko-bookmarks>
                 </td>
             </tr>
         </table>
@@ -253,17 +249,6 @@
              */
             getRefreshClass( isUpdating ) {
                 return ( isUpdating ? 'fa-pulse disabled' : '' );
-            }
-
-            /**
-             *
-             */
-            getBookmarkClass( connector, manga ) {
-                if( !connector || !manga ) {
-                    return '';
-                }
-                //return 'fa-star-o';
-                return 'fa-star';
             }
 
             /**
