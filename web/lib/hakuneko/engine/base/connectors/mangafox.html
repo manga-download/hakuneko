@@ -29,7 +29,7 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.get( this.url + '/manga', this.referer, this.agent, ( content, status ) => {
+            Engine.Request.get( this.url + '/manga', this.referer, this.agent, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -52,9 +52,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( content, status ) => {
+            Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
                 let sid = content.match( /sid\s*=\s*([0-9]+)/ )[1];
-                Engine.Request.get( this.url + '/media/js/list.' + sid + '.js', this.referer, this.agent, ( script, status ) => {
+                Engine.Request.get( this.url + '/media/js/list.' + sid + '.js', this.referer, this.agent, ( errorScript, script, status ) => {
                     let chapterList = [];
                     script.match( /\[\s*"(.+?"\s*,\s*".+?)"\s*\]/g ).forEach( function( match ) {
                         let chapter = JSON.parse( match );
@@ -73,7 +73,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + manga.id + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), this.referer, this.agent, ( content, status ) => {
+            Engine.Request.get( ( this.url + manga.id + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), this.referer, this.agent, ( error, content, status ) => {
                 // FIXME: very dangerous, might end up in endless recursion !!!
                 if( status === 503 ) {
                     setTimeout( () => {
@@ -90,7 +90,7 @@
                 let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {
                     return ( element.dataset.original );
                 });
-                callback( pageList );
+                callback( error, pageList );
             });
         }
     }

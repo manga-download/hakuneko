@@ -195,7 +195,7 @@
                     this.$.connectorSelection.value = connector.id;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
-                connector.getMangas( ( mangas ) => {
+                connector.getMangas( ( error, mangas ) => {
                     // check if executing connector is still the selected connector (visible)
                     if( connector === this.selectedConnector ) {
                         this.set( 'mangaList', mangas );
@@ -213,7 +213,7 @@
                     return;
                 }
                 let statusID = this.$.status.addToQueue( 'Updating manga list (' + connector.label + ')' );
-                connector.updateMangas( ( mangas ) => {
+                connector.updateMangas( ( error, mangas ) => {
                     // check if executing connector is still the selected connector (visible)
                     if( connector === this.selectedConnector ) {
                         this.set( 'mangaList', mangas );

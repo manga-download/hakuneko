@@ -38,7 +38,6 @@
                 // no need to process cookies, they are handled automatically by JAR
 
                 if( error || !response || !content ) {
-                    console.error( 'Get request failed', error.code );
                     response = response || {};
                     content = content || '';
                     if( error.code === 'ETIMEDOUT' ) {
@@ -57,7 +56,7 @@
                         content = content.toString();
                     }
                 }
-                callback( content, response.statusCode, response.headers );
+                callback( null, content, response.statusCode, response.headers );
             };
             this.request.get( options, requestCallback.bind( this ) );
         }

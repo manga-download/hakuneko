@@ -176,7 +176,7 @@
                     return;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
-                manga.getChapters( ( chapters ) => {
+                manga.getChapters( ( error, chapters ) => {
                     // only apply chapters when selected manga has not changed
                     if( manga === this.selectedManga ) {
                         this.set( 'chapterList', chapters );

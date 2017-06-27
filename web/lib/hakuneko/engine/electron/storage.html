@@ -62,48 +62,44 @@
         }
 
         /**
-         * 
+         * ...
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured)
+         * and a reference to the page list (undefined on error).
          */
         loadChapterPages( chapter, callback ) {
             let path = this._chapterOutputPath( chapter );
             if( Engine.Settings.compressChapters.value ) {
-                this._loadChapterPagesCBZ( path, ( error, pages ) => {
-                    if( error ) {
-                        console.error( error );
-                        callback( undefined );
-                    } else {
-                        callback( pages );
-                    }
-                });
+                this._loadChapterPagesCBZ( path, callback );
             } else {
-                this._loadChapterPagesFolder( path, ( error, pages ) => {
-                    if( error ) {
-                        console.error( error );
-                        callback( undefined );
-                    } else {
-                        callback( pages );
-                    }
-                });
+                this._loadChapterPagesFolder( path, callback );
             }
         }
 
         /**
          * Read image data from CBZ archive.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured)
+         * and a reference to the page list (undefined on error).
          */
         _loadChapterPagesCBZ( archive, callback ) {
-            this.fs.readFile( archive, ( function ( error, data ) {
+            this.fs.readFile( archive, ( function ( readingError, data ) {
+                if( readingError ) {
+                    errors.push( readingError );
+                }
                 let zip = new this.jszip();
                 zip.loadAsync( data, {} ).then( ( unzip ) => {
                     let pages = [];
                     let timestamp = Date.now();
                     let promise = new Promise( () => {
-                        callback( null, pages.sort() );
+                        callback( null, ( errors.length > 0 ? pages.sort() : undefined ) );
                     });
                     unzip.forEach( ( name, entry ) => {
                         let key = promise.defer();
                         name = this.path.join( this.temp, name );
                         entry.async( 'uint8array' ).then( ( data ) => {
-                            this.fs.writeFile( name, data, function( error ) {
+                            this.fs.writeFile( name, data, function( writingError ) {
+                                if( writingError ) {
+                                    errors.push( writingError );
+                                }
                                 // attach timestamp to force reload of already existing, but overwritten temp files
                                 pages.push( encodeURI( 'file://' + name.replace(/\\/g, '/') + '?ts=' + timestamp ) );
                                 promise.resolve( key );
@@ -116,6 +112,8 @@
 
         /**
          * Read image data from directory.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured)
+         * and a reference to the page list (undefined on error).
          */
         _loadChapterPagesFolder( directory, callback ) {
             this.fs.readdir( directory, ( error, files ) => {
@@ -136,6 +134,7 @@
          * Save the pages of the given chapter.
          * The given content is a list of raw data for each corresponding page in the chapter.
          * The storage decides depending on the engine and available settings where the pages will be stored!
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
         saveChapterPages( chapter, content, callback ) {
             let pageData = content.map( ( page, index ) => {
@@ -157,6 +156,7 @@
 
         /**
          * Create and save pages to the given archive file.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
         _saveChapterPagesCBZ( archive, pageData, callback ) {
             let zip = new this.jszip();
@@ -165,19 +165,30 @@
             });
             zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
                 this.fs.writeFile( archive, data, function( error ) {
-                    callback();
+                    callback( error );
                 });
             });
         }
 
         /**
          * Save pages to the given directory.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
         _saveChapterPagesFolder( directory, pageData, callback ) {
-            let promise = new Promise( callback );
+            let error = null;
+            let promise = new Promise( () => {
+                callback( error );
+            });
             pageData.forEach( ( page ) => {
                 let key = promise.defer();
-                this.fs.writeFile( this.path.join( directory, page.name ), page.data, function( error ) {
+                this.fs.writeFile( this.path.join( directory, page.name ), page.data, function( writingError ) {
+                    if( writingError ) {
+                        if( error ) {
+                            error = new Error( error.message + '\n' + writingError.message);
+                        } else {
+                            error = writingError;
+                        }
+                    }
                     promise.resolve( key );
                 });
             });

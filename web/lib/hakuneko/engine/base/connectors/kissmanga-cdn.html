@@ -28,8 +28,8 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.get( this.url + '/mangas', this.referer, this.agent, ( content, status ) => {
-                callback( (content ? JSON.parse( content ) : undefined ) );
+            Engine.Request.get( this.url + '/mangas', this.referer, this.agent, ( error, content, status ) => {
+                callback( null, (content ? JSON.parse( content ) : undefined ) );
             });
         }
 
@@ -37,8 +37,8 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters', this.referer, this.agent, ( content, status ) => {
-                callback( (content ? JSON.parse( content ).reverse() : undefined ) );
+            Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters', this.referer, this.agent, ( error, content, status ) => {
+                callback( null, (content ? JSON.parse( content ).reverse() : undefined ) );
             });
         }
 
@@ -46,8 +46,8 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters/' + chapter.id, this.referer, this.agent, ( content, status ) => {
-                callback( (content ? JSON.parse( content ).pages : undefined ) );
+            Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters/' + chapter.id, this.referer, this.agent, ( error, content, status ) => {
+                callback( null, (content ? JSON.parse( content ).pages : undefined ) );
             });
         }
     }

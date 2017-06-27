@@ -29,11 +29,11 @@
         _getMangaList( callback ) {
             let mangaList = [];
             let prms = new Promise(() => {
-                callback(mangaList);
+                callback(null, mangaList);
             });
             ['/series', '/anthologies', '/issues'].forEach((page) => {
                 let key = prms.defer();
-                Engine.Request.get( this.url + page, undefined, undefined, ( content, status ) => {
+                Engine.Request.get( this.url + page, undefined, undefined, ( error, content, status ) => {
                     // prevent images and iframes from loading
                     content = content.replace( /<img[^<]*?>/g, '<img>');
                     content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -58,7 +58,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
+            Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -72,7 +72,7 @@
                         language: 'en'
                     };
                 });
-                callback( chapterList );
+                callback( null, chapterList );
             });
         }
 
@@ -80,7 +80,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( content, status ) => {
+            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
                 let img_data_list = new RegExp("var pages =.*").exec(content)[0];    //Get raw data
                 content = '';
                 let img_url_rgx = /"image":"([^"]+)",/g
@@ -89,7 +89,7 @@
                 while((mtch = img_url_rgx.exec(img_data_list))){   //Get all matching string
                     img_url_list.push(this.url + mtch[1]);         //Keep only url group
                 }
-                callback( img_url_list );
+                callback( null, img_url_list );
             });
         }
     }

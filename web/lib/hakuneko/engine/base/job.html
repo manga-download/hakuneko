@@ -51,7 +51,10 @@
          */
         downloadPages( directory, compress, callback ) {
             this.setStatus( DownloadStatus.downloading );
-            this.chapter.getPages( ( pages ) => {
+            this.chapter.getPages( ( pageError, pages ) => {
+                if( pageError ) {
+                    this.errors.push( pageError );
+                }
                 let pageData = [];
                 // save pages when all promises fulfilled
                 let promise = new Promise( () => {
@@ -61,7 +64,10 @@ if( Math.random() > 0.5 ) {
     this.errors.push( new Error( 'Testing Error 2 ...' ) );
 }
 */
-                    Engine.Storage.saveChapterPages( this.chapter, pageData, () => {
+                    Engine.Storage.saveChapterPages( this.chapter, pageData, ( storageError ) => {
+                        if( storageError ) {
+                            this.errors.push( storageError );
+                        }
                         this.setProgress( 100 );
                         if( this.errors && this.errors.length > 0 ) {
                             this.setStatus( DownloadStatus.failed );
@@ -75,9 +81,9 @@ if( Math.random() > 0.5 ) {
                 // get data for all pages of chapter
                 pages.forEach( ( page, index ) => {
                     let key = promise.defer();
-                    Engine.Request.get( page, undefined, undefined, ( content, status, headers ) => {
+                    Engine.Request.get( page, undefined, undefined, ( error, content, status, headers ) => {
                         pageData[index] = {
-                            type:  headers['content-type'],
+                            type: headers['content-type'],
                             data: content
                         };
                         this.setProgress( this.progress + 100/pages.length );
