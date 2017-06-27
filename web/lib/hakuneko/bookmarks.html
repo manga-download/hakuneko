@@ -7,8 +7,6 @@
     <template>
         <style include="theme"></style>
         <style>
-            :host {
-            }
             .show {
                 display: block;
             }
@@ -18,49 +16,60 @@
             .bookmark {
                 cursor: pointer;
                 color: var(--manga-bookmark-button-color);
-                text-shadow: var(--manga-bookmark-button-shadow);
+                text-shadow: var(--bookmark-button-shadow);
+            }
+            .bookmarkInactive {
+                color: var(--bookmark-button-inactive-color);
+            }
+            .bookmarkActive {
+                color: var(--bookmark-button-active-color);
+            }
+            .bookmarkExist {
+                color: var(--bookmark-button-exist-color);
             }
             #popup {
                 position: absolute;
+                min-width: 8em;
                 cursor: default;
                 text-shadow: initial;
                 color: initial;
-                border: 1px solid black;
-                background-color: aliceblue;
+                border: var(--bookmark-list-border);
+                background-color: var(--bookmark-list-background-color);
                 padding: 0.25em;
             }
             .manga {
                 font-weight: bold;
                 text-align: left;
+                color: var(--bookmark-list-manga-color);
+                max-width: 16em;
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
             }
             .connector {
-                color: #808080;
-                text-align: right;
+                padding-left: 1em;
+                color: var(--bookmark-list-connector-color);
+                text-align: left;
+                font-style: italic;
             }
             .button {
                 cursor: pointer;
             }
+            .delete {
+                 color: var(--bookmark-list-delete-color);
+            }
         </style>
         <div>
-            <i class="fa fa-fw fa-star bookmark" on-mouseover="showBookmarks" on-mouseout="hideBookmarks">
-            <table id="popup" class$="[[ getPopupClass(showPopup) ]]">
-                <tr class="[[ getNewBookmarkClass(selectedConnector,selectedManga) ]]">
-                    <td class="manga">[[ selectedManga.title ]]</td>
-                    <td class="connector">[[ selectedConnector.label ]]</td>
-                    <td><i class="fa fa-fw fa-plus-circle button" title="Add select manga to bookmarks" on-click="addBookmark"></i></td>
-                </tr>
-                <tr>
-                    <td colspan="3"><hr></td>
-                </tr>
+            <i class$="fa fa-fw [[ getBookmarkClass(selectedConnector,selectedManga,bookmarkList.length) ]] bookmark" title="Click to add the selected manga to bookmarks" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" on-click="addBookmark"></i>
+            <table id="popup" class$="[[ getPopupClass(showPopup) ]]" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" >
                 <template is="dom-repeat" items="[[ bookmarkList ]]">
                     <tr>
-                        <td class="manga"><span class="button">[[ item.title.manga ]]</span></td>
+                        <td class="manga"><span class="button" title$="Click to open:&#10;[[ item.title.manga ]]">[[ item.title.manga ]]</span></td>
                         <td class="connector">[[ item.title.connector ]]</td>
-                        <td><i class="fa fa-fw fa-minus-circle button" title="Remove manga from bookmarks" on-click="deleteBookmark"></i></td>
+                        <td><i class="fa fa-fw fa-minus-circle button delete" title="Click to remove this manga from bookmarks" on-click="deleteBookmark"></i></td>
                     </tr>
                 </template>
             </table>
-            </i>
         </div>
     </template>
 
@@ -81,13 +90,11 @@
                 return {
                     selectedConnector: {
                         type: Object,
-                        notify: true,
-                        value: undefined
+                        notify: true
                     },
                     selectedManga: {
                         type: Object,
-                        notify: true,
-                        value: undefined
+                        notify: true
                     }
                 };
             }
@@ -98,18 +105,23 @@
             ready() {
                 super.ready();
                 this.showPopup = false;
-                this.bookmarkList = Engine.BookmarkManager.load();
-                console.log( this.bookmarks );
+                this.bookmarkList = Engine.BookmarkManager.bookmarks;
             }
 
             /**
              *
              */
-            getNewBookmarkClass( connector, manga ) {
-                if( !connector || !manga ) {
-                    return 'hide';
+            getBookmarkClass( connector, manga, trigger ) {
+                if( connector && manga ) {
+                    let index = this.bookmarkList.findIndex( ( bookmark ) => {
+                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === connector.id );
+                    });
+                    if( index > -1 ) {
+                        return 'fa-star bookmarkExist';
+                    }
+                    return 'fa-star bookmarkActive';
                 }
-                return 'show';
+                return 'fa-star bookmarkInactive';
             }
 
             /**
@@ -137,14 +149,18 @@
              *
              */
             addBookmark( e ) {
-                console.log( 'add bookmark', this.selectedManga );
+                Engine.BookmarkManager.addBookmark( this.selectedManga );
+                // add bookmark to internal list or reload list?
+                this.notifyPath( 'bookmarkList.length' );
             }
 
             /**
              *
              */
             deleteBookmark( e ) {
-                console.log( 'delete bookmark', e.model.item.id, e.model.item.key );
+                Engine.BookmarkManager.deleteBookmark( e.model.item.id );
+                // remove bookmark from internal list or reload list?
+                this.notifyPath( 'bookmarkList.length' );
             }
         }
         window.customElements.define(HakunekoBookmarks.is, HakunekoBookmarks);

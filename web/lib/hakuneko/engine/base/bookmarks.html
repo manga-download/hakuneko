@@ -9,35 +9,67 @@
 
         constructor() {
             //this.x = undefined;
+            this.bookmarks = [];
         }
 
         load() {
             let manga = {
-                id: 1,
-                title: 'xxx',
+                id: 0,
+                title: '',
                 connector: {
-                    id: 1,
-                    label: 'KissManga'
+                    id: 0,
+                    label: ''
                 }
             };
-            let bookmarks = [];
-            bookmarks.push( new Bookmark( manga ) );
+
+            manga.id++;
+            manga.connector.label = 'KissManga';
+            manga.title = 'One Piece';
+            this.bookmarks.push( new Bookmark( manga ) );
+
             manga.id++;
             manga.connector.label = 'Batoto';
-            bookmarks.push( new Bookmark( manga ) );
-            return bookmarks;
+            manga.title = 'Naruto';
+            this.bookmarks.push( new Bookmark( manga ) );
+
+            manga.id++;
+            manga.connector.label = 'MangaFox';
+            manga.title = 'Fairy Tail';
+            this.bookmarks.push( new Bookmark( manga ) );
+            /*
+            this.bookmarks.sort( ( a, b ) => {
+                return ( a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 );
+            });
+            */
         }
 
         save() {
             //
         }
 
-        add() {
-            //
+        addBookmark( manga ) {
+            if( !manga || ! manga.connector ) {
+                return false;
+            }
+            let index = this.bookmarks.findIndex( ( bookmark ) => {
+                return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+            });
+            if( index < 0 ) {
+                this.bookmarks.push( new Bookmark( manga ) );
+                return true;
+            }
+            return false;
         }
 
-        delete() {
-            //
+        deleteBookmark( bookmarkID ) {
+            let index = this.bookmarks.findIndex( ( bookmark ) => {
+                return ( bookmark.id === bookmarkID );
+            });
+            if( index > -1 ) {
+                this.bookmarks.splice( index, 1 );
+                return true;
+            }
+            return false;
         }
     }
     BookmarkManager; // reference the class to prevent removal of the class through js-minify
