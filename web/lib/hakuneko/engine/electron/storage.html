@@ -81,6 +81,7 @@
          * and a reference to the page list (undefined on error).
          */
         _loadChapterPagesCBZ( archive, callback ) {
+            let errors = [];
             this.fs.readFile( archive, ( function ( readingError, data ) {
                 if( readingError ) {
                     errors.push( readingError );
