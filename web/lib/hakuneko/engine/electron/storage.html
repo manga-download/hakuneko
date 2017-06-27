@@ -91,7 +91,7 @@
                     let pages = [];
                     let timestamp = Date.now();
                     let promise = new Promise( () => {
-                        callback( null, ( errors.length > 0 ? pages.sort() : undefined ) );
+                        callback( null, ( errors.length > 0 ? undefined : pages.sort() ) );
                     });
                     unzip.forEach( ( name, entry ) => {
                         let key = promise.defer();
