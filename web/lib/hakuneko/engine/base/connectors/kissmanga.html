@@ -73,7 +73,7 @@
         _getMangaList( callback, mangaList, pageFrom, pageTo ) {
             // connector initialization failed or not yet finished
             if( !this.initialized ) {
-                callback( null, undefined );
+                callback( null, [] );
                 return;
             }
             // set default values for arguments
@@ -129,7 +129,7 @@
         _getChapterList( manga, callback ) {
             // connector initialization failed or not yet finished
             if( !this.initialized ) {
-                callback( null, undefined );
+                callback( null, [] );
                 return;
             }
             Engine.Request.cfGet( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
@@ -173,7 +173,7 @@
         _getPageList( manga, chapter, callback ) {
             if( this.isLocked ) {
                 console.warn( '[WARN: KissManga, too many requests]' );
-                callback( null, undefined );
+                callback( null, [] );
                 return;
             }
             let key = this.lock();

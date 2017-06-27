@@ -42,7 +42,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( mangaList );
+                callback( null, mangaList );
             });
         }
 
@@ -64,7 +64,7 @@
                         language: 'en'
                     };
                 });
-                callback( chapterList );
+                callback( null, chapterList );
             });
         }
 
@@ -85,7 +85,7 @@
                 
                 let imageList = [];
                 let prms = new Promise(() => {
-                    callback(imageList);
+                    callback(null, imageList);
                 });
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();

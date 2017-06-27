@@ -41,7 +41,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( mangaList );
+                callback( null, mangaList );
             });
         }
 
@@ -64,7 +64,7 @@
                         language: 'fr'
                     };
                 });
-                callback( chapterList );
+                callback( null, chapterList );
             });
         }
 
@@ -89,7 +89,7 @@
                 imageList = imageList.map( (element) => {
                     return baseUrl + element;
                 });
-                callback( imageList );
+                callback( null, imageList );
             });
         }
     }

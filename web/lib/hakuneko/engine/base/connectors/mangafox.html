@@ -44,7 +44,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( mangaList );
+                callback( null, mangaList );
             });
         }
 
@@ -64,7 +64,7 @@
                             language: 'en'
                         });
                     });
-                    callback( chapterList );
+                    callback( null, chapterList );
                 });
             });
         }
