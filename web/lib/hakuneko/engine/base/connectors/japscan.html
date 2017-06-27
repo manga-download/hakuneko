@@ -25,7 +25,7 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.get( this.url + '/mangas/', undefined, undefined, ( content, status ) => {
+            Engine.Request.get( this.url + '/mangas/', undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -49,7 +49,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, undefined, undefined, ( content, status ) => {
+            Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -72,7 +72,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( content, status ) => {
+            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 //content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
