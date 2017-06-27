@@ -72,34 +72,13 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+            Engine.Request.get( ( this.url + chapter.id ).replace( 'www.mangahere.co/manga', 'm.mangahere.co/roll_manga' ), undefined, undefined, ( error, content, status ) => {
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
-                content = '';
-                let pageList = [...dom.querySelectorAll( 'section.readpage_top div.go_page.clearfix span.right select.wid60 option' )].map(  ( element ) => {    //All pages of chapter
-                    return element.value;
+                let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {
+                    return ( element.dataset.original );
                 });
-                
-                let imageList = [];
-                let prms = new Promise(() => {
-                    callback(null, imageList);
-                });
-                pageList.forEach((page, i) => {    //Get image on each page
-                    let key = prms.defer();
-                    Engine.Request.get( page, undefined, undefined, ( error, content, status ) => {
-                        // prevent images and iframes from loading
-                        content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                        content = content.replace( 'onload="loadImg(this)"', '');
-                        let dom = document.createElement( 'html' );
-                        dom.innerHTML = content;
-                        content = '';
-                        imageList[i] = dom.querySelector( '#image' ).src;    //Conserve order even using async processing
-                        prms.resolve( key );
-                    });
-                });
+                callback( error, pageList );
             });
         }
     }
