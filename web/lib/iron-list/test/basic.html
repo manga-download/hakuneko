@@ -1,0 +1,307 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-list test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="fixtures/helpers.html">
+  <link rel="import" href="fixtures/x-list.html">
+</head>
+<body>
+  <!-- Issue: web-component-tester/issues/505 -->
+  <script>void(0)</script>
+
+  <test-fixture id="trivialList">
+    <template>
+      <x-list></x-list>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="trivialScrollingRegion">
+    <template>
+      <div style="overflow-y: auto; width: 300px; background: blue; height: 300px;">
+        <x-list></x-list>
+      </div>
+    </template>
+  </test-fixture>
+
+
+<script>
+
+
+
+  suite('basic features', function() {
+    var list, container;
+
+    setup(function() {
+      container = fixture('trivialList');
+      list = container.list;
+    });
+
+    test('defaults', function() {
+      assert.equal(list.items, null, 'items');
+      assert.equal(list.as, 'item', 'as');
+      assert.equal(list.indexAs, 'index', 'indexAs');
+      assert.equal(list.selectedAs, 'selected', 'selectedAs');
+      assert.equal(list.scrollTarget, list, 'scrollTarget');
+      assert.equal(list.scrollOffset, 0, 'scrollOffset');
+      assert.isFalse(list.selectionEnabled, 'selectionEnabled');
+      assert.isFalse(list.multiSelection, 'multiSelection');
+    });
+
+    test('check items length', function() {
+      container.data = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(list.items.length, container.data.length);
+    });
+
+    test('check physical item heights', function() {
+      container.data = buildDataSet(100);
+      PolymerFlush();
+      var rowHeight = list._physicalItems[0].offsetHeight;
+      list._physicalItems.forEach(function(item) {
+        assert.equal(item.offsetHeight, rowHeight);
+      });
+    });
+
+    test('check physical item size', function() {
+      var setSize = 10;
+      container.data = buildDataSet(setSize);
+      PolymerFlush();
+      assert.equal(list.items.length, setSize);
+    });
+
+    test('first visible index', function() {
+      container.data = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(list.firstVisibleIndex, 0);
+      list.scroll(0, container.itemHeight * 10);
+      list.fire('scroll');
+      assert.equal(list.firstVisibleIndex, 10);
+      list.scroll(0, container.itemHeight * 50);
+      list.fire('scroll');
+      assert.equal(list.firstVisibleIndex, 50);
+      list.scrollToIndex(60);
+      PolymerFlush();
+      assert.equal(list.firstVisibleIndex, 60);
+      list.scrollToIndex(0);
+      PolymerFlush();
+      assert.equal(list.firstVisibleIndex, 0);
+    });
+
+    test('last visible index', function() {
+      container.data = buildDataSet(1);
+      container.itemHeight = 1000;
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 0);
+      container.data = buildDataSet(2);
+      container.itemHeight = 50;
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 1);
+      container.data = buildDataSet(10);
+      PolymerFlush();
+      list.scrollToIndex(8);
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 9);
+      container.itemHeight = 50;
+      container.data = buildDataSet(100);
+      PolymerFlush();
+      list.scroll(0, 100);
+      list.fire('scroll');
+      assert.equal(list.lastVisibleIndex,
+          ((list._scrollTop + container.listHeight) / container.itemHeight) - 1);
+    });
+
+    test('scroll to index', function() {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+
+      list.scrollToIndex(30);
+      assert.equal(list.firstVisibleIndex, 30);
+      list.scrollToIndex(0);
+      assert.equal(list.firstVisibleIndex, 0);
+      PolymerFlush();
+
+      var rowHeight = getFirstItemFromList(list).offsetHeight;
+      var viewportHeight = list.offsetHeight;
+      var itemsPerViewport = Math.floor(viewportHeight/rowHeight);
+
+      list.scrollToIndex(99);
+      assert.equal(list.firstVisibleIndex, list.items.length - itemsPerViewport);
+      // Make the height of the viewport same as the height of the row
+      // and scroll to the last item
+      list.style.height = list._physicalItems[0].offsetHeight + 'px';
+      list.fire('iron-resize');
+      PolymerFlush();
+      list.scrollToIndex(99);
+      assert.equal(list.firstVisibleIndex, 99);
+    });
+
+    test('scroll to index while not attached', function() {
+      var tmpList = document.createElement('iron-list');
+      Polymer.dom(tmpList).appendChild(document.createElement('template'));
+      tmpList.items = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(tmpList._virtualStart, 0);
+      tmpList.scrollToIndex(50);
+      PolymerFlush();
+      assert.equal(tmpList._virtualStart, 0);
+    });
+
+    test('scroll to item', function() {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      list.scrollToItem(list.items[30]);
+      assert.equal(list.firstVisibleIndex, 30);
+
+      list.scrollToItem(list.items[0]);
+      assert.equal(list.firstVisibleIndex, 0);
+
+      var rowHeight = getFirstItemFromList(list).offsetHeight;
+      var viewportHeight = list.offsetHeight;
+      var itemsPerViewport = Math.floor(viewportHeight/rowHeight);
+
+      list.scrollToItem(list.items[99]);
+      assert.equal(list.firstVisibleIndex, list.items.length - itemsPerViewport);
+      // make the height of the viewport same as the height of the row
+      // and scroll to the last item
+      list.style.height = list._physicalItems[0].offsetHeight + 'px';
+      list.fire('iron-resize');
+      PolymerFlush();
+      list.scrollToItem(list.items[99]);
+      assert.equal(list.firstVisibleIndex, 99);
+    });
+
+    test('scroll to top', function(done) {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      list.scrollToIndex(99);
+      PolymerFlush();
+      list.scroll(0, 0);
+      setTimeout(function() {
+        assert.equal(list._scrollTop, 0, 'scrollTop = 0');
+        done();
+      }, 100);
+    });
+
+    test('scroll to a given scrollTop', function(done) {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      list.scrollToIndex(99);
+      PolymerFlush();
+      list.scroll(0, 500);
+      setTimeout(function() {
+        assert.equal(list._scrollTop, 500, 'scrollTop = 500');
+        done();
+      }, 100);
+    });
+
+    test('reset items', function() {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(getFirstItemFromList(list).textContent, '0');
+      list.items = null;
+      PolymerFlush();
+      assert.notEqual(getFirstItemFromList(list).textContent, '0');
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(getFirstItemFromList(list).textContent, '0');
+    });
+
+    test('reset items should reset the scroll position', function() {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      list.scroll(0, 1000);
+      PolymerFlush();
+      assert.equal(list.style.overflowY, 'auto');
+      assert.equal(list._scrollTop, 1000);
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(list._scrollTop, 0,
+          'should reset the scroll position');
+      list.style.paddingTop = '100px';
+      list.scrollTarget = document.documentElement;
+      list.updateViewportBoundaries();
+      list.scroll(0, 50);
+      assert.equal(list.style.overflowY, '');
+      assert.equal(list._scrollTop, 50);
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(list._scrollTop, 50,
+          'should not reset the scroll position if the scrollTop is smaller than the paddingTop');
+    });
+
+    test('visibility', function() {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      assert.isTrue(list._isVisible);
+      list.style.display = 'none';
+      assert.isFalse(list._isVisible);
+      // Use main document scrolling
+      list.style.display = '';
+      list.scrollTarget = list.ownerDocument.documentElement;
+      assert.isTrue(list._isVisible);
+      list.style.display = 'none';
+      assert.isFalse(list._isVisible);
+      list.style.display = '';
+      // what if the list is using document scroll, but no template has been stamped.
+      list.style.height = '0px';
+      assert.isTrue(list._isVisible);
+    });
+  });
+
+  suite('update when the list is not rendered', function() {
+    var container, list, scrollTarget;
+
+    setup(function() {
+      scrollTarget = fixture('trivialScrollingRegion');
+      list = scrollTarget.querySelector('x-list').list;
+    });
+
+    test('should not called the scroll handler if the list is not rendered', function(done) {
+      list.items = buildDataSet(100);
+      list.scrollTarget = scrollTarget;
+
+      PolymerFlush();
+
+      list.style.display = 'none';
+      list.fire('iron-resize');
+
+      var scrollerSpy = sinon.spy(list, '_update');
+      list.scroll(0, 1000);
+
+      requestAnimationFrame(function() {
+        setTimeout(function() {
+          assert.isFalse(scrollerSpy.called, 'should not update the list');
+
+          list.style.display = '';
+          list.fire('iron-resize');
+          list.scroll(0, 1000);
+
+          requestAnimationFrame(function() {
+            setTimeout(function() {
+              assert.isTrue(scrollerSpy.called, 'should update the list');
+             done();
+            });
+          });
+        });
+      });
+    });
+
+  });
+</script>
+
+</body>
+</html>

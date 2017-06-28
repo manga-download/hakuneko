@@ -1,0 +1,113 @@
+<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<!doctype html>
+<html>
+<head>
+
+  <title>Issue #389</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../iron-list.html">
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+  </style>
+
+</head>
+<body>
+  
+  <style>
+    body {
+      margin: 0;
+    }
+  </style>
+
+</head>
+<body>
+  
+  <dom-module id="x-list">
+    <template>
+      <style>
+        :host {
+          display: block;
+        }
+        
+        #container {
+          height: 400px;
+        }
+
+        iron-list {
+          height: 100%;
+        }
+        
+        .item {
+          border-bottom: 1px solid #eee;
+          height: 40px;
+        }
+      </style>
+      
+      <p>
+        <button on-click="removeItems">remove 16 first items</button>
+      </p>
+      
+      <div id="container">
+        <iron-list items="[[items]]">
+          <template>
+            <div class="item">Item [[item]]</div>
+          </template>
+        </iron-list>
+      </div>
+    </template>
+  </dom-module>
+  <script>
+
+    HTMLImports.whenReady(function() {
+      Polymer({
+        is: 'x-list',
+        properties: {
+          items: {
+            type: Array,
+            value: function() {
+              var data = [];
+              
+              for (var i = 1; i <= 64; i++) {
+                data.push(i);
+              }
+              
+              return data;
+            }
+          }
+        },
+        
+        removeItems:function() {
+          for (var i = 0; i < 16; i++ ) {
+            this.shift("items");
+          }
+          console.log("16 items removed")
+        },
+      });
+    });
+  </script>
+  
+  <x-list></x-list>
+
+</body>
+</html>

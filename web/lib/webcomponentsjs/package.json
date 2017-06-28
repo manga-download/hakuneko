@@ -1,8 +1,8 @@
 {
-  "name": "webcomponents.js",
-  "version": "1.0.0-rc.11",
-  "description": "webcomponents.js",
-  "main": "webcomponents.js",
+  "name": "@webcomponents/webcomponentsjs",
+  "version": "1.0.1",
+  "description": "Web Components Polyfills",
+  "main": "webcomponents-lite.js",
   "directories": {
     "test": "tests"
   },
@@ -22,14 +22,21 @@
     "url": "https://github.com/webcomponents/webcomponentsjs/issues"
   },
   "scripts": {
-    "build": "gulp build",
+    "build": "gulp",
     "test": "wct"
   },
   "homepage": "https://webcomponents.org/polyfills",
   "devDependencies": {
+    "@webcomponents/custom-elements": "^1.0.0",
+    "@webcomponents/html-imports": "^1.0.0",
+    "@webcomponents/shadycss": "^1.0.0",
+    "@webcomponents/shadydom": "^1.0.0",
+    "@webcomponents/template": "^1.0.0",
+    "@webcomponents/webcomponents-platform": "^1.0.0",
     "babel-preset-babili": "0.0.12",
     "bower": "^1.8.0",
     "del": "^2.2.2",
+    "es6-promise": "^4.1.0",
     "eslint": "^3.16.1",
     "google-closure-compiler": "^20170409.0.0",
     "gulp": "^3.8.8",
@@ -41,5 +48,8 @@
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
     "web-component-tester": "^6.0.0-prerelease.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -1,0 +1,238 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+
+  <title>Grouping items using iron-list</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../iron-icons/iron-icons.html">
+  <link rel="import" href="../../paper-item/paper-item.html">
+  <link rel="import" href="../../paper-menu-button/paper-menu-button.html">
+  <link rel="import" href="../../paper-icon-button/paper-icon-button.html">
+  <link rel="import" href="../../paper-styles/color.html">
+  <link rel="import" href="../../paper-styles/typography.html">
+
+
+  <link rel="import" href="../../iron-ajax/iron-ajax.html">
+  <link rel="import" href="../../iron-image/iron-image.html">
+  <link rel="import" href="../iron-list.html">
+
+  <style>
+    body {
+      background-color: #eee;
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+
+<dom-module id="x-group">
+  <template>
+    <style>
+      :host {
+        display: block;
+        @apply --paper-font-common-base;
+      }
+
+      app-toolbar {
+        font-size: 18px;
+        font-weight: bold;
+        background-color: var(--google-blue-700);
+        box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3);
+        color: white;
+        z-index: 1;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      app-toolbar paper-icon-button {
+        --paper-icon-button-ink-color: white;
+      }
+
+      #list {
+        margin-top: 63px;
+        --iron-list-items-container: {
+          max-width: 800px;
+          margin: 10px auto;
+          border-bottom: 1px solid #ddd;
+        };
+      }
+
+      .group-header,
+      .group-item {
+        padding: 15px 20px;
+        background-color: white;
+        font-size: 15px;
+      }
+
+      .group-item {
+        @apply --layout-horizontal;
+        cursor: pointer;
+        border-left: 1px solid #ddd;
+        border-right: 1px solid #ddd;
+      }
+
+      .group-header {
+        font-weight: bold;
+        border: 1px solid #ddd;
+        color: #333;
+        margin-top: 20px;
+      }
+
+      .group-header:before {
+        content: '';
+        border-top: 1px solid #ddd;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+      }
+
+      .avatar {
+        height: 20px;
+        width: 20px;
+        border-radius: 20px;
+        box-sizing: border-box;
+        background-color: #DDD;
+        margin-right: 16px;
+      }
+
+      .pad {
+        line-height: 20px;
+      }
+
+      .secondary {
+        color: gray;
+        margin-left: 10px;
+      }
+
+      .state-list {
+        width: 250px;
+        height: 80vh;
+        color: black;
+      }
+
+    </style>
+
+    <iron-ajax url="data/contacts.json" last-response="{{items}}" auto></iron-ajax>
+
+    <app-toolbar>
+      <div main-title>Grouping items</div>
+      <paper-menu-button id="menu" dynamic-align>
+        <paper-icon-button icon="filter-list" class="dropdown-trigger"></paper-icon-button>
+          <iron-list class="state-list dropdown-content" items="[[states]]">
+          <template>
+            <paper-item on-click="_onStateClick">[[item.state]]</paper-item>
+          </template>
+        </iron-list>
+      </paper-menu-button>
+    </app-toolbar>
+
+    <iron-list id="list" items="[[_generateGroupsFor(items)]]" scroll-target="document">
+      <template>
+        <div>
+          <div class="group-header" hidden$="[[!_hasGroup(index)]]">[[item.state]]</div>
+          <div class="group-item">
+            <iron-image class="avatar" sizing="contain" src="[[item.image]]"></iron-image>
+            <div class="pad">
+              <span class="primary">[[item.name]]</span> <span class="secondary">[[item.shortText]]</span>
+            </div>
+          </div>
+        </div>
+      </template>
+    </iron-list>
+
+  </template>
+
+  <script>
+
+    HTMLImports.whenReady(function() {
+
+      Polymer({
+        is: 'x-group',
+
+        properties: {
+
+          items: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          },
+
+          states: {
+            type: Array,
+            value: function() {
+              return [];
+            }
+          }
+
+        },
+
+        attached: function() {
+          this._groupIdxMap = {};
+        },
+
+        _generateGroupsFor: function(items) {
+          // Sort by state name
+          var items = items.slice().sort(function(a, b) {
+            return a.state.localeCompare(b.state);
+          });
+          var states = [];
+          // Group by state where _groupIdxMap[index] = true means that items[index] starts a new group
+          this._groupIdxMap = items.reduce(function(map, item, idx, arr) {
+            if (idx == 0 || item.state != arr[idx-1].state) {
+              map[idx] = true;
+              states.push({ state: item.state, index: idx });
+            }
+            return map;
+          }, {});
+
+          this.states = states;
+          console.log('items', items);
+          return items;
+        },
+
+        _hasGroup: function(idx) {
+          return this._groupIdxMap[idx] == true;
+        },
+
+        _onStateClick: function(e) {
+          // scroll on the main list
+          this.$.menu.close();
+          this.$.list.scrollToIndex(e.model.item.index);
+        }
+
+      });
+
+    });
+
+  </script>
+</dom-module>
+
+<x-group></x-group>
+
+</body>
+</html>

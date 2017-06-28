@@ -1,0 +1,175 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+
+<script>
+  function findElementInList(container, selector) {
+    var i = 0;
+    var children = container._children;
+    var ms = Polymer.DomApi.matchesSelector;
+
+    for (; i < children.length; i++) {
+      if (children[i].nodeType === Node.ELEMENT_NODE && ms.call(children[i], selector)) {
+        return children[i];
+      }
+    }
+    return null;
+  }
+
+  function buildItem(index) {
+    return {
+      index: index
+    };
+  }
+
+  function buildDataSet(size) {
+    var data = [];
+    while (data.length < size) {
+      data.push(buildItem(data.length));
+    }
+    return data;
+  }
+
+  function simulateScroll(config) {
+    var list = config.list;
+    var target = config.target;
+    var contribution = Math.abs(config.contribution) || 10;
+    // scroll back up
+    if (target < list.scrollTop) {
+      contribution = -contribution;
+    }
+    function scrollHandler() {
+      var minScrollTop = 0;
+      var maxScrollTop = list.scrollHeight - list.clientHeight;
+      var nextScrollTop = list.scrollTop + contribution;
+
+      if (nextScrollTop != target && nextScrollTop >= minScrollTop && nextScrollTop <= maxScrollTop) {
+        // continue
+      } else {
+        nextScrollTop = target;
+      }
+      list.scroll(0, nextScrollTop);
+      list.fire('scroll');
+      PolymerFlush();
+      config.onScroll && config.onScroll();
+
+      if (nextScrollTop === target) {
+        config.onScrollEnd && config.onScrollEnd();
+      } else {
+        setTimeout(scrollHandler, 1);
+      }
+    }
+    PolymerFlush();
+    scrollHandler();
+  }
+
+  function deepElementFromPoint(x, y) {
+    var r, el;
+    var root = document;
+    while (root && root.elementFromPoint) {
+      el = root.elementFromPoint(x, y);
+      r = el || r;
+      root = el ? el.shadowRoot : null;
+    }
+    return r;
+  }
+
+  function getGridRowFromIndex(grid, index) {
+    return Math.floor(index / grid._itemsPerRow);
+  }
+
+  function getNthItemFromGrid(grid, n, itemSize) {
+    itemSize = itemSize || 100;
+    var gridRect = grid.getBoundingClientRect();
+    var x = gridRect.left + ((n % grid._itemsPerRow) * itemSize) + (itemSize / 2);
+    var y = gridRect.top + (Math.floor(n / grid._itemsPerRow) * itemSize) + (itemSize / 2);
+    return deepElementFromPoint(x, y);
+  }
+
+  function getNthItemFromRTLGrid(grid, n, itemSize) {
+    itemSize = itemSize || 100;
+    var gridRect = grid.getBoundingClientRect();
+    var x = gridRect.left + gridRect.width - ((n % grid._itemsPerRow) * itemSize) - (itemSize / 2);
+    var y = gridRect.top + (Math.floor(n / grid._itemsPerRow) * itemSize) + (itemSize / 2);
+    return document.elementFromPoint(x, y);
+  }
+
+  function getFirstItemFromList(list) {
+    var listRect = list.getBoundingClientRect();
+    return deepElementFromPoint(listRect.left + 100, listRect.top + 1);
+  }
+
+  function getNthItemFromList(list, n, itemHeight) {
+    itemHeight = itemHeight || 100;
+    var listRect = list.getBoundingClientRect();
+    var x = listRect.left + 1;
+    var y = listRect.top + (n * itemHeight) + 1;
+    return deepElementFromPoint(x, y);
+  }
+
+  function getLastItemFromList(list) {
+    var listRect = list.getBoundingClientRect();
+    return deepElementFromPoint(listRect.left + 100, listRect.top + listRect.height - 1);
+  }
+
+  function isFullOfItems(list) {
+    var listRect = list.getBoundingClientRect();
+    var listHeight = listRect.height - 1;
+    var item, y = listRect.top + 1;
+    // IE 10 & 11 doesn't render propertly :(
+    var badPixels = 0;
+    while (y < listHeight) {
+      item = deepElementFromPoint(listRect.left + 100, y);
+      if (!item || (item.parentNode && !list.modelForElement(item.parentNode))) {
+        badPixels++;
+      }
+      y++;
+      if (badPixels > 2) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  function checkRepeatedItems(list) {
+    var listRect = list.getBoundingClientRect();
+    var listHeight = list.offsetHeight;
+    var listItems = {};
+
+    return function() {
+      var itemKey;
+      var y = listRect.top;
+      while (y < listHeight) {
+        item = deepElementFromPoint(listRect.left + 100, y + 2);
+        itemKey = item.textContent || item.innerText;
+
+        if (item.parentNode && list.modelForElement(item.parentNode)) {
+          if (listItems[itemKey] && listItems[itemKey] != item) {
+            return true;
+          }
+          listItems[itemKey] = item;
+        }
+        y += item.offsetHeight;
+      }
+      return false;
+    };
+  }
+
+  function getNthItemRowStart(grid, n) {
+    return n - (n % grid._itemsPerRow);
+  }
+
+  function PolymerFlush() {
+    if (Polymer.flush) {
+      Polymer.flush();
+    } else if (Polymer.dom.flush) {
+      Polymer.dom.flush();
+    }
+  }
+</script>

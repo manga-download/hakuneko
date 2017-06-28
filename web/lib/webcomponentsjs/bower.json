@@ -2,7 +2,6 @@
   "name": "webcomponentsjs",
   "description": "Web components polyfill",
   "main": "webcomponents.js",
-  "version": "1.0.0-rc.11",
   "homepage": "http://webcomponents.org",
   "authors": [
     "The Polymer Authors"
@@ -21,12 +20,12 @@
   "ignore": [],
   "devDependencies": {
     "web-component-tester": "^v6.0.0-prerelease.10",
-    "custom-elements": "webcomponents/custom-elements#^v1.0.0-rc.1",
+    "custom-elements": "webcomponents/custom-elements#^v1.0.0",
     "es6-promise": "stefanpenner/es6-promise#^4.0.0",
-    "html-imports": "webcomponents/html-imports#^v1.0.0-rc.2",
-    "shadydom": "webcomponents/shadydom#^v1.0.0-rc.1",
-    "shadycss": "webcomponents/shadycss#^v1.0.0-rc.1",
-    "template": "webcomponents/template#^v1.0.0-rc.1",
-    "webcomponents-platform": "webcomponents/webcomponents-platform#^v1.0.0-rc.1"
+    "html-imports": "webcomponents/html-imports#^v1.0.0",
+    "shadydom": "webcomponents/shadydom#^v1.0.0",
+    "shadycss": "webcomponents/shadycss#^v1.0.0",
+    "template": "webcomponents/template#^v1.0.0",
+    "webcomponents-platform": "webcomponents/webcomponents-platform#^v1.0.0"
   }
 }

@@ -1,0 +1,90 @@
+<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html id="html">
+<head>
+
+  <title>iron-list demo</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../iron-list.html">
+
+</head>
+<body unresolved>
+  
+  <dom-module id="x-demo">
+    <template>
+      <style>
+        iron-list {
+          height: 300px;
+        }
+        
+        a:focus {
+          color: red;
+        }
+      </style>
+
+      <iron-list id="list" items="[[items]]">
+        <template>
+          <div tabindex$="[[tabIndex]]">
+            <span>[[item.name]]</span>
+            <input type="text">
+            <a href="#" on-click="_removeItem">Remove</a>
+          </div>
+        </template>
+      </iron-list>
+
+      <a href="#" on-click="_setItems">set items</a>
+    </template>
+
+    <script>
+    HTMLImports.whenReady(function() {
+      Polymer({
+        is: 'x-demo',
+        
+        attached() {
+          this._setItems();
+        },
+        
+        _removeItem(e) {
+          e.preventDefault();
+
+          var i = this.$.list.modelForElement(e.target.parentElement).index;
+          this.splice('items', i, 1);
+          // this.async(_ => this.$.list.focusItem(i));
+        },
+
+        _setItems() {
+          var items = [];
+          for (var i = 0; i < 1000; ++i) {
+            items.push({
+              name: 'a'+i,
+              modelIndex: i
+            });
+          }
+          this.items = items;
+        }
+      });
+    });
+    </script>
+  </dom-module>
+
+  <x-demo></x-demo>
+
+</body>
+</html>

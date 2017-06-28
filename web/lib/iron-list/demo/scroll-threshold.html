@@ -1,0 +1,198 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+  <title>Load data using iron-scroll-threshold</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../polymer/polymer.html">
+  <link rel="import" href="../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../iron-scroll-threshold/iron-scroll-threshold.html">
+  <link rel="import" href="../../iron-image/iron-image.html">
+  <link rel="import" href="../../paper-styles/color.html">
+  <link rel="import" href="../../paper-styles/typography.html">
+  <link rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
+  <link rel="import" href="../../paper-spinner/paper-spinner.html">
+  <link rel="import" href="../../iron-ajax/iron-ajax.html">
+  <link rel="import" href="../iron-list.html">
+
+  <custom-style>
+    <style is="custom-style">
+
+      html, body {
+        @apply --paper-font-common-base;
+        margin: 0;
+        padding: 0;
+        background-color: #eee;
+      }
+
+    </style>
+  </custom-style>
+
+</head>
+<body unresolved>
+
+  <dom-module id="x-app">
+    <template>
+      <style>
+        :host {
+          display: block;
+        }
+
+        app-toolbar {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          background: #F57C00;
+          box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.3);
+          color: white;
+          z-index: 1;
+          font-weight: bold;
+          font-size: 18px;
+        }
+
+        .loadingIndicator {
+          text-align: center;
+          height: 40px;
+        }
+
+        paper-spinner {
+          width: 20px;
+          height: 20px;
+          margin-right: 10px;
+        }
+
+        iron-list {
+          padding-top: 64px;
+          padding-bottom: 16px;
+          --iron-list-items-container: {
+            max-width: 800px;
+            margin: auto;
+            margin-top: 60px;
+            margin-bottom: 10px;
+          };
+        }
+
+        .personItem {
+          @apply --layout-horizontal;
+
+          margin: 16px 16px 0 16px;
+          padding: 20px;
+          border-radius: 8px;
+          background-color: white;
+          border: 1px solid #ddd;
+        }
+
+        .avatar {
+          height: 40px;
+          width: 40px;
+          border-radius: 20px;
+          box-sizing: border-box;
+          background-color: #DDD;
+        }
+
+        .pad {
+          padding: 0 16px;
+          @apply --layout-flex;
+          @apply --layout-vertical;
+        }
+
+        .primary {
+          font-size: 16px;
+          font-weight: bold;
+        }
+
+        address {
+          font-size: 14px;
+          margin: 10px 0;
+        }
+
+        .spacer {
+          @apply --layout-flex;
+        }
+
+        .index {
+          width: 30px;
+        }
+
+      </style>
+      <iron-ajax id="ajax"
+          url="https://randomuser.me/api/"
+          params='{"results": 20}'
+          handle-as="json"
+          loading="{{loadingPeople}}"
+          on-response="_didRespond"></iron-ajax>
+
+      <app-toolbar>
+        <div main-title>Load data using iron-scroll-threshold</div>
+      </app-toolbar>
+
+      <iron-list id="list" items="[]" as="person" scroll-target="document">
+        <template>
+          <div>
+            <div class="personItem" tabindex$="[[tabIndex]]">
+              <iron-image class="avatar" sizing="contain" src="[[person.picture.medium]]"></iron-image>
+              <div class="pad">
+                <div class="primary">[[person.name.first]] [[person.name.last]]</div>
+                <address>
+                  [[person.location.street]] [[person.city]] <br />
+                  [[person.location.city]], [[person.location.state]] [[person.location.postcode]]
+                </address>
+              </div>
+            </div>
+          </div>
+        </template>
+      </iron-list>
+
+      <div class="loadingIndicator">
+        <paper-spinner active="{{loadingPeople}}"></paper-spinner> Fetching data
+      </div>
+
+      <!-- this element will load more data when the user scrolls down and reached the lower threshold -->
+      <iron-scroll-threshold id="scrollTheshold"
+          lower-threshold="500"
+          on-lower-threshold="_load"
+          scroll-target="document"></iron-scroll-threshold>
+    </template>
+    <script>
+    HTMLImports.whenReady(function() {
+      Polymer({
+        is: 'x-app',
+
+        _load: function() {
+          this.$.ajax.generateRequest();
+        },
+
+        _didRespond: function(e) {
+          var people = e.detail.response.results;
+
+          people.forEach(function(person) {
+            this.$.list.push('items', person);
+          }, this);
+          // Clear the lower threshold so we can load more data when the user scrolls down again.
+          this.$.scrollTheshold.clearTriggers();
+        }
+      });
+    });
+    </script>
+  </dom-module>
+
+  <x-app></x-app>
+
+</body>
+</html>

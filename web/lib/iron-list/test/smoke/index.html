@@ -1,0 +1,213 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+
+  <title>iron-list demo</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../../paper-styles/demo-pages.html">
+
+  <link rel="import" href="../../../iron-flex-layout/iron-flex-layout.html">
+  <link rel="import" href="../../iron-list.html">
+  <link rel="import" href="dummy-data.html">
+
+  <dom-module id="x-app">
+    <template>
+      <style>
+        :host {
+          display: block;
+          font-family: sans-serif;
+          @apply --layout-horizontal;
+        }
+
+        iron-list {
+          @apply --layout-flex;
+          height: 100%;
+        }
+
+        .item {
+          display: block;
+          padding: 8px;
+          border-bottom: 1px solid gray;
+          @apply --layout-horizontal;
+        }
+
+        .item img {
+          height: 40px;
+          width: 40px;
+        }
+
+        .picture {
+          @apply --layout-vertical;
+        }
+
+        #about {
+          color: lightgray;
+          font-style: italic;
+          font-size: 0.8em;
+        }
+
+        #last {
+          font-weight: bold;
+          font-size: 1.2em;
+        }
+
+        .padded {
+          @apply --layout-flex;
+        }
+
+        .padded > * {
+          padding: 8px;
+        }
+
+        #index {
+          text-align: center;
+          padding-top: 8px;
+        }
+        #options {
+          background: white;
+          border-radius: 10px;
+          border: 1px solid gray;
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          z-index: 10;
+          padding: 5px;
+        }
+        #friends {
+          height: 20px;
+        }
+      </style>
+
+      <div id="options">
+        <input value="{{separator::input}}" style="width:20px;">
+        <label><input type="checkbox" checked="{{showing::change}}">Show friends</label>
+      </div>
+
+      <iron-list id="list1" items="{{data}}">
+        <template>
+          <div class="item">
+            <div class="picture">
+              <img src="[[pictureForItem(item, index)]]">
+              <div>{{item.index}}</div>
+            </div>
+            <div class="padded">
+              <div>
+                <input placeholder="name.last" value="{{item.name.last::input}}">
+                <span>{{separator}}</span>
+                <input placeholder="name.first" value="{{item.name.first::input}}">
+              </div>
+              <div>{{item.about}}</div>
+              <div id="friends">
+                <template is="dom-if" if="{{showing}}">
+                  <span><strong>Friends:</strong></span>
+                  <template is="dom-repeat" items="{{item.friends}}">
+                    <span>{{item.name}}</span>
+                    <span>{{separator}}</span>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </iron-list>
+     
+
+      <iron-list id="list2" items="{{data}}">
+        <template>
+          <div class="item">
+            <div class="picture">
+              <img src="[[pictureForItem(item, index)]]">
+              <div>{{item.index}}</div>
+            </div>
+            <div class="padded">
+              <div>
+                <input placeholder="name.last" value="{{item.name.last::input}}">
+                <span><input value="{{separator::input}}" size="1"></span>
+                <input placeholder="name.first" value="{{item.name.first::input}}">
+              </div>
+              <div>{{item.about}}</div>
+              <div id="friends">
+                <template is="dom-if" if="{{showing}}">
+                  <span><strong>Friends:</strong></span>
+                  <template is="dom-repeat" items="{{item.friends}}">
+                    <span>{{item.name}}</span>
+                    <span>{{separator}}</span>
+                  </template>
+                </template>
+              </div>
+            </div>
+          </div>
+        </template>
+      </iron-list>
+
+    </template>
+  </dom-module>
+
+  <script>
+
+    HTMLImports.whenReady(function() {
+
+      Polymer({
+
+        is: 'x-app',
+
+        properties: {
+          data: {
+            type: Array,
+            value: window.dummyData
+          },
+          separator: {
+            type: String,
+            value: '|'
+          },
+          showing: {
+            type: Boolean,
+            value: false
+          }
+        },
+        pictureForItem: function(item, index) {
+          if (item == null || index == null) {
+            console.log('bad');
+            return '';
+          }
+          return item.picture + '/' + item.guid.slice(0,6);
+        },
+        iconForItem: function(item) {
+          return item.gender == 'female' ? 'star' : 'star-outline';
+        }
+      });
+
+    });
+
+  </script>
+
+  <custom-style>
+    <style is="custom-style">
+      body, x-app {
+        @apply --layout-fit;
+      }
+    </style>
+  </custom-style>
+</head>
+<body>
+
+  <x-app></x-app>
+
+</body>
+</html>

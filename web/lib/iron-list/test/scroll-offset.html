@@ -1,0 +1,115 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-list test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="fixtures/helpers.html">
+  <link rel="import" href="../iron-list.html">
+
+  <style>
+
+    body {
+      margin: 0;
+    }
+
+    header {
+      background-color: #ddd;
+      height: 100px;
+      padding: 0 10px;
+    }
+
+    h1 {
+      margin: 0;
+      line-height: 100px;
+    }
+
+    .item {
+      box-sizing: border-box;
+      height: 50px;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+  </style>
+</head>
+<body>
+  <!-- Issue: web-component-tester/issues/505 -->
+  <script>void(0)</script>
+
+  <test-fixture id="trivialList">
+    <template>
+      <div>
+        <header>
+          header
+        </header>
+        <iron-list scroll-target="document" scroll-offset="100">
+          <template>
+            <div class="item">[[index]]</div>
+          </template>
+        </iron-list>
+      </div>
+    </template>
+  </test-fixture>
+
+  <script>
+
+    suite('scrollOffset property', function() {
+      var list, container;
+
+      setup(function() {
+        container = fixture('trivialList');
+        list = container.querySelector('iron-list');
+      });
+
+      test('value', function() {
+        list.items = buildDataSet(100);
+        Polymer.dom.flush();
+        assert.equal(list.scrollOffset, 100);
+      });
+
+      test('firstVisibleIndex', function(done) {
+        list.items = buildDataSet(100);
+        Polymer.dom.flush();
+        window.scrollTo(0, 1000);
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            var idx = Math.floor((window.pageYOffset - list.scrollOffset) / 50);
+            assert.equal(list.firstVisibleIndex, idx);
+            done();
+          });
+        });
+      });
+
+      test('lastVisibleIndex', function(done) {
+        list.items = buildDataSet(100);
+        Polymer.dom.flush();
+        window.scrollTo(0, 1000);
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            var idx = Math.floor((window.pageYOffset + window.innerHeight - list.scrollOffset) / 50);
+            assert.equal(list.lastVisibleIndex, idx);
+            done();
+          });
+        });
+      });
+
+    });
+
+  </script>
+
+</body>
+</html>

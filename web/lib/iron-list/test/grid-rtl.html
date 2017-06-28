@@ -1,0 +1,105 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-list test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+
+  <link rel="import" href="fixtures/helpers.html">
+  <link rel="import" href="fixtures/x-grid.html">
+</head>
+<body>
+  <!-- Issue: web-component-tester/issues/505 -->
+  <script>void(0)</script>
+
+  <test-fixture id="trivialList">
+    <template>
+      <x-grid dir="rtl" style="width: 300px;"></x-grid>
+    </template>
+  </test-fixture>
+
+<script>
+
+  suite('basic features', function() {
+    var list, container;
+
+    setup(function() {
+      container = fixture('trivialList');
+      list = container.list;
+    });
+
+
+    test('check horizontal rendering for rtl direction', function(done) {
+      container.data = buildDataSet(100);
+
+      flush(function() {
+        // Validate that items are being laid out from left to right.
+        for (var i = 0, rowIndex, indexInRow, itemsFromPreviousRows,
+             actualVisualIndex, expectedVisualIndex; i < 9; i++) {
+          rowIndex = getGridRowFromIndex(list, i);
+          indexInRow = i % list._itemsPerRow;
+          itemsFromPreviousRows = rowIndex * list._itemsPerRow;
+          // The item's "visual" index, which does not consider RTL. I.e. the
+          // item on the left side of a row is index 0, even with RTL direction.
+          actualVisualIndex = getNthItemFromGrid(list, i).textContent;
+          expectedVisualIndex = itemsFromPreviousRows + list._itemsPerRow - indexInRow - 1;
+          assert.equal(actualVisualIndex, expectedVisualIndex);
+        }
+        done();
+      });
+    });
+
+    test('rtl grid focus change with right arrow', function(done) {
+      container.useTabIndex = true;
+      container.data = buildDataSet(100);
+
+      flush(function() {
+        var initialItem = getNthItemFromRTLGrid(list, 0);
+        var itemToFocus = getNthItemFromRTLGrid(list, 1);
+        initialItem.focus();
+        flush(function() {
+          MockInteractions.pressAndReleaseKeyOn(list, 37); // left
+          flush(function() {
+            assert.notEqual(itemToFocus.tabIndex, -1);
+            done();
+          });
+        });
+      });
+    });
+
+    test('rtl grid focus change with left arrow', function(done) {
+      container.useTabIndex = true;
+      container.data = buildDataSet(100);
+
+      flush(function() {
+        var initialItem = getNthItemFromRTLGrid(list, 1);
+        var itemToFocus = getNthItemFromRTLGrid(list, 0);
+        initialItem.focus();
+        flush(function() {
+          MockInteractions.pressAndReleaseKeyOn(list, 39); // right
+          flush(function() {
+            assert.notEqual(itemToFocus.tabIndex, -1);
+            done();
+          });
+        });
+      });
+    });
+
+  });
+</script>
+
+</body>
+</html>
