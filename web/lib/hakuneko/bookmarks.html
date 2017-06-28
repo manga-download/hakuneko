@@ -36,6 +36,8 @@
                 border: var(--bookmark-list-border);
                 background-color: var(--bookmark-list-background-color);
                 padding: 0.25em;
+                overflow-y: scroll;
+                height: 10em;
             }
             .manga {
                 font-weight: bold;
@@ -64,7 +66,7 @@
             <table id="popup" class$="[[ getPopupClass(showPopup) ]]" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" >
                 <template is="dom-repeat" items="[[ bookmarkList ]]">
                     <tr>
-                        <td class="manga"><span class="button" title$="Click to open:&#10;[[ item.title.manga ]]">[[ item.title.manga ]]</span></td>
+                        <td class="manga"><span class="button" title$="Click to open:&#10;[[ item.title.manga ]]" on-click="openBookmark">[[ item.title.manga ]]</span></td>
                         <td class="connector">[[ item.title.connector ]]</td>
                         <td><i class="fa fa-fw fa-minus-circle button delete" title="Click to remove this manga from bookmarks" on-click="deleteBookmark"></i></td>
                     </tr>
@@ -89,12 +91,10 @@
             static get properties() {
                 return {
                     selectedConnector: {
-                        type: Object,
-                        notify: true
+                        type: Object
                     },
                     selectedManga: {
-                        type: Object,
-                        notify: true
+                        type: Object
                     }
                 };
             }
@@ -143,6 +143,14 @@
              */
             hideBookmarks() {
                 this.set( 'showPopup', false );
+            }
+
+            /**
+             *
+             */
+            openBookmark( e ) {
+                this.dispatchEvent( new CustomEvent( 'bookmark-clicked', { detail: e.model.item } ) );
+                // hide bookmarks?
             }
 
             /**

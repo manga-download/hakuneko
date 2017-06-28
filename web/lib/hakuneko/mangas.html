@@ -93,7 +93,7 @@
                     <input type="text" value="{{ searchPattern::input }}"/>
                 </td>
                 <td>
-                    <hakuneko-bookmarks selected-connector="{{ selectedConnector }}" selected-manga="{{ selectedManga }}"></hakuneko-bookmarks>
+                    <hakuneko-bookmarks selected-connector="{{ selectedConnector }}" selected-manga="{{ selectedManga }}" on-bookmark-clicked="onBookmarkClicked"></hakuneko-bookmarks>
                 </td>
             </tr>
         </table>
@@ -264,6 +264,14 @@
             }
 
             /**
+             *
+             */
+            onBookmarkClicked( e )
+            {
+                console.log( 'onBookmarkClicked', e.detail );
+            }
+
+            /**
              * 
              */
             onMangaStatusChanged( e ) {
@@ -282,7 +290,7 @@
                 if( index > -1 ) {
                     this.notifyPath( 'mangaList.' + index + '.status' );
                 }
-            }  
+            }
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );
     </script>
