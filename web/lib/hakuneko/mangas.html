@@ -1,5 +1,5 @@
 <link rel="import" href="../polymer/polymer-element.html">
-<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="engine/base/enums.html">
 <link rel="import" href="engine/loader.html">
 <link rel="import" href="status.html">
@@ -40,12 +40,12 @@
                 list-style-type: none;
                 padding: 0.25em;
             }
-            .list li {
+            .manga {
                 overflow-x: hidden;
                 text-overflow: ellipsis;
                 cursor: pointer;
             }
-            .list li:hover {
+            .manga:hover {
                 background-color: var(--manga-list-highlighted);
             }
             .focus {
@@ -91,7 +91,7 @@
             </tr>
             <tr>
                 <td>
-                    <i class="fa fa-fw fa-search" title="Enter a pattern to filter the manga list by their titles"></i>
+                    <i class="fa fa-fw fa-search" title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"></i>
                 </td>
                 <td>
                     <input type="text" value="{{ searchPattern::input }}"/>
@@ -101,14 +101,13 @@
                 </td>
             </tr>
         </table>
-        <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
-        <ul class="list" >
-            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}" initial-count="500" target-framerate="5">
-                <li class$="[[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+        <iron-list class="list" items="[[ filteredMangas(mangaList,searchPattern) ]]">
+            <template>
+                <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</div>
             </template>
-        </ul>
+        </iron-list>
         <div class="footer">
-            <hakuneko-status id="status" message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"></hakuneko-status>
+            <hakuneko-status id="status" message="Mangas: [[ mangaList.length ]]"></hakuneko-status>
         </div>
     </template>
 
@@ -195,6 +194,8 @@
                     this.$.connectorSelection.value = connector.id;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
+                // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage) 
+                this.set( 'mangaList', [] );
                 connector.getMangas( ( error, mangas ) => {
                     // check if executing connector is still the selected connector (visible)
                     if( connector === this.selectedConnector ) {
@@ -269,13 +270,13 @@
             /**
              *
              */
-            filterMangas( pattern ) {
-                if( !pattern || pattern.length < 1 ) {
-                    return null;
+            filteredMangas( mangas, pattern ) {
+                if( !mangas || !pattern || pattern.length < 3 ) {
+                    return mangas;
                 }
-                return ( manga ) => {
+                return mangas.filter( ( manga ) => {
                     return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
-                };
+                });
             }
 
             /**
