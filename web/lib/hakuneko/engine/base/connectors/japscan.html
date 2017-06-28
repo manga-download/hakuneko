@@ -22,6 +22,28 @@
         }
 
         /**
+         * Helper function to decrypt the protected email within the given DOM element.
+         */
+        cfMailDecrypt( element ) {
+            let span = element.querySelector( 'span[data-cfemail]' );
+            let script = element.querySelector( 'script[data-cfhash]' );
+            if( span && script ) {
+                let mail = span.getAttribute( 'data-cfemail' );
+                let hash = element.removeChild( script ).getAttribute( 'data-cfhash' );
+                // remove script
+                if( mail && hash ) {
+                    // decrypt mail
+                    let decrypted = '';
+                    let key = '0x' + mail.substr( 0, 2 ) | 0;
+                    for ( let i=2; i<mail.length; i+=2 ) {
+                        decrypted += '%' + ( '0' + ( '0x' + mail.substr( i, 2 ) ^ key ).toString( 16 ) ).slice( -2 );
+                    }
+                    element.replaceChild( document.createTextNode( decodeURIComponent( decrypted ) ), span );
+                }
+            }
+        }
+
+        /**
          *
          */
         _getMangaList( callback ) {
@@ -34,6 +56,7 @@
                 dom.innerHTML = content;
                 //console.log(dom.innerHTML);
                 let mangaList = [...dom.querySelectorAll( '#liste_mangas div.row div:first-of-type a' )].map(  ( element ) => {
+                    this.cfMailDecrypt( element );
                     return {
                         // as mentioned before, the eventually added host prefix must be removed
                         // for full qualified domain name, the host (dynasty-scans) can also be removed
@@ -57,6 +80,7 @@
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
                 let chapterList = [...dom.querySelectorAll( '#liste_chapitres ul li a' )].map(  ( element ) => {
+                    this.cfMailDecrypt( element );
                     element.text = element.text.replace( 'Scan', '' ).replace( 'VF', '' );
                     return {
                         id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
