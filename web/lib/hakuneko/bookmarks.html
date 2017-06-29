@@ -166,7 +166,7 @@
              *
              */
             deleteBookmark( e ) {
-                Engine.BookmarkManager.deleteBookmark( e.model.item.id );
+                Engine.BookmarkManager.deleteBookmark( e.model.item );
                 // remove bookmark from internal list or reload list?
                 this.notifyPath( 'bookmarkList.length' );
             }

@@ -32,8 +32,8 @@
         createIndexedDBScheme( event ) {
             event.target.result.createObjectStore( 'mangas' );
             event.target.result.createObjectStore( 'settings' );
-            event.target.result.createObjectStore( 'bookmarks', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id'] )*/;
-            event.target.result.createObjectStore( 'downloads', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id', 'chapter.id'] )*/;
+            event.target.result.createObjectStore( 'bookmarks'/*, {keyPath: 'id'}*/ )/*.createIndex( 'combined', ['connector.id', 'manga.id'] )*/;
+            event.target.result.createObjectStore( 'downloads'/*, {keyPath: 'id'}*/ )/*.createIndex( 'combined', ['connector.id', 'manga.id', 'chapter.id'] )*/;
         }
 
         /**

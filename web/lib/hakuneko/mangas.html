@@ -268,27 +268,25 @@
              */
             onBookmarkClicked( e )
             {
+                this.set( 'selectedManga', undefined );
                 let bookmark = e.detail;
-                // clear connector
-                // clear manga
-                // enter search pattern
-                this.set( 'selectedConnector', undefined );
                 let connector = Engine.Connectors.find( ( c ) => {
                     return ( c.id === bookmark.key.connector );
                 });
                 if( !connector ) {
                     return;
                 }
-                this.set( 'searchPattern', bookmark.title.manga );
-                this.set( 'selectedConnector', connector );
-                let manga = null;
+                let statusID = this.$.status.addToQueue( 'Searching for bookmarked manga (' + bookmark.title.manga + ' => ' + bookmark.title.connector + ')' );
                 connector.getMangas( ( mangas ) => {
                     let manga = mangas.find( ( m ) => {
                         return ( m.id === bookmark.key.manga );
                     });
-                    if( !manga || connector !== this.selectedConnector ) {
+                    this.$.status.removeFromQueue( statusID );
+                    if( !manga ) {
                         return;
                     }
+                    this.set( 'searchPattern', bookmark.title.manga );
+                    this.set( 'selectedConnector', connector );
                     this.set( 'selectedManga', manga );
                 });
             }

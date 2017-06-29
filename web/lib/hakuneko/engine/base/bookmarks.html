@@ -8,52 +8,35 @@
     class BookmarkManager {
 
         constructor() {
-            //this.x = undefined;
             this.bookmarks = [];
         }
 
-        load() {
-            let manga = {
-                id: '',
-                title: '',
-                connector: {
-                    id: '',
-                    label: ''
-                }
-            };
-
-            manga.connector.id = 'dynasty-scans';
-            manga.connector.label = 'DynastyScans';
-            manga.id = '/series/a_zone';
-            manga.title = 'A-Zone';
-            this.bookmarks.push( new Bookmark( manga ) );
-
-            manga.connector.id = 'kissmanga-cdn';
-            manga.connector.label = 'KissMAnga (CDN)';
-            manga.id = '5690139690926080';
-            manga.title = '"Gokko"';
-            this.bookmarks.push( new Bookmark( manga ) );
-
-            manga.connector.id = 'invalid';
-            manga.connector.label = 'INVALID';
-            manga.id = '5690139690926080';
-            manga.title = '"Gokko"';
-            this.bookmarks.push( new Bookmark( manga ) );
-
-            manga.connector.id = 'mangafox';
-            manga.connector.label = 'MangaFox';
-            manga.id = 'invalid';
-            manga.title = 'INVALID';
-            this.bookmarks.push( new Bookmark( manga ) );
-            /*
-            this.bookmarks.sort( ( a, b ) => {
-                return ( a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 );
+        /**
+         * Load and apply the bookmarks from the given profile.
+         * Callback will be executed after the data has been loaded.
+         * Callback will be provided with an error (or null if no error).
+         */
+        loadProfile( profile, callback ) {
+            Engine.Storage.loadFromDB( 'bookmarks', profile, ( data, error) => {
+                if( !error && data && data.length && data.length > 0 ) {
+                    console.log( error, data );
+                    this.bookmarks = data;
+                    this.bookmarks.sort( this.compareBookmarks );
+                }   
+                ( callback ? callback( error ) : undefined );
             });
-            */
         }
 
-        save() {
-            //
+        /**
+         * Save the current bookmarks for the given profile.
+         * Callback will be executed after the data has been saved.
+         * Callback will be provided with an error (or null if no error).
+         */
+        saveProfile( profile, callback ) {
+            Engine.Storage.saveToDB( 'bookmarks', profile, this.bookmarks, ( error) => {
+                (callback ? callback( error ) : undefined );
+            });
+
         }
 
         addBookmark( manga ) {
@@ -65,20 +48,30 @@
             });
             if( index < 0 ) {
                 this.bookmarks.push( new Bookmark( manga ) );
+                this.bookmarks.sort( this.compareBookmarks );
+                this.saveProfile( 'default', undefined );
                 return true;
             }
             return false;
         }
 
-        deleteBookmark( bookmarkID ) {
-            let index = this.bookmarks.findIndex( ( bookmark ) => {
-                return ( bookmark.id === bookmarkID );
+        deleteBookmark( bookmark ) {
+            let index = this.bookmarks.findIndex( ( b ) => {
+                return ( b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector );
             });
             if( index > -1 ) {
                 this.bookmarks.splice( index, 1 );
+                this.saveProfile( 'default', undefined );
                 return true;
             }
             return false;
+        }
+
+        /**
+         * Helper function for sorting
+         */
+        compareBookmarks( a, b ) {
+            return ( a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 );
         }
     }
     BookmarkManager; // reference the class to prevent removal of the class through js-minify
