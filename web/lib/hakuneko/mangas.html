@@ -268,7 +268,29 @@
              */
             onBookmarkClicked( e )
             {
-                console.log( 'onBookmarkClicked', e.detail );
+                let bookmark = e.detail;
+                // clear connector
+                // clear manga
+                // enter search pattern
+                this.set( 'selectedConnector', undefined );
+                let connector = Engine.Connectors.find( ( c ) => {
+                    return ( c.id === bookmark.key.connector );
+                });
+                if( !connector ) {
+                    return;
+                }
+                this.set( 'searchPattern', bookmark.title.manga );
+                this.set( 'selectedConnector', connector );
+                let manga = null;
+                connector.getMangas( ( mangas ) => {
+                    let manga = mangas.find( ( m ) => {
+                        return ( m.id === bookmark.key.manga );
+                    });
+                    if( !manga || connector !== this.selectedConnector ) {
+                        return;
+                    }
+                    this.set( 'selectedManga', manga );
+                });
             }
 
             /**

@@ -14,27 +14,36 @@
 
         load() {
             let manga = {
-                id: 0,
+                id: '',
                 title: '',
                 connector: {
-                    id: 0,
+                    id: '',
                     label: ''
                 }
             };
 
-            manga.id++;
-            manga.connector.label = 'KissManga';
-            manga.title = 'One Piece';
+            manga.connector.id = 'dynasty-scans';
+            manga.connector.label = 'DynastyScans';
+            manga.id = '/series/a_zone';
+            manga.title = 'A-Zone';
             this.bookmarks.push( new Bookmark( manga ) );
 
-            manga.id++;
-            manga.connector.label = 'Batoto';
-            manga.title = 'Naruto';
+            manga.connector.id = 'kissmanga-cdn';
+            manga.connector.label = 'KissMAnga (CDN)';
+            manga.id = '5690139690926080';
+            manga.title = '"Gokko"';
             this.bookmarks.push( new Bookmark( manga ) );
 
-            manga.id++;
+            manga.connector.id = 'invalid';
+            manga.connector.label = 'INVALID';
+            manga.id = '5690139690926080';
+            manga.title = '"Gokko"';
+            this.bookmarks.push( new Bookmark( manga ) );
+
+            manga.connector.id = 'mangafox';
             manga.connector.label = 'MangaFox';
-            manga.title = 'Fairy Tail';
+            manga.id = 'invalid';
+            manga.title = 'INVALID';
             this.bookmarks.push( new Bookmark( manga ) );
             /*
             this.bookmarks.sort( ( a, b ) => {
