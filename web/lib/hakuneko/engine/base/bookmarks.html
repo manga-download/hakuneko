@@ -19,7 +19,6 @@
         loadProfile( profile, callback ) {
             Engine.Storage.loadFromDB( 'bookmarks', profile, ( data, error) => {
                 if( !error && data && data.length && data.length > 0 ) {
-                    console.log( error, data );
                     this.bookmarks = data;
                     this.bookmarks.sort( this.compareBookmarks );
                 }   
