@@ -21,6 +21,8 @@
             this.isUpdating = false;
             //
             this.mangaCache = undefined;
+            //
+            this.existingMangas = [];
         }
 
         /**
@@ -62,28 +64,32 @@
          * Callback will be executed after completion and provided with a reference to the manga list (undefined on error).
          */
         getMangas( callback ) {
-            // check if manga list is cached
-            if( this.mangaCache ) {
-                this.mangaCache.forEach( ( manga ) => {
-                    manga.updateStatus();
-                });
-                callback( null, this.mangaCache );
-                return;
-            }
-            // get manga list from the local storage and cache them
-            Engine.Storage.loadMangaList( this.id, ( mangas, error ) => {
-                if( !error ) {
-                    if( mangas ) {
-                        // de-serialize mangas into objects
-                        this.mangaCache = mangas.map( ( manga ) => {
-                            return new Manga( this, manga.id, manga.title );
-                        });
-                    }
-                } else {
-                    console.error( error.message );
-                    this.mangaCache = undefined;
+            // find all manga titles (sanitized) that are found in the base directory for this connector
+            Engine.Storage.getExistingMangaTitles( this, ( error, existingMangaTitles ) => {
+                this.existingMangas = existingMangaTitles;
+                // check if manga list is cached
+                if( this.mangaCache ) {
+                    this.mangaCache.forEach( ( manga ) => {
+                        manga.updateStatus();
+                    });
+                    callback( null, this.mangaCache );
+                    return;
                 }
-                callback( null, this.mangaCache );
+                // get manga list from the local storage and cache them
+                Engine.Storage.loadMangaList( this.id, ( mangas, error ) => {
+                    if( !error ) {
+                        if( mangas ) {
+                            // de-serialize mangas into objects
+                            this.mangaCache = mangas.map( ( manga ) => {
+                                return new Manga( this, manga.id, manga.title );
+                            });
+                        }
+                    } else {
+                        console.error( error.message );
+                        this.mangaCache = undefined;
+                    }
+                    callback( null, this.mangaCache );
+                });
             });
         }
 

@@ -36,28 +36,36 @@
         }
 
         /**
-         * 
+         * Find all directories/files in the base directory.
+         * This key-value map can than be used to look up for existing manga titles (where the key represents the title and the value is always true).
+         * Keep in mind that the manga titles in this map are sanitized and may not equal the raw (original) manga title.
          */
-        getMangaStatus( manga, callback ) {
-            this.fs.access( this._mangaOutputPath( manga ), ( error ) => {
-                if( error ) {
-                    callback( DownloadStatus.available );
-                } else {
-                    callback( DownloadStatus.completed );
-                }
+        getExistingMangaTitles( connector, callback ) {
+            let directory = this._connectorOutputPath( connector );
+            this.fs.readdir( directory, ( error, entries ) => {
+                // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
+                let titleMap = [];
+                entries.forEach( ( title ) => {
+                    titleMap[title] = true;
+                });
+                callback( error, titleMap );
             });
         }
 
         /**
-         * 
+         * Find all directories/files in the manga directory.
+         * This list can than be used to look for existing chapter titles.
+         * Keep in mind that the chapter titles in this list are sanitized and may not equal the raw (original) chapter title.
          */
-        getChapterStatus( chapter, callback ) {
-            this.fs.access( this._chapterOutputPath( chapter ), ( error ) => {
-                if( error ) {
-                    callback( DownloadStatus.available );
-                } else {
-                    callback( DownloadStatus.completed );
-                }
+        getExistingChapterTitles( manga, callback ) {
+            let directory = this._mangaOutputPath( manga );
+            this.fs.readdir( directory, ( error, entries ) => {
+                // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
+                let titleMap = [];
+                entries.forEach( ( title ) => {
+                    titleMap[title] = true;
+                });
+                callback( error, titleMap );
             });
         }
 
@@ -196,17 +204,12 @@
         }
 
         /**
-         * Helper function to generate the path where the chapter pages are stored.
+         * Helper function to generate the path where the connector mangas are stored.
          */
-        _chapterOutputPath( chapter ) {
+        _connectorOutputPath( connector ) {
             let output = Engine.Settings.baseDirectory.value;
             if( Engine.Settings.useSubdirectory.value ) {
-                output = this.path.join( output, this._sanatizePath( chapter.manga.connector.label ) );
-            }
-            output = this.path.join( output, this._sanatizePath( chapter.manga.title ) );
-            output = this.path.join( output, this._sanatizePath( chapter.title ) );
-            if( Engine.Settings.compressChapters.value ) {
-                output += '.cbz';
+                output = this.path.join( output, this.sanatizePath( connector.label ) );
             }
             return output;
         }
@@ -215,16 +218,25 @@
          * Helper function to generate the path where the manga chapters are stored.
          */
         _mangaOutputPath( manga ) {
-            let output = Engine.Settings.baseDirectory.value;
-            if( Engine.Settings.useSubdirectory.value ) {
-                output = this.path.join( output, this._sanatizePath( manga.connector.label ) );
-            }
-            output = this.path.join( output, this._sanatizePath( manga.title ) );
+            let output = this._connectorOutputPath( manga.connector );
+            output = this.path.join( output, this.sanatizePath( manga.title ) );
             return output;
         }
 
         /**
-         * Helper function to recursively create all non-existing folders of the iven path.
+         * Helper function to generate the path where the chapter pages are stored.
+         */
+        _chapterOutputPath( chapter ) {
+            let output = this._mangaOutputPath( chapter.manga );
+            output = this.path.join( output, this.sanatizePath( chapter.title ) );
+            if( Engine.Settings.compressChapters.value ) {
+                output += '.cbz';
+            }
+            return output;
+        }
+
+        /**
+         * Helper function to recursively create all non-existing folders of the given path.
          */
         _createDirectoryChain( path ) {
             if( this.fs.existsSync( path ) || path === this.path.parse( path ).root ) {
@@ -240,7 +252,7 @@
          * LINUX: wxT("/\r\n\t");
          * WINDOWS: wxT("\\/:*?\"<>|\r\n\t");
          */
-        _sanatizePath ( path ) {
+        sanatizePath ( path ) {
             if( this.platform.indexOf( 'win' ) === 0 ) {
                 // TODO: max. 260 characters per path
                 return path.replace( /[\\\/\:\*\?\"\<\>\|\r\n\t]/g, '' );

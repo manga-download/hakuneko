@@ -17,6 +17,7 @@
             this.title = title;
             this.status = undefined;
             this.chapterCache = undefined;
+            this.existingChapters = [];
             this.updateStatus();
         }
 
@@ -34,7 +35,16 @@
          * 
          */
         updateStatus() {
-            Engine.Storage.getMangaStatus( this, this.setStatus.bind( this ) );
+            // look in the connector's list of existing mangas (found in directory), if this manga already exist
+            if( !this.connector || !this.connector.existingMangas ) {
+                return;
+            }
+            let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
+            if( this.connector.existingMangas[sanatizedTitle] ) {
+                this.setStatus( DownloadStatus.completed );
+            } else {
+                this.setStatus( DownloadStatus.available );
+            }
         }
 
         /**
@@ -42,21 +52,25 @@
          * Callback will be executed after completion and provided with a reference to the chapter list (empty on error).
          */
         getChapters( callback ) {
-            // check if chapter list is cached
-            if( this.chapterCache ) {
-                this.chapterCache.forEach( ( chapter ) => {
-                    chapter.updateStatus();
+            // find all chapter titles (sanitized) that are found in the directory for this manga
+            Engine.Storage.getExistingChapterTitles( this, ( error, existingChapterTitles ) => {
+                this.existingChapters = existingChapterTitles;
+                // check if chapter list is cached
+                if( this.chapterCache ) {
+                    this.chapterCache.forEach( ( chapter ) => {
+                        chapter.updateStatus();
+                    });
+                    callback( null, this.chapterCache );
+                    return;
+                }
+                // get chapter list directly from the connector interface and cache them
+                this.connector._getChapterList( this, ( error, chapters ) => {
+                    // de-serialize chapters into objects
+                    this.chapterCache = chapters.map( ( chapter ) => {
+                        return new Chapter( this, chapter.id, chapter.title, chapter.language );
+                    });
+                    callback( null, this.chapterCache );
                 });
-                callback( null, this.chapterCache );
-                return;
-            }
-            // get chapter list directly from the connector interface and cache them
-            this.connector._getChapterList( this, ( error, chapters ) => {
-                // de-serialize chapters into objects
-                this.chapterCache = chapters.map( ( chapter ) => {
-                    return new Chapter( this, chapter.id, chapter.title, chapter.language );
-                });
-                callback( null, this.chapterCache );
             });
         }
 

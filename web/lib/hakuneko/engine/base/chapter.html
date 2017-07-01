@@ -34,8 +34,20 @@
          */
         updateStatus() {
             // do not overwrite download status ...
-            if( !this.status || this.status === DownloadStatus.available || this.status === DownloadStatus.completed) {
-                Engine.Storage.getChapterStatus( this, this.setStatus.bind( this ) );
+            if( !this.status || this.status === DownloadStatus.available || this.status === DownloadStatus.completed ) {
+                // look in the manga's list of existing chapters (found in directory), if this chapter already exist
+                if( !this.manga || !this.manga.existingChapters ) {
+                    return;
+                }
+                let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
+                if( Engine.Settings.compressChapters.value ) {
+                    sanatizedTitle += '.cbz';
+                }
+                if( this.manga.existingChapters[sanatizedTitle] ) {
+                    this.setStatus( DownloadStatus.completed );
+                } else {
+                    this.setStatus( DownloadStatus.available );
+                }
             }
         }
 
