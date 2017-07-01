@@ -43,11 +43,13 @@
         getExistingMangaTitles( connector, callback ) {
             let directory = this._connectorOutputPath( connector );
             this.fs.readdir( directory, ( error, entries ) => {
-                // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
                 let titleMap = [];
-                entries.forEach( ( title ) => {
-                    titleMap[title] = true;
-                });
+                if( !error ) {
+                    // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
+                    entries.forEach( ( title ) => {
+                        titleMap[title] = true;
+                    });
+                }
                 callback( error, titleMap );
             });
         }
@@ -60,11 +62,13 @@
         getExistingChapterTitles( manga, callback ) {
             let directory = this._mangaOutputPath( manga );
             this.fs.readdir( directory, ( error, entries ) => {
-                // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
                 let titleMap = [];
-                entries.forEach( ( title ) => {
-                    titleMap[title] = true;
-                });
+                if( !error ) {
+                    // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
+                    entries.forEach( ( title ) => {
+                        titleMap[title] = true;
+                    });
+                }
                 callback( error, titleMap );
             });
         }
