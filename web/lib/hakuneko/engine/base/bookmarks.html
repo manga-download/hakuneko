@@ -1,0 +1,78 @@
+<link rel="import" href="bookmark.html">
+
+<script>
+
+    /**
+     * Base class for common BookmarkManager class implementation
+     */
+    class BookmarkManager {
+
+        constructor() {
+            this.bookmarks = [];
+        }
+
+        /**
+         * Load and apply the bookmarks from the given profile.
+         * Callback will be executed after the data has been loaded.
+         * Callback will be provided with an error (or null if no error).
+         */
+        loadProfile( profile, callback ) {
+            Engine.Storage.loadFromDB( 'bookmarks', profile, ( data, error) => {
+                if( !error && data && data.length && data.length > 0 ) {
+                    this.bookmarks = data;
+                    this.bookmarks.sort( this.compareBookmarks );
+                }   
+                ( callback ? callback( error ) : undefined );
+            });
+        }
+
+        /**
+         * Save the current bookmarks for the given profile.
+         * Callback will be executed after the data has been saved.
+         * Callback will be provided with an error (or null if no error).
+         */
+        saveProfile( profile, callback ) {
+            Engine.Storage.saveToDB( 'bookmarks', profile, this.bookmarks, ( error) => {
+                (callback ? callback( error ) : undefined );
+            });
+
+        }
+
+        addBookmark( manga ) {
+            if( !manga || ! manga.connector ) {
+                return false;
+            }
+            let index = this.bookmarks.findIndex( ( bookmark ) => {
+                return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+            });
+            if( index < 0 ) {
+                this.bookmarks.push( new Bookmark( manga ) );
+                this.bookmarks.sort( this.compareBookmarks );
+                this.saveProfile( 'default', undefined );
+                return true;
+            }
+            return false;
+        }
+
+        deleteBookmark( bookmark ) {
+            let index = this.bookmarks.findIndex( ( b ) => {
+                return ( b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector );
+            });
+            if( index > -1 ) {
+                this.bookmarks.splice( index, 1 );
+                this.saveProfile( 'default', undefined );
+                return true;
+            }
+            return false;
+        }
+
+        /**
+         * Helper function for sorting
+         */
+        compareBookmarks( a, b ) {
+            return ( a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 );
+        }
+    }
+    BookmarkManager; // reference the class to prevent removal of the class through js-minify
+
+</script>

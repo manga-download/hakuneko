@@ -1,0 +1,178 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-bookmarks">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            .show {
+                display: block;
+            }
+            .hide {
+                display: none;
+            }
+            .bookmark {
+                cursor: pointer;
+                color: var(--manga-bookmark-button-color);
+                text-shadow: var(--bookmark-button-shadow);
+            }
+            .bookmarkInactive {
+                color: var(--bookmark-button-inactive-color);
+            }
+            .bookmarkActive {
+                color: var(--bookmark-button-active-color);
+            }
+            .bookmarkExist {
+                color: var(--bookmark-button-exist-color);
+            }
+            #popup {
+                position: absolute;
+                min-width: 8em;
+                cursor: default;
+                text-shadow: initial;
+                color: initial;
+                border: var(--bookmark-list-border);
+                background-color: var(--bookmark-list-background-color);
+                padding: 0.25em;
+                overflow-y: scroll;
+                height: 10em;
+                z-index: 999;
+            }
+            .manga {
+                font-weight: bold;
+                text-align: left;
+                color: var(--bookmark-list-manga-color);
+                max-width: 16em;
+                overflow-x: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .connector {
+                padding-left: 1em;
+                color: var(--bookmark-list-connector-color);
+                text-align: left;
+                font-style: italic;
+            }
+            .button {
+                cursor: pointer;
+            }
+            .delete {
+                 color: var(--bookmark-list-delete-color);
+            }
+        </style>
+        <div>
+            <i class$="fa fa-fw [[ getBookmarkClass(selectedConnector,selectedManga,bookmarkList.length) ]] bookmark" title="Click to add the selected manga to bookmarks" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" on-click="addBookmark"></i>
+            <table id="popup" class$="[[ getPopupClass(showPopup,bookmarkList.length) ]]" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" >
+                <template is="dom-repeat" items="[[ bookmarkList ]]">
+                    <tr>
+                        <td class="manga"><span class="button" title$="Click to open:&#10;[[ item.title.manga ]]" on-click="openBookmark">[[ item.title.manga ]]</span></td>
+                        <td class="connector">[[ item.title.connector ]]</td>
+                        <td><i class="fa fa-fw fa-minus-circle button delete" title="Click to remove this manga from bookmarks" on-click="deleteBookmark"></i></td>
+                    </tr>
+                </template>
+            </table>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoBookmarks extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-bookmarks';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    selectedConnector: {
+                        type: Object
+                    },
+                    selectedManga: {
+                        type: Object
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.showPopup = false;
+                this.bookmarkList = Engine.BookmarkManager.bookmarks;
+            }
+
+            /**
+             *
+             */
+            getBookmarkClass( connector, manga, trigger ) {
+                if( connector && manga ) {
+                    let index = this.bookmarkList.findIndex( ( bookmark ) => {
+                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === connector.id );
+                    });
+                    if( index > -1 ) {
+                        return 'fa-star bookmarkExist';
+                    }
+                    return 'fa-star bookmarkActive';
+                }
+                return 'fa-star bookmarkInactive';
+            }
+
+            /**
+             *
+             */
+            getPopupClass(showPopup, bookmarksLength) {
+                return ( bookmarksLength && bookmarksLength > 0 && showPopup ? 'show' : 'hide' );
+            }
+
+            /**
+             *
+             */
+            showBookmarks() {
+                this.set( 'showPopup', true );
+            }
+
+            /**
+             *
+             */
+            hideBookmarks() {
+                this.set( 'showPopup', false );
+            }
+
+            /**
+             *
+             */
+            openBookmark( e ) {
+                this.dispatchEvent( new CustomEvent( 'bookmark-clicked', { detail: e.model.item } ) );
+                // hide bookmarks?
+            }
+
+            /**
+             *
+             */
+            addBookmark( e ) {
+                Engine.BookmarkManager.addBookmark( this.selectedManga );
+                // add bookmark to internal list or reload list?
+                this.notifyPath( 'bookmarkList.length' );
+            }
+
+            /**
+             *
+             */
+            deleteBookmark( e ) {
+                Engine.BookmarkManager.deleteBookmark( e.model.item );
+                // remove bookmark from internal list or reload list?
+                this.notifyPath( 'bookmarkList.length' );
+            }
+        }
+        window.customElements.define(HakunekoBookmarks.is, HakunekoBookmarks);
+    </script>
+
+</dom-module>

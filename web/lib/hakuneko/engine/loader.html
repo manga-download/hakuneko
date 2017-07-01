@@ -3,6 +3,7 @@
 <link rel="import" href="electron.html">
 <link rel="import" href="base/downloader.html">
 <link rel="import" href="base/connectors.html">
+<link rel="import" href="base/bookmarks.html">
 
 <script>
 
@@ -30,6 +31,16 @@
                 this._instanceDownloadManager = new DownloadManager();
             }
             return this._instanceDownloadManager;
+        }
+
+        /**
+         *
+         */
+        static get BookmarkManager() {
+            if( !this._instanceBookmarkManager ) {
+                this._instanceBookmarkManager = new BookmarkManager();
+            }
+            return this._instanceBookmarkManager;
         }
 
         /**
@@ -75,6 +86,7 @@
     }
 
     Engine.Settings.loadProfile( 'default', undefined );
+    Engine.BookmarkManager.loadProfile( 'default', undefined );
 
 
 

@@ -27,13 +27,27 @@
         }
 
         /**
-         * Helper function to create scheme for IndexedDB if not exist.
+         * Helper function to create scheme for IndexedDB if not exist
+         * and perform update of data layout for new scheme versions.
          */
         createIndexedDBScheme( event ) {
-            event.target.result.createObjectStore( 'mangas' );
-            event.target.result.createObjectStore( 'settings' );
-            event.target.result.createObjectStore( 'bookmarks', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id'] )*/;
-            event.target.result.createObjectStore( 'downloads', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id', 'chapter.id'] )*/;
+            if( event.oldVersion >= event.newVersion ) {
+                return;
+            }
+            console.log( 'Updated database scheme: ' + event.oldVersion + ' => ' + event.newVersion );
+            let db = event.target.result;
+            // initial object store
+            if( event.oldVersion < 1 ) {
+                db.createObjectStore( 'mangas' );
+                db.createObjectStore( 'settings' );
+                db.createObjectStore( 'bookmarks', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id'] )*/;
+                db.createObjectStore( 'downloads', {keyPath: 'id'} )/*.createIndex( 'combined', ['connector.id', 'manga.id', 'chapter.id'] )*/;
+            }
+            // changed bookmarks store to use separate key instead of object id
+            if( event.oldVersion < 2 && event.newVersion > 1 ) {
+                db.deleteObjectStore( 'bookmarks' );
+                db.createObjectStore( 'bookmarks' );
+            }
         }
 
         /**
@@ -45,7 +59,7 @@
          */
         saveToDB( collection, key, value, callback ) {
             // https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
-            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko' );
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko', 2 );
             scheme.onupgradeneeded = this.createIndexedDBScheme;
             scheme.onsuccess = function( event ) {
                 let db = event.target.result;
@@ -69,7 +83,7 @@
          */
         loadFromDB( collection, key, callback ) {
             // https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
-            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko' );
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko', 2 );
             scheme.onupgradeneeded = this.createIndexedDBScheme;
             scheme.onsuccess = function( event ) {
                 let db = event.target.result;

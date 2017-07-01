@@ -2,6 +2,7 @@
 <link rel="import" href="../iron-list/iron-list.html">
 <link rel="import" href="engine/base/enums.html">
 <link rel="import" href="engine/loader.html">
+<link rel="import" href="bookmarks.html">
 <link rel="import" href="status.html">
 <link rel="import" href="theme.html">
 
@@ -56,11 +57,6 @@
                 color: var(--manga-refresh-button-color);
                 text-shadow: var(--manga-refresh-button-shadow);
             }
-            .bookmark {
-                cursor: pointer;
-                color: var(--manga-bookmark-button-color);
-                text-shadow: var(--manga-bookmark-button-shadow);
-            }
             .disabled {
                 color: var(--manga-button-disabled-color);
                 cursor: progress !important; /* wait */
@@ -97,7 +93,7 @@
                     <input type="text" value="{{ searchPattern::input }}"/>
                 </td>
                 <td>
-                    <i class$="fa fa-fw [[ getBookmarkClass(selectedConnector,selectedManga) ]] bookmark" title="Add/Remove Bookmark:&#10;&#10;&lt;[[ selectedConnector.label ]]&gt;&#10;[[ selectedManga.title ]]"></i>
+                    <hakuneko-bookmarks selected-connector="{{ selectedConnector }}" selected-manga="{{ selectedManga }}" on-bookmark-clicked="onBookmarkClicked"></hakuneko-bookmarks>
                 </td>
             </tr>
         </table>
@@ -280,6 +276,34 @@
             }
 
             /**
+             *
+             */
+            onBookmarkClicked( e )
+            {
+                this.set( 'selectedManga', undefined );
+                let bookmark = e.detail;
+                let connector = Engine.Connectors.find( ( c ) => {
+                    return ( c.id === bookmark.key.connector );
+                });
+                if( !connector ) {
+                    return;
+                }
+                let statusID = this.$.status.addToQueue( 'Searching for bookmarked manga (' + bookmark.title.manga + ' => ' + bookmark.title.connector + ')' );
+                connector.getMangas( ( error, mangas ) => {
+                    let manga = mangas.find( ( m ) => {
+                        return ( m.id === bookmark.key.manga );
+                    });
+                    this.$.status.removeFromQueue( statusID );
+                    if( !manga ) {
+                        return;
+                    }
+                    this.set( 'searchPattern', bookmark.title.manga );
+                    this.set( 'selectedConnector', connector );
+                    this.set( 'selectedManga', manga );
+                });
+            }
+
+            /**
              * 
              */
             onMangaStatusChanged( e ) {
@@ -298,7 +322,7 @@
                 if( index > -1 ) {
                     this.notifyPath( 'mangaList.' + index + '.status' );
                 }
-            }  
+            }
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );
     </script>
