@@ -1,0 +1,25 @@
+<script>
+
+    /**
+     * Base class for common Bookmark class implementation
+     */
+    class Bookmark {
+
+        /**
+         *
+         */
+        constructor( manga ) {
+            //this.id = Symbol();
+            this.title = {
+                connector: manga.connector.label,
+                manga: manga.title
+            };
+            this.key = {
+                connector: manga.connector.id,
+                manga: manga.id
+            };
+        }
+    }
+    Bookmark; // reference the class to prevent removal of the class through js-minify
+
+</script>
