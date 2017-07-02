@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer-element.html">
-<link rel="import" href="../iron-list/iron-list.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<!-- <link rel="import" href="../iron-list/iron-list.html"> -->
 <link rel="import" href="engine/base/enums.html">
 <link rel="import" href="engine/loader.html">
 <link rel="import" href="bookmarks.html">
@@ -97,13 +98,20 @@
                 </td>
             </tr>
         </table>
+        <ul class="list" >
+            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}" initial-count="500" target-framerate="5">
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+            </template>
+        </ul>
+        <!--
         <iron-list class="list" items="[[ filteredMangas(mangaList,searchPattern) ]]">
             <template>
                 <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</div>
             </template>
         </iron-list>
+        -->
         <div class="footer">
-            <hakuneko-status id="status" message="Mangas: [[ mangaList.length ]]"></hakuneko-status>
+            <hakuneko-status id="status" message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"></hakuneko-status>
         </div>
     </template>
 
@@ -266,6 +274,7 @@
             /**
              *
              */
+            /*
             filteredMangas( mangas, pattern ) {
                 if( !mangas || !pattern || pattern.length < 3 ) {
                     return mangas;
@@ -273,6 +282,16 @@
                 return mangas.filter( ( manga ) => {
                     return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
                 });
+            }
+            */
+
+            filterMangas( pattern ) {
+                if( !pattern || pattern.length < 3 ) {
+                    return null;
+                }
+                return ( manga ) => {
+                    return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                };
             }
 
             /**
