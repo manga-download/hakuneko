@@ -214,7 +214,7 @@
              */
             onUpdateMangaListClick( e ) {
                 let connector = this.selectedConnector;
-                if( !connector ) {
+                if( !connector || connector.isUpdating ) {
                     return;
                 }
                 let statusID = this.$.status.addToQueue( 'Updating manga list (' + connector.label + ')' );
