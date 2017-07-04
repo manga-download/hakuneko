@@ -47,6 +47,7 @@
                         }
                     }
                 });
+                document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
                 ( callback ? callback( error ) : undefined );
             });
         }
@@ -73,9 +74,9 @@
                 }
             });
             Engine.Storage.saveToDB( 'settings', profile, data, ( error) => {
+                document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
                 (callback ? callback( error ) : undefined );
             });
-
         }
     }
     SettingsBase; // reference the class to prevent removal of the class through js-minify
