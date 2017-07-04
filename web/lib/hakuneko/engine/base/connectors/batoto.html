@@ -36,6 +36,7 @@
                     value: ''
                 }
             };
+            document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
         /**
@@ -93,7 +94,10 @@
          * Login to batoto website with username and password from settings to get a cookie
          * and gaining full access to all chapters.
          */
-        login( username, password ) {
+        onSettingsChanged( e ) {
+            let username = this.config.username.value;
+            let password = this.config.password.value;
+            console.log( username, password );
             if( !username || username.length < 1 || !password || password.length < 1 ) {
                 return;
             }
