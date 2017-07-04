@@ -97,7 +97,6 @@
         onSettingsChanged( e ) {
             let username = this.config.username.value;
             let password = this.config.password.value;
-            console.log( username, password );
             if( !username || username.length < 1 || !password || password.length < 1 ) {
                 return;
             }
