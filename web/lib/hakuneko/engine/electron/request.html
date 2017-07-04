@@ -19,8 +19,10 @@
         /**
          * Electron specific implementation of the get method for the request engine.
          * Callback arguments:
+         *   error => error that occurs in request module (or null if no error)
          *   content => the content of the requested url
          *   status => http status code of the request
+         *   headers => response headers of the request
          */
         get( href, referer, agent, callback ) {
             let options = {
@@ -34,32 +36,58 @@
                 //realEncoding: 'utf8',
                 encoding: null // keep content in binary presentation and do not convert
             };
-            let requestCallback = ( error, response, content ) => {
-                // no need to process cookies, they are handled automatically by JAR
-
-                if( error || !response || !content ) {
-                    response = response || {};
-                    content = content || '';
-                    if( error.code === 'ETIMEDOUT' ) {
-                        // FIXME: dangerous because of infinite loop ...
-                        this.request.get( options, requestCallback.bind( this ) );
-                        return;
-                        //response['statusCode'] = 408;
-                    }
-                }
-
-                let contentType = ( response.headers && response.headers['content-type'] ? response.headers['content-type'].toLowerCase() : '' );
-                if( contentType.indexOf( 'text' ) > -1 || contentType.indexOf( 'javascript' ) > -1 ) {
-                    if( contentType.indexOf( 'charset=utf-8' ) > -1 ) {
-                        content = content.toString( 'utf8' );
-                    } else {
-                        content = content.toString();
-                    }
-                }
-                callback( null, content, response.statusCode, response.headers );
-            };
-            this.request.get( options, requestCallback.bind( this ) );
+            this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, callback ); } );
         }
+
+        /**
+         * Electron specific implementation of the post method for the request engine.
+         * Callback arguments:
+         *   error => error that occurs in request module (or null if no error)
+         *   content => the content of the requested url
+         *   status => http status code of the request
+         *   headers => response headers of the request
+         */
+        post( href, form, referer, agent, callback ) {
+            let options = {
+                method: 'GET',
+                url: href,
+                headers: {
+                    'User-Agent': agent || this.agent,
+                    'Referer': referer || href
+                },
+                gzip: true,
+                form: form,
+                //realEncoding: 'utf8',
+                encoding: null // keep content in binary presentation and do not convert
+            };
+            this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, callback ); } );
+        }
+
+        /**
+         * Helper function relaying the processed results from the raw request to the callback.
+         */
+        _requestCallback ( error, response, content, callback ) {
+            // no need to process cookies, they are handled automatically by JAR
+            if( error || !response || !content ) {
+                response = response || {};
+                content = content || '';
+                if( error.code === 'ETIMEDOUT' ) {
+                    // FIXME: dangerous because of infinite loop ...
+                    this.request.get( options, this._requestCallback.bind( this ) );
+                    return;
+                    //response['statusCode'] = 408;
+                }
+            }
+            let contentType = ( response.headers && response.headers['content-type'] ? response.headers['content-type'].toLowerCase() : '' );
+            if( contentType.indexOf( 'text' ) > -1 || contentType.indexOf( 'javascript' ) > -1 ) {
+                if( contentType.indexOf( 'charset=utf-8' ) > -1 ) {
+                    content = content.toString( 'utf8' );
+                } else {
+                    content = content.toString();
+                }
+            }
+            callback( null, content, response.statusCode, response.headers );
+        };
     }
 
 </script>
