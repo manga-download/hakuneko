@@ -56,7 +56,7 @@
             Engine.Storage.getExistingChapterTitles( this, ( error, existingChapterTitles ) => {
                 this.existingChapters = existingChapterTitles;
                 // check if chapter list is cached
-                if( this.chapterCache ) {
+                if( this.chapterCache && this.chapterCache.length > 0 ) {
                     this.chapterCache.forEach( ( chapter ) => {
                         chapter.updateStatus();
                     });
