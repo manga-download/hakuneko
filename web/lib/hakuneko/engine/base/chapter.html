@@ -61,7 +61,7 @@
                 Engine.Storage.loadChapterPages( this, callback );
             } else {
             // check if page list is cached
-                if( this.pageCache ) {
+                if( this.pageCache && this.pageCache.length > 0 ) {
                     callback( null, this.pageCache );
                     return;
                 }
