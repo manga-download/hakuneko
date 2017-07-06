@@ -259,7 +259,8 @@
         sanatizePath ( path ) {
             if( this.platform.indexOf( 'win' ) === 0 ) {
                 // TODO: max. 260 characters per path
-                return path.replace( /[\\\/\:\*\?\"\<\>\|\r\n\t]/g, '' );
+                path = path.replace( /[\\\/\:\*\?\"\<\>\|\r\n\t]/g, '' );
+                return path.replace( /\.+$/g, '' ); //Remove trailing dots
             }
             if( this.platform.indexOf( 'linux' ) === 0 ) {
                 return path.replace( /[\/\r\n\t]/g, '' );
