@@ -11,6 +11,12 @@
          * Declare all settings that will be available for all engines
          */
         constructor() {
+            this.readerEnabled = {
+                label: 'Enable Reader',
+                description: 'Show a preview panel and a basic reader for the chapters',
+                input: Input.checkbox,
+                value: true
+            };
             this.compressChapters = {
                 label: 'Compress Chapters',
                 description: 'Compress chapters to comic book archives',
