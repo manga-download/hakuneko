@@ -103,7 +103,7 @@
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="processChapter" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
-                    <i class="fa fa-fw fa-picture-o button" on-click="selectChapter" title="Show preview of chapter's pages"></i>
+                    <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="selectChapter" title="Show preview of chapter's pages"></i>
                     <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
                 </li>
             </template>
@@ -152,9 +152,12 @@
              */
             ready() {
                 super.ready();
+                // 
+                this.readerEnabled = Engine.Settings.readerEnabled;
                 // list of all available chapters
                 this.chapterList = undefined;
                 // register callbacks for published events
+                document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
             }
 
@@ -239,6 +242,13 @@
             /**
              *
              */
+            getPagePreviewStyle( readerEnabled ) {
+                return ( readerEnabled ? '' : 'display: none;' );
+            }
+
+            /**
+             *
+             */
             processChapter( e ) {
                 let chapter = e.model.item;
                 switch ( chapter.status ) {
@@ -296,6 +306,13 @@
                     let matchLanguage = !language || ( chapter.language.toLowerCase().indexOf( language.toLowerCase() ) > -1 );
                     return ( matchTitle && matchLanguage );
                 };
+            }
+
+            /**
+             *
+             */
+            onSettingsChanged( e ) {
+                this.readerEnabled = Engine.Settings.readerEnabled.value;
             }
 
             /**
