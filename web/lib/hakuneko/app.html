@@ -55,7 +55,18 @@
                 z-index: 0;
                 overflow-x: hidden;
             }
+
+            #loader{
+                position: absolute;
+                top: 0;
+                left: 0;
+                bottom: 0;
+                right: 0;
+                background-color: #ffffff;
+                z-index: 9999;
+            }
         </style>
+        <div id="loader">LOADING ...</div>
         <div class$="control [[ getControlClass(page) ]]">
             <hakuneko-menu ></hakuneko-menu>
             <div class="mangas">
@@ -83,9 +94,14 @@
             ready() {
                 super.ready();
                 // 
-                this.readerEnabled = Engine.Settings.readerEnabled;
+                this.readerEnabled;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+                // hide loading screen after 2500 ms
+                setTimeout( (() => {
+                    // TODO: remove element from html?
+                    this.$.loader.style = 'display: none;';
+                }).bind( this ), 1000);
             }
 
             /**
