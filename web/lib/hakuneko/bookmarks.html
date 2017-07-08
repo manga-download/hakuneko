@@ -37,7 +37,7 @@
                 background-color: var(--bookmark-list-background-color);
                 padding: 0.25em;
                 overflow-y: scroll;
-                height: 10em;
+                height: 10.5em;
                 z-index: 999;
             }
             .manga {
@@ -106,7 +106,9 @@
             ready() {
                 super.ready();
                 this.showPopup = false;
-                this.bookmarkList = Engine.BookmarkManager.bookmarks;
+                this.bookmarkList = undefined;
+                // register callbacks for published events
+                document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }
 
             /**
@@ -159,8 +161,6 @@
              */
             addBookmark( e ) {
                 Engine.BookmarkManager.addBookmark( this.selectedManga );
-                // add bookmark to internal list or reload list?
-                this.notifyPath( 'bookmarkList.length' );
             }
 
             /**
@@ -168,7 +168,13 @@
              */
             deleteBookmark( e ) {
                 Engine.BookmarkManager.deleteBookmark( e.model.item );
-                // remove bookmark from internal list or reload list?
+            }
+
+            /**
+             *
+             */
+            onBookmarksChanged( e ) {
+                this.bookmarkList = e.detail;
                 this.notifyPath( 'bookmarkList.length' );
             }
         }
