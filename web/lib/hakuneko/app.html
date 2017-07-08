@@ -21,7 +21,7 @@
                 flex-direction: column;
                 width: 100%;
                 height: 100%;
-                flex: 0;
+                flex: 1;
                 border-right: var(--app-control-border);
                 -webkit-box-shadow: var(--app-control-shadow);
                    -moz-box-shadow: var(--app-control-shadow);
@@ -47,17 +47,11 @@
             hakuneko-menu {
                 flex: 0;
             }
-            hakuneko-mangas {
-                width: 20em;
-            }
-            hakuneko-chapters {
-                width: 20em;
-            }
             hakuneko-jobs {
                 flex: 0;
             }
             hakuneko-pages {
-                flex: 1;
+                flex: 100;
                 z-index: 0;
                 overflow-x: hidden;
             }
@@ -65,12 +59,12 @@
         <div class$="control [[ getControlClass(page) ]]">
             <hakuneko-menu ></hakuneko-menu>
             <div class="mangas">
-                <hakuneko-mangas selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
-                <hakuneko-chapters selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
+                <hakuneko-mangas style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
+                <hakuneko-chapters style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
             </div>
             <hakuneko-jobs></hakuneko-jobs>
         </div>
-        <hakuneko-pages selected-chapter="[[ chapter ]]" selected-page="{{ page }}"></hakuneko-pages>
+        <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled) ]]" selected-chapter="[[ chapter ]]" selected-page="{{ page }}"></hakuneko-pages>
     </template>
 
     <script>
@@ -86,8 +80,47 @@
             /**
              *
              */
+            ready() {
+                super.ready();
+                // 
+                this.readerEnabled = Engine.Settings.readerEnabled;
+                // register callbacks for published events
+                document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+            }
+
+            /**
+             *
+             */
             getControlClass( index ) {
                 return ( index < 0 ? 'show' : 'hide' );
+            }
+
+            /**
+             *
+             */
+            getMangaListStyle(readerEnabled) {
+                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+            }
+
+            /**
+             *
+             */
+            getChapterListStyle(readerEnabled) {
+                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+            }
+
+            /**
+             *
+             */
+            getPagePanelStyle(readerEnabled) {
+                return ( readerEnabled ? '' : 'display: none;' );
+            }
+
+            /**
+             *
+             */
+            onSettingsChanged( e ) {
+                this.readerEnabled = Engine.Settings.readerEnabled.value;
             }
         }
         window.customElements.define(HakunekoApp.is, HakunekoApp);
