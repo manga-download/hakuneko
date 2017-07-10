@@ -37,10 +37,12 @@
                             this.initialized = true;
                         } else {
                             console.error( '[ERROR: Failed to load KissManga script]', this.url + '/Scripts/lo.js' );
+                            this.initialized = undefined;
                         }
                     });
                 } else {
                     console.error( '[ERROR: Failed to load CryptoJS script]', this.url + '/Scripts/ca.js' );
+                    this.initialized = undefined;
                 }
             });
         }

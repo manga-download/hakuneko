@@ -5,6 +5,7 @@
 <link rel="import" href="chapters.html">
 <link rel="import" href="pages.html">
 <link rel="import" href="jobs.html">
+<link rel="import" href="fortune.html">
 
 <dom-module id="hakuneko-app">
 
@@ -57,16 +58,32 @@
             }
 
             #loader{
-                position: absolute;
-                top: 0;
-                left: 0;
-                bottom: 0;
-                right: 0;
-                background-color: #ffffff;
+                position: fixed;
+                color: var(--app-loading-screen-color);
+                background-color: var(--app-loading-screen-background-color);
+                text-align: center;
+                font-size: 1.5em;
+                padding: 1em;
+                top: 0%;
+                left: 0%;
+                bottom: 0%;
+                right: 0%;
                 z-index: 9999;
             }
         </style>
-        <div id="loader">LOADING ...</div>
+        <div id="loader">
+            <p style="font-size: 2em;">
+                Initializing <i class="fa fa-cog fa-spin"></i> Connectors
+            </p>
+            <hr width="75%">
+            <p>
+                Today's quote:
+            </p>
+            <p style="font-weight: bold; font-style: italic;">
+                &ldquo;[[ loadingMessage.text ]]&rdquo;<br>
+                &mdash; [[ loadingMessage.author ]]
+            </p>
+        </div>
         <div class$="control [[ getControlClass(page) ]]">
             <hakuneko-menu ></hakuneko-menu>
             <div class="mangas">
@@ -93,15 +110,22 @@
              */
             ready() {
                 super.ready();
+                this.loadingMessage = quotes[Math.floor(Math.random()*quotes.length)];
                 // load settings in case UI was not ready when the settings were loaded and event was fired
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
-                // hide loading screen after 2500 ms
-                setTimeout( (() => {
-                    // TODO: remove element from html?
-                    this.$.loader.style = 'display: none;';
-                }).bind( this ), 1000);
+                // disable loading screen when all connectors with initialization state are initialized
+                let disableLoadingScreen = () => {
+                    for( let connector of Engine.Connectors) {
+                        if( connector.initialized !== undefined && connector.initialized === false ) {
+                            setTimeout( disableLoadingScreen.bind( this ), 1000 );
+                            return;
+                        }
+                    }
+                    this.$.loader.parentNode.removeChild( this.$.loader );
+                };
+                disableLoadingScreen();
             }
 
             /**
