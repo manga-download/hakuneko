@@ -14,13 +14,14 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id       = 'batoto';
-            super.label    = 'Batoto';
-            super.isLocked = false;
+            super.id         = 'batoto';
+            super.label      = 'Batoto';
+            super.isLocked   = false;
             // Private members for internal usage only (convenience)
-            this.url       = 'https://bato.to';
-            this.referer   = 'https://bato.to';
-            this.agent     = 'Mozilla/5.0';
+            this.url         = 'https://bato.to';
+            this.referer     = 'https://bato.to';
+            this.agent       = 'Mozilla/5.0';
+            this.initialized = false;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 username: {
@@ -134,6 +135,7 @@
          */
         _login( username, password ) {
             if( !username || username.length < 1 || !password || password.length < 1 ) {
+                this.initialized = true;
                 return;
             }
             // initialization: login to batoto with credentials
@@ -154,6 +156,7 @@
                     if( error || status >= 400 ) {
                         console.error( '[ERROR: batoto auth failed]', error, status );
                     }
+                    this.initialized = true;    
                 });
             });
         }
