@@ -65,6 +65,7 @@
                 let dom = document.createElement( 'html' );
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
+                
                 let chapterList = [...dom.querySelectorAll( '.chapter-list dd a[class="name"]' )].map(  ( element ) => {
                     return {
                         id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
@@ -72,6 +73,31 @@
                         language: 'en'
                     };
                 });
+                
+                //Check for empty titles
+                let chap = undefined;
+                while( (chap = chapterList.find((chapter) => {return chapter.title == '';})) ){
+                    chap.title = manga.title;
+                }
+                
+                //Check for duplicates
+                let other_chap = undefined;
+                while( (chap = chapterList.find((chapter) => {
+                    return chapterList.find((otherChapter) => {
+                        other_chap = otherChapter;
+                        return ((chapter.title == otherChapter.title) && (chapter.id != otherChapter.id));
+                        });
+                    })) ){
+                    
+                    let duplicate_id = chap.id.match(/\d+$/);
+                    if(duplicate_id){
+                        chap.title = (chap.title + ' ' + duplicate_id);
+                    }else{
+                        duplicate_id = other_chap.id.match(/\d+$/);
+                        other_chap.title = (other_chap.title + ' ' + duplicate_id);
+                    }
+                }
+                
                 callback( null, chapterList );
             });
         }
