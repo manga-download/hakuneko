@@ -93,8 +93,8 @@
              */
             ready() {
                 super.ready();
-                // 
-                this.readerEnabled;
+                // load settings in case UI was not ready when the settings were loaded and event was fired
+                this.readerEnabled = Engine.Settings.readerEnabled.value;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 // hide loading screen after 2500 ms

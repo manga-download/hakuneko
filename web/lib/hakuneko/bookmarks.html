@@ -106,7 +106,8 @@
             ready() {
                 super.ready();
                 this.showPopup = false;
-                this.bookmarkList = undefined;
+                // load bookmarks in case UI was not ready when the bookmarks were loaded and event was fired
+                this.bookmarkList = Engine.BookmarkManager.bookmarks;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }
