@@ -21,7 +21,8 @@
                 if( !error && data && data.length && data.length > 0 ) {
                     this.bookmarks = data;
                     this.bookmarks.sort( this.compareBookmarks );
-                }   
+                }
+                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
                 ( callback ? callback( error ) : undefined );
             });
         }
@@ -33,6 +34,7 @@
          */
         saveProfile( profile, callback ) {
             Engine.Storage.saveToDB( 'bookmarks', profile, this.bookmarks, ( error) => {
+                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
                 (callback ? callback( error ) : undefined );
             });
 

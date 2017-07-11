@@ -5,6 +5,7 @@
 <link rel="import" href="chapters.html">
 <link rel="import" href="pages.html">
 <link rel="import" href="jobs.html">
+<link rel="import" href="fortune.html">
 
 <dom-module id="hakuneko-app">
 
@@ -21,7 +22,7 @@
                 flex-direction: column;
                 width: 100%;
                 height: 100%;
-                flex: 0;
+                flex: 1;
                 border-right: var(--app-control-border);
                 -webkit-box-shadow: var(--app-control-shadow);
                    -moz-box-shadow: var(--app-control-shadow);
@@ -47,30 +48,51 @@
             hakuneko-menu {
                 flex: 0;
             }
-            hakuneko-mangas {
-                width: 20em;
-            }
-            hakuneko-chapters {
-                width: 20em;
-            }
             hakuneko-jobs {
                 flex: 0;
             }
             hakuneko-pages {
-                flex: 1;
+                flex: 100;
                 z-index: 0;
                 overflow-x: hidden;
             }
+
+            #loader{
+                position: fixed;
+                color: var(--app-loading-screen-color);
+                background-color: var(--app-loading-screen-background-color);
+                text-align: center;
+                font-size: 1.5em;
+                padding: 1em;
+                top: 0%;
+                left: 0%;
+                bottom: 0%;
+                right: 0%;
+                z-index: 9999;
+            }
         </style>
+        <div id="loader">
+            <p style="font-size: 2em;">
+                Initializing <i class="fa fa-cog fa-spin"></i> Connectors
+            </p>
+            <hr width="75%">
+            <p>
+                Today's quote:
+            </p>
+            <p style="font-weight: bold; font-style: italic;">
+                &ldquo;[[ loadingMessage.text ]]&rdquo;<br>
+                &mdash; [[ loadingMessage.author ]]
+            </p>
+        </div>
         <div class$="control [[ getControlClass(page) ]]">
             <hakuneko-menu ></hakuneko-menu>
             <div class="mangas">
-                <hakuneko-mangas selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
-                <hakuneko-chapters selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
+                <hakuneko-mangas style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
+                <hakuneko-chapters style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
             </div>
             <hakuneko-jobs></hakuneko-jobs>
         </div>
-        <hakuneko-pages selected-chapter="[[ chapter ]]" selected-page="{{ page }}"></hakuneko-pages>
+        <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled) ]]" selected-chapter="[[ chapter ]]" selected-page="{{ page }}"></hakuneko-pages>
     </template>
 
     <script>
@@ -86,8 +108,59 @@
             /**
              *
              */
+            ready() {
+                super.ready();
+                this.loadingMessage = quotes[Math.floor(Math.random()*quotes.length)];
+                // load settings in case UI was not ready when the settings were loaded and event was fired
+                this.readerEnabled = Engine.Settings.readerEnabled.value;
+                // register callbacks for published events
+                document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+                // disable loading screen when all connectors with initialization state are initialized
+                let disableLoadingScreen = () => {
+                    for( let connector of Engine.Connectors) {
+                        if( connector.initialized !== undefined && connector.initialized === false ) {
+                            setTimeout( disableLoadingScreen.bind( this ), 1000 );
+                            return;
+                        }
+                    }
+                    this.$.loader.parentNode.removeChild( this.$.loader );
+                };
+                disableLoadingScreen();
+            }
+
+            /**
+             *
+             */
             getControlClass( index ) {
                 return ( index < 0 ? 'show' : 'hide' );
+            }
+
+            /**
+             *
+             */
+            getMangaListStyle(readerEnabled) {
+                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+            }
+
+            /**
+             *
+             */
+            getChapterListStyle(readerEnabled) {
+                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+            }
+
+            /**
+             *
+             */
+            getPagePanelStyle(readerEnabled) {
+                return ( readerEnabled ? '' : 'display: none;' );
+            }
+
+            /**
+             *
+             */
+            onSettingsChanged( e ) {
+                this.readerEnabled = Engine.Settings.readerEnabled.value;
             }
         }
         window.customElements.define(HakunekoApp.is, HakunekoApp);
