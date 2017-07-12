@@ -81,9 +81,9 @@
                 <td>
                     <select id="languageSelection" value="{{ searchLanguage::change }}">
                         <option value="">*</option>
-                        <option value="en">English</option>
-                        <option value="es">Spanish</option>
-                        <option value="fr">French</option>
+                        <template is="dom-repeat" items="[[ languageList ]]">
+                            <option value$="[[ item ]]">[[ item ]]</option>
+                        </template>
                     </select>
                 </td>
                 <td></td>
@@ -156,6 +156,8 @@
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
                 // list of all available chapters
                 this.chapterList = undefined;
+                // list of all existing languages in the chapter list
+                this.languageList = undefined
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
@@ -183,6 +185,10 @@
                     // only apply chapters when selected manga has not changed
                     if( manga === this.selectedManga ) {
                         this.set( 'chapterList', chapters );
+                        // extract languages from chapters and use a set to remove duplicates
+                        this.languageList = Array.from( new Set( chapters.map( ( chapter ) => {
+                            return chapter.language;
+                        }).sort() ));
                     }
                     this.$.status.removeFromQueue( statusID );
                 });
