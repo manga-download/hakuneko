@@ -135,19 +135,26 @@
          */
         _login( username, password ) {
             if( !username || username.length < 1 || !password || password.length < 1 ) {
-                this.initialized = true;
+                this.initialized = undefined;
                 return;
             }
             // initialization: login to batoto with credentials
             Engine.Request.get( this.url + '/forums/index.php?app=core', this.referer, this.agent, ( error, content ) => {
                 if( error ) {
                     console.error( '[ERROR: batoto login failed]', error );
+                    this.initialized = undefined;  
                     return;
                 }
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
+                let authElement = dom.querySelector( 'input[name="auth_key"]' );
+                if( !authElement ) {
+                    console.error( '[ERROR: batoto login failed]', error );
+                    this.initialized = undefined;  
+                    return;
+                }
                 let form = {
-                    auth_key: dom.querySelector( 'input[name="auth_key"]' ).value,
+                    auth_key: authElement.value,
                     ips_username: username,
                     ips_password: password,
                     anonymous: 1
