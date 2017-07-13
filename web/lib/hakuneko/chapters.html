@@ -102,8 +102,8 @@
         <ul class="list" >
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
-                    <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="processChapter" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
-                    <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="selectChapter" title="Show preview of chapter's pages"></i>
+                    <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
+                    <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
                     <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
                 </li>
             </template>
@@ -253,9 +253,9 @@
             }
 
             /**
-             *
+             * Determine chapter status and execute the corresponding action
              */
-            processChapter( e ) {
+            onProcessChapterClick( e ) {
                 let chapter = e.model.item;
                 switch ( chapter.status ) {
                     case DownloadStatus.unavailable:
@@ -284,9 +284,25 @@
             }
 
             /**
+             * Add all chapters currently visible (filtered) with status available to the download manager
+             */
+            onDownloadChaptersClick( e ) {
+                if(!this.chapterList || this.chapterList.length < 1) {
+                    return;
+                }
+                let filterFunction = this.filterChapters( this.searchPattern, this.searchLanguage );
+                (filterFunction ? this.chapterList.filter( filterFunction ) : this.chapterList).forEach( ( chapter ) => {
+                    if( chapter.status === DownloadStatus.available ) {
+                        console.log( chapter.title );
+                        Engine.DownloadManager.addDownload( chapter );
+                    }
+                });
+            }
+
+            /**
              * Select a chapter => this will trigger the pages to be viewed.
              */
-            selectChapter( e ) {
+            onSelectChapterClick( e ) {
                 if( !e.model || !e.model.item ) {
                     return;
                 }
