@@ -72,7 +72,19 @@
                 flex: 0;
             }
         </style>
-        <div class="header separator">Chapter List</div>
+        <div class="header separator">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td>
+                        Chapter List 
+                        <i class$="fa fa-fw button [[ getSortClass(chapterSort) ]]" on-click="onToggleSortClick" title="Click to toggle chapter sorting"></i>
+                    </td>
+                    <td width="1"> 
+                        <i class="fa fa-fw fa-download button" on-click="onDownloadChaptersClick" title="Click to download all chapters currently shown in the filtered and sorted list"></i>
+                    </td>
+                </tr>
+            </table>
+           </div>
         <table class="filter separator">
             <tr>
                 <td>
@@ -100,11 +112,6 @@
         </table>
         <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
         <ul class="list" >
-            <li class="separator">
-                <i class="fa fa-fw fa-download button" on-click="onDownloadChaptersClick" title="Click to download all available chapters currently visible in the (filtered) list"></i>
-                <i class$="fa fa-fw button [[ getSortClass(chapterSort) ]]" on-click="onToggleSortClick" title="Click to toggle chapter sorting"></i>
-                <strong class=>CHAPTERS</strong>
-            </li>
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" sort="[[ sortChapters(chapterSort) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
@@ -213,9 +220,9 @@
             getSortClass( chapterSort ) {
                 switch ( chapterSort ) {
                     case this.sort.asc:
-                        return 'fa-sort-alpha-asc';
+                        return 'fa-sort-asc';
                     case this.sort.desc:
-                        return 'fa-sort-alpha-desc';
+                        return 'fa-sort-desc';
                     default:
                         return 'fa-sort';
                 }
