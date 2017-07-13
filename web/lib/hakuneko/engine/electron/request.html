@@ -67,7 +67,10 @@
          * Helper function relaying the processed results from the raw request to the callback.
          */
         _requestCallback ( error, response, content, callback ) {
-console.log( 'BATOTO Cookies:', response.request._jar.getCookieString( 'https://bato.to' ) );
+console.log('<REQUEST>', response.request.url);
+console.log( '  ', 'BATOTO Cookies (request):', response.request._jar.getCookieString( 'https://bato.to' ) );
+console.log( '  ', 'BATOTO Cookies (response):', response.headers['set-cookie'] );
+console.log('</REQUEST>');
             // no need to process cookies, they are handled automatically by JAR
             if( error || !response || !content ) {
                 response = response || {};
