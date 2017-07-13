@@ -324,7 +324,17 @@
                     return null;
                 }
                 return ( chapter ) => {
-                    let matchTitle = !pattern || ( chapter.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                    let matchTitle;
+                    let regex = pattern.split( '/' );
+                    if( regex.length === 3 && regex[0].length === 0 && regex[1].length > 0 ) {
+                        try {
+                            matchTitle = ( new RegExp( regex[1], regex[2] ) ).test( chapter.title );
+                        } catch( error ) {
+                            matchTitle = false;
+                        }
+                    } else {
+                        matchTitle = !pattern || ( chapter.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                    }
                     let matchLanguage = !language || ( chapter.language.toLowerCase().indexOf( language.toLowerCase() ) > -1 );
                     return ( matchTitle && matchLanguage );
                 };
