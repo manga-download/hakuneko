@@ -90,7 +90,7 @@
             </tr>
             <tr>
                 <td>
-                    <i class="fa fa-fw fa-search" title="Enter a pattern to filter the chapter list by their titles"></i>
+                    <i class="fa fa-fw fa-search" title="Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles"></i>
                 </td>
                 <td style="width: 100%;">
                     <input type="text" value="{{ searchPattern::input }}"/>
@@ -100,7 +100,12 @@
         </table>
         <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
         <ul class="list" >
-            <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
+            <li class="separator">
+                <i class="fa fa-fw fa-download button" on-click="onDownloadChaptersClick" title="Click to download all available chapters currently visible in the (filtered) list"></i>
+                <i class$="fa fa-fw button [[ getSortClass(chapterSort) ]]" on-click="onToggleSortClick" title="Click to toggle chapter sorting"></i>
+                <strong class=>CHAPTERS</strong>
+            </li>
+            <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" sort="[[ sortChapters(chapterSort) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
                     <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
@@ -154,6 +159,14 @@
                 super.ready();
                 // load settings in case UI was not ready when the settings were loaded and event was fired
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
+                //
+                this.sort = {
+                    none: null,
+                    asc: Symbol(),
+                    desc: Symbol()
+                };
+                // sort direction and type used for chapter list
+                this.chapterSort = this.sort.none;
                 // list of all available chapters
                 this.chapterList = undefined;
                 // list of all existing languages in the chapter list
@@ -192,6 +205,20 @@
                     }
                     this.$.status.removeFromQueue( statusID );
                 });
+            }
+
+            /**
+             *
+             */
+            getSortClass( chapterSort ) {
+                switch ( chapterSort ) {
+                    case this.sort.asc:
+                        return 'fa-sort-alpha-asc';
+                    case this.sort.desc:
+                        return 'fa-sort-alpha-desc';
+                    default:
+                        return 'fa-sort';
+                }
             }
 
             /**
@@ -290,13 +317,42 @@
                 if(!this.chapterList || this.chapterList.length < 1) {
                     return;
                 }
+                // clone list for in-place sorting
+                let chapterList = this.chapterList.slice();
+                let sortFunction = this.sortChapters( this.chapterSort );
+                if( sortFunction ) {
+                    chapterList.sort( sortFunction );
+                }
                 let filterFunction = this.filterChapters( this.searchPattern, this.searchLanguage );
-                (filterFunction ? this.chapterList.filter( filterFunction ) : this.chapterList).forEach( ( chapter ) => {
+                if( filterFunction ) {
+                    chapterList = chapterList.filter( filterFunction );
+                }
+                chapterList.forEach( ( chapter ) => {
                     if( chapter.status === DownloadStatus.available ) {
                         console.log( chapter.title );
                         Engine.DownloadManager.addDownload( chapter );
                     }
                 });
+            }
+
+            /**
+             *
+             */
+            onToggleSortClick( e ) {
+                switch ( this.chapterSort ) {
+                    case this.sort.none:
+                        this.set( 'chapterSort', this.sort.asc );
+                        break;
+                    case this.sort.asc:
+                        this.set( 'chapterSort', this.sort.desc );
+                        break;
+                    case this.sort.desc:
+                        this.set( 'chapterSort', this.sort.none );
+                        break;
+                    default:
+                        this.set( 'chapterSort', this.sort.none );
+                        break;
+                }
             }
 
             /**
@@ -338,6 +394,20 @@
                     let matchLanguage = !language || ( chapter.language.toLowerCase().indexOf( language.toLowerCase() ) > -1 );
                     return ( matchTitle && matchLanguage );
                 };
+            }
+
+            /**
+             *
+             */
+            sortChapters( chapterSort ) {
+                let collator = new Intl.Collator( undefined, { numeric: true, sensitivity: 'base' } );
+                if( chapterSort === this.sort.asc ) {
+                    return ( a, b ) => { return collator.compare( a.title, b.title ); };
+                }
+                if( chapterSort === this.sort.desc ) {
+                    return ( a, b ) => { return -1 * collator.compare( a.title, b.title ); };
+                }
+                return null;
             }
 
             /**
