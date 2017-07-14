@@ -1,21 +1,40 @@
 #!/bin/bash
 
+PUBLISHER="Ronny Wegener"
+PACKAGE="hakuneko-desktop"
+PRODUCT="HakuNeko Desktop"
+VERSION="0.0.31"
+DESCRIPTION_SHORT="Manga Downloader"
+DESCRIPTION_LONG=""
+YEAR="$(date +%Y)"
+URL="http://sourceforge.net/projects/hakuneko"
+BIN_WINDOWS="hakuneko.exe"
+BIN_DARWIN="hakuneko"
+BIN_LINUX="hakuneko"
+
 function build {
-    rm -r -f "build/$1"
-    unzip "redist/electron-v1.*-$1.zip" -d "build/$1"
-    rm -f "build/$1/version"
-    rm -f "build/$1/LICENSE"*
-    rm -r -f "build/$1/locales"
-    rm -r -f "build/$1/resources/default_app.asar"
-    if [[ $1 =~ linux.* ]]
+    rm -r -f "build/$2"
+    unzip "redist/electron-v1.*-$1.zip" -d "build/$2"
+    rm -f "build/$2/version"
+    rm -f "build/$2/LICENSE"*
+    rm -r -f "build/$2/locales"
+    rm -r -f "build/$2/resources/default_app.asar"
+    if [[ $2 =~ linux.* ]]
     then
-        mv "build/$1/electron" "build/$1/hakuneko"
+        mv "build/$2/electron" "build/$2/$BIN_LINUX"
     fi
-    if [[ $1 =~ win32.* ]]
+    if [[ $2 =~ windows.* ]]
     then
-        mv "build/$1/electron.exe" "build/$1/hakuneko.exe"
+        mv "build/$2/electron.exe" "build/$2/$BIN_WINDOWS"
     fi
-    cp -r "src" "build/$1/resources/app"
+    cp -r "src" "build/$2/resources/app"
+}
+
+function compress {
+    cd "build"
+    rm -f "$1.zip"
+    zip -r "$1.zip" "$1"
+    cd ..
 }
 
 set -e
