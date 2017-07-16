@@ -67,10 +67,12 @@
          * Helper function relaying the processed results from the raw request to the callback.
          */
         _requestCallback ( error, response, content, callback ) {
-console.log('<REQUEST>', response.request.url);
-console.log( '  ', 'BATOTO Cookies (request):', response.request._jar.getCookieString( 'https://bato.to' ) );
-console.log( '  ', 'BATOTO Cookies (response):', response.headers['set-cookie'] );
+if( response.request.host.indexOf( 'bato.to' ) > -1 ) {
+console.log('<REQUEST host="' + response.request.host + '" path="' + response.request.path + '">');
+console.log( '  ', 'BATOTO Cookies (request):', response.request._jar.getCookieString( 'https://bato.to' ).split(';').find( ( cookie ) => { return cookie.indexOf('session_id') > -1; } ) );
+console.log( '  ', 'BATOTO Cookies (response):', response.headers['set-cookie'].find( ( cookie ) => { return cookie.indexOf('session_id') > -1; } ) );
 console.log('</REQUEST>');
+}
             // no need to process cookies, they are handled automatically by JAR
             if( error || !response || !content ) {
                 response = response || {};
