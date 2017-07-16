@@ -196,8 +196,8 @@
              */
             onSelectedMangaChanged( manga ) {
                 this.set( 'selectedChapter', undefined );
+                this.set( 'chapterList', undefined );
                 if( !this.selectedConnector || !manga ) {
-                    this.set( 'chapterList', undefined );
                     return;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
