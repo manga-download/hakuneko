@@ -130,6 +130,7 @@
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
+                /*
                 let pageList = [];
                 let promise = new Promise( () => {
                     console.log( pageList );
@@ -147,6 +148,32 @@
                         promise.resolve( key );
                     });
                 });
+                */
+                let pageList = [...dom.querySelector( 'select#page_select:first-child' ).querySelectorAll( 'option' )].map(  ( element ) => {
+                    return this._areaderURL( element.value );
+                });
+
+                this._getPageListSync( callback, pageList, 0 );
+            });
+        }
+
+        /**
+         *
+         */
+        _getPageListSync( callback, pageList, index ) {
+            console.log( index, pageList.length );
+            if( index > pageList.length - 1 ) {
+                callback( null, pageList );
+                return;
+            }
+            Engine.Request.get( pageList[index], this.url + '/reader', this.agent, ( error, content, status ) => {
+                // prevent scropts and iframes from loading
+                //content = content.replace( /<script[^<]*?>/g, '<script>');
+                //content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                pageList[index] = dom.querySelector( 'img#comic_page' ).src;
+                this._getPageListSync( callback, pageList, index+1 );
             });
         }
 
