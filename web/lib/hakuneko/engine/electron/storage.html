@@ -90,8 +90,44 @@
                 //this._loadChapterPagesPDF( path, callback );
             }
             if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
-                //this._loadChapterPagesEPUB( path, callback );
+                this._loadChapterPagesEPUB( path, callback );
             }
+        }
+
+        /**
+         * Read image data from e-book.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured)
+         * and a reference to the page list (undefined on error).
+         */
+        _loadChapterPagesEPUB( ebook, callback ) {
+            let errors = [];
+            this.fs.readFile( ebook, ( function ( readingError, data ) {
+                if( readingError ) {
+                    errors.push( readingError );
+                }
+                let zip = new this.jszip();
+                zip.loadAsync( data, {} ).then( ( unzip ) => {
+                    let pages = [];
+                    let timestamp = Date.now();
+                    let promise = new Promise( () => {
+                        callback( null, ( errors.length > 0 ? undefined : pages.sort() ) );
+                    });
+                    unzip.folder( 'OEBPS' ).folder( 'img' ).forEach( ( name, entry ) => {
+                        let key = promise.defer();
+                        name = this.path.join( this.temp, name );
+                        entry.async( 'uint8array' ).then( ( data ) => {
+                            this.fs.writeFile( name, data, function( writingError ) {
+                                if( writingError ) {
+                                    errors.push( writingError );
+                                }
+                                // attach timestamp to force reload of already existing, but overwritten temp files
+                                pages.push( encodeURI( 'file://' + name.replace(/\\/g, '/') + '?ts=' + timestamp ) );
+                                promise.resolve( key );
+                            });
+                        });
+                    });
+                });
+            }).bind( this ) );
         }
 
         /**
@@ -178,9 +214,41 @@
                 //this._saveChapterPagesPDF( output, pageData, callback );
             }
             if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
-                //this._createDirectoryChain( this.path.dirname( output ) );
-                //this._saveChapterPagesEPUB( output, pageData, callback );
+                this._createDirectoryChain( this.path.dirname( output ) );
+                this._saveChapterPagesEPUB( output, pageData, callback );
             }
+        }
+
+        /**
+         * Create and save pages to the given e-book file.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
+         */
+        _saveChapterPagesEPUB( ebook, pageData, callback ) {
+            let zip = new this.jszip();
+            zip.file( 'mimetype', EbookGenerator.createMimetype() );
+            zip.folder( 'META-INF' ).file( 'container.xml', EbookGenerator.createContainerXML() );
+            let oebps = zip.folder('OEBPS');
+            oebps.folder( 'css' ).file( 'style.css', EbookGenerator.createStyleCSS() );
+            let img = oebps.folder( 'img' );
+            let xhtml = oebps.folder( 'xhtml' );
+            let params = [];
+            pageData.forEach( ( page, index ) => {
+                img.file( page.name, page.data );
+                xhtml.file( index + '.xhtml', EbookGenerator.createPageXHTML( page.name ) );
+                params.push({
+                    img: page.name,
+                    xhtml: index + '.xhtml',
+                    mime: this._pageFileMime( page.name )
+                });
+            });
+            let uid = btoa( ebook ).replace(/[^a-zA-Z]/g, '');;
+            oebps.file( 'content.opf', EbookGenerator.createContentOPF( uid, '', params ) );
+            oebps.file( 'toc.ncx', EbookGenerator.createTocNCX( uid, '', params ) );
+            zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
+                this.fs.writeFile( ebook, data, function( error ) {
+                    callback( error );
+                });
+            });
         }
 
         /**
