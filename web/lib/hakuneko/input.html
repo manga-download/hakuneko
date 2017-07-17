@@ -40,6 +40,15 @@
                 <input type="text" value="{{ item.value::change }}"/>
             </div>
         </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.select) ]]" restamp="false">
+            <div class="stretch">
+                <select value="{{ item.value::change }}">
+                    <template is="dom-repeat" items="[[ item.options ]]" as="option">
+                        <option value="[[ option.value ]]" selected$="[[ isSelected(item.value, option.value) ]]">[[ option.name ]]</option>
+                    </template>
+                </select>
+            </div>
+        </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.checkbox) ]]" restamp="false">
             <div class="stretch">
                 <input type="checkbox" checked="{{ item.value::change }}"/>
@@ -103,6 +112,12 @@
                 return ( inputType === expectedType );
             }
 
+            /**
+             *
+             */
+            isSelected(selected, option){
+                return ( selected === option );
+            }
             /**
              *
              */

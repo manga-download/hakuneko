@@ -40,8 +40,14 @@
                     return;
                 }
                 let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
-                if( Engine.Settings.compressChapters.value ) {
-                    sanatizedTitle += '.cbz';
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
+                    sanatizedTitle += ChapterFormat.cbz;
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
+                    sanatizedTitle += ChapterFormat.pdf;
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
+                    sanatizedTitle += ChapterFormat.epub;
                 }
                 if( this.manga.existingChapters[sanatizedTitle] ) {
                     this.setStatus( DownloadStatus.completed );
