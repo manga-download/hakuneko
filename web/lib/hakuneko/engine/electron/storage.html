@@ -80,11 +80,54 @@
          */
         loadChapterPages( chapter, callback ) {
             let path = this._chapterOutputPath( chapter );
-            if( Engine.Settings.compressChapters.value ) {
-                this._loadChapterPagesCBZ( path, callback );
-            } else {
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
                 this._loadChapterPagesFolder( path, callback );
             }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
+                this._loadChapterPagesCBZ( path, callback );
+            }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
+                //this._loadChapterPagesPDF( path, callback );
+            }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
+                this._loadChapterPagesEPUB( path, callback );
+            }
+        }
+
+        /**
+         * Read image data from e-book.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured)
+         * and a reference to the page list (undefined on error).
+         */
+        _loadChapterPagesEPUB( ebook, callback ) {
+            let errors = [];
+            this.fs.readFile( ebook, ( function ( readingError, data ) {
+                if( readingError ) {
+                    errors.push( readingError );
+                }
+                let zip = new this.jszip();
+                zip.loadAsync( data, {} ).then( ( unzip ) => {
+                    let pages = [];
+                    let timestamp = Date.now();
+                    let promise = new Promise( () => {
+                        callback( null, ( errors.length > 0 ? undefined : pages.sort() ) );
+                    });
+                    unzip.folder( 'OEBPS' ).folder( 'img' ).forEach( ( name, entry ) => {
+                        let key = promise.defer();
+                        name = this.path.join( this.temp, name );
+                        entry.async( 'uint8array' ).then( ( data ) => {
+                            this.fs.writeFile( name, data, function( writingError ) {
+                                if( writingError ) {
+                                    errors.push( writingError );
+                                }
+                                // attach timestamp to force reload of already existing, but overwritten temp files
+                                pages.push( encodeURI( 'file://' + name.replace(/\\/g, '/') + '?ts=' + timestamp ) );
+                                promise.resolve( key );
+                            });
+                        });
+                    });
+                });
+            }).bind( this ) );
         }
 
         /**
@@ -158,13 +201,54 @@
             });
 
             let output = this._chapterOutputPath( chapter );
-            if( Engine.Settings.compressChapters.value ) {
-                this._createDirectoryChain( this.path.dirname( output ) );
-                this._saveChapterPagesCBZ( output, pageData, callback );
-            } else {
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
                 this._createDirectoryChain( output );
                 this._saveChapterPagesFolder( output, pageData, callback );
             }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
+                this._createDirectoryChain( this.path.dirname( output ) );
+                this._saveChapterPagesCBZ( output, pageData, callback );
+            }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
+                //this._createDirectoryChain( this.path.dirname( output ) );
+                //this._saveChapterPagesPDF( output, pageData, callback );
+            }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
+                this._createDirectoryChain( this.path.dirname( output ) );
+                this._saveChapterPagesEPUB( output, pageData, callback );
+            }
+        }
+
+        /**
+         * Create and save pages to the given e-book file.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
+         */
+        _saveChapterPagesEPUB( ebook, pageData, callback ) {
+            let zip = new this.jszip();
+            zip.file( 'mimetype', EbookGenerator.createMimetype() );
+            zip.folder( 'META-INF' ).file( 'container.xml', EbookGenerator.createContainerXML() );
+            let oebps = zip.folder('OEBPS');
+            oebps.folder( 'css' ).file( 'style.css', EbookGenerator.createStyleCSS() );
+            let img = oebps.folder( 'img' );
+            let xhtml = oebps.folder( 'xhtml' );
+            let params = [];
+            pageData.forEach( ( page, index ) => {
+                img.file( page.name, page.data );
+                xhtml.file( index + '.xhtml', EbookGenerator.createPageXHTML( page.name ) );
+                params.push({
+                    img: page.name,
+                    xhtml: index + '.xhtml',
+                    mime: this._pageFileMime( page.name )
+                });
+            });
+            let uid = btoa( ebook ).replace(/[^a-zA-Z]/g, '');;
+            oebps.file( 'content.opf', EbookGenerator.createContentOPF( uid, '', params ) );
+            oebps.file( 'toc.ncx', EbookGenerator.createTocNCX( uid, '', params ) );
+            zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
+                this.fs.writeFile( ebook, data, function( error ) {
+                    callback( error );
+                });
+            });
         }
 
         /**
@@ -233,8 +317,14 @@
         _chapterOutputPath( chapter ) {
             let output = this._mangaOutputPath( chapter.manga );
             output = this.path.join( output, this.sanatizePath( chapter.title ) );
-            if( Engine.Settings.compressChapters.value ) {
-                output += '.cbz';
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
+                output += ChapterFormat.cbz;
+            }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
+                output += ChapterFormat.pdf;
+            }
+            if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
+                output += ChapterFormat.epub;
             }
             return output;
         }
