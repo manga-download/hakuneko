@@ -54,11 +54,6 @@
             content += '        <dc:title>' + title + '</dc:title>\n';
             content += '        <dc:language>und</dc:language>\n';
             content += '        <dc:identifier id="' + uid + '" opf:scheme="UUID">' + uid + '</dc:identifier>\n';
-            content += '        <!--\n';
-            content += '        <dc:creator opf:role="aut"></dc:creator>\n';
-            content += '        <dc:rights></dc:rights>\n';
-            content += '        <dc:publisher></dc:publisher>\n';
-            content += '        -->\n';
             content += '    </metadata>\n';
             content += '    <manifest>\n';
             content += '        <item id="ncx" href="toc.ncx" media-type="application/x-dtbncx+xml"/>\n';
@@ -83,11 +78,6 @@
             content += '<ncx xmlns="http://www.daisy.org/z3986/2005/ncx/" version="2005-1">\n';
             content += '    <head>\n';
             content += '        <meta name="dtb:uid" content="' + uid + '"/>\n';
-            content += '        <!--\n';
-            content += '        <meta name="dtb:depth" content="2"/>\n';
-            content += '        <meta name="dtb:totalPageCount" content="0"/>\n';
-            content += '        <meta name="dtb:maxPageNumber" content="0"/>\n';
-            content += '        -->\n';
             content += '    </head>\n';
             content += '    <docTitle>\n';
             content += '        <text>' + title + '</text>\n';
