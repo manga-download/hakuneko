@@ -77,6 +77,8 @@
                 <tr>
                     <td>
                         Chapter List 
+                    </td>
+                    <td width="1"> 
                         <i class$="fa fa-fw button [[ getSortClass(chapterSort) ]]" on-click="onToggleSortClick" title="Click to toggle chapter sorting"></i>
                     </td>
                     <td width="1"> 
@@ -334,12 +336,14 @@
                 if( filterFunction ) {
                     chapterList = chapterList.filter( filterFunction );
                 }
-                chapterList.forEach( ( chapter ) => {
-                    if( chapter.status === DownloadStatus.available ) {
-                        console.log( chapter.title );
-                        Engine.DownloadManager.addDownload( chapter );
-                    }
+                chapterList = chapterList.filter( ( chapter ) => {
+                    return ( chapter.status === DownloadStatus.available );
                 });
+                if( chapterList.length > 0 && confirm( 'Download ' + chapterList.length + ' new chapter(s) from the current chapter list?' ) ) {
+                    chapterList.forEach( ( chapter ) => {
+                        Engine.DownloadManager.addDownload( chapter );
+                    });
+                }
             }
 
             /**
