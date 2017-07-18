@@ -24,6 +24,18 @@
                 input: Input.checkbox,
                 value: false
             };
+            this.chapterFormat = {
+                label: 'Chapter Format',
+                description: 'Store chapters in the selected file format',
+                input: Input.select,
+                options: [
+                    { value: ChapterFormat.img, name: 'Folder with Images (*.jpg, *.png)' },
+                    { value: ChapterFormat.cbz, name: 'Comic Book Archive (*.cbz)' },
+                    //{ value: ChapterFormat.pdf, name: 'Portable Document Format (*.pdf)' },
+                    { value: ChapterFormat.epub, name: 'Ebook Reader (*.epub)' },
+                ],
+                value: 1
+            };
         }
     }
 
