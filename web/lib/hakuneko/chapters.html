@@ -392,8 +392,8 @@
                 }
                 return ( chapter ) => {
                     let matchTitle;
-                    let regex = pattern.split( '/' );
-                    if( regex.length === 3 && regex[0].length === 0 && regex[1].length > 0 ) {
+                    let regex = ( pattern ? pattern.split( '/' ) : undefined );
+                    if( regex && regex.length === 3 && regex[0].length === 0 && regex[1].length > 0 ) {
                         try {
                             matchTitle = ( new RegExp( regex[1], regex[2] ) ).test( chapter.title );
                         } catch( error ) {
