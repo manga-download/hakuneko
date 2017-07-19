@@ -241,7 +241,7 @@
                     mime: this._pageFileMime( page.name )
                 });
             });
-            let uid = btoa( ebook ).replace(/[^a-zA-Z]/g, '');;
+            let uid = btoa( encodeURIComponent( ebook ) ).replace(/[^a-zA-Z]/g, '');;
             oebps.file( 'content.opf', EbookGenerator.createContentOPF( uid, '', params ) );
             oebps.file( 'toc.ncx', EbookGenerator.createTocNCX( uid, '', params ) );
             zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
