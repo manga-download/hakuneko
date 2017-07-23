@@ -73,9 +73,13 @@
                 content = content || '';
                 if( error.code === 'ETIMEDOUT' ) {
                     // FIXME: dangerous because of infinite loop ...
-                    this.request.get( options, this._requestCallback.bind( this ) );
+                    if( options.method.toUpperCase() === 'GET' ) {
+                        this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
+                    }
+                    if( options.method.toUpperCase() === 'POST' ) {
+                        this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
+                    }
                     return;
-                    //response['statusCode'] = 408;
                 }
             }
             let contentType = ( response.headers && response.headers['content-type'] ? response.headers['content-type'].toLowerCase() : '' );
