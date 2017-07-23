@@ -18,6 +18,7 @@
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.mangago.me';
+            this.initialized    = false;
             this.manga_list_page_nb   = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
@@ -33,11 +34,14 @@
                     if(max_page_text != null){
                         max_page_text = max_page_text.textContent.trim();
                         this.manga_list_page_nb = parseInt(max_page_text);
+                        this.initialized = true;
                     }else{
                         console.error( 'Failed to get MangaGo manga list page number (can\'t find number');
+                        this.initialized = undefined;
                     }
                 } else {
                     console.error( 'Failed to get MangaGo manga list page number (error ' + error + ')');
+                    this.initialized = undefined;
                 }
             });
         }
