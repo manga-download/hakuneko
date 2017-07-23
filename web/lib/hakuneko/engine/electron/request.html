@@ -36,7 +36,7 @@
                 //realEncoding: 'utf8',
                 encoding: null // keep content in binary presentation and do not convert
             };
-            this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, callback ); } );
+            this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
         }
 
         /**
@@ -60,13 +60,13 @@
                 //realEncoding: 'utf8',
                 encoding: null // keep content in binary presentation and do not convert
             };
-            this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, callback ); } );
+            this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
         }
 
         /**
          * Helper function relaying the processed results from the raw request to the callback.
          */
-        _requestCallback ( error, response, content, callback ) {
+        _requestCallback ( error, response, content, options, callback ) {
             // no need to process cookies, they are handled automatically by JAR
             if( error || !response || !content ) {
                 response = response || {};
