@@ -46,10 +46,10 @@
                 Engine.Storage.saveMangaList( this.id, mangas, ( error ) => {
                     // callback function may access update status, so set it before executing callback
                     this.isUpdating = false;
+                    this.mangaCache = undefined;
                     if( error ) {
                         // update failed
                         console.error( error.message );
-                        this.mangaCache = undefined;
                         callback( null, undefined );
                     } else {
                         // de-serialize manga list from local storage
