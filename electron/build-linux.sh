@@ -2,9 +2,23 @@
 
 . "./build.sh"
 
+DIR_32="${PACKAGE}_${VERSION}_linux_i686"
+DIR_64="${PACKAGE}_${VERSION}_linux_amd64"
+
 function deb {
     # check if this is a deb based distribution with dpkg tool ...
-    echo "TODO: creating deb pakage => $1.deb"
+    rm -r -f "build/$2"
+    cp -r "redist/deb" "build/$2"
+    build "$1" "$2/usr/lib/hakuneko-desktop"
+
+    find "build/$2" -type f -not -path "build/$2/DEBIAN/*" -print0 | xargs -0 md5sum | sed 's|build/$2/||g' > "build/$2/DEBIAN/md5sums"
+
+    rm -f "build/$2.deb"
+	dpkg-deb -v -b "build/$2" "build/$2.deb"
+	#rm -f -r deb
+	lintian --profile debian "build/$2.deb"
+
+    echo "TODO: creating deb pakage => $2.deb"
 }
 
 function rpm {
@@ -12,12 +26,8 @@ function rpm {
     echo "TODO: creating rpm package => $1.rpm"
 }
 
-build "linux-x64" "hakuneko-desktop_0.0.31_linux_amd64"
-compress "hakuneko-desktop_0.0.31_linux_amd64"
-deb "hakuneko-desktop_0.0.31_linux_amd64"
-rpm "hakuneko-desktop_0.0.31_linux_amd64"
+deb "linux-x64" "$DIR_64"
+rpm "$DIR_64"
 
-build "linux-ia32" "hakuneko-desktop_0.0.31_linux_i686"
-compress "hakuneko-desktop_0.0.31_linux_i686"
-deb "hakuneko-desktop_0.0.31_linux_i686"
-rpm "hakuneko-desktop_0.0.31_linux_i686"
+deb "linux-ia32" "$DIR_32"
+rpm "$DIR_32"

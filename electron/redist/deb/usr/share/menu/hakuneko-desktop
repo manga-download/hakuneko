@@ -1,0 +1,6 @@
+?package(hakuneko): needs="X11" \
+                    section="Applications/Network/File Transfer" \
+                    title="HakuNeko S" \
+                    longtitle="Manga Downloader" \
+                    icon="/usr/share/pixmaps/hakuneko-desktop.xpm" \
+                    command="/usr/bin/hakuneko"

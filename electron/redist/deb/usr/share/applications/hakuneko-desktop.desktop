@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=HakuNeko S
+GenericName=Manga Downloader
+Exec=hakuneko
+Icon=hakuneko-desktop
+Type=Application
+Categories=Network;FileTransfer;
