@@ -118,10 +118,9 @@
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 
                 content = content.substr(content.indexOf('imgsrcs = '));
-                content = content.substr(content.indexOf('\'') + 1);
-                content = content.substr(0, content.indexOf('\''));
-                
-                let img_url_list = content.split(',');
+                content = content.substr(0, content.indexOf('rimgsrcs = '));
+
+                let img_url_list = content.match(/http:\/\/.+?\.((jpe?g)|(png))/g);
                 
                 callback( null, img_url_list );
             });
