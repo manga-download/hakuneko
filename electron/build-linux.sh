@@ -43,11 +43,13 @@ function deb_changelog {
 function deb_application {
 	mkdir -p "build/$1/usr/share/applications"
 	echo "[Desktop Entry]" > "build/$1/usr/share/applications/${PACKAGE}.desktop"
-	echo "Name=${PACKAGE}" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
-	echo "GenericName=${PRODUCT}" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
+	
+	echo "Version=1.0" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
+	echo "Type=Application" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
+	echo "Name=${PRODUCT}" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
+	echo "GenericName=${DESCRIPTION_SHORT}" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
 	echo "Exec=${PACKAGE}" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
 	echo "Icon=${PACKAGE}" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
-	echo "Type=Application" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
 	echo "Categories=Network;FileTransfer;" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
 }
 
