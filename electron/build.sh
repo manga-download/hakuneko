@@ -1,11 +1,11 @@
 #!/bin/bash
 
-PUBLISHER="Ronny Wegener"
+PUBLISHER="Ronny Wegener <wegener.ronny@gmail.com>"
 PACKAGE="hakuneko-desktop"
 PRODUCT="HakuNeko Desktop"
 VERSION="0.0.31"
 DESCRIPTION_SHORT="Manga Downloader"
-DESCRIPTION_LONG=""
+DESCRIPTION_LONG="Desktop client for HakuNeko S web-based manga downloader."
 YEAR="$(date +%Y)"
 URL="http://sourceforge.net/projects/hakuneko"
 BIN_WINDOWS="hakuneko.exe"
