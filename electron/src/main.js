@@ -24,7 +24,7 @@ function activateWindow() {
 
     // '../electron[.exe]' => host in development mode
     // '../hakuneko[.exe]' => host in distribution mode
-    if( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/) ) {
+    if( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/i) ) {
         // local served app
         win.loadURL( 'http://127.0.0.1:8081' );
         // open dev tools
