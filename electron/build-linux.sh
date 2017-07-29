@@ -2,7 +2,7 @@
 
 . "./build.sh"
 
-DIR_32="${PACKAGE}_${VERSION}_linux_i686"
+DIR_32="${PACKAGE}_${VERSION}_linux_i386"
 DIR_64="${PACKAGE}_${VERSION}_linux_amd64"
 
 function deb_control {
