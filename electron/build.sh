@@ -9,7 +9,7 @@ DESCRIPTION_LONG="Desktop client for HakuNeko S web-based manga downloader."
 YEAR="$(date +%Y)"
 URL="http://sourceforge.net/projects/hakuneko"
 BIN_WINDOWS="hakuneko.exe"
-BIN_DARWIN="hakuneko"
+BIN_DARWIN="HakuNeko"
 BIN_LINUX="hakuneko"
 
 function build {
@@ -18,17 +18,27 @@ function build {
     unzip "redist/electron-v1.*-$1.zip" -d "build/$2"
     rm -f "build/$2/version"
     rm -f "build/$2/LICENSE"*
-    rm -r -f "build/$2/locales"
-    rm -r -f "build/$2/resources/default_app.asar"
     if [[ $2 =~ linux.* ]]
     then
+        rm -r -f "build/$2/locales"
+        rm -r -f "build/$2/resources/default_app.asar"
+        cp -r "src" "build/$2/resources/app"
         mv "build/$2/electron" "build/$2/$BIN_LINUX"
     fi
     if [[ $2 =~ windows.* ]]
     then
+        rm -r -f "build/$2/locales"
+        rm -r -f "build/$2/resources/default_app.asar"
+        cp -r "src" "build/$2/resources/app"
         mv "build/$2/electron.exe" "build/$2/$BIN_WINDOWS"
     fi
-    cp -r "src" "build/$2/resources/app"
+    if [[ $2 =~ darwin.* ]]
+    then
+        rm -r -f "build/$2/Electron.app/Contents/Resources/"*.lproj
+        rm -r -f "build/$2/Electron.app/Contents/Resources/default_app.asar"
+        cp -r "src" "build/$2/Electron.app/Contents/Resources/app"
+        mv "build/$2/Electron.app/Contents/MacOS/Electron" "build/$2/Electron.app/Contents/MacOS/$BIN_DARWIN"
+    fi
 }
 
 function compress {
