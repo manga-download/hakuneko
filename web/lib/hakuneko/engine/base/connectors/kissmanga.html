@@ -87,7 +87,9 @@
                 callback( null, mangaList );
                 return;
             }
+            console.log( 'KissManga::_getMangaList()', mangaList.length, pageFrom, pageTo );
             Engine.Request.cfGet( this.url + '/MangaList?page=' + pageFrom, this.referer, this.agent, ( error, content, status ) => {
+                console.log( error, status );
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
