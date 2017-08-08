@@ -19,23 +19,23 @@
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.mangago.me';
             this.initialized    = false;
+            this.pageLoadDelay  = 2500;
             this.manga_list_page_nb   = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
             
             //Get manga list page number
-            Engine.Request.cfGet( this.url + '/list/directory/all/', this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.cfGet( this.url + '/list/latest/all/', this.referer, this.agent, ( error, content, status ) => {
                 if( status === 200 ) {
                     content = content.replace( /<img[^<]*?>/g, '<img>');
                     content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                     let dom = document.createElement( 'html' );
                     dom.innerHTML = content;
-                    let max_page_text = dom.querySelector( 'div#directory_panel div.directory_left div.pagination div ol li:nth-last-of-type(2) a span' );
-                    if(max_page_text != null){
-                        max_page_text = max_page_text.textContent.trim();
-                        this.manga_list_page_nb = parseInt(max_page_text);
+                    let element = dom.querySelector( 'div.pagination[total]' );
+                    if( element ) {
+                        this.manga_list_page_nb = parseInt( element.getAttribute( 'total' ) );
                         this.initialized = true;
-                    }else{
+                    } else {
                         console.error( 'Failed to get MangaGo manga list page number (can\'t find number');
                         this.initialized = undefined;
                     }
@@ -64,23 +64,29 @@
                 callback( null, mangaList );
                 return;
             }
-            Engine.Request.cfGet( this.url + '/list/directory/all/' + page, this.referer, this.agent, ( error, content, status ) => {
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                
-                [...dom.querySelectorAll( 'h3.title a' )].forEach(  ( element ) => {
-                    mangaList.push( {
-                        // as mentioned before, the eventually added host prefix must be removed
-                        // for full qualified domain name, the host (kissmanga) can also be removed
-                        id: encodeURI( element.href.trim().replace( /\s+/, '' ).replace( this.url, '' ).replace( window.location.origin, '' ) ),
-                        title: element.title.trim()
+            console.log( 'MangaGo::_getMangaList()', mangaList.length, page, this.manga_list_page_nb );
+            Engine.Request.cfGet( this.url + '/list/latest/all/' + page + '/', this.referer, this.agent, ( error, content, status ) => {
+                console.log( error, status );
+                if( status === 200 ) {
+                    // prevent images and iframes from loading
+                    content = content.replace( /<img[^<]*?>/g, '<img>');
+                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                    let dom = document.createElement( 'html' );
+                    dom.innerHTML = content;
+                    
+                    [...dom.querySelectorAll( 'span.tit h2 a' )].forEach(  ( element ) => {
+                        mangaList.push( {
+                            // as mentioned before, the eventually added host prefix must be removed
+                            // for full qualified domain name, the host (kissmanga) can also be removed
+                            id: encodeURI( element.href.trim().replace( /\s+/, '' ).replace( this.url, '' ).replace( window.location.origin, '' ) ),
+                            title: element.text.trim()
+                        });
                     });
-                });
+                }
                 // recursive call to process next page
-                this._getMangaList( callback, mangaList, page + 1);
+                setTimeout( () => {
+                    this._getMangaList( callback, mangaList, page + 1);
+                }, this.pageLoadDelay );
             });
         }
 
