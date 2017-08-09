@@ -2,7 +2,7 @@
 
 . "./build.sh"
 
-DIR_64="${PACKAGE}_${VERSION}_darwin_amd64"
+DIR_64="${PACKAGE}_${VERSION}_macosx_amd64"
 
 function dmg {
 

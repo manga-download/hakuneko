@@ -32,7 +32,7 @@ function build {
         cp -r "src" "build/$2/resources/app"
         mv "build/$2/electron.exe" "build/$2/$BIN_WINDOWS"
     fi
-    if [[ $2 =~ darwin.* ]]
+    if [[ $2 =~ macosx.* ]]
     then
         rm -r -f "build/$2/Electron.app/Contents/Resources/"*.lproj
         rm -r -f "build/$2/Electron.app/Contents/Resources/default_app.asar"
