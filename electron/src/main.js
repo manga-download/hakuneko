@@ -55,9 +55,9 @@ function activateWindow() {
  * Quit aplication, except for OSX
  */
 function closeWindow () {
-    if( process.platform !== 'darwin' ) {
+    //if( process.platform !== 'darwin' ) {
         electron.app.quit();
-    }
+    //}
 }
 
 // connect events
