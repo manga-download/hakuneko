@@ -1,5 +1,8 @@
 const electron = require( 'electron' );
+const path = require( 'path' );
 
+// set portable mode e.g. for path locations
+var portable = false;
 // global reference to the main window
 var win = null;
 
@@ -58,6 +61,11 @@ function closeWindow () {
     //if( process.platform !== 'darwin' ) {
         electron.app.quit();
     //}
+}
+
+// change userdata path for portable version
+if( portable ) {
+    electron.app.setPath( 'userData', path.join( path.dirname( electron.app.getPath( 'exe' ) ), 'userdata' ) );
 }
 
 // connect events

@@ -3,7 +3,7 @@
 PUBLISHER="Ronny Wegener <wegener.ronny@gmail.com>"
 PACKAGE="hakuneko-desktop"
 PRODUCT="HakuNeko Desktop"
-VERSION="0.0.31"
+VERSION="0.0.32"
 DESCRIPTION_SHORT="Manga Downloader"
 DESCRIPTION_LONG="Desktop client for HakuNeko S web-based manga downloader."
 YEAR="$(date +%Y)"

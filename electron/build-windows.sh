@@ -109,12 +109,14 @@ function installer {
 
 build "win32-x64" "$DIR_64"
 rcedit "$DIR_64"
-compress "$DIR_64"
 setup "$DIR_64"
 #installer "$DIR_64"
+sed 's/^var portable =.*$/var portable = true;/g' -i "build/$DIR_64/resources/app/main.js"
+compress "$DIR_64"
 
 build "win32-ia32" "$DIR_32"
 rcedit "$DIR_32"
-compress "$DIR_32"
 setup "$DIR_32"
 #installer "$DIR_32"
+sed 's/^var portable =.*$/var portable = true;/g' -i "build/$DIR_32/resources/app/main.js"
+compress "$DIR_32"
