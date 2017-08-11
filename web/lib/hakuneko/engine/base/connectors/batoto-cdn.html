@@ -21,7 +21,14 @@
             this.referer   = undefined; //'https://bato.to';
             this.agent     = undefined; //'Mozilla/5.0';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config = {
+                legacy: {
+                    label: 'Legacy Chapter Naming',
+                    description: 'Use the old naming scheme for the chapters\nUse this option if HakuNeko S should recognise chapters downloaded by HakuNeko Legacy',
+                    input: Input.checkbox,
+                    value: false
+                }
+            };
         }
 
         /**
@@ -38,7 +45,152 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters', this.referer, this.agent, ( error, content, status ) => {
-                callback( null, (content ? JSON.parse( content ).reverse() : undefined ) );
+                callback( null, (content ? JSON.parse( content ).reverse().map( (chapter) => {
+                    chapter.title = chapter.title.replace( ' Read Online', '' );
+                    // backward compatibility with hakuneko legacy naming?
+                    if ( this.config.legacy.value ) {
+                        /*
+                            // Example Entry:
+                            <tr class="row lang_English chapter_row">
+                            <td style="border-top:0;"><a href="http://www.batoto.net/read/_/134827/one-piece_ch683_by_mangarule" title="Ch.683: A Woman like Ice | Sort: 683"><img src="http://www.batoto.net/book_open.png" style="vertical-align:middle;"/> Ch.683: A Woman like Ice</a></td>
+                            <td style="border-top:0;"><div title="English" style="display: inline-block; width:16px; height: 12px; margin: 2px 0; padding:0; background-image:url('http://www.batoto.net/images/all_flags.png'); background-position: -284px -173px; "></div></td>
+                            <td style="border-top:0;"><a href="http://www.batoto.net/group/_/mangarule-r149">Mangarule</a>        </td>
+
+                            chLanguage = content.Mid(indexStart, indexEnd-indexStart); // e.g. 'English'
+                            chEntry = content.Mid(indexStart, indexEnd-indexStart); // e.g. 'Ch.683: A Woman like Ice'
+                            chScangroup = content.Mid(indexStart, indexEnd-indexStart); // e.g. 'Mangarule'
+
+                            // extract volume number from chEntry
+                            posStart = chEntry.find(wxT("Vol."));
+                            if(posStart > -1)
+                            {
+                                posEnd = chEntry.find(wxT(" "), posStart);
+                                volumePrefix = chEntry.Mid(posStart, posEnd-posStart); // e.g. 'Vol.3'
+                            }
+
+                            // extract chapter number from chEntry
+                            posStart = chEntry.find(wxT("Ch.")) + 3;
+                            if(posStart > 2)
+                            {
+                                if(chEntry.EndsWith(wxT("Read Online")))
+                                {
+                                    posEnd = chEntry.rfind(wxT(" R"));
+                                    chTitle = wxEmptyString; // overwrite previous title
+                                }
+                                else
+                                {
+                                    // NOTE: wrong data when text before chapter number contains ': ' (i.e. ch.Text: Text 10: Chapter Title)
+                                    posEnd = chEntry.find(wxT(": "), posStart);
+                                    chTitle = chEntry.Mid(posEnd+2); // e.g. 'A Woman like Ice'
+                                }
+                                chNumber = chEntry.Mid(posStart, posEnd-posStart); // e.g. '0683'
+                                FormatChapterNumberStyle(&chNumber);
+
+
+
+
+                                                void MangaConnector::FormatChapterNumberStyle(wxString* ChapterNumber)
+                                                {
+                                                    // the "tail" (length after the major chapter number) is excluded in 4 digit processing of major chapter number
+                                                    size_t chNumberResidualLength = 0;
+
+                                                    // plain chapter variations:
+                                                        %c = "13-18"
+                                                        %c = "13"
+                                                        %c = "13.5"
+                                                        %c = "13v2"
+                                                        %c = "13v.2"
+                                                        %c = "13.5v2"
+                                                        %c = "13.5v.2"
+                                                    // variations combined with text:
+                                                        %ct = "Text Text"
+                                                        %ct = "%c Text Text"
+                                                        %ct = "Text Text %c"
+
+                                                    // remove preceding/succeeding text from chapter number
+                                                    int posFirstSpace = ChapterNumber->find(wxT(" ")); // sometimes chapter numbers are followed by text (i.e. 13 Bla Bla)
+                                                    int posLastSpace = ChapterNumber->rfind(wxT(" ")); // sometimes chapter numbers are preceded by text (i.e. Bla Bla 13)
+                                                    if(posFirstSpace > -1 && posLastSpace > -1)
+                                                    {
+                                                        // NOTE: in case numbers are at beginning and ending, the number at beginning got higher priority (assigned first to *ChapterNumber)
+                                                        if(wxAtoi(ChapterNumber->Mid(0, posFirstSpace)))
+                                                        {
+                                                            //wxMessageBox(wxT("integer at beginning\n\n") + *ChapterNumber);
+                                                            *ChapterNumber = ChapterNumber->Mid(0, posFirstSpace);
+                                                        }
+
+                                                        if(wxAtoi(ChapterNumber->Mid(posLastSpace+1)))
+                                                        {
+                                                            //wxMessageBox(wxT("integer at ending\n\n") + *ChapterNumber);
+                                                            *ChapterNumber = ChapterNumber->Mid(posLastSpace+1);
+                                                        }
+                                                    }
+
+                                                    // sometimes chapter numbers are spanned with a hyphen (i.e. 13-18)
+                                                    int posHyphen = ChapterNumber->find(wxT("-"));
+                                                    if(posHyphen > -1)
+                                                    {
+                                                        wxString from = ChapterNumber->Mid(0, posHyphen);
+                                                        wxString to = ChapterNumber->Mid(posHyphen+1);
+
+                                                        FormatChapterNumberStyle(&from);
+                                                        FormatChapterNumberStyle(&to);
+
+                                                        *ChapterNumber = from + wxT("-") + to;
+                                                        return;
+                                                    }
+
+                                                    // sometimes chapter numbers are followed by version (i.e. 13v2, 13v.2)
+                                                    int posVchar = ChapterNumber->find(wxT("v"));
+                                                    if(posVchar > -1)
+                                                    {
+                                                        chNumberResidualLength = wxMax(chNumberResidualLength, ChapterNumber->Len() - posVchar);
+                                                    }
+
+                                                    // sometimes chapter numbers contains a dot (i.e. 13.5, 13.5v2, 13.5.v2)
+                                                    int posDot = ChapterNumber->find(wxT("."));
+                                                    if(posDot > -1)
+                                                    {
+                                                        chNumberResidualLength = wxMax(chNumberResidualLength, ChapterNumber->Len() - posDot);
+                                                    }
+
+                                                    while(ChapterNumber->Len()-chNumberResidualLength < 4)
+                                                    {
+                                                        *ChapterNumber = wxT("0") + *ChapterNumber;
+                                                    }
+                                                }
+
+
+
+                            }
+
+                            if(volumePrefix.IsEmpty())
+                            {
+                                chapterList.Add(new MCEntry(HtmlUnescapeString(                                        chNumber + wxT(" - ") + chTitle + wxT(" [") + chLanguage + wxT("] by [") + chScangroup + wxT("]")), chLink));
+                            }
+                            else
+                            {
+                                chapterList.Add(new MCEntry(HtmlUnescapeString(wxT("[") + volumePrefix + wxT("] - ") + chNumber + wxT(" - ") + chTitle + wxT(" [") + chLanguage + wxT("] by [") + chScangroup + wxT("]")), chLink));
+                            }
+                        */
+                        // TODO: remove volume/chapter title prefix from title?
+                        // extract volume number from chapter.t
+                        let vol = chapter.t.match( /(?:vol\.?|volume\.?)\s*(\d+)/i );
+                        vol = ( vol ? vol[1] : '' );
+                        // extract chapter number from chapter.t
+                        let ch = FormatChapterNumber( chapter.n );
+                        // extract raw title from chapter.t (without volume and chapter prefix)
+                        let title = '';
+                        // compose legacy capter title
+                        chapter.title = chapter.n + ' - ' + chapter.t + ' [' + chapter.l + '] by [' + chapter.g + ']';
+                        if( chapter.v ) {
+                            chapter.t = '[Vol.' + chapter.v + '] - ' + chapter.t;
+                        }
+                    } else {
+                        chapter.title = chapter.title + ' [' + chapter.language + '] by [' + chapter.group + ']';
+                    }
+                    return chapter;
+                }) : undefined ) );
             });
         }
 
