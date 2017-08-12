@@ -14,6 +14,8 @@
             super();
             let req = require( 'electron' ).remote.require( 'request' );
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
+            this.agent = new require( 'electron' ).remote.require( 'http' ).Agent();
+            this.agent.maxSockets = 4;
         }
 
         /**
@@ -34,7 +36,9 @@
                 },
                 gzip: true,
                 //realEncoding: 'utf8',
-                encoding: null // keep content in binary presentation and do not convert
+                encoding: null, // keep content in binary presentation and do not convert
+                pool: this.agent,
+                timeout: 30000
             };
             this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
         }
@@ -58,7 +62,9 @@
                 gzip: true,
                 form: form,
                 //realEncoding: 'utf8',
-                encoding: null // keep content in binary presentation and do not convert
+                encoding: null, // keep content in binary presentation and do not convert
+                pool: this.agent,
+                timeout: 30000
             };
             this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
         }
