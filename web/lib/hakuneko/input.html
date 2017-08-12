@@ -37,7 +37,7 @@
         </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.numeric) ]]" restamp="false">
             <div class="stretch">
-                <input type="text" value="{{ item.value::change }}"/>
+                <input type="number" min="[[ item.min ]]" max="[[ item.max ]]" value="{{ item.value::change }}"/>
             </div>
         </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.select) ]]" restamp="false">

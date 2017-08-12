@@ -122,6 +122,10 @@
                 margin: 0.5em;
             }
 
+            input[type="number"] {
+                width: 4em;
+            }
+
             select {
                 width: calc(100% - 0em - 0.5em); /* adjust with padding and margin */
                 padding-right: 1.5em;
@@ -131,7 +135,7 @@
                 background-repeat: no-repeat;
             }
 
-            input[type="text"], select {
+            input[type="text"], input[type="number"], select {
                 outline: none; /* disable chromium highlighting of input fields */
                 -webkit-appearance: none;
                    -moz-appearance: none;

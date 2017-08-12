@@ -15,7 +15,14 @@
             let req = require( 'electron' ).remote.require( 'request' );
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
             this.agent = new require( 'electron' ).remote.require( 'http' ).Agent();
-            this.agent.maxSockets = 4;
+            document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        onSettingsChanged( e ) {
+            this.agent.maxSockets = e.detail.socketConnections.value;
         }
 
         /**

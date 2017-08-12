@@ -12,6 +12,14 @@
          */
         constructor() {
             super();
+            this.socketConnections = {
+                label: 'Host Connections',
+                description: 'The maximum number of concurrent connections to a host (use lesser connections for slow internet/servers)',
+                input: Input.numeric,
+                min: 1,
+                max: 32,
+                value: 4
+            };
             this.baseDirectory = {
                 label: 'Manga Directory',
                 description: 'The base directory where all downloaded mangas will be stored',
