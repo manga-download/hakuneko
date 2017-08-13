@@ -44,7 +44,6 @@ layout means (e.g. the `flex` or `fit` classes).
 <template is="x-list">
   <style>
     :host {
-      display: block;
       height: 100vh;
       display: flex;
       flex-direction: column;

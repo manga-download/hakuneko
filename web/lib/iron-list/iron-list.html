@@ -292,6 +292,7 @@ will only render 20.
 
   /* Polymer.OptionalMutableDataBehavior is only available with Polymer 2.0. */
   if (!Polymer.OptionalMutableDataBehavior) {
+    /* @polymerBehavior */
     Polymer.OptionalMutableDataBehavior = {};
   }
 
@@ -307,14 +308,6 @@ will only render 20.
        */
       items: {
         type: Array
-      },
-
-      /**
-       * The max count of physical items the pool can extend to.
-       */
-      maxPhysicalCount: {
-        type: Number,
-        value: 500
       },
 
       /**
@@ -687,9 +680,6 @@ will only render 20.
      * to a viewport of physical items above and below the user's viewport.
      */
     get _optPhysicalSize() {
-      if (this.grid) {
-        return this._estRowsInView * this._rowHeight * this._maxPages;
-      }
       return this._viewportHeight === 0 ? Infinity : this._viewportHeight * this._maxPages;
     },
 
@@ -767,13 +757,6 @@ will only render 20.
       return Math.ceil(this._physicalCount / this._itemsPerRow);
     },
 
-    /**
-     * The parent node for the _userTemplate.
-     */
-    get _itemsParent() {
-      return Polymer.dom(Polymer.dom(this._userTemplate).parentNode);
-    },
-
     get _scrollOffset() {
       return this._scrollerPaddingTop + this.scrollOffset;
     },
@@ -783,7 +766,7 @@ will only render 20.
     },
 
     attached: function() {
-      this._debounceRender(this._render, ANIMATION_FRAME);
+      this._debounce('_render', this._render, ANIMATION_FRAME);
       // `iron-resize` is fired when the list is attached if the event is added
       // before attached causing unnecessary work.
       this.listen(this, 'iron-resize', '_resizeHandler');
@@ -804,7 +787,7 @@ will only render 20.
       // Clear cache.
       this._lastVisibleIndexVal = null;
       this._firstVisibleIndexVal = null;
-      this._debounceRender(this._render, ANIMATION_FRAME);
+      this._debounce('_render', this._render, ANIMATION_FRAME);
     },
 
     /**
@@ -855,7 +838,7 @@ will only render 20.
           this._physicalStart = this._physicalStart - reusables.indexes.length;
         }
         this._update(reusables.indexes, isScrollingDown ? null : reusables.indexes);
-        this._debounceRender(this._increasePoolIfNeeded.bind(this, 0), MICRO_TASK);
+        this._debounce('_increasePoolIfNeeded', this._increasePoolIfNeeded.bind(this, 0), MICRO_TASK);
       }
     },
 
@@ -1012,14 +995,16 @@ will only render 20.
       if (this._virtualEnd >= this._virtualCount - 1 || nextIncrease === 0) {
         // Do nothing.
       } else if (!this._isClientFull()) {
-        this._debounceRender(
+        this._debounce(
+          '_increasePoolIfNeeded',
           this._increasePoolIfNeeded.bind(
             this,
             nextIncrease
           ), MICRO_TASK);
       } else if (this._physicalSize < this._optPhysicalSize) {
         // Yield and increase the pool during idle time until the physical size is optimal.
-        this._debounceRender(
+        this._debounce(
+          '_increasePoolIfNeeded',
           this._increasePoolIfNeeded.bind(
             this,
             this._clamp(Math.round(50 / this._templateCost), 1, nextIncrease)
@@ -1099,7 +1084,7 @@ will only render 20.
           this._resetScrollPosition(0);
         }
         this._removeFocusedItem();
-        this._debounceRender(this._render, ANIMATION_FRAME);
+        this._debounce('_render', this._render, ANIMATION_FRAME);
       } else if (change.path === 'items.splices') {
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
@@ -1108,7 +1093,7 @@ will only render 20.
           return this._isIndexRendered(splice.index);
         }, this);
         if (!this._isClientFull() || affectedIndexRendered) {
-          this._debounceRender(this._render, ANIMATION_FRAME);
+          this._debounce('_render', this._render, ANIMATION_FRAME);
         }
       } else if (change.path !== 'items.length') {
         this._forwardItemPath(change.path, change.value);
@@ -1128,9 +1113,11 @@ will only render 20.
       var offscreenItem = this._offscreenFocusedItem;
       var isIndexRendered = this._isIndexRendered(idx);
       var inst;
+      var pidx;
 
       if (isIndexRendered) {
-        inst = this.modelForElement(this._physicalItems[this._getPhysicalIndex(idx)]);
+        pidx = this._getPhysicalIndex(idx);
+        inst = this.modelForElement(this._physicalItems[pidx]);
       } else if (offscreenItem) {
         inst = this.modelForElement(offscreenItem);
       }
@@ -1145,7 +1132,7 @@ will only render 20.
       inst._flushProperties && inst._flushProperties(true);
       // TODO(blasten): V1 doesn't do this and it's a bug
       if (isIndexRendered) {
-        this._updateMetrics([idx]);
+        this._updateMetrics([pidx]);
         this._positionItems();
         this._updateScrollerSize();
       }
@@ -1391,7 +1378,7 @@ will only render 20.
       forceUpdate = forceUpdate || this._scrollPosition >= this._estScrollHeight - this._physicalSize;
       forceUpdate = forceUpdate || this.grid && this.$.items.style.height < this._estScrollHeight;
       // Amortize height adjustment, so it won't trigger large repaints too often.
-      if (forceUpdate || Math.abs(this._estScrollHeight - this._scrollHeight) >= this._optPhysicalSize) {
+      if (forceUpdate || Math.abs(this._estScrollHeight - this._scrollHeight) >= this._viewportHeight) {
         this.$.items.style.height = this._estScrollHeight + 'px';
         this._scrollHeight = this._estScrollHeight;
       }
@@ -1467,7 +1454,7 @@ will only render 20.
      * when the element is resized.
      */
     _resizeHandler: function() {
-      this._debounceRender(function() {
+      this._debounce('_render', function() {
         // clear cached visible index.
         this._firstVisibleIndexVal = null;
         this._lastVisibleIndexVal = null;
@@ -1500,7 +1487,7 @@ will only render 20.
      * Selects the item at the given index in the items array.
      *
      * @method selectIndex
-     * @param {Object} index The item instance.
+     * @param {number} index The index of the item in the items array.
      */
     selectIndex: function(index) {
       if (index < 0 || index >= this._virtualCount) {
@@ -1870,19 +1857,20 @@ will only render 20.
       return Math.min(max, Math.max(min, v));
     },
 
-    _debounceRender: function(cb, asyncModule) {
+    _debounce: function(name, cb, asyncModule) {
       if (IS_V2) {
-        this._renderDebouncer = Polymer.Debouncer.debounce(
-          this._renderDebouncer,
+        this._debouncers = this._debouncers || {};
+        this._debouncers[name] = Polymer.Debouncer.debounce(
+          this._debouncers[name],
           asyncModule,
           cb.bind(this));
-        Polymer.enqueueDebouncer(this._renderDebouncer);
+        Polymer.enqueueDebouncer(this._debouncers[name]);
       } else {
-        this._debounceTemplate(cb);
+        Polymer.dom.addDebouncer(this.debounce(name, cb));
       }
     },
 
-    _forwardProperty(inst, name, value) {
+    _forwardProperty: function(inst, name, value) {
       if (IS_V2) {
         inst._setPendingProperty(name, value);
       } else {

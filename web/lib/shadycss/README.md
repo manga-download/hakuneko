@@ -1,6 +1,6 @@
 # ShadyCSS
 
-ShadyCSS provides a library to simulate ShadowDOM style encapsulation (ScopingShim), a shim for the proposed CSS mixin `@apply` styntax (ApplyShim), and a library to integrate document-level stylesheets with both of the former libraries (CustomStyleInterface).
+ShadyCSS provides a library to simulate ShadowDOM style encapsulation (ScopingShim), a shim for the proposed CSS mixin `@apply` syntax (ApplyShim), and a library to integrate document-level stylesheets with both of the former libraries (CustomStyleInterface).
 
 ## Requirements
 ShadyCSS requires support for the `<template>` element, ShadowDOM, MutationObserver, Promise, and Object.assign
@@ -333,7 +333,7 @@ defines the property in its host's stylesheet.
 
 ### `<custom-style>` Flash of unstyled content
 
-If `ShadyCss.applyStyle` is never called, `<custom-style>` elements will process
+If `ShadyCSS.applyStyle` is never called, `<custom-style>` elements will process
 after HTML Imports have loaded, after the document loads, or after the next paint.
 This means that there may be a flash of unstyled content on the first load.
 
@@ -342,3 +342,12 @@ This means that there may be a flash of unstyled content on the first load.
 Crawling the DOM and updating styles is very expensive, and we found that trying to
 update mixins through `<slot>` insertion points to be too expensive to justify for both
 polyfilled CSS Mixins and polyfilled CSS Custom Properties.
+
+### External stylesheets not currently supported
+
+External stylesheets loaded via `<link rel="stylesheet">` within a shadow root or
+`@import` syntax inside a shadow root's stylesheet are not currently shimmed by
+the polyfill.  This is mainly due to the fact that shimming them would require
+a fetch of the stylesheet text that is async cannot be easily coordinated with
+the upgrade timing of custom elements using them, making it impossible to avoid
+"flash of unstyled content" when running on polyfill.

@@ -235,17 +235,58 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           target: itemHeight * list.items.length,
           onScrollEnd: function() {
             list.items = list.items.slice(0);
-            simulateScroll({
-              list: list,
-              contribution: itemHeight,
-              target: itemHeight * list.items.length,
-              onScroll: function() {
-                assert.isFalse(hasRepeatedItems(), 'List should not have repeated items');
-              },
-              onScrollEnd: done
+            // NOTE(keanulee): you shouldn't need to call Polymer.flush() here (#475).
+            requestAnimationFrame(function() {
+              assert.equal(getFirstItemFromList(list).textContent, '0');
+
+              simulateScroll({
+                list: list,
+                contribution: itemHeight,
+                target: itemHeight * list.items.length,
+                onScroll: function() {
+                  assert.isFalse(hasRepeatedItems(), 'List should not have repeated items');
+                },
+                onScrollEnd: done
+              });
             });
           }
         });
+      });
+
+      test('Issue #468: forwardItemPath updates correct item', function(done) {
+        list.items = buildDataSet(100);
+        container.itemHeight = 'auto';
+        PolymerFlush();
+        var itemHeight = getFirstItemFromList(list).offsetHeight;
+        var hasRepeatedItems = checkRepeatedItems(list);
+
+        simulateScroll({
+          list: list,
+          target: itemHeight * 40,
+          onScrollEnd: function() {
+            assert.doesNotThrow(function() {
+              list.set('items.43.index', '43a');
+            });
+            done();
+          }
+        });
+      });
+
+      test('Issue #463: scroller size is updated', function() {
+        list.items = buildDataSet(2);
+        PolymerFlush();
+
+        assert.equal(list.$.items.style.height, '200px');
+
+        list.items = buildDataSet(7);
+        PolymerFlush();
+
+        assert.equal(list.$.items.style.height, '700px');
+
+        list.items = buildDataSet(11);
+        PolymerFlush();
+
+        assert.equal(list.$.items.style.height, '1100px');
       });
 
       test('empty items array', function() {

@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import { MIXIN_MATCH, VAR_ASSIGN } from './common-regex'
+import { MIXIN_MATCH, VAR_ASSIGN } from './common-regex.js'
 
 /**
  * @param {Element} element

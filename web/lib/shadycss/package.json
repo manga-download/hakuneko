@@ -1,6 +1,6 @@
 {
   "name": "@webcomponents/shadycss",
-  "version": "1.0.1",
+  "version": "1.0.4",
   "description": "Styling helpers for ShadyDOM",
   "main": "shadycss.min.js",
   "directories": {
@@ -37,11 +37,11 @@
     "@webcomponents/shadydom": "^1.0.0",
     "@webcomponents/template": "^1.0.0",
     "@webcomponents/webcomponents-platform": "^1.0.0",
-    "del": "^2.2.2",
+    "del": "^3.0.0",
     "es6-promise": "^4.1.0",
-    "eslint": "^3.4.0",
-    "eslint-plugin-html": "^2.0.0",
-    "google-closure-compiler": "^20170423.0.0",
+    "eslint": "^4.0.0",
+    "eslint-plugin-html": "^3.0.0",
+    "google-closure-compiler": "^20170521.0.0",
     "gulp": "^3.8.8",
     "gulp-rename": "^1.2.2",
     "gulp-size": "^2.1.0",

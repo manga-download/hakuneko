@@ -9,11 +9,15 @@ addons:
     - google-chrome
     packages:
     - google-chrome-stable
+before_script:
+- export DISPLAY=:99.0
+- sh -e /etc/init.d/xvfb start
+- sleep 3
 script:
 - npm install -g bower
 - bower install
-- xvfb-run wct -l chrome
-- xvfb-run wct -l firefox
+- wct -l chrome
+- wct -l firefox
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then wct -s 'windows 10/microsoftedge@14' -s 'windows 8.1/internet explorer@11' -s 'os x 10.11/safari@10' -s 'os x 10.11/safari@9' -s 'Linux/chrome@41'; fi
 env:
   global:

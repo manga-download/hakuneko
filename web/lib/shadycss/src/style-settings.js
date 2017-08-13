@@ -24,7 +24,9 @@ function calcCssVariables(settings) {
     // safari 9.1 has a recalc bug: https://bugs.webkit.org/show_bug.cgi?id=155782
     // However, shim css custom properties are only supported with ShadyDOM enabled,
     // so fall back on native if we do not detect ShadyDOM
-    nativeCssVariables = nativeShadow || Boolean(!navigator.userAgent.match('AppleWebKit/601') &&
+    // Edge 15: custom properties used in ::before and ::after will also be used in the parent element
+    // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/12414257/
+    nativeCssVariables = nativeShadow || Boolean(!navigator.userAgent.match(/AppleWebKit\/601|Edge\/15/) &&
       window.CSS && CSS.supports && CSS.supports('box-shadow', '0 0 0 var(--foo)'));
   }
 }

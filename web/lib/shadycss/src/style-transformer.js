@@ -306,7 +306,7 @@ class StyleTransformer {
 let NTH = /:(nth[-\w]+)\(([^)]+)\)/;
 let SCOPE_DOC_SELECTOR = `:not(.${SCOPE_NAME})`;
 let COMPLEX_SELECTOR_SEP = ',';
-let SIMPLE_SELECTOR_SEP = /(^|[\s>+~]+)((?:\[.+?\]|[^\s>+~=\[])+)/g;
+let SIMPLE_SELECTOR_SEP = /(^|[\s>+~]+)((?:\[.+?\]|[^\s>+~=[])+)/g;
 let SIMPLE_SELECTOR_PREFIX = /[[.:#*]/;
 let HOST = ':host';
 let ROOT = ':root';

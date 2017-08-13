@@ -53,7 +53,7 @@ function closurify(sourceName, fileName) {
     compilation_level: 'ADVANCED',
     language_in: 'ES6_STRICT',
     language_out: 'ES5_STRICT',
-    output_wrapper: '(function(){\n%output%\n}).call(self)',
+    isolation_mode: 'IIFE',
     assume_function_wrapper: true,
     js_output_file: `${fileName}.js`,
     warning_level: 'VERBOSE',
@@ -64,22 +64,8 @@ function closurify(sourceName, fileName) {
       'bower_components/html-imports/externs/html-imports.js',
       'bower_components/shadycss/externs/shadycss-externs.js',
       'bower_components/shadydom/externs/shadydom.js'
-    ],
-    // entry_point: `/entrypoints/${sourceName}-index.js`,
-    // dependency_mode: 'STRICT'
+    ]
   };
-
-  //   const closureSources = [
-  //   'src/*.js',
-  //   'entrypoints/*.js',
-  //   'bower_components/custom-elements/src/**/*.js',
-  //   'bower_components/html-imports/src/*.js',
-  //   'bower_components/es6-promise/dist/es6-promise.auto.min.js',
-  //   'bower_components/webcomponents-platform/*.js',
-  //   'bower_components/shadycss/{src,entrypoints}/*.js',
-  //   'bower_components/shadydom/src/*.js',
-  //   'bower_components/template/*.js'
-  // ];
 
   const rollupOptions = {
     entry: `entrypoints/${sourceName}-index.js`,
@@ -96,12 +82,6 @@ function closurify(sourceName, fileName) {
   .pipe(closure(closureOptions))
   .pipe(sourcemaps.write('.'))
   .pipe(gulp.dest('.'));
-
-  // return gulp.src(sources, {base: './'})
-  // .pipe(sourcemaps.init({loadMaps: true}))
-  // .pipe(closure(closureOptions))
-  // .pipe(sourcemaps.write('.'))
-  // .pipe(gulp.dest('.'));
 }
 
 gulp.task('debugify-hi', () => {
@@ -168,10 +148,9 @@ gulp.task('debugify-ce-es5-adapter', () => {
 
 gulp.task('refresh-bower', () => {
   return del('bower_components').then(() => {
-    let resolve, reject;
-    let p = new Promise((res, rej) => {resolve = res; reject = rej});
-    bower.commands.install().on('end', () => resolve()).on('error', (e) => reject(e));
-    return p;
+    return new Promise((resolve, reject) => {
+      bower.commands.install().on('end', () => resolve()).on('error', (e) => reject(e));
+    });
   });
 });
 
