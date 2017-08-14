@@ -1,0 +1,127 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * @author Neogeek
+     */
+    class MangaNel extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id            = 'manganel';
+            super.label         = 'MangaNel';
+            super.isLocked      = false;
+            // Private members for internal usage only (convenience)
+            this.url            = 'http://manganel.com';
+            this.initialized    = false;
+            this.manga_list_page_nb   = undefined;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+            
+            //Get manga list page number
+            Engine.Request.get( this.url + '/manga_list?type=topview&category=all&alpha=all&page=1&state=all', this.referer, this.agent, ( error, content, status ) => {
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                let max_page_text = dom.querySelector( '.phan-trang a.page:last-of-type' );
+                if(max_page_text != null){
+                    max_page_text = max_page_text.href.match(/&page=(\d+)&/)[1];
+                    this.manga_list_page_nb = parseInt(max_page_text);
+                    this.initialized = true;
+                }else{
+                    console.error( 'Failed to get MangaNel manga list page number (can\'t find number');
+                    this.initialized = undefined;
+                }
+            });
+        }
+        
+
+        /**
+         * Parameters mangalist and page should never be used by external calls.
+         */
+        _getMangaList( callback, mangaList, page) {
+            // connector initialization failed or not yet finished
+            if( !this.manga_list_page_nb ) {
+                callback( null, [] );
+                return;
+            }
+            // set default values for arguments
+            mangaList = mangaList || [];
+            page = page || 1;
+            // abort condition for recursive call
+            if( page > this.manga_list_page_nb ) {
+                callback( null, mangaList );
+                return;
+            }
+            Engine.Request.get( this.url + '/manga_list?type=topview&category=all&alpha=all&page=' + page + '&state=all', this.referer, this.agent, ( error, content, status ) => {
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                
+                [...dom.querySelectorAll( 'div.list-truyen-item-wrap h3 a' )].forEach(  ( element ) => {
+                    mangaList.push( {
+                        // as mentioned before, the eventually added host prefix must be removed
+                        // for full qualified domain name, the host (kissmanga) can also be removed
+                        id: encodeURI( element.href.replace( this.url, '' ).replace( window.location.origin, '' ) ),	//manganel.com in just a redirect, so we can later replace it with this.url
+                        title: element.title.trim()
+                    });
+                });
+                // recursive call to process next page
+                this._getMangaList( callback, mangaList, page + 1);
+            });
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                
+                //TODO Some chapters have a title
+                let chapterList = [...dom.querySelectorAll( '.chapter-list div.row span a' )].map(  ( element ) => {
+                    return {
+                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        title: element.title.replace( manga.title, '' ).trim(),
+                        language: 'en'
+                    };
+                });
+                
+                callback( null, chapterList );
+            });
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+                // prevent iframes from loading
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                
+                let img_url_list = [...dom.querySelectorAll( '#vungdoc img' )].map(  ( element ) => {
+                    return element.src;
+                });
+                
+                callback( null, img_url_list );
+            });
+        }
+    }
+
+</script>
