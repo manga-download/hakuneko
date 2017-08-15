@@ -12,6 +12,8 @@
          */
         constructor() {
             super();
+            let app = require( 'electron' ).remote.app;
+            let path = require( 'path' );
             this.socketConnections = {
                 label: 'Host Connections',
                 description: 'The maximum number of concurrent connections to a host (use lesser connections for slow internet/servers)',
@@ -24,7 +26,7 @@
                 label: 'Manga Directory',
                 description: 'The base directory where all downloaded mangas will be stored',
                 input: Input.directory,
-                value: ''
+                value: path.join( app.getPath( 'documents' ), 'Mangas' )
             };
             this.useSubdirectory = {
                 label: 'Use Sub-Directories',
