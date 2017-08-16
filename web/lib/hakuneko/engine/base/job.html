@@ -58,12 +58,13 @@
                 let pageData = [];
                 // save pages when all promises fulfilled
                 let promise = new Promise( () => {
-/*
-if( Math.random() > 0.5 ) {
-    this.errors.push( new Error( 'Testing Error 1 ...' ) );
-    this.errors.push( new Error( 'Testing Error 2 ...' ) );
-}
-*/
+                    // do not store chapter when any error occured
+                    if( this.errors && this.errors.length > 0 ) {
+                        this.setStatus( DownloadStatus.failed );
+                        this.setProgress( 100 );
+                        callback();
+                        return;
+                    }
                     Engine.Storage.saveChapterPages( this.chapter, pageData, ( storageError ) => {
                         if( storageError ) {
                             this.errors.push( storageError );
@@ -82,10 +83,14 @@ if( Math.random() > 0.5 ) {
                 pages.forEach( ( page, index ) => {
                     let key = promise.defer();
                     Engine.Request.get( page, undefined, undefined, ( error, content, status, headers ) => {
-                        pageData[index] = {
-                            type: headers['content-type'],
-                            data: content
-                        };
+                        if( error ) {
+                            this.errors.push( error );
+                        } else {
+                            pageData[index] = {
+                                type: headers['content-type'],
+                                data: content
+                            };
+                        }
                         this.setProgress( this.progress + 100/pages.length );
                         promise.resolve( key );
                     });
