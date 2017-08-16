@@ -20,6 +20,10 @@
             agent = agent || this.agent;
             referer = referer || href;
             this.get( href, referer, agent, ( error, content, status, headers ) => {
+                if( error ) {
+                    callback( error, content, status, headers );
+                    return;
+                }
                 if ( content.indexOf( 'document.getElementById(\'jschl-answer\');' ) > -1 ) {
                     setTimeout( function() {
                         let url = new URL( href );
