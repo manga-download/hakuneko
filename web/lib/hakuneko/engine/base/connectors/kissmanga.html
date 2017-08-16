@@ -186,6 +186,10 @@
             }, this.pageLoadDelay );
             Engine.Request.cfGet( this.url + chapter.id, this.referer, this.agent, ( error, content, status ) => {
                 let pageList = [];
+                if( error ) {
+                    callback( error, pageList );
+                    return;
+                }
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
