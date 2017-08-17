@@ -45,7 +45,7 @@
                 //realEncoding: 'utf8',
                 encoding: null, // keep content in binary presentation and do not convert
                 pool: this.agent,
-                timeout: 30000
+                timeout: 15000
             };
             this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
         }
@@ -71,7 +71,7 @@
                 //realEncoding: 'utf8',
                 encoding: null, // keep content in binary presentation and do not convert
                 pool: this.agent,
-                timeout: 30000
+                timeout: 15000
             };
             this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
         }
@@ -80,15 +80,15 @@
          * Helper function relaying the processed results from the raw request to the callback.
          */
         _requestCallback ( error, response, content, options, callback, retries ) {
-            retries = retries || 5;
+            retries = retries || 3;
             if( retries < 0 ) {
-                callback( new Error( 'The url "' + options.url + '" could not be reached' ), undefined, response.statusCode, response.headers );
+                callback( new Error( 'The url "' + options.url + '" could not be reached' ), undefined, ( response ? response.statusCode : undefined ), ( response ? response.headers : undefined ) );
                 return;
             }
             // no need to process cookies, they are handled automatically by JAR
             if( error || !response || !content ) {
-                console.log( options.url, error, retries );
-                if( error.code === 'ETIMEDOUT' ) {
+                console.log( options.url, '[', retries, ']', error );
+                if( error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT' ) {
                     if( options.method.toUpperCase() === 'GET' ) {
                         this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback, retries - 1 ); } );
                     }
