@@ -1,3 +1,4 @@
+<link rel="import" href="version.html">
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
@@ -112,7 +113,7 @@
                 <div class="info">
                     <div>A simple and easy Manga Downloader&hellip;</div>
                     <div class="credits">
-                        <div>&copy; 2017 <a href="https://sourceforge.net/projects/hakuneko/" target="_blank">hakuneko.sf.net</a><hr></div>
+                        <div>&copy; 2017 <a href="https://sourceforge.net/projects/hakuneko/" target="_blank">HakuNeko</a> rev.<a href$="[[ revision.url ]]" target="_blank">[[ revision.id ]]</a><hr></div>
                         <div><a href="https://sourceforge.net/u/ronny1982/profile/" target="_blank">Ronny Wegener</a> (Application)</div>
                         <div><a href="https://sourceforge.net/u/medmig/profile/" target="_blank">Neogeek</a> (Connectors)</div>
                         <!-- <div><a href="#" target="_blank">mytenmo</a> (Connectors)</div> -->
@@ -189,6 +190,7 @@
              */
             ready() {
                 super.ready();
+                this.revision = revision;
                 this.popupVisibility = false;
                 // cannot directly access settings and connector configurations through binding, because of save/cancel staging
                 this.settingsGeneral = [];
