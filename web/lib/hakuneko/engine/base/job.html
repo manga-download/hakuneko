@@ -53,7 +53,11 @@
             this.setStatus( DownloadStatus.downloading );
             this.chapter.getPages( ( pageError, pages ) => {
                 if( pageError || !pages || pages.length < 1 ) {
-                    this.errors.push( pageError );
+                    if( pageError ) {
+                        this.errors.push( pageError );
+                    } else {
+                        this.errors.push( new Error( 'Page list is empty' ) );
+                    }
                     this.setStatus( DownloadStatus.failed );
                     this.setProgress( 100 );
                     callback();
