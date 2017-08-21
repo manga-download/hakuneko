@@ -78,6 +78,10 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -87,14 +91,27 @@
                 let pageList = [...dom.querySelectorAll( '#pageMenu option' )].map(  ( element ) => {    //All pages of chapter
                     return this.url + element.value;
                 });
+
+                // fix: no pages => promise never initialized and promise callback never executed (fulfilled)
+                if( !pageList || pageList.length < 1 ) {
+                    callback( error, [] );
+                    return;
+                }
                 
+                let errorMessage = '';
                 let imageList = [];
                 let prms = new Promise(() => {
-                    callback(null, imageList);
+                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : undefined );
+                    callback( error, imageList );
                 });
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();
                     Engine.Request.get( page, undefined, undefined, ( error, content, status ) => {
+                        if( error ) {
+                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
+                            prms.resolve( key );
+                            return;
+                        }
                         // prevent images and iframes from loading
                         content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                         let dom = document.createElement( 'html' );

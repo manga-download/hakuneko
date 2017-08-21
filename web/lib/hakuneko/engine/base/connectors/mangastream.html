@@ -86,23 +86,32 @@
                 for(var i = 1; i < nb_page; i++){
                     page_list.push(base_chap_url + i);
                 }
+
+                // fix: no pages => promise never initialized and promise callback never executed (fulfilled)
+                if( !page_list || page_list.length < 1 ) {
+                    callback( error, [] );
+                    return;
+                }
                 
+                let errorMessage = '';
                 let mangaList = [];
-                
                 let prms = new Promise(() => {
-                    callback(null, mangaList);
+                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : undefined );
+                    callback( error, mangaList );
                 });
-                
                 page_list.forEach( ( url, idx ) => {
                     let key = prms.defer();
                     Engine.Request.get( url, undefined, undefined, ( error, content, status ) => {
+                        if( error ) {
+                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
+                            prms.resolve( key );
+                            return;
+                        }
                         // prevent iframes from loading
                         content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                         let dom = document.createElement( 'html' );
                         dom.innerHTML = content;
-                        
                         mangaList[idx] =  dom.querySelector('#manga-page').src;
-                        
                         prms.resolve( key );
                     });
                 });
