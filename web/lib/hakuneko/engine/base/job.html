@@ -52,11 +52,17 @@
         downloadPages( directory, compress, callback ) {
             this.setStatus( DownloadStatus.downloading );
             this.chapter.getPages( ( pageError, pages ) => {
-                if( pageError ) {
+                if( pageError || !pages || pages.length < 1 ) {
                     this.errors.push( pageError );
+                    this.setStatus( DownloadStatus.failed );
+                    this.setProgress( 100 );
+                    callback();
+                    return;
                 }
+                
                 let pageData = [];
                 // save pages when all promises fulfilled
+                // no pages => promise never initialized and promise callback never executed (fulfilled)
                 let promise = new Promise( () => {
                     // do not store chapter when any error occured
                     if( this.errors && this.errors.length > 0 ) {
