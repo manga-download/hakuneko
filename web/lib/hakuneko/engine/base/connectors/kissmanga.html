@@ -187,13 +187,13 @@
             Engine.Request.cfGet( this.url + chapter.id, this.referer, this.agent, ( error, content, status ) => {
                 let pageList = [];
                 if( error ) {
-                    callback( error, pageList );
+                    callback( error, [] );
                     return;
                 }
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
-                    callback( null, pageList );
+                    callback( new Error( 'CAPTCHA required, to many requests from the same IP' ), [] );
                     return;
                 }
                 // prevent images and iframes from loading

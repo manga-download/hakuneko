@@ -51,7 +51,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters/' + chapter.id, this.referer, this.agent, ( error, content, status ) => {
-                callback( null, (content ? JSON.parse( content ).pages : undefined ) );
+                callback( error, ( !error && content ? JSON.parse( content ).pages : [] ) );
             });
         }
     }

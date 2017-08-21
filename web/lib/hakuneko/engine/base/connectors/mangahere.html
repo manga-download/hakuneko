@@ -73,6 +73,10 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + chapter.id ).replace( 'www.mangahere.co/manga', 'm.mangahere.co/roll_manga' ), undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
                 let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {

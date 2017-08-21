@@ -119,6 +119,10 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.cfGet( this.url + chapter.id, this.referer, this.agent, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');

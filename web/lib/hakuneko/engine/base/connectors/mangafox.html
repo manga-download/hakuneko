@@ -74,6 +74,10 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + manga.id + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), this.referer, this.agent, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // FIXME: very dangerous, might end up in endless recursion !!!
                 if( status === 503 ) {
                     setTimeout( () => {
@@ -81,11 +85,11 @@
                     }, this.pageLoadDelay );
                     return;
                 }
-                // FIXME: MangaFox has request limit, to many requests / second => 503 (service unavailable)
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
                 if( dom.querySelector('.alsotitle') ) {
-                    console.error( manga.title, 'is licensed in your country!' );
+                    callback( new Error( manga.title + ' => is licensed in your country!' ), [] );
+                    return;
                 }
                 let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {
                     return ( element.dataset.original );

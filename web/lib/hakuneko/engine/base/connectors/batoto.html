@@ -167,7 +167,11 @@
                 return;
             }
             Engine.Request.get( pageList[index], this.url + '/reader', this.agent, ( error, content, status ) => {
-                // prevent scropts and iframes from loading
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
+                // prevent scripts and iframes from loading
                 //content = content.replace( /<script[^<]*?>/g, '<script>');
                 //content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );

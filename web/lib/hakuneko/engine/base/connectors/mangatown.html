@@ -119,13 +119,20 @@
                     return element.value;
                 });
                 
+                let errorMessage = '';
                 let imageList = [];
                 let prms = new Promise(() => {
-                    callback(null, imageList);
+                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : undefined );
+                    callback( error, imageList );
                 });
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();
                     Engine.Request.get( page, undefined, undefined, ( error, content, status ) => {
+                        if( error ) {
+                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
+                            prms.resolve( key );
+                            return;
+                        }
                         // prevent images and iframes from loading
                         content = content.replace( /<img[^<]*?>/g, '<img>');
                         content = content.replace( /<iframe[^<]*?>/g, '<iframe>');

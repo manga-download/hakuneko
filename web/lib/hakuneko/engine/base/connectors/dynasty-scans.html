@@ -107,6 +107,10 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 let img_data_list = new RegExp("var pages =.*").exec(content)[0];    //Get raw data
                 content = '';
                 let img_url_rgx = /"image":"([^"]+)",/g
