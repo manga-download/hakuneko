@@ -48,28 +48,6 @@
         }
 
         /**
-         * Helper function to decrypt the protected email within the given DOM element.
-         */
-        cfMailDecrypt( element ) {
-            let span = element.querySelector( 'span[data-cfemail]' );
-            let script = element.querySelector( 'script[data-cfhash]' );
-            if( span && script ) {
-                let mail = span.getAttribute( 'data-cfemail' );
-                let hash = element.removeChild( script ).getAttribute( 'data-cfhash' );
-                // remove script
-                if( mail && hash ) {
-                    // decrypt mail
-                    let decrypted = '';
-                    let key = '0x' + mail.substr( 0, 2 ) | 0;
-                    for ( let i=2; i<mail.length; i+=2 ) {
-                        decrypted += '%' + ( '0' + ( '0x' + mail.substr( i, 2 ) ^ key ).toString( 16 ) ).slice( -2 );
-                    }
-                    element.replaceChild( document.createTextNode( decodeURIComponent( decrypted ) ), span );
-                }
-            }
-        }
-
-        /**
          * Parameters mangalist, pageFrom and pageTo should never be used by external calls.
          */
         _getMangaList( callback, mangaList, pageFrom, pageTo ) {
