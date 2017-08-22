@@ -75,6 +75,8 @@
                     dom.innerHTML = content;
                     
                     [...dom.querySelectorAll( 'span.tit h2 a' )].forEach(  ( element ) => {
+                        // clean cfmail
+                        this.cfMailDecrypt( element );
                         mangaList.push( {
                             // as mentioned before, the eventually added host prefix must be removed
                             // for full qualified domain name, the host (kissmanga) can also be removed
@@ -103,6 +105,8 @@
                 dom.innerHTML = content;
                 
                 let mangaList = [...dom.querySelectorAll( '#chapter_table * a.chico' )].map(  ( element ) => {
+                        // clean cfmail
+                        this.cfMailDecrypt( element );
                         return {
                             id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
                             title: element.text.replace( manga.title, '' ).trim(),
