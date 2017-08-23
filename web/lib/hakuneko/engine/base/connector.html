@@ -136,6 +136,8 @@
                     }
                     element.replaceChild( document.createTextNode( decodeURIComponent( decrypted ) ), span );
                 }
+                // call again in case there is another encrypted mail in this element
+                this.cfMailDecrypt( element );
             }
         }
     }
