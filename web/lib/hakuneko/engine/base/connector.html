@@ -121,24 +121,18 @@
          * Helper function to decrypt the protected email within the given DOM element.
          */
         cfMailDecrypt( element ) {
-            let span = element.querySelector( 'span[data-cfemail]' );
-            let script = element.querySelector( 'script[data-cfhash]' );
-            if( span && script ) {
-                let mail = span.getAttribute( 'data-cfemail' );
-                let hash = element.removeChild( script ).getAttribute( 'data-cfhash' );
-                // remove script
-                if( mail && hash ) {
+            [...element.querySelectorAll( 'span[data-cfemail]' )].forEach(  ( span ) => {
+                let encrypted = span.getAttribute( 'data-cfemail' ); // span.dataset.cfmail
+                if( encrypted ) {
                     // decrypt mail
                     let decrypted = '';
-                    let key = '0x' + mail.substr( 0, 2 ) | 0;
-                    for ( let i=2; i<mail.length; i+=2 ) {
-                        decrypted += '%' + ( '0' + ( '0x' + mail.substr( i, 2 ) ^ key ).toString( 16 ) ).slice( -2 );
+                    let key = '0x' + encrypted.substr(0, 2) | 0;
+                    for ( let i=2; i<encrypted.length; i+=2) {
+                        decrypted += '%' + ('0' + ('0x' + encrypted.substr(i, 2) ^ key).toString(16)).slice(-2);
                     }
-                    element.replaceChild( document.createTextNode( decodeURIComponent( decrypted ) ), span );
+                    span.replaceWith( decodeURIComponent( decrypted ) );
                 }
-                // call again in case there is another encrypted mail in this element
-                this.cfMailDecrypt( element );
-            }
+            });
         }
     }
     Connector; // reference the class to prevent removal of the class through js-minify
