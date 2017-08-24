@@ -71,10 +71,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import {forEachRule, processVariableAndFallback, rulesForStyle, toCssText} from './style-util.js'
-import {MIXIN_MATCH, VAR_ASSIGN} from './common-regex.js'
-import {detectMixin} from './common-utils.js'
-import {StyleNode} from './css-parse.js' // eslint-disable-line no-unused-vars
+import {forEachRule, processVariableAndFallback, rulesForStyle, toCssText} from './style-util.js';
+import {MIXIN_MATCH, VAR_ASSIGN} from './common-regex.js';
+import {detectMixin} from './common-utils.js';
+import {StyleNode} from './css-parse.js'; // eslint-disable-line no-unused-vars
 
 const APPLY_NAME_CLEAN = /;\s*/m;
 const INITIAL_INHERIT = /^\s*(initial)|(inherit)\s*$/;

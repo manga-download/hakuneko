@@ -14,13 +14,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  * Used in: IE 11
  */
 
-import '../bower_components/webcomponents-platform/webcomponents-platform.js'
-import '../bower_components/template/template.js'
-import '../bower_components/es6-promise/dist/es6-promise.auto.min.js'
-import '../bower_components/html-imports/src/html-imports.js'
-import '../src/pre-polyfill.js'
-import '../bower_components/shadydom/src/shadydom.js'
-import '../bower_components/custom-elements/src/custom-elements.js'
-import '../bower_components/shadycss/entrypoints/scoping-shim.js'
-import '../src/post-polyfill.js'
-import '../src/unresolved.js'
+import '../node_modules/@webcomponents/webcomponents-platform/webcomponents-platform.js';
+import '../node_modules/@webcomponents/template/template.js';
+import '../node_modules/es6-promise/lib/es6-promise.auto.js';
+import '../node_modules/@webcomponents/html-imports/src/html-imports.js';
+import '../src/pre-polyfill.js';
+import '../node_modules/@webcomponents/shadydom/src/shadydom.js';
+import '../node_modules/@webcomponents/custom-elements/src/custom-elements.js';
+import '../node_modules/@webcomponents/shadycss/entrypoints/scoping-shim.js';
+import '../src/post-polyfill.js';
+import '../src/unresolved.js';

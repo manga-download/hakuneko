@@ -10,8 +10,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import {nativeShadow, nativeCssVariables} from './style-settings.js'
-import {parse, stringify, types, StyleNode} from './css-parse.js' // eslint-disable-line no-unused-vars
+import {nativeShadow, nativeCssVariables} from './style-settings.js';
+import {parse, stringify, types, StyleNode} from './css-parse.js'; // eslint-disable-line no-unused-vars
 import {MEDIA_MATCH} from './common-regex.js';
 
 /**

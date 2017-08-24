@@ -14,32 +14,29 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  * Used in: Safari 9, Firefox, Edge
  */
 
-import '../bower_components/shadydom/src/shadydom.js'
-import '../bower_components/custom-elements/src/custom-elements.js'
-import '../bower_components/shadycss/entrypoints/scoping-shim.js'
+import '../node_modules/@webcomponents/shadydom/src/shadydom.js';
+import '../node_modules/@webcomponents/custom-elements/src/custom-elements.js';
+import '../node_modules/@webcomponents/shadycss/entrypoints/scoping-shim.js';
 
-// NOTE: this is a load-bearing IIFE for Closure
-(function() {
-  let document = window.document;
-  // global for (1) existence means `WebComponentsReady` will file,
-  // (2) WebComponents.ready == true means event has fired.
-  window.WebComponents = window.WebComponents || {};
+let document = window.document;
+// global for (1) existence means `WebComponentsReady` will file,
+// (2) WebComponents.ready == true means event has fired.
+window.WebComponents = window.WebComponents || {};
 
-  function fire() {
-    requestAnimationFrame(() => {
-      window.WebComponents.ready = true;
-      window.document.dispatchEvent(new CustomEvent('WebComponentsReady', { bubbles: true }));
-    })
-  }
+function fire() {
+  requestAnimationFrame(() => {
+    window.WebComponents.ready = true;
+    window.document.dispatchEvent(new CustomEvent('WebComponentsReady', { bubbles: true }));
+  })
+}
 
-  function wait() {
-    fire();
-    document.removeEventListener('readystatechange', wait);
-  }
+function wait() {
+  fire();
+  document.removeEventListener('readystatechange', wait);
+}
 
-  if (document.readyState !== 'loading') {
-    fire();
-  } else {
-    document.addEventListener('readystatechange', wait);
-  }
-})();
+if (document.readyState !== 'loading') {
+  fire();
+} else {
+  document.addEventListener('readystatechange', wait);
+}

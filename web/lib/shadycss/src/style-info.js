@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import {StyleNode} from './css-parse.js' // eslint-disable-line no-unused-vars
+import {StyleNode} from './css-parse.js'; // eslint-disable-line no-unused-vars
 
 /** @const {string} */
 const infoKey = '__styleInfo';

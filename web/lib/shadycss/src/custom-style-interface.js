@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import documentWait from './document-wait.js'
+import documentWait from './document-wait.js';
 
 /**
  * @typedef {HTMLStyleElement | {getStyle: function():HTMLStyleElement}}

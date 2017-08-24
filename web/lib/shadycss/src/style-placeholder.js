@@ -10,8 +10,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import {applyStylePlaceHolder} from './style-util.js'
-import {nativeShadow} from './style-settings.js'
+import {applyStylePlaceHolder} from './style-util.js';
+import {nativeShadow} from './style-settings.js';
 
 /** @type {Object<string, !Node>} */
 let placeholderMap = {};

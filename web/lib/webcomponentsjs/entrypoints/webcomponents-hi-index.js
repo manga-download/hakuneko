@@ -14,7 +14,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  * Used in: Safari Tech Preview
  */
 
-import '../bower_components/html-imports/src/html-imports.js'
+import '../node_modules/@webcomponents/html-imports/src/html-imports.js';
 
-import '../src/post-polyfill.js'
-import '../src/unresolved.js'
+import '../src/post-polyfill.js';
+import '../src/unresolved.js';

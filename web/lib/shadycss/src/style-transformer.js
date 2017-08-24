@@ -10,9 +10,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import {StyleNode} from './css-parse.js' // eslint-disable-line no-unused-vars
-import * as StyleUtil from './style-util.js'
-import {nativeShadow} from './style-settings.js'
+import {StyleNode} from './css-parse.js'; // eslint-disable-line no-unused-vars
+import * as StyleUtil from './style-util.js';
+import {nativeShadow} from './style-settings.js';
 
 /* Transforms ShadowDOM styling into ShadyDOM styling
 
@@ -181,6 +181,21 @@ class StyleTransformer {
     return p$.join(COMPLEX_SELECTOR_SEP);
   }
 
+  /**
+   * @param {string} selector
+   * @return {string}
+   */
+  _twiddleNthPlus(selector) {
+    return selector.replace(NTH, (m, type, inside) => {
+      if (inside.indexOf('+') > -1) {
+        inside = inside.replace(/\+/g, '___');
+      } else if (inside.indexOf('___') > -1) {
+        inside = inside.replace(/___/g, '+');
+      }
+      return `:${type}(${inside})`;
+    });
+  }
+
 /**
  * @param {string} selector
  * @param {string} scope
@@ -190,7 +205,11 @@ class StyleTransformer {
     let stop = false;
     selector = selector.trim();
     // Remove spaces inside of selectors like `:nth-of-type` because it confuses SIMPLE_SELECTOR_SEP
-    selector = selector.replace(NTH, (m, type, inner) => `:${type}(${inner.replace(/\s/g, '')})`);
+    let isNth = NTH.test(selector);
+    if (isNth) {
+      selector = selector.replace(NTH, (m, type, inner) => `:${type}(${inner.replace(/\s/g, '')})`)
+      selector = this._twiddleNthPlus(selector);
+    }
     selector = selector.replace(SLOTTED_START, `${HOST} $1`);
     selector = selector.replace(SIMPLE_SELECTOR_SEP, (m, c, s) => {
       if (!stop) {
@@ -201,6 +220,9 @@ class StyleTransformer {
       }
       return c + s;
     });
+    if (isNth) {
+      selector = this._twiddleNthPlus(selector);
+    }
     return selector;
   }
 

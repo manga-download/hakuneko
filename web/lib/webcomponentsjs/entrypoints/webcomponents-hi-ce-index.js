@@ -14,8 +14,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
  * Used in: Safari 10, Firefox once SD is shipped
  */
 
-import '../bower_components/html-imports/src/html-imports.js'
-import '../bower_components/custom-elements/src/custom-elements.js'
+import '../node_modules/@webcomponents/html-imports/src/html-imports.js';
+import '../node_modules/@webcomponents/custom-elements/src/custom-elements.js';
 
-import '../src/post-polyfill.js'
-import '../src/unresolved.js'
+import '../src/post-polyfill.js';
+import '../src/unresolved.js';

@@ -10,14 +10,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import ApplyShim from '../src/apply-shim.js'
-import templateMap from '../src/template-map.js'
-import {getIsExtends, toCssText} from '../src/style-util.js'
-import * as ApplyShimUtils from '../src/apply-shim-utils.js'
-import documentWait from '../src/document-wait.js'
-import {getComputedStyleValue, updateNativeProperties} from '../src/common-utils.js'
-import {CustomStyleInterfaceInterface} from '../src/custom-style-interface.js' // eslint-disable-line no-unused-vars
-import {nativeCssVariables, nativeShadow} from '../src/style-settings.js'
+import ApplyShim from '../src/apply-shim.js';
+import templateMap from '../src/template-map.js';
+import {getIsExtends, toCssText} from '../src/style-util.js';
+import * as ApplyShimUtils from '../src/apply-shim-utils.js';
+import documentWait from '../src/document-wait.js';
+import {getComputedStyleValue, updateNativeProperties} from '../src/common-utils.js';
+import {CustomStyleInterfaceInterface} from '../src/custom-style-interface.js'; // eslint-disable-line no-unused-vars
+import {nativeCssVariables, nativeShadow} from '../src/style-settings.js';
 
 /** @const {ApplyShim} */
 const applyShim = new ApplyShim();

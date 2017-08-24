@@ -10,9 +10,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import CustomStyleInterface from '../src/custom-style-interface.js'
-import {getComputedStyleValue, updateNativeProperties} from '../src/common-utils.js'
-import {nativeCssVariables, nativeShadow} from '../src/style-settings.js'
+import CustomStyleInterface from '../src/custom-style-interface.js';
+import {getComputedStyleValue, updateNativeProperties} from '../src/common-utils.js';
+import {nativeCssVariables, nativeShadow} from '../src/style-settings.js';
 
 const customStyleInterface = new CustomStyleInterface();
 

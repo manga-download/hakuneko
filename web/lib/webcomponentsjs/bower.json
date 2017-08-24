@@ -19,13 +19,6 @@
   "license": "BSD-3-Clause",
   "ignore": [],
   "devDependencies": {
-    "web-component-tester": "^v6.0.0",
-    "custom-elements": "webcomponents/custom-elements#^v1.0.0",
-    "es6-promise": "stefanpenner/es6-promise#^4.0.0",
-    "html-imports": "webcomponents/html-imports#^v1.0.0",
-    "shadydom": "webcomponents/shadydom#^v1.0.0",
-    "shadycss": "webcomponents/shadycss#^v1.0.0",
-    "template": "webcomponents/template#^v1.0.0",
-    "webcomponents-platform": "webcomponents/webcomponents-platform#^v1.0.0"
+    "web-component-tester": "^v6.0.0"
   }
 }

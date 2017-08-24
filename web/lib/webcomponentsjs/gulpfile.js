@@ -20,7 +20,6 @@ const rename = require('gulp-rename');
 const rollup = require('rollup-stream');
 const source = require('vinyl-source-stream');
 const del = require('del');
-const bower = require('bower');
 const runseq = require('run-sequence');
 const closure = require('google-closure-compiler').gulp();
 const babel = require('rollup-plugin-babel');
@@ -60,10 +59,10 @@ function closurify(sourceName, fileName) {
     rewrite_polyfills: false,
     externs: [
       'externs/webcomponents.js',
-      'bower_components/custom-elements/externs/custom-elements.js',
-      'bower_components/html-imports/externs/html-imports.js',
-      'bower_components/shadycss/externs/shadycss-externs.js',
-      'bower_components/shadydom/externs/shadydom.js'
+      'node_modules/@webcomponents/custom-elements/externs/custom-elements.js',
+      'node_modules/@webcomponents/html-imports/externs/html-imports.js',
+      'node_modules/@webcomponents/shadycss/externs/shadycss-externs.js',
+      'node_modules/@webcomponents/shadydom/externs/shadydom.js'
     ]
   };
 
@@ -138,7 +137,7 @@ function singleLicenseComment() {
 }
 
 const babelOptions = {
-  presets: 'babili',
+  presets: 'minify',
   shouldPrintComment: singleLicenseComment()
 };
 
@@ -146,17 +145,7 @@ gulp.task('debugify-ce-es5-adapter', () => {
   return debugify('custom-elements-es5-adapter', '', {plugins: [babel(babelOptions)]});
 });
 
-gulp.task('refresh-bower', () => {
-  return del('bower_components').then(() => {
-    return new Promise((resolve, reject) => {
-      bower.commands.install().on('end', () => resolve()).on('error', (e) => reject(e));
-    });
-  });
-});
-
-gulp.task('default', (cb) => {
-  runseq('refresh-bower', 'closure', cb);
-});
+gulp.task('default', ['closure']);
 
 gulp.task('clean-builds', () => {
   return del(['custom-elements-es5-adapter.js{,.map}', 'webcomponents*.js{,.map}', '!webcomponents-loader.js']);

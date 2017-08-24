@@ -1,6 +1,6 @@
 {
   "name": "@webcomponents/webcomponentsjs",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Web Components Polyfills",
   "main": "webcomponents-lite.js",
   "directories": {
@@ -33,12 +33,11 @@
     "@webcomponents/shadydom": "^1.0.0",
     "@webcomponents/template": "^1.0.0",
     "@webcomponents/webcomponents-platform": "^1.0.0",
-    "babel-preset-babili": "^0.1.4",
-    "bower": "^1.8.0",
+    "babel-preset-minify": "^0.2.0",
     "del": "^3.0.0",
     "es6-promise": "^4.1.1",
-    "eslint": "^3.16.1",
-    "google-closure-compiler": "^20170626.0.0",
+    "eslint": "^4.4.1",
+    "google-closure-compiler": "^20170806.0.0",
     "gulp": "^3.8.8",
     "gulp-rename": "^1.2.2",
     "gulp-sourcemaps": "^2.4.1",

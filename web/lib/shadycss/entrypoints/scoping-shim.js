@@ -10,8 +10,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import ScopingShim from '../src/scoping-shim.js'
-import {nativeCssVariables, nativeShadow} from '../src/style-settings.js'
+import ScopingShim from '../src/scoping-shim.js';
+import {nativeCssVariables, nativeShadow} from '../src/style-settings.js';
 
 /** @const {ScopingShim} */
 const scopingShim = new ScopingShim();
