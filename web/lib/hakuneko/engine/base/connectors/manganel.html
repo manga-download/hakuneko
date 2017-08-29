@@ -25,7 +25,7 @@
         /**
          * Parameters mangalist and page should never be used by external calls.
          */
-        _getMangaList( callback, mangaList, page) {
+        _getMangaList( callback, mangaList, page ) {
             Engine.Request.get( 'http://static.hakuneko.ovh/manganel/mangas.json', this.referer, this.agent, ( error, content, status ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
