@@ -131,6 +131,7 @@
                 let dom = document.createElement( 'html' );
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
+                let noScript = true;
                 [...dom.querySelectorAll( 'script' )].forEach(  ( element ) => {
                     let script = element.innerHTML;
                     // evaluate scripts related to the link encryption key
@@ -154,10 +155,13 @@
                         };
                         this.sandbox.addEventListener( 'message', eventListener, false );
                         this.sandbox.postMessage( { id: messageID, content: code, return: ['lstImages'] } );
+                        noScript = false;
                         return;
                     }
                 });
-                callback( null, pageList );
+                if( noScript ) {
+                    callback( null, pageList );
+                }
             });
         }
     }
