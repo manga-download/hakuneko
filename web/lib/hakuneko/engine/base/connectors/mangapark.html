@@ -18,64 +18,16 @@
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'http://mangapark.me';
-            this.initialized    = false;
-            this.manga_list_page_nb   = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
-            
-            //Get manga list page number
-            Engine.Request.get( this.url + '/genre?a-z', this.referer, this.agent, ( error, content, status ) => {
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                let max_page_text = dom.querySelector( '#paging-bar ul.paging.full li span select option:first-of-type' );
-                if(max_page_text != null){
-                    max_page_text = max_page_text.textContent.trim().split('/')[1].trim();
-                    this.manga_list_page_nb = parseInt(max_page_text);
-                    this.initialized = true;
-                }else{
-                    console.error( 'Failed to get MangaPark manga list page number (can\'t find number');
-                    this.initialized = undefined;
-                }
-            });
         }
         
-
         /**
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page) {
-            // connector initialization failed or not yet finished
-            if( !this.manga_list_page_nb ) {
-                callback( null, [] );
-                return;
-            }
-            // set default values for arguments
-            mangaList = mangaList || [];
-            page = page || 1;
-            // abort condition for recursive call
-            if( page > this.manga_list_page_nb ) {
-                callback( null, mangaList );
-                return;
-            }
-            Engine.Request.get( this.url + '/genre/' + page + '/?a-z', this.referer, this.agent, ( error, content, status ) => {
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                
-                [...dom.querySelectorAll( 'div.item ul h3 a' )].forEach(  ( element ) => {
-                    mangaList.push( {
-                        // as mentioned before, the eventually added host prefix must be removed
-                        // for full qualified domain name, the host (kissmanga) can also be removed
-                        id: encodeURI( element.href.replace( this.url, '' ).replace( window.location.origin, '' ) ),
-                        title: element.text.trim()
-                    });
-                });
-                // recursive call to process next page
-                this._getMangaList( callback, mangaList, page + 1);
+            Engine.Request.get( 'http://static.hakuneko.ovh/mangapark/mangas.json', this.referer, this.agent, ( error, content, status ) => {
+                callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
 
