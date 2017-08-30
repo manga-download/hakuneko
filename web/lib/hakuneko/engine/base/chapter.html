@@ -66,14 +66,16 @@
             if( this.status === DownloadStatus.completed ) {
                 Engine.Storage.loadChapterPages( this, callback );
             } else {
-            // check if page list is cached
+                // check if page list is cached
                 if( this.pageCache && this.pageCache.length > 0 ) {
                     callback( null, this.pageCache );
                     return;
                 }
                 // get page list directly from the connector interface and cache them
                 this.manga.connector._getPageList( this.manga, this, ( error, pages ) => {
-                    this.pageCache = pages;
+                    if( !error ) {
+                        this.pageCache = pages;
+                    }
                     callback( error, this.pageCache );
                 });
             }
