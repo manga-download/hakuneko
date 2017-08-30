@@ -88,23 +88,4 @@
     Engine.Settings.loadProfile( 'default', undefined );
     Engine.BookmarkManager.loadProfile( 'default', undefined );
 
-
-
-/*
-// cloudflare testing area
-Engine.Request.get( 'http://kissmanga.com/MangaList?page=1', 'kissmanga.com', 'Mozilla/5.0', ( content, status ) => {
-    let dom = document.createElement( 'html' );
-    dom.innerHTML = content;
-    let script = dom.querySelector( 'script' ).innerHTML.replace( /\n/g, '' ).replace(/document\./g, 'dom\.');
-    console.log( script );
-    script = script.match( /setTimeout\s*\(\s*function\s*\(\s*\)\s*\{\s*(.+)\s*[a-z]\s*\.\s*submit\s*\(\s*\)\s*;/g );
-    console.log( script );
-    eval( script[0] );
-    console.log( '++++++++', status, dom.querySelector('#challenge-form') );
-    setTimeout( () => {
-        console.log( '++++++++', dom.querySelector('#challenge-form') );
-    }, 7500 );
-});
-*/
-
 </script>
