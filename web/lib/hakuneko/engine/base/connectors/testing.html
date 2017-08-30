@@ -60,6 +60,11 @@
                     title: 'Chapter 003',
                     language: 'en'
                 },
+                {
+                    id: 4,
+                    title: 'Chapter ERROR',
+                    language: 'en'
+                },
             ]);
         }
 
@@ -67,13 +72,17 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            callback( null, [
-                window.location.origin + '/img/background.png',
-                window.location.origin + '/img/background.png',
-                window.location.origin + '/img/background.png',
-                window.location.origin + '/img/background.png',
-                window.location.origin + '/img/background.png'
-            ]);
+            if(chapter.id === 4) {
+                callback( new Error( 'Error test' ), [] );
+            } else {
+                callback( null, [
+                    window.location.origin + '/img/background.png',
+                    window.location.origin + '/img/background.png',
+                    window.location.origin + '/img/background.png',
+                    window.location.origin + '/img/background.png',
+                    window.location.origin + '/img/background.png'
+                ]);
+            }
         }
     }
 
