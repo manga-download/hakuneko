@@ -28,6 +28,7 @@
          * 
          */
         isSame( job ) {
+            // comparing chapter objects works, because chapters for each manga are cached
             return ( this.chapter === job.chapter);
             //return ( this.chapter.id === job.chapter.id && this.chapter.manga.id === job.chapter.manga.id && this.chapter.manga.connector.id === job.chapter.manga.connector.id );
         }
