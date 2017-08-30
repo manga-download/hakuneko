@@ -301,17 +301,12 @@
                         Engine.DownloadManager.addDownload( chapter );
                         break;
                     case DownloadStatus.completed:
-                        if( confirm( 'Re-Download?' ) ) {
+                        if( confirm( 'Re-download existing chapter?' ) ) {
                             Engine.DownloadManager.addDownload( chapter );
                         }
                         break;
                     case DownloadStatus.failed:
-                        alert( 'No action available!' );
-                        /*
-                        if( confirm( 'Re-Download?' ) ) {
-                            alert( 'TODO: ...' );
-                        }
-                        */
+                        Engine.DownloadManager.addDownload( chapter );
                         break;
                     default:
                         alert( 'No action available!' );
