@@ -25,6 +25,14 @@
         }
 
         /**
+         * 
+         */
+        isSame( job ) {
+            return ( this.chapter === job.chapter);
+            //return ( this.chapter.id === job.chapter.id && this.chapter.manga.id === job.chapter.manga.id && this.chapter.manga.connector.id === job.chapter.manga.connector.id );
+        }
+
+        /**
          * Apply a new status for the job and publish the corresponding event.
          */
         setStatus( status ) {

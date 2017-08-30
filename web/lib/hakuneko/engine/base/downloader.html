@@ -29,7 +29,7 @@
             }
             // check if job exist
             let job = this.queue[connector.id].find( ( item ) => {
-                return ( item.chapter === chapter );
+                return job.isSame( item );
             });
             // check if a job exist or a new job will be added
             if( job ) {
