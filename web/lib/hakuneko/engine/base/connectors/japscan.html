@@ -22,28 +22,6 @@
         }
 
         /**
-         * Helper function to decrypt the protected email within the given DOM element.
-         */
-        cfMailDecrypt( element ) {
-            let span = element.querySelector( 'span[data-cfemail]' );
-            let script = element.querySelector( 'script[data-cfhash]' );
-            if( span && script ) {
-                let mail = span.getAttribute( 'data-cfemail' );
-                let hash = element.removeChild( script ).getAttribute( 'data-cfhash' );
-                // remove script
-                if( mail && hash ) {
-                    // decrypt mail
-                    let decrypted = '';
-                    let key = '0x' + mail.substr( 0, 2 ) | 0;
-                    for ( let i=2; i<mail.length; i+=2 ) {
-                        decrypted += '%' + ( '0' + ( '0x' + mail.substr( i, 2 ) ^ key ).toString( 16 ) ).slice( -2 );
-                    }
-                    element.replaceChild( document.createTextNode( decodeURIComponent( decrypted ) ), span );
-                }
-            }
-        }
-
-        /**
          *
          */
         _getMangaList( callback ) {
@@ -107,13 +85,21 @@
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
                 content = '';
-                let baseUrl = dom.querySelector( '#image' ).src;
+                let baseUrl = dom.querySelector( '#image' );
+                if(!baseUrl){
+                    baseUrl = dom.querySelector( '#first_img' );
+                    if(!baseUrl){
+                        callback( new Error( 'Couldn\'t find image links' ), [] );
+                        return;
+                    }
+                }
+                baseUrl = baseUrl.src;
                 let imageList = [...dom.querySelectorAll( '#pages option' )].map(  ( element ) => {
                     return element.getAttribute( 'data-img' );
                 });
                 imageList.splice(2, 1);  //Remove 2nd and last images
                 imageList.splice(-1, 1);
-                baseUrl = baseUrl.replace(imageList[0], '');
+                baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
                 imageList = imageList.map( (element) => {
                     return baseUrl + element;
                 });
