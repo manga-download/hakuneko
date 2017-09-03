@@ -162,6 +162,8 @@
              */
             ready() {
                 super.ready();
+                // the bookmark connector which is required for some exceptional handling
+                this.bookmarkConnectorID = 'bookmarks';
                 // list of all available connectors
                 this.connectorList = [];
                 // currently active manga list
@@ -329,7 +331,7 @@
                 let manga = e.detail;
                 if( !this.mangaList
                     || !this.selectedConnector
-                    || this.selectedConnector.id !== manga.connector.id
+                    || (this.selectedConnector.id !== this.bookmarkConnectorID && this.selectedConnector.id !== manga.connector.id)
                 ) {
                     return;
                 }
