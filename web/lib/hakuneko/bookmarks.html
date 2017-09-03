@@ -63,7 +63,7 @@
             }
         </style>
         <div>
-            <i class$="fa fa-fw [[ getBookmarkClass(selectedConnector,selectedManga,bookmarkList.length) ]] bookmark" title="Click to add the selected manga to bookmarks" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" on-click="addBookmark"></i>
+            <i class$="fa fa-fw [[ getBookmarkClass(selectedManga,bookmarkList.length) ]] bookmark" title="Click to add the selected manga to bookmarks" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" on-click="addBookmark"></i>
             <table id="popup" class$="[[ getPopupClass(showPopup,bookmarkList.length) ]]" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" >
                 <template is="dom-repeat" items="[[ bookmarkList ]]">
                     <tr>
@@ -115,10 +115,10 @@
             /**
              *
              */
-            getBookmarkClass( connector, manga, trigger ) {
-                if( connector && manga ) {
+            getBookmarkClass( manga, trigger ) {
+                if( manga ) {
                     let index = this.bookmarkList.findIndex( ( bookmark ) => {
-                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === connector.id );
+                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
                     });
                     if( index > -1 ) {
                         return 'fa-star bookmarkExist';
