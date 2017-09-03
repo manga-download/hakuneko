@@ -100,7 +100,7 @@
         </table>
         <ul class="list" >
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}" initial-count="500" target-framerate="5">
-                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
         <!--
