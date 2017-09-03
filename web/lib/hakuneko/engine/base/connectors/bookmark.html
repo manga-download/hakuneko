@@ -49,15 +49,24 @@
          *
          */
         _getMangaList( callback ) {
-            // get mangas
+            // get mangas and check status
+            // use a different approach to determine existence of manga, since it can be expected that
+            // the bookmark list is way shorter than a manga list of a connector => no performance issues expected
             let mangas = Engine.BookmarkManager.bookmarks.map( ( bookmark ) => {
-                console.log( bookmark.key.connector, this._getConnectorByID( bookmark.key.connector ) );
-                return new Manga( this._getConnectorByID( bookmark.key.connector ), bookmark.key.manga, bookmark.title.manga );
+                let manga = new Manga( this._getConnectorByID( bookmark.key.connector ), bookmark.key.manga, bookmark.title.manga );
+                // determine if manga directory exist on disk
+                Engine.Storage.mangaDirectoryExist( manga, ( error, exist ) => {
+                    if( !error && exist ) {
+                        // set existing manga list for related connector (used by manga.updateStatus function)
+                        manga.connector.existingMangas[ Engine.Storage.sanatizePath ( manga.title ) ] = true;
+                        manga.updateStatus();
+                    }
+                });
+                return manga;
             });
             mangas.sort( ( a, b ) => {
                 return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
             });
-            console.log( mangas );
             callback( null, mangas );
         }
     }
