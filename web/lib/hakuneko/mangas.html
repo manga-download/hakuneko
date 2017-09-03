@@ -76,7 +76,6 @@
                 </td>
                 <td style="width: 100%;">
                     <select id="connectorSelection" on-change="onSelectedConnectorIDChanged">
-                        <option value="">&lt; Select Connector &gt;</option>
                         <template is="dom-repeat" items="[[ connectorList ]]">
                             <option value$="[[ item.id ]]">[[ item.label ]]</option>
                         </template>
@@ -170,6 +169,8 @@
                 this.mangaList = undefined;
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors );
+                // auto select the bookmarks connector when available
+                this.selectedConnector = this.connectorList.find( ( connector ) => { return connector.id === this.bookmarkConnectorID; });
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
             }          
