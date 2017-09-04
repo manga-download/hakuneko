@@ -93,7 +93,7 @@
                     <input type="text" value="{{ searchPattern::input }}"/>
                 </td>
                 <td>
-                    <hakuneko-bookmarks selected-connector="{{ selectedConnector }}" selected-manga="{{ selectedManga }}" on-bookmark-clicked="onBookmarkClicked"></hakuneko-bookmarks>
+                    <hakuneko-bookmarks selected-manga="{{ selectedManga }}"></hakuneko-bookmarks>
                 </td>
             </tr>
         </table>
@@ -298,34 +298,6 @@
                 return ( manga ) => {
                     return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
                 };
-            }
-
-            /**
-             *
-             */
-            onBookmarkClicked( e )
-            {
-                this.set( 'selectedManga', undefined );
-                let bookmark = e.detail;
-                let connector = Engine.Connectors.find( ( c ) => {
-                    return ( c.id === bookmark.key.connector );
-                });
-                if( !connector ) {
-                    return;
-                }
-                let statusID = this.$.status.addToQueue( 'Searching for bookmarked manga (' + bookmark.title.manga + ' => ' + bookmark.title.connector + ')' );
-                connector.getMangas( ( error, mangas ) => {
-                    let manga = mangas.find( ( m ) => {
-                        return ( m.id === bookmark.key.manga );
-                    });
-                    this.$.status.removeFromQueue( statusID );
-                    if( !manga ) {
-                        return;
-                    }
-                    this.set( 'searchPattern', bookmark.title.manga );
-                    this.set( 'selectedConnector', connector );
-                    this.set( 'selectedManga', manga );
-                });
             }
 
             /**
