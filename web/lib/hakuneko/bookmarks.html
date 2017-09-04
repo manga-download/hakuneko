@@ -97,11 +97,11 @@
             processBookmark( e ) {
                 let manga = this.selectedManga;
                 if( manga ) {
-                    let bm = this.bookmarkList.find( ( bookmark ) => {
-                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+                    let bookmark = this.bookmarkList.find( ( b ) => {
+                        return ( b.key.manga === manga.id && b.key.connector === manga.connector.id );
                     });
-                    if( bm ) {
-                        Engine.BookmarkManager.deleteBookmark( bm );
+                    if( bookmark ) {
+                        Engine.BookmarkManager.deleteBookmark( bookmark );
                     } else {
                         Engine.BookmarkManager.addBookmark( manga );
                     }
