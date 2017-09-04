@@ -88,7 +88,7 @@
             // no need to process cookies, they are handled automatically by JAR
             if( error || !response || !content ) {
                 console.log( options.url, '[', retries, ']', error );
-                if( error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT' ) {
+                if( error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT' || error.code === 'ECONNRESET' ) {
                     if( options.method.toUpperCase() === 'GET' ) {
                         this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback, retries - 1 ); } );
                     }
