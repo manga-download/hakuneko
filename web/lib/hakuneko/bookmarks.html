@@ -63,7 +63,7 @@
             }
         </style>
         <div>
-            <i class$="fa fa-fw [[ getBookmarkClass(selectedManga,bookmarkList.length) ]] bookmark" title="Click to add the selected manga to bookmarks" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" on-click="addBookmark"></i>
+            <i class$="fa fa-fw [[ getBookmarkClass(selectedManga,bookmarkList.length) ]] bookmark" title$="[[ getBookmarkTitle(selectedManga,bookmarkList.length) ]]" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" on-click="processBookmark"></i>
             <table id="popup" class$="[[ getPopupClass(showPopup,bookmarkList.length) ]]" on-mouseover="showBookmarks" on-mouseout="hideBookmarks" >
                 <template is="dom-repeat" items="[[ bookmarkList ]]">
                     <tr>
@@ -131,6 +131,40 @@
             /**
              *
              */
+            getBookmarkTitle( manga, trigger ) {
+                if( manga ) {
+                    let index = this.bookmarkList.findIndex( ( bookmark ) => {
+                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+                    });
+                    if( index > -1 ) {
+                        return 'Click to remove the selected manga from bookmarks';
+                    }
+                    return 'Click to add the selected manga to bookmarks';
+                }
+                return '???';
+            }
+
+            /**
+             *
+             */
+            processBookmark( e ) {
+                let manga = this.selectedManga;
+                if( manga ) {
+                    let bm = this.bookmarkList.find( ( bookmark ) => {
+                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+                    });
+                    if( bm ) {
+                        Engine.BookmarkManager.deleteBookmark( bm );
+                    } else {
+                        Engine.BookmarkManager.addBookmark( manga );
+                    }
+                    return 'Click to add the selected manga to bookmarks';
+                }
+            }
+
+            /**
+             *
+             */
             getPopupClass(showPopup, bookmarksLength) {
                 return ( bookmarksLength && bookmarksLength > 0 && showPopup ? 'show' : 'hide' );
             }
@@ -152,23 +186,15 @@
             /**
              *
              */
-            openBookmark( e ) {
-                this.dispatchEvent( new CustomEvent( 'bookmark-clicked', { detail: e.model.item } ) );
-                // hide bookmarks?
-            }
-
-            /**
-             *
-             */
-            addBookmark( e ) {
-                Engine.BookmarkManager.addBookmark( this.selectedManga );
-            }
-
-            /**
-             *
-             */
             deleteBookmark( e ) {
                 Engine.BookmarkManager.deleteBookmark( e.model.item );
+            }
+
+            /**
+             *
+             */
+            openBookmark( e ) {
+                this.dispatchEvent( new CustomEvent( 'bookmark-clicked', { detail: e.model.item } ) );
             }
 
             /**

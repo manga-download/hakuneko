@@ -173,6 +173,7 @@
                 this.selectedConnector = this.connectorList.find( ( connector ) => { return connector.id === this.bookmarkConnectorID; });
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
+                document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }          
 
             /**
@@ -266,6 +267,7 @@
             /**
              *
              */
+            /*
             getBookmarkClass( connector, manga ) {
                 if( !connector || !manga ) {
                     return '';
@@ -273,6 +275,7 @@
                 //return 'fa-star-o';
                 return 'fa-star';
             }
+            */
 
             /**
              *
@@ -343,6 +346,15 @@
                 });
                 if( index > -1 ) {
                     this.notifyPath( 'mangaList.' + index + '.status' );
+                }
+            }
+
+            /**
+             *
+             */
+            onBookmarksChanged( e ) {
+                if( this.selectedConnector.id === this.bookmarkConnectorID ) {
+                    this.onSelectedConnectorChanged( this.selectedConnector )
                 }
             }
         }
