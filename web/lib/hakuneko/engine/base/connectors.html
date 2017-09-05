@@ -1,5 +1,6 @@
 <!-- include all connectors that should be added to the list of available connectors -->
 <link rel="import" href="connectors/testing.html">
+<link rel="import" href="connectors/bookmark.html">
 <link rel="import" href="connectors/kissmanga-cdn.html">
 <link rel="import" href="connectors/kissmanga.html">
 <link rel="import" href="connectors/mangafox.html">
@@ -29,7 +30,9 @@
         constructor() {
             // raw list of available connectors
             this.list = [];
+            // TODO: only register testing on localhost
             //this.register( new Testing() );
+            this.register( new BookmarkConnector() );
             this.register( new KissMangaCDN() );
             this.register( new KissManga() );
             this.register( new MangaFox() );

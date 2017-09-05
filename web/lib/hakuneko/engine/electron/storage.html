@@ -36,6 +36,20 @@
         }
 
         /**
+         * Check if the corresponding manga directory exist.
+         * Due to performance this method must not be used for bulk existing checks.
+         */
+        mangaDirectoryExist( manga, callback ) {
+            this.fs.stat(this._mangaOutputPath( manga ), ( error, stats ) => {
+                if( !error && stats.isDirectory() ) {
+                    callback( null, true );
+                } else {
+                    callback( error, false );
+                }
+            });
+        }
+
+        /**
          * Find all directories/files in the base directory.
          * This key-value map can than be used to look up for existing manga titles (where the key represents the title and the value is always true).
          * Keep in mind that the manga titles in this map are sanitized and may not equal the raw (original) manga title.

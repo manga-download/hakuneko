@@ -76,7 +76,6 @@
                 </td>
                 <td style="width: 100%;">
                     <select id="connectorSelection" on-change="onSelectedConnectorIDChanged">
-                        <option value="">&lt; Select Connector &gt;</option>
                         <template is="dom-repeat" items="[[ connectorList ]]">
                             <option value$="[[ item.id ]]">[[ item.label ]]</option>
                         </template>
@@ -94,13 +93,13 @@
                     <input type="text" value="{{ searchPattern::input }}"/>
                 </td>
                 <td>
-                    <hakuneko-bookmarks selected-connector="{{ selectedConnector }}" selected-manga="{{ selectedManga }}" on-bookmark-clicked="onBookmarkClicked"></hakuneko-bookmarks>
+                    <hakuneko-bookmarks selected-manga="{{ selectedManga }}"></hakuneko-bookmarks>
                 </td>
             </tr>
         </table>
         <ul class="list" >
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}" initial-count="500" target-framerate="5">
-                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
         <!--
@@ -162,14 +161,19 @@
              */
             ready() {
                 super.ready();
+                // the bookmark connector which is required for some exceptional handling
+                this.bookmarkConnectorID = 'bookmarks';
                 // list of all available connectors
                 this.connectorList = [];
                 // currently active manga list
                 this.mangaList = undefined;
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors );
+                // auto select the bookmarks connector when available
+                this.selectedConnector = this.connectorList.find( ( connector ) => { return connector.id === this.bookmarkConnectorID; });
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
+                document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }          
 
             /**
@@ -263,17 +267,6 @@
             /**
              *
              */
-            getBookmarkClass( connector, manga ) {
-                if( !connector || !manga ) {
-                    return '';
-                }
-                //return 'fa-star-o';
-                return 'fa-star';
-            }
-
-            /**
-             *
-             */
             /*
             filteredMangas( mangas, pattern ) {
                 if( !mangas || !pattern || pattern.length < 3 ) {
@@ -295,41 +288,13 @@
             }
 
             /**
-             *
-             */
-            onBookmarkClicked( e )
-            {
-                this.set( 'selectedManga', undefined );
-                let bookmark = e.detail;
-                let connector = Engine.Connectors.find( ( c ) => {
-                    return ( c.id === bookmark.key.connector );
-                });
-                if( !connector ) {
-                    return;
-                }
-                let statusID = this.$.status.addToQueue( 'Searching for bookmarked manga (' + bookmark.title.manga + ' => ' + bookmark.title.connector + ')' );
-                connector.getMangas( ( error, mangas ) => {
-                    let manga = mangas.find( ( m ) => {
-                        return ( m.id === bookmark.key.manga );
-                    });
-                    this.$.status.removeFromQueue( statusID );
-                    if( !manga ) {
-                        return;
-                    }
-                    this.set( 'searchPattern', bookmark.title.manga );
-                    this.set( 'selectedConnector', connector );
-                    this.set( 'selectedManga', manga );
-                });
-            }
-
-            /**
              * 
              */
             onMangaStatusChanged( e ) {
                 let manga = e.detail;
                 if( !this.mangaList
                     || !this.selectedConnector
-                    || this.selectedConnector.id !== manga.connector.id
+                    || (this.selectedConnector.id !== this.bookmarkConnectorID && this.selectedConnector.id !== manga.connector.id)
                 ) {
                     return;
                 }
@@ -340,6 +305,15 @@
                 });
                 if( index > -1 ) {
                     this.notifyPath( 'mangaList.' + index + '.status' );
+                }
+            }
+
+            /**
+             *
+             */
+            onBookmarksChanged( e ) {
+                if( this.selectedConnector.id === this.bookmarkConnectorID ) {
+                    this.onSelectedConnectorChanged( this.selectedConnector )
                 }
             }
         }
