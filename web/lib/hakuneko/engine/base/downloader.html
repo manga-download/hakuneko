@@ -27,17 +27,15 @@
                 this.queue[connector.id] = [];
                 this.queue[connector.id].activeCount = 0;
             }
-            // check if job exist
-            let job = this.queue[connector.id].find( ( item ) => {
+            // create a job for the chapter and add the job to the download queue (if not already exist)
+            let job = new DownloadJob( chapter );
+            let jobExist = this.queue[connector.id].find( ( item ) => {
                 return job.isSame( item );
             });
-            // check if a job exist or a new job will be added
-            if( job ) {
-                return;
+            if( !jobExist ) {
+                this.queue[connector.id].push( job );
+                job.setStatus( DownloadStatus.queued );
             }
-            job = new DownloadJob( chapter );
-            this.queue[connector.id].push( job );
-            job.setStatus( DownloadStatus.queued );
         }
 
         /**
