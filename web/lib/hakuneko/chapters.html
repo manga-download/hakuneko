@@ -166,6 +166,8 @@
              */
             ready() {
                 super.ready();
+                // the bookmark connector which is required for some exceptional handling
+                this.bookmarkConnectorID = 'bookmarks';
                 // load settings in case UI was not ready when the settings were loaded and event was fired
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
                 //
@@ -432,7 +434,7 @@
                     || !this.selectedManga
                     || !this.selectedConnector
                     || this.selectedManga.id !== chapter.manga.id
-                    || this.selectedConnector.id !== chapter.manga.connector.id
+                    || (this.selectedConnector.id !== this.bookmarkConnectorID && this.selectedConnector.id !== chapter.manga.connector.id)
                 ) {
                     return;
                 }
