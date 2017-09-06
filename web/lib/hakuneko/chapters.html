@@ -68,6 +68,12 @@
             .buttonFailed {
                 color: var(--chapter-button-failed-color);
             }
+            .markerActive {
+                color: var(--chapter-marker-active-color);
+            }
+            .markerInactive {
+                color: var(--chapter-marker-inactive-color);
+            }
             .footer {
                 flex: 0;
             }
@@ -118,6 +124,7 @@
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
                     <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
+                    <i class$="fa fa-fw button [[ getChapterMarkClass(markedChapterID, item.id) ]]" on-click="onMarkChapterClick" title$="[[ getChapterMarkTooltip(markedChapterID, item.id) ]]"></i>
                     <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
                 </li>
             </template>
@@ -181,7 +188,9 @@
                 // list of all available chapters
                 this.chapterList = undefined;
                 // list of all existing languages in the chapter list
-                this.languageList = undefined
+                this.languageList = undefined;
+                // the chapter that has been marked as last read by the user
+                this.markedChapterID = undefined;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
@@ -204,6 +213,15 @@
                 if( !this.selectedConnector || !manga ) {
                     return;
                 }
+                // load marked chapter
+                Engine.Storage.loadFromDB( 'chaptermarks', [ manga.connector.id, manga.id ], (value, error) => {
+                    if( !error && value ) {
+                        this.set( 'markedChapterID', value.chapterID);
+                    } else {
+                        this.set( 'markedChapterID', undefined );
+                    }
+                });
+                // load chapterlist
                 let statusID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
                 manga.getChapters( ( error, chapters ) => {
                     // only apply chapters when selected manga has not changed
@@ -281,6 +299,20 @@
                     default:
                         return '';
                 }
+            }
+
+            /**
+             *
+             */
+            getChapterMarkTooltip( markedChapterID, chapterID ) {
+                return ( markedChapterID === chapterID ? 'Remove the "recently read" marker from this chapter' : 'Mark this chapter as "recently read"');
+            }
+
+            /**
+             *
+             */
+            getChapterMarkClass( markedChapterID, chapterID ) {
+                return ( markedChapterID === chapterID ? 'fa-bookmark markerActive' : 'fa-bookmark-o markerInactive');
             }
 
             /**
@@ -371,6 +403,35 @@
                     return;
                 }
                 this.set( 'selectedChapter', e.model.item );
+            }
+
+            /**
+             *
+             */
+            onMarkChapterClick( e ) {
+                if( !e.model || !e.model.item ) {
+                    return;
+                }
+                let chapter = e.model.item;
+                if( this.markedChapterID === chapter.id ) {
+                    // delete from object store
+                    Engine.Storage.deleteFromDB( 'chaptermarks', [chapter.manga.connector.id, chapter.manga.id], ( x, error ) => {
+                        if( !error ) {
+                            this.markedChapterID = undefined;
+                        }
+                    });
+                } else {
+                    // update in object store
+                    Engine.Storage.saveToDB( 'chaptermarks', undefined, {
+                        connectorID: chapter.manga.connector.id,
+                        mangaID: chapter.manga.id,
+                        chapterID: chapter.id
+                    }, ( error ) => {
+                        if( !error ) {
+                            this.markedChapterID = chapter.id;
+                        }
+                    });
+                }
             }
 
             /**
