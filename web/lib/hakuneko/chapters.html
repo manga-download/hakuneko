@@ -68,6 +68,12 @@
             .buttonFailed {
                 color: var(--chapter-button-failed-color);
             }
+            .markerActive {
+                color: var(--chapter-marker-active-color);
+            }
+            .markerInactive {
+                color: var(--chapter-marker-inactive-color);
+            }
             .footer {
                 flex: 0;
             }
@@ -118,7 +124,7 @@
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
                     <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
-                    <i class$="fa fa-fw button [[ getChapterMarkClass(markedChapterID, item.id) ]]" on-click="onMarkChapterClick" title="Mark this chapter as 'last read'"></i>
+                    <i class$="fa fa-fw button [[ getChapterMarkClass(markedChapterID, item.id) ]]" on-click="onMarkChapterClick" title$="[[ getChapterMarkTooltip(markedChapterID, item.id) ]]"></i>
                     <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
                 </li>
             </template>
@@ -289,8 +295,15 @@
             /**
              *
              */
+            getChapterMarkTooltip( markedChapterID, chapterID ) {
+                return ( markedChapterID === chapterID ? 'Remove the "recently read" marker from this chapter' : 'Mark this chapter as "recently read"');
+            }
+
+            /**
+             *
+             */
             getChapterMarkClass( markedChapterID, chapterID ) {
-                return ( markedChapterID === chapterID ? 'fa-bookmark' : "fa-bookmark-o");
+                return ( markedChapterID === chapterID ? 'fa-bookmark markerActive' : 'fa-bookmark-o markerInactive');
             }
 
             /**
