@@ -52,7 +52,7 @@
             }
             // add new object store to mark last read chapter
             if( event.newVersion > 2 ) {
-                db.createObjectStore( 'chaptermarks' );
+                db.createObjectStore( 'chaptermarks', {keyPath: ['connectorID', 'mangaID']} );
             }
         }
 
@@ -64,7 +64,6 @@
          * https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
          */
         saveToDB( collection, key, value, callback ) {
-            // https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
             let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko', 3 );
             scheme.onupgradeneeded = this.createIndexedDBScheme;
             scheme.onsuccess = function( event ) {
@@ -88,7 +87,6 @@
          * https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
          */
         loadFromDB( collection, key, callback ) {
-            // https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
             let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko', 3 );
             scheme.onupgradeneeded = this.createIndexedDBScheme;
             scheme.onsuccess = function( event ) {
@@ -108,5 +106,5 @@
         }
     }
     StorageBase; // reference the class to prevent removal of the class through js-minify
-
+ 
 </script>
