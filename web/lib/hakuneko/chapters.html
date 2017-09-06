@@ -415,7 +415,11 @@
                 let chapter = e.model.item;
                 if( this.markedChapterID === chapter.id ) {
                     // delete from object store
-                    this.markedChapterID = undefined;
+                    Engine.Storage.deleteFromDB( 'chaptermarks', [chapter.manga.connector.id, chapter.manga.id], ( x, error ) => {
+                        if( !error ) {
+                            this.markedChapterID = undefined;
+                        }
+                    });
                 } else {
                     // update in object store
                     Engine.Storage.saveToDB( 'chaptermarks', undefined, {
@@ -426,7 +430,7 @@
                         if( !error ) {
                             this.markedChapterID = chapter.id;
                         }
-                    } );
+                    });
                 }
             }
 

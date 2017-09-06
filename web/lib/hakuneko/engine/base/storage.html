@@ -11,7 +11,8 @@
          *
          */
         constructor() {
-            //
+            this.databaseName = 'hakuneko';
+            this.databaseVersion = 3;
         }
 
         /**
@@ -64,7 +65,7 @@
          * https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
          */
         saveToDB( collection, key, value, callback ) {
-            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko', 3 );
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( this.databaseName, this.databaseVersion );
             scheme.onupgradeneeded = this.createIndexedDBScheme;
             scheme.onsuccess = function( event ) {
                 let db = event.target.result;
@@ -87,7 +88,7 @@
          * https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
          */
         loadFromDB( collection, key, callback ) {
-            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( 'hakuneko', 3 );
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( this.databaseName, this.databaseVersion );
             scheme.onupgradeneeded = this.createIndexedDBScheme;
             scheme.onsuccess = function( event ) {
                 let db = event.target.result;
@@ -102,6 +103,29 @@
                 tx.oncomplete = function() {
                     db.close();
                 };
+            }
+        }
+
+        /**
+         * Provides acces to delete data from the browser's indexedDB.
+         * Callback will be executed after the data has been deleted.
+         * Callback will be provided with an error (or null if no error).
+         *
+         * https://gist.github.com/BigstickCarpet/a0d6389a5d0e3a24814b
+         */
+        deleteFromDB( collection, key, callback ) {
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( this.databaseName, this.databaseVersion );
+            scheme.onupgradeneeded = this.createIndexedDBScheme;
+            scheme.onsuccess = function( event ) {
+                let db = event.target.result;
+                let tx = db.transaction( collection, 'readwrite' );
+                tx.objectStore( collection ).delete( key );
+                tx.oncomplete = function() {
+                    db.close();
+                };
+                if( callback ) {
+                    callback( null );
+                }
             }
         }
     }
