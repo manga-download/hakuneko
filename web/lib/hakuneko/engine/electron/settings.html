@@ -14,6 +14,14 @@
             super();
             let app = require( 'electron' ).remote.app;
             let path = require( 'path' );
+            let docs = undefined;
+            try {
+                // on some circumstances the documents directory might not be found by electron
+                docs = app.getPath( 'documents' );
+            } catch ( e ) {
+                docs = '.';
+            }
+            console.log( docs );
             this.socketConnections = {
                 label: 'Host Connections',
                 description: 'The maximum number of concurrent connections to a host (use lesser connections for slow internet/servers)',
@@ -26,7 +34,7 @@
                 label: 'Manga Directory',
                 description: 'The base directory where all downloaded mangas will be stored',
                 input: Input.directory,
-                value: path.join( app.getPath( 'documents' ), 'Mangas' )
+                value: path.join( docs, 'Mangas' )
             };
             this.useSubdirectory = {
                 label: 'Use Sub-Directories',
