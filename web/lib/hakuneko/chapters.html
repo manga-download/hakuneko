@@ -118,6 +118,7 @@
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
                     <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
+                    <i class$="fa fa-fw button [[ getChapterMarkClass(markedChapterID, item.id) ]]" on-click="onMarkChapterClick" title="Mark this chapter as 'last read'"></i>
                     <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
                 </li>
             </template>
@@ -181,7 +182,9 @@
                 // list of all available chapters
                 this.chapterList = undefined;
                 // list of all existing languages in the chapter list
-                this.languageList = undefined
+                this.languageList = undefined;
+                // the chapter that has been marked as last read by the user
+                this.markedChapterID = undefined;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
@@ -286,6 +289,13 @@
             /**
              *
              */
+            getChapterMarkClass( markedChapterID, chapterID ) {
+                return ( markedChapterID === chapterID ? 'fa-bookmark' : "fa-bookmark-o");
+            }
+
+            /**
+             *
+             */
             getPagePreviewStyle( readerEnabled ) {
                 return ( readerEnabled ? '' : 'display: none;' );
             }
@@ -371,6 +381,23 @@
                     return;
                 }
                 this.set( 'selectedChapter', e.model.item );
+            }
+
+            /**
+             *
+             */
+            onMarkChapterClick( e ) {
+                if( !e.model || !e.model.item ) {
+                    return;
+                }
+                let chapterID = e.model.item.id;
+                if( this.markedChapterID === chapterID ) {
+                    this.markedChapterID = undefined;
+                    // delete from object store
+                } else {
+                    this.markedChapterID = chapterID;
+                    // update in object store
+                }
             }
 
             /**
