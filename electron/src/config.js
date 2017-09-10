@@ -46,9 +46,11 @@ function getUserData() {
 function getCacheDirectory() {
     if( getDeveloperMode() ) {
         return path.normalize( path.join( electron.app.getAppPath(), devDirectory ) );
-    } else {
-        return electron.app.getPath( 'userCache' );
     }
+    if( portable ) {
+        return path.join( path.dirname( electron.app.getPath( 'exe' ) ), 'cache' );
+    }
+    return electron.app.getPath( 'userCache' );
 }
 
 /**
