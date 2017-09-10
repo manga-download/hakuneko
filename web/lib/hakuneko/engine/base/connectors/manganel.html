@@ -46,7 +46,7 @@
                 //TODO Some chapters have a title
                 let chapterList = [...dom.querySelectorAll( '.chapter-list div.row span a' )].map(  ( element ) => {
                     return {
-                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        id: this.getRelativeLink( element ),
                         title: element.title.replace( manga.title, '' ).trim(),
                         language: 'en'
                     };

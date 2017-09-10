@@ -68,7 +68,7 @@
                     mangaList.push( {
                         // as mentioned before, the eventually added host prefix must be removed
                         // for full qualified domain name, the host (kissmanga) can also be removed
-                        id: encodeURI( element.href.trim().replace( this.url, '' ).replace( window.location.origin, '' ) ),
+                        id: encodeURI( this.getRelativeLink( element ) ),
                         title: element.text.trim()
                     });
                 });
@@ -104,7 +104,7 @@
                             chapterList.push( {
                                 // as mentioned before, the eventually added host prefix must be removed
                                 // for full qualified domain name, the host (kissmanga) can also be removed
-                                id: encodeURI( a.href.trim().replace( this.url, '' ).replace( window.location.origin, '' ) ),
+                                id: encodeURI( this.getRelativeLink( a ) ),
                                 title: a.text.trim() + ' [' + language + '] by [' + group + ']',
                                 language: language
                             });

@@ -48,8 +48,9 @@
                 dom.querySelectorAll( '.stream' ).forEach ( (version, idx) => {
                     mangaList[idx] = [...version.querySelectorAll( 'li span a' )].map(  ( element ) => {
                         let titleVersion = '[Ver ' + (idx + 1) + '] ' + element.text.replace( manga.title, '' ).trim();
+                        element.href = element.href.substring( 0, element.href.lastIndexOf( '/' ) + 1 );
 	                    return {
-	                        id: element.href.substring(0, element.href.lastIndexOf('/') + 1).replace( this.url, '' ).replace( window.location.origin, '' ),
+	                        id: this.getRelativeLink( element ),
 	                        title: titleVersion,
 	                        language: 'en'
 	                    };

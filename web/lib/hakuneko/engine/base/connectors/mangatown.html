@@ -46,7 +46,7 @@
                 //TODO Some chapter have a title e.g http://www.mangatown.com/manga/fairy_tail/
                 let mangaList = [...dom.querySelectorAll( 'ul.chapter_list li a' )].map(  ( element ) => {
                         return {
-                            id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                            id: this.getRelativeLink( element ),
                             title: element.text.replace( manga.title, '' ).trim(),
                             language: 'en'
                         };

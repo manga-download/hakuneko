@@ -37,7 +37,7 @@
                     return {
                         // as mentioned before, the eventually added host prefix must be removed
                         // for full qualified domain name, the host (dynasty-scans) can also be removed
-                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        id: this.getRelativeLink( element ),
                         title: element.text.trim()
                     };
                 });
@@ -58,7 +58,7 @@
                 dom.innerHTML = content;
                 let chapterList = [...dom.querySelectorAll( 'table.table-striped tbody tr td a' )].map(  ( element ) => {
                     return {
-                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: 'en'
                     };
@@ -94,10 +94,10 @@
                 }
                 
                 let errorMessage = '';
-                let mangaList = [];
+                let pageList = [];
                 let prms = new Promise(() => {
                     let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : undefined );
-                    callback( error, mangaList );
+                    callback( error, pageList );
                 });
                 page_list.forEach( ( url, idx ) => {
                     let key = prms.defer();
@@ -107,11 +107,12 @@
                             prms.resolve( key );
                             return;
                         }
-                        // prevent iframes from loading
+                        // prevent images and iframes from loading
+                        content = content.replace( /<img/g, '<source').replace( /<\/img/g, '<\/source');
                         content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                         let dom = document.createElement( 'html' );
                         dom.innerHTML = content;
-                        mangaList[idx] =  dom.querySelector('#manga-page').src;
+                        pageList[idx] =  this.getRelativeLink( dom.querySelector( '#manga-page' ) );
                         prms.resolve( key );
                     });
                 });

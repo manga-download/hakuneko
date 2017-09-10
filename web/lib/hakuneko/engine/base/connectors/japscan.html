@@ -38,7 +38,7 @@
                     return {
                         // as mentioned before, the eventually added host prefix must be removed
                         // for full qualified domain name, the host (dynasty-scans) can also be removed
-                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        id: this.getRelativeLink( element ),
                         title: element.text.trim()
                     };
                 });
@@ -61,7 +61,7 @@
                     this.cfMailDecrypt( element );
                     element.text = element.text.replace( 'Scan', '' ).replace( 'VF', '' );
                     return {
-                        id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                        id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: 'fr'
                     };
