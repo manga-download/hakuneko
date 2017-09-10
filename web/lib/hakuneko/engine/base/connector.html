@@ -134,6 +134,37 @@
                 }
             });
         }
+
+        /**
+         * Revert the expansion of relative links regardng the base url,
+         * or leave the absolute url if the link seems not to been expanded.
+         */
+         getRelativeLink( element ) {
+            if( element.href ) {
+                let baseURI = new URL( this.url );
+                let refURI = new URL( element.href );
+
+                // case: element.href => protocol + host expanded to window location (e.g. /sub/page.html => protocol://window/sub/page.html)
+                if( refURI.origin === window.location.origin ) {
+                    refURI.hostname = baseURI.hostname;
+                }
+
+                // case: element.href => protocol expanded to window location (e.g. //domain.net/sub/page.html => protocol://domain.net/sub/page.html)
+                // HakuNeko uses its own protocol for local hosted application files
+                // expansion of hrefs may lead to wrong protocol for external links
+                // => use the protocol of the connector's base url
+                if( refURI.protocol === window.location.protocol ) {
+                    refURI.protocol = baseURI.protocol;
+                }
+
+                // case: element.href => absolute link that contains base url of connector (e.g. http://onnector.net/sub/page.html)
+                if( refURI.hostname === baseURI.hostname ) {
+                    return (refURI.pathname + refURI.search + refURI.hash);
+                } else {
+                    return refURI.href;
+                }
+            }
+        }
     }
     Connector; // reference the class to prevent removal of the class through js-minify
 
