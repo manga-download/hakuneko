@@ -140,9 +140,9 @@
          * or leave the absolute url if the link seems not to been expanded.
          */
          getRelativeLink( element ) {
-            if( element.href ) {
+            if( element.href || element.src ) {
                 let baseURI = new URL( this.url );
-                let refURI = new URL( element.href );
+                let refURI = new URL( element.href || element.src );
 
                 // case: element.href => protocol + host expanded to window location (e.g. /sub/page.html => protocol://window/sub/page.html)
                 if( refURI.origin === window.location.origin ) {
