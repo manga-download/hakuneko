@@ -5,7 +5,7 @@ const url = require( 'url' );
 // indicate whether the settings should be saved in the application directory or in the user directory
 var portable = false;
 // online repository where the latest version of the app is stored
-var appURL = 'http://hakuneko.ovh/app.tar';
+var appURL = 'http://hakuneko.ovh/';
 // app url that will be opened in electron on startup
 var cacheURL = 'cache://hakuneko/index.html';
 // relative path to the web app directory in the development directory
