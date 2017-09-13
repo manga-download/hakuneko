@@ -102,21 +102,22 @@ function updateRequired( appVersionFile, cacheVersionFile, callback ) {
  */
 cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
     //
-    let getArchive = ( signature, callback ) => {
-        request.get( { url: appArchiveURL + revision + '.zip', encoding: null }, ( error, response, content ) => {
-            callback( content, signature );
-        });
-    };
-    //
-    let getSignature = ( callback ) => {
-        request.get( { url: appArchiveURL + revision + '.sig', encoding: null }, ( error, response, content ) => {
-            if( !error && response.statusCode === 200 ) {
-                getArchive( content, callback );
-            }
-        });
-    };
-    //
-    updateRequired( appArchiveURL + 'latest', path.join( cacheDirectory, 'revision' ), ( revision ) => {
+    updateRequired( appArchiveURL + 'latest', path.join( cacheDirectory, 'version' ), ( revision ) => {
+        //
+        let getArchive = ( signature, callback ) => {
+            request.get( { url: appArchiveURL + revision + '.zip', encoding: null }, ( error, response, content ) => {
+                callback( content, signature );
+            });
+        };
+        //
+        let getSignature = ( callback ) => {
+            request.get( { url: appArchiveURL + revision + '.sig', encoding: null }, ( error, response, content ) => {
+                if( !error && response.statusCode === 200 ) {
+                    getArchive( content, callback );
+                }
+            });
+        };
+        //
         getSignature( ( archive, signature  ) => {
             let verify = crypto.createVerify( 'RSA-SHA256' );
             verify.update( archive );
@@ -126,7 +127,7 @@ cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
                 extractArchive( archive, cacheDirectory );
                 // TODO: wait for extract to finish ...
                 setTimeout( () => {
-                    fs.writeFileSync( path.join( cacheDirectory, 'revision' ), revision );
+                    fs.writeFileSync( path.join( cacheDirectory, 'version' ), revision );
                 }, 2500 );
             }
         });
