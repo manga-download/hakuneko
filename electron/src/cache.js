@@ -43,32 +43,33 @@ function createDirectoryChain( directory ) {
  * @param {*} archiveData 
  * @param {*} ouputDirectory 
  */
-function extractArchive( archiveData, ouputDirectory ) {
+function extractArchive( archiveData, ouputDirectory, callback ) {
     let zip = new jszip();
-    let errors = [];
     zip.loadAsync( archiveData, {} ).then( ( unzip ) => {
-        //let promise = new Promise( () => {
-        //    console.log( errors );
-        //    // callback( null );
-        //});
+        let promises = [];
         unzip.forEach( ( name, entry ) => {
-            //let key = promise.defer();
+            promises.push( new Promise( ( resolve, reject ) => {
             name = path.join( ouputDirectory, name );
-            if( entry.dir ) {
-                createDirectoryChain( name );
-                //promise.resolve( key );
-            } else {
-                entry.async( 'uint8array' ).then( ( data ) => {
-                    fs.writeFile( name, data, function( writingError ) {
-                        if( writingError ) {
-                            errors.push( writingError );
-                        }
-                        //promise.resolve( key );
+                if( entry.dir ) {
+                    createDirectoryChain( name );
+                    console.log( 'DIR', name );
+                    resolve();
+                } else {
+                    entry.async( 'uint8array' ).then( ( data ) => {
+                        fs.writeFile( name, data, function( writingError ) {
+                            if( writingError ) {
+                                console.error( writingError );
+                            }
+                            console.log( 'FILE', name );
+                            resolve();
+                        });
                     });
-                    //promise.resolve( key );
-                });
-                // TODO: handle error
-            }
+                }
+            }));
+        });
+        Promise.all( promises ).then( (values ) => {
+            console.log( 'Extracting complete ...' );
+            callback();
         });
     });
 }
@@ -124,11 +125,10 @@ cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
             console.log( 'SIZE:', archive.length, config.app.key.length, signature.length );
             if( verify.verify( config.app.key, signature ) ) {
                 deleteFileEntry( cacheDirectory );
-                extractArchive( archive, cacheDirectory );
-                // TODO: wait for extract to finish ...
-                setTimeout( () => {
+                extractArchive( archive, cacheDirectory, () => {
                     fs.writeFileSync( path.join( cacheDirectory, 'version' ), revision );
-                }, 2500 );
+                    callback();
+                });
             }
         });
     });
