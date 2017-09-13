@@ -2,6 +2,7 @@ const electron = require( 'electron' );
 const path = require( 'path' );
 const url = require( 'url' );
 const config = require( './config.js' );
+const cache = require( './cache.js' );
 
 // global reference to the main window
 var win = null;
@@ -28,6 +29,10 @@ function activateWindow() {
     }
 
     registerCacheProtocol( config.cache.url.protocol, config.cache.directory );
+
+    if( true || !config.app.developer ) {
+        cache.update( 'http://127.0.0.1:8081/'/*config.app.url.href*/, '/home/ronny/.local/share/hakuneko-desktop'/*config.cache.directory*/ );
+    }
 
     win = new electron.BrowserWindow( {
         width: 1120,
