@@ -2,7 +2,6 @@
 
 DIR=../cloud/htdocs
 KEY=../../web/hakuneko.key
-PUB=../../web/hakuneko.pem
 REV=$(git log -1 --format="%H")
 VER=$(echo $REV | cut -c 1-6)
 
@@ -19,4 +18,3 @@ cd $DIR
 zip -r $VER.zip .
 openssl dgst -sha256 -sign $KEY -out $VER.sig $VER.zip
 echo -n $VER > latest
-cp $PUB $VER.pem
