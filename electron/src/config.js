@@ -10,6 +10,17 @@ var appURL = 'http://hakuneko.ovh/';
 var cacheURL = 'cache://hakuneko/index.html';
 // relative path to the web app directory in the development directory
 var devDirectory = '../../web';
+// public key to verify signature of web-app
+var pubkey =
+`-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzx5ZZjtNPDbf/iGqdjQj
+FyCSIWF4dXDiRUWVga7yBBMJOOEidBDlHeAhQXj64f+IrXCxu+/ySNRgXTYp/1I7
+S0HJsgcRz9AlzUVm6jeBZbFs42ggxVOxPA8RQDcEZFU/YDPQuYmz82euhI8VqDoZ
+VlHmFOUICTgp7GvNNK94KDxx3H0qX9kv1U3tQEdxb9FFH5kzg4dR5/5WSriFFMNS
+QDVrm5yAaEfty75u2Os1hobY9r5ACHpaoxitPBUNgqX7lORseb3t+dfoDVhowTXy
+P0xJDQn8Kz3JTmVUjPnZO+JFcvVjtYU2x+i0ab/qfTDSB5W62HUFQZ40EUTXeNN3
+owIDAQAB
+-----END PUBLIC KEY-----`;
 
 /**
  * Create url object from a given uri string
@@ -60,7 +71,8 @@ module.exports = {
     app: {
         developer: getDeveloperMode(),
         userdata: getUserData(),
-        url: getURL( appURL )
+        url: getURL( appURL ),
+        key: pubkey
     },
     cache: {
         url: getURL( cacheURL ),
