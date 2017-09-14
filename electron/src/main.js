@@ -29,11 +29,7 @@ function activateWindow() {
     }
 
     registerCacheProtocol( config.cache.url.protocol, config.cache.directory );
-
-    if( true || !config.app.developer ) {
-        cache.update( 'http://127.0.0.1:8081/'/*config.app.url.href*/, '/home/ronny/.local/share/hakuneko-desktop'/*config.cache.directory*/ );
-    }
-
+    
     win = new electron.BrowserWindow( {
         width: 1120,
         height: 680,
@@ -42,16 +38,16 @@ function activateWindow() {
             webSecurity: false // required to open local images in browser
         }
     });
-
+    
     win.setMenu( null );
 
     if( config.app.developer ) {
         win.webContents.openDevTools();
     }
 
-    win.loadURL( config.cache.url.href );
-    //win.loadURL( 'http://127.0.0.1:8081' );
-    //win.loadURL( 'http://hakuneko.ovh:80' );
+    cache.update( config.app.url.href, config.cache.directory, ( error ) => {
+        win.loadURL( config.cache.url.href );
+    });
 
     /**
      * Replace any existing event listener function registered by previous browser window that would be released when reloding page.
