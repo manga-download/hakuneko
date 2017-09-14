@@ -142,7 +142,7 @@ function getArchiveWithSignature( appArchiveFileURL, callback ) {
  */
 cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
     // never update when in developer mode
-    if( false && config.app.developer ) {
+    if( config.app.developer ) {
         callback( /*new Error( 'Update prohibited while in developer mode' )*/ null );
         return;
     }
