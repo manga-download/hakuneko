@@ -3,6 +3,7 @@
 /daemon
 /electron/build
 /electron/redist/*.zip
+/web/*.pem
 /web/*.key
 /web/build
 /web/lib/hakuneko/version.html
