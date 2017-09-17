@@ -4,6 +4,8 @@ const url = require( 'url' );
 
 // indicate whether the settings should be saved in the application directory or in the user directory
 var portable = false;
+// indicate whether the application was started in development environment or production mode (detected by name of the executable)
+var developer = ( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/i) !== null );
 // online repository where the latest version of the app is stored
 var appURL = 'http://hakuneko.ovh/';
 // app url that will be opened in electron on startup
@@ -28,16 +30,9 @@ owIDAQAB
  */
 function getURL( href ) {
     let result = url.parse( href );
-    // remove trailing period from protocol property
+    // remove trailing colon from protocol property
     result.protocol = result.protocol.slice( 0, -1 );
     return result;
-}
-
-/**
- * Determine whether the application was started in a development environment or not
- */
-function getDeveloperMode() {
-    return ( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/i) !== null );
 }
 
 /**
@@ -55,7 +50,7 @@ function getUserData() {
  * Get the path to the directory where the web application is stored (locally)
  */
 function getCacheDirectory() {
-    if( getDeveloperMode() ) {
+    if( developer ) {
         return path.normalize( path.join( electron.app.getAppPath(), devDirectory ) );
     }
     if( portable ) {
@@ -69,7 +64,7 @@ function getCacheDirectory() {
  */
 module.exports = {
     app: {
-        developer: getDeveloperMode(),
+        developer: developer,
         userdata: getUserData(),
         url: getURL( appURL ),
         key: pubkey
