@@ -16,5 +16,4 @@ rm -r -f $DIR
 polymer build
 cd $DIR
 zip -r $VER.zip .
-openssl dgst -sha256 -sign $KEY -out $VER.sig $VER.zip
-echo -n $VER > latest
+echo -n $VER.zip?signature=$(openssl dgst -sha256 -hex -sign $KEY $VER.zip | cut -d' ' -f2) > latest

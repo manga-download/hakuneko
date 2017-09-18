@@ -7,7 +7,7 @@ var portable = false;
 // indicate whether the application was started in development environment or production mode (detected by name of the executable)
 var developer = ( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/i) !== null );
 // online repository where the latest version of the app is stored
-var appURL = 'http://hakuneko.ovh/';
+var appURL = 'http://hakuneko.ovh/latest';
 // app url that will be opened in electron on startup
 var cacheURL = 'cache://hakuneko/index.html';
 // relative path to the web app directory in the development directory

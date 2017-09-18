@@ -1,6 +1,7 @@
 const fs = require( 'fs' );
 const path = require( 'path' );
 const jszip = require( 'jszip' );
+const url = require( 'url' );
 const request = require( 'request' );
 const crypto = require( 'crypto' );
 const config = require( './config' );
@@ -93,12 +94,12 @@ function updateRequired( appVersionFile, cacheVersionFile, callback ) {
     // get latest version from web
     request.get( appVersionFile, ( error, response, content ) => {
         if( !error && response.statusCode === 200 ) {
-            let appVersion = content.trim();
+            let appVersion = content.substring(0, 6);
             // get current version from cache
             fs.readFile( cacheVersionFile, 'utf8', ( error, data ) => {
                 if( error || appVersion !== data.trim() ) {
                     //console.log( 'Revision from cache does not match revision from URL:', cacheVersionFile );
-                    callback( null, appVersion );
+                    callback( null, url.resolve( appVersionFile, content ));
                 } else {
                     //console.log( 'Cache is already up-to-date:', cacheVersionFile );
                     callback( new Error( 'Cache revision is already the same as the online revision' ), undefined );
@@ -116,20 +117,13 @@ function updateRequired( appVersionFile, cacheVersionFile, callback ) {
  * @param {*} revision 
  * @param {*} callback 
  */
-function getArchiveWithSignature( appArchiveFileURL, callback ) {
-    request.get( { url: appArchiveFileURL + '.sig', encoding: null }, ( error, response, signature ) => {
+function getArchive( appArchiveFileURL, callback ) {
+    request.get( { url: appArchiveFileURL, encoding: null }, ( error, response, archive ) => {
         if( !error && response.statusCode === 200 ) {
-            request.get( { url: appArchiveFileURL + '.zip', encoding: null }, ( error, response, archive ) => {
-                if( !error && response.statusCode === 200 ) {
-                    callback( null, archive, signature );
-                } else {
-                    console.error( 'Failed to get archive from URL:', appArchiveFileURL + '.zip' );
-                    callback( error, undefined, signature );
-                }
-            });
+            callback( null, archive );
         } else {
-            console.error( 'Failed to get signature from URL:', appArchiveFileURL + '.sig' );
-            callback( error, undefined, undefined );
+            console.error( 'Failed to get archive from URL:', appArchiveFileURL );
+            callback( error, undefined );
         }
     });
 };
@@ -147,14 +141,15 @@ cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
         return;
     }
     //
-    updateRequired( appArchiveURL + 'latest', path.join( cacheDirectory, 'version' ), ( error, revision ) => {
+    updateRequired( appArchiveURL, path.join( cacheDirectory, 'version' ), ( error, archiveURL ) => {
         //
-        if( !error && revision ) {
-            getArchiveWithSignature( appArchiveURL + revision, ( error, archive, signature  ) => {
-                if( !error && archive && signature ) {
+        if( !error && archiveURL ) {
+            getArchive( archiveURL, ( error, archive ) => {
+                if( !error && archive ) {
+                    let signature = url.parse( archiveURL, true ).query.signature;
                     let verify = crypto.createVerify( 'RSA-SHA256' );
                     verify.update( archive );
-                    if( verify.verify( config.app.key, signature ) ) {
+                    if( verify.verify( config.app.key, Buffer.from( signature, 'hex' ) ) ) {
                         deleteFileEntry( cacheDirectory );
                         extractArchive( archive, cacheDirectory, () => {
                             fs.writeFileSync( path.join( cacheDirectory, 'version' ), revision );
@@ -162,11 +157,11 @@ cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
                             callback( null );
                         });
                     } else {
-                        console.warn( 'Invalid signature:', appArchiveURL + revision )
+                        console.warn( 'Invalid signature:', signature )
                         callback( null );
                     }
                 } else {
-                    console.warn( 'Failed to get archive/signature from', appArchiveURL );
+                    console.warn( 'Failed to get archive/signature', error );
                     callback( null );
                 }
             });
