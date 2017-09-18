@@ -68,6 +68,10 @@
                 dom.innerHTML = content;
                 content = '';
                 let pageList = [...dom.querySelector('div.page_select:first-of-type').querySelectorAll( 'select option' )].map(  ( element ) => {    //All pages of chapter
+                    // missing protocol in option.value
+                    if( element.value.indexOf( '//' ) === 0 ) {
+                        return ( ( new URL( this.url ) ).protocol + element.value );
+                    }
                     return element.value;
                 });
                 
