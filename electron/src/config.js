@@ -39,11 +39,14 @@ function getURL( href ) {
  * Get the path to the directory where the user data should be stored (depends on global portable variable)
  */
 function getUserData() {
+    if( developer ) {
+        //
+    }
     if( portable ) {
         return path.join( path.dirname( electron.app.getPath( 'exe' ) ), 'userdata' );
-    } else {
-        return electron.app.getPath( 'userData' );
+        //return path.normalize( path.join( electron.app.getAppPath(), '../../userdata' ) );
     }
+    return electron.app.getPath( 'userData' );
 }
 
 /**
@@ -55,8 +58,24 @@ function getCacheDirectory() {
     }
     if( portable ) {
         return path.join( path.dirname( electron.app.getPath( 'exe' ) ), 'cache' );
+        //return path.normalize( path.join( electron.app.getAppPath(), '../../cache' ) );
     }
+    // even if this data is for all users => store for each user because of required write permission for updates
     return electron.app.getPath( 'userCache' );
+    /*
+    if( process.platform == 'win32' ) {
+        // even if this data is for all users => store for each user because of required write permission for updates
+        return electron.app.getPath( 'userCache' ); // => C:\Users\ronny\AppData\Roaming\hakuneko-desktop
+    }
+    if( process.platform == 'darwin' ) {
+        // even if this data is for all users => store for each user because of required write permission for updates
+        return electron.app.getPath( 'userCache' ); // => ~/Library/Caches/hakuneko-desktop
+    }
+    if( process.platform == 'linux' ) {
+        // even if this data is for all users => store for each user because of required write permission for updates
+        return electron.app.getPath( 'userCache' ); // => ~/.cache/hakuneko-desktop
+    }
+    */
 }
 
 /**
@@ -70,7 +89,7 @@ module.exports = {
         key: pubkey
     },
     cache: {
-        url: getURL( cacheURL ),
+        url: getURL( cacheURL ), // ( <is online> ? getURL( appURL ) : getURL( cacheURL ) ),
         directory: getCacheDirectory()
     }
 };
