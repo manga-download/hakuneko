@@ -44,10 +44,22 @@
                 dom.innerHTML = content;
                 
                 //TODO Some chapter have a title e.g http://www.mangatown.com/manga/fairy_tail/
-                let mangaList = [...dom.querySelectorAll( 'ul.chapter_list li a' )].map(  ( element ) => {
+                let mangaList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map(  ( element ) => {
+                        let link = element.getElementsByTagName( 'a' )[0];
+                        let title = link.text.replace( manga.title, '' ).trim();
+                        let texts = element.getElementsByTagName( 'span' );
+                        for(let i = 0; i < texts.length; i++) {
+                            if(texts[i].getAttribute('class') != 'time'){
+                                if(texts[i].textContent.match(/^Vol \d+/i)){
+                                    title = '[' + texts[i].textContent + '] ' + title;
+                                } else {
+                                    title = title + ' ' + texts[i].textContent;
+                                }
+                            }
+                        }
                         return {
-                            id: element.href.replace( this.url, '' ).replace( window.location.origin, '' ),
-                            title: element.text.replace( manga.title, '' ).trim(),
+                            id: link.href.replace( this.url, '' ).replace( window.location.origin, '' ),
+                            title: title,
                             language: 'en'
                         };
                     });
