@@ -36,6 +36,7 @@
         get( href, referer, agent, callback ) {
             let options = {
                 method: 'GET',
+                rejectUnauthorized: false,
                 url: href,
                 headers: {
                     'User-Agent': agent || this.agent,
@@ -60,7 +61,8 @@
          */
         post( href, form, referer, agent, callback ) {
             let options = {
-                method: 'GET',
+                method: 'POST',
+                rejectUnauthorized: false,
                 url: href,
                 headers: {
                     'User-Agent': agent || this.agent,
