@@ -43,7 +43,6 @@
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
                 
-                //TODO Some chapter have a title e.g http://www.mangatown.com/manga/fairy_tail/
                 let mangaList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map(  ( element ) => {
                         let link = element.getElementsByTagName( 'a' )[0];
                         let title = link.text.replace( manga.title, '' ).trim();
@@ -58,7 +57,7 @@
                             }
                         }
                         return {
-                            id: this.getRelativeLink( element ),
+                            id: this.getRelativeLink( link ),
                             title: title,
                             language: 'en'
                         };
