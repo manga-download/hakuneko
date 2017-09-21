@@ -31,7 +31,7 @@ function build {
         rm -r -f "build/$2/locales"
         rm -r -f "build/$2/resources/default_app.asar"
         #cp -r "src" "build/$2/resources/app"
-        cp -r "src" "build/$2/resources/app"
+        asar pack "src" "build/$2/resources/app"
         mv "build/$2/electron.exe" "build/$2/$BIN_WINDOWS"
     fi
     if [[ $2 =~ macosx.* ]]
