@@ -1,13 +1,14 @@
 const electron = require( 'electron' );
 const path = require( 'path' );
 const url = require( 'url' );
+const args = require( './args.js' );
 
 // indicate whether the settings should be saved in the application directory or in the user directory
 var portable = false;
 // indicate whether the application was started in development environment or production mode (detected by name of the executable)
 var developer = ( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/i) !== null );
 // online repository where the latest version of the app is stored
-var appURL = 'http://hakuneko.ovh/latest';
+var appURL = args.getArg( '-u', '--url' ) || 'http://hakuneko.ovh/latest';
 // app url that will be opened in electron on startup
 var cacheURL = 'cache://hakuneko/index.html';
 // relative path to the web app directory in the development directory
