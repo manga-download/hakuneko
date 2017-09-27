@@ -99,15 +99,15 @@ function updateRequired( appVersionFile, cacheVersionFile, callback ) {
             fs.readFile( cacheVersionFile, 'utf8', ( error, data ) => {
                 if( error || appVersion !== data.trim() ) {
                     //console.log( 'Revision from cache does not match revision from URL:', cacheVersionFile );
-                    callback( null, url.resolve( appVersionFile, content ));
+                    callback( null, appVersion, url.resolve( appVersionFile, content ) );
                 } else {
                     //console.log( 'Cache is already up-to-date:', cacheVersionFile );
-                    callback( new Error( 'Cache revision is already the same as the online revision' ), undefined );
+                    callback( new Error( 'Cache revision is already the same as the online revision' ), undefined, undefined );
                 }
             });
         } else {
             console.error( 'Failed to get revision from URL:', appVersionFile );
-            callback( error, undefined );
+            callback( error, undefined, undefined );
         }
     });
 }
@@ -140,8 +140,9 @@ cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
         callback( /*new Error( 'Update prohibited while in developer mode' )*/ null );
         return;
     }
+    let cacheVersionFile = path.join( cacheDirectory, 'version' );
     //
-    updateRequired( appArchiveURL, path.join( cacheDirectory, 'version' ), ( error, archiveURL ) => {
+    updateRequired( appArchiveURL, cacheVersionFile, ( error, archiveVersion, archiveURL ) => {
         //
         if( !error && archiveURL ) {
             getArchive( archiveURL, ( error, archive ) => {
@@ -152,7 +153,7 @@ cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
                     if( verify.verify( config.app.key, Buffer.from( signature, 'hex' ) ) ) {
                         deleteFileEntry( cacheDirectory );
                         extractArchive( archive, cacheDirectory, () => {
-                            fs.writeFileSync( path.join( cacheDirectory, 'version' ), revision );
+                            fs.writeFileSync( cacheVersionFile, archiveVersion );
                             // execute callback when 
                             callback( null );
                         });
