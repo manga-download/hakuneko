@@ -26,6 +26,7 @@ Since the offline cache directory is system dependent, the test schedule must be
 #### Prerequisite for all Cases
 
 1. The package that should be tested must be installed/extracted on the test system
+2. The test cases must be conducted in the correct order to ensure the offline cache is in the correct state
 
 #### Case 01:
 
@@ -68,13 +69,56 @@ The application shall not delete the offline cache and start without any error.
 
 The application shall update the offline cache and the version must be the [latest](http://hakuneko.ovh/latest).
 
+#### Case 05:
+
+**Test the behavior of the application when the host provides an invalid archive with a valid signature**
+
+1. *Ensure the cache directory is not empty, if not update with a working internet connection*
+
+2. *Create an invalid archive with a valid signature*
+
+   ```shell
+   ZIP="invalid.zip"
+   KEY=../../web/hakuneko.key
+   openssl rand 8192 > $ZIP
+   echo -n $ZIP?signature=$(openssl dgst -sha256 -hex -sign $KEY $ZIP | cut -d' ' -f2) > latest
+   ```
+
+3. *Launch a HTTP webserver in the folder where the zip archive and the signature were created*
+
+   ```shell
+   cd path/to/folder
+   polymer serve
+   ```
+
+4. *Start the application from a terminal with the --url argument pointing to the signature of the local HTTP webserver (e.g. `http://127.0.0.1:8081/latest`)*
+
+The application shall not update the offline cache and start normally, but showing an error in the terminal during startup.
+
+#### Case 06:
+
+**Test the behavior of the application when the host provides a valid archive with an invalid signature**
+
+1. *Ensure the cache directory is not empty, if not update with a working internet connection*
+
+2. *Create a valid archive with an invalid signature*
+
+   ```shell
+   ZIP="valid.zip"
+   KEY=../../web/hakuneko.key
+   curl "http://hakuneko.ovh/$(curl http://hakuneko.ovh/latest)" > $ZIP
+   echo -n $ZIP?signature=$(openssl rand -hex 256) > latest
+   ```
+
+3. *Launch a HTTP webserver in the folder where the zip archive and the signature were created*
+
+   ```shell
+   cd path/to/folder
+   polymer serve
+   ```
+
+4. *Start the application from a terminal with the --url argument pointing to the signature of the local HTTP webserver (e.g. `http://127.0.0.1:8081/latest`)*
 
 
 
-
-
-
-
-Behaviour with broken archive (but valid signature)
-=>
-Behaviour with old cache, internet connection and invalid signature
+The application shall not update the offline cache and start normally, but showing an error in the terminal during startup.
