@@ -44,24 +44,24 @@
                 dom.innerHTML = content;
                 
                 let mangaList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map(  ( element ) => {
-                        let link = element.getElementsByTagName( 'a' )[0];
-                        let title = link.text.replace( manga.title, '' ).trim();
-                        let texts = element.getElementsByTagName( 'span' );
-                        for(let i = 0; i < texts.length; i++) {
-                            if(texts[i].getAttribute('class') != 'time'){
-                                if(texts[i].textContent.match(/^Vol \d+/i)){
-                                    title = '[' + texts[i].textContent + '] ' + title;
-                                } else {
-                                    title = title + ' ' + texts[i].textContent;
-                                }
+                    let link = element.getElementsByTagName( 'a' )[0];
+                    let title = link.text.replace( manga.title, '' ).trim();
+                    let texts = element.getElementsByTagName( 'span' );
+                    for(let i = 0; i < texts.length; i++) {
+                        if(texts[i].getAttribute('class') != 'time'){
+                            if(texts[i].textContent.match(/^Vol \d+/i)){
+                                title = '[' + texts[i].textContent + '] ' + title;
+                            } else {
+                                title = title + ' ' + texts[i].textContent;
                             }
                         }
-                        return {
-                            id: this.getRelativeLink( link ),
-                            title: title,
-                            language: 'en'
-                        };
-                    });
+                    }
+                    return {
+                        id: this.getRelativeLink( link ),
+                        title: title,
+                        language: 'en'
+                    };
+                });
                 
                 callback(null, mangaList);
             });
