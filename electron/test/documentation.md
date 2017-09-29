@@ -10,7 +10,7 @@ NOT AVAILABLE
 
 ## Manual Tests
 
-Manual test must be executed individually by a developer. A test protocol may summarize the results of the tests and test cases. A release shall only be published when all tests have been passed without any failure.
+Manual test must be executed individually by a developer. A test [protocol](#Protocols) may summarize the results of the tests and test cases. A release shall only be published when all tests have been passed without any failure.
 
 ### Offline Cache
 
@@ -120,5 +120,20 @@ The application shall not update the offline cache and start normally, but showi
 4. *Start the application from a terminal with the --url argument pointing to the signature of the local HTTP webserver (e.g. `http://127.0.0.1:8081/latest`)*
 
 
-
 The application shall not update the offline cache and start normally, but showing an error in the terminal during startup.
+
+## Protocols
+
+### Offline Cache
+
+Revision: #1234567890
+
+| Test Case            | Win (Setup) | Win (Portable) | Linux | MacOS |
+| -------------------- | ----------- | -------------- | ----- | ----- |
+| [Case 01](#Case 01:) |             |                |       |       |
+| [Case 02](#Case 02:) |             |                |       |       |
+| [Case 03](#Case 03:) |             |                |       |       |
+| [Case 04](#Case 04:) |             |                |       |       |
+| [Case 05](#Case 05:) |             |                |       |       |
+| [Case 06](#Case 06:) |             |                |       |       |
+
