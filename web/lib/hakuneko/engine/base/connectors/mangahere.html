@@ -87,6 +87,8 @@
                     callback( error, [] );
                     return;
                 }
+                // prevent images from being loaded
+                content = content.replace( /src=/g, 'data-src=');
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
                 let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {
