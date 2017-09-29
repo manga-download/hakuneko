@@ -57,10 +57,20 @@
                 let dom = document.createElement( 'html' );
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
-                let chapterList = [...dom.querySelectorAll( 'div.detail_list ul li span.left a.color_0077' )].map(  ( element ) => {
+                let chapterList = [...dom.querySelectorAll( 'div.detail_list ul li span.left' )].map(  ( element ) => {
+                    let link = element.getElementsByTagName( 'a' )[0];
+                    let title = link.text.replace( manga.title, '' ).trim();
+                    let volume = element.querySelector( 'span.mr6' );
+                    if( volume) {
+                        volume = volume.textContent;
+                        //volume = volume.replace(/Vol ?/i, '');
+                        if( volume.length ) {
+                            title = '[' + volume + '] ' + title;
+                        }
+                    }
                     return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
+                        id: this.getRelativeLink( link ),
+                        title: title,
                         language: 'en'
                     };
                 });
