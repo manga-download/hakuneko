@@ -1,0 +1,47 @@
+<link rel="import" href="./_testing.html">
+<link rel="import" href="../lib/hakuneko/engine/base/connector.html">
+
+<script>
+
+    // wrap in scope to ensure declared variables/functions do not collide with other tests
+    {
+        let test = new TestCollection( 'Connector Tests' );
+        test.register( 'lock' );
+        test.register( 'cfMailDecrypt' );
+
+        function lock_test() {
+            let connector = new Connector();
+            let key = connector.lock();
+            Assert.equal( key, connector.isLocked, 'Failed to lock connector!' );
+            Assert.equal( null, connector.lock(), 'A locked connector must not be lockable before unlocked!' );
+            connector.unlock( key );
+            Assert.equal( false, connector.isLocked, 'Failed to unlock connector!' );
+        }
+
+        function cfMailDecrypt_test() {
+            // TODO (2017-10-04): use online encrypted mail address to test latest encryption
+            let testCases = [
+                {
+                    mail: '<a href="/Manga/THE-iDOLM-STER-Cinderella-Girls-Shuffle-Cinderella★Egg">THE <span>iDOLM@STER</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
+                    expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
+                },
+                {
+                    mail: '<a href="/Manga/THE-iDOLM-STER-Cinderella-Girls-Shuffle-Cinderella★Egg">THE <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
+                    expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
+                }
+            ];
+            let connector = new Connector();
+            for(let testCase of testCases) {
+                let template = document.createElement( 'template' );
+                template.innerHTML = testCase.mail;
+                let mail = template.content.firstChild;
+                connector.cfMailDecrypt( mail );
+                Assert.equal( testCase.expected, mail.text, 'Failed to decrypt cloudflare mail protection!' );
+            }
+        }
+
+        test.call( 'lock', lock_test );
+        test.call( 'cfMailDecrypt', cfMailDecrypt_test );
+    }
+
+</script>
