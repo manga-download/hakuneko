@@ -107,8 +107,8 @@
                                 setTimeout(dlImgFct, 500, page, i, key, retries - 1);
                             } else {
                                 errorMessage += 'Couldn\'t get image for page ' + page;
+                                prms.resolve( key );
                             }
-                            prms.resolve( key );
                             return;
                         }
                         
