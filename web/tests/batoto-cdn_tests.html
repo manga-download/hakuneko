@@ -23,7 +23,7 @@
             let error = null;
             let mangas = {length: undefined};
             test.call( '_getMangaList', () => {
-                Assert.equal( null, error, error.message );
+                Assert.equal( null, error, ( error ? error.message : '' ) );
                 Assert.equal( 50, mangas.length, 'Invalid number of mangas from BatotoCDN' );
             });
         }, 1000 );
@@ -32,7 +32,7 @@
             let error = new Error( 'E_SOCKETTIMEDOUT' );
             let chapters = {length: 27};
             test.call( '_getChapterList', () => {
-                Assert.equal( null, error, error.message );
+                Assert.equal( null, error, ( error ? error.message : '' ));
                 Assert.equal( 27, chapters.length, 'Invalid number of chapters from BatotoCDN' );
             });
         }, 750 );
