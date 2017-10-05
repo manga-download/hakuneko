@@ -1,0 +1,41 @@
+<link rel="import" href="./_testing.html">
+<!--
+<link rel="import" href="../lib/hakuneko/engine/loader.html">
+<link rel="import" href="../lib/hakuneko/engine/base/connectors/batoto-cdn.html">
+-->
+
+<script>
+
+    // wrap in scope to ensure declared variables/functions do not collide with other tests
+    {
+        let test = new TestCollection( 'Batoto-CDN Tests' );
+        test.register( '_getMangaList' );
+        test.register( '_getChapterList' );
+
+        /*
+        let batoto = new BatotoCDN();
+        batoto._getMangaList( ( error, mangas ) => {
+            Assert.equal( 1, 2, 'MEOW' );
+            //console.log( error, mangas.length );
+        } );
+        */
+        setTimeout( () => {
+            let error = null;
+            let mangas = {length: undefined};
+            test.call( '_getMangaList', () => {
+                Assert.equal( null, error, ( error ? error.message : '' ) );
+                Assert.equal( 50, mangas.length, 'Invalid number of mangas from BatotoCDN' );
+            });
+        }, 1000 );
+
+        setTimeout( () => {
+            let error = new Error( 'E_SOCKETTIMEDOUT' );
+            let chapters = {length: 27};
+            test.call( '_getChapterList', () => {
+                Assert.equal( null, error, ( error ? error.message : '' ));
+                Assert.equal( 27, chapters.length, 'Invalid number of chapters from BatotoCDN' );
+            });
+        }, 750 );
+    }
+
+</script>

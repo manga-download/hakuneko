@@ -1,0 +1,74 @@
+<script>
+
+    /**
+     *
+     */
+    class TestCollection {
+        constructor( title ) {
+            this.tests = [];
+            this.report = ( '<hr><h2>' + title + '</h2>' );
+            this.statistic = {
+                all: 0,
+                success: 0,
+                failed: 0
+            };
+        }
+
+        register( id ) {
+            this.tests[id] = false;
+        }
+
+        print( title, description, result, color ) {
+            this.report += ( '<div style="display: table;">' );
+            this.report += ( '<div style="display: table-cell; padding-right: 1em; width: 1em; color: ' + color + ';"><strong>' + result + '</strong></div>' );
+            this.report += ( '<div style="display: table-cell; padding-right: 1em; width: 8em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; color: #004080;" title="' + title + '">' + title + '</div>' );
+            this.report += ( '<div style="display: table-cell; padding-right: 1em; width: 48em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; font-style: oblique;" title="' + description + '">' + description + '</div>' );
+            this.report += ( '</div>' );
+        }
+
+        // execute the registered test
+        call( id, action ) {
+            if( this.tests[id] !== false ) {
+                console.error( 'Test not registered or already called: ' + id );
+                return;
+            }
+            this.statistic.all++;
+            try {
+                action();
+                this.statistic.success++;
+                this.print( id, '', '&#x2713;', 'green' );
+            } catch (error) {
+                this.statistic.failed++;
+                this.print( id, error.message, '&#x274c;', 'red' );
+            } finally {
+                this.tests[id] = true;
+                this.finalize();
+            }
+        }
+
+        // write report when all registered tests has been executed
+        finalize() {
+            for(let id in this.tests ) {
+                if( !this.tests[id] ) {
+                    return;
+                }
+            }
+            this.report += ( '<p><strong>Failed: <span style="color: red;">' + this.statistic.failed + '</span>, Success: <span style="color: green;">' + this.statistic.success + '</span></strong></p><hr>' );
+            document.body.innerHTML += this.report;
+        }
+    }
+
+    /**
+     *
+     */
+    class Assert {
+        static equal(expected, value, message) {
+            // TODO (2017-10-04): JSON serialization to ensure deep comparison
+            if(expected !== value) {
+                //throw new Error( 'Value not as expected: ' + expected + ' !== ' + value + ' | ' + message );
+                throw new Error( message );
+            }
+        }
+    }
+
+</script>
