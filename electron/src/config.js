@@ -7,6 +7,8 @@ const args = require( './args.js' );
 var portable = false;
 // indicate whether the application was started in development environment or production mode (detected by name of the executable)
 var developer = ( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/i) !== null );
+// url with tests that should be run (hakuneko will ne started in test mode when test !== undefined)
+var testURL = args.getArg( '-t', '--test' );
 // online repository where the latest version of the app is stored
 var appURL = args.getArg( '-u', '--url' ) || 'http://hakuneko.ovh/latest';
 // app url that will be opened in electron on startup
@@ -90,7 +92,7 @@ module.exports = {
         key: pubkey
     },
     cache: {
-        url: getURL( cacheURL ), // ( <is online> ? getURL( appURL ) : getURL( cacheURL ) ),
+        url: ( testURL ? getURL( testURL ) : getURL( cacheURL )), // ( <is online> ? getURL( appURL ) : getURL( cacheURL ) ),
         directory: getCacheDirectory()
     }
 };
