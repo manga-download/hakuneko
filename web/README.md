@@ -33,6 +33,12 @@ Can be downloaded from github...
 
 Run `polymer serve` from the directory containing the `index.html` file (might be the development directory, or the build directory) to start a local HTTP server and preview the web-application.
 
+## Test
+
+When serving the pages the tests can be run with the electron engine and the url of the local served directory (including the tests sub-directory)
+
+`electron hakuneko/electron/src --test 'http://127.0.0.1:8081/components/web/tests/'`
+
 ## Build/Deploy
 
 Use `polymer build` to store compressed files in the `../cloud/htdocs` directory.

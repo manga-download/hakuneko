@@ -22,12 +22,20 @@
             // TODO (2017-10-04): use online encrypted mail address to test latest encryption
             let testCases = [
                 {
-                    mail: '<a href="/Manga/THE-iDOLM-STER-Cinderella-Girls-Shuffle-Cinderella★Egg">THE <span>iDOLM@STER</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
+                    mail: '<a href="#">THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
                     expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
                 },
                 {
-                    mail: '<a href="/Manga/THE-iDOLM-STER-Cinderella-Girls-Shuffle-Cinderella★Egg">THE <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
+                    mail: '<a href="#">THE <span>iDOLM@STER</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
                     expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
+                },
+                {
+                    mail: '<a href="#">THE <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
+                    expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
+                },
+                {
+                    mail: '<a href="#"><span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> - <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span></a>',
+                    expected: 'iDOLM@STER - iDOLM@STER'
                 }
             ];
             let connector = new Connector();
@@ -40,8 +48,8 @@
             }
         }
 
-        test.call( 'lock', lock_test );
-        test.call( 'cfMailDecrypt', cfMailDecrypt_test );
+        test.run( 'lock', lock_test );
+        test.run( 'cfMailDecrypt', cfMailDecrypt_test );
     }
 
 </script>

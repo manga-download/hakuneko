@@ -27,7 +27,7 @@
         }
 
         // execute the registered test
-        call( id, action ) {
+        run( id, action ) {
             if( this.tests[id] !== false ) {
                 console.error( 'Test not registered or already called: ' + id );
                 return;
@@ -53,7 +53,10 @@
                     return;
                 }
             }
-            this.report += ( '<p><strong>Failed: <span style="color: red;">' + this.statistic.failed + '</span>, Success: <span style="color: green;">' + this.statistic.success + '</span></strong></p><hr>' );
+            this.report += ( '<p><strong>' );
+            this.report += ( 'Success: <span style="color: green;">' + this.statistic.success + '</span>' );
+            this.report += ( ', Failed: <span style="color: red;">' + this.statistic.failed + '</span>' );
+            this.report += ( '</strong></p><hr>' );
             document.body.innerHTML += this.report;
         }
     }
@@ -62,10 +65,20 @@
      *
      */
     class Assert {
-        static equal(expected, value, message) {
+        static equal( expected, actual, message ) {
             // TODO (2017-10-04): JSON serialization to ensure deep comparison
-            if(expected !== value) {
-                //throw new Error( 'Value not as expected: ' + expected + ' !== ' + value + ' | ' + message );
+            if(expected !== actual) {
+                //throw new Error( 'actual not as expected: ' + expected + ' !== ' + actual + ' | ' + message );
+                console.log( 'Failed Assert.equal()', expected, actual );
+                throw new Error( message );
+            }
+        }
+
+        static nequal( expected, actual, message ) {
+            // TODO (2017-10-04): JSON serialization to ensure deep comparison
+            if(expected === actual) {
+                //throw new Error( 'actual not as expected: ' + expected + ' !== ' + actual + ' | ' + message );
+                console.log( 'Failed Assert.nequal()', expected, actual );
                 throw new Error( message );
             }
         }
