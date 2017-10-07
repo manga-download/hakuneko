@@ -19,38 +19,29 @@
             Assert.equal( false, connector.isLocked, 'Failed to unlock connector!' );
         }
 
-        function cfMailDecrypt_test() {
-            // TODO (2017-10-04): use online encrypted mail address to test latest encryption
-            let testCases = [
-                {
-                    mail: '<a href="#">THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
-                    expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
-                },
-                {
-                    mail: '<a href="#">THE <span>iDOLM@STER</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
-                    expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
-                },
-                {
-                    mail: '<a href="#">THE <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>',
-                    expected: 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg'
-                },
-                {
-                    mail: '<a href="#"><span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> - <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span></a>',
-                    expected: 'iDOLM@STER - iDOLM@STER'
-                }
-            ];
+        function cfMailDecrypt_test( anchor, expected ) {
             let connector = new Connector();
-            for(let testCase of testCases) {
-                let template = document.createElement( 'template' );
-                template.innerHTML = testCase.mail;
-                let mail = template.content.firstChild;
-                connector.cfMailDecrypt( mail );
-                Assert.equal( testCase.expected, mail.text, 'Failed to decrypt cloudflare mail protection!' );
-            }
+            let template = document.createElement( 'template' );
+            template.innerHTML = anchor;
+            let mail = template.content.firstChild;
+            connector.cfMailDecrypt( mail );
+            Assert.equal( expected, mail.text, 'Failed to decrypt cloudflare mail protection!' );
         }
 
         test.run( 'lock', lock_test );
-        test.run( 'cfMailDecrypt', cfMailDecrypt_test );
+        Engine.Request.cfGet( 'http://cf.hakuneko.x10host.com/mail.html', undefined, undefined, ( error, content, status, headers ) => {
+            test.run( 'cfMailDecrypt', () => {
+                Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
+                Assert.nequal( undefined, content, 'Invalid content' );
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                cfMailDecrypt_test( dom.querySelector( 'a#cfmail' ).outerHTML, 'breaking@cloudflare.com' );
+                cfMailDecrypt_test( '<a href="#">THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg</a>', 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg' );
+                cfMailDecrypt_test( '<a href="#">THE <span>iDOLM@STER</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>', 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg' );
+                cfMailDecrypt_test( '<a href="#">THE <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>', 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg' );
+                cfMailDecrypt_test( '<a href="#"><span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> - <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span></a>', 'iDOLM@STER - iDOLM@STER' );
+            });
+        });
     }
 
     // wrap in scope to ensure declared variables/functions do not collide with other tests
