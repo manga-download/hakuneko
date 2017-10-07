@@ -96,8 +96,8 @@
                 let errorMessage = '';
                 let pageList = [];
                 let prms = new Promise(() => {
-                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : undefined );
-                    callback( error, pageList );
+                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
+                    callback( error, mangaList );
                 });
                 page_list.forEach( ( url, idx ) => {
                     let key = prms.defer();
