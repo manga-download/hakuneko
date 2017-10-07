@@ -1,4 +1,5 @@
 <link rel="import" href="./_testing.html">
+<link rel="import" href="../lib/hakuneko/engine/loader.html">
 <link rel="import" href="../lib/hakuneko/engine/base/connector.html">
 
 <script>
@@ -50,6 +51,94 @@
 
         test.run( 'lock', lock_test );
         test.run( 'cfMailDecrypt', cfMailDecrypt_test );
+    }
+
+    // wrap in scope to ensure declared variables/functions do not collide with other tests
+    {
+        function _getMangaList_test( test, testID, connector, callback ) {
+            connector._getMangaList( ( error, mangas ) => {
+                test.run( testID, () => {
+                    Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
+                    Assert.nequal( undefined, mangas, 'Failed to get manga list from ' + connector.label );
+                    Assert.nequal( undefined, mangas.length, 'Invalid length of manga list from ' + connector.label );
+                    Assert.nequal( 0, mangas.length, 'Empty manga list from ' + connector.label );
+                    // TODO (2017-10-05): iterate through all mangas and check valid url
+                });
+                if( callback ) {
+                    callback( mangas );
+                }
+            });
+        }
+
+        function _getChapterList_test( test, testID, connector, manga, callback ) {
+            //console.log( connector.id, manga );
+            connector._getChapterList( manga, ( error, chapters ) => {
+                test.run( testID, () => {
+                    Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
+                    Assert.nequal( undefined, chapters, 'Failed to get chapter list from ' + connector.label );
+                    Assert.nequal( undefined, chapters.length, 'Invalid length of chapter list from ' + connector.label );
+                    Assert.nequal( 0, chapters.length, 'Empty chapter list from ' + connector.label );
+                    // TODO (2017-10-05): iterate through all chapters and check valid url
+                });
+                if( callback ) {
+                    callback( chapters );
+                }
+            });
+        }
+
+        function _getPageList_test( test, testID, connector, manga, chapter, callback ) {
+            //console.log( connector.id, manga, chapter );
+            connector._getPageList( manga, chapter, ( error, pages ) => {
+                test.run( testID, () => {
+                    Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
+                    Assert.nequal( undefined, pages, 'Failed to get page list from ' + connector.label );
+                    Assert.nequal( undefined, pages.length, 'Invalid length of page list from ' + connector.label );
+                    Assert.nequal( 0, pages.length, 'Empty page list from ' + connector.label );
+                    // TODO (2017-10-05): iterate through all pages and check valid url
+                });
+                if( callback ) {
+                    callback( pages );
+                }
+            });
+        }
+
+        function connector_test( connector ) {
+            let test = new TestCollection( connector.label + ' Tests' );
+            test.register( '_getMangaList' );
+            test.register( '_getChapterList' );
+            test.register( '_getPageList' );
+
+            _getMangaList_test( test, '_getMangaList', connector, ( mangas ) => {
+                let manga = mangas[Math.floor( Math.random() * mangas.length )];
+                _getChapterList_test( test, '_getChapterList', connector, manga, ( chapters ) => {
+                    let chapter = chapters[Math.floor( Math.random() * chapters.length )];
+                    _getPageList_test( test, '_getPageList', connector, manga, chapter, ( pages ) => {
+                        //
+                    });
+                });
+            });
+        }
+
+        function connectorInitialization() {
+            for( let connector of Engine.Connectors) {
+                if( connector.initialized !== undefined && connector.initialized === false ) {
+                    setTimeout( connectorInitialization.bind( this ), 1000 );
+                    return;
+                }
+            }
+            for( let index in Engine.Connectors) {
+                let connector = Engine.Connectors[index];
+                if( connector.id === 'bookmarks' ) {
+                    continue;
+                }
+                setTimeout( () => {
+                    connector_test( connector );
+                }, index*2500 );
+                
+            }
+        };
+        
+        connectorInitialization();
     }
 
 </script>

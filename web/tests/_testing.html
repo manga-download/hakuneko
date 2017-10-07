@@ -56,7 +56,7 @@
             this.report += ( '<p><strong>' );
             this.report += ( 'Success: <span style="color: green;">' + this.statistic.success + '</span>' );
             this.report += ( ', Failed: <span style="color: red;">' + this.statistic.failed + '</span>' );
-            this.report += ( '</strong></p><hr>' );
+            this.report += ( '</strong></p>' );
             document.body.innerHTML += this.report;
         }
     }
@@ -65,21 +65,33 @@
      *
      */
     class Assert {
+
+        static get counter() {
+            if( !this._counter ) {
+                this._counter = 1000;
+            }
+            return this._counter;
+        }
+
+        static set counter( value ) {
+            this._counter = value;
+        }
+
         static equal( expected, actual, message ) {
             // TODO (2017-10-04): JSON serialization to ensure deep comparison
-            if(expected !== actual) {
-                //throw new Error( 'actual not as expected: ' + expected + ' !== ' + actual + ' | ' + message );
-                console.log( 'Failed Assert.equal()', expected, actual );
-                throw new Error( message );
+            if( expected !== actual ) {
+                this.counter++;
+                console.log( '[' + this.counter + '] ' + 'Failed Assert.equal()', expected, actual, message );
+                throw new Error( '[' + this.counter + '] ' + message );
             }
         }
 
         static nequal( expected, actual, message ) {
             // TODO (2017-10-04): JSON serialization to ensure deep comparison
-            if(expected === actual) {
-                //throw new Error( 'actual not as expected: ' + expected + ' !== ' + actual + ' | ' + message );
-                console.log( 'Failed Assert.nequal()', expected, actual );
-                throw new Error( message );
+            if( expected === actual ) {
+                this.counter++;
+                console.log( '[' + this.counter + '] ' + 'Failed Assert.nequal()', expected, actual, message );
+                throw new Error( '[' + this.counter + '] ' + message );
             }
         }
     }
