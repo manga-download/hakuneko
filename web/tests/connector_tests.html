@@ -131,6 +131,7 @@
                 if( connector.id === 'bookmarks' ) {
                     continue;
                 }
+                // run connector tests delayed to prevent to many concurrent connections
                 setTimeout( () => {
                     connector_test( connector );
                 }, index*2500 );

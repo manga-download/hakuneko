@@ -54,8 +54,8 @@
                 }
             }
             this.report += ( '<p><strong>' );
-            this.report += ( 'Success: <span style="color: green;">' + this.statistic.success + '</span>' );
-            this.report += ( ', Failed: <span style="color: red;">' + this.statistic.failed + '</span>' );
+            this.report += ( 'Success: <span style="color: ' + ( this.statistic.success > 0 ? 'green' : 'red' ) + ';">' + this.statistic.success + '</span>' );
+            this.report += ( ', Failed: <span style="color: ' + ( this.statistic.failed > 0 ? 'red' : 'green' ) + ';">' + this.statistic.failed + '</span>' );
             this.report += ( '</strong></p>' );
             document.body.innerHTML += this.report;
         }
