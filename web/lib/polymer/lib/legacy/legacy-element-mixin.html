@@ -72,6 +72,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       constructor() {
         super();
         this.root = this;
+        /** @type {boolean} */
+        this.isAttached;
+        /** @type {WeakMap<!Element, !Object<string, !Function>>} */
+        this.__boundListeners;
+        /** @type {Object<string, Function>} */
+        this._debouncers;
         this.created();
       }
 
@@ -194,7 +200,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * add any required element event listeners.
        * In performance critical elements, the work done here should be kept
        * to a minimum since it is done before the element is rendered. In
-       * these elements, consider adding listeners asychronously so as not to
+       * these elements, consider adding listeners asynchronously so as not to
        * block render.
        * @protected
        */
@@ -241,7 +247,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        *
        * @param {string} property Property name to reflect.
        * @param {string=} attribute Attribute name to reflect.
-       * @param {*=} value Property value to refect.
+       * @param {*=} value Property value to reflect.
        */
       reflectPropertyToAttribute(property, attribute, value) {
         this._propertyToAttribute(property, attribute, value);
@@ -363,7 +369,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
         event.detail = detail;
         let node = options.node || this;
-        node.dispatchEvent(event)
+        node.dispatchEvent(event);
         return event;
       }
 
@@ -376,7 +382,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @param {string} methodName Name of handler method on `this` to call.
        */
       listen(node, eventName, methodName) {
-        node = /** @type {Element} */ (node || this);
+        node = /** @type {!Element} */ (node || this);
         let hbl = this.__boundListeners ||
           (this.__boundListeners = new WeakMap());
         let bl = hbl.get(node);
@@ -401,7 +407,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        anymore.
        */
       unlisten(node, eventName, methodName) {
-        node = /** @type {Element} */ (node || this);
+        node = /** @type {!Element} */ (node || this);
         let bl = this.__boundListeners && this.__boundListeners.get(node);
         let key = eventName + methodName;
         let handler = bl && bl[key];
@@ -470,10 +476,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * any `<content>` elements are replaced with the list of nodes distributed
        * to the `<content>`, the result of its `getDistributedNodes` method.
        * @this {Element}
-       * @return {Array<Node>} List of effctive child nodes.
+       * @return {Array<Node>} List of effective child nodes.
        */
       getEffectiveChildNodes() {
-        return /** @type {Polymer.DomApi} */ (Polymer.dom(this)).getEffectiveChildNodes();
+        const domApi = /** @type {Polymer.DomApi} */(Polymer.dom(this));
+        return domApi.getEffectiveChildNodes();
       }
 
       /**
@@ -485,7 +492,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @return {Array<Node>} List of distributed elements that match selector.
        */
       queryDistributedElements(selector) {
-        return /** @type {Polymer.DomApi} */ (Polymer.dom(this)).queryDistributedElements(selector);
+        const domApi = /** @type {Polymer.DomApi} */(Polymer.dom(this));
+        return domApi.queryDistributedElements(selector);
       }
 
       /**
@@ -494,7 +502,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * any `<content>` elements are replaced with the list of elements
        * distributed to the `<content>`.
        *
-       * @return {Array<Node>} List of effctive children.
+       * @return {Array<Node>} List of effective children.
        */
       getEffectiveChildren() {
         let list = this.getEffectiveChildNodes();
@@ -508,7 +516,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * text content's of the element's effective childNodes (the elements
        * returned by <a href="#getEffectiveChildNodes>getEffectiveChildNodes</a>.
        *
-       * @return {string} List of effctive children.
+       * @return {string} List of effective children.
        */
       getEffectiveTextContent() {
         let cn = this.getEffectiveChildNodes();
@@ -575,9 +583,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @suppress {invalidCasts}
        */
       getContentChildren(slctr) {
-        return /** @type {Array<HTMLElement>} */(this.getContentChildNodes(slctr).filter(function(n) {
+        let children = /** @type {Array<HTMLElement>} */(this.getContentChildNodes(slctr).filter(function(n) {
           return (n.nodeType === Node.ELEMENT_NODE);
         }));
+        return children;
       }
 
       /**
@@ -631,7 +640,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        *       } 100);
        *     }
        *
-       * @param {string} jobName String to indentify the debounce job.
+       * @param {string} jobName String to identify the debounce job.
        * @param {function()} callback Function that is called (with `this`
        *   context) when the wait time elapses.
        * @param {number} wait Optional wait time in milliseconds (ms) after the
@@ -681,7 +690,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @param {string} jobName The name of the debouncer started with `debounce`
        */
       cancelDebouncer(jobName) {
-        this._debouncers = this._debouncers || {}
+        this._debouncers = this._debouncers || {};
         let debouncer = this._debouncers[jobName];
         if (debouncer) {
           debouncer.cancel();
@@ -689,7 +698,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
 
       /**
-       * Runs a callback function asyncronously.
+       * Runs a callback function asynchronously.
        *
        * By default (if no waitTime is specified), async callbacks are run at
        * microtask timing, which will occur before paint.
@@ -921,7 +930,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @param {...*} args Array of strings or objects to log
        */
       _error(...args) {
-        this._logger('error', args)
+        this._logger('error', args);
       }
 
       /**

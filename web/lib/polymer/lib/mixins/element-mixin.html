@@ -103,7 +103,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     /**
      * Returns the `properties` object specifically on `klass`. Use for:
-     * (1) super chain mixes togther to make `propertiesForClass` which is
+     * (1) super chain mixes together to make `propertiesForClass` which is
      * then used to make `observedAttributes`.
      * (2) properties effects and observers are created from it at `finalize` time.
      *
@@ -116,7 +116,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         JSCompiler_renameProperty('__ownProperties', klass))) {
         klass.__ownProperties =
           klass.hasOwnProperty(JSCompiler_renameProperty('properties', klass)) ?
-          /** @type PolymerElementConstructor */ (klass).properties : {};
+          /** @type {PolymerElementConstructor} */ (klass).properties : {};
       }
       return klass.__ownProperties;
     }
@@ -134,7 +134,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         JSCompiler_renameProperty('__ownObservers', klass))) {
         klass.__ownObservers =
           klass.hasOwnProperty(JSCompiler_renameProperty('observers', klass)) ?
-          /** @type PolymerElementConstructor */ (klass).observers : [];
+          /** @type {PolymerElementConstructor} */ (klass).observers : [];
       }
       return klass.__ownObservers;
     }
@@ -178,7 +178,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         let superCtor = Object.getPrototypeOf(klass.prototype).constructor;
         if (superCtor.prototype instanceof PolymerElement) {
           klass.__classProperties = Object.assign(
-            Object.create(propertiesForClass(/** @type PolymerElementConstructor */(superCtor))),
+            Object.create(propertiesForClass(/** @type {PolymerElementConstructor} */(superCtor))),
             klass.__classProperties);
         }
       }
@@ -232,7 +232,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @private
      */
     function finalizeClassAndSuper(klass) {
-      let proto = /** @type PolymerElementConstructor */ (klass).prototype;
+      let proto = /** @type {PolymerElementConstructor} */ (klass).prototype;
       let superCtor = Object.getPrototypeOf(proto).constructor;
       if (superCtor.prototype instanceof PolymerElement) {
         superCtor.finalize();
@@ -241,7 +241,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
 
     /**
-     * Configures a `klass` based on a staic `klass.config` object and
+     * Configures a `klass` based on a static `klass.config` object and
      * a `template`. This includes creating accessors and effects
      * for properties in `config` and the `template` as well as preparing the
      * `template` for stamping.
@@ -251,7 +251,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      */
     function finalizeClass(klass) {
       klass.__finalized = true;
-      let proto = /** @type PolymerElementConstructor */ (klass).prototype;
+      let proto = /** @type {PolymerElementConstructor} */ (klass).prototype;
       if (klass.hasOwnProperty(
         JSCompiler_renameProperty('is', klass)) && klass.is) {
         Polymer.telemetry.register(proto);
@@ -265,7 +265,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         finalizeObservers(proto, observers, props);
       }
       // note: create "working" template that is finalized at instance time
-      let template = /** @type PolymerElementConstructor */ (klass).template;
+      let template = /** @type {PolymerElementConstructor} */ (klass).template;
       if (template) {
         if (typeof template === 'string') {
           let t = document.createElement('template');
@@ -326,7 +326,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      *
      * * `type`: {function} type to which an attribute matching the property
      * is deserialized. Note the property is camel-cased from a dash-cased
-     * attribute. For example, 'foo-bar' attribute is dersialized to a
+     * attribute. For example, 'foo-bar' attribute is deserialized to a
      * property named 'fooBar'.
      *
      * * `readOnly`: {boolean} creates a readOnly property and
@@ -340,7 +340,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * 'foo' property changes by executing the 'compute' method. This method
      * must return the computed value.
      *
-     * * `reflectToAttriute`: {boolean} If true, the property value is reflected
+     * * `reflectToAttribute`: {boolean} If true, the property value is reflected
      * to an attribute of the same name. Note, the attribute is dash-cased
      * so a property named 'fooBar' is reflected as 'foo-bar'.
      *
@@ -416,8 +416,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     function finalizeTemplate(proto, template, baseURI, is, ext) {
       // support `include="module-name"`
       let cssText =
-        Polymer.StyleGather.cssFromTemplate(template, baseURI) +
-        Polymer.StyleGather.cssFromModuleImports(is);
+        Polymer.StyleGather.cssFromModuleImports(is) +
+        Polymer.StyleGather.cssFromTemplate(template, baseURI);
       if (cssText) {
         let style = document.createElement('style');
         style.textContent = cssText;
@@ -515,11 +515,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       static get template() {
         if (!this.hasOwnProperty(JSCompiler_renameProperty('_template', this))) {
           this._template = Polymer.DomModule && Polymer.DomModule.import(
-            /** @type PolymerElementConstructor*/ (this).is, 'template') ||
+            /** @type {PolymerElementConstructor}*/ (this).is, 'template') ||
             // note: implemented so a subclass can retrieve the super
             // template; call the super impl this way so that `this` points
             // to the superclass.
-            Object.getPrototypeOf(/** @type PolymerElementConstructor*/ (this).prototype).constructor.template;
+            Object.getPrototypeOf(/** @type {PolymerElementConstructor}*/ (this).prototype).constructor.template;
         }
         return this._template;
       }
@@ -537,11 +537,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       static get importPath() {
         if (!this.hasOwnProperty(JSCompiler_renameProperty('_importPath', this))) {
-            const module = Polymer.DomModule && Polymer.DomModule.import(/** @type PolymerElementConstructor */ (this).is);
+            const module = Polymer.DomModule && Polymer.DomModule.import(/** @type {PolymerElementConstructor} */ (this).is);
             this._importPath = module ? module.assetpath : '' ||
-            Object.getPrototypeOf(/** @type PolymerElementConstructor*/ (this).prototype).constructor.importPath;
+            Object.getPrototypeOf(/** @type {PolymerElementConstructor}*/ (this).prototype).constructor.importPath;
         }
         return this._importPath;
+      }
+
+      constructor() {
+        super();
+        /** @type {HTMLTemplateElement} */
+        this._template;
+        /** @type {string} */
+        this._importPath;
+        /** @type {string} */
+        this.rootPath;
+        /** @type {string} */
+        this.importPath;
+        /** @type {StampedTemplate | HTMLElement | ShadowRoot} */
+        this.root;
+        /** @type {!Object<string, !Node>} */
+        this.$;
       }
 
       /**
@@ -644,7 +660,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       _readyClients() {
         if (this._template) {
-          this.root = this._attachDom(this.root);
+          this.root = this._attachDom(/** @type {StampedTemplate} */(this.root));
         }
         // The super._readyClients here sets the clients initialized flag.
         // We must wait to do this until after client dom is created/attached
@@ -662,8 +678,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        *
        * @throws {Error}
        * @suppress {missingReturn}
-       * @param {NodeList} dom to attach to the element.
-       * @return {Node} node to which the dom has been attached.
+       * @param {StampedTemplate} dom to attach to the element.
+       * @return {ShadowRoot} node to which the dom has been attached.
        */
       _attachDom(dom) {
         if (this.attachShadow) {
@@ -689,7 +705,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        *
        * By default, attributes declared in `properties` metadata are
        * deserialized using their `type` information to properties of the
-       * same name.  "Dash-cased" attributes are deserialzed to "camelCase"
+       * same name.  "Dash-cased" attributes are deserialized to "camelCase"
        * properties.
        *
        * @param {string} name Name of attribute.
@@ -792,7 +808,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @private
      */
     _regLog: function(prototype) {
-      console.log('[' + prototype.is + ']: registered')
+      console.log('[' + prototype.is + ']: registered');
     },
     /**
      * Registers a class prototype for telemetry purposes.

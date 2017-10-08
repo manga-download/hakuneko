@@ -16,7 +16,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 import '../node_modules/@webcomponents/webcomponents-platform/webcomponents-platform.js';
 import '../node_modules/@webcomponents/template/template.js';
-import '../node_modules/es6-promise/lib/es6-promise.auto.js';
+import '../src/promise.js';
 import '../node_modules/@webcomponents/html-imports/src/html-imports.js';
 import '../src/pre-polyfill.js';
 import '../node_modules/@webcomponents/shadydom/src/shadydom.js';

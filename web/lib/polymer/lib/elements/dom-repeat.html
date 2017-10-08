@@ -220,7 +220,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
          * When using a `filter` or `sort` function, the `delay` property
          * determines a debounce time after a change to observed item
          * properties that must pass before the filter or sort is re-run.
-         * This is useful in rate-limiting shuffing of the view when
+         * This is useful in rate-limiting shuffling of the view when
          * item changes may be frequent.
          */
         delay: Number,
@@ -267,12 +267,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           computed: '__computeFrameTime(targetFramerate)'
         }
 
-      }
+      };
 
     }
 
     static get observers() {
-      return [ '__itemsChanged(items.*)' ]
+      return [ '__itemsChanged(items.*)' ];
     }
 
     constructor() {
@@ -302,6 +302,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     connectedCallback() {
       super.connectedCallback();
+      this.style.display = 'none';
       // only perform attachment if the element was previously detached.
       if (this.__isDetached) {
         this.__isDetached = false;
@@ -327,7 +328,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
             } else {
               throw new Error('dom-repeat requires a <template> child');
             }
-          })
+          });
           observer.observe(this, {childList: true});
           return false;
         }
@@ -445,7 +446,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         console.warn('dom-repeat expected array for `items`, found', this.items);
       }
       // If path was to an item (e.g. 'items.3' or 'items.3.foo'), forward the
-      // path to that instance synchronously (retuns false for non-item paths)
+      // path to that instance synchronously (returns false for non-item paths)
       if (!this.__handleItemPath(change.path, change.value)) {
         // Otherwise, the array was reset ('items') or spliced ('items.splices'),
         // so queue a full refresh

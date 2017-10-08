@@ -113,7 +113,7 @@ Now you are ready to build the polyfills with:
     npm install
     bower install
     # build
-    gulp build
+    gulp
 
 The builds will be placed into the root directory.
 

@@ -1,3 +1,4 @@
+package-lock.json
 /.helper
 /cloud
 /daemon
@@ -6,4 +7,5 @@
 /web/*.pem
 /web/*.key
 /web/build
+/web/hakuneko.key
 /web/lib/hakuneko/version.html

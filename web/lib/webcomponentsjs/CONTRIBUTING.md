@@ -30,7 +30,7 @@ Other projects require a similar agreement: jQuery, Firefox, Apache, Node, and m
 
         cd $REPO
         npm install
-        gulp build
+        gulp
 
 The builds will be placed into the `dist/` directory if all goes well.
 
