@@ -22,24 +22,33 @@ function build {
     then
         rm -r -f "build/$2/locales"
         rm -r -f "build/$2/resources/default_app.asar"
-        #cp -r "src" "build/$2/resources/app"
         asar pack "src" "build/$2/resources/app.asar"
+        # or without asar: cp -r "src" "build/$2/resources/app"
         mv "build/$2/electron" "build/$2/$BIN_LINUX"
     fi
     if [[ $2 =~ windows.* ]]
     then
         rm -r -f "build/$2/locales"
         rm -r -f "build/$2/resources/default_app.asar"
-        #cp -r "src" "build/$2/resources/app"
-        asar pack "src" "build/$2/resources/app"
+        if [[ "$3" = true ]]
+        then
+            pwd
+            echo "Portable Mode: TRUE"
+            sed 's/^var portable =.*$/var portable = true;/g' -i "src/config.js"
+        else
+            echo "Portable Mode: FALSE"
+            sed 's/^var portable =.*$/var portable = false;/g' -i "src/config.js"
+        fi
+        asar pack "src" "build/$2/resources/app.asar"
+        # or without asar: cp -r "src" "build/$2/resources/app"
         mv "build/$2/electron.exe" "build/$2/$BIN_WINDOWS"
     fi
     if [[ $2 =~ macosx.* ]]
     then
         rm -r -f "build/$2/Electron.app/Contents/Resources/"*.lproj
         rm -r -f "build/$2/Electron.app/Contents/Resources/default_app.asar"
-        #cp -r "src" "build/$2/Electron.app/Contents/Resources/app"
         asar pack "src" "build/$2/Electron.app/Contents/Resources/app.asar"
+        # or without asar: cp -r "src" "build/$2/Electron.app/Contents/Resources/app"
         mv "build/$2/Electron.app/Contents/MacOS/Electron" "build/$2/Electron.app/Contents/MacOS/$BIN_DARWIN"
     fi
 }

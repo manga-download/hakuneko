@@ -2,8 +2,10 @@
 
 . "./build.sh"
 
-DIR_32="${PACKAGE}_${VERSION}_windows-portable_i686"
-DIR_64="${PACKAGE}_${VERSION}_windows-portable_amd64"
+DIR_32="${PACKAGE}_${VERSION}_windows-setup_i686"
+DIR_32_PORTABLE="${PACKAGE}_${VERSION}_windows-portable_i686"
+DIR_64="${PACKAGE}_${VERSION}_windows-setup_amd64"
+DIR_64_PORTABLE="${PACKAGE}_${VERSION}_windows-portable_amd64"
 
 function rcedit {
   ./rcedit.exe "build/$1/$BIN_WINDOWS" \
@@ -107,16 +109,20 @@ function installer {
   rm -f "$WXS" "${WXS}obj" "build/$1.wixpdb"
 }
 
-build "win32-x64" "$DIR_64"
+build "win32-x64" "$DIR_64_PORTABLE" true
+rcedit "$DIR_64_PORTABLE"
+compress "$DIR_64_PORTABLE"
+
+build "win32-ia32" "$DIR_32_PORTABLE" true
+rcedit "$DIR_32_PORTABLE"
+compress "$DIR_32_PORTABLE"
+
+build "win32-x64" "$DIR_64" false
 rcedit "$DIR_64"
 setup "$DIR_64"
 #installer "$DIR_64"
-sed 's/^var portable =.*$/var portable = true;/g' -i "build/$DIR_64/resources/app/config.js"
-compress "$DIR_64"
 
-build "win32-ia32" "$DIR_32"
+build "win32-ia32" "$DIR_32" false
 rcedit "$DIR_32"
 setup "$DIR_32"
 #installer "$DIR_32"
-sed 's/^var portable =.*$/var portable = true;/g' -i "build/$DIR_32/resources/app/config.js"
-compress "$DIR_32"
