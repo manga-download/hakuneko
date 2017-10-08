@@ -1,6 +1,14 @@
-
 /**
  * @fileoverview Closure types for Polymer mixins
+ * @externs
+ *
+ * @license
+ * Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+ * This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+ * The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+ * The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+ * Code distributed by Google as part of the polymer project is also
+ * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  *
  * This file is generated, do not edit manually
  */
@@ -10,6 +18,39 @@
 * @interface
 */
 function Polymer_PropertyAccessors(){}
+/** @type {boolean} */
+Polymer_PropertyAccessors.prototype.__serializing;
+
+/** @type {number} */
+Polymer_PropertyAccessors.prototype.__dataCounter;
+
+/** @type {boolean} */
+Polymer_PropertyAccessors.prototype.__dataEnabled;
+
+/** @type {boolean} */
+Polymer_PropertyAccessors.prototype.__dataReady;
+
+/** @type {boolean} */
+Polymer_PropertyAccessors.prototype.__dataInvalid;
+
+/** @type {!Object} */
+Polymer_PropertyAccessors.prototype.__data;
+
+/** @type {Object} */
+Polymer_PropertyAccessors.prototype.__dataPending;
+
+/** @type {Object} */
+Polymer_PropertyAccessors.prototype.__dataOld;
+
+/** @type {Object} */
+Polymer_PropertyAccessors.prototype.__dataProto;
+
+/** @type {Object} */
+Polymer_PropertyAccessors.prototype.__dataHasAccessor;
+
+/** @type {Object} */
+Polymer_PropertyAccessors.prototype.__dataInstanceProps;
+
 /**
 * @param {string} name Name of attribute that changed
 * @param {?string} old Old attribute value
@@ -163,9 +204,9 @@ Polymer_TemplateStamp.prototype._removeEventListenerFromNode = function(node, ev
 */
 Polymer_TemplateStamp._parseTemplate = function(template, outerTemplateInfo){};
 /**
-* @param {*} template 
-* @param {*} templateInfo 
-* @param {*} nodeInfo 
+* @param {*} template
+* @param {*} templateInfo
+* @param {*} nodeInfo
 */
 Polymer_TemplateStamp._parseTemplateContent = function(template, templateInfo, nodeInfo){};
 /**
@@ -216,6 +257,66 @@ Polymer_TemplateStamp._contentForTemplate = function(template){};
 * @extends {Polymer_PropertyAccessors}
 */
 function Polymer_PropertyEffects(){}
+/** @type {number} */
+Polymer_PropertyEffects.prototype.__dataCounter;
+
+/** @type {!Object} */
+Polymer_PropertyEffects.prototype.__data;
+
+/** @type {!Object} */
+Polymer_PropertyEffects.prototype.__dataPending;
+
+/** @type {!Object} */
+Polymer_PropertyEffects.prototype.__dataOld;
+
+/** @type {boolean} */
+Polymer_PropertyEffects.prototype.__dataClientsReady;
+
+/** @type {Array} */
+Polymer_PropertyEffects.prototype.__dataPendingClients;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__dataToNotify;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__dataLinkedPaths;
+
+/** @type {boolean} */
+Polymer_PropertyEffects.prototype.__dataHasPaths;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__dataCompoundStorage;
+
+/** @type {Polymer_PropertyEffects} */
+Polymer_PropertyEffects.prototype.__dataHost;
+
+/** @type {!Object} */
+Polymer_PropertyEffects.prototype.__dataTemp;
+
+/** @type {boolean} */
+Polymer_PropertyEffects.prototype.__dataClientsInitialized;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__computeEffects;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__reflectEffects;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__notifyEffects;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__propagateEffects;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__observeEffects;
+
+/** @type {Object} */
+Polymer_PropertyEffects.prototype.__readOnly;
+
+/** @type {!TemplateInfo} */
+Polymer_PropertyEffects.prototype.__templateInfo;
+
 /**
 * @override
 * @param {!HTMLTemplateElement} template Template to stamp
@@ -487,32 +588,32 @@ Polymer_PropertyEffects.prototype.get = function(path, root){};
 */
 Polymer_PropertyEffects.prototype.set = function(path, value, root){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_PropertyEffects.prototype.push = function(path, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_PropertyEffects.prototype.pop = function(path){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @param {number} start Index from which to start removing/inserting.
 * @param {number} deleteCount Number of items to remove.
-* @param {...*} items 
+* @param {...*} items
 * @return {Array}
 */
 Polymer_PropertyEffects.prototype.splice = function(path, start, deleteCount, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_PropertyEffects.prototype.shift = function(path){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_PropertyEffects.prototype.unshift = function(path, items){};
@@ -579,9 +680,9 @@ Polymer_PropertyEffects.prototype._removeBoundDom = function(dom){};
 */
 Polymer_PropertyEffects._parseTemplate = function(template, outerTemplateInfo){};
 /**
-* @param {*} template 
-* @param {*} templateInfo 
-* @param {*} nodeInfo 
+* @param {*} template
+* @param {*} templateInfo
+* @param {*} nodeInfo
 */
 Polymer_PropertyEffects._parseTemplateContent = function(template, templateInfo, nodeInfo){};
 /**
@@ -618,8 +719,8 @@ Polymer_PropertyEffects._parseTemplateNodeAttributes = function(node, templateIn
 * @param {Element} node Node to parse
 * @param {TemplateInfo} templateInfo Template metadata for current template
 * @param {NodeInfo} nodeInfo Node metadata for current template node
-* @param {*} name 
-* @param {*} value 
+* @param {*} name
+* @param {*} value
 * @return {boolean}
 */
 Polymer_PropertyEffects._parseTemplateNodeAttribute = function(node, templateInfo, nodeInfo, name, value){};
@@ -705,6 +806,24 @@ Polymer_PropertyEffects._evaluateBinding = function(inst, part, path, props, old
 * @extends {Polymer_PropertyEffects}
 */
 function Polymer_ElementMixin(){}
+/** @type {HTMLTemplateElement} */
+Polymer_ElementMixin.prototype._template;
+
+/** @type {string} */
+Polymer_ElementMixin.prototype._importPath;
+
+/** @type {string} */
+Polymer_ElementMixin.prototype.rootPath;
+
+/** @type {string} */
+Polymer_ElementMixin.prototype.importPath;
+
+/** @type {(StampedTemplate|HTMLElement|ShadowRoot)} */
+Polymer_ElementMixin.prototype.root;
+
+/** @type {!Object.<string, !Node>} */
+Polymer_ElementMixin.prototype.$;
+
 /**
 * @override
 * @param {!HTMLTemplateElement} template Template to stamp
@@ -977,32 +1096,32 @@ Polymer_ElementMixin.prototype.get = function(path, root){};
 */
 Polymer_ElementMixin.prototype.set = function(path, value, root){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_ElementMixin.prototype.push = function(path, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_ElementMixin.prototype.pop = function(path){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @param {number} start Index from which to start removing/inserting.
 * @param {number} deleteCount Number of items to remove.
-* @param {...*} items 
+* @param {...*} items
 * @return {Array}
 */
 Polymer_ElementMixin.prototype.splice = function(path, start, deleteCount, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_ElementMixin.prototype.shift = function(path){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_ElementMixin.prototype.unshift = function(path, items){};
@@ -1070,8 +1189,8 @@ Polymer_ElementMixin.prototype.connectedCallback = function(){};
 */
 Polymer_ElementMixin.prototype.disconnectedCallback = function(){};
 /**
-* @param {NodeList} dom to attach to the element.
-* @return {Node}
+* @param {StampedTemplate} dom to attach to the element.
+* @return {ShadowRoot}
 */
 Polymer_ElementMixin.prototype._attachDom = function(dom){};
 /**
@@ -1131,8 +1250,8 @@ Polymer_ElementMixin._parseTemplateNodeAttributes = function(node, templateInfo,
 * @param {Element} node Node to parse
 * @param {TemplateInfo} templateInfo Template metadata for current template
 * @param {NodeInfo} nodeInfo Node metadata for current template node
-* @param {*} name 
-* @param {*} value 
+* @param {*} name
+* @param {*} value
 * @return {boolean}
 */
 Polymer_ElementMixin._parseTemplateNodeAttribute = function(node, templateInfo, nodeInfo, name, value){};
@@ -1221,15 +1340,15 @@ Polymer_ElementMixin.finalize = function(){};
 */
 function Polymer_GestureEventListeners(){}
 /**
-* @param {*} node 
-* @param {*} eventName 
-* @param {*} handler 
+* @param {*} node
+* @param {*} eventName
+* @param {*} handler
 */
 Polymer_GestureEventListeners.prototype._addEventListenerToNode = function(node, eventName, handler){};
 /**
-* @param {*} node 
-* @param {*} eventName 
-* @param {*} handler 
+* @param {*} node
+* @param {*} eventName
+* @param {*} handler
 */
 Polymer_GestureEventListeners.prototype._removeEventListenerFromNode = function(node, eventName, handler){};
 /**
@@ -1238,6 +1357,15 @@ Polymer_GestureEventListeners.prototype._removeEventListenerFromNode = function(
 * @extends {Polymer_GestureEventListeners}
 */
 function Polymer_LegacyElementMixin(){}
+/** @type {boolean} */
+Polymer_LegacyElementMixin.prototype.isAttached;
+
+/** @type {WeakMap.<!Element, !Object.<string, !Function>>} */
+Polymer_LegacyElementMixin.prototype.__boundListeners;
+
+/** @type {Object.<string, Function>} */
+Polymer_LegacyElementMixin.prototype._debouncers;
+
 /**
 * @override
 * @param {!HTMLTemplateElement} template Template to stamp
@@ -1254,15 +1382,15 @@ Polymer_LegacyElementMixin.prototype._stampTemplate = function(template){};
 */
 Polymer_LegacyElementMixin.prototype._addMethodEventListenerToNode = function(node, eventName, methodName, context){};
 /**
-* @param {*} node 
-* @param {*} eventName 
-* @param {*} handler 
+* @param {*} node
+* @param {*} eventName
+* @param {*} handler
 */
 Polymer_LegacyElementMixin.prototype._addEventListenerToNode = function(node, eventName, handler){};
 /**
-* @param {*} node 
-* @param {*} eventName 
-* @param {*} handler 
+* @param {*} node
+* @param {*} eventName
+* @param {*} handler
 */
 Polymer_LegacyElementMixin.prototype._removeEventListenerFromNode = function(node, eventName, handler){};
 /**
@@ -1510,32 +1638,32 @@ Polymer_LegacyElementMixin.prototype.get = function(path, root){};
 */
 Polymer_LegacyElementMixin.prototype.set = function(path, value, root){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_LegacyElementMixin.prototype.push = function(path, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_LegacyElementMixin.prototype.pop = function(path){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @param {number} start Index from which to start removing/inserting.
 * @param {number} deleteCount Number of items to remove.
-* @param {...*} items 
+* @param {...*} items
 * @return {Array}
 */
 Polymer_LegacyElementMixin.prototype.splice = function(path, start, deleteCount, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_LegacyElementMixin.prototype.shift = function(path){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_LegacyElementMixin.prototype.unshift = function(path, items){};
@@ -1603,8 +1731,8 @@ Polymer_LegacyElementMixin.prototype.connectedCallback = function(){};
 */
 Polymer_LegacyElementMixin.prototype.disconnectedCallback = function(){};
 /**
-* @param {NodeList} dom to attach to the element.
-* @return {Node}
+* @param {StampedTemplate} dom to attach to the element.
+* @return {ShadowRoot}
 */
 Polymer_LegacyElementMixin.prototype._attachDom = function(dom){};
 /**
@@ -1786,8 +1914,8 @@ Polymer_LegacyElementMixin.prototype.isLightDescendant = function(node){};
 */
 Polymer_LegacyElementMixin.prototype.isLocalDescendant = function(node){};
 /**
-* @param {*} container 
-* @param {*} shouldObserve 
+* @param {*} container
+* @param {*} shouldObserve
 */
 Polymer_LegacyElementMixin.prototype.scopeSubtree = function(container, shouldObserve){};
 /**
@@ -1796,7 +1924,7 @@ Polymer_LegacyElementMixin.prototype.scopeSubtree = function(container, shouldOb
 */
 Polymer_LegacyElementMixin.prototype.getComputedStyleValue = function(property){};
 /**
-* @param {string} jobName String to indentify the debounce job.
+* @param {string} jobName String to identify the debounce job.
 * @param {function ()} callback Function that is called (with `this`
   context) when the wait time elapses.
 * @param {number} wait Optional wait time in milliseconds (ms) after the
@@ -1895,20 +2023,20 @@ Polymer_LegacyElementMixin.prototype.arrayDelete = function(arrayOrPath, item){}
 */
 Polymer_LegacyElementMixin.prototype._logger = function(level, args){};
 /**
-* @param {...*} args 
+* @param {...*} args
 */
 Polymer_LegacyElementMixin.prototype._log = function(args){};
 /**
-* @param {...*} args 
+* @param {...*} args
 */
 Polymer_LegacyElementMixin.prototype._warn = function(args){};
 /**
-* @param {...*} args 
+* @param {...*} args
 */
 Polymer_LegacyElementMixin.prototype._error = function(args){};
 /**
 * @param {string} methodName Method name to associate with message
-* @param {...*} args 
+* @param {...*} args
 * @return {Array}
 */
 Polymer_LegacyElementMixin.prototype._logf = function(methodName, args){};
@@ -1957,8 +2085,8 @@ Polymer_LegacyElementMixin._parseTemplateNodeAttributes = function(node, templat
 * @param {Element} node Node to parse
 * @param {TemplateInfo} templateInfo Template metadata for current template
 * @param {NodeInfo} nodeInfo Node metadata for current template node
-* @param {*} name 
-* @param {*} value 
+* @param {*} name
+* @param {*} value
 * @return {boolean}
 */
 Polymer_LegacyElementMixin._parseTemplateNodeAttribute = function(node, templateInfo, nodeInfo, name, value){};
@@ -2359,32 +2487,32 @@ Polymer_ArraySelectorMixin.prototype.get = function(path, root){};
 */
 Polymer_ArraySelectorMixin.prototype.set = function(path, value, root){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_ArraySelectorMixin.prototype.push = function(path, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_ArraySelectorMixin.prototype.pop = function(path){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @param {number} start Index from which to start removing/inserting.
 * @param {number} deleteCount Number of items to remove.
-* @param {...*} items 
+* @param {...*} items
 * @return {Array}
 */
 Polymer_ArraySelectorMixin.prototype.splice = function(path, start, deleteCount, items){};
 /**
-* @param {string} path Path to array.
+* @param {(string|!Array.<(string|number)>)} path Path to array.
 * @return {*}
 */
 Polymer_ArraySelectorMixin.prototype.shift = function(path){};
 /**
-* @param {string} path Path to array.
-* @param {...*} items 
+* @param {(string|!Array.<(string|number)>)} path Path to array.
+* @param {...*} items
 * @return {number}
 */
 Polymer_ArraySelectorMixin.prototype.unshift = function(path, items){};
@@ -2452,8 +2580,8 @@ Polymer_ArraySelectorMixin.prototype.connectedCallback = function(){};
 */
 Polymer_ArraySelectorMixin.prototype.disconnectedCallback = function(){};
 /**
-* @param {NodeList} dom to attach to the element.
-* @return {Node}
+* @param {StampedTemplate} dom to attach to the element.
+* @return {ShadowRoot}
 */
 Polymer_ArraySelectorMixin.prototype._attachDom = function(dom){};
 /**
@@ -2543,8 +2671,8 @@ Polymer_ArraySelectorMixin._parseTemplateNodeAttributes = function(node, templat
 * @param {Element} node Node to parse
 * @param {TemplateInfo} templateInfo Template metadata for current template
 * @param {NodeInfo} nodeInfo Node metadata for current template node
-* @param {*} name 
-* @param {*} value 
+* @param {*} name
+* @param {*} value
 * @return {boolean}
 */
 Polymer_ArraySelectorMixin._parseTemplateNodeAttribute = function(node, templateInfo, nodeInfo, name, value){};

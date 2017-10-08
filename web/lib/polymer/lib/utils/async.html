@@ -33,7 +33,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         try {
           cb();
         } catch (e) {
-          setTimeout(() => { throw e });
+          setTimeout(() => { throw e; });
         }
       }
     }
@@ -72,9 +72,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        */
       after(delay) {
         return  {
-          run(fn) { return setTimeout(fn, delay) },
+          run(fn) { return setTimeout(fn, delay); },
           cancel: window.clearTimeout.bind(window)
-        }
+        };
       },
       /**
        * Enqueues a function called in the next task.
@@ -153,7 +153,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     /**
-     * Async interface for enqueueing callbacks that run at microtask timing.
+     * Async interface for enqueuing callbacks that run at microtask timing.
      *
      * Note that microtask timing is achieved via a single `MutationObserver`,
      * and thus callbacks enqueued with this API will all run in a single
@@ -163,7 +163,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      *
      * @namespace
      * @memberof Polymer.Async
-     * @summary Async interface for enqueueing callbacks that run at microtask
+     * @summary Async interface for enqueuing callbacks that run at microtask
      *   timing.
      */
     microTask: {

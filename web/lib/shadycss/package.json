@@ -1,6 +1,6 @@
 {
   "name": "@webcomponents/shadycss",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Styling helpers for ShadyDOM",
   "main": "shadycss.min.js",
   "directories": {
@@ -32,25 +32,25 @@
   },
   "homepage": "https://webcomponents.org/polyfills",
   "devDependencies": {
-    "@webcomponents/custom-elements": "^1.0.0",
+    "@webcomponents/custom-elements": "^1.0.4",
     "@webcomponents/html-imports": "^1.0.0",
-    "@webcomponents/shadydom": "^1.0.0",
+    "@webcomponents/shadydom": "^1.0.4",
     "@webcomponents/template": "^1.0.0",
     "@webcomponents/webcomponents-platform": "^1.0.0",
     "del": "^3.0.0",
     "es6-promise": "^4.1.0",
-    "eslint": "^4.4.1",
-    "eslint-plugin-html": "^3.0.0",
-    "google-closure-compiler": "^20170806.0.0",
+    "eslint": "^4.7.1",
+    "eslint-plugin-html": "^3.2.2",
+    "google-closure-compiler": "^20170910.0.0",
     "gulp": "^3.8.8",
     "gulp-rename": "^1.2.2",
     "gulp-size": "^2.1.0",
-    "gulp-sourcemaps": "^2.4.0",
-    "rollup-stream": "^1.14.0",
-    "run-sequence": "^2.1.0",
+    "gulp-sourcemaps": "^2.6.1",
+    "rollup-stream": "=1.23.1",
+    "run-sequence": "^2.2.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "web-component-tester": "^6.0.1"
+    "web-component-tester": "^6.1.5"
   },
   "publishConfig": {
     "access": "public"
