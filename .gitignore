@@ -1,7 +1,9 @@
+package-lock.json
 /.helper
 /cloud
 /daemon
 /electron/build
 /electron/redist/*.zip
 /web/build
+/web/hakuneko.key
 /web/lib/hakuneko/version.html
