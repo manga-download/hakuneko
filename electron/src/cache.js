@@ -50,11 +50,12 @@ function extractArchive( archiveData, ouputDirectory, callback ) {
         let promises = [];
         unzip.forEach( ( name, entry ) => {
             promises.push( new Promise( ( resolve, reject ) => {
-            name = path.join( ouputDirectory, name );
+                name = path.join( ouputDirectory, name );
                 if( entry.dir ) {
                     createDirectoryChain( name );
                     resolve();
                 } else {
+                    createDirectoryChain( path.dirname( name ) );
                     entry.async( 'uint8array' ).then( ( data ) => {
                         fs.writeFile( name, data, function( error ) {
                             if( error ) {
