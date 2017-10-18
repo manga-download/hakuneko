@@ -63,12 +63,10 @@ function getCacheDirectory() {
         return path.join( path.dirname( electron.app.getPath( 'exe' ) ), 'cache' );
         //return path.normalize( path.join( electron.app.getAppPath(), '../../cache' ) );
     }
-    // even if this data is for all users => store for each user because of required write permission for updates
-    return electron.app.getPath( 'userCache' );
-    /*
+
     if( process.platform == 'win32' ) {
         // even if this data is for all users => store for each user because of required write permission for updates
-        return electron.app.getPath( 'userCache' ); // => C:\Users\ronny\AppData\Roaming\hakuneko-desktop
+        return path.normalize( path.join( electron.app.getPath( 'userData' ), 'Local/hakuneko-desktop/cache' ) ); // => ~\AppData\Local\hakuneko-desktop\cache
     }
     if( process.platform == 'darwin' ) {
         // even if this data is for all users => store for each user because of required write permission for updates
@@ -78,7 +76,6 @@ function getCacheDirectory() {
         // even if this data is for all users => store for each user because of required write permission for updates
         return electron.app.getPath( 'userCache' ); // => ~/.cache/hakuneko-desktop
     }
-    */
 }
 
 /**

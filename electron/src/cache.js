@@ -47,6 +47,7 @@ function createDirectoryChain( directory ) {
 function extractArchive( archiveData, ouputDirectory, callback ) {
     let zip = new jszip();
     zip.loadAsync( archiveData, {} ).then( ( unzip ) => {
+        deleteFileEntry( ouputDirectory );
         let promises = [];
         unzip.forEach( ( name, entry ) => {
             promises.push( new Promise( ( resolve, reject ) => {
@@ -59,29 +60,24 @@ function extractArchive( archiveData, ouputDirectory, callback ) {
                     entry.async( 'uint8array' ).then( ( data ) => {
                         fs.writeFile( name, data, function( error ) {
                             if( error ) {
-                                console.error( 'Failed to save file from zip archive', name, error );
-                                reject();
+                                reject( error );
                             } else {
                                 resolve();
                             }
                         });
                     }).catch( ( error ) => {
-                        console.error( 'Failed to extract file from zip archive', name, error );
-                        reject();
+                        reject( error );
                     });
                 }
             }));
         });
         Promise.all( promises ).then( (data ) => {
-            //console.log( 'Extracting complete ...' );
-            callback();
+            callback( null );
         }).catch( ( error ) => {
-            console.error( 'Failed to extract zip archive'  );
-            callback();
+            callback( error );
         });
     }).catch( ( error ) => {
-        console.error( 'Failed to open zip archive'  );
-        callback();
+        callback( error );
     });
 }
 
@@ -95,19 +91,16 @@ function updateRequired( appVersionFile, cacheVersionFile, callback ) {
     // get latest version from web
     request.get( appVersionFile, ( error, response, content ) => {
         if( !error && response.statusCode === 200 ) {
-            let appVersion = content.substring(0, 6);
+            let appVersion = content.substring( 0, 6 );
             // get current version from cache
             fs.readFile( cacheVersionFile, 'utf8', ( error, data ) => {
                 if( error || appVersion !== data.trim() ) {
-                    //console.log( 'Revision from cache does not match revision from URL:', cacheVersionFile );
                     callback( null, appVersion, url.resolve( appVersionFile, content ) );
                 } else {
-                    //console.log( 'Cache is already up-to-date:', cacheVersionFile );
-                    callback( new Error( 'Cache revision is already the same as the online revision' ), undefined, undefined );
+                    callback( new Error( 'Cached revision is already the same as the online revision' ), undefined, undefined );
                 }
             });
         } else {
-            console.error( 'Failed to get revision from URL:', appVersionFile );
             callback( error, undefined, undefined );
         }
     });
@@ -123,7 +116,6 @@ function getArchive( appArchiveFileURL, callback ) {
         if( !error && response.statusCode === 200 ) {
             callback( null, archive );
         } else {
-            console.error( 'Failed to get archive from URL:', appArchiveFileURL );
             callback( error, undefined );
         }
     });
@@ -152,24 +144,21 @@ cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
                     let verify = crypto.createVerify( 'RSA-SHA256' );
                     verify.update( archive );
                     if( verify.verify( config.app.key, Buffer.from( signature, 'hex' ) ) ) {
-                        deleteFileEntry( cacheDirectory );
-                        extractArchive( archive, cacheDirectory, () => {
-                            fs.writeFileSync( cacheVersionFile, archiveVersion );
-                            // execute callback when 
-                            callback( null );
+                        extractArchive( archive, cacheDirectory, ( error ) => {
+                            if( !error ) {
+                                fs.writeFileSync( cacheVersionFile, archiveVersion );
+                            }
+                            callback( error );
                         });
                     } else {
-                        console.warn( 'Invalid signature:', signature )
-                        callback( null );
+                        callback( new Error( 'Application archive on server has invalid signature: ' + signature ) );
                     }
                 } else {
-                    console.warn( 'Failed to get archive/signature', error );
-                    callback( null );
+                    callback( error );
                 }
             });
         } else {
-            //console.log( 'A newer revision could not be found' );
-            callback( null );
+            callback( error );
         }
     });
 }
