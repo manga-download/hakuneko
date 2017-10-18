@@ -72,7 +72,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+            Engine.Request.get( chapter.id, undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -93,23 +93,46 @@
                     let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : undefined );
                     callback( error, imageList );
                 });
-                pageList.forEach((page, i) => {    //Get image on each page
-                    let key = prms.defer();
+                
+                let dlImgFct = function(page, i, key, retries) {
                     Engine.Request.get( page, undefined, undefined, ( error, content, status ) => {
                         if( error ) {
                             errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
                             prms.resolve( key );
                             return;
                         }
+                        
+                        if( status != 200) {
+                            if( retries > 0 ) {
+                                setTimeout(dlImgFct, 500, page, i, key, retries - 1);
+                            } else {
+                                errorMessage += 'Couldn\'t get image for page ' + page;
+                                prms.resolve( key );
+                            }
+                            return;
+                        }
+                        
                         // prevent images and iframes from loading
                         content = content.replace( /<img[^<]*?>/g, '<img>');
                         content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                         let dom = document.createElement( 'html' );
                         dom.innerHTML = content;
                         content = '';
-                        imageList[i] = dom.querySelector( 'meta[property="og:image"]' ).content;    //Conserve order even using async processing
+                        let meta_img = dom.querySelector( 'meta[property="og:image"]' );
+                        
+                        if( meta_img ) {
+                            imageList[i] = meta_img.content;    //Conserve order even using async processing
+                        } else {
+                            errorMessage += 'Couldn\'t get image for page ' + page;
+                        }
+                        
                         prms.resolve( key );
                     });
+                }
+                
+                pageList.forEach((page, i) => {    //Get image on each page
+                    let key = prms.defer();
+                    dlImgFct(page, i, key, 3);
                 });
             });
         }
