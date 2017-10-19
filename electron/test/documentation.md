@@ -4,31 +4,20 @@
 
 ...
 
-## Automated Tests
+## Offline Cache
 
-NOT AVAILABLE
+A test script for base functionality exists in the test directory. The test script can be executed with electron `electron cache_test.js` and the result is printed to the command-line output. The correctness of the operating system depending  cache directory must be validated manually with a HakuNeko installation package.
 
-## Manual Tests
+| System             | Offline Cache Directory                |
+| ------------------ | -------------------------------------- |
+| Linux              | ~/.cache/hakuneko-desktop              |
+| MacOS              | ~/Library/Caches/hakuneko-desktop      |
+| Windows (Setup)    | ~\AppData\Local\hakuneko-desktop\cache |
+| Windows (Portable) | %APPLICATION%\cache                    |
 
-Manual test must be executed individually by a developer. A test [protocol](#Protocols) may summarize the results of the tests and test cases. A release shall only be published when all tests have been passed without any failure.
+The following test cases are covered by the test script `cache_test.js`. The generated mock data described in the test cases is also included in the test script.
 
-### Offline Cache
-
-Since the offline cache directory is system dependent, the test schedule must be executed for all packages:
-
-| System             | Offline Cache Directory            |
-| ------------------ | ---------------------------------- |
-| Linux              | ~/.cache/hakuneko-desktop          |
-| MacOS              | ~/Library/Caches/hakuneko-desktop  |
-| Windows (Setup)    | ~\AppData\Roaming\hakuneko-desktop |
-| Windows (Portable) | %APPLICATION%\cache                |
-
-#### Prerequisite for all Cases
-
-1. The package that should be tested must be installed/extracted on the test system
-2. The test cases must be conducted in the correct order to ensure the offline cache is in the correct state
-
-#### Case 01:
+### Case 01:
 
 **Test the behavior of the application when the offline cache is empty and no internet connection is available.**
 
@@ -38,7 +27,7 @@ Since the offline cache directory is system dependent, the test schedule must be
 
 The application shall start with a white window and the terminal shall show an error message.
 
-#### Case 02:
+### Case 02:
 
 **Test the behavior of the application when the offline cache is empty and an internet connection is available.**
 
@@ -48,7 +37,7 @@ The application shall start with a white window and the terminal shall show an e
 
 The application shall update the offline cache and start without any error.
 
-#### Case 03:
+### Case 03:
 
 **Test the behavior of the application when the offline cache is valid and no internet connection is available.**
 
@@ -58,7 +47,7 @@ The application shall update the offline cache and start without any error.
 
 The application shall not delete the offline cache and start without any error.
 
-#### Case 04:
+### Case 04:
 
 **Test the behavior of the application when the offline cache is outdated and an internet connection is available**
 
@@ -95,7 +84,7 @@ The application shall update the offline cache and the version must be the [late
 
 The application shall not update the offline cache and start normally, but showing an error in the terminal during startup.
 
-#### Case 06:
+### Case 06:
 
 **Test the behavior of the application when the host provides a valid archive with an invalid signature**
 
@@ -121,19 +110,3 @@ The application shall not update the offline cache and start normally, but showi
 
 
 The application shall not update the offline cache and start normally, but showing an error in the terminal during startup.
-
-## Protocols
-
-### Offline Cache
-
-Revision: #1234567890
-
-| Test Case            | Win (Setup) | Win (Portable) | Linux | MacOS |
-| -------------------- | ----------- | -------------- | ----- | ----- |
-| [Case 01](#Case 01:) |             |                |       |       |
-| [Case 02](#Case 02:) |             |                |       |       |
-| [Case 03](#Case 03:) |             |                |       |       |
-| [Case 04](#Case 04:) |             |                |       |       |
-| [Case 05](#Case 05:) |             |                |       |       |
-| [Case 06](#Case 06:) |             |                |       |       |
-
