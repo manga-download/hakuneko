@@ -73,7 +73,7 @@
         _getPageList( manga, chapter, callback ) {
             let base_chap_url = chapter.id.substr(0, chapter.id.lastIndexOf('/') + 1);
 
-            Engine.Request.get( chapter.id, undefined, undefined, ( error, content, status ) => {
+            Engine.Request.get( this.url + chapter.id, undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -84,7 +84,7 @@
                 
                 let page_list = [];
                 for(var i = 1; i < nb_page; i++){
-                    page_list.push(base_chap_url + i);
+                    page_list.push(this.url + base_chap_url + i);
                 }
 
                 // fix: no pages => promise never initialized and promise callback never executed (fulfilled)
