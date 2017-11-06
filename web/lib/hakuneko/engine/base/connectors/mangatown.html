@@ -130,6 +130,11 @@
                     });
                 }
                 
+                //Remove additionnal 'featured' page, that causes duplicate of first picture at end of chapter
+                if(pageList[pageList.length - 1] && pageList[pageList.length - 1].endsWith('featured.html')) {
+                    pageList.pop();
+                }
+                
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();
                     dlImgFct(page, i, key, 3);
