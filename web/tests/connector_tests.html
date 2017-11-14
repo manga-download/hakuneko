@@ -96,12 +96,17 @@
         function connector_test( connector ) {
             let test = new TestCollection( connector.label + ' Tests' );
             test.register( '_getMangaList' );
-            test.register( '_getChapterList' );
-            test.register( '_getPageList' );
-
             _getMangaList_test( test, '_getMangaList', connector, ( mangas ) => {
+                if( !mangas || !mangas.length ) {
+                    return;
+                }
+                test.register( '_getChapterList' );
                 let manga = mangas[Math.floor( Math.random() * mangas.length )];
                 _getChapterList_test( test, '_getChapterList', connector, manga, ( chapters ) => {
+                    if( !chapters || !chapters.length ) {
+                        return;
+                    }
+                    test.register( '_getPageList' );
                     let chapter = chapters[Math.floor( Math.random() * chapters.length )];
                     _getPageList_test( test, '_getPageList', connector, manga, chapter, ( pages ) => {
                         //
