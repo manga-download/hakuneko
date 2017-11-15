@@ -93,7 +93,7 @@
                 let errorMessage = '';
                 let imageList = [];
                 let prms = new Promise(() => {
-                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : undefined );
+                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
                     callback( error, imageList );
                 });
                 
