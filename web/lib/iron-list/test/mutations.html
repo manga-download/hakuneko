@@ -25,8 +25,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 </head>
 <body>
-  <!-- Issue: web-component-tester/issues/505 -->
-  <script>void(0)</script>
 
   <test-fixture id="trivialList">
     <template>
@@ -325,6 +323,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         PolymerFlush();
         assert.equal(getFirstItemFromList(list).textContent, 'correct');
       });
+
+      test('should update correct item on screen', function() {
+        container.set('data', buildDataSet(3));
+        PolymerFlush();
+        container.splice('data', 0, 1);
+        PolymerFlush();
+        container.set('data.0.index', 'correct');
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, 'correct');
+        container.splice('data', 0, 1);
+        PolymerFlush();
+        container.set('data.0.index', 'correct again');
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, 'correct again');
+      });
+
     });
 
     suite('mutableData', function() {

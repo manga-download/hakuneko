@@ -11,8 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <html>
   <head>
     <title>Template with HTMLImports Test</title>
-    <script src="../node_modules/@webcomponents/template/template.js"></script>
-    <script src="../node_modules/@webcomponents/custom-elements/custom-elements.min.js"></script>
+    <script src="../webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
   </head>
   <body>
@@ -51,12 +50,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         }
       }
 
-      // The template polyfill is asynchronous, so on IE11 we shouldn't
-      // try to upgrade before it's done its thing.
-      document.addEventListener('DOMContentLoaded', function() {
-        window.customElements.define('x-child', XChild);
-        window.customElements.define('x-after', XAfter);
-      });
+      window.customElements.define('x-child', XChild);
+      window.customElements.define('x-after', XAfter);
 
       suite('template and custom elements', function() {
         test('elements within templates not upgraded', function() {

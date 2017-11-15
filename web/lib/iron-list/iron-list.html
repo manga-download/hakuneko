@@ -292,7 +292,7 @@ will only render 20.
 
   /* Polymer.OptionalMutableDataBehavior is only available with Polymer 2.0. */
   if (!Polymer.OptionalMutableDataBehavior) {
-    /* @polymerBehavior */
+    /** @polymerBehavior */
     Polymer.OptionalMutableDataBehavior = {};
   }
 
@@ -976,7 +976,10 @@ will only render 20.
         var ts = window.performance.now();
         // Concat arrays in place.
         [].push.apply(this._physicalItems, this._createPool(delta));
-        [].push.apply(this._physicalSizes, new Array(delta));
+        // Push 0s into physicalSizes. Can't use Array.fill because IE11 doesn't support it.
+        for (var i = 0; i < delta; i++) {
+          this._physicalSizes.push(0);
+        }
         this._physicalCount = this._physicalCount + delta;
         // Update the physical start if it needs to preserve the model of the focused item.
         // In this situation, the focused item is currently rendered and its model would
@@ -1106,23 +1109,26 @@ will only render 20.
       if (dot === 0) {
         dot = path.length;
       }
-      var idx = IS_V2
+      var vidx = IS_V2
           ? parseInt(path.substring(0, dot), 10)
           // Extract `#` from `path`.
           : parseInt(path.substring(1, dot), 10);
       var offscreenItem = this._offscreenFocusedItem;
-      var isIndexRendered = this._isIndexRendered(idx);
+      var isIndexRendered = this._isIndexRendered(vidx);
       var inst;
       var pidx;
 
       if (isIndexRendered) {
-        pidx = this._getPhysicalIndex(idx);
+        pidx = this._getPhysicalIndex(vidx);
         inst = this.modelForElement(this._physicalItems[pidx]);
       } else if (offscreenItem) {
         inst = this.modelForElement(offscreenItem);
       }
-      if (!inst || inst[this.indexAs] !== idx) {
-        return;
+      if (!inst || inst[this.indexAs] !== vidx) {
+        // NOTE: consider valid instance if it has correct __key__ (Polymer 1.x).
+        if (!inst || inst.__key__ !== '#' + vidx) {
+          return;
+        }
       }
       path = path.substring(dot);
       path = this.as + (path ? '.' + path : '');
@@ -1254,7 +1260,7 @@ will only render 20.
       var prevPhysicalAvg = this._physicalAverage;
 
       this._iterateItems(function(pidx, vidx) {
-        oldPhysicalSize += this._physicalSizes[pidx] || 0;
+        oldPhysicalSize += this._physicalSizes[pidx];
         this._physicalSizes[pidx] = this._physicalItems[pidx].offsetHeight;
         newPhysicalSize += this._physicalSizes[pidx];
         this._physicalAverageCount += this._physicalSizes[pidx] ? 1 : 0;
@@ -1562,7 +1568,7 @@ will only render 20.
      * depending on whether the item has already been selected.
      *
      * @method toggleSelectionForIndex
-     * @param {Object} index The index of the item in the items array.
+     * @param {number} index The index of the item in the items array.
      */
     toggleSelectionForIndex: function(index) {
       var isSelected = this.$.selector.isIndexSelected
@@ -1698,8 +1704,10 @@ will only render 20.
       return idx >= this.firstVisibleIndex && idx <= this.lastVisibleIndex;
     },
 
-    _getPhysicalIndex: function(idx) {
-      return (this._physicalStart + (idx - this._virtualStart)) % this._physicalCount;
+    _getPhysicalIndex: function(vidx) {
+      return IS_V2
+        ? (this._physicalStart + (vidx - this._virtualStart)) % this._physicalCount
+        : this._physicalIndexForKey['#' + vidx];
     },
 
     focusItem: function(idx) {
