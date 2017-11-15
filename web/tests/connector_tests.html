@@ -54,10 +54,10 @@
                     Assert.nequal( undefined, mangas.length, 'Invalid length of manga list from ' + connector.label );
                     Assert.nequal( 0, mangas.length, 'Empty manga list from ' + connector.label );
                     // TODO (2017-10-05): iterate through all mangas and check valid url
+                    if( callback ) {
+                        callback( mangas );
+                    }
                 });
-                if( callback ) {
-                    callback( mangas );
-                }
             });
         }
 
@@ -70,10 +70,10 @@
                     Assert.nequal( undefined, chapters.length, 'Invalid length of chapter list from ' + connector.label );
                     Assert.nequal( 0, chapters.length, 'Empty chapter list from ' + connector.label );
                     // TODO (2017-10-05): iterate through all chapters and check valid url
+                    if( callback ) {
+                        callback( chapters );
+                    }
                 });
-                if( callback ) {
-                    callback( chapters );
-                }
             });
         }
 
@@ -86,10 +86,10 @@
                     Assert.nequal( undefined, pages.length, 'Invalid length of page list from ' + connector.label );
                     Assert.nequal( 0, pages.length, 'Empty page list from ' + connector.label );
                     // TODO (2017-10-05): iterate through all pages and check valid url
+                    if( callback ) {
+                        callback( pages );
+                    }
                 });
-                if( callback ) {
-                    callback( pages );
-                }
             });
         }
 
@@ -131,7 +131,6 @@
                 setTimeout( () => {
                     connector_test( connector );
                 }, index*2500 );
-                
             }
         };
         
