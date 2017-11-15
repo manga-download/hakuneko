@@ -71,7 +71,11 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( chapter.id, undefined, undefined, ( error, content, status ) => {
+            let chapter_url = chapter.id;
+            if(!chapter_url.match(/https?:\/\//i)) {
+                chapter_url = (this.url + chapter_url);
+            }
+            Engine.Request.get( chapter_url, undefined, undefined, ( error, content, status ) => {
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
