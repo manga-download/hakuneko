@@ -24,7 +24,3 @@ Why HakuNeko became a hosted web-application?
 ## Desktop Client
 
 Running the web-application in a browser only offers very limited interaction capabilities (no local file access) with the user's machine. HakuNeko offers a desktop client based on [electron](https://en.wikipedia.org/wiki/Electron_(software_framework)). The desktop client is like a tailored browser, but allows the web-application access to the file system. To develop and run the electron client, the `electron` npm package should be installed. To run the electron desktop client, open a terminal, change to the *electron* sub-directory and run `electron ./src`. The desktop client will now run the web-application hosted on *http://localhost:8081*. The *F12* key allows to open and close the developer console as in the generic chromium browser. After making changes to the source code of the web-application, press the *F5* key (while the developer console is active) to reload the web-page.
-
-## Connector Plugins
-
-Connector plugins are located in the *web/lib/hakuneko/engine/base/connectors* sub-directory. The sub-directory *web/tools* contains the *plugin-developer.html* web-application that is helpful in creating connector plugins. In order to use the testing functions in the *plugin-developer*, *Allow-Control-Allow-Origin* must be disabled in the browser. This can be done in Chromium/Chrome browser with a simple [extension](https://chrome.google.com/webstore/detail/allow-control-allow-origi/nlfbmbojpeacfghkpbjhddihlkkiljbi?utm_source=chrome-app-launcher-info-dialog).
