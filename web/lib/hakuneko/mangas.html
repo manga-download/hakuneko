@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
 <!-- <link rel="import" href="../iron-list/iron-list.html"> -->
 <link rel="import" href="engine/base/enums.html">
 <link rel="import" href="engine/loader.html">
@@ -30,6 +31,13 @@
             .filter {
                 flex: 0;
                 width: 100%;
+            }
+            .notification {
+                padding: 0.5em;
+                font-weight: bold;
+                text-align: center;
+                line-height: 150%;
+                background-color: var(--manga-list-notification-color);
             }
             .list {
                 flex: 1;
@@ -98,6 +106,9 @@
             </tr>
         </table>
         <ul class="list" >
+            <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
+                <li class="notification">Manga list is empty<br>Click &nbsp;<i class="fa fa-refresh refresh" style="cursor: auto !important;"></i>&nbsp; button to update list</li>
+            </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
@@ -233,6 +244,13 @@
                 });
                 // trigger update for refresh button style (update started)
                 this.notifyPath( 'selectedConnector.isUpdating' );
+            }
+
+            /**
+             *
+             */
+            existMangasForValidConnector( connector, mangaCount ) {
+                return (connector.id !== this.bookmarkConnectorID && ( !mangaCount || mangaCount < 1 ) );
             }
 
             /**
