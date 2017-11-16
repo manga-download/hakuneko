@@ -1,10 +1,10 @@
 Content of this folder follows zlib C sources as close as possible.
-That's indended to simplify maintainability and guarantee equal API
+That's intended to simplify maintainability and guarantee equal API
 and result.
 
 Key differences:
 
-- Everything is in Javascript.
+- Everything is in JavaScript.
 - No platform-dependent blocks.
 - Some things like crc32 rewritten to keep size small and make JIT
   work better.
