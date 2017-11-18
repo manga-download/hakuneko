@@ -98,7 +98,7 @@
                 let img_url_list = [];
                 let mtch;
                 while((mtch = img_url_rgx.exec(img_data_list))){   //Get all matching string
-                    img_url_list.push(mtch[1]);         //Keep only url group
+                    img_url_list.push(mtch[1].replace( /\\\//g, '/' ) );         //Keep only url group
                 }
                 callback( null, img_url_list );
             });
