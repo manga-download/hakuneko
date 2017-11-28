@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../polymer/lib/elements/dom-if.html">
+<link rel="import" href="engine/base/enums.html">
 <link rel="import" href="engine/loader.html">
 <link rel="import" href="theme.html">
 
@@ -64,6 +65,11 @@
                 position: fixed;
                 top: 0;
                 right: 2em;
+                visibility: visible;
+                color: var(--page-chapter-title-color);
+            }
+            .buttons:hover {
+                visibility: visible;
             }
             .button {
                 cursor: pointer;
@@ -78,9 +84,16 @@
             </template>
             <template is="dom-if" if="[[ pageViewMode(selectedPage) ]]">
                 <div class="buttons">
-                    <i class="fa fa-search-plus fa-2x button" title$="Zoom In" on-click="zoomIn"></i><i class="fa fa-search-minus fa-2x button" title$="Zoom Out" on-click="zoomOut"></i><i class="fa fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
+                    <span>[[ selectedChapter.title ]]</span>
+                    <i class="fa fa-chevron-down fa-2x button" title$="Chapter Down" on-click="requestChapterDown"></i>
+                    <i class="fa fa-chevron-up fa-2x button" title$="Chapter Up" on-click="requestChapterUp"></i>
+                    |
+                    <i class="fa fa-search-plus fa-2x button" title$="Zoom In" on-click="zoomIn"></i>
+                    <i class="fa fa-search-minus fa-2x button" title$="Zoom Out" on-click="zoomOut"></i>
+                    |
+                    <i class="fa fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
                 </div>
-                <template is="dom-repeat" items="[[ pages ]]">
+                <template is="dom-repeat" items="[[ pages ]]" style="margin-top: 1.5em;">
                     <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="height: [[ imageHeight ]]%;"></div>
                 </template>
             </template>
@@ -175,6 +188,22 @@
              */
             pageViewMode( selectedPage ) {
                 return ( selectedPage > -1 );
+            }
+
+            /**
+             * fire event to request the next chapter
+             */
+            requestChapterUp( e ) {
+                console.log( 'Chapter UP', e );
+                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterUp, { detail: this.selectedChapter } ) );
+            }
+
+            /**
+             * fire event to request the previous chapter
+             */
+            requestChapterDown( e ) {
+                console.log( 'Chapter DOWN', e );
+                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterDown, { detail: this.selectedChapter } ) );
             }
 
             /**
