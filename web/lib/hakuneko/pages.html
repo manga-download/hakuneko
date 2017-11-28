@@ -194,7 +194,6 @@
              * fire event to request the next chapter
              */
             requestChapterUp( e ) {
-                console.log( 'Chapter UP', e );
                 document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterUp, { detail: this.selectedChapter } ) );
             }
 
@@ -202,7 +201,6 @@
              * fire event to request the previous chapter
              */
             requestChapterDown( e ) {
-                console.log( 'Chapter DOWN', e );
                 document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterDown, { detail: this.selectedChapter } ) );
             }
 
