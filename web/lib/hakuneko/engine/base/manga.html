@@ -89,12 +89,13 @@
                 return title;
             }
 
+            title = title.trim();
             let name = title;
 
-            let reVol = /\s*vol\.?(\d+)\s*/i;
-            let reCh1 = /\s*ch\.?([\d\.?\-?v?]+)\s*:?\s*/i;
+            let reVol = /\s*vol\.?\s*(\d+)\s*/i;
+            let reCh1 = /\s*ch\.?\s*([\d\.?\-?v?]+)\s*:?\s*/i;
             // digits at beginning or end (including optional space and colon)
-            let reCh2 = /((^\d+)\s*:?\s*|\s*(\d+)$)/i;
+            let reCh2 = /(?:(^\d+)\s*:?\s*|\s*(\d+)$)/i;
 
             // extract volume number
             let volume = title.match( reVol );
@@ -115,6 +116,7 @@
                 chapter = title.match( reCh2 );
                 if( chapter && chapter.length > 1 ) {
                     name = name.replace( reCh2, '' ).trim();
+                    console.log( '> CH2_2:', '"' + chapter[0] + '"', '"' + chapter[1] + '"', name );
                     chapter = chapter[1];
                 } else {
                     chapter = '';
