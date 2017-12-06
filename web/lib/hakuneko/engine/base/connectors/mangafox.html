@@ -17,7 +17,7 @@
             super.label         = 'MangaFox';
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://mangafox.me';
+            this.url            = 'http://mangafox.la';
             this.referer        = undefined; //'http://mangafox.me';
             this.agent          = undefined; //'Mozilla/5.0';
             this.pageLoadDelay  = 50; // 25;
@@ -73,7 +73,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + manga.id + chapter.id ).replace( 'mangafox.me/manga', 'm.mangafox.me/roll_manga' ), this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.get( ( this.url + manga.id + chapter.id ).replace( 'mangafox.la/manga', 'm.mangafox.la/roll_manga' ), this.referer, this.agent, ( error, content, status ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
