@@ -5,117 +5,117 @@
 <script>
 
     // wrap in scope to ensure declared variables/functions do not collide with other tests
-    {
-        let test = new TestCollection( 'Manga Tests' );
-        test.register( 'formatChapterTitle' );
+    { 
+        // volume patterns
+        let volumes = [
+            {
+                data: '',
+                expected: '000'
+            },
+            {
+                data: '1',
+                expected: '001'
+            },
+            {
+                data: 'vol.1',
+                expected: '001'
+            },
+            {
+                data: 'vol. 1',
+                expected: '001'
+            },
+            {
+                data: ' VOL 00001 ',
+                expected: '00001'
+            }
+        ];
+        // chapter patterns
+        let chapters = [
+            {
+                data: '',
+                expected: '0000'
+            },
+            {
+                data: '1',
+                expected: '0001'
+            },
+            {
+                data: 'ch.1',
+                expected: '0001'
+            },
+            {
+                data: 'ch. 1.2v3',
+                expected: '0001.2v3'
+            },
+            {
+                data: 'ch. 1-2',
+                expected: '0001-2'
+            },
+            {
+                data: ' CH 00001 : ',
+                expected: '00001'
+            }
+        ];
+        // title patterns
+        let titles = [
+            {
+                data: 'Title',
+                expected: 'Title'
+            }
+        ];
+        //
+        let formats = [
+            {
+                data: '%VOL% %CH% %T%',
+                expected: '%VOL%|%CH%|%T%'
+            }
+        ];
+        //
+        let dataset = [];
 
-        test.run( 'formatChapterTitle', () => {
-            // volume patterns
-            let volumes = [
-                {
-                    data: '',
-                    expected: '000'
-                },
-                {
-                    data: '1',
-                    expected: '001'
-                },
-                {
-                    data: 'vol.1',
-                    expected: '001'
-                },
-                {
-                    data: 'vol. 1',
-                    expected: '001'
-                },
-                {
-                    data: ' VOL 00001 ',
-                    expected: '00001'
-                }
-            ];
-            // chapter patterns
-            let chapters = [
-                {
-                    data: '',
-                    expected: '0000'
-                },
-                {
-                    data: '1',
-                    expected: '0001'
-                },
-                {
-                    data: 'ch.1',
-                    expected: '0001'
-                },
-                {
-                    data: 'ch. 1.2v3',
-                    expected: '0001'
-                },
-                {
-                    data: 'ch. 1-2',
-                    expected: '0001'
-                },
-                {
-                    data: ' CH 00001 : ',
-                    expected: '00001'
-                }
-            ];
-            // title patterns
-            let titles = [
-                'Title',
-            ];
-            //
-            let formats = [
-                {
-                    original: '%VOL% %CH% %T%',
-                    data: '%VOL%|%CH%|%T%',
-                    expected: '%VOL%|%CH%|%T%'
-                }
-            ];
-            let manga = new Manga();
-            for(v of volumes) {
-                for(c of chapters) {
-                    for( t of titles ) {
-                        for( f of formats ) {
-                            // compose original
-                            let original = f.original;
-                            original = original.replace( '%VOL%', v.data );
-                            original = original.replace( '%CH%', c.data );
-                            original = original.replace( '%T%', t.data );
-                            // compose expected
-                            let expected = f.expected;
-                            expected = expected.replace( '%VOL%', v.expected );
-                            expected = expected.replace( '%CH%', c.expected );
-                            expected = expected.replace( '%T%', t.expected );
-
-                            Assert.equal( expected, manga.formatChapterTitle( original, f.data ) );
-                        }
+        // create test cases
+        let manga = new Manga();
+        for(v of volumes) {
+            for(c of chapters) {
+                for( t of titles ) {
+                    for( f of formats ) {
+                        // compose original
+                        let data = f.data;
+                        data = data.replace( '%VOL%', v.data );
+                        data = data.replace( '%CH%', c.data );
+                        data = data.replace( '%T%', t.data );
+                        // compose expected
+                        let expected = f.expected;
+                        expected = expected.replace( '%VOL%', v.expected );
+                        expected = expected.replace( '%CH%', c.expected );
+                        expected = expected.replace( '%T%', t.expected );
+                        //
+                        dataset.push({
+                            original : data,
+                            format : f.expected,
+                            expected : expected,
+                        });
                     }
                 }
             }
-            /*
-            // with volume and chapter and 'Read Online'
-            test( 'Vol.1 Ch.2: Read Online', ['Vol.1', '2', ''] );
-            // with volume and chapter
-            test( 'Vol.1 Ch.2: Meow', ['Vol.1', '2', 'Meow'] );
-            // with volume and without chapter
-            test( 'Vol.1: Meow' , ['Vol.1', '', 'Meow']);
-            // without volume and chapter
-            test( 'Meow', ['', '', 'Meow'] );
-            // starts with chapter number
-            test( '1 Meow', ['', '1', '1 Meow'] );
-            // ends with chapter number
-            test( 'Meow 1', ['', '1', 'Meow 1'] );
-            // chapter with dot
-            test( 'Vol.1 Ch.2.3: Meow', ['Vol.1', '2.3', 'Meow'] );
-            // chapter with v
-            test( 'Vol.1 Ch.2v3: Meow', ['Vol.1', '2v3', 'Meow'] );
-            // chapter with dot and v
-            test( 'Vol.1 Ch.2.3v4: Meow', ['Vol.1', '2.3v4', 'Meow'] );
-            // chapter range with dash
-            test( 'Vol.1 Ch.2-3: Meow', ['Vol.1', '2-3', 'Meow'] );
-            */
-        });
+        }
+
+        //
+        let test = new TestCollection( 'Manga Tests' );
+
+        // register test cases
+        for( i=0; i<dataset.length; i++ ) {
+            test.register( 'formatChapterTitle[' + i + ']' );
+        }
+
+        // run test cases
+        for( i=0; i<dataset.length; i++ ) {
+            test.run( 'formatChapterTitle[' + i + ']', () => {
+                console.log( 'EQUALS:', dataset[i].expected, '<==>', manga.formatChapterTitle( dataset[i].original, dataset[i].format ), ' | ',  dataset[i].original, dataset[i].format );
+                let message = 'Chapter "' + dataset[i].original + '" cannot be formated to "' + dataset[i].expected + '" using the format "' + dataset[i].format + '"';
+                Assert.equal( dataset[i].expected, manga.formatChapterTitle( dataset[i].original, dataset[i].format ), message );
+            });
+        }
     }
 
 </script>
