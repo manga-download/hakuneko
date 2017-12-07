@@ -523,6 +523,13 @@
              */
             onSettingsChanged( e ) {
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
+                // chapter naming format may have been changed => reload chapter list
+                if( this.selectedManga ) {
+                    // use timeout to ensure chapter cache is cleared before list is reloaded
+                    setTimeout( ( () => {
+                        this.onSelectedMangaChanged( this.selectedManga );
+                    } ).bind( this ), 0 );
+                }
             }
 
             /**

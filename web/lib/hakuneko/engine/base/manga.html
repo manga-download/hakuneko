@@ -28,6 +28,9 @@
             if( this.status !== status ) {
                 this.status = status;
                 document.dispatchEvent( new CustomEvent( EventListener.onMangaStatusChanged, { detail: this } ) );
+                // TODO: thousands of mangas means thousands of event listeners... performance issues?
+                //       maybe it would be better to clean cache in a central place (e.g. mangas.html)
+                document.addEventListener( EventListener.onSettingsChanged, ( e ) => { this.chapterCache = undefined; } );
             }
         }
 
@@ -65,13 +68,79 @@
                 }
                 // get chapter list directly from the connector interface and cache them
                 this.connector._getChapterList( this, ( error, chapters ) => {
+                    let chapterFormat = Engine.Settings.chapterTitleFormat.value;
                     // de-serialize chapters into objects
                     this.chapterCache = chapters.map( ( chapter ) => {
-                        return new Chapter( this, chapter.id, chapter.title, chapter.language );
+                        return new Chapter( this, chapter.id, this.formatChapterTitle( chapter.title, chapterFormat ), chapter.language );
                     });
                     callback( null, this.chapterCache );
                 });
             });
+        }
+
+        /**
+         *
+         */
+        formatChapterTitle( title, format ) {
+            //
+            let result = format;
+            // do not extract volume/chapter
+            if( result === '' ) {
+                return title;
+            }
+
+            title = title.trim();
+            let name = title;
+
+            let reVol = /\s*vol\.?\s*(\d+)\s*/i;
+            let reCh1 = /\s*ch\.?\s*([\d\.?\-?v?]+)\s*:?\s*/i;
+            // digits at beginning or end (including optional space and colon)
+            let reCh2 = /(?:(^\d+)\s*:?\s*|\s*(\d+)$)/i;
+
+            // extract volume number
+            let volume = title.match( reVol );
+            if( volume && volume.length > 1 ) {
+                name = name.replace( reVol, '' ).trim();
+                volume = volume[1];
+            } else {
+                volume = '';
+            }
+            volume = this._padNumberPrefixWithZeros( volume, 3 );
+
+            // extract chapter number
+            let chapter = title.match( reCh1 );
+            if( chapter && chapter.length > 1 ) {
+                name = name.replace( reCh1, '' ).trim();
+                chapter = chapter[1];
+            } else {
+                chapter = title.match( reCh2 );
+                if( chapter && chapter.length > 1 ) {
+                    name = name.replace( reCh2, '' ).trim();
+                    console.log( '> CH2_2:', '"' + chapter[0] + '"', '"' + chapter[1] + '"', name );
+                    chapter = chapter[1];
+                } else {
+                    chapter = '';
+                }
+            }
+            chapter = this._padNumberPrefixWithZeros( chapter, 4 );
+
+            // apply extracted parts to format from user settings
+            result = result.replace( /%VOL%/i, volume ); // volume number replacement
+            result = result.replace( /%CH%/i, chapter ); // chapter number replacement
+            result = result.replace( /%T%/i, name ); // clean title replacement
+            result = result.replace( /%O%/i, title ); // original title replacement
+
+            return result;
+        }
+
+        /**
+         * Prepend the given text with zeros until the 
+         */
+        _padNumberPrefixWithZeros( text, digits ) {
+            let prefix = text.match( /^\d+/ );
+            let count = ( prefix && prefix.length > 0 ? prefix[0].length : 0 );
+            count = Math.min( digits, count );
+            return '0'.repeat( digits - count ) + text;
         }
 
     }
