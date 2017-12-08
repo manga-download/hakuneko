@@ -13,20 +13,20 @@
                 expected: '000'
             },
             {
-                data: '1',
-                expected: '001'
+                data: '7',
+                expected: '007'
             },
             {
-                data: 'vol.1',
-                expected: '001'
+                data: 'vol.7',
+                expected: '007'
             },
             {
-                data: 'vol. 1',
-                expected: '001'
+                data: 'vol. 7',
+                expected: '007'
             },
             {
-                data: ' VOL 00001 ',
-                expected: '00001'
+                data: ' VOL 00007 ',
+                expected: '00007'
             }
         ];
         // chapter patterns
@@ -38,6 +38,10 @@
             {
                 data: '1',
                 expected: '0001'
+            },
+            {
+                data: '1.2v3',
+                expected: '0001.2v3'
             },
             {
                 data: 'ch.1',
@@ -54,10 +58,18 @@
             {
                 data: ' CH 00001 : ',
                 expected: '00001'
+            },
+            {
+                data: 'Chapter 1',
+                expected: '0001'
             }
         ];
         // title patterns
         let titles = [
+            {
+                data: ' ',
+                expected: ''
+            },
             {
                 data: 'Title',
                 expected: 'Title'
@@ -111,7 +123,7 @@
         // run test cases
         for( i=0; i<dataset.length; i++ ) {
             test.run( 'formatChapterTitle[' + i + ']', () => {
-                console.log( 'EQUALS:', dataset[i].expected, '<==>', manga.formatChapterTitle( dataset[i].original, dataset[i].format ), ' | ',  dataset[i].original, dataset[i].format );
+                //console.log( 'EQUALS:', dataset[i].expected, '<==>', manga.formatChapterTitle( dataset[i].original, dataset[i].format ), ' | ',  dataset[i].original, dataset[i].format );
                 let message = 'Chapter "' + dataset[i].original + '" cannot be formated to "' + dataset[i].expected + '" using the format "' + dataset[i].format + '"';
                 Assert.equal( dataset[i].expected, manga.formatChapterTitle( dataset[i].original, dataset[i].format ), message );
             });
