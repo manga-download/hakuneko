@@ -118,6 +118,8 @@
             result = result.replace( /%CH%/i, chapter ); // chapter number replacement
             result = result.replace( /%T%/i, name ); // clean title replacement
             result = result.replace( /%O%/i, title ); // original title replacement
+            result = result.replace( /%M%/i, this.title ); // original title replacement
+            result = result.replace( /%C%/i, this.connector.label ); // original title replacement
 
             return result;
         }
