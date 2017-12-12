@@ -63,6 +63,17 @@
                     callback( null, this.chapterCache );
                     return;
                 }
+                // check if application is in offline mode
+                let offlineMode = true;
+                if( offlineMode ) {
+                    this.chapterCache = [];
+                    for( let chapter in this.existingChapters ) {
+                        console.log( '  ENTRY', chapter );
+                        this.chapterCache.push( new Chapter( this, chapter, chapter, 'en' ) );
+                    }
+                    callback( null, this.chapterCache );
+                    return;
+                }
                 // get chapter list directly from the connector interface and cache them
                 this.connector._getChapterList( this, ( error, chapters ) => {
                     // de-serialize chapters into objects

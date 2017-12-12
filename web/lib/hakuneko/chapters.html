@@ -264,6 +264,8 @@
                 switch ( status ) {
                     case DownloadStatus.unavailable:
                         return 'Chapter is not available';
+                    case DownloadStatus.offline:
+                        return 'OFFLINE\nThe chapter is accessable from the manga directory';
                     case DownloadStatus.available:
                         return 'AVAILABLE\nClick to download chapter';
                     case DownloadStatus.queued:
@@ -286,6 +288,8 @@
                 switch ( status ) {
                     case DownloadStatus.unavailable:
                         return 'fa-exclamation-triangle';
+                    case DownloadStatus.offline:
+                        return 'fa-folder-open buttonCompleted';
                     case DownloadStatus.available:
                         return 'fa-cloud buttonAvailable';
                     case DownloadStatus.queued:
@@ -329,6 +333,9 @@
                 let chapter = e.model.item;
                 switch ( chapter.status ) {
                     case DownloadStatus.unavailable:
+                        alert( 'No action available!' );
+                        break;
+                    case DownloadStatus.offline:
                         alert( 'No action available!' );
                         break;
                     case DownloadStatus.available:

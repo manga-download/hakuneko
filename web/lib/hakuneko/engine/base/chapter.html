@@ -39,6 +39,11 @@
                 if( !this.manga || !this.manga.existingChapters ) {
                     return;
                 }
+                let offlineMode = true;
+                if( offlineMode ) {
+                    this.setStatus( DownloadStatus.offline );
+                    return;
+                }
                 let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
                     sanatizedTitle += ChapterFormat.cbz;
