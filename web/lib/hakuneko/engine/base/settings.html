@@ -17,6 +17,12 @@
                 input: Input.checkbox,
                 value: true
             };
+            this.chapterTitleFormat = {
+                label: 'Chapter Format',
+                description: 'Define the chapter name format.\nThis is an experimental feature, volume/chapter numbers are extracted directly from the original name.\nMay fail in some cases and also reduce performance!\n\nSupported placeholders:\n\n%C% - Connector title\n%M% - Manga title\n%VOL% - Volume number\n%CH% - Chapter number\n%T% - Chapter title (without volume/chapter number)\n%O% - Chapter title (original)',
+                input: Input.text,
+                value: ''
+            };
         }
 /*
         // expose property iterator through a generator function

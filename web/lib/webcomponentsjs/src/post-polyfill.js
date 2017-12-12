@@ -12,6 +12,8 @@
 
 let customElements = window['customElements'];
 let HTMLImports = window['HTMLImports'];
+let Template = window['HTMLTemplateElement'];
+
 // global for (1) existence means `WebComponentsReady` will file,
 // (2) WebComponents.ready == true means event has fired.
 window.WebComponents = window.WebComponents || {};
@@ -22,6 +24,10 @@ if (customElements && customElements['polyfillWrapFlushCallback']) {
   let flushCallback;
   let runAndClearCallback = function runAndClearCallback() {
     if (flushCallback) {
+      // make sure to run the HTMLTemplateElement polyfill before custom elements upgrade
+      if (Template.bootstrap) {
+        Template.bootstrap(window.document);
+      }
       let cb = flushCallback;
       flushCallback = null;
       cb();

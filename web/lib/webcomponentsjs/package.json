@@ -1,6 +1,6 @@
 {
   "name": "@webcomponents/webcomponentsjs",
-  "version": "1.0.14",
+  "version": "1.0.17",
   "description": "Web Components Polyfills",
   "main": "webcomponents-lite.js",
   "directories": {
@@ -30,13 +30,13 @@
     "@webcomponents/custom-elements": "^1.0.4",
     "@webcomponents/html-imports": "^1.0.3",
     "@webcomponents/shadycss": "^1.0.6",
-    "@webcomponents/shadydom": "^1.0.5",
-    "@webcomponents/template": "^1.0.0",
+    "@webcomponents/shadydom": "^1.0.6",
+    "@webcomponents/template": "^1.1.0",
     "@webcomponents/webcomponents-platform": "^1.0.0",
     "babel-preset-minify": "^0.2.0",
     "del": "^3.0.0",
     "es6-promise": "^4.1.1",
-    "eslint": "^4.4.1",
+    "eslint": "^4.9.0",
     "google-closure-compiler": "^20170910.0.0",
     "gulp": "^3.8.8",
     "gulp-rename": "^1.2.2",
@@ -46,7 +46,7 @@
     "run-sequence": "^2.0.0",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "web-component-tester": "^6.0.0"
+    "web-component-tester": "^6.3.0"
   },
   "publishConfig": {
     "access": "public"

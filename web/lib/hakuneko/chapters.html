@@ -194,6 +194,8 @@
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
+                document.addEventListener( EventListener.onRequestChapterUp, this.onRequestChapterUp.bind( this ) );
+                document.addEventListener( EventListener.onRequestChapterDown, this.onRequestChapterDown.bind( this ) );
             }
 
             /**
@@ -447,6 +449,31 @@
             onSelectedChapterChanged( chapter ) {
                 //
             }
+            
+            /**
+             *
+             */
+            onRequestChapterUp( e ) {
+                let chapter = e.detail;
+                let chapterList = this.getFilteredAndSortedList();
+                let index = chapterList.findIndex( ( c ) => { return c === chapter; } );
+                if( index > 0 ) {
+                   this.selectedChapter = chapterList[index-1]; 
+                }
+            }
+
+            /**
+             *
+             */
+            onRequestChapterDown( e ) {
+                //
+                let chapter = e.detail;
+                let chapterList = this.getFilteredAndSortedList();
+                let index = chapterList.findIndex( ( c ) => { return c === chapter; } );
+                if( index < chapterList.length-1 ) {
+                   this.selectedChapter = chapterList[index+1]; 
+                }
+            }
 
             /**
              *
@@ -489,8 +516,27 @@
             /**
              *
              */
+            getFilteredAndSortedList() {
+                let filterFunction = this.filterChapters( this.searchPattern, this.searchLanguage );
+                let sortFunction = this.sortChapters( this.chapterSort );
+                let chapterList = this.chapterList;
+                chapterList = ( filterFunction ? chapterList.filter( filterFunction ) : chapterList );
+                chapterList = ( sortFunction ? chapterList.sort( sortFunction ) : chapterList );
+                return chapterList;
+            }
+
+            /**
+             *
+             */
             onSettingsChanged( e ) {
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
+                // chapter naming format may have been changed => reload chapter list
+                if( this.selectedManga ) {
+                    // use timeout to ensure chapter cache is cleared before list is reloaded
+                    setTimeout( ( () => {
+                        this.onSelectedMangaChanged( this.selectedManga );
+                    } ).bind( this ), 0 );
+                }
             }
 
             /**

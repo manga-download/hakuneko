@@ -66,7 +66,7 @@ function getCacheDirectory() {
 
     if( process.platform == 'win32' ) {
         // even if this data is for all users => store for each user because of required write permission for updates
-        return path.normalize( path.join( electron.app.getPath( 'userData' ), 'Local/hakuneko-desktop/cache' ) ); // => ~\AppData\Local\hakuneko-desktop\cache
+        return path.normalize( path.join( electron.app.getPath( 'appData' ), '../Local/hakuneko-desktop/cache' ) ); // => ~\AppData\Local\hakuneko-desktop\cache
     }
     if( process.platform == 'darwin' ) {
         // even if this data is for all users => store for each user because of required write permission for updates

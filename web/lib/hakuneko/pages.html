@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="../polymer/lib/elements/dom-if.html">
+<link rel="import" href="engine/base/enums.html">
 <link rel="import" href="engine/loader.html">
 <link rel="import" href="theme.html">
 
@@ -14,11 +15,11 @@
                 height: calc(100% - 2em);
                 padding: 1em;
                 overflow-y: scroll;
-                background-color: var(--page-control-background-color);
                 background-image: url(/img/background.png);
                 background-size: cover;
                 background-repeat: no-repeat;
                 background-position: left top;
+                user-select: none;
             }
             .thumbnail {
                 display: inline-block;
@@ -36,18 +37,6 @@
                    -moz-box-shadow: var(--page-thumbnail-shadow);
                         box-shadow: var(--page-thumbnail-shadow);
             }
-            .viewer {
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                background-color: var(--page-viewer-background-color);
-                cursor: crosshair;
-                overflow-y: scroll;
-                overflow-x: hidden;
-                z-index: 9999;
-            }
             .show {
                 display: block ;
             }
@@ -63,7 +52,26 @@
             .buttons {
                 position: fixed;
                 top: 0;
-                right: 2em;
+                right: 0;
+                padding-left: 1em;  
+                padding-right: 2.0em;
+                opacity: 0.1;
+                transition: opacity 0.25s;
+                background-color: var(--page-viewer-title-background-color);
+                border-bottom-left-radius: 1em;
+                box-shadow: var(--page-viewer-title-shadow);
+            }
+            .buttons:hover {
+                opacity: 1.0;
+            }
+            .buttons:hover > .title {
+                display: inline;
+            }
+            .title {
+                display: none;
+                font-weight: bold;
+                font-size: 1.25em;
+                color: var(--page-chapter-title-color);
             }
             .button {
                 cursor: pointer;
@@ -78,10 +86,17 @@
             </template>
             <template is="dom-if" if="[[ pageViewMode(selectedPage) ]]">
                 <div class="buttons">
-                    <i class="fa fa-search-plus fa-2x button" title$="Zoom In" on-click="zoomIn"></i><i class="fa fa-search-minus fa-2x button" title$="Zoom Out" on-click="zoomOut"></i><i class="fa fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
+                    <span class="title">[[ selectedChapter.title ]]</span>
+                    <i class="fa fa-chevron-down fa-2x button" title="Chapter Down" on-click="requestChapterDown"></i>
+                    <i class="fa fa-chevron-up fa-2x button" title="Chapter Up" on-click="requestChapterUp"></i>
+                    &nbsp;
+                    <i class="fa fa-search-plus fa-2x button" title="Zoom In" on-click="zoomIn"></i>
+                    <i class="fa fa-search-minus fa-2x button" title="Zoom Out" on-click="zoomOut"></i>
+                    &nbsp;
+                    <i class="fa fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
                 </div>
-                <template is="dom-repeat" items="[[ pages ]]">
-                    <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="height: [[ imageHeight ]]%;"></div>
+                <template is="dom-repeat" items="[[ pages ]]" style="margin-top: 1.5em;">
+                    <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%;"></div>
                 </template>
             </template>
         </div>
@@ -123,7 +138,7 @@
                 super.ready();
                 this.pages = undefined;
                 this.selectedPage = -1;
-                this.imageHeight = 100;
+                this.imageWidth = 75;
             }
 
             /**
@@ -167,7 +182,7 @@
              *
              */
             getContainerColor( selectedPage ) {
-                return ( this.pageViewMode( selectedPage ) ? '#202020' : '#a0a0a0' );
+                return ( this.pageViewMode( selectedPage ) ? 'var(--page-reader-background-color)' : 'var(--page-control-background-color)' );
             }
 
             /**
@@ -178,10 +193,24 @@
             }
 
             /**
+             * fire event to request the next chapter
+             */
+            requestChapterUp( e ) {
+                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterUp, { detail: this.selectedChapter } ) );
+            }
+
+            /**
+             * fire event to request the previous chapter
+             */
+            requestChapterDown( e ) {
+                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterDown, { detail: this.selectedChapter } ) );
+            }
+
+            /**
              *
              */
             zoomIn( e ) {
-                let scale = this.imageHeight + 15;
+                let scale = this.imageWidth + 15;
                 this.zoom( ( scale > 400 ? 400 : scale ) );
             }
 
@@ -189,7 +218,7 @@
              *
              */
             zoomOut( e ) {
-                let scale = this.imageHeight - 15;
+                let scale = this.imageWidth - 15;
                 this.zoom( ( scale < 25 ? 25 : scale ) );
             }
 
@@ -199,7 +228,7 @@
             zoom( scale ) {
                 let previousHeight = this.$.container.scrollHeight;
                 let previousOffset = this.$.container.scrollTop;
-                this.set( 'imageHeight', scale );
+                this.set( 'imageWidth', scale );
                 // embed in timeout function to ensure layout is updated before adjusting offsetY
                 //setTimeout( function() {
                     // adjust new offsetY depending on height changed ratio of container after scaling images

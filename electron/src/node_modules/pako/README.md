@@ -1,8 +1,10 @@
-pako - zlib port to javascript, very fast!
+pako
 ==========================================
 
 [![Build Status](https://travis-ci.org/nodeca/pako.svg?branch=master)](https://travis-ci.org/nodeca/pako)
 [![NPM version](https://img.shields.io/npm/v/pako.svg)](https://www.npmjs.org/package/pako)
+
+> zlib port to javascript, very fast!
 
 __Why pako is cool:__
 
@@ -22,7 +24,7 @@ __Famous projects, using pako:__
 - [mincer](https://github.com/nodeca/mincer)
 - [JS-Git](https://github.com/creationix/js-git) and
   [Tedit](https://chrome.google.com/webstore/detail/tedit-development-environ/ooekdijbnbbjdfjocaiflnjgoohnblgf)
-  by [@creatronix](https://github.com/creationix)
+  by [@creationix](https://github.com/creationix)
 
 
 __Benchmarks:__
@@ -61,7 +63,7 @@ node v0.11.12, 1mb sample:
  * inflate-zlib x 60.32 ops/sec ±1.36% (69 runs sampled)
 ```
 
-zlib's test is partialy afferted by marshling (that make sense for inflate only).
+zlib's test is partially affected by marshalling (that make sense for inflate only).
 You can change deflate level to 0 in benchmark source, to investigate details.
 For deflate level 6 results can be considered as correct.
 

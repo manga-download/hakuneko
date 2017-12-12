@@ -206,7 +206,7 @@
                 let pages = files.map( ( file ) => {
                     file = this.path.join( directory, file );
                     // websecurity is disabled => direct access to file links
-                    return encodeURI( 'file://' + file.replace(/\\/g, '/') );
+                    return encodeURI( 'file://' + file.replace(/\\/g, '/') ).replace(/'/g, '%27');
                     //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
                 });
                 callback( null, pages );
