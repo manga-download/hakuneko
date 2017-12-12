@@ -68,7 +68,6 @@
                 if( offlineMode ) {
                     this.chapterCache = [];
                     for( let chapter in this.existingChapters ) {
-                        console.log( '  ENTRY', chapter );
                         this.chapterCache.push( new Chapter( this, chapter, chapter, 'en' ) );
                     }
                     callback( null, this.chapterCache );
