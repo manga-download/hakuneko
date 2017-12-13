@@ -8,15 +8,17 @@
         /**
          *
          */
-        constructor( manga, id, title, language ) {
+        constructor( manga, id, title, language, status ) {
             this.manga = manga;
             this.id = id;
             this.title = title;
             this.language = language;
-            this.status = undefined;
+            this.status = status;
             this.pageProcess = false;
             this.pageCache = undefined;
-            this.updateStatus();
+            if( !this.status ) {
+                this.updateStatus();
+            }
         }
 
         /**
@@ -37,11 +39,6 @@
             if( !this.status || this.status === DownloadStatus.available || this.status === DownloadStatus.completed ) {
                 // look in the manga's list of existing chapters (found in directory), if this chapter already exist
                 if( !this.manga || !this.manga.existingChapters ) {
-                    return;
-                }
-                let offlineMode = true;
-                if( offlineMode ) {
-                    this.setStatus( DownloadStatus.offline );
                     return;
                 }
                 let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
