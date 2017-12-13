@@ -66,24 +66,23 @@
                     callback( null, this.chapterCache );
                     return;
                 }
-                // check if application is in offline mode
-                let offlineMode = true;
-                if( offlineMode ) {
-                    this.chapterCache = [];
-                    for( let chapter in this.existingChapters ) {
-                        this.chapterCache.push( new Chapter( this, chapter, chapter, 'en' ) );
-                    }
-                    callback( null, this.chapterCache );
-                    return;
-                }
-                // get chapter list directly from the connector interface and cache them
+                // get chapter list directly from the connector interface and cache them or from the manga directory when connector not reachable (offline mode)
                 this.connector._getChapterList( this, ( error, chapters ) => {
-                    let chapterFormat = Engine.Settings.chapterTitleFormat.value;
-                    // de-serialize chapters into objects
-                    this.chapterCache = chapters.map( ( chapter ) => {
-                        return new Chapter( this, chapter.id, this.formatChapterTitle( chapter.title, chapterFormat ), chapter.language );
-                    });
-                    callback( null, this.chapterCache );
+                    if( error ) {
+                        // disable chapter cache in offline mode
+                        this.chapterCache = [];
+                        for( let chapter in this.existingChapters ) {
+                            this.chapterCache.push( new Chapter( this, Symbol(), chapter, undefined, DownloadStatus.offline ) );
+                        }
+                        callback( null, this.chapterCache );
+                    } else {
+                        let chapterFormat = Engine.Settings.chapterTitleFormat.value;
+                        // de-serialize chapters into objects
+                        this.chapterCache = chapters.map( ( chapter ) => {
+                            return new Chapter( this, chapter.id, this.formatChapterTitle( chapter.title, chapterFormat ), chapter.language );
+                        });
+                        callback( null, this.chapterCache );
+                    }
                 });
             });
         }
