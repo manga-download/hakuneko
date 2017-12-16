@@ -28,12 +28,20 @@
          */
         _getMangaList( callback ) {
             let mangaList = [];
+            let errMessage = '';
             let prms = new Promise(() => {
-                callback(null, mangaList);
+                let err = ( errMessage.length > 0 ? new Error( errMessage ) : null );
+                callback( err, mangaList );
+                return;
             });
             ['/series', '/anthologies', '/issues'].forEach((page) => {
                 let key = prms.defer();
                 Engine.Request.get( this.url + page, undefined, undefined, ( error, content, status ) => {
+                    if( error ) {
+                        errMessage += error.message + '\n';
+                        prms.resolve( key );
+                        return;
+                    }
                     // prevent images and iframes from loading
                     content = content.replace( /<img[^<]*?>/g, '<img>');
                     content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -59,6 +67,10 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -98,7 +110,7 @@
                     }
                 }
                 
-                callback( null, chapterList );
+                callback( error, chapterList );
             });
         }
 
@@ -119,7 +131,7 @@
                 while((mtch = img_url_rgx.exec(img_data_list))){   //Get all matching string
                     img_url_list.push(this.url + mtch[1]);         //Keep only url group
                 }
-                callback( null, img_url_list );
+                callback( error, img_url_list );
             });
         }
     }

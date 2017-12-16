@@ -36,6 +36,10 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.cfGet( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -53,7 +57,7 @@
                         };
                     });
                 
-                callback(null, mangaList);
+                callback(error, mangaList);
             });
         }
 
@@ -75,7 +79,7 @@
 
                 let img_url_list = content.match(/http:\/\/.+?\.((jpe?g)|(png))/g);
                 
-                callback( null, img_url_list );
+                callback( error, img_url_list );
             });
         }
     }

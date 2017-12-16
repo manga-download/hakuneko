@@ -36,6 +36,11 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+                let mangaList = [];
+                if( error ) {
+                    callback( error, mangaList );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -44,7 +49,6 @@
                 dom.innerHTML = content;
                 
                 //TODO Some chapter have a title
-                let mangaList = [];
                 dom.querySelectorAll( '.stream' ).forEach ( (version, idx) => {
                     mangaList[idx] = [...version.querySelectorAll( 'li span a' )].map(  ( element ) => {
                         let titleVersion = '[Ver ' + (idx + 1) + '] ' + element.text.replace( manga.title, '' ).trim();
@@ -57,7 +61,7 @@
 	                });
                 });
                 mangaList = [].concat.apply([], mangaList); //Merge all version in one array
-                callback(null, mangaList);
+                callback(error, mangaList);
             });
         }
 
@@ -81,7 +85,7 @@
                     return element.href;
                 });
                 
-                callback( null, img_url_list );
+                callback( error, img_url_list );
             });
         }
     }

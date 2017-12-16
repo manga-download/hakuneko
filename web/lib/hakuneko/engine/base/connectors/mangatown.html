@@ -36,6 +36,10 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -63,7 +67,7 @@
                     };
                 });
                 
-                callback(null, mangaList);
+                callback(error, mangaList);
             });
         }
 
@@ -76,6 +80,11 @@
                 chapter_url = (this.url + chapter_url);
             }
             Engine.Request.get( chapter_url, undefined, undefined, ( error, content, status ) => {
+                let imageList = [];
+                if( error ) {
+                    callback( error, imageList );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -91,27 +100,27 @@
                 });
                 
                 let errorMessage = '';
-                let imageList = [];
                 let prms = new Promise(() => {
-                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
-                    callback( error, imageList );
+                    let err = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
+                    callback( err, imageList );
                 });
                 
                 let dlImgFct = function(page, i, key, retries) {
                     Engine.Request.get( page, undefined, undefined, ( error, content, status ) => {
-                        if( error ) {
-                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
-                            prms.resolve( key );
-                            return;
-                        }
                         
                         if( status != 200) {
                             if( retries > 0 ) {
                                 setTimeout(dlImgFct, 500, page, i, key, retries - 1);
                             } else {
-                                errorMessage += 'Couldn\'t get image for page ' + page;
+                                errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + 'Couldn\'t get image for page ' + page;
                                 prms.resolve( key );
                             }
+                            return;
+                        }
+
+                        if( error ) {
+                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
+                            prms.resolve( key );
                             return;
                         }
                         
@@ -134,7 +143,7 @@
                 }
                 
                 //Remove additionnal 'featured' page, that causes duplicate of first picture at end of chapter
-                if(pageList[pageList.length - 1] && pageList[pageList.length - 1].endsWith('featured.html')) {
+                if(pageList.length > 0 && pageList[pageList.length - 1].endsWith('featured.html')) {
                     pageList.pop();
                 }
                 

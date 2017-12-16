@@ -30,6 +30,10 @@
          */
         _getMangaList( callback ) {
             Engine.Request.get( this.url + '/manga', this.referer, this.agent, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -44,7 +48,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( null, mangaList );
+                callback( error, mangaList );
             });
         }
 
@@ -53,9 +57,17 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+                let chapterList = [];
+                if( error ) {
+                    callback( error, chapterList );
+                    return;
+                }
                 let sid = content.match( /sid\s*=\s*([0-9]+)/ )[1];
                 Engine.Request.get( this.url + '/media/js/list.' + sid + '.js', this.referer, this.agent, ( errorScript, script, status ) => {
-                    let chapterList = [];
+                    if( errorScript ) {
+                        callback( errorScript, chapterList );
+                        return;
+                    }
                     script.match( /\[\s*"(.+?"\s*,\s*".+?)"\s*\]/g ).forEach( function( match ) {
                         let chapter = JSON.parse( match );
                         chapterList.push( {
@@ -64,7 +76,7 @@
                             language: 'en'
                         });
                     });
-                    callback( null, chapterList );
+                    callback( errorScript, chapterList );
                 });
             });
         }
@@ -74,15 +86,15 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + manga.id + chapter.id ).replace( 'mangafox.la/manga', 'm.mangafox.la/roll_manga' ), this.referer, this.agent, ( error, content, status ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
-                }
                 // FIXME: very dangerous, might end up in endless recursion !!!
                 if( status === 503 ) {
                     setTimeout( () => {
                         this.getPages( manga, chapter, callback );
                     }, this.pageLoadDelay );
+                    return;
+                }
+                if( error ) {
+                    callback( error, [] );
                     return;
                 }
                 let dom = document.createElement( 'html' );

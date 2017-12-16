@@ -27,6 +27,10 @@
          */
         _getMangaList( callback ) {
             Engine.Request.get( this.url + '/alphabetical', undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -42,7 +46,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( null, mangaList );
+                callback( error, mangaList );
             });
         }
 
@@ -51,6 +55,10 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -64,7 +72,7 @@
                         language: 'en'
                     };
                 });
-                callback( null, chapterList );
+                callback( error, chapterList );
             });
         }
 
@@ -73,6 +81,11 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+                let imageList = [];
+                if( error ) {
+                    callback( error, imageList );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -85,15 +98,14 @@
                 
                 // fix: no pages => promise never initialized and promise callback never executed (fulfilled)
                 if( !pageList || pageList.length < 1 ) {
-                    callback( error, [] );
+                    callback( error, imageList );
                     return;
                 }
                 
                 let errorMessage = '';
-                let imageList = [];
                 let prms = new Promise(() => {
-                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
-                    callback( error, imageList );
+                    let err = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
+                    callback( err, imageList );
                 });
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();

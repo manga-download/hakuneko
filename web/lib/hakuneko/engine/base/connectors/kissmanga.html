@@ -62,15 +62,19 @@
         _getChapterList( manga, callback ) {
             // connector initialization failed or not yet finished
             if( !this.initialized ) {
-                callback( null, [] );
+                callback( new Error( 'Connector ' + this.label + ' not correctly initialized!' ), [] );
                 return;
             }
             Engine.Request.cfGet( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
                 let chapterList = [];
+                if( error ) {
+                    callback( error, chapterList );
+                    return;
+                }
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
-                    callback( null, chapterList );
+                    callback( new Error( 'Failed to get chapter from ' + this.label + ' due to captcha protection!' ), chapterList );
                     return;
                 }
                 // prevent images and iframes from loading
@@ -96,7 +100,7 @@
                         }
                     }
                 });
-                callback( null, chapterList );
+                callback( error, chapterList );
             });
         }
 
@@ -106,7 +110,7 @@
         _getPageList( manga, chapter, callback ) {
             if( this.isLocked ) {
                 console.warn( '[WARN: KissManga, too many requests]' );
-                callback( null, [] );
+                callback( new Error( 'Request to ' + this.label + ' has been skipped to prevent the client from beeing blocked for to many requests!' ), [] );
                 return;
             }
             let key = this.lock();
@@ -116,13 +120,13 @@
             Engine.Request.cfGet( this.url + chapter.id, this.referer, this.agent, ( error, content, status ) => {
                 let pageList = [];
                 if( error ) {
-                    callback( error, [] );
+                    callback( error, pageList );
                     return;
                 }
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
                     console.error( '[ERROR: CAPTCHA required]', settings.url );
-                    callback( new Error( 'CAPTCHA required, to many requests from the same IP' ), [] );
+                    callback( new Error( 'Failed to get chapter from ' + this.label + ' due to captcha protection!' ), pageList );
                     return;
                 }
                 // prevent images and iframes from loading
@@ -150,7 +154,7 @@
                         let eventListener = ( e ) => {
                             if( e.data.id === messageID ) {
                                 this.sandbox.removeEventListener( 'message', eventListener );
-                                callback( null, e.data.content[ 'lstImages' ] );
+                                callback( error, e.data.content[ 'lstImages' ] );
                             }
                         };
                         this.sandbox.addEventListener( 'message', eventListener, false );
@@ -160,7 +164,7 @@
                     }
                 });
                 if( noScript ) {
-                    callback( null, pageList );
+                    callback( error, pageList );
                 }
             });
         }
