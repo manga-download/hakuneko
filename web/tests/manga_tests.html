@@ -86,7 +86,7 @@
         let dataset = [];
 
         // create test cases
-        let manga = new Manga();
+        let manga = new Manga( { label: 'CONNECTOR' }, Symbol(), 'MANGA' );
         for(v of volumes) {
             for(c of chapters) {
                 for( t of titles ) {
