@@ -85,6 +85,12 @@
                     }, this.pageLoadDelay );
                     return;
                 }
+                if( content.indexOf( 'its licensed' ) > -1 ) {
+                    let err = new Error( 'The manga is licensed and not available in your country!' );
+                    console.error( err );
+                    callback( err, [] );
+                    return;
+                }
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
                 if( dom.querySelector('.alsotitle') ) {
