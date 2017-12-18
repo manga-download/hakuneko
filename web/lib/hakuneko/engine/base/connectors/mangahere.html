@@ -87,6 +87,12 @@
                     callback( error, [] );
                     return;
                 }
+                if( content.indexOf( 'has been licensed' ) > -1 ) {
+                    let err = new Error( 'The manga is licensed and not available in your country!' );
+                    console.error( err );
+                    callback( err, [] );
+                    return;
+                }
                 // prevent images from being loaded
                 content = content.replace( /src=/g, 'data-src=');
                 let dom = document.createElement( 'html' );
