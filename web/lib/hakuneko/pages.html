@@ -153,6 +153,9 @@
                 chapter.getPages( ( error, pages ) => {
                     if( chapter === this.selectedChapter ) {
                         this.set( 'pages', pages );
+                        if( error ) {
+                            alert( error.message );
+                        }
                     }
                 });
             }
