@@ -17,7 +17,8 @@
             super.id             = 'mangahere';
             super.label          = 'MangaHere';
             // Private members for internal usage only (convenience)
-            this.url            = 'http://www.mangahere.co';
+            this.url             = 'http://www.mangahere.cc';
+            this.urlm            = 'http://m.mangahere.co';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -82,7 +83,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ).replace( 'www.mangahere.co/manga', 'm.mangahere.co/roll_manga' ), undefined, undefined, ( error, content, status ) => {
+            Engine.Request.get( ( this.url + chapter.id ).replace( this.url + '/manga', this.urlm + '/roll_manga' ), undefined, undefined, ( error, content, status ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
