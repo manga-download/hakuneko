@@ -18,6 +18,7 @@
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'https://www.mangatown.com';
+            this.pageLoadDelay  = 200;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -98,35 +99,33 @@
                 });
                 
                 let dlImgFct = function(page, i, key, retries) {
-                    Engine.Request.get( page, undefined, undefined, ( error, content, status ) => {
-                        if( error ) {
-                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
+                    Engine.Request.get( page, undefined, undefined, ( errorImage, content, status ) => {
+                        if( errorImage ) {
+                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + errorImage.message;
                             prms.resolve( key );
                             return;
                         }
                         
                         if( status != 200) {
                             if( retries > 0 ) {
-                                setTimeout(dlImgFct, 500, page, i, key, retries - 1);
+                                setTimeout(dlImgFct, 1000, page, i, key, retries - 1);
                             } else {
-                                errorMessage += 'Couldn\'t get image for page ' + page;
+                                errorMessage += 'Couldn\'t get image for page ' + page + '\n';
                                 prms.resolve( key );
                             }
                             return;
                         }
                         
                         // prevent images and iframes from loading
-                        content = content.replace( /<img[^<]*?>/g, '<img>');
+                        //content = content.replace( /<img[^<]*?>/g, '<img>');
                         content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                         let dom = document.createElement( 'html' );
                         dom.innerHTML = content;
-                        content = '';
-                        let meta_img = dom.querySelector( 'meta[property="og:image"]' );
-                        
-                        if( meta_img ) {
-                            imageList[i] = meta_img.content;    //Conserve order even using async processing
+                        let img = dom.querySelector( 'img#image' );
+                        if( img ) {
+                            imageList[i] = img.src;    //Conserve order even using async processing
                         } else {
-                            errorMessage += 'Couldn\'t get image for page ' + page;
+                            errorMessage += 'Couldn\'t get image for page ' + page + '\n';
                         }
                         
                         prms.resolve( key );
@@ -140,7 +139,8 @@
                 
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();
-                    dlImgFct(page, i, key, 3);
+                    // delay downloads to prevent 503 status (for to many requests)
+                    setTimeout( dlImgFct, i * this.pageLoadDelay, page, i, key, 3 );
                 });
             });
         }
