@@ -70,11 +70,12 @@
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 
-                content = content.substr(content.indexOf('imgsrcs = '));
-                content = content.substr(0, content.indexOf('rimgsrcs = '));
+                let start = content.indexOf( 'var imgsrcs' );
+                let end = content.indexOf( ');', start ) + 2;
+                content = content.substr( start, end - start );
 
                 let img_url_list = content.match(/http:\/\/.+?\.((jpe?g)|(png))/g);
-                
+
                 callback( null, img_url_list );
             });
         }
