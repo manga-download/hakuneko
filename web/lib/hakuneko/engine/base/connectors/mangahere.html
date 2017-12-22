@@ -36,6 +36,8 @@
                 dom.innerHTML = content;
                 //console.log(dom.innerHTML);
                 let mangaList = [...dom.querySelectorAll( 'a.manga_info' )].map(  ( element ) => {
+                    // TODO (2017-12-20): sometimes the links are still pointing to the old domain => replace old domain until this is fixed on the website
+                    element.href = element.href.replace( 'mangahere.co', 'mangahere.cc' );
                     return {
                         // as mentioned before, the eventually added host prefix must be removed
                         // for full qualified domain name, the host (dynasty-scans) can also be removed
