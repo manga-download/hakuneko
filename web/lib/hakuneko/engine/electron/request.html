@@ -104,7 +104,7 @@
                 }
             }
             let contentType = ( response.headers && response.headers['content-type'] ? response.headers['content-type'].toLowerCase() : '' );
-            if( contentType.indexOf( 'text' ) > -1 || contentType.indexOf( 'javascript' ) > -1 ) {
+            if( contentType.indexOf( 'text' ) > -1 || contentType.indexOf( 'json' ) > -1 || contentType.indexOf( 'javascript' ) > -1 ) {
                 if( contentType.indexOf( 'charset=utf-8' ) > -1 ) {
                     content = content.toString( 'utf8' );
                 } else {
