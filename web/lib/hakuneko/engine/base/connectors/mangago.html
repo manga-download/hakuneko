@@ -16,10 +16,26 @@
             super.id            = 'mangago';
             super.label         = 'MangaGo';
             super.isLocked      = false;
+            this.initialized    = false;
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.mangago.me';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // initialization: bypass cloudflare for all known domains
+            let tmp = 0;
+            Engine.Request.cfGet( this.url, this.referer, this.agent, ( error, content, status ) => {
+                tmp++;
+                this.initialized = ( tmp >= 3 );
+            });
+            Engine.Request.cfGet( 'http://www.mnggo.net', this.referer, this.agent, ( error, content, status ) => {
+                tmp++;
+                this.initialized = ( tmp >= 3 );
+            });
+            Engine.Request.cfGet( 'http://www.fashionlib.net', this.referer, this.agent, ( error, content, status ) => {
+                tmp++;
+                this.initialized = ( tmp >= 3 );
+            });
         }
 
         /**
