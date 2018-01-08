@@ -17,7 +17,7 @@
             super.label         = 'MangaPark';
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://mangapark.me';
+            this.url            = 'https://mangapark.me';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -78,7 +78,7 @@
                 dom.innerHTML = content;
                 
                 let img_url_list = [...dom.querySelectorAll( '.img-num' )].map(  ( element ) => {
-                    return element.href;
+                    return element.href.replace( 'cache://', ( new URL( this.url ) ).protocol + '//' );
                 });
                 
                 callback( null, img_url_list );
