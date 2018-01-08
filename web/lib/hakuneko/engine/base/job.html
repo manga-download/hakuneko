@@ -101,18 +101,31 @@
                 // get data for all pages of chapter
                 pages.forEach( ( page, index ) => {
                     let key = promise.defer();
-                    Engine.Request.get( page, undefined, undefined, ( error, content, status, headers ) => {
-                        if( error ) {
-                            this.errors.push( error );
-                        } else {
-                            pageData[index] = {
-                                type: headers['content-type'],
-                                data: content
-                            };
-                        }
-                        this.setProgress( this.progress + 100/pages.length );
-                        promise.resolve( key );
-                    });
+                    let downloadPage = ( retries ) => {
+                        Engine.Request.cfGet( page, undefined, undefined, ( error, content, status, headers ) => {
+                            if( retries > 0 && status !== 200 ) {
+                                setTimeout( () => {
+                                    downloadPage( retries-1 );
+                                }, 2500 );
+                                return;
+                            }
+                            if( error ) {
+                                this.errors.push( error );
+                            } else {
+                                if( status !== 200 ) {
+                                    this.errors.push( new Error( 'Page "' + page + '" returned status code ' + status ) );
+                                } else {
+                                    pageData[index] = {
+                                        type: headers['content-type'],
+                                        data: content
+                                    };
+                                }
+                            }
+                            this.setProgress( this.progress + 100/pages.length );
+                            promise.resolve( key );
+                        });
+                    };
+                    downloadPage( 5 );
                 });
             });
         }
