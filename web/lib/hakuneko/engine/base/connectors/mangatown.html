@@ -18,7 +18,7 @@
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'https://www.mangatown.com';
-            this.pageLoadDelay  = 200;
+            this.pageLoadDelay  = 250;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -108,7 +108,7 @@
                         
                         if( status != 200) {
                             if( retries > 0 ) {
-                                setTimeout(dlImgFct, 1000, page, i, key, retries - 1);
+                                setTimeout(dlImgFct, 2500, page, i, key, retries - 1);
                             } else {
                                 errorMessage += 'Couldn\'t get image for page ' + page + '\n';
                                 prms.resolve( key );
@@ -140,7 +140,7 @@
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();
                     // delay downloads to prevent 503 status (for to many requests)
-                    setTimeout( dlImgFct, i * this.pageLoadDelay, page, i, key, 3 );
+                    setTimeout( dlImgFct, i * this.pageLoadDelay, page, i, key, 5 );
                 });
             });
         }
