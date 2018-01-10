@@ -39,7 +39,7 @@
                 rejectUnauthorized: false,
                 url: href,
                 headers: {
-                    'User-Agent': agent || this.agent,
+                    'User-Agent': agent || this.userAgent,
                     'Referer': referer || href
                 },
                 gzip: true,
@@ -48,6 +48,7 @@
                 pool: this.agent,
                 timeout: 15000
             };
+//console.log( '   GET', options.url, options.headers['Referer'], options.headers['User-Agent'] );
             this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
         }
 

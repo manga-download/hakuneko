@@ -10,15 +10,16 @@
          */
         constructor() {
             // default agent used for requests
-            this.agent = 'Mozilla/5.0 (Windows NT 6.3; rv:53.0) Gecko/20100101 Firefox/53.0';
+            this.userAgent = 'Mozilla/5.0 (Windows NT 6.3; rv:53.0) Gecko/20100101 Firefox/53.0';
         }
 
         /**
          * Cloudflare wrapper, detect and solve cloudflare protected content.
          */
         cfGet( href, referer, agent, callback ) {
-            agent = agent || this.agent;
+            agent = agent || this.userAgent;
             referer = referer || href;
+//console.log( 'CF-GET', href, referer, agent );
             this.get( href, referer, agent, ( error, content, status, headers ) => {
                 if( error ) {
                     callback( error, content, status, headers );
