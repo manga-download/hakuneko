@@ -48,12 +48,19 @@
             mangaList = mangaList || [];
             pageFrom = pageFrom || 0;
             pageTo = pageTo || 9999;
+            errMessage = '';
             // abort condition for recursive call
             if( pageFrom > pageTo ) {
-                callback( null, mangaList );
+                let err = ( errMessage.length > 0 ? new Error( errMessage ) : null );
+                callback( err, mangaList );
                 return;
             }
             Engine.Request.get( this.url + '/comic/_/comics/?per_page=1000&st=' + (1000 * pageFrom), this.referer, this.agent, ( error, content, status ) => {
+                if( error ) {
+                    errMessage += error.message + '\n';
+                    this._getMangaList( callback, mangaList, pageFrom + 1, pageTo );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -61,7 +68,8 @@
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
                 if( dom.querySelectorAll( 'table.topic_list' ).length < 1 ) {
-                    callback( null, mangaList );
+                    let err = ( errMessage.length > 0 ? new Error( errMessage ) : null );
+                    callback( err, mangaList );
                     return;
                 }
                 [...dom.querySelectorAll( 'table.topic_list tr.__topic td h4 a' )].forEach(  ( element ) => {
@@ -83,6 +91,10 @@
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
                 let chapterList = [];
+                if( error ) {
+                    callback( error, chapterList );
+                    return;
+                }
                 //
                 if( content.indexOf( 'register_notice' ) > -1 ) {
                     console.warn( '[WARNING: not logged in to batoto => limited access]' );
@@ -111,7 +123,7 @@
                         }
                     }
                 });
-                callback( null, chapterList );
+                callback( error, chapterList );
             });
         }
 
@@ -120,7 +132,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             Engine.Request.get( this._areaderURL( this.url + chapter.id ), this.url + '/reader', this.agent, ( error, content, status ) => {
-                if( error !== null ) {
+                if( error ) {
                     console.log( error );
                     callback( error, [] );
                     return;

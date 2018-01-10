@@ -29,7 +29,7 @@
          */
         _getMangaList( callback ) {
             Engine.Request.get( this.url + '/mangas', this.referer, this.agent, ( error, content, status ) => {
-                callback( null, (content ? JSON.parse( content ) : undefined ) );
+                callback( error, ( !error && content ? JSON.parse( content ) : undefined ) );
             });
         }
 
@@ -38,7 +38,7 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + '/mangas/' + manga.id + '/chapters', this.referer, this.agent, ( error, content, status ) => {
-                callback( null, (content ? JSON.parse( content ).reverse().map( (chapter) => {
+                callback( error, ( !error && content ? JSON.parse( content ).reverse().map( (chapter) => {
                     chapter.title = chapter.title.replace( ' Read Online', '' );
                     chapter.title = chapter.title + ' [' + chapter.language + '] by [' + chapter.group + ']';
                     return chapter;

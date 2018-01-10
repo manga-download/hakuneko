@@ -8,15 +8,17 @@
         /**
          *
          */
-        constructor( manga, id, title, language ) {
+        constructor( manga, id, title, language, status ) {
             this.manga = manga;
             this.id = id;
             this.title = title;
             this.language = language;
-            this.status = undefined;
+            this.status = status;
             this.pageProcess = false;
             this.pageCache = undefined;
-            this.updateStatus();
+            if( !this.status ) {
+                this.updateStatus();
+            }
         }
 
         /**
@@ -63,7 +65,7 @@
          * and a reference to the page list (undefined on error).
          */
         getPages( callback ) {
-            if( this.status === DownloadStatus.completed ) {
+            if( this.status === DownloadStatus.offline || this.status === DownloadStatus.completed ) {
                 Engine.Storage.loadChapterPages( this, callback );
             } else {
                 // check if page list is cached

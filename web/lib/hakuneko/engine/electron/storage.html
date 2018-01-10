@@ -94,17 +94,30 @@
          */
         loadChapterPages( chapter, callback ) {
             let path = this._chapterOutputPath( chapter );
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
-                this._loadChapterPagesFolder( path, callback );
-            }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
-                this._loadChapterPagesCBZ( path, callback );
-            }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
-                //this._loadChapterPagesPDF( path, callback );
-            }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
-                this._loadChapterPagesEPUB( path, callback );
+            if( chapter.status === DownloadStatus.offline ) {
+                if( path.endsWith( ChapterFormat.epub ) ) {
+                    return this._loadChapterPagesEPUB( path, callback );
+                }
+                if( path.endsWith( ChapterFormat.pdf ) ) {
+                    //return this._loadChapterPagesPDF( path, callback );
+                }
+                if( path.endsWith( ChapterFormat.cbz ) ) {
+                    return this._loadChapterPagesCBZ( path, callback );
+                }
+                return this._loadChapterPagesFolder( path, callback );
+            } else {
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
+                    this._loadChapterPagesFolder( path, callback );
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
+                    this._loadChapterPagesCBZ( path, callback );
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
+                    //this._loadChapterPagesPDF( path, callback );
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
+                    this._loadChapterPagesEPUB( path, callback );
+                }
             }
         }
 
@@ -193,7 +206,8 @@
                 let pages = files.map( ( file ) => {
                     file = this.path.join( directory, file );
                     // websecurity is disabled => direct access to file links
-                    return encodeURI( 'file://' + file.replace(/\\/g, '/') ).replace(/'/g, '%27');
+                    //return encodeURI( 'file://' + file.replace(/\\/g, '/') ).replace(/#/g, '%23').replace(/'/g, '%27');
+                    return 'file://' + encodeURIComponent( file.replace(/\\/g, '/') ).replace(/%2F/g, '/');
                     //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
                 });
                 callback( null, pages );
@@ -331,6 +345,9 @@
         _chapterOutputPath( chapter ) {
             let output = this._mangaOutputPath( chapter.manga );
             output = this.path.join( output, this.sanatizePath( chapter.title ) );
+            if( chapter.status === DownloadStatus.offline ) {
+                return output;
+            }
             if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
                 output += ChapterFormat.cbz;
             }

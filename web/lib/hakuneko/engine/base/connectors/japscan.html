@@ -26,6 +26,10 @@
          */
         _getMangaList( callback ) {
             Engine.Request.get( this.url + '/mangas/', undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback(error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -42,7 +46,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( null, mangaList );
+                callback( error, mangaList );
             });
         }
 
@@ -51,6 +55,10 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -66,7 +74,7 @@
                         language: 'fr'
                     };
                 });
-                callback( null, chapterList );
+                callback( error, chapterList );
             });
         }
 
@@ -103,7 +111,7 @@
                 imageList = imageList.map( (element) => {
                     return baseUrl + element;
                 });
-                callback( null, imageList );
+                callback( error, imageList );
             });
         }
     }

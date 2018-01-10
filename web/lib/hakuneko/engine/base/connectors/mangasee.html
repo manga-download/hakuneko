@@ -32,7 +32,6 @@
                     callback( error, [] );
                     return;
                 }
-                
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -49,7 +48,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( null, mangaList );
+                callback( error, mangaList );
             });
         }
 
@@ -62,7 +61,6 @@
                     callback( error, [] );
                     return;
                 }
-                
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -79,7 +77,7 @@
                     };
                 });
                 
-                callback( null, chapterList );
+                callback( error, chapterList );
             });
         }
 
@@ -100,7 +98,7 @@
                 while((mtch = img_url_rgx.exec(img_data_list))){   //Get all matching string
                     img_url_list.push(mtch[1].replace( /\\\//g, '/' ) );         //Keep only url group
                 }
-                callback( null, img_url_list );
+                callback( error, img_url_list );
             });
         }
     }

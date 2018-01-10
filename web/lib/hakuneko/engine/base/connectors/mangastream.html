@@ -27,6 +27,10 @@
          */
         _getMangaList( callback ) {
             Engine.Request.get( this.url + '/manga', undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -41,7 +45,7 @@
                         title: element.text.trim()
                     };
                 });
-                callback( null, mangaList );
+                callback( error, mangaList );
             });
         }
 
@@ -50,6 +54,10 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -63,7 +71,7 @@
                         language: 'en'
                     };
                 });
-                callback( null, chapterList );
+                callback( error, chapterList );
             });
         }
 
@@ -72,8 +80,13 @@
          */
         _getPageList( manga, chapter, callback ) {
             let base_chap_url = chapter.id.substr(0, chapter.id.lastIndexOf('/') + 1);
-
             Engine.Request.get( this.url + chapter.id, undefined, undefined, ( error, content, status ) => {
+                let page_list = [];
+                let pageList = [];
+                if( error ) {
+                    callback( error, pageList );
+                    return;
+                }
                 // prevent images and iframes from loading
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
@@ -82,22 +95,20 @@
                 let nb_page = dom.querySelector('div.btn-reader-page ul.dropdown-menu li:last-of-type a').href;
                 nb_page = parseInt(nb_page.match(/\d+$/)) + 1;
                 
-                let page_list = [];
                 for(var i = 1; i < nb_page; i++){
                     page_list.push(this.url + base_chap_url + i);
                 }
 
                 // fix: no pages => promise never initialized and promise callback never executed (fulfilled)
                 if( !page_list || page_list.length < 1 ) {
-                    callback( error, [] );
+                    callback( error, pageList );
                     return;
                 }
                 
                 let errorMessage = '';
-                let pageList = [];
                 let prms = new Promise(() => {
-                    let error = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
-                    callback( error, pageList );
+                    let err = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
+                    callback( err, pageList );
                 });
                 page_list.forEach( ( url, idx ) => {
                     let key = prms.defer();
