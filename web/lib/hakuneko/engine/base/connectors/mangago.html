@@ -23,26 +23,25 @@
             this.config = undefined;
 
             // initialization: bypass cloudflare for all known domains
-            let tmp = 0;
-            Engine.Request.cfGet( this.url, this.referer, this.agent, ( error, content, status ) => {
-                tmp++;
-                this.initialized = ( tmp >= 3 );
-            });
-            Engine.Request.cfGet( 'http://www.mnggo.net', this.referer, this.agent, ( error, content, status ) => {
-                tmp++;
-                this.initialized = ( tmp >= 3 );
-            });
-            Engine.Request.cfGet( 'http://www.fashionlib.net', this.referer, this.agent, ( error, content, status ) => {
-                tmp++;
-                this.initialized = ( tmp >= 3 );
-            });
+            let domains = [
+                this.url,
+                'http://www.mnggo.net',
+                'http://www.fashionlib.net',
+                'http://www.lady-first.me'
+            ];
+            for(let domain of domains) {
+                Engine.Request.cfGet( domain, this.referer, this.agent, ( error, content, status ) => {
+                    domains.pop();
+                    this.initialized = ( domains.length < 1 );
+                });
+            }
         }
 
         /**
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.get( 'http://static.hakuneko.ovh/mangago/mangas.json', this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.cfGet( 'http://static.hakuneko.ovh/mangago/mangas.json', this.referer, this.agent, ( error, content, status ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
@@ -63,7 +62,7 @@
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
                 
-                let mangaList = [...dom.querySelectorAll( '#chapter_table * a.chico' )].map(  ( element ) => {
+                let chapterList = [...dom.querySelectorAll( '#chapter_table * a.chico' )].map(  ( element ) => {
                         // clean cfmail
                         this.cfMailDecrypt( element );
                         return {
@@ -73,7 +72,7 @@
                         };
                     });
                 
-                callback(error, mangaList);
+                callback(error, chapterList);
             });
         }
 

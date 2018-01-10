@@ -83,6 +83,7 @@
          * Helper function relaying the processed results from the raw request to the callback.
          */
         _requestCallback ( error, response, content, options, callback, retries ) {
+//console.log( 'REDIRECT', response.statusCode, options, response.request );
             retries = ( retries != undefined ? retries : 3 );
             if( retries < 0 ) {
                 callback( new Error( 'The url "' + options.url + '" could not be reached' ), undefined, ( response ? response.statusCode : undefined ), ( response ? response.headers : undefined ) );
