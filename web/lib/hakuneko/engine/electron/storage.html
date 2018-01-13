@@ -207,7 +207,7 @@
                     file = this.path.join( directory, file );
                     // websecurity is disabled => direct access to file links
                     //return encodeURI( 'file://' + file.replace(/\\/g, '/') ).replace(/#/g, '%23').replace(/'/g, '%27');
-                    return 'file://' + encodeURIComponent( file.replace(/\\/g, '/') ).replace(/%2F/g, '/');
+                    return 'file://' + encodeURIComponent( file.replace(/\\/g, '/') ).replace(/%2F/g, '/').replace(/'/g, '%27');
                     //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
                 });
                 callback( null, pages );
