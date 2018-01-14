@@ -14,6 +14,8 @@
         }
 
         /**
+         * DEPRECATED (2018-01-14): Use cloudflare() method
+         * 
          * Cloudflare wrapper, detect and solve cloudflare protected content.
          */
         cfGet( href, referer, agent, callback ) {
@@ -42,6 +44,39 @@
                 } else {
                     callback( null, content, status, headers );
                 }
+            });
+        }
+
+        /**
+         * 
+         */
+        cloudflare( options, callback ) {
+            this.request( options, ( error, response, content ) => {
+                if( error || !content || content.indexOf( 'document.getElementById(\'jschl-answer\');' ) === -1 ) {
+                    callback( error, response, content );
+                    return;
+                }
+                //content = content.toString( 'utf8' );
+                // solve challenge
+                setTimeout( () => {
+                    let challenge = content.match( /getElementById\('cf-content'\)[\s\S]+?setTimeout.+?\r?\n([\s\S]+?a\.value =.+?)\r?\n/i )[1];
+                    challenge = challenge.replace( /a\.value =(.+?) \+ .+?;/i, '$1' );
+                    challenge = challenge.replace( /\s{3,}[a-z](?: = |\.).+/g, '' );
+                    challenge = challenge.replace( /'; \d+'/g, '' );
+
+                    let optionsCF = ( typeof options !== 'string' ? JSON.parse( JSON.stringify( options ) ) : {} );
+                    optionsCF['url'] = response.request.uri.protocol + '//' + response.request.host + content.match( /id="challenge-form" action="(.+?)"/ )[1];
+                    optionsCF['headers'] = optionsCF['headers'] || {};
+                    optionsCF['headers']['Referer'] = response.request.uri.href;
+                    optionsCF['qs'] = optionsCF['qs'] || {};
+                    optionsCF['qs']['jschl_vc'] = content.match( /name="jschl_vc" value="(.+?)"/ )[1];
+                    optionsCF['qs']['jschl_answer'] = ( eval(challenge) + response.request.host.length );
+                    optionsCF['qs']['pass'] = content.match( /name="pass" value="(.+?)"/ )[1];
+
+                    // recursive cloudflare request in case the challenge fails
+                    // or the redircet target is another domain that also requires cloudflare
+                    this.cloudflare( optionsCF, callback );
+                }, 4000 );
             });
         }
     }
