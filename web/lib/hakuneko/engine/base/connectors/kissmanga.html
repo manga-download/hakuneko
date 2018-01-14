@@ -17,9 +17,13 @@
             super.label         = 'KissManga';
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://kissmanga.com';
-            this.referer        = undefined; //'http://kissmanga.com';
-            this.agent          = undefined; //'Mozilla/5.0';
+            this.url = 'http://kissmanga.com';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0'
+                }
+            } );
             this.sandbox        = new Worker( '/js/sandbox.js' );
             this.initialized    = false;
             this.pageLoadDelay  = 5000;
@@ -27,11 +31,11 @@
             this.config  = undefined;
 
             // initialization: bypass cloudflare and get encryption scripts
-            Engine.Request.cfGet( this.url + '/Scripts/ca.js', this.referer, this.agent, ( error, content, status ) => {
-                if( status === 200 ) {
+            Engine.Request.cloudflare( this.url + '/Scripts/ca.js', ( error, response, content ) => {
+                if( response.statusCode === 200 ) {
                     let script = content + ';';
-                    Engine.Request.cfGet( this.url + '/Scripts/lo.js', this.referer, this.agent, ( error, content, status ) => {
-                        if( status === 200 ) {
+                    Engine.Request.cloudflare( this.url + '/Scripts/lo.js', ( error, response, content, status ) => {
+                        if( response.statusCode === 200 ) {
                             script += content + ';';
                             this.sandbox.postMessage( { id: 1, content: script, return: [] } );
                             this.initialized = true;
@@ -51,7 +55,7 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.get( 'http://static.hakuneko.ovh/kissmanga/mangas.json', this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.cloudflare( 'http://static.hakuneko.ovh/kissmanga/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
@@ -65,7 +69,9 @@
                 callback( new Error( 'Connector ' + this.label + ' not correctly initialized!' ), [] );
                 return;
             }
-            Engine.Request.cfGet( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += manga.id;
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
                 let chapterList = [];
                 if( error ) {
                     callback( error, chapterList );
@@ -117,7 +123,9 @@
             setTimeout( () => {
                 this.unlock( key );
             }, this.pageLoadDelay );
-            Engine.Request.cfGet( this.url + chapter.id, this.referer, this.agent, ( error, content, status ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += chapter.id;
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
                 let pageList = [];
                 if( error ) {
                     callback( error, pageList );
