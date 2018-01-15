@@ -136,14 +136,14 @@
         fetch( options, callback, retries ) {
             retries = ( retries != undefined ? retries : 3 );
             if( retries < 0 ) {
-                callback( new Error( 'The url "' + options.url + '" could not be reached' ), undefined, undefined );
+                callback( new Error( 'The url "' + ( options.url ? options.url : options ) + '" could not be reached' ), undefined, undefined );
                 return;
             }
             this.request( options, ( error, response, content ) => {
                 //
                 if( error && this.reconnectErrors.indexOf( error.code ) > -1 ) {
                     setTimeout( () => {
-                        console.warn( 'RETRY:', error.code, options.url );
+                        //console.warn( 'RETRY:', error.code, options );
                         this.fetch( options, callback, retries-1 );
                     }, this.reconnectDelay  );
                 } else {
