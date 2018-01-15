@@ -51,7 +51,7 @@
          * 
          */
         cloudflare( options, callback ) {
-            this.request( options, ( error, response, content ) => {
+            this.fetch( options, ( error, response, content ) => {
                 if( error || !content || content.indexOf( 'document.getElementById(\'jschl-answer\');' ) === -1 ) {
                     callback( error, response, content );
                     return;
@@ -77,7 +77,7 @@
                     // or the redircet target is another domain that also requires cloudflare
                     this.cloudflare( optionsCF, callback );
                 }, 4000 );
-            });
+            } );
         }
     }
     RequestBase; // reference the class to prevent removal of the class through js-minify

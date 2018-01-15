@@ -15,6 +15,16 @@
             let req = require( 'electron' ).remote.require( 'request' );
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
             this.agent = new require( 'electron' ).remote.require( 'http' ).Agent();
+            this.reconnectDelay = 250;
+            this.reconnectErrors = [
+                'ETIMEDOUT',
+                'ESOCKETTIMEDOUT',
+                'ECONNRESET',
+                'ECONNREFUSED',
+                //'EHOSTUNREACH',
+                //'ENOTFOUND',
+                //'EAI_AGAIN',
+            ];
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
@@ -26,7 +36,7 @@
         }
 
         /**
-         * DEPRECATED (2018-01-14): Use request() method
+         * DEPRECATED (2018-01-14): Use fetch() method instead
          * 
          * Electron specific implementation of the get method for the request engine.
          * Callback arguments:
@@ -55,7 +65,7 @@
         }
 
         /**
-         * DEPRECATED (2018-01-14): Use request() method
+         * DEPRECATED (2018-01-14): Use fetch() method instead
          * 
          * Electron specific implementation of the post method for the request engine.
          * Callback arguments:
@@ -119,6 +129,28 @@
             }
             callback( null, content, response.statusCode, response.headers );
         };
+
+        /**
+         * Electron specific implementation of the fetch method to make HTTP requests.
+         */
+        fetch( options, callback, retries ) {
+            retries = ( retries != undefined ? retries : 3 );
+            if( retries < 0 ) {
+                callback( new Error( 'The url "' + options.url + '" could not be reached' ), undefined, undefined );
+                return;
+            }
+            this.request( options, ( error, response, content ) => {
+                //
+                if( error && this.reconnectErrors.indexOf( error.code ) > -1 ) {
+                    setTimeout( () => {
+                        console.warn( 'RETRY:', error.code, options.url );
+                        this.fetch( options, callback, retries-1 );
+                    }, this.reconnectDelay  );
+                } else {
+                    callback( error, response, content );
+                }
+            } );
+        }
     }
 
 </script>
