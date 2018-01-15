@@ -56,7 +56,7 @@
             Engine.Request.fetch( options, ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ).pages.map( ( page )  => {
                     let uri = new URL( page );
-                    uri.hostname = uri.hostname.replace( /iweb[a-z0-9]+\./, 'www.' ) + '.hakuneko.download';
+                    uri.hostname += '.hakuneko.download';
                     return uri.href;
                 } ) : undefined ) );
             } );
