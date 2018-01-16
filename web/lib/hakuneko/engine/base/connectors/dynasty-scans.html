@@ -36,7 +36,7 @@
             });
             ['/series', '/anthologies', '/issues'].forEach((page) => {
                 let key = prms.defer();
-                Engine.Request.get( this.url + page, undefined, undefined, ( error, content, status ) => {
+                Engine.Request.fetch( this.url + page, ( error, response, content ) => {
                     if( error ) {
                         errMessage += error.message + '\n';
                         prms.resolve( key );
@@ -66,7 +66,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
@@ -118,7 +118,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( ( this.url + chapter.id ), ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;

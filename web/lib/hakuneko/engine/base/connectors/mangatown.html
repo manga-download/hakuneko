@@ -18,6 +18,11 @@
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'https://www.mangatown.com';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                gzip: true,
+                rejectUnauthorized: false // ignore broken https certificate chain from mangatown
+            } );
             this.pageLoadDelay  = 250;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
@@ -27,7 +32,7 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.get( 'http://static.hakuneko.ovh/mangatown/mangas.json', this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.fetch( 'http://static.hakuneko.ovh/mangatown/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
@@ -36,7 +41,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += manga.id;
+            Engine.Request.fetch( options, ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
@@ -46,9 +53,8 @@
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                
-                let mangaList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map(  ( element ) => {
+                dom.innerHTML =content;
+                let chapterList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map(  ( element ) => {
                     let link = element.getElementsByTagName( 'a' )[0];
                     let title = link.text.replace( manga.title, '' ).trim();
                     let texts = element.getElementsByTagName( 'span' );
@@ -68,7 +74,7 @@
                     };
                 });
                 
-                callback(error, mangaList);
+                callback(error, chapterList);
             });
         }
 
@@ -76,11 +82,13 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let chapter_url = chapter.id;
-            if(!chapter_url.match(/https?:\/\//i)) {
-                chapter_url = (this.url + chapter_url);
+            let options = JSON.parse( this.reqOptionsJSON );
+            if(chapter.id.match(/https?:\/\//i)) {
+                options.url = chapter.id;
+            } else {
+                options.url += chapter.id
             }
-            Engine.Request.get( chapter_url, undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( options, ( error, response, content ) => {
                 let imageList = [];
                 if( error ) {
                     callback( error, imageList );
@@ -107,14 +115,16 @@
                 });
                 
                 let dlImgFct = function(page, i, key, retries) {
-                    Engine.Request.get( page, undefined, undefined, ( errorImage, content, status ) => {
+                    let options = JSON.parse( this.reqOptionsJSON );
+                    options.url = page;
+                    Engine.Request.fetch( options, ( errorImage, response, content ) => {
                         if( errorImage ) {
                             errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + errorImage.message;
                             prms.resolve( key );
                             return;
                         }
                         
-                        if( status != 200) {
+                        if( response.statusCode != 200 ) {
                             if( retries > 0 ) {
                                 setTimeout(dlImgFct, 2500, page, i, key, retries - 1);
                             } else {
@@ -133,12 +143,13 @@
                         if( img ) {
                             imageList[i] = img.src;    //Conserve order even using async processing
                         } else {
+                            console.log( error, response );
                             errorMessage += 'Couldn\'t get image for page ' + page + '\n';
                         }
                         
                         prms.resolve( key );
                     });
-                }
+                }.bind( this );
                 
                 //Remove additionnal 'featured' page, that causes duplicate of first picture at end of chapter
                 if(pageList.length > 0 && pageList[pageList.length - 1].endsWith('featured.html')) {

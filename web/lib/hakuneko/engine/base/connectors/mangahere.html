@@ -27,7 +27,7 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.get( this.url + '/mangalist/', undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + '/mangalist/', ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
@@ -57,7 +57,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
@@ -93,7 +93,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ).replace( this.url + '/manga', this.urlm + '/roll_manga' ), undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( ( this.url + chapter.id ).replace( this.url + '/manga', this.urlm + '/roll_manga' ), ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;

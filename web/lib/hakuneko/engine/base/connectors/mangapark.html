@@ -26,7 +26,7 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.get( 'http://static.hakuneko.ovh/mangapark/mangas.json', this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.fetch( 'http://static.hakuneko.ovh/mangapark/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
@@ -35,7 +35,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
                 let mangaList = [];
                 if( error ) {
                     callback( error, mangaList );
@@ -69,7 +69,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( ( this.url + chapter.id ), ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;

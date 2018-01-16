@@ -26,7 +26,7 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.get( this.url + '/alphabetical', undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + '/alphabetical', ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
@@ -54,7 +54,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
@@ -80,7 +80,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + chapter.id ), undefined, undefined, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + chapter.id, ( error, response, content ) => {
                 let imageList = [];
                 if( error ) {
                     callback( error, imageList );
@@ -109,7 +109,7 @@
                 });
                 pageList.forEach((page, i) => {    //Get image on each page
                     let key = prms.defer();
-                    Engine.Request.get( page, undefined, undefined, ( error, content, status ) => {
+                    Engine.Request.fetch( page, ( error, response, content ) => {
                         if( error ) {
                             errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
                             prms.resolve( key );

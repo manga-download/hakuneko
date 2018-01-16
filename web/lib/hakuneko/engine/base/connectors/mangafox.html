@@ -18,8 +18,6 @@
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'http://mangafox.la';
-            this.referer        = undefined; //'http://mangafox.me';
-            this.agent          = undefined; //'Mozilla/5.0';
             this.pageLoadDelay  = 50; // 25;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
@@ -29,7 +27,7 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.get( this.url + '/manga', this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + '/manga', ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
@@ -56,14 +54,14 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
                 let chapterList = [];
                 if( error ) {
                     callback( error, chapterList );
                     return;
                 }
                 let sid = content.match( /sid\s*=\s*([0-9]+)/ )[1];
-                Engine.Request.get( this.url + '/media/js/list.' + sid + '.js', this.referer, this.agent, ( errorScript, script, status ) => {
+                Engine.Request.fetch( this.url + '/media/js/list.' + sid + '.js', ( errorScript, responseScript, script ) => {
                     if( errorScript ) {
                         callback( errorScript, chapterList );
                         return;
@@ -85,13 +83,13 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( ( this.url + manga.id + chapter.id ).replace( 'mangafox.la/manga', 'm.mangafox.la/roll_manga' ), this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.fetch( ( this.url + manga.id + chapter.id ).replace( 'mangafox.la/manga', 'm.mangafox.la/roll_manga' ), ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;
                 }
                 // FIXME: very dangerous, might end up in endless recursion !!!
-                if( status === 503 ) {
+                if( response.statusCode === 503 ) {
                     setTimeout( () => {
                         this.getPages( manga, chapter, callback );
                     }, this.pageLoadDelay );
