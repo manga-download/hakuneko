@@ -21,6 +21,12 @@
             } catch ( e ) {
                 docs = '.';
             }
+            this.useGoogleDataSaver = {
+                label: 'Google Data Saver (Proxy)',
+                description: 'Use the Google Data Saver Proxy (only for downloads)',
+                input: Input.checkbox,
+                value: false
+            };
             this.socketConnections = {
                 label: 'Host Connections',
                 description: 'The maximum number of concurrent connections to a host (use lesser connections for slow internet/servers)',

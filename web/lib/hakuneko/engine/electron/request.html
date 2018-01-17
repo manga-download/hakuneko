@@ -15,6 +15,7 @@
             let req = require( 'electron' ).remote.require( 'request' );
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
             this.agent = new require( 'electron' ).remote.require( 'http' ).Agent();
+            this.crypto = require( 'electron' ).remote.require( 'crypto' );
             this.reconnectDelay = 250;
             this.reconnectErrors = [
                 'ETIMEDOUT',
@@ -134,6 +135,7 @@
          * Electron specific implementation of the fetch method to make HTTP requests.
          */
         fetch( options, callback, retries ) {
+            this._proxify( options );
             retries = ( retries != undefined ? retries : 3 );
             if( retries < 0 ) {
                 callback( new Error( 'The url "' + ( options.url ? options.url : options ) + '" could not be reached' ), undefined, undefined );
@@ -150,6 +152,48 @@
                     callback( error, response, content );
                 }
             } );
+        }
+
+        /**
+         * Modify the request options to use any configured proxy server (e.g. Google Data Saver)
+         */
+        _proxify( options ) {
+            if( typeof options === 'string' ) {
+                options = {
+                    url: options
+                };
+            }
+            options['headers'] = ( options['headers'] ? options['headers'] : {} );
+            // it cannot hurt to pretend the request already passed through some other proxy servers ...
+            options['headers']['X-Forwarded-For'] = this._randIP( 3 ).join( ',' );
+            // use google data saver proxy server
+            if( Engine.Settings.useGoogleDataSaver.value ) {
+                let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
+                let ts = Math.floor(Date.now() / 1000);
+                let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
+                let rd = Math.floor( 999 * Math.random() );
+                //
+                options['proxy'] = 'http://proxy.googlezip.net:80',
+                options['headers']['Chrome-Proxy'] = 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
+                options['gzip'] = true;
+            }
+        }
+
+        /**
+         * Generate random IPs ( 1 ~ amount )
+         */
+        _randIP( amount ) {
+            amount = amount || 1;
+            let result = [];
+            let rd = ( min, max ) => {
+                return Math.floor( Math.random() * ( max - min + 1 ) ) + min;
+            };
+            let count = rd( 1, amount );
+            for(let i=0; i<count; i++) {
+                let ip = [ rd( 32, 224 ), rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ) ];
+                result.push( ip.join( '.' ) );
+            }
+            return result;
         }
     }
 
