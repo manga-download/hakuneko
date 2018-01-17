@@ -29,13 +29,14 @@
         }
 
         test.run( 'lock', lock_test );
-        Engine.Request.cfGet( 'http://cf.hakuneko.x10host.com/mail.html', undefined, undefined, ( error, content, status, headers ) => {
+        Engine.Request.cloudflare( 'http://cf.hakuneko.x10host.com/mail.html', ( error, content, status, headers ) => {
             test.run( 'cfMailDecrypt', () => {
                 Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
                 Assert.nequal( undefined, content, 'Invalid content' );
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
-                cfMailDecrypt_test( dom.querySelector( 'a#cfmail' ).outerHTML, 'breaking@cloudflare.com' );
+                cfMailDecrypt_test( dom.querySelector( 'a#cfmail[0]' ).outerHTML, 'breaking@cloudflare.com' );
+                cfMailDecrypt_test( dom.querySelector( 'a#cfmail[1]' ).outerHTML, 'THE iDOLM@STER -Your Mess@ge- Vol.001 Ch.001: 001st stage - Watashi wa Idol ♥' );
                 cfMailDecrypt_test( '<a href="#">THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg</a>', 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg' );
                 cfMailDecrypt_test( '<a href="#">THE <span>iDOLM@STER</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>', 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg' );
                 cfMailDecrypt_test( '<a href="#">THE <span class="__cf_email__" data-cfemail="abc2efe4e7e6ebf8ffeef9">[email&#160;protected]</span> Cinderella Girls Shuffle!! - Cinderella★Egg</a>', 'THE iDOLM@STER Cinderella Girls Shuffle!! - Cinderella★Egg' );
