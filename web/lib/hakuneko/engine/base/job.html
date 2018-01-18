@@ -102,8 +102,8 @@
                 pages.forEach( ( page, index ) => {
                     let key = promise.defer();
                     let downloadPage = ( retries ) => {
-                        Engine.Request.cfGet( page, undefined, undefined, ( error, content, status, headers ) => {
-                            if( retries > 0 && status !== 200 ) {
+                        Engine.Request.cloudflare( page, ( error, response, content ) => {
+                            if( retries > 0 && response.statusCode !== 200 ) {
                                 setTimeout( () => {
                                     downloadPage( retries-1 );
                                 }, 2500 );
@@ -112,11 +112,11 @@
                             if( error ) {
                                 this.errors.push( error );
                             } else {
-                                if( status !== 200 ) {
-                                    this.errors.push( new Error( 'Page "' + page + '" returned status code ' + status ) );
+                                if( response.statusCode !== 200 ) {
+                                    this.errors.push( new Error( 'Page "' + page + '" returned status code ' + response.statusCode ) );
                                 } else {
                                     pageData[index] = {
-                                        type: headers['content-type'],
+                                        type: response.headers['content-type'],
                                         data: content
                                     };
                                 }
