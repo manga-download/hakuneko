@@ -55,99 +55,6 @@
         }
 
         /**
-         * DEPRECATED (2018-01-14): Use fetch() method instead
-         * 
-         * Electron specific implementation of the get method for the request engine.
-         * Callback arguments:
-         *   error => error that occurs in request module (or null if no error)
-         *   content => the content of the requested url
-         *   status => http status code of the request
-         *   headers => response headers of the request
-         */
-        get( href, referer, agent, callback ) {
-            let options = {
-                method: 'GET',
-                rejectUnauthorized: false,
-                url: href,
-                headers: {
-                    'User-Agent': agent || this.userAgent,
-                    'Referer': referer || href
-                },
-                gzip: true,
-                //realEncoding: 'utf8',
-                encoding: null, // keep content in binary presentation and do not convert
-                pool: this.agent,
-                timeout: 15000
-            };
-            this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
-        }
-
-        /**
-         * DEPRECATED (2018-01-14): Use fetch() method instead
-         * 
-         * Electron specific implementation of the post method for the request engine.
-         * Callback arguments:
-         *   error => error that occurs in request module (or null if no error)
-         *   content => the content of the requested url
-         *   status => http status code of the request
-         *   headers => response headers of the request
-         */
-        post( href, form, referer, agent, callback ) {
-            let options = {
-                method: 'POST',
-                rejectUnauthorized: false,
-                url: href,
-                headers: {
-                    'User-Agent': agent || this.agent,
-                    'Referer': referer || href
-                },
-                gzip: true,
-                form: form,
-                //realEncoding: 'utf8',
-                encoding: null, // keep content in binary presentation and do not convert
-                pool: this.agent,
-                timeout: 15000
-            };
-            this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback ); } );
-        }
-
-        /**
-         * Helper function relaying the processed results from the raw request to the callback.
-         */
-        _requestCallback ( error, response, content, options, callback, retries ) {
-            retries = ( retries != undefined ? retries : 3 );
-            if( retries < 0 ) {
-                callback( new Error( 'The url "' + options.url + '" could not be reached' ), undefined, ( response ? response.statusCode : undefined ), ( response ? response.headers : undefined ) );
-                return;
-            }
-            // no need to process cookies, they are handled automatically by JAR
-            if( error || !response || !content ) {
-                console.log( options.url, '[', retries, ']', error );
-                if( error.code === 'ETIMEDOUT' || error.code === 'ESOCKETTIMEDOUT' || error.code === 'ECONNRESET' ) {
-                    if( options.method.toUpperCase() === 'GET' ) {
-                        this.request.get( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback, retries - 1 ); } );
-                    }
-                    if( options.method.toUpperCase() === 'POST' ) {
-                        this.request.post( options, ( error, response, content ) => { this._requestCallback( error, response, content, options, callback, retries - 1 ); } );
-                    }
-                    return;
-                } else {
-                    callback( error, undefined, ( response ? response.statusCode : undefined ), ( response ? response.headers : undefined ) );
-                    return;
-                }
-            }
-            let contentType = ( response.headers && response.headers['content-type'] ? response.headers['content-type'].toLowerCase() : '' );
-            if( contentType.indexOf( 'text' ) > -1 || contentType.indexOf( 'json' ) > -1 || contentType.indexOf( 'javascript' ) > -1 ) {
-                if( contentType.indexOf( 'charset=utf-8' ) > -1 ) {
-                    content = content.toString( 'utf8' );
-                } else {
-                    content = content.toString();
-                }
-            }
-            callback( null, content, response.statusCode, response.headers );
-        };
-
-        /**
          * Electron specific implementation of the fetch method to make HTTP requests.
          */
         fetch( options, callback, retries ) {
@@ -236,7 +143,7 @@
                 }
             } );
 
-            win.webContents.setUserAgent( options.headers['User-Agent'] || 'Mozilla/5.0' );
+            win.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
             win.webContents.on( 'dom-ready', ( e ) => {
                 // do not process when this is a cloudflare challenge
                 win.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )

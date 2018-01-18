@@ -10,41 +10,7 @@
          */
         constructor() {
             // default agent used for requests
-            this.userAgent = 'Mozilla/5.0 (Windows NT 6.3; rv:53.0) Gecko/20100101 Firefox/53.0';
-        }
-
-        /**
-         * DEPRECATED (2018-01-14): Use cloudflare() method
-         * 
-         * Cloudflare wrapper, detect and solve cloudflare protected content.
-         */
-        cfGet( href, referer, agent, callback ) {
-            agent = agent || this.userAgent;
-            referer = referer || href;
-//console.log( 'CF-GET', href, referer, agent );
-            this.get( href, referer, agent, ( error, content, status, headers ) => {
-                if( error ) {
-                    callback( error, content, status, headers );
-                    return;
-                }
-                if ( content.indexOf( 'document.getElementById(\'jschl-answer\');' ) > -1 ) {
-                    setTimeout( function() {
-                        let url = new URL( href );
-                        let challenge = content.match( /getElementById\('cf-content'\)[\s\S]+?setTimeout.+?\r?\n([\s\S]+?a\.value =.+?)\r?\n/i )[1];
-                        challenge = challenge.replace( /a\.value =(.+?) \+ .+?;/i, '$1' );
-                        challenge = challenge.replace( /\s{3,}[a-z](?: = |\.).+/g, '' );
-                        challenge = challenge.replace( /'; \d+'/g, '' );
-                        url.pathname = content.match( /id="challenge-form" action="(.+?)"/ )[1];
-                        url.search = '';
-                        url.search += '?jschl_vc=' + content.match( /name="jschl_vc" value="(.+?)"/ )[1];
-                        url.search += '&jschl_answer=' + ( eval(challenge) + url.host.length );
-                        url.search += '&pass=' + content.match( /name="pass" value="(.+?)"/ )[1];
-                        this.cfGet( url.href, referer, agent, callback );
-                    }.bind( this ), 4000);
-                } else {
-                    callback( null, content, status, headers );
-                }
-            });
+            this.userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0';
         }
 
         /**
