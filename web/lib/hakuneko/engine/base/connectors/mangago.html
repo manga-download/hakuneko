@@ -19,20 +19,29 @@
             this.initialized    = false;
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.mangago.me';
-            this.userAgent      = 'Mozilla/5.0';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                headers: {
+                    'User-Agent': 'Mozilla/5.0'
+                }
+            } );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
-            // initialization: bypass cloudflare for all known domains
+            // initialization: solve cloudflare for all known domains
             let domains = [
                 this.url,
-                'http://www.mnggo.net',
-                'http://www.fashionlib.net',
-                'http://www.lady-first.me',
-                'http://www.mangapicgallery.com'
+                /*
+                'http://www.mnggo.net/c/1/1/1',
+                'http://www.fashionlib.net/c/1/1/1',
+                'http://www.lady-first.me/c/1/1/1',
+                //'http://www.mangapicgallery.com'
+                */
             ];
             for(let domain of domains) {
-                Engine.Request.fetchUI( domain, '', ( error, content ) => {
+                let options = JSON.parse( this.reqOptionsJSON );
+                options.url = domain;
+                Engine.Request.fetchUI( options, '', ( error, content ) => {
                     domains.pop();
                     this.initialized = ( domains.length < 1 );
                 } );
@@ -52,6 +61,8 @@
          *
          */
         _getChapterList( manga, callback ) {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += manga.id;
             let script = `[...document.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
                 return {
                     id: element.href,
@@ -59,7 +70,7 @@
                     language: 'en'
                 };
             } );`;
-            Engine.Request.fetchUI( this.url + manga.id, this.userAgent, script, ( error, content ) => {
+            Engine.Request.fetchUI( options, script, ( error, content ) => {
                 content.forEach( ( chapter ) => {
                     chapter.id = chapter.id.replace( this.url , '' );
                     chapter.title = chapter.title.replace( manga.title, '' ).trim();
@@ -73,8 +84,16 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let script = `imgsrcs;`;
-            Engine.Request.fetchUI( this.url + chapter.id, this.userAgent, script, ( error, content ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += chapter.id;
+            Engine.Request.fetchUI( options , `imgsrcs;`, ( error, content ) => {
+                // due to an encryption bug in mangago the first bytes are messed up
+                if( content && content.length > 0 ) {
+                    console.log( '[0]', content[0] );
+                    let parts = content[0].split('//');
+                    parts[0] = 'http:';
+                    content[0] = parts.join( '//' );
+                }
                 console.log( content );
                 callback( error, content );
             } );
