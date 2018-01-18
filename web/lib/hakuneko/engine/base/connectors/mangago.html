@@ -19,6 +19,7 @@
             this.initialized    = false;
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.mangago.me';
+            this.userAgent      = 'Mozilla/5.0';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
@@ -27,16 +28,14 @@
                 this.url,
                 'http://www.mnggo.net',
                 'http://www.fashionlib.net',
-                'http://www.lady-first.me'
+                'http://www.lady-first.me',
+                'http://www.mangapicgallery.com'
             ];
             for(let domain of domains) {
-                Engine.Request.cfGet( domain, this.referer, this.agent, ( error, content, status ) => {
+                Engine.Request.fetchUI( domain, '', ( error, content ) => {
                     domains.pop();
                     this.initialized = ( domains.length < 1 );
-                    // login after all are nitialized ... 'http://www.mangago.me/home/accounts/login/'
-                    // solve captcha
-                    // curl 'http://www.mangago.me/home/accounts/submit/?t=login' -H 'Pragma: no-cache' -H 'Origin: http://www.mangago.me' -H 'Accept-Encoding: gzip, deflate' -H 'Accept-Language: en-US,en;q=0.8,de;q=0.6' -H 'Upgrade-Insecure-Requests: 1' -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.104 Safari/537.36' -H 'Content-Type: application/x-www-form-urlencoded' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8' -H 'Cache-Control: no-cache' -H 'Referer: http://www.mangago.me/home/accounts/login/' -H 'Cookie: __cfduid=dec075eb1c049a36d91702fb66f1491701516044563; cf_clearance=87dc47798e1e30134907779c213a2027cf73e839-1516044567-7200; __unam=657356c-160fb4c50da-84e761f-24; PHPSESSID=nl2jvrargs1druoarpjjiq6vd3' -H 'Connection: keep-alive' --data 'email=hakuneko%40byom.de&password=hakuneko&captcha=43372&submit=SIGN+IN&redir=' --compressed
-                });
+                } );
             }
         }
 
@@ -44,80 +43,41 @@
          * 
          */
         _getMangaList( callback ) {
-            /*
-            Engine.Request.cfGet( 'http://static.hakuneko.ovh/mangago/mangas.json', this.referer, this.agent, ( error, content, status ) => {
+            Engine.Request.fetch( 'http://static.hakuneko.ovh/mangago/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
-            */
         }
 
         /**
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetchUI( 'http://www.mangago.me/read-manga/ookami_heika_no_hanayome/', ( content ) => {
+            let script = `[...document.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
+                return {
+                    id: element.href,
+                    title: element.text,
+                    language: 'en'
+                };
+            } );`;
+            Engine.Request.fetchUI( this.url + manga.id, this.userAgent, script, ( error, content ) => {
+                content.forEach( ( chapter ) => {
+                    chapter.id = chapter.id.replace( this.url , '' );
+                    chapter.title = chapter.title.replace( manga.title, '' ).trim();
+                } );
                 console.log( content );
+                callback( error, content );
             } );
-            /*
-            this._unlock( this.url + manga.id, () => {
-                console.log( '_getChapterList' );
-                Engine.Request.cfGet( this.url + manga.id, this.referer, this.agent, ( error, content, status ) => {
-                    if( error ) {
-                        callback( error, [] );
-                        return;
-                    }
-                    // prevent images and iframes from loading
-                    content = content.replace( /<img[^<]*?>/g, '<img>');
-                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                    let dom = document.createElement( 'html' );
-                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                    dom.innerHTML = content;
-                    
-                    let chapterList = [...dom.querySelectorAll( '#chapter_table * a.chico' )].map(  ( element ) => {
-                        // clean cfmail
-                        this.cfMailDecrypt( element );
-                        return {
-                            id: this.getRelativeLink( element ),
-                            title: element.text.replace( manga.title, '' ).trim(),
-                            language: 'en'
-                        };
-                    });
-                    
-                    callback(error, chapterList);
-                });
-            } );
-            */
         }
 
         /**
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetchUI( 'http://www.mangago.me/read-manga/ookami_heika_no_hanayome/mf/hs_v-12-chapter-60/pg-1/', ( content ) => {
+            let script = `imgsrcs;`;
+            Engine.Request.fetchUI( this.url + chapter.id, this.userAgent, script, ( error, content ) => {
                 console.log( content );
+                callback( error, content );
             } );
-            /*
-            this._unlock( this.url + chapter.id, () => {
-                console.log( '_getPageList' );
-                Engine.Request.cfGet( this.url + chapter.id, this.referer, this.agent, ( error, content, status ) => {
-                    if( error ) {
-                        callback( error, [] );
-                        return;
-                    }
-                    // prevent images and iframes from loading
-                    content = content.replace( /<img[^<]*?>/g, '<img>');
-                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                    
-                    let start = content.indexOf( 'var imgsrcs' );
-                    let end = content.indexOf( ');', start ) + 2;
-                    content = content.substr( start, end - start );
-
-                    let img_url_list = content.match(/http:\/\/.+?\.((jpe?g)|(png))/g);
-                    
-                    callback( error, img_url_list );
-                });
-            } );
-            */
         }
     }
 
