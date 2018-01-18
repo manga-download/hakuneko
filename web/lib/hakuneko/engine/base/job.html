@@ -102,7 +102,7 @@
                 pages.forEach( ( page, index ) => {
                     let key = promise.defer();
                     let downloadPage = ( retries ) => {
-                        Engine.Request.cloudflare( page, ( error, response, content ) => {
+                        Engine.Request.cloudflare( { url: page, encoding: null }, ( error, response, content ) => {
                             if( retries > 0 && response.statusCode !== 200 ) {
                                 setTimeout( () => {
                                     downloadPage( retries-1 );
