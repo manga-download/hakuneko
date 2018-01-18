@@ -200,21 +200,40 @@
         /**
          *
          */
-         fetchUI( uri, callback ) {
+        fetchUI( uri, agent, script, callback ) {
             let win = new this.browser( {
                 width: 1280,
                 height: 720,
-                show: true
+                show: false,
+                webPreferences: {
+                    nodeIntegration: true,
+                    webSecurity: true,
+                    //sandbox: true
+                }
             });
+            win.webContents.setUserAgent( agent );
             win.loadURL( uri );
             win.webContents.on( 'dom-ready', ( e ) => {
-                console.log( win.getURL() );
-                if( true ) {
-                    setTimeout( () => {
-                        win.close();
-                        callback( 'RESULT' );
-                    }, 7500 );
-                }
+                // TODO: skip cloudflare challenge and only execute script when final page has been reached
+                win.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )
+                .then( ( result ) => {
+                    console.log( 'CF', result );
+                    if( result == null ) {
+                        win.webContents.executeJavaScript( script )
+                        .then( ( result ) => {
+                            callback( null, result );
+                            win.close();
+                        } )
+                        .catch( ( error ) => {
+                            callback( error, undefined );
+                            win.close();
+                        } );
+                    }
+                } )
+                .catch( ( error ) => {
+                    callback( error, undefined );
+                    win.close();
+                } );
             } );
         }
     }
