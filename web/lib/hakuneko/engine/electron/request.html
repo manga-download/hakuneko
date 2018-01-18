@@ -167,15 +167,22 @@
             options['headers']['X-Forwarded-For'] = this._randIP( 3 ).join( ',' );
             // use google data saver proxy server
             if( Engine.Settings.useGoogleDataSaver.value ) {
-                let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
-                let ts = Math.floor(Date.now() / 1000);
-                let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
-                let rd = Math.floor( 999 * Math.random() );
                 //
-                options['proxy'] = 'http://proxy.googlezip.net:80',
-                options['headers']['Chrome-Proxy'] = 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
+                options['proxy'] = 'http://proxy.googlezip.net:80';
+                options['headers']['Chrome-Proxy'] = this.getDataSaverHeader();
                 options['gzip'] = true;
             }
+        }
+
+        /**
+         * Generate cntent of 'Chrome-Proxy' header field for use with google data saver
+         */
+        getDataSaverHeader() {
+            let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
+            let ts = Math.floor( Date.now() / 1000 );
+            let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
+            let rd = Math.floor( 999 * Math.random() );
+            return 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
         }
 
         /**
@@ -198,7 +205,9 @@
         /**
          *
          */
-        fetchUI( uri, agent, script, callback ) {
+        fetchUI( options, script, callback ) {
+            this._proxify( options );
+            // list of available settings: https://www.npmjs.com/package/electron-browser-window-options
             let win = new this.browser( {
                 width: 1280,
                 height: 720,
@@ -208,23 +217,24 @@
                     webSecurity: true,
                     //sandbox: true
                 }
-            });
-            win.webContents.setUserAgent( agent );
-            win.loadURL( uri );
+            } );
+
+            win.webContents.setUserAgent( options.headers['User-Agent'] || 'Mozilla/5.0' );
             win.webContents.on( 'dom-ready', ( e ) => {
                 // do not process when this is a cloudflare challenge
                 win.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )
                 .then( ( result ) => {
-                    console.log( 'CF', result );
                     if( result == null ) {
+                        //console.log( win.webContents.session.cookies );
+                        // win.webContents.session.cookies.remove(url, name, callback)
                         win.webContents.executeJavaScript( script )
                         .then( ( result ) => {
                             callback( null, result );
-                            win.close();
+                            //win.close();
                         } )
                         .catch( ( error ) => {
                             callback( error, undefined );
-                            win.close();
+                            //win.close();
                         } );
                     }
                 } )
@@ -233,6 +243,16 @@
                     win.close();
                 } );
             } );
+
+            if( Engine.Settings.useGoogleDataSaver.value ) {
+                //win.webContents.session.setProxy( { proxyRules: 'socks5://127.0.0.1:8080' }, () => {
+                win.webContents.session.setProxy( { proxyRules: options.proxy }, () => {
+                    console.log( options.proxy );
+                    win.loadURL( options.url );
+                });
+            } else {
+                win.loadURL( options.url );
+            }
         }
     }
 
