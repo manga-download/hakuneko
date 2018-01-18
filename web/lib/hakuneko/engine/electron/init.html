@@ -3,7 +3,6 @@
     if( typeof(process) !== 'undefined' && process.versions && process.versions.electron ) {
 
         let electronRemote = require( 'electron' ).remote;
-        let crypto = electronRemote.require( 'crypto' );
 
         /**
         * Register event listener to open developer console with F12 key.
@@ -13,24 +12,6 @@
                 electronRemote.getCurrentWindow().openDevTools();
             }
         });
-
-        /**
-        * some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
-        */
-        electronRemote.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-            // add Google Data Saver requires header or the request will be rejected
-            if( Engine.Settings.useGoogleDataSaver.value ) {
-                details.requestHeaders['Chrome-Proxy'] = Engine.Request.getDataSaverHeader();
-            }
-            // TODO: only use origin of url => (new URL(details.url)).origin
-            details.requestHeaders['Referer'] = details.url;
-            console.log( 'Chrome-Proxy', details.requestHeaders['Chrome-Proxy'] );
-            callback( {
-                cancel: false,
-                requestHeaders: details.requestHeaders
-            } );
-        });
-
     }
 
 </script>
