@@ -72,7 +72,6 @@
                     chapter.id = chapter.id.replace( this.url , '' );
                     chapter.title = chapter.title.replace( manga.title, '' ).trim();
                 } );
-                console.log( content );
                 callback( error, content );
             } );
         }
@@ -86,12 +85,10 @@
             Engine.Request.fetchUI( options , `imgsrcs;`, ( error, content ) => {
                 // due to an encryption bug in mangago the first bytes are messed up
                 if( content && content.length > 0 ) {
-                    console.log( '[0]', content[0] );
                     let parts = content[0].split('//');
                     parts[0] = 'http:';
                     content[0] = parts.join( '//' );
                 }
-                console.log( content );
                 callback( error, content );
             } );
         }
