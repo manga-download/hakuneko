@@ -398,6 +398,9 @@
          */
         _pageFileName( number, mimeType ) {
             let fileName = ( '00' + number ).slice( -3 );
+            if( mimeType.indexOf( 'image/webp' ) > -1 ) {
+                return fileName + '.webp';
+            }
             if( mimeType.indexOf( 'image/jpeg' ) > -1 ) {
                 return fileName + '.jpg';
             }
@@ -421,6 +424,9 @@
          */
         _pageFileMime( file ) {
             let extension = this.path.extname( file );
+            if( extension === '.webp' ) {
+                return 'image/webp';
+            }
             if( extension === '.jpg' ) {
                 return 'image/jpeg';
             }
