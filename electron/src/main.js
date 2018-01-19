@@ -29,7 +29,7 @@ function activateWindow() {
     }
 
     registerCacheProtocol( config.cache.url.protocol, config.cache.directory );
-    
+
     win = new electron.BrowserWindow( {
         width: 1120,
         height: 680,
@@ -38,30 +38,34 @@ function activateWindow() {
             webSecurity: false // required to open local images in browser
         }
     });
+
+    // inject headers before a request is made (send to webapp to do the dirty work)
+    electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
+        if( win && win.webContents ) {
+            // inject javascript: looks stupid, but is a working solution
+            // to call a function directly within the render process (without dealing with ipcRenderer)
+            win.webContents.executeJavaScript('Engine.Request.getRequestHeaders(\'' + JSON.stringify( details ) + '\');')
+            .then( ( result ) => {
+                callback( {
+                    cancel: false,
+                    requestHeaders: result.requestHeaders
+                } );
+            } )
+            .catch( ( error ) => {
+                callback( {
+                    cancel: false,
+                    requestHeaders: details.requestHeaders
+                } );
+            } );
+        } else {
+            callback( {
+                cancel: false,
+                requestHeaders: details.requestHeaders
+            } );
+        }
+    });
     
     win.setMenu( null );
-
-
-
-
-
-    electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-        // add Google Data Saver requires header or the request will be rejected
-        let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
-        let ts = Math.floor( Date.now() / 1000 );
-        let hash = require( 'crypto' ).createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
-        let rd = Math.floor( 999999 * Math.random() );
-        details.requestHeaders['Chrome-Proxy'] = 'ps=' + [ ts, rd, Math.floor( 999999 * Math.random() ), Math.floor( 999999 * Math.random() ) ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
-        details.requestHeaders['X-Forwarded-For'] = '123.123.123.123';
-        console.log( 'REQ HEADERS', details.requestHeaders['Chrome-Proxy'] );
-        callback( {
-            cancel: false,
-            requestHeaders: details.requestHeaders
-        } );
-    });
-
-
-
 
     if( config.app.developer ) {
         win.webContents.openDevTools();

@@ -113,7 +113,7 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
         }
 
         /**
-         * Generate cntent of 'Chrome-Proxy' header field for use with google data saver
+         * Generate content of 'Chrome-Proxy' header field for use with google data saver
          */
         _getDataSaverHeader() {
             let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
@@ -198,6 +198,23 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
             // TODO (2018-01-18): capture the did-get-response-details event and run callback in case dom-ready event can never be reached ...
 
             win.loadURL( options.url, opts );
+        }
+
+        /**
+         * Provide headers for the electron main process that shall be modified before every BrowserWindow request is made.
+         * DO NOT RENAME THIS METHOD!
+         */
+        getRequestHeaders( details ) {
+            details = JSON.parse( details );
+            // details.url
+            details.requestHeaders['X-Forwarded-For'] = this.ipChain;
+            if( Engine.Settings.useGoogleDataSaver.value ) {
+                details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
+            }
+            // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
+            details.requestHeaders['Referer'] = details.url;
+            
+            return details;
         }
     }
 
