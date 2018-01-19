@@ -41,6 +41,28 @@ function activateWindow() {
     
     win.setMenu( null );
 
+
+
+
+
+    electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
+        // add Google Data Saver requires header or the request will be rejected
+        let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
+        let ts = Math.floor( Date.now() / 1000 );
+        let hash = require( 'crypto' ).createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
+        let rd = Math.floor( 999999 * Math.random() );
+        details.requestHeaders['Chrome-Proxy'] = 'ps=' + [ ts, rd, Math.floor( 999999 * Math.random() ), Math.floor( 999999 * Math.random() ) ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
+        details.requestHeaders['X-Forwarded-For'] = '123.123.123.123';
+        console.log( 'REQ HEADERS', details.requestHeaders['Chrome-Proxy'] );
+        callback( {
+            cancel: false,
+            requestHeaders: details.requestHeaders
+        } );
+    });
+
+
+
+
     if( config.app.developer ) {
         win.webContents.openDevTools();
     }
@@ -54,7 +76,7 @@ function activateWindow() {
      * This prevents the "Attempting to call a function in a renderer window that has been closed or released" error.
      */
     win.webContents.on( 'devtools-reload-page', () => {
-        electron.session.defaultSession.webRequest.onBeforeSendHeaders( null, null );
+        //electron.session.defaultSession.webRequest.onBeforeSendHeaders( null, null );
     });
 
     win.on( 'closed', () => {

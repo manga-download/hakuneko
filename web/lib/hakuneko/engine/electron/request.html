@@ -12,12 +12,12 @@
          */
         constructor() {
             super();
-            let electronRemote = require( 'electron' ).remote;
-            let req = electronRemote.require( 'request' );
+            this.electronRemote = require( 'electron' ).remote;
+            let req = this.electronRemote.require( 'request' );
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
-            this.agent = new electronRemote.require( 'http' ).Agent();
-            this.crypto = electronRemote.require( 'crypto' );
-            this.browser = electronRemote.BrowserWindow;
+            this.agent = new this.electronRemote.require( 'http' ).Agent();
+            this.crypto = this.electronRemote.require( 'crypto' );
+            this.browser = this.electronRemote.BrowserWindow;
             this.reconnectDelay = 250;
             this.reconnectErrors = [
                 'ETIMEDOUT',
@@ -28,22 +28,26 @@
                 //'ENOTFOUND',
                 //'EAI_AGAIN',
             ];
-
+            this.ipChain = this._randIP( 3 ).join( ',' );
+/*
+            // this will modify headers made directly by electron browser windows (not by node request module!)
             electronRemote.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-                // add Google Data Saver requires header or the request will be rejected
-                if( Engine.Settings.useGoogleDataSaver.value ) {
-                    details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
-                }
+// it cannot hurt to pretend the request already passed through some other proxy servers ...
+details.requestHeaders['X-Forwarded-For'] = this.ipChain;
                 // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
                 details.requestHeaders['Referer'] = details.url;
+// add Google Data Saver requires header or the request will be rejected
+if( Engine.Settings.useGoogleDataSaver.value ) {
+    details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
+}
                 // TODO: only use origin of url => (new URL(details.url)).origin
-                console.log( 'Chrome-Proxy', details.requestHeaders['Chrome-Proxy'] );
+                console.log( 'REQ HEADERS' );
                 callback( {
                     cancel: false,
                     requestHeaders: details.requestHeaders
                 } );
             });
-
+*/
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
@@ -52,6 +56,15 @@
          */
         onSettingsChanged( e ) {
             this.agent.maxSockets = e.detail.socketConnections.value;
+            // set google data saver for electron browser window requests (does not apply to NPM request module).
+            let proxy = {};
+            if( e.detail.useGoogleDataSaver.value ) {
+                //proxy['proxyRules'] = 'socks5://127.0.0.1:8080';
+                proxy['proxyRules'] = 'http://proxy.googlezip.net:80';
+            }
+            this.electronRemote.session.defaultSession.setProxy( proxy, () => {
+                console.log( 'PROXY:', proxy );
+            });
         }
 
         /**
@@ -78,7 +91,8 @@
         }
 
         /**
-         * Modify the request options to use any configured proxy server (e.g. Google Data Saver)
+         * Modify the request options to use any configured proxy server (e.g. Google Data Saver).
+         * Set options & headers for NPM request module (does not apply to electron browser window).
          */
         _proxify( options ) {
             if( typeof options === 'string' ) {
@@ -88,7 +102,7 @@
             }
             options['headers'] = ( options['headers'] ? options['headers'] : {} );
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
-            options['headers']['X-Forwarded-For'] = this._randIP( 3 ).join( ',' );
+            options['headers']['X-Forwarded-For'] = this.ipChain;
             // use google data saver proxy server
             if( Engine.Settings.useGoogleDataSaver.value ) {
                 //
@@ -105,7 +119,7 @@
             let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
             let ts = Math.floor( Date.now() / 1000 );
             let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
-            let rd = Math.floor( 999 * Math.random() );
+            let rd = Math.floor( 9999 * Math.random() );
             return 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
         }
 
@@ -131,7 +145,20 @@
          */
         fetchUI( options, script, callback ) {
             this._proxify( options );
-            // list of available settings: https://www.npmjs.com/package/electron-browser-window-options
+            // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
+            let opts = {
+                extraHeaders: ''
+            };
+            for( let header in options.headers ) {
+                opts.extraHeaders += header + ': ' + options.headers[header] + '\n';
+            }
+            let proxy = {};
+            if( Engine.Settings.useGoogleDataSaver.value ) {
+                //proxy['proxyRules'] = 'socks5://127.0.0.1:8080';
+                proxy['proxyRules'] = options.proxy;
+            }
+
+            // see: https://www.npmjs.com/package/electron-browser-window-options
             let win = new this.browser( {
                 width: 1280,
                 height: 720,
@@ -142,7 +169,7 @@
                     //sandbox: true
                 }
             } );
-
+            
             win.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
             win.webContents.on( 'dom-ready', ( e ) => {
                 // do not process when this is a cloudflare challenge
@@ -154,11 +181,11 @@
                         win.webContents.executeJavaScript( script )
                         .then( ( result ) => {
                             callback( null, result );
-                            //win.close();
+                            win.close();
                         } )
                         .catch( ( error ) => {
                             callback( error, undefined );
-                            //win.close();
+                            win.close();
                         } );
                     }
                 } )
@@ -167,16 +194,10 @@
                     win.close();
                 } );
             } );
+            
+            // TODO (2018-01-18): capture the did-get-response-details event and run callback in case dom-ready event can never be reached ...
 
-            if( Engine.Settings.useGoogleDataSaver.value ) {
-                //win.webContents.session.setProxy( { proxyRules: 'socks5://127.0.0.1:8080' }, () => {
-                win.webContents.session.setProxy( { proxyRules: options.proxy }, () => {
-                    console.log( options.proxy );
-                    win.loadURL( options.url );
-                });
-            } else {
-                win.loadURL( options.url );
-            }
+            win.loadURL( options.url, opts );
         }
     }
 
