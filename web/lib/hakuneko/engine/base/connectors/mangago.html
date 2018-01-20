@@ -23,6 +23,34 @@
                 url: this.url
             } );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.script = {
+                chapter: `
+                    [...document.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
+                        return {
+                            id: element.href,
+                            title: element.text,
+                            language: 'en'
+                        };
+                    } );
+                `,
+                page: `
+                    let tmpImgSrc = imgsrcs[0].split('//');
+                    tmpImgSrc[0] = 'http:';
+                    imgsrcs[0] = tmpImgSrc.join( '//' );
+                    [...document.querySelectorAll( 'ul#dropdown-menu-page li a' )].map( ( element, index ) => {
+                        return { page: element.href.trim(), image: imgsrcs[index] };
+                    } );
+                `,
+                img: `
+                    let canvasTemplate = document.createElement( 'canvas' );
+                    let canvasOriginal = document.querySelector( '#pic_container canvas' );
+                    //canvasOriginal.toBlob = canvasTemplate.toBlob;
+                    canvasOriginal.toDataURL = canvasTemplate.toDataURL;
+                    canvasOriginal.getImageData = canvasTemplate.getImageData;
+                    //canvasOriginal.toDataURL( 'image/jpeg', 0.95 );
+                    canvasOriginal.toDataURL( 'image/webp', 0.95 );
+                `
+            };
             this.config = undefined;
 
             // initialization: solve cloudflare for all known domains
@@ -35,6 +63,25 @@
                 //'http://www.mangapicgallery.com'
                 */
             ];
+
+            // register a protocol handler to intercept requests (with custom 'mangago' protocol) and decrypt images
+            Engine.Request.registerProtocol( this.id, ( request, callback ) => {
+                let uri = new URL( request.url );
+                uri.protocol = ( new URL( this.url ) ).protocol;
+                Engine.Request.fetchUI( uri.href, this.script.img, ( error, content ) => {
+                    let indexA = content.indexOf( ':' );
+                    let indexB = content.indexOf( ';', indexA );
+                    let indexC = content.indexOf( ',', indexB );
+                    let mime = content.substring( indexA+1, indexB );
+                    let encoding = content.substring( indexB+1, indexC );
+                    let data = content.substring( indexC+1 );
+                    callback( {
+                        mimeType: mime,
+                        data: Buffer.from( data, encoding ) //new Uint8Array( content ) //Buffer.from('xxxxxxxx')
+                    } );
+                });
+            } );
+
             for(let domain of domains) {
                 let options = JSON.parse( this.reqOptionsJSON );
                 options.url = domain;
@@ -60,14 +107,7 @@
         _getChapterList( manga, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += manga.id;
-            let script = `[...document.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
-                return {
-                    id: element.href,
-                    title: element.text,
-                    language: 'en'
-                };
-            } );`;
-            Engine.Request.fetchUI( options, script, ( error, content ) => {
+            Engine.Request.fetchUI( options, this.script.chapter, ( error, content ) => {
                 content.forEach( ( chapter ) => {
                     chapter.id = chapter.id.replace( this.url , '' );
                     chapter.title = chapter.title.replace( manga.title, '' ).trim();
@@ -82,13 +122,18 @@
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
-            Engine.Request.fetchUI( options , `imgsrcs;`, ( error, content ) => {
+            Engine.Request.fetchUI( options , this.script.page, ( error, content ) => {
                 // due to an encryption bug in mangago the first bytes are messed up
-                if( content && content.length > 0 ) {
-                    let parts = content[0].split('//');
-                    parts[0] = 'http:';
-                    content[0] = parts.join( '//' );
-                }
+                content = content.map( ( entry ) => {
+                    if( entry.image && entry.image.indexOf( 'cspiclink' ) < 0 ) {
+                        return entry.image; //.replace( 'mangapicgallery.com', 'rocaca.net' ).replace( 'iweb', 'img_' );
+                    } else {
+                        // use dedicated protocol handler for image decryption
+                        let uri = new URL( entry.page );
+                        uri.protocol = this.id;
+                        return uri.href;
+                    }
+                } );
                 callback( error, content );
             } );
         }
