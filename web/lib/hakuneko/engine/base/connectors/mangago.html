@@ -42,13 +42,13 @@
                     } );
                 `,
                 img: `
-                    let canvasTemplate = document.createElement( 'canvas' );
-                    let canvasOriginal = document.querySelector( '#pic_container canvas' );
-                    //canvasOriginal.toBlob = canvasTemplate.toBlob;
+                    canvasTemplate = document.createElement( 'canvas' );
+                    canvasOriginal = document.querySelector( '#pic_container canvas' );
+                    canvasOriginal.toBlob = canvasTemplate.toBlob;
                     canvasOriginal.toDataURL = canvasTemplate.toDataURL;
                     canvasOriginal.getImageData = canvasTemplate.getImageData;
-                    //canvasOriginal.toDataURL( 'image/jpeg', 0.95 );
-                    canvasOriginal.toDataURL( 'image/webp', 0.95 );
+                    //canvasOriginal.toDataURL( 'image/jpeg', 0.90 );
+                    canvasOriginal.toDataURL( 'image/webp', 0.90 );
                 `
             };
             this.config = undefined;

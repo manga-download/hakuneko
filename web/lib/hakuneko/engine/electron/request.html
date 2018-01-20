@@ -170,8 +170,8 @@
          *
          */
         fetchUI( options, script, callback ) {
-
-            console.log( 'BUSY:', this.browserWindows.filter( ( b ) => { return b.busy; } ).length );
+            //
+            //console.log( 'BUSY:', this.browserWindows.filter( ( b ) => { return b.busy; } ).length );
             let browsers = this.browserWindows.filter( ( b ) => {
                 return !b.busy;
             } );
@@ -179,7 +179,7 @@
                 // retry in 1~5 seconds
                 setTimeout( () => {
                     this.fetchUI( options, script, callback );
-                }, Math.floor( 4000 * Math.random() ) + 1000  );
+                }, Math.floor( 4000 * Math.random() + 1000 )  );
                 return;
             }
             let browser = browsers[0];
@@ -187,30 +187,21 @@
             let win = browser.window;
 
             options = this._proxify( options );
-            // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
-            let opts = {};
-            let proxy = {};
-            if( Engine.Settings.useGoogleDataSaver.value ) {
-                //proxy['proxyRules'] = 'socks5://127.0.0.1:8080';
-                proxy['proxyRules'] = options.proxy;
-            }
             
-            win.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
+            browser.window.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
 
             let cleanup = () => {
-                if( win && win.webContents ) {
-                    win.webContents.removeAllListeners( 'did-fail-load' );
-                    win.webContents.removeAllListeners( 'dom-ready' );
+                if( win && browser.window.webContents ) {
+                    browser.window.webContents.removeAllListeners( 'dom-ready' );
                 }
             };
 
-            win.webContents.on( 'dom-ready', ( evt ) => {
-                console.log( 'dom-ready', evt );
+            browser.window.webContents.on( 'dom-ready', ( evt ) => {
                 // do not process when this is a cloudflare challenge
-                win.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )
+                browser.window.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )
                 .then( ( result ) => {
                     if( result == null ) {
-                        win.webContents.executeJavaScript( script )
+                        browser.window.webContents.executeJavaScript( script )
                         .then( ( result ) => {
                             cleanup();
                             callback( null, result );
@@ -230,7 +221,9 @@
                 } );
             } );
 
-            win.loadURL( options.url, opts );
+            // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
+            let opts = {};
+            browser.window.loadURL( options.url, opts );
         }
 
         /**
@@ -238,6 +231,7 @@
          * DO NOT RENAME THIS METHOD!
          */
         getRequestHeaders( details ) {
+            
             details = JSON.parse( details );
             let uri = new URL( details.url );
             // details.url
@@ -250,7 +244,8 @@
             // BUT: some other connectors like mangago require to keep the original referer
             //details.requestHeaders['Referer'] = details.url;
             if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
-                details.requestHeaders['Referer'] = 'http://www.mnggo.net';
+                uri.hostname = 'www.mnggo.net';
+                details.requestHeaders['Referer'] = uri.href;
             }
 
             return details;
