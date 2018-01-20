@@ -200,6 +200,7 @@
          */
         getRequestHeaders( details ) {
             details = JSON.parse( details );
+            let uri = new URL( details.url );
             // details.url
             details.requestHeaders['X-Forwarded-For'] = this.ipChain;
             if( Engine.Settings.useGoogleDataSaver.value ) {
@@ -209,6 +210,9 @@
             // => overwrite the referer for each request directly made through the electron browser
             // BUT: some other connectors like mangago require to keep the original referer
             //details.requestHeaders['Referer'] = details.url;
+            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
+                details.requestHeaders['Referer'] = 'http://www.mnggo.net';
+            }
 
             return details;
         }
