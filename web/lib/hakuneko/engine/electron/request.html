@@ -30,7 +30,41 @@
                 //'EAI_AGAIN',
             ];
             this.ipChain = this._randIP( 3 ).join( ',' );
-            this.browserWindowCount = 0;
+            let browserOptions = {
+                width: 1280,
+                height: 720,
+                show: false,
+                frame: false,
+                webPreferences: {
+                    nodeIntegration: true,
+                    webSecurity: false,
+                    //sandbox: true
+                }
+            };
+            this.browserWindows = [];
+            for( let i=0; i<5; i++ ) {
+                let browser = {
+                    // see: https://github.com/electron/electron/blob/master/docs/api/browser-window.md
+                    window: new this.browser( browserOptions ),
+                    busy: false
+                };
+                // block pupups
+                browser.window.webContents.on( 'new-window', ( evt ) => {
+                    evt.preventDefault();
+                } );
+                // create new window if the current one is destroyed for some reason ...
+                // =>problems when closing hakuneko main application, remove close event from all existing windows and then close them
+                /*
+                let listener = () => {
+                    console.warn( 'WINDOW DESTROYED' );
+                    browser.window = new this.browser( browserOptions );
+                    browser.window.once( 'closed', listener );
+                    browser.busy = false;
+                };
+                browser.window.once( 'closed', listener );
+                */
+                this.browserWindows.push( browser );
+            }
 
             //
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
@@ -136,13 +170,22 @@
          *
          */
         fetchUI( options, script, callback ) {
-            if( this.browserWindowCount > 5 ) {
+
+            console.log( 'BUSY:', this.browserWindows.filter( ( b ) => { return b.busy; } ).length );
+            let browsers = this.browserWindows.filter( ( b ) => {
+                return !b.busy;
+            } );
+            if( browsers.length === 0 ) {
+                // retry in 1~5 seconds
                 setTimeout( () => {
                     this.fetchUI( options, script, callback );
-                }, this.browserWindowCount * 250 );
+                }, Math.floor( 4000 * Math.random() ) + 1000  );
                 return;
             }
-            this.browserWindowCount++;
+            let browser = browsers[0];
+            browser.busy = true;
+            let win = browser.window;
+
             options = this._proxify( options );
             // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
             let opts = {};
@@ -151,43 +194,39 @@
                 //proxy['proxyRules'] = 'socks5://127.0.0.1:8080';
                 proxy['proxyRules'] = options.proxy;
             }
-
-            // see: https://www.npmjs.com/package/electron-browser-window-options
-            let win = new this.browser( {
-                width: 1280,
-                height: 720,
-                show: false,
-                webPreferences: {
-                    nodeIntegration: true,
-                    webSecurity: false,
-                    //sandbox: true
-                }
-            } );
             
             win.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
-            win.on( 'closed', () => {
-                this.browserWindowCount--;
-                console.log( 'CLOSED', this.browserWindowCount );
-            } );
-            win.webContents.on( 'dom-ready', ( e ) => {
+
+            let cleanup = () => {
+                if( win && win.webContents ) {
+                    win.webContents.removeAllListeners( 'did-fail-load' );
+                    win.webContents.removeAllListeners( 'dom-ready' );
+                }
+            };
+
+            win.webContents.on( 'dom-ready', ( evt ) => {
+                console.log( 'dom-ready', evt );
                 // do not process when this is a cloudflare challenge
                 win.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )
                 .then( ( result ) => {
                     if( result == null ) {
                         win.webContents.executeJavaScript( script )
                         .then( ( result ) => {
+                            cleanup();
                             callback( null, result );
-                            win.close();
+                            browser.busy = false;
                         } )
                         .catch( ( error ) => {
+                            cleanup();
                             callback( error, undefined );
-                            win.close();
+                            browser.busy = false;
                         } );
                     }
                 } )
                 .catch( ( error ) => {
+                    cleanup();
                     callback( error, undefined );
-                    win.close();
+                    browser.busy = false;
                 } );
             } );
 

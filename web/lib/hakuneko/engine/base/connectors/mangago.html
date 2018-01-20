@@ -77,7 +77,7 @@
                     let data = content.substring( indexC+1 );
                     callback( {
                         mimeType: mime,
-                        data: Buffer.from( data, encoding ) //new Uint8Array( content ) //Buffer.from('xxxxxxxx')
+                        data: Buffer.from( data, encoding )
                     } );
                 });
             } );
