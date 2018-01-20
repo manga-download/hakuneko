@@ -13,6 +13,7 @@
         constructor() {
             super();
             this.electronRemote = require( 'electron' ).remote;
+            this.protocol = this.electronRemote.require( 'electron' ).protocol;
             let req = this.electronRemote.require( 'request' );
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
             this.agent = new this.electronRemote.require( 'http' ).Agent();
@@ -29,25 +30,9 @@
                 //'EAI_AGAIN',
             ];
             this.ipChain = this._randIP( 3 ).join( ',' );
-/*
-            // this will modify headers made directly by electron browser windows (not by node request module!)
-            electronRemote.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-// it cannot hurt to pretend the request already passed through some other proxy servers ...
-details.requestHeaders['X-Forwarded-For'] = this.ipChain;
-                // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
-                details.requestHeaders['Referer'] = details.url;
-// add Google Data Saver requires header or the request will be rejected
-if( Engine.Settings.useGoogleDataSaver.value ) {
-    details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
-}
-                // TODO: only use origin of url => (new URL(details.url)).origin
-                console.log( 'REQ HEADERS' );
-                callback( {
-                    cancel: false,
-                    requestHeaders: details.requestHeaders
-                } );
-            });
-*/
+            this.browserWindowCount = 0;
+
+            //
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
@@ -59,19 +44,25 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
             // set google data saver for electron browser window requests (does not apply to NPM request module).
             let proxy = {};
             if( e.detail.useGoogleDataSaver.value ) {
-                //proxy['proxyRules'] = 'socks5://127.0.0.1:8080';
-                proxy['proxyRules'] = 'http://proxy.googlezip.net:80';
+                proxy['proxyRules'] = 'http://proxy.googlezip.net:80'; // 'socks5://127.0.0.1:8080';
             }
             this.electronRemote.session.defaultSession.setProxy( proxy, () => {
-                console.log( 'PROXY:', proxy );
+                //console.log( 'SET PROXY:', proxy );
             });
+        }
+
+        /**
+         *
+         */
+        registerProtocol( protocol, callback ) {
+            this.protocol.registerBufferProtocol( protocol, callback );
         }
 
         /**
          * Electron specific implementation of the fetch method to make HTTP requests.
          */
         fetch( options, callback, retries ) {
-            this._proxify( options );
+            options = this._proxify( options );
             retries = ( retries != undefined ? retries : 3 );
             if( retries < 0 ) {
                 callback( new Error( 'The url "' + ( options.url ? options.url : options ) + '" could not be reached' ), undefined, undefined );
@@ -110,6 +101,7 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
                 options['headers']['Chrome-Proxy'] = this._getDataSaverHeader();
                 options['gzip'] = true;
             }
+            return options;
         }
 
         /**
@@ -144,14 +136,16 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
          *
          */
         fetchUI( options, script, callback ) {
-            this._proxify( options );
-            // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
-            let opts = {
-                extraHeaders: ''
-            };
-            for( let header in options.headers ) {
-                opts.extraHeaders += header + ': ' + options.headers[header] + '\n';
+            if( this.browserWindowCount > 5 ) {
+                setTimeout( () => {
+                    this.fetchUI( options, script, callback );
+                }, this.browserWindowCount * 250 );
+                return;
             }
+            this.browserWindowCount++;
+            options = this._proxify( options );
+            // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
+            let opts = {};
             let proxy = {};
             if( Engine.Settings.useGoogleDataSaver.value ) {
                 //proxy['proxyRules'] = 'socks5://127.0.0.1:8080';
@@ -165,19 +159,21 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
                 show: false,
                 webPreferences: {
                     nodeIntegration: true,
-                    webSecurity: true,
+                    webSecurity: false,
                     //sandbox: true
                 }
             } );
             
             win.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
+            win.on( 'closed', () => {
+                this.browserWindowCount--;
+                console.log( 'CLOSED', this.browserWindowCount );
+            } );
             win.webContents.on( 'dom-ready', ( e ) => {
                 // do not process when this is a cloudflare challenge
                 win.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )
                 .then( ( result ) => {
                     if( result == null ) {
-                        //console.log( win.webContents.session.cookies );
-                        // win.webContents.session.cookies.remove(url, name, callback)
                         win.webContents.executeJavaScript( script )
                         .then( ( result ) => {
                             callback( null, result );
@@ -194,8 +190,6 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
                     win.close();
                 } );
             } );
-            
-            // TODO (2018-01-18): capture the did-get-response-details event and run callback in case dom-ready event can never be reached ...
 
             win.loadURL( options.url, opts );
         }
@@ -211,9 +205,11 @@ if( Engine.Settings.useGoogleDataSaver.value ) {
             if( Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
-            // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images => overwrite the referer for each request directly made through the electron browser
-            details.requestHeaders['Referer'] = details.url;
-            
+            // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images (ticket #2, commit [758df9])
+            // => overwrite the referer for each request directly made through the electron browser
+            // BUT: some other connectors like mangago require to keep the original referer
+            //details.requestHeaders['Referer'] = details.url;
+
             return details;
         }
     }
