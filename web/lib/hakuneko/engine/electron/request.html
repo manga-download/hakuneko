@@ -18,7 +18,7 @@
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
             this.agent = new this.electronRemote.require( 'http' ).Agent();
             this.crypto = this.electronRemote.require( 'crypto' );
-            this.browser = this.electronRemote.BrowserWindow;
+            //this.browser = this.electronRemote.BrowserWindow;
             this.reconnectDelay = 250;
             this.reconnectErrors = [
                 'ETIMEDOUT',
@@ -30,6 +30,8 @@
                 //'EAI_AGAIN',
             ];
             this.ipChain = this._randIP( 3 ).join( ',' );
+            this.protocolTable = [];
+            /*
             let browserOptions = {
                 width: 1280,
                 height: 720,
@@ -54,18 +56,18 @@
                 } );
                 // create new window if the current one is destroyed for some reason ...
                 // =>problems when closing hakuneko main application, remove close event from all existing windows and then close them
-                /*
-                let listener = () => {
-                    console.warn( 'WINDOW DESTROYED' );
-                    browser.window = new this.browser( browserOptions );
-                    browser.window.once( 'closed', listener );
-                    browser.busy = false;
-                };
-                browser.window.once( 'closed', listener );
-                */
+                
+                //let listener = () => {
+                //    console.warn( 'WINDOW DESTROYED' );
+                //    browser.window = new this.browser( browserOptions );
+                //    browser.window.once( 'closed', listener );
+                //    browser.busy = false;
+                //};
+                //browser.window.once( 'closed', listener );
+                
                 this.browserWindows.push( browser );
             }
-
+            */
             //
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
@@ -88,15 +90,55 @@
         /**
          *
          */
-        registerProtocol( protocol, callback ) {
-            this.protocol.registerBufferProtocol( protocol, callback );
+        registerProtocol( scheme, callback ) {
+            this.protocolTable[scheme + ':'] = callback;
+            // register callback for electron process (when callback becomes unavailable by e.g. by reloading page, the previous registered handler must be removed)
+            this.protocol.isProtocolHandled( scheme, ( error ) => {
+                if( error ) {
+                    this.protocol.unregisterProtocol( scheme, ( e ) => {
+                        this.protocol.registerBufferProtocol( scheme, callback );
+                    } );
+                } else {
+                    this.protocol.registerBufferProtocol( scheme, callback );
+                }
+            } );
+        }
+
+        /**
+         * Since the request module does not support custom protocol handler we need to track and take care of them ourselves
+         */
+        _handleProtocol( options, callback ) {
+            let protocol = ( new URL( options.url ) ).protocol;
+            if( !this.protocolTable[protocol] ) {
+                return false;
+            }
+            let request = {
+                url: options.url, //url String
+                referrer: options.url, //referrer String
+                //method: '', //method String
+                //uploadData: [], //uploadData UploadData[]
+            }
+            this.protocolTable[protocol]( request, ( data ) => {
+                let error = null;
+                let response = {
+                    statusCode: 200,
+                    headers: {
+                        'Content-Type': data.mimeType
+                    }
+                };
+                callback( error, response, data.data );
+            });
+            return true;
         }
 
         /**
          * Electron specific implementation of the fetch method to make HTTP requests.
          */
         fetch( options, callback, retries ) {
-            options = this._proxify( options );
+            options = this._prepareHeaders( options );
+            if( this._handleProtocol( options, callback ) ) {
+                return;
+            }
             retries = ( retries != undefined ? retries : 3 );
             if( retries < 0 ) {
                 callback( new Error( 'The url "' + ( options.url ? options.url : options ) + '" could not be reached' ), undefined, undefined );
@@ -113,29 +155,6 @@
                     callback( error, response, content );
                 }
             } );
-        }
-
-        /**
-         * Modify the request options to use any configured proxy server (e.g. Google Data Saver).
-         * Set options & headers for NPM request module (does not apply to electron browser window).
-         */
-        _proxify( options ) {
-            if( typeof options === 'string' ) {
-                options = {
-                    url: options
-                };
-            }
-            options['headers'] = ( options['headers'] ? options['headers'] : {} );
-            // it cannot hurt to pretend the request already passed through some other proxy servers ...
-            options['headers']['X-Forwarded-For'] = this.ipChain;
-            // use google data saver proxy server
-            if( Engine.Settings.useGoogleDataSaver.value ) {
-                //
-                options['proxy'] = 'http://proxy.googlezip.net:80';
-                options['headers']['Chrome-Proxy'] = this._getDataSaverHeader();
-                options['gzip'] = true;
-            }
-            return options;
         }
 
         /**
@@ -169,6 +188,7 @@
         /**
          *
          */
+        /*
         fetchUI( options, script, callback ) {
             //
             //console.log( 'BUSY:', this.browserWindows.filter( ( b ) => { return b.busy; } ).length );
@@ -186,44 +206,91 @@
             browser.busy = true;
             let win = browser.window;
 
-            options = this._proxify( options );
+            options = this._prepareHeaders( options );
             
             browser.window.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
 
-            let cleanup = () => {
-                if( win && browser.window.webContents ) {
-                    browser.window.webContents.removeAllListeners( 'dom-ready' );
-                }
-            };
+            browser.window.webContents.on( 'crashed', ( e ) => {
+                console.warn( 'crashed', browser.window.getURL(), e );
+            } );
+            browser.window.webContents.on( 'did-fail-load', ( e, ec, ed ) => {
+                console.warn( 'did-fail-load', browser.window.getURL(), e, ec, ed );
+            } );
 
             browser.window.webContents.on( 'dom-ready', ( evt ) => {
-                // do not process when this is a cloudflare challenge
-                browser.window.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' );` )
-                .then( ( result ) => {
-                    if( result == null ) {
+console.warn( 'dom-ready BUSY ENGINES:', this.browserWindows.filter( ( b ) => { return b.busy; } ).length );
+                let timeout = setTimeout( () => {
+                    console.log( 'TIMEOUT: executeJavaScript', browser.window.getURL(), browser.busy );
+                    browser.window.webContents.removeAllListeners( 'dom-ready' );
+                    callback( new Error( 'TIMEOUT: executeJavaScript' ), undefined );
+                    browser.busy = false;
+                }, 25000 );
+                // do not process when this is a cloudflare challenge and wait for next call of dom-ready (after redirect)
+                browser.window.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' ) === null;` )
+                .then( ( resultOuter ) => {
+                    console.log( 'THEN [OUTER] executeJavaScript', resultOuter );
+                    if( resultOuter ) {
                         browser.window.webContents.executeJavaScript( script )
-                        .then( ( result ) => {
-                            cleanup();
-                            callback( null, result );
+                        .then( ( resultInner ) => {
+                            clearTimeout( timeout );
+                            console.log( 'THEN [INNER] executeJavaScript', ( resultInner ? resultInner.length : resultInner ) );
+                            browser.window.webContents.removeAllListeners( 'dom-ready' );
                             browser.busy = false;
+                            callback( null, resultInner );
                         } )
                         .catch( ( error ) => {
-                            cleanup();
-                            callback( error, undefined );
+                            clearTimeout( timeout );
+                            console.log( 'CATCH [INNER] executeJavaScript', error );
+                            browser.window.webContents.removeAllListeners( 'dom-ready' );
                             browser.busy = false;
+                            callback( error, undefined );
                         } );
+                    } else {
+                        console.log( 'CLOUDFLARE...' );
+                        browser.window.show();
                     }
                 } )
                 .catch( ( error ) => {
-                    cleanup();
-                    callback( error, undefined );
+                    clearTimeout( timeout );
+                    console.log( 'CATCH [OUTER] executeJavaScript', error );
+                    browser.window.webContents.removeAllListeners( 'dom-ready' );
                     browser.busy = false;
+                    callback( error, undefined );
                 } );
             } );
-
             // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
             let opts = {};
             browser.window.loadURL( options.url, opts );
+        }
+        */
+
+        /**
+         * Modify the request options to use any configured proxy server (e.g. Google Data Saver).
+         * Set options & headers for NPM request module (does not apply to electron browser window).
+         */
+        _prepareHeaders( options ) {
+            if( typeof options === 'string' ) {
+                options = {
+                    url: options
+                };
+            }
+            let uri = new URL( options.url );
+            options['headers'] = ( options['headers'] ? options['headers'] : {} );
+            // it cannot hurt to pretend the request already passed through some other proxy servers ...
+            options['headers']['X-Forwarded-For'] = this.ipChain;
+            // use google data saver proxy server
+            if( Engine.Settings.useGoogleDataSaver.value ) {
+                //
+                options['proxy'] = 'http://proxy.googlezip.net:80';
+                options['headers']['Chrome-Proxy'] = this._getDataSaverHeader();
+                options['gzip'] = true;
+            }
+            // connector specific headers ...
+            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
+                uri.hostname = 'www.mnggo.net';
+                options['headers']['Referer'] = uri.href;
+            }
+            return options;
         }
 
         /**
@@ -231,7 +298,6 @@
          * DO NOT RENAME THIS METHOD!
          */
         getRequestHeaders( details ) {
-            
             details = JSON.parse( details );
             let uri = new URL( details.url );
             // details.url
