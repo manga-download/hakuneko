@@ -34,7 +34,7 @@
             Engine.Request.cloudflare( this.url + '/Scripts/ca.js', ( error, response, content ) => {
                 if( response.statusCode === 200 ) {
                     let script = content + ';';
-                    Engine.Request.cloudflare( this.url + '/Scripts/lo.js', ( error, response, content, status ) => {
+                    Engine.Request.cloudflare( this.url + '/Scripts/lo.js', ( error, response, content ) => {
                         if( response.statusCode === 200 ) {
                             script += content + ';';
                             this.sandbox.postMessage( { id: 1, content: script, return: [] } );
