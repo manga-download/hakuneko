@@ -191,6 +191,8 @@
             if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
                 uri.hostname = 'www.mnggo.net';
                 details.requestHeaders['Referer'] = uri.href;
+            } else {
+                details.requestHeaders['Referer'] = details.url;
             }
 
             return details;

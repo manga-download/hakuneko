@@ -22,7 +22,9 @@
                     callback( error, response, content );
                     return;
                 }
-                //content = content.toString( 'utf8' );
+                if( typeof content !== 'string' ) {
+                    content = content.toString( 'utf8' );
+                }
                 // solve challenge
                 setTimeout( () => {
                     let challenge = content.match( /getElementById\('cf-content'\)[\s\S]+?setTimeout.+?\r?\n([\s\S]+?a\.value =.+?)\r?\n/i )[1];
