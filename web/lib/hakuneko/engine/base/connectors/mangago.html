@@ -61,6 +61,10 @@
                     },
                     encoding: null
                 }
+                if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
+                    uri.hostname = 'www.mnggo.net';
+                    opts['headers']['Referer'] = uri.href;
+                }
                 Engine.Request.cloudflare( opts, ( error, response, content ) => {
                     if( !error ) {
                         let desKey = this.desKeys.find( ( key ) => {
