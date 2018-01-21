@@ -16,9 +16,11 @@
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             let req = this.electronRemote.require( 'request' );
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
-            this.agent = new this.electronRemote.require( 'http' ).Agent();
+            this.agentHTTP = this.electronRemote.require( 'http' ).globalAgent;
+            this.agentHTTPS = this.electronRemote.require( 'https' ).globalAgent;
+            //this.agent = new this.electronRemote.require( 'http' ).Agent();
             this.crypto = this.electronRemote.require( 'crypto' );
-            this.reconnectDelay = 250;
+            this.reconnectDelay = 1000; // average value ± 50% random distribution
             this.reconnectErrors = [
                 'ETIMEDOUT',
                 'ESOCKETTIMEDOUT',
@@ -39,7 +41,8 @@
          *
          */
         onSettingsChanged( e ) {
-            this.agent.maxSockets = e.detail.socketConnections.value;
+            this.agentHTTP.maxSockets = e.detail.socketConnections.value;
+            this.agentHTTPS.maxSockets = e.detail.socketConnections.value;
             // set google data saver for electron browser window requests (does not apply to NPM request module).
             let proxy = {};
             if( e.detail.useGoogleDataSaver.value ) {
@@ -102,18 +105,16 @@
             if( this._handleProtocol( options, callback ) ) {
                 return;
             }
-            retries = ( retries != undefined ? retries : 3 );
+            retries = ( retries !== undefined ? retries : 3 );
             if( retries < 0 ) {
                 callback( new Error( 'The url "' + ( options.url ? options.url : options ) + '" could not be reached' ), undefined, undefined );
                 return;
             }
             this.request( options, ( error, response, content ) => {
-                //
                 if( error && this.reconnectErrors.indexOf( error.code ) > -1 ) {
                     setTimeout( () => {
-                        //console.warn( 'RETRY:', error.code, options );
                         this.fetch( options, callback, retries-1 );
-                    }, this.reconnectDelay  );
+                    }, 0.5 * ( Math.random() * this.reconnectDelay + this.reconnectDelay ) );
                 } else {
                     callback( error, response, content );
                 }
