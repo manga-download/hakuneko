@@ -80,6 +80,8 @@ function activateWindow() {
      * This prevents the "Attempting to call a function in a renderer window that has been closed or released" error.
      */
     win.webContents.on( 'devtools-reload-page', () => {
+        // no longer required to clear the event, because callback from renderer is no longer linked directly,
+        // it is now called by injecting javascript name)
         //electron.session.defaultSession.webRequest.onBeforeSendHeaders( null, null );
     });
 
