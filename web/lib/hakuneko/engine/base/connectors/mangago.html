@@ -23,34 +23,20 @@
                 url: this.url
             } );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.script = {
-                chapter: `
-                    [...document.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
-                        return {
-                            id: element.href,
-                            title: element.text,
-                            language: 'en'
-                        };
-                    } );
-                `,
-                page: `
-                    let tmpImgSrc = imgsrcs[0].split('//');
-                    tmpImgSrc[0] = 'http:';
-                    imgsrcs[0] = tmpImgSrc.join( '//' );
-                    [...document.querySelectorAll( 'ul#dropdown-menu-page li a' )].map( ( element, index ) => {
-                        return { page: element.href.trim(), image: imgsrcs[index] };
-                    } );
-                `,
-                img: `
-                    canvasTemplate = document.createElement( 'canvas' );
-                    canvasOriginal = document.querySelector( '#pic_container canvas' );
-                    canvasOriginal.toBlob = canvasTemplate.toBlob;
-                    canvasOriginal.toDataURL = canvasTemplate.toDataURL;
-                    canvasOriginal.getImageData = canvasTemplate.getImageData;
-                    //canvasOriginal.toDataURL( 'image/jpeg', 0.90 );
-                    canvasOriginal.toDataURL( 'image/webp', 0.90 );
-                `
-            };
+            this.sandbox        = new Worker( '/js/sandbox.js' );
+            this.desKeys        = [
+                //{ id: 'default',                          pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
+                { id: '60a2b0ed56cd458c4633d04b1b76b7e9', pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
+                { id: '400df5e8817565e28b2e141c533ed7db', pattern: '61a74a10a45a3a37a72a22a57a39a25a56a52a29a70a60a67a41a63a55a27a28a43a18a5a9a8a40a17a48a44a79a38a47a32a73a4a6a13a34a33a49a2a42a50a76a54a36a35a14a58a7a69a46a16a30a21a11aa51a53a77a26a31a1a19a20a80a24a62a68a59a66a75a12a64a78a71a15a65a23' },
+                { id: '84ba0d8098f405b14f4dbbcc04c93bac', pattern: '61a26a35a16a55a10a72a37a2a60a66a65a33a44a7a28a70a62a32a56a30a40a58a15a74a47aa36a78a75a11a6a77a67a39a23a9a31a64a59a13a24a80a14a38a45a21a63a19a51a17a34a50a46a5a29a73a8a57a69a48a68a49a71a41a12a52a18a79a76a54a42a22a4a1a3a53a20a25a43a27' },
+                { id: '56665708741979f716e5bd64bf733c33', pattern: '23a7a41a48a57a27a69a36a76a62a40a75a26a2a51a6a10a65a43a24a1aa20a71a28a30a13a38a79a78a72a14a49a55a56a58a25a70a12a80a3a66a11a39a42a17a15a54a45a34a74a31a8a61a46a73a63a22a64a19a77a50a9a59a37a68a52a18a32a16a33a60a67a21a44a53a5a35a4a29a47' },
+                { id: 'a67e15ed870fe4aab0a502478a5c720f', pattern: '8a12a59a52a24a13a37a21a55a56a41a71a65a43a40a66a11a79a67a44a33a20a72a2a31a42a29a34a58a60a27a48a28a15a35a51a76a80a0a63a69a53a39a46a64a50a75a1a57a9a62a74a18a16a73a14a17a6a19a61a23a38a10a3a32a26a36a54a4a30a45a47a70a22a7a68a49a77a5a25a78' },
+                { id: 'b6a2f75185754b691e4dfe50f84db57c', pattern: '47a63a76a58a37a4a56a21a1a48a62a2a36a44a34a42a23a9a60a72a11a74a70a20a77a16a15a35a69a0a55a46a24a6a32a75a68a43a41a78a31a71a52a33a67a25a80a30a5a28a40a65a39a14a29a64a3a53a49a59a12a66a38a27a79a45a18a22a8a61a50a17a51a10a26a13a57a19a7a54a73' },
+                { id: 'db99689c5a26a09d126c7089aedc0d86', pattern: '57a31a46a61a55a41a26a2a39a24a75a4a45a13a23a51a15a8a64a37a72a34a12a3a79a42a80a17a62a49a19a77a48a68a78a65a14a10a29a16a20a76a38a36a54a30a53a40a33a21a44a22a32a5a1a7a70a67a58a0a71a74a43a66a6a63a35a56a73a9a27a25a59a47a52a11a50a18a28a60a69' },
+                { id: '37abcb7424ce8df47ccb1d2dd9144b49', pattern: '67a45a39a72a35a38a61a11a51a60a13a22a31a25a75a30a74a43a69a50a6a26a16a49a77a68a59a64a17a56a18a1a10a54a44a62a53a80a5a23a48a32a29a79a24a70a28a58a71a3a52a42a55a9a14a36a73a34a2a27a57a0a21a41a33a37a76a8a40a65a7a20a12a19a47a4a78a15a63a66a46' },
+                { id: '874b83ba76a7e783d13abc2dabc08d76', pattern: '26a59a42a43a4a20a61a28a12a64a37a52a2a77a34a13a46a74a70a0a44a29a73a66a55a38a69a67a62a9a63a6a54a79a21a33a8a58a40a47a71a49a22a50a57a78a56a25a17a15a36a16a48a32a5a10a14a80a24a72a76a45a3a53a23a41a60a11a65a19a27a51a68a35a31a1a75a39a30a7a18' },
+                { id: 'd320d2647d70c068b89853e1a269c609', pattern: '77a38a53a40a16a3a20a18a63a9a24a64a50a61a45a59a27a37a8a34a11a55a79a13a47a68a12a22a46a33a1a69a52a54a31a23a62a43a0a2a35a28a57a36a51a78a70a5a32a75a41a30a4a80a19a21a42a71a49a10a56a74a17a7a25a6a14a73a29a44a48a39a60a58a15a66a67a72a65a76a26' },
+            ];
             this.config = undefined;
 
             // initialization: solve cloudflare for all known domains
@@ -60,7 +46,7 @@
                 'http://www.mnggo.net/c/1/1/1',
                 'http://www.fashionlib.net/c/1/1/1',
                 'http://www.lady-first.me/c/1/1/1',
-                //'http://www.mangapicgallery.com'
+                'http://www.mangapicgallery.com'
                 */
             ];
 
@@ -68,24 +54,40 @@
             Engine.Request.registerProtocol( this.id, ( request, callback ) => {
                 let uri = new URL( request.url );
                 uri.protocol = ( new URL( this.url ) ).protocol;
-                Engine.Request.fetchUI( uri.href, this.script.img, ( error, content ) => {
-                    let indexA = content.indexOf( ':' );
-                    let indexB = content.indexOf( ';', indexA );
-                    let indexC = content.indexOf( ',', indexB );
-                    let mime = content.substring( indexA+1, indexB );
-                    let encoding = content.substring( indexB+1, indexC );
-                    let data = content.substring( indexC+1 );
-                    callback( {
-                        mimeType: mime,
-                        data: Buffer.from( data, encoding )
-                    } );
-                });
+                let opts = {
+                    url: uri.href,
+                    headers: {
+                        'Referer': this.url
+                    },
+                    encoding: null
+                }
+                Engine.Request.cloudflare( opts, ( error, response, content ) => {
+                    if( !error ) {
+                        let desKey = this.desKeys.find( ( key ) => {
+                            return ( uri.pathname.indexOf( key.id ) > -1 );
+                        } ) || this.desKeys[0];
+                        let blob = new Blob( [content], { type: response.headers['content-type'] } );
+                        this._descrambleImage( blob, desKey.pattern, 'image/webp', 0.90, ( data ) => {
+                            var fs = new FileReader();
+                            fs.onload = ( e ) => {
+                                callback( {
+                                    mimeType: data.type,
+                                    data: new Uint8Array( e.target.result )
+                                } );
+                            };
+                            fs.readAsArrayBuffer( data );
+                        } );
+                    } else {
+                        callback( undefined );
+                    }
+                } );
             } );
 
+            // process acloudflare challenge for all domains during initialization phase
             for(let domain of domains) {
                 let options = JSON.parse( this.reqOptionsJSON );
                 options.url = domain;
-                Engine.Request.fetchUI( options, '', ( error, content ) => {
+                Engine.Request.cloudflare( options, ( error, content ) => {
                     domains.pop();
                     this.initialized = ( domains.length < 1 );
                 } );
@@ -107,12 +109,23 @@
         _getChapterList( manga, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += manga.id;
-            Engine.Request.fetchUI( options, this.script.chapter, ( error, content ) => {
-                content.forEach( ( chapter ) => {
-                    chapter.id = chapter.id.replace( this.url , '' );
-                    chapter.title = chapter.title.replace( manga.title, '' ).trim();
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
+                let dom = document.createElement( 'html' );
+                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                dom.innerHTML = content;
+                let chapters = [...dom.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
+                    this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'en'
+                    };
                 } );
-                callback( error, content );
+                callback( error, chapters );
             } );
         }
 
@@ -122,19 +135,106 @@
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
-            Engine.Request.fetchUI( options , this.script.page, ( error, content ) => {
-                // due to an encryption bug in mangago the first bytes are messed up
-                content = content.map( ( entry ) => {
-                    if( entry.image && entry.image.indexOf( 'cspiclink' ) < 0 ) {
-                        return entry.image; //.replace( 'mangapicgallery.com', 'rocaca.net' ).replace( 'iweb', 'img_' );
-                    } else {
-                        // use dedicated protocol handler for image decryption
-                        let uri = new URL( entry.page );
-                        uri.protocol = this.id;
-                        return uri.href;
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                let pages = [];
+                if( error ) {
+                    callback( error, pages );
+                    return;
+                }
+                let imgsrcs = content.match( /imgsrcs\s*=\s*'(.*?)';/ );
+                let script = content.match( /src="(.*\/chapter.js\?[\d]+)"/ );
+                if( !imgsrcs || !script || imgsrcs.length < 2 || script.length < 2 ) {
+                    callback( new Error( 'Link encryption not found!' ), pages );
+                }
+                imgsrcs = imgsrcs[1];
+                options.url = script[1];
+                Engine.Request.cloudflare( options, ( errorScript, responseScript, code ) => {
+                    if( errorScript ) {
+                        callback( errorScript, pages );
+                        return;
                     }
+
+                    if( code.indexOf( 'window["\\x65\\x76\\x61\\x6c"](' ) !== 0 ) {
+                        callback( new Error( 'Failed to detect script obfuscation!' ), pages );
+                        return;
+                    }
+
+                    code = code.replace( /window\["\\x65\\x76\\x61\\x6c"\]/g, 'var rawCode = ' );
+                    code = code.replace( /window\["\\x70\\x61\\x72\\x73\\x65\\x49\\x6e\\x74"\]/g, 'parseInt' );
+                    code = code.replace( /window\["\\x53\\x74\\x72\\x69\\x6e\\x67"\]/g, 'String' );
+                    code = code.replace( /window\["\\x52\\x65\\x67\\x45\\x78\\x70"\]/g, 'RegExp' );
+
+                    let messageID = Math.random();
+                    let eventListener = ( e ) => {
+                        if( e.data.id === messageID ) {
+                            this.sandbox.removeEventListener( 'message', eventListener );
+                            code = e.data.content[ 'rawCode' ];
+                            let rgx = /"(@[\d]+?!)"/g;
+                            let key = rgx.exec( code );
+                            let iv = rgx.exec( code );
+                            if( !key || !iv || key.length < 2 || iv.length < 2 ) {
+                                callback( new Error( 'Failed to detect decryption parameters!' ), pages );
+                                return;
+                            }
+                            imgsrcs = CryptoJS.AES.decrypt( imgsrcs, CryptoJS.enc.Utf8.parse( CryptoJS.MD5( key[1] ) ), {
+                                iv: CryptoJS.enc.Utf8.parse( iv[1] ),
+                                padding: CryptoJS.pad.ZeroPadding
+                            } ).toString( CryptoJS.enc.Utf8 ).split( ',' );
+                            // first 5 bytes are always broken (seems IV issue caused by mangago)
+                            imgsrcs[0] = 'http://' + imgsrcs[0].substring( 7 );
+                            pages = imgsrcs.map( ( link ) => {
+                                let uri = new URL( link );
+                                if( uri.pathname.indexOf( 'cspiclink' ) > -1 ) {
+                                    uri.protocol = this.id;
+                                    return uri.href;
+                                } else {
+                                    return uri.href;
+                                }
+                            } );
+
+                            callback( null, pages );
+                        }
+                    };
+                    this.sandbox.addEventListener( 'message', eventListener, false );
+                    this.sandbox.postMessage( { id: messageID, content: code, return: ['rawCode'] } );
                 } );
-                callback( error, content );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _descrambleImage( blob, pattern, mimeOut, quality, callback ) {
+            createImageBitmap( blob )
+            .then( ( bitmap ) => {
+                let canvas = document.createElement( 'canvas' );
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                var ctx = canvas.getContext( '2d' );
+                let partMap = pattern.split( 'a' );
+                let widthnum = 9;
+                let heightnum = 9;
+                let partWidth = bitmap.width / widthnum;
+                let partHeight = bitmap.height / heightnum;
+                let row, col, targetPosY, targetPosX, sourcePosY, sourcePosX;
+                for ( let index = 0; index < partMap.length; index++ ) {
+                    //
+                    row = Math.floor( partMap[index] / heightnum );
+                    targetPosY = row * partHeight;
+                    targetPosX = ( partMap[index] - row * widthnum ) * partWidth;
+                    //
+                    col = Math.floor( index / widthnum );
+                    sourcePosY = col * partHeight;
+                    sourcePosX = ( index - col * widthnum ) * partWidth;
+                    //
+                    ctx.drawImage( bitmap, sourcePosX, sourcePosY, partWidth, partHeight, targetPosX, targetPosY, partWidth, partHeight );
+                }
+                canvas.toBlob( ( response ) => {
+                    callback( response );
+                }, mimeOut, quality );
+            } )
+            .catch( ( error ) => {
+                callaback( undefined );
             } );
         }
     }
