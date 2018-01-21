@@ -116,7 +116,7 @@
                                     this.errors.push( new Error( 'Page "' + page + '" returned status code ' + response.statusCode ) );
                                 } else {
                                     pageData[index] = {
-                                        type: response.headers['content-type'],
+                                        type: response.headers['Content-Type'] || response.headers['content-type'],
                                         data: content
                                     };
                                 }
