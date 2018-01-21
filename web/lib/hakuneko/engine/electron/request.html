@@ -18,7 +18,6 @@
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
             this.agent = new this.electronRemote.require( 'http' ).Agent();
             this.crypto = this.electronRemote.require( 'crypto' );
-            //this.browser = this.electronRemote.BrowserWindow;
             this.reconnectDelay = 250;
             this.reconnectErrors = [
                 'ETIMEDOUT',
@@ -31,43 +30,7 @@
             ];
             this.ipChain = this._randIP( 3 ).join( ',' );
             this.protocolTable = [];
-            /*
-            let browserOptions = {
-                width: 1280,
-                height: 720,
-                show: false,
-                frame: false,
-                webPreferences: {
-                    nodeIntegration: true,
-                    webSecurity: false,
-                    //sandbox: true
-                }
-            };
-            this.browserWindows = [];
-            for( let i=0; i<5; i++ ) {
-                let browser = {
-                    // see: https://github.com/electron/electron/blob/master/docs/api/browser-window.md
-                    window: new this.browser( browserOptions ),
-                    busy: false
-                };
-                // block pupups
-                browser.window.webContents.on( 'new-window', ( evt ) => {
-                    evt.preventDefault();
-                } );
-                // create new window if the current one is destroyed for some reason ...
-                // =>problems when closing hakuneko main application, remove close event from all existing windows and then close them
-                
-                //let listener = () => {
-                //    console.warn( 'WINDOW DESTROYED' );
-                //    browser.window = new this.browser( browserOptions );
-                //    browser.window.once( 'closed', listener );
-                //    browser.busy = false;
-                //};
-                //browser.window.once( 'closed', listener );
-                
-                this.browserWindows.push( browser );
-            }
-            */
+
             //
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
@@ -184,85 +147,6 @@
             }
             return result;
         }
-
-        /**
-         *
-         */
-        /*
-        fetchUI( options, script, callback ) {
-            //
-            //console.log( 'BUSY:', this.browserWindows.filter( ( b ) => { return b.busy; } ).length );
-            let browsers = this.browserWindows.filter( ( b ) => {
-                return !b.busy;
-            } );
-            if( browsers.length === 0 ) {
-                // retry in 1~5 seconds
-                setTimeout( () => {
-                    this.fetchUI( options, script, callback );
-                }, Math.floor( 4000 * Math.random() + 1000 )  );
-                return;
-            }
-            let browser = browsers[0];
-            browser.busy = true;
-            let win = browser.window;
-
-            options = this._prepareHeaders( options );
-            
-            browser.window.webContents.setUserAgent( ( options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent ) );
-
-            browser.window.webContents.on( 'crashed', ( e ) => {
-                console.warn( 'crashed', browser.window.getURL(), e );
-            } );
-            browser.window.webContents.on( 'did-fail-load', ( e, ec, ed ) => {
-                console.warn( 'did-fail-load', browser.window.getURL(), e, ec, ed );
-            } );
-
-            browser.window.webContents.on( 'dom-ready', ( evt ) => {
-console.warn( 'dom-ready BUSY ENGINES:', this.browserWindows.filter( ( b ) => { return b.busy; } ).length );
-                let timeout = setTimeout( () => {
-                    console.log( 'TIMEOUT: executeJavaScript', browser.window.getURL(), browser.busy );
-                    browser.window.webContents.removeAllListeners( 'dom-ready' );
-                    callback( new Error( 'TIMEOUT: executeJavaScript' ), undefined );
-                    browser.busy = false;
-                }, 25000 );
-                // do not process when this is a cloudflare challenge and wait for next call of dom-ready (after redirect)
-                browser.window.webContents.executeJavaScript( `document.querySelector( 'input#jschl-answer' ) === null;` )
-                .then( ( resultOuter ) => {
-                    console.log( 'THEN [OUTER] executeJavaScript', resultOuter );
-                    if( resultOuter ) {
-                        browser.window.webContents.executeJavaScript( script )
-                        .then( ( resultInner ) => {
-                            clearTimeout( timeout );
-                            console.log( 'THEN [INNER] executeJavaScript', ( resultInner ? resultInner.length : resultInner ) );
-                            browser.window.webContents.removeAllListeners( 'dom-ready' );
-                            browser.busy = false;
-                            callback( null, resultInner );
-                        } )
-                        .catch( ( error ) => {
-                            clearTimeout( timeout );
-                            console.log( 'CATCH [INNER] executeJavaScript', error );
-                            browser.window.webContents.removeAllListeners( 'dom-ready' );
-                            browser.busy = false;
-                            callback( error, undefined );
-                        } );
-                    } else {
-                        console.log( 'CLOUDFLARE...' );
-                        browser.window.show();
-                    }
-                } )
-                .catch( ( error ) => {
-                    clearTimeout( timeout );
-                    console.log( 'CATCH [OUTER] executeJavaScript', error );
-                    browser.window.webContents.removeAllListeners( 'dom-ready' );
-                    browser.busy = false;
-                    callback( error, undefined );
-                } );
-            } );
-            // see: https://electronjs.org/docs/api/webview-tag#webviewloadurlurl-options
-            let opts = {};
-            browser.window.loadURL( options.url, opts );
-        }
-        */
 
         /**
          * Modify the request options to use any configured proxy server (e.g. Google Data Saver).
