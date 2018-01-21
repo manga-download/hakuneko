@@ -97,18 +97,11 @@
                         callback();
                     });
                 });
-
                 // get data for all pages of chapter
                 pages.forEach( ( page, index ) => {
                     let key = promise.defer();
-                    let downloadPage = ( retries ) => {
+                    setTimeout( () => {
                         Engine.Request.cloudflare( { url: page, encoding: null }, ( error, response, content ) => {
-                            if( retries > 0 && response.statusCode !== 200 ) {
-                                setTimeout( () => {
-                                    downloadPage( retries-1 );
-                                }, 2500 );
-                                return;
-                            }
                             if( error ) {
                                 this.errors.push( error );
                             } else {
@@ -123,9 +116,8 @@
                             }
                             this.setProgress( this.progress + 100/pages.length );
                             promise.resolve( key );
-                        });
-                    };
-                    downloadPage( 5 );
+                        }, 5 );
+                    }, index * 200 );
                 });
             });
         }
