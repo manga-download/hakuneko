@@ -158,6 +158,9 @@
                     url: options
                 };
             }
+            if( options['gzip'] === undefined ) {
+                options['gzip'] = true;
+            }
             let uri = new URL( options.url );
             options['headers'] = ( options['headers'] ? options['headers'] : {} );
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
