@@ -5,7 +5,9 @@
   "sources": [
     "js/*",
     "img/*",
-    "css/*"
+    "css/*",
+    "index.html",
+    "lib/hakuneko/app.html"
   ],
   "extraDependencies": [
     "lib/webcomponentsjs/*-*.js",
@@ -13,7 +15,7 @@
   ],
   "builds": [
     {
-      "name": "../../cloud/htdocs",
+      "name": "htdocs",
       "bundle": true,
       "js": {
         "minify": true
