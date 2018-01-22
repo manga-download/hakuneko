@@ -32,7 +32,7 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.fetch( 'http://static.hakuneko.ovh/mangatown/mangas.json', ( error, response, content ) => {
+            Engine.Request.fetch( 'http://static.hakuneko.download/mangatown/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }

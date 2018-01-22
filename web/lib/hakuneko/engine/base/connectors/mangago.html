@@ -102,7 +102,7 @@
          * 
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( 'http://static.hakuneko.ovh/mangago/mangas.json', ( error, response, content ) => {
+            Engine.Request.fetch( 'http://static.hakuneko.download/mangago/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
