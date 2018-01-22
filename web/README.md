@@ -6,6 +6,7 @@ Polymer is written in ES6 and may run directly in modern bowsers. To transpile E
 
 - `nodejs` >= 6.10.3
 - `npm` >= 4.6.1
+- `asar` >= 0.14.0
 - `polymer-cli` >= 1.0.2
 
 Installation process:
