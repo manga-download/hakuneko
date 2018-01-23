@@ -67,6 +67,13 @@
                 }
                 Engine.Request.cloudflare( opts, ( error, response, content ) => {
                     if( !error ) {
+                        if( uri.pathname.indexOf( 'cspiclink' ) < 0 ) {
+                            callback( {
+                                mimeType: response.headers['content-type'],
+                                data: content
+                            } );
+                            return;
+                        }
                         let desKey = this.desKeys.find( ( key ) => {
                             return ( uri.pathname.indexOf( key.id ) > -1 );
                         } ) || this.desKeys[0];
@@ -191,12 +198,8 @@
                             imgsrcs[0] = 'http://' + imgsrcs[0].substring( 7 );
                             pages = imgsrcs.map( ( link ) => {
                                 let uri = new URL( link );
-                                if( uri.pathname.indexOf( 'cspiclink' ) > -1 ) {
-                                    uri.protocol = this.id;
-                                    return uri.href;
-                                } else {
-                                    return uri.href;
-                                }
+                                uri.protocol = this.id;
+                                return uri.href;
                             } );
 
                             callback( null, pages );
