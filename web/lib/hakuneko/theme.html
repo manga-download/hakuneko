@@ -109,11 +109,11 @@
                 --page-chapter-title-color: #202020;
             }
 
-            input[type="text"] {
+            input[type="text"], input[type="password"] {
                 width: calc(100% - 0.5em - 0.5em); /* adjust with padding and margin */
             }
 
-            input[type="text"]:disabled {
+            input[type="text"]:disabled, input[type="password"]:disabled {
                 color: #808080;
                 background-color: #f0f0f0;
                 border-bottom: 1px solid #a0a0a0;
@@ -137,7 +137,7 @@
                 background-repeat: no-repeat;
             }
 
-            input[type="text"], input[type="number"], select {
+            input[type="text"], input[type="password"], input[type="number"], select {
                 outline: none; /* disable chromium highlighting of input fields */
                 -webkit-appearance: none;
                    -moz-appearance: none;

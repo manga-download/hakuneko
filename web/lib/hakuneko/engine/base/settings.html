@@ -42,14 +42,14 @@
                 // apply general settings
                 for( let property in this) {
                     if( data && property in data ) {
-                        this[property].value = data[property];
+                        this[property].value = this._getDecryptedValue( this[property].input, data[property] );
                     }
                 }
                 // apply settings to each connector
                 Engine.Connectors.forEach( ( connector ) => {
                     for( let property in connector.config ) {
                         if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
-                            connector.config[property].value = data.connectors[connector.id][property];
+                            connector.config[property].value = this._getDecryptedValue( data.connectors[connector.id][property] );
                         }
                     }
                 });
@@ -70,19 +70,41 @@
             // gather general settings
             for( let property in this) {
                 //this[property] = ( property in data ? data[property] : this[property] );
-                data[property] = this[property].value;
+                data[property] = this._getEncryptedValue( this[property].input, this[property].value );
             }
             // gather settings from each connector
             Engine.Connectors.forEach( ( connector ) => {
                 data.connectors[connector.id] = {};
                 for( let property in connector.config ) {
-                    data.connectors[connector.id][property] = connector.config[property].value;
+                    data.connectors[connector.id][property] = this._getEncryptedValue( connector.config[property].input, connector.config[property].value );
                 }
             });
             Engine.Storage.saveToDB( 'settings', profile, data, ( error) => {
                 document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
                 (callback ? callback( error ) : undefined );
             });
+        }
+
+        /**
+         * 
+         */
+        _getEncryptedValue( inputType, decryptedValue ) {
+            if( inputType !== Input.password || !decryptedValue || decryptedValue.length < 1 ) {
+                return decryptedValue;
+            }
+            // hakuneko must be portable and work offline => impossible to generate a secure key
+            // so keep things simple and at least secure the password in case the data was leeched and cannot be asociated with hakuneko
+            return CryptoJS.AES.encrypt( decryptedValue, 'HakuNeko!' ).toString();
+        }
+
+        /**
+         * 
+         */
+        _getDecryptedValue( inputType, encryptedValue ) {
+            if( inputType !== Input.password || !encryptedValue || encryptedValue.length < 1 ) {
+                return encryptedValue;
+            }
+            return CryptoJS.AES.decrypt( encryptedValue, 'HakuNeko!' ).toString( CryptoJS.enc.Utf8 );
         }
     }
     SettingsBase; // reference the class to prevent removal of the class through js-minify
