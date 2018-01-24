@@ -1,0 +1,112 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaRock extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id       = 'mangarock';
+            super.label    = 'MangaRock';
+            super.isLocked = false;
+            // Private members for internal usage only (convenience)
+            this.url       = 'https://api.mangarockhd.com';
+            this.referer   = undefined;
+            this.agent     = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let payload = {
+                genres: {},
+                order: 'name',
+                rank: 'all',
+                status: 'all'
+            };
+            Engine.Request.post( this.url + '/query/web400/mrs_filter', JSON.stringify( payload ), this.referer, this.agent, ( error, content, status ) => {
+                let ids = JSON.parse( content ).data;
+                Engine.Request.post( this.url + '/meta', JSON.stringify( ids ), this.referer, this.agent, ( error, content, status ) => {
+                    let metas = JSON.parse( content ).data;
+                    let mangas = ids.map( ( id ) => {
+                        let manga = metas[ id ];
+                        return {
+                            id: manga.oid,
+                            title: manga.name
+                        }
+                    } );
+                    callback( null, mangas );
+                });
+            });
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.get( this.url + '/query/web400/info?oid=' + manga.id, this.referer, this.agent, ( error, content, status ) => {
+                callback( null, (content ? JSON.parse( content ).data.chapters.reverse().map( ( chapter ) => {
+                    return {
+                        id: chapter.oid,
+                        title: chapter.name,
+                        language: 'en'
+                    };
+                } ) : undefined ) );
+            });
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.get( this.url + '/query/web400/pages?oid=' + chapter.id, this.referer, this.agent, ( error, content, status ) => {
+                callback( error, ( !error && content ? JSON.parse( content ).data : [] ) );
+            });
+        }
+
+        /*
+        function download( uri, file ) {
+            let options = {
+                method: 'GET',
+                url: uri,
+                encoding: null
+            }
+            request.get( options, ( error, response, body ) => {
+                if( body[0] === 69 ) {
+                    // convert buffer to Unt8Array
+                    let encrypted = new Uint8Array( body );
+                    // decrypt data ...
+                    let decrypted = decrypt( encrypted );
+                    // create buffer from Uint8Array
+                    let data = Buffer.from( decrypted );
+                    // save to file
+                    fs.writeFile( file, data );
+                }
+            } );
+        }
+
+        function decrypt( encrypted ) {
+            let decrypted = new Uint8Array( encrypted.length + 15 );
+            let n = encrypted.length + 7;
+            let header = Uint8Array.of( 82, 73, 70, 70, n & 255, n >> 8 & 255, n >> 16 & 255, n >> 24 & 255, 87, 69, 66, 80, 86, 80, 56 );
+            let data = encrypted.map( ( byte ) => {
+                return ( 101 ^ byte );
+            } );
+            decrypted.set( header, 0 );
+            decrypted.set( data, header.length );
+            return decrypted;
+        }
+
+        download( 'https://f01.mrcdn.info/file/mrfiles/g/8/d/d/Du.52eXfdKn.mri', './' + i + '.webp' );
+        */
+    }
+
+</script>
