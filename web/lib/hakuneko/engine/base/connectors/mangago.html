@@ -78,7 +78,7 @@
                             return ( uri.pathname.indexOf( key.id ) > -1 );
                         } ) || this.desKeys[0];
                         let blob = new Blob( [content], { type: response.headers['content-type'] } );
-                        this._descrambleImage( blob, desKey.pattern, 'image/webp', 0.90, ( data ) => {
+                        this._descrambleImage( blob, desKey.pattern, 'image/jpeg', 0.90, ( data ) => {
                             var fs = new FileReader();
                             fs.onload = ( e ) => {
                                 callback( {
