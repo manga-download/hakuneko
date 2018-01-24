@@ -13,12 +13,19 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id       = 'crunchymanga';
-            super.label    = 'CrunchyManga (Premium)';
-            super.isLocked = false;
+            super.id         = 'crunchymanga';
+            super.label      = 'CrunchyManga (Premium)';
+            super.isLocked   = false;
             // Private members for internal usage only (convenience)
-            this.url       = 'http://api-manga.crunchyroll.com';
+            this.url         = 'http://api-manga.crunchyroll.com';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                json: {} // => use to automatically parse a response as json
+            } );
             this.initialized = false;
+            this.premium     = false;
+            this.session     = null;
+            this.token       = null;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 username: {
@@ -34,73 +41,63 @@
                     value: ''
                 }
             };
-            document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+            document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
 
-            // register a protocol handler to intercept requests (with custom 'mangago' protocol) and decrypt images
+            // register a protocol handler to intercept requests (with custom 'crunchymanga' protocol) and decrypt images
             Engine.Request.registerProtocol( this.id, ( request, callback ) => {
                 let uri = new URL( request.url );
                 uri.protocol = ( new URL( this.url ) ).protocol;
                 let opts = {
                     url: uri.href,
-                    headers: {
-                        //'Referer': this.url
-                    },
                     encoding: null
                 }
                 Engine.Request.fetch( opts, ( error, response, content ) => {
                     callback( {
-                        mimeType: 'image/jpeg',
-                        data: this._decryptImage( new Uint8Array( content ), 0x42 ) //Buffer.from('xxxxxxxx')
+                        mimeType: response.headers['content-type'],
+                        data: this._decryptImage( content, 0x42 )
                     } );
                 });
             } );
         }
 
+        /**
+         *
+         */
         _getRequestError( error, response, content ) {
             if( error ) {
                 return error;
             }
             if( response.statusCode !== 200 ) {
-                try {
-                    let dbg = JSON.parse( content );
-                    /*
-                    if( dbg.__class__ === 'error' ) {
-                        return new Error( dbg.type + ': ' + dbg.message )
-                    } else {
-                        return new Error( 'No additional information available!' );
-                    }
-                    */
-                } catch ( e ) {
-                    return new Error( '[' + response.statusCode + '] ' + e.message );
+                return new Error( `Response status code: ${response.statusCode}!` );
+            }
+            try {
+                if( content.__class__ === 'error' ) {
+                    return new Error( content.type + ': ' + content.message )
                 }
+            } catch ( e ) {
+                return new Error( '[' + response.statusCode + '] ' + e.message );
             }
             return null;
-        }
-
-        /**
-         * encrypted must be Uint8Array
-         */
-        _decryptImage( encrypted, key ) {
-            let decrypted = new Uint8Array( encrypted.length );
-            let data = encrypted.map( ( byte ) => {
-                return ( byte ^ key );
-            } );
-            decrypted.set( data, 0 );
-            return decrypted;
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( this.url + '/series', ( error, response, content ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['url'] += '/series';
+            options['qs'] = {
+                'session_id': this.session,
+                'auth': this.token
+            };
+            Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content);
-                callback( error, ( !error && content ? JSON.parse( content ).map( ( manga ) => {
+                callback( error, ( !error ? content.map( ( manga ) => {
                     return {
                         id: manga.series_id,
                         title: ( manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace( /^\// , '' ) )
                     }
-                } ) : undefined ) );
+                } ) : [] ) );
             });
         }
 
@@ -108,16 +105,23 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( this.url + '/chapters?series_id=' + manga.id, ( error, response, content ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['url'] += '/chapters';
+            options['qs'] = {
+                'series_id': manga.id,
+                'session_id': this.session,
+                'auth': this.token
+            };
+            Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content );
-                callback( error, ( !error && content ? JSON.parse( content ).chapters.reverse().map( ( chapter ) => {
+                callback( error, ( !error ? content.chapters.reverse().map( ( chapter ) => {
                     // chapter.volume_number
                     return {
                         id: chapter.chapter_id,
                         title: ( '0000' + chapter.number ).slice( -7 ) + ( chapter.locale && chapter.locale.enUS ? ' - ' + chapter.locale.enUS.name : '' ),
                         language: 'en'
                     }
-                }) : undefined ) );
+                }) : [] ) );
             });
         }
 
@@ -125,14 +129,25 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( this.url + '/list_chapter?chapter_id=' + chapter.id + '&session_id=' + this.session /*+ '&auth=' + this.token*/, ( error, response, content ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['url'] += '/list_chapter';
+            options['qs'] = {
+                'chapter_id': chapter.id,
+                'session_id': this.session,
+                'auth': this.token
+            };
+            Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content );
                 if( error ) {
-                    return callback( error, [] );
+                    callback( error, [] );
+                    return;
                 }
-                let pages = JSON.parse( content ).pages.map( ( page ) => {
+                let pages = content.pages.map( ( page ) => {
+                    //let uri = new URL( page['image_url'] ); // sometimes invalid
+                    //let uri = new URL( page.locale.enUS['image_url'] ); // this seems to be the raw image (png), but access is forbidden
+                    //let uri = new URL( page.locale.enUS['composed_image_url'] ); // access is forbidden
+                    //let uri = new URL( page.locale.enUS['encrypted_mobile_image_url'] ); // smaller size
                     let uri = new URL( page.locale.enUS['encrypted_composed_image_url'] );
-                    // FALLBACK: let uri = new URL( page['image_url'] );
                     // use dedicated protocol handler for image decryption from crunchyroll
                     uri.protocol = this.id;
                     return uri.href;
@@ -144,7 +159,7 @@
         /**
         *
         */
-        onSettingsChanged( e ) {
+        _onSettingsChanged( e ) {
             this._login( this.config.username.value, this.config.password.value );
         }
 
@@ -157,14 +172,61 @@
                 this.initialized = undefined;
                 return;
             }
-            // initialization: login to crunchyroll with credentials
-            this.session = 'w1nhwmuwmcmbc1wxmtb5pze6klngufg1';
-            Engine.Request.fetch( this.url +  '/cr_authenticate?version=0&format=json&session_id=' + this.session /*+ '&auth='*/, ( error, response, content ) => {
-                this.token = JSON.parse( content ).data.auth;
-                this.initialized = true;
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['url'] = 'https://www.crunchyroll.com/login';
+            options['json'] = undefined;
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                // TODO: error handling
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                let token = dom.querySelector( 'input#login_form__token' ).value;
+                options['method'] = 'POST';
+                options['form'] = {
+                    'login_form[name]': username,
+                    'login_form[password]': password,
+                    'login_form[redirect_url]': '',
+                    'login_form[_token]': token
+                };
+                Engine.Request.cloudflare( options, ( error, response, content ) => {
+                    // TODO: error handling
+                    this.session = response.headers['set-cookie'].reverse().find( ( cookie ) => {
+                        return ( cookie.indexOf( 'sess_id=' ) === 0 && cookie.indexOf( 'sess_id=deleted' ) < 0 );
+                    }).split('=')[1].split(';')[0];
+                    options['url'] = `${this.url}/cr_authenticate`;
+                    options['method'] = 'GET';
+                    options['form'] = undefined;
+                    options['json'] = {};
+                    options['qs'] = {
+                        'version': 0,
+                        'format': 'json',
+                        'session_id': this.session
+                    }
+                    // get auth token and premium status
+                    Engine.Request.fetch( options, ( error, response, content ) => {
+                        // TODO: error handling
+                        if( !error ) {
+                            this.token = content.data.auth;
+                            this.premium = ( content.data.user.premium.indexOf( 'manga' ) > -1 );
+                        }
+                        this.initialized = true;
+                    });
+                });
             });
-            
          }
+
+        /**
+         * encrypted must be Uint8Array
+         */
+        _decryptImage( encrypted, key ) {
+            let decrypted = new Uint8Array( encrypted.length );
+            let data = encrypted.map( ( byte ) => {
+                return ( byte ^ key );
+            } );
+            decrypted.set( data, 0 );
+            return decrypted;
+        }
     }
 
 </script>
