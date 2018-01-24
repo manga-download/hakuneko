@@ -49,7 +49,7 @@
                 Engine.Connectors.forEach( ( connector ) => {
                     for( let property in connector.config ) {
                         if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
-                            connector.config[property].value = this._getDecryptedValue( data.connectors[connector.id][property] );
+                            connector.config[property].value = this._getDecryptedValue( connector.config[property].input, data.connectors[connector.id][property] );
                         }
                     }
                 });
