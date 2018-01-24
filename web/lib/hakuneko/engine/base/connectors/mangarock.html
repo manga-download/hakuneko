@@ -115,7 +115,7 @@
          */
         _getChapterList( manga, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
-            options['url'] += '/query/web400/info?oid=' + manga.id;
+            options['url'] += `/query/web400/info?oid=${manga.id}`;
             Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content);
                 if( error ) {
@@ -137,7 +137,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
-            options['url'] += '/query/web400/pages?oid=' + chapter.id;
+            options['url'] += `/query/web400/pages?oid=${chapter.id}`;
             Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content);
                 if( error ) {
