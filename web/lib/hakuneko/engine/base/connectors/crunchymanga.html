@@ -1,0 +1,167 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class CrunchyManga extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id       = 'crunchymanga';
+            super.label    = 'CrunchyManga (Premium)';
+            super.isLocked = false;
+            // Private members for internal usage only (convenience)
+            this.url       = 'http://api-manga.crunchyroll.com';
+            this.referer   = undefined;
+            this.agent     = undefined;
+            this.initialized = false;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = {
+                username: {
+                    label: 'Username',
+                    description: 'Username for login with CrunchyRoll Premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    input: Input.text,
+                    value: ''
+                },
+                password: {
+                    label: 'Password',
+                    description: 'Password for login with CrunchyRoll Premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    input: Input.password,
+                    value: ''
+                }
+            };
+            document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+
+            // TODO: remove electron dependency (e.g. Engine.registerProtocol() ...)
+            let EngineRegisterProtocol = require( 'electron' ).remote.require( 'electron' ).protocol;
+            // register a protocol handler to intercept requests (with custom 'crunchyroll' protocol) and decrypt images
+            EngineRegisterProtocol.registerBufferProtocol( this.id, ( request, callback ) => {
+                let uri = new URL( request.url );
+                uri.protocol = ( new URL( this.url ) ).protocol;
+                Engine.Request.get( uri.href, this.referer, this.agent, ( error, content, status ) => {
+                    callback( {
+                        mimeType: 'image/jpeg',
+                        data: this._decryptImage( new Uint8Array( content ) ) //Buffer.from('xxxxxxxx')
+                    } );
+                });
+            } );
+        }
+
+        _getRequestError( error, content, status) {
+            if( error ) {
+                return error;
+            }
+            if( status !== 200 ) {
+                try {
+                    let dbg = JSON.parse( content );
+                    /*
+                    if( dbg.__class__ === 'error' ) {
+                        return new Error( dbg.type + ': ' + dbg.message )
+                    } else {
+                        return new Error( 'No additional information available!' );
+                    }
+                    */
+                } catch ( e ) {
+                    return new Error( '[' + status + '] ' + e.message );
+                }
+            }
+            return null;
+        }
+
+        /**
+         * encrypted must be Uint8Array
+         */
+        _decryptImage( encrypted, key ) {
+            let decrypted = new Uint8Array( encrypted.length );
+            let data = encrypted.map( ( byte ) => {
+                return ( byte ^ 0x42 );
+            } );
+            decrypted.set( data, 0 );
+            return decrypted;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Engine.Request.get( this.url + '/series', this.referer, this.agent, ( error, content, status ) => {
+                error = this._getRequestError( error, content, status);
+                callback( error, ( !error && content ? JSON.parse( content ).map( ( manga ) => {
+                    return {
+                        id: manga.series_id,
+                        title: ( manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace( /^\// , '' ) )
+                    }
+                } ) : undefined ) );
+            });
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.get( this.url + '/chapters?series_id=' + manga.id, this.referer, this.agent, ( error, content, status ) => {
+                error = this._getRequestError( error, content, status);
+                callback( error, ( !error && content ? JSON.parse( content ).chapters.reverse().map( ( chapter ) => {
+                    // chapter.volume_number
+                    return {
+                        id: chapter.chapter_id,
+                        title: ( '0000' + chapter.number ).slice( -7 ) + ( chapter.locale && chapter.locale.enUS ? ' - ' + chapter.locale.enUS.name : '' ),
+                        language: 'en'
+                    }
+                }) : undefined ) );
+            });
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.get( this.url + '/list_chapter?chapter_id=' + chapter.id + '&session_id=' + this.session /*+ '&auth=' + this.token*/, this.referer, this.agent, ( error, content, status ) => {
+                error = this._getRequestError( error, content, status);
+                if( error ) {
+                    return callback( error, [] );
+                }
+                let pages = JSON.parse( content ).pages.map( ( page ) => {
+                    let uri = new URL( page.locale.enUS['encrypted_composed_image_url'] );
+                    // FALLBACK: let uri = new URL( page['image_url'] );
+                    // use dedicated protocol handler for image decryption from crunchyroll
+                    uri.protocol = this.id;
+                    return uri.href;
+                });
+                callback( error, ( !error && content ? pages : [] ) );
+            });
+        }
+
+        /**
+        *
+        */
+        onSettingsChanged( e ) {
+            this._login( this.config.username.value, this.config.password.value );
+        }
+
+        /**
+         * Login to crunchyroll website with username and password from settings to
+         * get full access to all chapters.
+         */
+         _login( username, password ) {
+            if( !username || username.length < 1 || !password || password.length < 1 ) {
+                this.initialized = undefined;
+                return;
+            }
+            // initialization: login to crunchyroll with credentials
+            this.session = 'w1nhwmuwmcmbc1wxmtb5pze6klngufg1';
+            Engine.Request.get( this.url +  '/cr_authenticate?version=0&format=json&session_id=' + this.session /*+ '&auth='*/, this.referer, this.agent, ( error, content, status ) => {
+                this.token = JSON.parse( content ).data.auth;
+                this.initialized = true;
+            });
+            
+         }
+    }
+
+</script>
