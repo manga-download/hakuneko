@@ -177,6 +177,11 @@
             options['json'] = undefined;
             Engine.Request.cloudflare( options, ( error, response, content ) => {
                 // TODO: error handling
+                if( error ) {
+                    this.initialized = true;
+                    console.error( error );
+                    return;
+                }
                 content = content.replace( /<img[^<]*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
@@ -191,6 +196,11 @@
                 };
                 Engine.Request.cloudflare( options, ( error, response, content ) => {
                     // TODO: error handling
+                    if( error ) {
+                        this.initialized = true;
+                        console.error( error );
+                        return;
+                    }
                     this.session = response.headers['set-cookie'].reverse().find( ( cookie ) => {
                         return ( cookie.indexOf( 'sess_id=' ) === 0 && cookie.indexOf( 'sess_id=deleted' ) < 0 );
                     }).split('=')[1].split(';')[0];
