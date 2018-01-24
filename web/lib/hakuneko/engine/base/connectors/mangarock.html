@@ -38,7 +38,7 @@
                     if( content[0] === 69 ) {
                         callback( {
                             mimeType: 'image/webp', // response.headers['content-type']
-                            data: this._decryptImage( content, 101 )
+                            data: this._decryptImage( content, 0x65 )
                         } );
                     } else {
                         callback( {
@@ -58,11 +58,11 @@
                 return error;
             }
             if( response.statusCode !== 200 ) {
-                return new Error( `Response status code: ${response.statusCode}` );
+                return new Error( `Response status code: ${response.statusCode}!` );
             }
             try {
-                if( content['code'] > 0 ) {
-                    return new Error( 'XXX' )
+                if( content.code !== 0 ) {
+                    return new Error( 'Content is invalid JSON!' )
                 }
             } catch ( e ) {
                 return new Error( '[' + response.statusCode + '] ' + e.message );
