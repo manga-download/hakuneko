@@ -18,25 +18,87 @@
             super.isLocked = false;
             // Private members for internal usage only (convenience)
             this.url       = 'https://api.mangarockhd.com';
-            this.referer   = undefined;
-            this.agent     = undefined;
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                json: {} // => use to automatically parse a response as json
+            } );
+            // register a protocol handler to intercept requests (with custom 'mangarock' protocol) and decrypt images
+            Engine.Request.registerProtocol( this.id, ( request, callback ) => {
+                let uri = new URL( request.url );
+                uri.protocol = ( new URL( this.url ) ).protocol;
+                let options = JSON.parse( this.reqOptionsJSON );
+                options['url'] = uri.href;
+                options['json'] = undefined;
+                options['encoding'] = null;
+                Engine.Request.fetch( options, ( error, response, content ) => {
+                    if( error || response.statusCode != 200 ) {
+                        callback( undefined );
+                        return;
+                    }
+                    if( content[0] === 69 ) {
+                        callback( {
+                            mimeType: 'image/webp', // response.headers['content-type']
+                            data: this._decryptImage( content, 101 )
+                        } );
+                    } else {
+                        callback( {
+                            mimeType: response.headers['content-type'],
+                            data: content
+                        } );
+                    }
+                } );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getRequestError( error, response, content ) {
+            if( error ) {
+                return error;
+            }
+            if( response.statusCode !== 200 ) {
+                return new Error( `Response status code: ${response.statusCode}` );
+            }
+            try {
+                if( content['code'] > 0 ) {
+                    return new Error( 'XXX' )
+                }
+            } catch ( e ) {
+                return new Error( '[' + response.statusCode + '] ' + e.message );
+            }
+            return null;
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            let payload = {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['method'] = 'POST';
+            options['url'] += '/query/web400/mrs_filter';
+            options['json'] = {
                 genres: {},
                 order: 'name',
                 rank: 'all',
                 status: 'all'
             };
-            Engine.Request.post( this.url + '/query/web400/mrs_filter', JSON.stringify( payload ), this.referer, this.agent, ( error, content, status ) => {
-                let ids = JSON.parse( content ).data;
-                Engine.Request.post( this.url + '/meta', JSON.stringify( ids ), this.referer, this.agent, ( error, content, status ) => {
-                    let metas = JSON.parse( content ).data;
-                    let mangas = ids.map( ( id ) => {
+            Engine.Request.fetch( options, ( error, response, content ) => {
+                error = this._getRequestError( error, response, content);
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
+                options['url'] = this.url + '/meta';
+                options['json'] = content.data;
+                Engine.Request.fetch( options, ( error, response, content ) => {
+                    error = this._getRequestError( error, response, content);
+                    if( error ) {
+                        callback( error, [] );
+                        return;
+                    }
+                    let metas = content.data;
+                    let mangas = options['json'].map( ( id ) => {
                         let manga = metas[ id ];
                         return {
                             id: manga.oid,
@@ -52,14 +114,21 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.get( this.url + '/query/web400/info?oid=' + manga.id, this.referer, this.agent, ( error, content, status ) => {
-                callback( null, (content ? JSON.parse( content ).data.chapters.reverse().map( ( chapter ) => {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['url'] += '/query/web400/info?oid=' + manga.id;
+            Engine.Request.fetch( options, ( error, response, content ) => {
+                error = this._getRequestError( error, response, content);
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
+                callback( error, ( !error ? content.data.chapters.reverse().map( ( chapter ) => {
                     return {
                         id: chapter.oid,
                         title: chapter.name,
                         language: 'en'
                     };
-                } ) : undefined ) );
+                } ) : [] ) );
             });
         }
 
@@ -67,46 +136,37 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.get( this.url + '/query/web400/pages?oid=' + chapter.id, this.referer, this.agent, ( error, content, status ) => {
-                callback( error, ( !error && content ? JSON.parse( content ).data : [] ) );
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['url'] += '/query/web400/pages?oid=' + chapter.id;
+            Engine.Request.fetch( options, ( error, response, content ) => {
+                error = this._getRequestError( error, response, content);
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
+                let pages = content.data.map( ( link ) => {
+                    let uri = new URL( link );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( error, ( !error ? pages : [] ) );
             });
         }
 
-        /*
-        function download( uri, file ) {
-            let options = {
-                method: 'GET',
-                url: uri,
-                encoding: null
-            }
-            request.get( options, ( error, response, body ) => {
-                if( body[0] === 69 ) {
-                    // convert buffer to Unt8Array
-                    let encrypted = new Uint8Array( body );
-                    // decrypt data ...
-                    let decrypted = decrypt( encrypted );
-                    // create buffer from Uint8Array
-                    let data = Buffer.from( decrypted );
-                    // save to file
-                    fs.writeFile( file, data );
-                }
-            } );
-        }
-
-        function decrypt( encrypted ) {
+        /**
+         *
+         */
+        _decryptImage( encrypted, key ) {
             let decrypted = new Uint8Array( encrypted.length + 15 );
             let n = encrypted.length + 7;
             let header = Uint8Array.of( 82, 73, 70, 70, n & 255, n >> 8 & 255, n >> 16 & 255, n >> 24 & 255, 87, 69, 66, 80, 86, 80, 56 );
             let data = encrypted.map( ( byte ) => {
-                return ( 101 ^ byte );
+                return ( key ^ byte );
             } );
             decrypted.set( header, 0 );
             decrypted.set( data, header.length );
             return decrypted;
         }
-
-        download( 'https://f01.mrcdn.info/file/mrfiles/g/8/d/d/Du.52eXfdKn.mri', './' + i + '.webp' );
-        */
     }
 
 </script>
