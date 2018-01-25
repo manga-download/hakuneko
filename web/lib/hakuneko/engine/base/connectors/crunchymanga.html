@@ -129,6 +129,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            if( !this.premium ) {
+                callback( new Error( 'A crunchyroll account with a crunchyroll or VRV premium subscription is required in the settings to access the content!' ), [] );
+                return;
+            }
             let options = JSON.parse( this.reqOptionsJSON );
             options['url'] += '/list_chapter';
             options['qs'] = {
@@ -157,8 +161,8 @@
         }
 
         /**
-        *
-        */
+         *
+         */
         _onSettingsChanged( e ) {
             this._login( this.config.username.value, this.config.password.value );
         }
@@ -167,7 +171,7 @@
          * Login to crunchyroll website with username and password from settings to
          * get full access to all chapters.
          */
-         _login( username, password ) {
+        _login( username, password ) {
             if( !username || username.length < 1 || !password || password.length < 1 ) {
                 this.initialized = undefined;
                 return;
@@ -176,9 +180,9 @@
             options['url'] = 'https://www.crunchyroll.com/login';
             options['json'] = undefined;
             Engine.Request.cloudflare( options, ( error, response, content ) => {
-                // TODO: error handling
+                // TODO (2018-01-25): better error handling
                 if( error ) {
-                    this.initialized = true;
+                    this.initialized = undefined;
                     console.error( error );
                     return;
                 }
@@ -195,9 +199,9 @@
                     'login_form[_token]': token
                 };
                 Engine.Request.cloudflare( options, ( error, response, content ) => {
-                    // TODO: error handling
+                    // TODO (2018-01-25): better error handling
                     if( error ) {
-                        this.initialized = true;
+                        this.initialized = undefined;
                         console.error( error );
                         return;
                     }
@@ -215,16 +219,19 @@
                     }
                     // get auth token and premium status
                     Engine.Request.fetch( options, ( error, response, content ) => {
-                        // TODO: error handling
-                        if( !error ) {
-                            this.token = content.data.auth;
-                            this.premium = ( content.data.user.premium.indexOf( 'manga' ) > -1 );
+                        // TODO (2018-01-25): better error handling
+                        if( error ) {
+                            this.initialized = undefined;
+                            console.error( error );
+                            return;
                         }
+                        this.token = content.data.auth;
+                        this.premium = ( content.data.user.premium.indexOf( 'manga' ) > -1 );
                         this.initialized = true;
                     });
                 });
             });
-         }
+        }
 
         /**
          * encrypted must be Uint8Array
