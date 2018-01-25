@@ -186,9 +186,13 @@
                             let rgx = /"(@[\d]+?!)"/g;
                             let key = rgx.exec( code );
                             let iv = rgx.exec( code );
-                            if( !key || !iv || key.length < 2 || iv.length < 2 ) {
-                                callback( new Error( 'Failed to detect decryption parameters!' ), pages );
+                            if( !key || key.length < 2 ) {
+                                callback( new Error( 'Failed to detect decryption key!' ), pages );
                                 return;
+                            }
+                            if( !iv || iv.length < 2 ) {
+                                console.warn( 'Failed to detect decryption iv => using key as iv!' );
+                                iv = [ null, key[1] ];
                             }
                             imgsrcs = CryptoJS.AES.decrypt( imgsrcs, CryptoJS.enc.Utf8.parse( CryptoJS.MD5( key[1] ) ), {
                                 iv: CryptoJS.enc.Utf8.parse( iv[1] ),
