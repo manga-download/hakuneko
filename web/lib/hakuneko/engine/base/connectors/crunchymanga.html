@@ -205,6 +205,11 @@
                         console.error( error );
                         return;
                     }
+                    if( !response.headers['set-cookie'] || response.headers['set-cookie'].length < 1 ) {
+                        this.initialized = undefined;
+                        console.error( new Error( 'Login failed (incorrect logn data or reCaptcha required)!' ) );
+                        return;
+                    }
                     this.session = response.headers['set-cookie'].reverse().find( ( cookie ) => {
                         return ( cookie.indexOf( 'sess_id=' ) === 0 && cookie.indexOf( 'sess_id=deleted' ) < 0 );
                     }).split('=')[1].split(';')[0];
