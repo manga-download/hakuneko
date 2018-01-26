@@ -18,8 +18,8 @@
             this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
             this.agentHTTP = this.electronRemote.require( 'http' ).globalAgent;
             this.agentHTTPS = this.electronRemote.require( 'https' ).globalAgent;
-            //this.agent = new this.electronRemote.require( 'http' ).Agent();
             this.crypto = this.electronRemote.require( 'crypto' );
+            //this.browser = this.electronRemote.BrowserWindow;
             this.reconnectDelay = 1000; // average value ± 50% random distribution
             this.reconnectErrors = [
                 'ETIMEDOUT',
@@ -120,6 +120,27 @@
                 }
             } );
         }
+
+        /*
+        uiWindow() {
+            let win = new this.browser( {
+                width: 420,
+                height: 680,
+                menu: false,
+                frame: true,
+                show: true,
+                webPreferences: {
+                    nodeIntegration: false,
+                    webSecurity: true
+                }
+            } );
+            win.setMenu( null );
+            win.loadURL( 'https://crunchyroll.com/login' );
+            setTimeout( () => {
+                console.log( 'COOKIES', win.webContents.session.cookies );
+            }, 5000 )
+        }
+        */
 
         /**
          * Generate content of 'Chrome-Proxy' header field for use with google data saver
