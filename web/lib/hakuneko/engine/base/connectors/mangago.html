@@ -183,7 +183,7 @@
                         if( e.data.id === messageID ) {
                             this.sandbox.removeEventListener( 'message', eventListener );
                             code = e.data.content[ 'rawCode' ];
-                            let rgx = /"(@[\d]+?!)"/g;
+                            let rgx = /"(@[^"]+!)"/g;
                             let key = rgx.exec( code );
                             let iv = rgx.exec( code );
                             if( !key || key.length < 2 ) {
