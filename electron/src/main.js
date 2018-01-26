@@ -41,7 +41,9 @@ function activateWindow() {
 
     // inject headers before a request is made (send to webapp to do the dirty work)
     electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-        if( win && win.webContents ) {
+        // prevent from injecting javascript into the webpage while the webcontent is not yet ready
+        // => required for loading initial page over http protocol (e.g. local hosted test page)
+        if( win && win.webContents && !win.webContents.isLoading() ) {
             // inject javascript: looks stupid, but is a working solution
             // to call a function directly within the render process (without dealing with ipcRenderer)
             win.webContents.executeJavaScript('Engine.Request.getRequestHeaders(\'' + JSON.stringify( details ) + '\');')
