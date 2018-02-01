@@ -62,12 +62,11 @@
                     prefix += season;
                     prefix += ( season.length > 0 && episode.length > 0 ? '.' : '' );
                     prefix += episode;
-                    prefix += ( prefix.length > 0 ? ' - ' : '' );
-                    console.log( prefix, chapter );
+                    prefix += ( prefix.length > 0 ? ' ' : '' );
                     chapter.pages.forEach( ( page ) => {
                         chapters.push( {
                             id: chapter.id + '|' + page,
-                            title: prefix + chapter.title + ' [@' + page + 'p]',
+                            title: prefix + '[' + page + 'p] - ' + chapter.title,
                             language: chapter.language,
                             volume: chapter.volume,
                             number: chapter.number,
@@ -76,7 +75,6 @@
                         } );
                     } );
                 } );
-                console.log( chapters );
                 callback( error, chapters );
             });
         }
