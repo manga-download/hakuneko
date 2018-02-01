@@ -14,21 +14,21 @@
             super();
             // Public members for usage in UI (mandatory)
             super.id       = 'crunchyroll-vrv';
-            super.label    = 'Crunchyroll (VRV)';
+            super.label    = 'Crunchyroll (VRV Premium)';
             super.isLocked = false;
             // Private members for internal usage only (convenience)
-            this.url       = 'http://hakuneko.ovh/db/connectors/5759778777202688';
+            this.url       = 'http://hakuneko.download/db/connectors/5689127638925312';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 username: {
                     label: 'Username',
-                    description: 'Username for login with VRV Premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    description: 'Username for login with VRV premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
                     input: Input.text,
                     value: ''
                 },
                 password: {
                     label: 'Password',
-                    description: 'Password for login with VRV Premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    description: 'Password for login with VRV premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
                     input: Input.password,
                     value: ''
                 }
@@ -40,28 +40,45 @@
          *
          */
         _getMangaList( callback ) {
-            /*
             Engine.Request.fetch( this.url + '/mangas', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : undefined ) );
             });
-            */
-            callback( new Error( 'Not implemented!' ), [] );
         }
 
         /**
          *
          */
         _getChapterList( manga, callback ) {
-            /*
             Engine.Request.fetch( this.url + '/mangas/' + manga.id + '/chapters', ( error, response, content ) => {
-                callback( error, ( !error && content ? JSON.parse( content ).reverse().map( (chapter) => {
-                    chapter.title = chapter.title.replace( ' Read Online', '' );
-                    chapter.title = chapter.title + ' [' + chapter.language + '] by [' + chapter.group + ']';
-                    return chapter;
-                }) : undefined ) );
+                if( error && !content ) {
+                    callback( error, [] );
+                    return;
+                }
+                let chapters = [];
+                JSON.parse( content ).forEach( ( chapter ) => {
+                    let prefix = '';
+                    let season = ( chapter.volume ? 'S' + ( '0' + chapter.volume ).slice( -2 ) : '' );
+                    let episode = ( chapter.number ? 'E' + ( '00' + chapter.number ).slice( -3 ) : '' );
+                    prefix += season;
+                    prefix += ( season.length > 0 && episode.length > 0 ? '.' : '' );
+                    prefix += episode;
+                    prefix += ( prefix.length > 0 ? ' - ' : '' );
+                    console.log( prefix, chapter );
+                    chapter.pages.forEach( ( page ) => {
+                        chapters.push( {
+                            id: chapter.id + '|' + page,
+                            title: prefix + chapter.title + ' [@' + page + 'p]',
+                            language: chapter.language,
+                            volume: chapter.volume,
+                            number: chapter.number,
+                            group: chapter.group,
+                            pages: [ page ]
+                        } );
+                    } );
+                } );
+                console.log( chapters );
+                callback( error, chapters );
             });
-            */
-            callback( new Error( 'Not implemented!' ), [] );
         }
 
         /**
@@ -74,6 +91,13 @@
             });
             */
             callback( new Error( 'Not implemented!' ), [] );
+        }
+
+        /**
+         * 
+         */
+        _onSettingsChanged( e ) {
+            //
         }
     }
 
