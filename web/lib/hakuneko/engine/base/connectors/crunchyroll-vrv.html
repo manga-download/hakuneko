@@ -18,11 +18,14 @@
             super.isLocked = false;
             // Private members for internal usage only (convenience)
             this.url       = 'http://hakuneko.download/db/connectors/5689127638925312';
+            this.initialized = false;
+            this.premium     = false;
+            this.token       = null;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 username: {
-                    label: 'Username',
-                    description: 'Username for login with VRV premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    label: 'E-Mail',
+                    description: 'E-Mail for login with VRV premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
                     input: Input.text,
                     value: ''
                 },
@@ -66,7 +69,7 @@
                     chapter.pages.forEach( ( page ) => {
                         chapters.push( {
                             id: chapter.id + '|' + page,
-                            title: prefix + '[' + page + 'p] - ' + chapter.title,
+                            title: prefix + chapter.title + ' [' + page + 'p]',
                             language: chapter.language,
                             volume: chapter.volume,
                             number: chapter.number,
@@ -88,6 +91,7 @@
                 callback( error, ( !error && content ? JSON.parse( content ).pages : [] ) );
             });
             */
+            console.log( chapter );
             callback( new Error( 'Not implemented!' ), [] );
         }
 
@@ -95,7 +99,48 @@
          * 
          */
         _onSettingsChanged( e ) {
-            //
+            console.log( 'VRV settings ...' );
+            this._login( this.config.username.value, this.config.password.value );
+        }
+
+        /**
+         * Login to vrv website with username and password from settings to
+         * get full access to all series.
+         */
+        _login( username, password ) {
+            if( !username || username.length < 1 || !password || password.length < 1 ) {
+                this.initialized = undefined;
+                return;
+            }
+            let options = {
+                method: 'POST',
+                url: 'https://api.vrv.co/core/authenticate/by:credentials',
+                form : {
+                    email: username,
+                    password: password
+                },
+                // data field required for oauth signature algorithm
+                //data : loginCredentials
+            };/*
+            options.headers = oauth.toHeader( oauth.authorize( options ) );
+            request.post( options, ( error, response, body ) => {
+                error = _getRequestError( error, response, body );
+                if( error ) {
+                    _init( callback );
+                    return;
+                }
+                let content = JSON.parse( body );
+                oauthToken = {
+                    key: content.oauth_token,
+                    secret: content.oauth_token_secret
+                }
+                // (re-)initialize API urls
+                _init( callback );
+            } );
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                //
+            } );*/
+            this.initialized = true;
         }
     }
 
