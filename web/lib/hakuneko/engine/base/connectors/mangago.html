@@ -41,6 +41,9 @@
                 { id: '1269606c6c3d8bb6508426468216d6b1', pattern: '49a15a0a60a14a26a34a69a61a24a35a4a77a80a70a40a39a6a68a17a41a56a28a46a79a16a21a1a37a42a44a58a78a18a52a73a32a9a12a50a8a13a20a19a67a36a45a75a48a10a65a7a38a66a3a2a43a27a29a31a72a74a55a23a54a22a59a57a11a62a47a53a30a5a64a25a76a71a51a33a63' },
                 { id: '33a3b21bb2d14a09d15f995224ae4284', pattern: '30a59a35a34a42a8a10a56a70a64a48a69a26a18a6a16a54a24a73a79a68a33a32a2a63a53a31a14a17a57a41a80a76a40a60a12a43a29a39a4a77a58a66a36a38a52a13a19a0a75a28a55a25a61a71a11a67a49a23a45a5a15a1a50a51a9a44a47a65a74a72a27a7a37a46a20a22a62a78a21a3' },
                 { id: '9ae6640761b947e61624671ef841ee78', pattern: '62a25a21a75a42a61a73a59a23a19a66a38a71a70a6a55a3a16a43a32a53a37a41a28a49a63a47a17a7a30a78a46a20a67a56a79a65a14a69a60a8a52a22a9a24a2a4a13a36a27a0a18a33a12a44a5a76a26a29a40a1a11a64a48a39a51a80a72a68a10a58a35a77a54a34a74a57a31a50a45a15' },
+                { id: 'f4ab0903149b5d94baba796a5cf05938', pattern: '40a37a55a73a18a42a15a59a50a13a22a63a52a58a6a80a47a17a38a71a74a70a30a11a10a19a0a31a36a21a51a68a1a3a14a66a45a2a79a7a76a75a8a67a20a78a25a69a43a28a35a60a4a23a65a54a34a9a5a39a27a57a26a33a12a24a46a72a56a44a49a61a64a29a53a48a32a62a41a16a77' },
+                { id: 'f5baf770212313f5e9532ec5e6103b61', pattern: '55a69a78a75a38a25a20a60a6a80a46a5a48a18a23a24a17a67a64a70a63a57a22a10a49a19a8a16a11a12a61a76a34a27a54a73a44a0a56a3a15a29a28a13a4a2a7a77a74a35a37a26a30a58a9a71a50a1a43a79a47a32a14a53a52a66a72a59a68a31a42a45a62a51a40a39a33a65a41a36a21' },
+                { id: 'e2169a4bfd805e9aa21d3112d498d68c', pattern: '54a34a68a69a26a20a66a1a67a74a22a39a63a70a5a37a75a15a6a14a62a50a46a35a44a45a28a8a40a25a29a76a51a77a17a47a0a42a2a9a48a27a13a64a58a57a18a30a80a23a61a36a60a59a71a32a7a38a41a78a12a49a43a79a24a31a52a19a3a53a72a10a73a11a33a16a4a55a65a21a56' },
             ];
             this.config = undefined;
 
@@ -188,9 +191,21 @@
                         if( e.data.id === messageID ) {
                             this.sandbox.removeEventListener( 'message', eventListener );
                             code = e.data.content[ 'rawCode' ];
-                            let rgx = /"(@[^"]+!)"/g;
-                            let key = rgx.exec( code );
-                            let iv = rgx.exec( code );
+                            let rgx1 = /_deskeys\s*\[\s*['"]([a-f0-9]+?)['"]\s*\]\s*=\s*['"]([a0-9]+?)['"]\s*;/g;
+                            let desKey;
+                            while( desKey = rgx1.exec( code ) ) {
+                                let id = desKey[1];
+                                let pattern = desKey[2];
+                                if( id && pattern && !this.desKeys.find( ( dk ) => { return dk.id === id; } ) ) {
+                                    this.desKeys.push( {
+                                        id: id,
+                                        pattern: pattern
+                                    } );
+                                }
+                            }
+                            let rgx2 = /"(@[^"]+!)"/g;
+                            let key = rgx2.exec( code );
+                            let iv = rgx2.exec( code );
                             if( !key || key.length < 2 ) {
                                 callback( new Error( 'Failed to detect decryption key!' ), pages );
                                 return;
@@ -205,6 +220,15 @@
                             } ).toString( CryptoJS.enc.Utf8 ).split( ',' );
                             // first 5 bytes are always broken (seems IV issue caused by mangago)
                             imgsrcs[0] = 'http://' + imgsrcs[0].substring( 7 );
+                            imgsrcs = imgsrcs.filter( ( link ) => {
+                                try {
+                                    new URL( link );
+                                    return true;
+                                } catch ( e ) {
+                                    console.warn( 'Invalid image URL (skipped): ' + link );
+                                    return false;
+                                }
+                            });
                             pages = imgsrcs.map( ( link ) => {
                                 let uri = new URL( link );
                                 uri.protocol = this.id;
