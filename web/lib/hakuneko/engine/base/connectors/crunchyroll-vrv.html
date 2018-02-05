@@ -65,7 +65,7 @@
                     prefix += season;
                     prefix += ( season.length > 0 && episode.length > 0 ? '.' : '' );
                     prefix += episode;
-                    prefix += ( prefix.length > 0 ? ' ' : '' );
+                    prefix += ( prefix.length > 0 ? ' - ' : '' );
                     chapter.pages.forEach( ( page ) => {
                         chapters.push( {
                             id: chapter.id + '|' + page,
@@ -77,6 +77,16 @@
                             pages: [ page ]
                         } );
                     } );
+                } );
+                chapters.sort( ( a, b ) => {
+                    if( a.volume !== b.volume ) {
+                        return ( b.volume - a.volume );
+                    }
+                    if ( a.number !== b.number ) {
+                        return ( b.number - a.number );
+                    }
+                    //return ( a.pages[0] > b.pages[0] ? 1 :-1 );
+                    return ( parseInt( b.pages[0] ) - parseInt( a.pages[0] ) );
                 } );
                 callback( error, chapters );
             });
