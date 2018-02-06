@@ -87,7 +87,7 @@
                     prefix += ( prefix.length > 0 ? ' - ' : '' );
                     chapter.pages.forEach( ( page ) => {
                         chapters.push( {
-                            id: chapter.url + '|' + page,
+                            id: chapter.url + '.' + page,
                             title: prefix + chapter.title + ' [' + page + 'p]',
                             language: chapter.language,
                             volume: chapter.volume,
@@ -115,7 +115,9 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let identifier = chapter.id.split( '|' );
+            //let type = chapter.manga.id.split( '|' )[1];
+            console.log( chapter.manga );
+            let identifier = chapter.id.split( '.' );
             let id = identifier[0];
             let resolution = parseInt( identifier[1] );
             let options = {
@@ -126,12 +128,24 @@
             Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content );
                 if( error ) {
-                    callback( error, [] );
-                    return;
+                    // try to get movie info
+                    options.url = this.api.cms + '/movies/' + id;
+                    this._mergePolicyParams( options );
+                    Engine.Request.fetch( options, ( error, response, content ) => {
+                        error = this._getRequestError( error, response, content );
+                        if( error ) {
+                            callback( error, [] );
+                            return;
+                        }
+                        let item = JSON.parse( content );
+                        let streamsURL = ( item.__links__.streams ? this.api.base + item.__links__.streams.href : undefined );
+                        this._getMedia( streamsURL, resolution, callback );
+                    } );
+                } else {
+                    let item = JSON.parse( content );
+                    let streamsURL = ( item.__links__.streams ? this.api.base + item.__links__.streams.href : undefined );
+                    this._getMedia( streamsURL, resolution, callback );
                 }
-                let item = JSON.parse( content );
-                let streamsURL = ( item.__links__.streams ? this.api.base + item.__links__.streams.href : undefined );
-                this._getMedia( streamsURL, resolution, callback );
             } );
         }
 
@@ -161,7 +175,6 @@
                 });
                 let href = ( content.streams.adaptive_hls[''] ? content.streams.adaptive_hls[''].url : content.streams.adaptive_hls['en-US'].url );
                 this._getPlaylist( href, resolution, ( error, playlist ) => {
-                    console.log( 'VIDEO', { playlist: playlist, subtitles: subtitles } );
                     callback( null, { playlist: playlist, subtitles: subtitles } );
                 } );
             } );
@@ -216,7 +229,6 @@
          * 
          */
         _onSettingsChanged( e ) {
-            console.log( 'VRV settings ...' );
             this._login( this.config.username.value, this.config.password.value );
         }
 

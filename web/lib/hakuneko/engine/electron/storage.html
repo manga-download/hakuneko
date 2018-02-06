@@ -15,6 +15,7 @@
             let electron = require( 'electron' );
             this.dialog = electron.remote.dialog;
             this.platform = electron.remote.process.platform;
+            this.exec = electron.remote.require( 'child_process' ).exec;
             this.jszip = electron.remote.require( 'jszip' );
             this.fs = require( 'fs' );
             this.path = require( 'path' );
@@ -317,6 +318,33 @@
                     promise.resolve( key );
                 });
             });
+        }
+
+        /**
+         * Store a file directly in the chapter directory
+         */
+        saveChapterFile( chapter, content, callback ) {
+            let file = this._mangaOutputPath( chapter.manga );
+            file = this.path.join( file, this.sanatizePath( chapter.title ) );
+            this._createDirectoryChain( file );
+            file = this.path.join( file, this.sanatizePath( content.name ) );
+            this.fs.writeFile( file, content.data, function( error ) {
+                callback( error );
+            });
+        }
+
+        /**
+         * Multiplex chapter playlist/streams using the given ffmpeg command (without output format & file!).
+         * The chapter directory is the working directory, and will be deleted after muxing.
+         * The output file will be stored directly in the manga directory.
+         */
+        muxPlaylistHLS( chapter, ffmpeg, callback ) {
+            let directory = this._mangaOutputPath( chapter.manga );
+            this._createDirectoryChain( directory );
+            let file = this.path.join( directory, this.sanatizePath( chapter.title + '.mkv' ) );
+            directory = this.path.join( directory, this.sanatizePath( chapter.title ) );
+            ffmpeg += ' -f matroska -y "' + file + '"';
+            this.exec( ffmpeg, { cwd: directory, windowsHide: true }, callback );
         }
 
         /**
