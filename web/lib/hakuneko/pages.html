@@ -77,14 +77,18 @@
                 cursor: pointer;
                 margin: 0.25em;
             }
+            #video {
+                width: 100%;
+                background-color: rgba(0, 0, 0, 0.25);
+            }
         </style>
-        <div id="container" style$="background-color: [[ getContainerColor(selectedPage) ]];">
-            <template is="dom-if" if="[[ !pageViewMode(selectedPage) ]]">
-                <template is="dom-repeat" items="[[ pages ]]">
+        <div id="container" style$="background-color: [[ getContainerColor(selectedMedia) ]];">
+            <template is="dom-if" if="[[ thumbnailViewMode(media,selectedMedia) ]]">
+                <template is="dom-repeat" items="[[ media ]]">
                     <div class="thumbnail" style$="background-image: url('[[ item ]]');" on-click="showViewer" title$="Page [[ index ]]"></div>
                 </template>
             </template>
-            <template is="dom-if" if="[[ pageViewMode(selectedPage) ]]">
+            <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
                 <div class="buttons">
                     <span class="title">[[ selectedChapter.title ]]</span>
                     <i class="fa fa-chevron-down fa-2x button" title="Chapter Down" on-click="requestChapterDown"></i>
@@ -95,9 +99,12 @@
                     &nbsp;
                     <i class="fa fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
                 </div>
-                <template is="dom-repeat" items="[[ pages ]]" style="margin-top: 1.5em;">
+                <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
                     <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%;"></div>
                 </template>
+            </template>
+            <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
+                <video id="video" controls></video>
             </template>
         </div>
     </template>
@@ -122,7 +129,7 @@
                         value: undefined,
                         observer: 'onSelectedChapterChanged'
                     },
-                    selectedPage: {
+                    selectedMedia: {
                         type: Number,
                         value: -1,
                         notify: true // enable upward data flow
@@ -136,23 +143,24 @@
              */
             ready() {
                 super.ready();
-                this.pages = undefined;
-                this.selectedPage = -1;
+                this.media = undefined;
+                this.selectedMedia = -1;
                 this.imageWidth = 75;
+                this.hls = new Hls();
             }
 
             /**
              * Observer will be executed, whenever the 'selectedChapter' is changed.
              */
             onSelectedChapterChanged( chapter ) {
-                this.set( 'pages', undefined );
+                this.set( 'media', undefined );
                 if( !chapter ) {
                     return;
                 }
                 // TODO: abort any pending page request (maybe store current request in global variable?)
-                chapter.getPages( ( error, pages ) => {
+                chapter.getPages( ( error, media ) => {
                     if( chapter === this.selectedChapter ) {
-                        this.set( 'pages', pages );
+                        this.set( 'media', media );
                         if( error ) {
                             alert( error.message );
                         }
@@ -164,35 +172,60 @@
              *
              */
             showViewer( e ) {
-                this.set( 'selectedPage', e.model.index);
-                this.set( 'viewerStyle.bgImage', this.pages[this.selectedPage] );
+                this.set( 'selectedMedia', e.model.index);
+                this.set( 'viewerStyle.bgImage', this.media[this.selectedMedia] );
                 // embed in timeout function to ensure image layout is updated before adjusting scroll offsetTop
-                setTimeout( function(){
-                    // find offset for image with id=selectedPage and scroll to page
-                    this.$.container.scrollTop = this.$.container.querySelector('#page_' + this.selectedPage).offsetTop;
-                }.bind( this ), 0 );
+                setTimeout( () => {
+                    // find offset for image with id=selectedMedia and scroll to page
+                    this.$.container.scrollTop = this.$.container.querySelector('#page_' + this.selectedMedia).offsetTop;
+                }, 0 );
             }
 
             /**
              *
              */
             hideViewer( e ) {
-                this.set( 'selectedPage', -1 );
+                this.set( 'selectedMedia', -1 );
                 this.$.container.scrollTop = 0;
             }
 
             /**
              *
              */
-            getContainerColor( selectedPage ) {
-                return ( this.pageViewMode( selectedPage ) ? 'var(--page-reader-background-color)' : 'var(--page-control-background-color)' );
+            getContainerColor( selectedMedia ) {
+                return ( ( selectedMedia > -1 ) ? 'var(--page-reader-background-color)' : 'var(--page-control-background-color)' );
+            }
+
+            /**
+            *
+            */
+            thumbnailViewMode( media, selectedMedia ) {
+                return ( media && media.length && selectedMedia < 0 );
             }
 
             /**
              *
              */
-            pageViewMode( selectedPage ) {
-                return ( selectedPage > -1 );
+            pageViewMode( media, selectedMedia ) {
+                return ( media && media.length && selectedMedia > -1 );
+            }
+
+            /**
+             *
+             */
+            videoViewMode( media, selectedMedia ) {
+                return ( media && ( media.playlist || media.video ) );
+            }
+
+            /**
+             *
+             */
+            onVideoElementChanged( e ) {
+                let element = this.shadowRoot.querySelector( '#video' );
+                if( element && this.media && this.media.playlist ) {
+                    this.hls.loadSource( this.media.playlist );
+                    this.hls.attachMedia( this.shadowRoot.querySelector( '#video' ) );
+                }
             }
 
             /**
