@@ -115,8 +115,6 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            //let type = chapter.manga.id.split( '|' )[1];
-            console.log( chapter.manga );
             let identifier = chapter.id.split( '.' );
             let id = identifier[0];
             let resolution = parseInt( identifier[1] );

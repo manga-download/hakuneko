@@ -223,8 +223,11 @@
             onVideoElementChanged( e ) {
                 let element = this.shadowRoot.querySelector( '#video' );
                 if( element && this.media && this.media.playlist ) {
-                    this.hls.loadSource( this.media.playlist );
                     this.hls.attachMedia( this.shadowRoot.querySelector( '#video' ) );
+                    this.hls.loadSource( this.media.playlist );
+                } else {
+                    this.hls.stopLoad();
+                    this.hls.detachMedia();
                 }
             }
 
