@@ -222,12 +222,18 @@
              */
             onVideoElementChanged( e ) {
                 let element = this.shadowRoot.querySelector( '#video' );
-                if( element && this.media && this.media.playlist ) {
-                    this.hls.attachMedia( this.shadowRoot.querySelector( '#video' ) );
-                    this.hls.loadSource( this.media.playlist );
-                } else {
+                if( element ) {
+                    element.pause();
                     this.hls.stopLoad();
                     this.hls.detachMedia();
+                    element.src = '';
+                    if( this.media && this.media.playlist ) {
+                        this.hls.attachMedia( element );
+                        this.hls.loadSource( this.media.playlist );
+                    }
+                    if( this.media && this.media.video ) {
+                        element.src = this.media.video;
+                    }
                 }
             }
 

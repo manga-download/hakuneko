@@ -79,6 +79,10 @@
             this.fs.readdir( directory, ( error, entries ) => {
                 let titleMap = [];
                 if( !error ) {
+                    // TODO: only add supported files / folders
+                    entries = entries.filter( ( path ) => {
+                        return true;
+                    } );
                     // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
                     entries.forEach( ( title ) => {
                         titleMap[title] = true;
@@ -95,31 +99,31 @@
          */
         loadChapterPages( chapter, callback ) {
             let path = this._chapterOutputPath( chapter );
-            if( chapter.status === DownloadStatus.offline ) {
-                if( path.endsWith( ChapterFormat.epub ) ) {
-                    return this._loadChapterPagesEPUB( path, callback );
-                }
-                if( path.endsWith( ChapterFormat.pdf ) ) {
-                    //return this._loadChapterPagesPDF( path, callback );
-                }
-                if( path.endsWith( ChapterFormat.cbz ) ) {
-                    return this._loadChapterPagesCBZ( path, callback );
-                }
-                return this._loadChapterPagesFolder( path, callback );
-            } else {
-                if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
-                    this._loadChapterPagesFolder( path, callback );
-                }
-                if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
-                    this._loadChapterPagesCBZ( path, callback );
-                }
-                if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
-                    //this._loadChapterPagesPDF( path, callback );
-                }
-                if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
-                    this._loadChapterPagesEPUB( path, callback );
-                }
+            if( path.endsWith( EpisodeFormat.mkv ) ) {
+                return this._loadEpisodeMKV( path, callback );
             }
+            if( path.endsWith( ChapterFormat.epub ) ) {
+                return this._loadChapterPagesEPUB( path, callback );
+            }
+            if( path.endsWith( ChapterFormat.pdf ) ) {
+                //return this._loadChapterPagesPDF( path, callback );
+            }
+            if( path.endsWith( ChapterFormat.cbz ) ) {
+                return this._loadChapterPagesCBZ( path, callback );
+            }
+            this._loadChapterPagesFolder( path, callback );
+        }
+
+        /**
+         * 
+         */
+        _loadEpisodeMKV( matroska, callback ) {
+            // TODO: load subtitles
+            let media = {
+                video: this._makeValidFileURL( matroska, '' ),
+                subtitles: []
+            }
+            callback( null, media );
         }
 
         /**
@@ -205,14 +209,17 @@
                     return callback( error, undefined );
                 }
                 let pages = files.map( ( file ) => {
-                    file = this.path.join( directory, file );
-                    // websecurity is disabled => direct access to file links
-                    return encodeURI( 'file://' + file.replace(/\\/g, '/') ).replace(/#/g, '%23').replace(/'/g, '%27');
-                    //return 'file://' + encodeURIComponent( file.replace(/\\/g, '/') ).replace(/%2F/g, '/').replace(/'/g, '%27'); // this replaces colon after windows drive letter => not shown in src of image tag
-                    //return 'data:image/jpeg;base64,' + fs.readFileSync( file ).toString( 'base64' );
-                });
+                    return this._makeValidFileURL( directory, file );
+                } );
                 callback( null, pages );
             });
+        }
+
+        /**
+         * 
+         */
+        _makeValidFileURL( directory, file ) {
+            return encodeURI( 'file://' + this.path.join( directory, file ).replace(/\\/g, '/') ).replace(/#/g, '%23').replace(/'/g, '%27');
         }
 
         /**
@@ -341,7 +348,7 @@
         muxPlaylistHLS( chapter, ffmpeg, callback ) {
             let directory = this._mangaOutputPath( chapter.manga );
             this._createDirectoryChain( directory );
-            let file = this.path.join( directory, this.sanatizePath( chapter.title + '.mkv' ) );
+            let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mkv ) );
             directory = this.path.join( directory, this.sanatizePath( chapter.title ) );
             ffmpeg += ' -f matroska -y "' + file + '"';
             this.exec( ffmpeg, { cwd: directory, windowsHide: true }, callback );
@@ -376,14 +383,11 @@
             if( chapter.status === DownloadStatus.offline ) {
                 return output;
             }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
-                output += ChapterFormat.cbz;
+            if( this.fs.existsSync( output + EpisodeFormat.mkv ) ) {
+                return output + EpisodeFormat.mkv;
             }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
-                output += ChapterFormat.pdf;
-            }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
-                output += ChapterFormat.epub;
+            if( Engine.Settings.chapterFormat.value !== ChapterFormat.img ) {
+                output += Engine.Settings.chapterFormat.value;
             }
             return output;
         }
