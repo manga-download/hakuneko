@@ -80,6 +80,10 @@
                 let titleMap = [];
                 if( !error ) {
                     // TODO: only add supported files / folders
+                    // file that ends with any of the supported extension,
+                    // folders that not ends with m3u8
+                    // folders that contains m3u8?
+                    // folders that contains any image?
                     entries = entries.filter( ( path ) => {
                         return true;
                     } );
@@ -330,9 +334,9 @@
         /**
          * Store a file directly in the chapter directory
          */
-        saveChapterFile( chapter, content, callback ) {
+        saveChapterFileM3U8( chapter, content, callback ) {
             let file = this._mangaOutputPath( chapter.manga );
-            file = this.path.join( file, this.sanatizePath( chapter.title ) );
+            file = this.path.join( file, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
             this._createDirectoryChain( file );
             file = this.path.join( file, this.sanatizePath( content.name ) );
             this.fs.writeFile( file, content.data, function( error ) {
@@ -345,11 +349,11 @@
          * The chapter directory is the working directory, and will be deleted after muxing.
          * The output file will be stored directly in the manga directory.
          */
-        muxPlaylistHLS( chapter, ffmpeg, callback ) {
+        muxPlaylistM3U8( chapter, ffmpeg, callback ) {
             let directory = this._mangaOutputPath( chapter.manga );
             this._createDirectoryChain( directory );
             let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mkv ) );
-            directory = this.path.join( directory, this.sanatizePath( chapter.title ) );
+            directory = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
             ffmpeg += ' -f matroska -y "' + file + '"';
             this.exec( ffmpeg, { cwd: directory, windowsHide: true }, callback );
         }

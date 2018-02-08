@@ -154,7 +154,7 @@
                 args = args.concat( ffmpeg.metas );
                 args = args.concat( [ '-c', 'copy' ] );
                 // multiplex media
-                Engine.Storage.muxPlaylistHLS( this.chapter, args.join( ' ' ), ( error ) => {
+                Engine.Storage.muxPlaylistM3U8( this.chapter, args.join( ' ' ), ( error ) => {
                     if( error ) {
                         console.error( error );
                         this.errors.push( error );
@@ -190,7 +190,7 @@
                                     this.errors.push( new Error( 'Packet "' + link + '" returned status code ' + response.statusCode ) );
                                 } else {
                                     let storageKey = promise.defer();
-                                    Engine.Storage.saveChapterFile( this.chapter, { name: file, data: content }, ( storageError ) => {
+                                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: file, data: content }, ( storageError ) => {
                                         if( storageError ) {
                                             this.errors.push( storageError );
                                         }
@@ -205,7 +205,7 @@
                     // save modified playlist
                     ffmpeg.inputs.push( '-i', '"' + this.chapter.id + '.m3u8"' );
                     let playlistKey = promise.defer();
-                    Engine.Storage.saveChapterFile( this.chapter, { name: this.chapter.id + '.m3u8', data: content }, ( storageError ) => {
+                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: this.chapter.id + '.m3u8', data: content }, ( storageError ) => {
                         if( storageError ) {
                             this.errors.push( storageError );
                         }
@@ -230,7 +230,7 @@
                                     this.errors.push( new Error( 'Subtitle "' + subtitle.url + '" returned status code ' + response.statusCode ) );
                                 } else {
                                     let storageKey = promise.defer();
-                                    Engine.Storage.saveChapterFile( this.chapter, { name: file, data: content }, ( storageError ) => {
+                                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: file, data: content }, ( storageError ) => {
                                         if( storageError ) {
                                             this.errors.push( storageError );
                                         }
