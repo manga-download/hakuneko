@@ -84,9 +84,18 @@
                     // folders that not ends with m3u8
                     // folders that contains m3u8?
                     // folders that contains any image?
+                    /*
                     entries = entries.filter( ( path ) => {
-                        return true;
+                        return (
+                            path.endsWith( EpisodeFormat.m3u8 ) || 
+                            path.endsWith( EpisodeFormat.mkv ) ||
+                            path.endsWith( ChapterFormat.epub ) ||
+                            path.endsWith( ChapterFormat.cbz ) ||
+                            path.endsWith( ChapterFormat.pdf )
+                            // what about directory with images ???
+                        );
                     } );
+                    */
                     // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
                     entries.forEach( ( title ) => {
                         titleMap[title] = true;
@@ -103,6 +112,9 @@
          */
         loadChapterPages( chapter, callback ) {
             let path = this._chapterOutputPath( chapter );
+            if( path.endsWith( EpisodeFormat.m3u8 ) ) {
+                return this._loadEpisodeM3U8( path, callback );
+            }
             if( path.endsWith( EpisodeFormat.mkv ) ) {
                 return this._loadEpisodeMKV( path, callback );
             }
@@ -116,6 +128,28 @@
                 return this._loadChapterPagesCBZ( path, callback );
             }
             this._loadChapterPagesFolder( path, callback );
+        }
+
+        /**
+         * 
+         */
+        _loadEpisodeM3U8( directory, callback ) {
+            this.fs.readdir( directory, ( error, files ) => {
+                if( error ) {
+                    return callback( error, undefined );
+                }
+                let playlist = files.find( ( file ) => {
+                    return file.endsWith( EpisodeFormat.m3u8 );
+                } );
+                let subtitles = files.filter( ( file ) => {
+                    return file.endsWith( '.ass' );
+                } );
+                let media = {
+                    playlist: this._makeValidFileURL( directory, playlist ),
+                    subtitles: subtitles.sort().map( subtitle => this._makeValidFileURL( directory, subtitle ) )
+                }
+                callback( null, media );
+            });
         }
 
         /**
@@ -387,9 +421,15 @@
             if( chapter.status === DownloadStatus.offline ) {
                 return output;
             }
+            // only valid for loading anime episodes, ignored when save pages
+            if( this.fs.existsSync( output + EpisodeFormat.m3u8 ) ) {
+                return output + EpisodeFormat.m3u8;
+            }
+            // only valid for loading anime episodes, ignored when save pages
             if( this.fs.existsSync( output + EpisodeFormat.mkv ) ) {
                 return output + EpisodeFormat.mkv;
             }
+            // used when loading and saving manga chapters
             if( Engine.Settings.chapterFormat.value !== ChapterFormat.img ) {
                 output += Engine.Settings.chapterFormat.value;
             }
