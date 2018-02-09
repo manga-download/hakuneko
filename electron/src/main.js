@@ -34,6 +34,7 @@ function activateWindow() {
         width: 1120,
         height: 680,
         webPreferences: {
+            experimentalFeatures: true,
             nodeIntegration: true,
             webSecurity: false // required to open local images in browser
         }
