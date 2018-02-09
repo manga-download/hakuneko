@@ -151,7 +151,8 @@
                         return {
                             format: parts[parts.length-1],
                             locale: parts[parts.length-2],
-                            url: this._makeValidFileURL( directory, subtitle )
+                            url: this._makeValidFileURL( directory, subtitle ),
+                            content: this.fs.readFileSync( this.path.join( directory, subtitle ), { encoding: 'utf-8' } )
                         };
                     } )
                 }
