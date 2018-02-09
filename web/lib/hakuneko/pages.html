@@ -104,7 +104,11 @@
                 </template>
             </template>
             <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
-                <video id="video" controls></video>
+                <video id="video" controls on-click="onSelectedSubtitleChanged">
+                    <template is="dom-repeat" items="[[ media.subtitles ]]">
+                        <track kind="subtitles" src="data:text/vtt," label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
+                    </template>
+                </video>
             </template>
         </div>
     </template>
@@ -145,8 +149,11 @@
                 super.ready();
                 this.media = undefined;
                 this.selectedMedia = -1;
+                this.selectedSubtitle = -1;
                 this.imageWidth = 75;
                 this.hls = new Hls();
+                this.ass = undefined;
+                this.videoResizeObserver = new ResizeObserver( this.onVideoResized );
             }
 
             /**
@@ -166,6 +173,37 @@
                         }
                     }
                 });
+            }
+
+            /**
+             *
+             */
+            onSelectedSubtitleChanged( e ) {
+                if( this.ass ) {
+                    //this.ass.destroy();
+                }
+                let tracks = e.path[0].textTracks;//this.shadowRoot.querySelector( '#video' ).textTracks;
+                setTimeout( () => {
+                    // assumption: tracks are in same order as subtitles ...
+                    let subtitle = -1;
+                    for(let index = 0; index < this.media.subtitles.length; index++ ) {
+                        if( tracks[index].mode === 'showing' ) {
+                            subtitle = index;
+                            break;
+                        }
+                    }
+                    if( this.selectedSubtitle !== subtitle ) {
+                        if(subtitle > -1 ) {
+                            // load new subtitle
+                            //this.ass = new ASS( '', element );
+                            console.log( 'SUBTITLE', 'ON', this.media.subtitles[subtitle] );
+                        } else {
+                            // disable subtitle
+                            console.log( 'SUBTITLE', 'OFF', subtitle );
+                        }
+                        this.selectedSubtitle = subtitle;
+                    }
+                }, 250 );
             }
 
             /**
@@ -230,11 +268,21 @@
                     if( this.media && this.media.playlist ) {
                         this.hls.attachMedia( element );
                         this.hls.loadSource( this.media.playlist );
+                        console.log( this.media.subtitles );
                     }
                     if( this.media && this.media.video ) {
                         element.src = this.media.video;
                     }
+                    this.videoResizeObserver.observe( element );
                 }
+            }
+
+            /**
+             *
+             */
+            onVideoResized( e ) {
+                console.log( 'RESIZED', e[0].target );
+                // this.ass.resize();
             }
 
             /**
