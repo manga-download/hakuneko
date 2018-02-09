@@ -146,7 +146,14 @@
                 } );
                 let media = {
                     playlist: this._makeValidFileURL( directory, playlist ),
-                    subtitles: subtitles.sort().map( subtitle => this._makeValidFileURL( directory, subtitle ) )
+                    subtitles: subtitles.sort().map( subtitle => {
+                        let parts = subtitle.split( '.' );
+                        return {
+                            format: parts[parts.length-1],
+                            locale: parts[parts.length-2],
+                            url: this._makeValidFileURL( directory, subtitle )
+                        };
+                    } )
                 }
                 callback( null, media );
             });
