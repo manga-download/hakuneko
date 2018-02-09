@@ -1870,6 +1870,7 @@ function init(source, video, options) {
   if ( options === void 0 ) options = {};
 
   this.scale = 1;
+  let shadowRoot = video.getRootNode();
 
   // private variables
   this._ = {
@@ -1886,7 +1887,7 @@ function init(source, video, options) {
   this._.$stage.className = 'ASS-stage ASS-animation-paused';
   this._.$animation.type = 'text/css';
   this._.$animation.className = 'ASS-animation';
-  document.head.appendChild(this._.$animation);
+  shadowRoot.appendChild(this._.$animation);
 
   this._.resampling = options.resampling || 'video_height';
 
@@ -1920,13 +1921,13 @@ function init(source, video, options) {
   };
   this.dialogues = dialogues;
 
-  var $style = document.getElementById('ASS-global-style');
+  var $style = shadowRoot.querySelector('#ASS-global-style');
   if (!$style) {
     $style = document.createElement('style');
     $style.type = 'text/css';
     $style.id = 'ASS-global-style';
     $style.appendChild(document.createTextNode(GLOBAL_CSS));
-    document.head.appendChild($style);
+    shadowRoot.appendChild($style);
   }
 
   resize.call(this);
@@ -1963,7 +1964,7 @@ function destroy() {
       this.video.play();
     }
   }
-  document.head.removeChild(this._.$animation);
+  this.video.getRootNode().removeChild(this._.$animation);
   // eslint-disable-next-line no-restricted-syntax
   for (var key in this$1) {
     if (Object.prototype.hasOwnProperty.call(this$1, key)) {
