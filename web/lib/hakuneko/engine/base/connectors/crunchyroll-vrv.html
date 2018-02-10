@@ -13,9 +13,10 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id       = 'crunchyroll-vrv';
-            super.label    = 'Crunchyroll (VRV Premium)';
-            super.isLocked = false;
+            super.id         = 'crunchyroll-vrv';
+            super.label      = 'VRV Premium* (Crunchyroll)';
+            super.isLocked   = false;
+            this.initialized = false;
             // Private members for internal usage only (convenience)
             this.url       = 'http://hakuneko.download/db/connectors/5689127638925312';
             this.api       = {
@@ -25,10 +26,11 @@
                 public: undefined,
                 private: undefined
             };
-            this.initialized = false;
-            this.premium     = false;
-            this.token       = null;
-            this.policies    = [];
+            this.subscriptionID = 'crunchyroll';
+            this.subscription   = false;
+            this.regionBlock    = true;
+            this.token          = null;
+            this.policies       = [];
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 username: {
@@ -115,6 +117,11 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            let authError = this._validateAuthorization();
+            if( authError ) {
+                callback( authError, [] );
+                return;
+            }
             let identifier = chapter.id.split( '.' );
             let id = identifier[0];
             let resolution = parseInt( identifier[1] );
@@ -233,15 +240,25 @@
         /**
          * 
          */
+        _validateAuthorization() {
+            if( this.regionBlock ) {
+                return new Error( 'VRV service is not available in your country!' );
+            }
+            if( !this.subscription ) {
+                return new Error( 'In order to access the content, a paid VRV (Crunchyroll channel) subscription is required!' );
+            }
+            return null;
+        }
+
+        /**
+         * 
+         */
         _getRequestError( error, response, content ) {
             if( error ) {
                 return error;
             }
             if( response.statusCode === 403 ) {
-                this.token = undefined;
-                this.api.cms = undefined;
-                this.api.public = undefined;
-                this.api.private = undefined;
+                this._logout();
             }
             if( response.statusCode !== 200 ) {
                 try {
@@ -277,6 +294,7 @@
          * get full access to all series.
          */
         _login( username, password ) {
+            this._logout();
             if( !username || username.length < 1 || !password || password.length < 1 ) {
                 this._init();
                 return;
@@ -297,7 +315,7 @@
             Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content );
                 if( error ) {
-                    console.warn( error );
+                    console.warn( 'VRV login failed!', error );
                     this._init();
                     return;
                 }
@@ -306,10 +324,20 @@
                     key: content.oauth_token,
                     secret: content.oauth_token_secret
                 };
-                // TODO: verify account is really premium account ...
-                this.premium = true;
                 this._init();
             } );
+        }
+
+        /**
+         * 
+         */
+        _logout() {
+            this.token = undefined;
+            this.api.cms = undefined;
+            this.api.public = undefined;
+            this.api.private = undefined;
+            this.subscription = false;
+            this.regionBlock = true;
         }
 
         /**
@@ -330,7 +358,7 @@
             Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content );
                 if( error ) {
-                    console.warn( error );
+                    console.warn( 'VRV initialization failed!', error );
                     this.initialized = undefined;
                     return;
                 }
@@ -339,6 +367,9 @@
                 this.api.public = this.api.base + content.__links__.disc_index_unsigned.href.replace( /\/index$/, '' ).replace( '/private/', '/public/' ).replace( /\/\d+$/, '/-');
                 this.api.private = this.api.base + content.__links__.disc_index_unsigned.href.replace( /\/index$/, '' );
                 this.policies = content.signing_policies;
+                // verify if premium access is granted
+                this.subscription = ( this.api.private.indexOf( this.subscriptionID ) > -1 );
+                this.regionBlock = !content.service_available;
                 this.initialized = true;
             } );
         }
