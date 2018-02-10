@@ -31,10 +31,11 @@
                         return;
                     }
                     // prevent images and iframes from loading
+                    content = content.replace( /<img/g, '<source').replace( /<\/img/g, '<\/source');
                     content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                     let dom = document.createElement( 'html' );
                     dom.innerHTML = content;
-                    let image = dom.querySelector( '#imgholder a img' );
+                    let image = dom.querySelector( '#imgholder a #img' );
                     if( !image ) {
                         callback( undefined );
                         return;
