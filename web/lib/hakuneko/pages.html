@@ -81,6 +81,14 @@
                 width: 100%;
                 background-color: rgba(0, 0, 0, 0.25);
             }
+            /* hack to allow video to expand size when wrapped in subtitle container */
+            .ASS-container, .ASS-container svg {
+                width: 100% !important;
+            }
+            /* hack to show subtitles when video is in fullscreen mode */
+            .ASS-stage {
+                z-index: 2147483647;
+            }
         </style>
         <div id="container" style$="background-color: [[ getContainerColor(selectedMedia) ]];">
             <template is="dom-if" if="[[ thumbnailViewMode(media,selectedMedia) ]]">
@@ -105,6 +113,7 @@
             </template>
             <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
                 <video id="video" controls on-click="onSelectedSubtitleChanged">
+                    <!-- dummy tracks to show subtitle menu in video player -->
                     <template is="dom-repeat" items="[[ media.subtitles ]]">
                         <track kind="subtitles" src="data:text/vtt," label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
                     </template>
@@ -151,9 +160,9 @@
                 this.selectedMedia = -1;
                 this.selectedSubtitle = -1;
                 this.imageWidth = 75;
-                this.hls = new Hls();
+                this.hls = undefined;
                 this.ass = undefined;
-                this.videoResizeObserver = new ResizeObserver( this.onVideoResized );
+                this.videoResizeObserver = new ResizeObserver( this.onVideoResized.bind( this ) );
             }
 
             /**
@@ -173,16 +182,37 @@
                         }
                     }
                 });
+                this.resetSubtitles( true );
+            }
+
+            /**
+             * 
+             */
+            resetSubtitles( clearTracks ) {
+                this.selectedSubtitle = -1;
+                if( this.ass ) {
+                    this.ass.destroy();
+                    this.ass = undefined;
+                }
+                if( clearTracks ) {
+                    let element = this.shadowRoot.querySelector( '#video' );
+                    if( element ) {
+                        let tracks = element.textTracks;
+                        let i = 0;
+                        while( tracks[i] ) {
+                            tracks[i].mode = 'disabled';
+                            i++;
+                        }
+                    }
+                }
             }
 
             /**
              *
              */
             onSelectedSubtitleChanged( e ) {
-                if( this.ass ) {
-                    //this.ass.destroy();
-                }
-                let tracks = e.path[0].textTracks;//this.shadowRoot.querySelector( '#video' ).textTracks;
+                let element = e.path[0];
+                let tracks = element.textTracks;
                 setTimeout( () => {
                     // assumption: tracks are in same order as subtitles ...
                     let subtitle = -1;
@@ -193,15 +223,23 @@
                         }
                     }
                     if( this.selectedSubtitle !== subtitle ) {
-                        if(subtitle > -1 ) {
-                            // load new subtitle
-                            //this.ass = new ASS( '', element );
-                            console.log( 'SUBTITLE', 'ON', this.media.subtitles[subtitle] );
-                        } else {
-                            // disable subtitle
-                            console.log( 'SUBTITLE', 'OFF', subtitle );
-                        }
+                        this.resetSubtitles( false ); // NOTE: this will also set this.selectedSubtitle to -1
                         this.selectedSubtitle = subtitle;
+                        if(subtitle > -1 ) {
+                            let sub = this.media.subtitles[this.selectedSubtitle];
+                            if( sub.content ) {
+                                this.ass = new ASS( sub.content, element );
+                            } else {
+                                Engine.Request.fetch( sub.url, ( error, response, content ) => {
+                                    if( !error && response.statusCode === 200 ) {
+                                        sub.content = content;
+                                        this.ass = new ASS( sub.content, element );
+                                    } else {
+                                        console.warn( 'Failed to get subtitle...', error, response );
+                                    }
+                                } );
+                            }
+                        }
                     }
                 }, 250 );
             }
@@ -259,16 +297,19 @@
              *
              */
             onVideoElementChanged( e ) {
+                this.resetSubtitles( true );
                 let element = this.shadowRoot.querySelector( '#video' );
                 if( element ) {
                     element.pause();
-                    this.hls.stopLoad();
-                    this.hls.detachMedia();
+                    // destroying seems the only way to flush buffers and prevent packets from the previous stream being played
+                    if( this.hls ) {
+                        this.hls.destroy();
+                    }
                     element.src = '';
                     if( this.media && this.media.playlist ) {
+                        this.hls = new Hls();
                         this.hls.attachMedia( element );
                         this.hls.loadSource( this.media.playlist );
-                        console.log( this.media.subtitles );
                     }
                     if( this.media && this.media.video ) {
                         element.src = this.media.video;
@@ -281,8 +322,9 @@
              *
              */
             onVideoResized( e ) {
-                console.log( 'RESIZED', e[0].target );
-                // this.ass.resize();
+                if( this.ass ) {
+                    this.ass.resize();
+                }
             }
 
             /**
