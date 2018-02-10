@@ -20,6 +20,37 @@
             this.url            = 'http://www.mangareader.net';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'mangapanda' protocol) and parse images from html pages
+            Engine.Request.registerProtocol( this.id, ( request, callback ) => {
+                let uri = new URL( request.url );
+                uri.protocol = ( new URL( this.url ) ).protocol;
+                Engine.Request.fetch( uri.href, ( error, response, content ) => {
+                    if( error || response.statusCode != 200 ) {
+                        callback( undefined );
+                        return;
+                    }
+                    // prevent images and iframes from loading
+                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                    let dom = document.createElement( 'html' );
+                    dom.innerHTML = content;
+                    let image = dom.querySelector( '#imgholder a img' );
+                    if( !image ) {
+                        callback( undefined );
+                        return;
+                    }
+                    Engine.Request.fetch( { url: image.src, encoding: null }, ( error, response, content ) => {
+                        if( error || response.statusCode != 200 ) {
+                            callback( undefined );
+                            return;
+                        }
+                        callback( {
+                            mimeType: response.headers['content-type'],
+                            data: content
+                        } );
+                    } );
+                } );
+            } );
         }
 
         /**
@@ -38,7 +69,7 @@
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
                 //console.log(dom.innerHTML);
-                let mangaList = [...dom.querySelectorAll( 'ul.series_alpha li a' )].map(  ( element ) => {
+                let mangaList = [...dom.querySelectorAll( 'ul.series_alpha li a' )].map( ( element ) => {
                     return {
                         // as mentioned before, the eventually added host prefix must be removed
                         // for full qualified domain name, the host (dynasty-scans) can also be removed
@@ -65,7 +96,7 @@
                 let dom = document.createElement( 'html' );
                 // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
                 dom.innerHTML = content;
-                let chapterList = [...dom.querySelectorAll( '#listing tbody tr td a' )].map(  ( element ) => {
+                let chapterList = [...dom.querySelectorAll( '#listing tbody tr td a' )].map( ( element ) => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim(),
@@ -91,39 +122,12 @@
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
-                content = '';
-                let pageList = [...dom.querySelectorAll( '#pageMenu option' )].map(  ( element ) => {    //All pages of chapter
-                    return this.url + element.value;
+                let pageList = [...dom.querySelectorAll( '#pageMenu option' )].map( ( element ) => {
+                    let uri = new URL( this.url + element.value );
+                    uri.protocol = this.id;
+                    return uri.href;
                 });
-                
-                // fix: no pages => promise never initialized and promise callback never executed (fulfilled)
-                if( !pageList || pageList.length < 1 ) {
-                    callback( error, imageList );
-                    return;
-                }
-                
-                let errorMessage = '';
-                let prms = new Promise(() => {
-                    let err = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
-                    callback( err, imageList );
-                });
-                pageList.forEach((page, i) => {    //Get image on each page
-                    let key = prms.defer();
-                    Engine.Request.fetch( page, ( error, response, content ) => {
-                        if( error ) {
-                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
-                            prms.resolve( key );
-                            return;
-                        }
-                        // prevent images and iframes from loading
-                        content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                        let dom = document.createElement( 'html' );
-                        dom.innerHTML = content;
-                        content = '';
-                        imageList[i] = dom.querySelector( '#imgholder a img' ).src;    //Conserve order even using async processing
-                        prms.resolve( key );
-                    });
-                });
+                callback( error, pageList );
             });
         }
     }

@@ -20,6 +20,38 @@
             this.url            = 'https://readms.net/';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'mangapanda' protocol) and parse images from html pages
+            Engine.Request.registerProtocol( this.id, ( request, callback ) => {
+                let uri = new URL( request.url );
+                uri.protocol = ( new URL( this.url ) ).protocol;
+                Engine.Request.fetch( uri.href, ( error, response, content ) => {
+                    if( error || response.statusCode != 200 ) {
+                        callback( undefined );
+                        return;
+                    }
+                    // prevent images and iframes from loading
+                    content = content.replace( /<img/g, '<source').replace( /<\/img/g, '<\/source');
+                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                    let dom = document.createElement( 'html' );
+                    dom.innerHTML = content;
+                    let image = this.getRelativeLink( dom.querySelector( '#manga-page' ) );
+                    if( !image ) {
+                        callback( undefined );
+                        return;
+                    }
+                    Engine.Request.fetch( { url: image, encoding: null }, ( error, response, content ) => {
+                        if( error || response.statusCode != 200 ) {
+                            callback( undefined );
+                            return;
+                        }
+                        callback( {
+                            mimeType: response.headers['content-type'],
+                            data: content
+                        } );
+                    } );
+                } );
+            } );
         }
 
         /**
@@ -81,10 +113,8 @@
         _getPageList( manga, chapter, callback ) {
             let base_chap_url = chapter.id.substr(0, chapter.id.lastIndexOf('/') + 1);
             Engine.Request.fetch( this.url + chapter.id, ( error, response, content ) => {
-                let page_list = [];
-                let pageList = [];
                 if( error ) {
-                    callback( error, pageList );
+                    callback( error, [] );
                     return;
                 }
                 // prevent images and iframes from loading
@@ -92,41 +122,12 @@
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
-                let nb_page = dom.querySelector('div.btn-reader-page ul.dropdown-menu li:last-of-type a').href;
-                nb_page = parseInt(nb_page.match(/\d+$/)) + 1;
-                
-                for(var i = 1; i < nb_page; i++){
-                    page_list.push(this.url + base_chap_url + i);
-                }
-
-                // fix: no pages => promise never initialized and promise callback never executed (fulfilled)
-                if( !page_list || page_list.length < 1 ) {
-                    callback( error, pageList );
-                    return;
-                }
-                
-                let errorMessage = '';
-                let prms = new Promise(() => {
-                    let err = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
-                    callback( err, pageList );
+                let pageList = [...dom.querySelectorAll( 'div.btn-reader-page ul.dropdown-menu li a' )].map( ( element ) => {
+                    let uri = new URL( this.url + this.getRelativeLink( element ) );
+                    uri.protocol = this.id;
+                    return uri.href;
                 });
-                page_list.forEach( ( url, idx ) => {
-                    let key = prms.defer();
-                    Engine.Request.fetch( url, ( error, response, content ) => {
-                        if( error ) {
-                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + error.message;
-                            prms.resolve( key );
-                            return;
-                        }
-                        // prevent images and iframes from loading
-                        content = content.replace( /<img/g, '<source').replace( /<\/img/g, '<\/source');
-                        content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                        let dom = document.createElement( 'html' );
-                        dom.innerHTML = content;
-                        pageList[idx] =  this.getRelativeLink( dom.querySelector( '#manga-page' ) );
-                        prms.resolve( key );
-                    });
-                });
+                callback( error, pageList );
             });
         }
     }
