@@ -168,7 +168,19 @@
                 if( !imgsrcs || !script || imgsrcs.length < 2 || script.length < 2 ) {
                     callback( new Error( 'Link encryption not found!' ), pages );
                 }
-                imgsrcs = imgsrcs[1];
+                // determine if decryption is required
+                imgsrcs = imgsrcs[1].split( ',' );
+                if( imgsrcs.length > 1 ) {
+                    pages = imgsrcs.map( ( link ) => {
+                        let uri = new URL( link );
+                        uri.protocol = this.id;
+                        return uri.href;
+                    } );
+                    callback( null, pages );
+                    return;
+                } else {
+                    imgsrcs = imgsrcs[0];
+                }
                 options.url = script[1];
                 Engine.Request.cloudflare( options, ( errorScript, responseScript, code ) => {
                     if( errorScript ) {
