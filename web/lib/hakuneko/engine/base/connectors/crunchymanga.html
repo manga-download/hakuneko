@@ -17,7 +17,7 @@
             super.label      = 'CrunchyManga (Premium)';
             super.isLocked   = false;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://api-manga.crunchyroll.com';
+            this.url         = 'https://api-manga.crunchyroll.com';
             this.reqOptionsJSON = JSON.stringify( {
                 url: this.url,
                 json: {} // => use to automatically parse a response as json
@@ -46,12 +46,13 @@
             // register a protocol handler to intercept requests (with custom 'crunchymanga' protocol) and decrypt images
             Engine.Request.registerProtocol( this.id, ( request, callback ) => {
                 let uri = new URL( request.url );
-                uri.protocol = ( new URL( this.url ) ).protocol;
+                uri.protocol = 'http:'; //( new URL( this.url ) ).protocol;
                 let opts = {
                     url: uri.href,
                     encoding: null
                 }
                 Engine.Request.fetch( opts, ( error, response, content ) => {
+                    // TODO: error handling ...
                     callback( {
                         mimeType: response.headers['content-type'],
                         data: this._decryptImage( content, 0x42 )
