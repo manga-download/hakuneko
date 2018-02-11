@@ -109,7 +109,7 @@ function closeWindow () {
  ************************/
 
 // add HakuNeko's application directory to the environment variable path (ffmpeg available on windows)
-process.env.PATH += ';' + path.dirname( process.execPath );
+process.env.PATH += ( process.platform == 'win32' ? ';' : ':' ) + path.dirname( process.execPath );
 
 // register new protocol handler as standard handler to host files locally without web server
 // => required to enable access to chromium specific features such as local store, indexedDB, ...
