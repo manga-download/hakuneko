@@ -86,14 +86,17 @@
                 //uploadData: [], //uploadData UploadData[]
             }
             this.protocolTable[protocol]( request, ( data ) => {
-                let error = null;
+                if( !data || !data.mimeType || !data.data ) {
+                    callback( new Error( `Failed to get content from "${ request.url }"` ), undefined, undefined );
+                    return;
+                }
                 let response = {
                     statusCode: 200,
                     headers: {
                         'Content-Type': data.mimeType
                     }
                 };
-                callback( error, response, data.data );
+                callback( null, response, data.data );
             });
             return true;
         }
