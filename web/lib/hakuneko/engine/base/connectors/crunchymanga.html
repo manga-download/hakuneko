@@ -30,13 +30,13 @@
             this.config = {
                 username: {
                     label: 'Username',
-                    description: 'Username for login with CrunchyRoll Premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    description: 'Username for login with Crunchyroll premium account.\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.',
                     input: Input.text,
                     value: ''
                 },
                 password: {
                     label: 'Password',
-                    description: 'Password for login with CrunchyRoll Premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    description: 'Password for login with Crunchyroll premium account.\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.',
                     input: Input.password,
                     value: ''
                 }
@@ -52,7 +52,10 @@
                     encoding: null
                 }
                 Engine.Request.fetch( opts, ( error, response, content ) => {
-                    // TODO: error handling ...
+                    if( error || response.statusCode !== 200 ) {
+                        callback( undefined );
+                        return;
+                    }
                     callback( {
                         mimeType: response.headers['content-type'],
                         data: this._decryptImage( content, 0x42 )
@@ -69,7 +72,7 @@
                 return error;
             }
             if( response.statusCode !== 200 ) {
-                return new Error( `Response status code: ${response.statusCode}!` );
+                return new Error( `Response status code: ${response.statusCode}!\nMake sure a Crunchyroll premium account is configured in the settings.\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.` );
             }
             try {
                 if( content.__class__ === 'error' ) {
@@ -131,7 +134,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             if( !this.premium ) {
-                callback( new Error( 'A crunchyroll account with a crunchyroll or VRV premium subscription is required in the settings to access the content!' ), [] );
+                callback( new Error( 'A subscription is required to access the content!\nMake sure a Crunchyroll premium account is configured in the settings.\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.' ), [] );
                 return;
             }
             let options = JSON.parse( this.reqOptionsJSON );
@@ -173,70 +176,80 @@
          * get full access to all chapters.
          */
         _login( username, password ) {
-            if( !username || username.length < 1 || !password || password.length < 1 ) {
-                this.initialized = undefined;
-                return;
-            }
-            let options = JSON.parse( this.reqOptionsJSON );
-            options['url'] = 'https://www.crunchyroll.com/login';
-            options['json'] = undefined;
-            Engine.Request.cloudflare( options, ( error, response, content ) => {
-                // TODO (2018-01-25): better error handling
-                if( error ) {
+            Engine.Request.cloudflare( 'https://www.crunchyroll.com/logout', () => {
+                if( !username || username.length < 1 || !password || password.length < 1 ) {
                     this.initialized = undefined;
-                    console.error( error );
                     return;
                 }
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                let token = dom.querySelector( 'input#login_form__token' ).value;
-                options['method'] = 'POST';
-                options['form'] = {
-                    'login_form[name]': username,
-                    'login_form[password]': password,
-                    'login_form[redirect_url]': '',
-                    'login_form[_token]': token
-                };
+                let options = JSON.parse( this.reqOptionsJSON );
+                options['url'] = 'https://www.crunchyroll.com/login';
+                options['json'] = undefined;
                 Engine.Request.cloudflare( options, ( error, response, content ) => {
-                    // TODO (2018-01-25): better error handling
-                    if( error ) {
+                    if( error || ( response && response.statusCode !== 200 ) ) {
+                        console.warn( 'Failed to load login formular!', error, ( response ? response.statusCode : response ) );
                         this.initialized = undefined;
-                        console.error( error );
                         return;
                     }
-                    if( !response.headers['set-cookie'] || response.headers['set-cookie'].length < 1 ) {
+                    content = content.replace( /<img[^<]*?>/g, '<img>');
+                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                    let dom = document.createElement( 'html' );
+                    dom.innerHTML = content;
+                    let token = dom.querySelector( 'input#login_form__token' );
+                    if( !token ) {
+                        console.warn( 'Failed to find login token!', error );
                         this.initialized = undefined;
-                        console.error( new Error( 'Login failed (incorrect logn data or reCaptcha required)!' ) );
                         return;
                     }
-                    this.session = response.headers['set-cookie'].reverse().find( ( cookie ) => {
-                        return ( cookie.indexOf( 'sess_id=' ) === 0 && cookie.indexOf( 'sess_id=deleted' ) < 0 );
-                    }).split('=')[1].split(';')[0];
-                    options['url'] = `${this.url}/cr_authenticate`;
-                    options['method'] = 'GET';
-                    options['form'] = undefined;
-                    options['json'] = {};
-                    options['qs'] = {
-                        'version': 0,
-                        'format': 'json',
-                        'session_id': this.session
-                    }
-                    // get auth token and premium status
-                    Engine.Request.fetch( options, ( error, response, content ) => {
-                        // TODO (2018-01-25): better error handling
-                        if( error ) {
+                    options['method'] = 'POST';
+                    options['form'] = {
+                        'login_form[name]': username,
+                        'login_form[password]': password,
+                        'login_form[redirect_url]': '',
+                        'login_form[_token]': token.value
+                    };
+                    Engine.Request.cloudflare( options, ( error, response, content ) => {
+                        if( error || ( response && response.statusCode >= 400 ) ) {
+                            console.warn( 'Login failed!', error, ( response ? response.statusCode : response ) );
                             this.initialized = undefined;
-                            console.error( error );
                             return;
                         }
-                        this.token = content.data.auth;
-                        this.premium = ( content.data.user.premium.indexOf( 'manga' ) > -1 );
-                        this.initialized = true;
-                    });
-                });
-            });
+                        if( !response.headers['set-cookie'] || response.headers['set-cookie'].length < 1 ) {
+                            this.initialized = undefined;
+                            console.warn( new Error( 'Login failed (incorrect login data or reCaptcha required)!' ) );
+                            return;
+                        }
+                        let session = response.headers['set-cookie'].reverse().find( ( cookie ) => {
+                            return ( cookie.indexOf( 'sess_id=' ) === 0 && cookie.indexOf( 'sess_id=deleted' ) < 0 );
+                        } );
+                        if( !session ) {
+                            this.initialized = undefined;
+                            console.warn( new Error( 'Login failed (incorrect login data or reCaptcha required)!' ) );
+                            return;
+                        }
+                        this.session = session.split( '=' )[1].split( ';' )[0];
+                        options['url'] = `${this.url}/cr_authenticate`;
+                        options['method'] = 'GET';
+                        options['form'] = undefined;
+                        options['json'] = {};
+                        options['qs'] = {
+                            'version': 0,
+                            'format': 'json',
+                            'session_id': this.session
+                        }
+                        // get auth token and premium status
+                        Engine.Request.fetch( options, ( error, response, content ) => {
+                            if( error || ( response && response.statusCode !== 200 ) ) {
+                                console.error( 'Failed to get auth token!', error, ( response ? response.statusCode : response ) );
+                                this.initialized = undefined;
+                                return;
+                            }
+                            this.token = content.data.auth;
+                            this.premium = ( content.data.user.premium.indexOf( 'manga' ) > -1 );
+                            this.initialized = true;
+                        } );
+                    } );
+                } );
+            } );
         }
 
         /**
