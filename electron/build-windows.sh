@@ -7,6 +7,11 @@ DIR_32_PORTABLE="${PACKAGE}_${VERSION}_windows-portable_i686"
 DIR_64="${PACKAGE}_${VERSION}_windows-setup_amd64"
 DIR_64_PORTABLE="${PACKAGE}_${VERSION}_windows-portable_amd64"
 
+function deployFFMPEG {
+  unzip -j "./redist/$1.zip" "$1/bin/ffmpeg.exe" -d "./build/$2"
+  ./upx.exe "./build/$2/ffmpeg.exe"
+}
+
 function rcedit {
   ./rcedit.exe "build/$1/$BIN_WINDOWS" \
     --set-version-string "ProductName" "$PRODUCT" \
@@ -110,19 +115,23 @@ function installer {
 }
 
 build "win32-x64" "$DIR_64_PORTABLE" true
+deployFFMPEG "ffmpeg-3.4.1-win64-static" "$DIR_64_PORTABLE"
 rcedit "$DIR_64_PORTABLE"
 compress "$DIR_64_PORTABLE"
 
 build "win32-ia32" "$DIR_32_PORTABLE" true
+deployFFMPEG "ffmpeg-3.4.1-win32-static" "$DIR_32_PORTABLE"
 rcedit "$DIR_32_PORTABLE"
 compress "$DIR_32_PORTABLE"
 
 build "win32-x64" "$DIR_64" false
+deployFFMPEG "ffmpeg-3.4.1-win64-static" "$DIR_64"
 rcedit "$DIR_64"
 setup "$DIR_64"
 #installer "$DIR_64"
 
 build "win32-ia32" "$DIR_32" false
+deployFFMPEG "ffmpeg-3.4.1-win32-static" "$DIR_32"
 rcedit "$DIR_32"
 setup "$DIR_32"
 #installer "$DIR_32"
