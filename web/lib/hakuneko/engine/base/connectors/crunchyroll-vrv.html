@@ -35,13 +35,13 @@
             this.config = {
                 username: {
                     label: 'E-Mail',
-                    description: 'E-Mail for login with VRV premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    description: 'E-Mail for login with VRV premium account.\nDisclaimer: HakuNeko may drop support for VRV at any time.',
                     input: Input.text,
                     value: ''
                 },
                 password: {
                     label: 'Password',
-                    description: 'Password for login with VRV premium account (leave blank for guest account with limited access).\nDue to HakuNeko\'s low security level you should not use your real account!',
+                    description: 'Password for login with VRV premium account.\nDisclaimer: HakuNeko may drop support for VRV at any time.',
                     input: Input.password,
                     value: ''
                 }
@@ -216,11 +216,11 @@
                     }
                 }
                 // find playlist for stream with desired resolution and pick the first available mirror ...
-                streams.sort( (a, b) => {
+                streams.sort( ( a, b ) => {
                     if( a.height !== b.height ) {
                         return ( a.height - b.height );
                     } else {
-                        return ( a.mirror > b.mirror ? 1 :-1 );
+                        return ( a.mirror > b.mirror ? 1 : -1 );
                     }
                 } );
                 let stream = streams.find( ( s ) => {
@@ -245,7 +245,7 @@
                 return new Error( 'VRV service is not available in your country!' );
             }
             if( !this.subscription ) {
-                return new Error( 'In order to access the content, a paid VRV (Crunchyroll channel) subscription is required!' );
+                return new Error( 'In order to access the content, a paid VRV (Crunchyroll channel) subscription is required!\nDisclaimer: HakuNeko may drop support for VRV at any time.' );
             }
             return null;
         }
