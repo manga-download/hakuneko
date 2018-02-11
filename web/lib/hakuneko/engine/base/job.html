@@ -55,15 +55,12 @@
             }
         }
 
-        /**
-         *
-         */
-        downloadPages( directory, compress, callback ) {
+        downloadPages( directory, callback ) {
             this.setStatus( DownloadStatus.downloading );
-            this.chapter.getPages( ( pageError, pages ) => {
-                if( pageError || !pages || pages.length < 1 ) {
-                    if( pageError ) {
-                        this.errors.push( pageError );
+            this.chapter.getPages( ( error, data ) => {
+                if( error || !data ) {
+                    if( error ) {
+                        this.errors.push( error );
                     } else {
                         this.errors.push( new Error( 'Page list is empty' ) );
                     }
@@ -72,54 +69,180 @@
                     callback();
                     return;
                 }
-                
-                let pageData = [];
-                // save pages when all promises fulfilled
-                // no pages => promise never initialized and promise callback never executed (fulfilled)
-                let promise = new Promise( () => {
-                    // do not store chapter when any error occured
+
+                if( data.length ) {
+                    this._downloadPages( data, directory, callback );
+                    return;
+                }
+
+                if( data.playlist ) {
+                    this._downloadPlaylistHLS( data, directory, callback );
+                    return;
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _downloadPages( pages, directory, callback ) {
+            let pageData = [];
+            // save pages when all promises are fulfilled
+            // FIXME: no pages => promise never initialized and promise callback never executed (fulfilled)
+            let promise = new Promise( () => {
+                // do not store chapter when any error occured
+                if( this.errors && this.errors.length > 0 ) {
+                    this.setStatus( DownloadStatus.failed );
+                    this.setProgress( 100 );
+                    callback();
+                    return;
+                }
+                Engine.Storage.saveChapterPages( this.chapter, pageData, ( storageError ) => {
+                    if( storageError ) {
+                        this.errors.push( storageError );
+                    }
+                    this.setProgress( 100 );
                     if( this.errors && this.errors.length > 0 ) {
                         this.setStatus( DownloadStatus.failed );
-                        this.setProgress( 100 );
-                        callback();
-                        return;
+                    } else {
+                        this.setStatus( DownloadStatus.completed );
                     }
-                    Engine.Storage.saveChapterPages( this.chapter, pageData, ( storageError ) => {
+                    callback();
+                });
+            });
+            // get data for all pages of chapter
+            pages.forEach( ( page, index ) => {
+                let key = promise.defer();
+                setTimeout( () => {
+                    Engine.Request.cloudflare( { url: page, encoding: null }, ( error, response, content ) => {
+                        if( error ) {
+                            this.errors.push( error );
+                        } else {
+                            if( response.statusCode !== 200 ) {
+                                this.errors.push( new Error( 'Page "' + page + '" returned status code ' + response.statusCode ) );
+                            } else {
+                                pageData[index] = {
+                                    type: response.headers['Content-Type'] || response.headers['content-type'],
+                                    data: content
+                                };
+                            }
+                        }
+                        this.setProgress( this.progress + 100/pages.length );
+                        promise.resolve( key );
+                    }, 5 );
+                }, index * 250 );
+            });
+        }
+
+        /**
+         * 
+         */
+        _downloadPlaylistHLS( episode, directory, callback ) {
+            let ffmpeg = {
+                command: ['ffmpeg', '-allowed_extensions', 'ALL'],
+                inputs: [],
+                maps: ['-map', '0:v', '-map', '0:a'],
+                metas: []
+            };
+            // mux media when all promises are fulfilled
+            // FIXME: no media => promise never initialized and promise callback never executed (fulfilled)
+            let promise = new Promise( () => {
+                // compose ffmpeg command for multiplexing
+                let args = ffmpeg.command;
+                args = args.concat( ffmpeg.inputs );
+                args = args.concat( ffmpeg.maps );
+                args = args.concat( ffmpeg.metas );
+                args = args.concat( [ '-c', 'copy' ] );
+                // multiplex media
+                Engine.Storage.muxPlaylistM3U8( this.chapter, args.join( ' ' ), ( error ) => {
+                    if( error ) {
+                        console.error( error );
+                        this.errors.push( error );
+                    }
+                    this.setProgress( 100 );
+                    if( this.errors && this.errors.length > 0 ) {
+                        this.setStatus( DownloadStatus.failed );
+                    } else {
+                        this.setStatus( DownloadStatus.completed );
+                    }
+                    callback();
+                } );
+            } );
+
+            // download playlist
+            Engine.Request.fetch( episode.playlist, ( error, response, content ) => {
+                if( error ) {
+                    this.errors.push( error );
+                } else if( response.statusCode !== 200 ) {
+                    this.errors.push( new Error( 'Playlist "' + episode.playlist + '" returned status code ' + response.statusCode ) );
+                } else {
+                    // download media packets
+                    content.match( /http[s]?:\/\/[^\s\"]+/g ).forEach( ( link, index, links ) => {
+                        let file = this.chapter.id + '.' + ( new URL( link ) ).pathname.split( '/' ).pop();
+                        // ffmpeg does not support backslashes => replace with slashes
+                        content = content.replace( link, file.replace( /\\/g, '/' ) );
+                        let key = promise.defer();
+                        setTimeout( () => {
+                            Engine.Request.fetch( { url: link, encoding: null }, ( error, response, content ) => {
+                                if( error ) {
+                                    this.errors.push( error );
+                                } else if( response.statusCode !== 200 ) {
+                                    this.errors.push( new Error( 'Packet "' + link + '" returned status code ' + response.statusCode ) );
+                                } else {
+                                    let storageKey = promise.defer();
+                                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: file, data: content }, ( storageError ) => {
+                                        if( storageError ) {
+                                            this.errors.push( storageError );
+                                        }
+                                        promise.resolve( storageKey );
+                                    });
+                                }
+                                this.setProgress( 100 * index/links.length );
+                                promise.resolve( key );
+                            } );
+                        }, index * 1000 );
+                    } );
+                    // save modified playlist
+                    ffmpeg.inputs.push( '-i', '"' + this.chapter.id + '.m3u8"' );
+                    let playlistKey = promise.defer();
+                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: this.chapter.id + '.m3u8', data: content }, ( storageError ) => {
                         if( storageError ) {
                             this.errors.push( storageError );
                         }
-                        this.setProgress( 100 );
-                        if( this.errors && this.errors.length > 0 ) {
-                            this.setStatus( DownloadStatus.failed );
-                        } else {
-                            this.setStatus( DownloadStatus.completed );
-                        }
-                        callback();
+                        promise.resolve( playlistKey );
                     });
-                });
-                // get data for all pages of chapter
-                pages.forEach( ( page, index ) => {
-                    let key = promise.defer();
-                    setTimeout( () => {
-                        Engine.Request.cloudflare( { url: page, encoding: null }, ( error, response, content ) => {
-                            if( error ) {
-                                this.errors.push( error );
-                            } else {
-                                if( response.statusCode !== 200 ) {
-                                    this.errors.push( new Error( 'Page "' + page + '" returned status code ' + response.statusCode ) );
+                    // download subtitles
+                    episode.subtitles.forEach( ( subtitle, index ) => {
+                        let file = this.chapter.id + '.' + subtitle.locale + '.' + subtitle.format;
+                        ffmpeg.inputs.push( '-i', '"' + file + '"' );
+                        ffmpeg.maps.push( '-map', (index + 1) + ':s' );
+                        ffmpeg.metas.push( '-metadata:s:s:' + index, 'language=' + subtitle.locale );
+                        // make english the default subtitle
+                        if( subtitle.locale.toLowerCase() === 'en-us' ) {
+                            ffmpeg.metas.push( '-disposition:s:' + index, 'default' );
+                        }
+                        let key = promise.defer();
+                        setTimeout( () => {
+                            Engine.Request.fetch( subtitle.url, ( error, response, content ) => {
+                                if( error ) {
+                                    this.errors.push( error );
+                                } else if( response.statusCode !== 200 ) {
+                                    this.errors.push( new Error( 'Subtitle "' + subtitle.url + '" returned status code ' + response.statusCode ) );
                                 } else {
-                                    pageData[index] = {
-                                        type: response.headers['Content-Type'] || response.headers['content-type'],
-                                        data: content
-                                    };
+                                    let storageKey = promise.defer();
+                                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: file, data: content }, ( storageError ) => {
+                                        if( storageError ) {
+                                            this.errors.push( storageError );
+                                        }
+                                        promise.resolve( storageKey );
+                                    });
                                 }
-                            }
-                            this.setProgress( this.progress + 100/pages.length );
-                            promise.resolve( key );
-                        }, 5 );
-                    }, index * 200 );
-                });
-            });
+                                promise.resolve( key );
+                            } );
+                        }, index * 200 );
+                    } );
+                }
+            } );
         }
     }
     DownloadJob; // reference the class to prevent removal of the class through js-minify

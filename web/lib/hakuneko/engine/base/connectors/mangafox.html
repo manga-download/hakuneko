@@ -17,7 +17,7 @@
             super.label         = 'MangaFox';
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://mangafox.la';
+            this.url            = 'http://fanfox.net';
             this.pageLoadDelay  = 50; // 25;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
@@ -83,7 +83,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( ( this.url + manga.id + chapter.id ).replace( 'mangafox.la/manga', 'm.mangafox.la/roll_manga' ), ( error, response, content ) => {
+            Engine.Request.fetch( ( this.url + manga.id + chapter.id ).replace( 'fanfox.net/manga', 'm.fanfox.net/roll_manga' ), ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
                     return;

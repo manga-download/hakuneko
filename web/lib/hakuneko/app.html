@@ -84,7 +84,7 @@
                 &mdash; [[ loadingMessage.author ]]
             </p>
         </div>
-        <div class$="control [[ getControlClass(page) ]]">
+        <div class$="control [[ getControlClass(selectedMediaIndex) ]]">
             <hakuneko-menu ></hakuneko-menu>
             <div class="mangas">
                 <hakuneko-mangas style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
@@ -92,7 +92,7 @@
             </div>
             <hakuneko-jobs></hakuneko-jobs>
         </div>
-        <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled) ]]" selected-chapter="[[ chapter ]]" selected-page="{{ page }}"></hakuneko-pages>
+        <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled) ]]" selected-chapter="[[ chapter ]]" selected-media="{{ selectedMediaIndex }}"></hakuneko-pages>
     </template>
 
     <script>

@@ -42,14 +42,16 @@
                     return;
                 }
                 let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
-                if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
-                    sanatizedTitle += ChapterFormat.cbz;
+                if( this.manga.existingChapters[sanatizedTitle + EpisodeFormat.m3u8] ) {
+                    this.setStatus( DownloadStatus.completed );
+                    return;
                 }
-                if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
-                    sanatizedTitle += ChapterFormat.pdf;
+                if( this.manga.existingChapters[sanatizedTitle + EpisodeFormat.mkv] ) {
+                    this.setStatus( DownloadStatus.completed );
+                    return;
                 }
-                if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
-                    sanatizedTitle += ChapterFormat.epub;
+                if( Engine.Settings.chapterFormat.value !== ChapterFormat.img ) {
+                    sanatizedTitle += Engine.Settings.chapterFormat.value;
                 }
                 if( this.manga.existingChapters[sanatizedTitle] ) {
                     this.setStatus( DownloadStatus.completed );
