@@ -1,0 +1,85 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class TuMangaOnline extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id            = 'tumangaonline';
+            super.label         = 'TuMangaOnline';
+            super.isLocked      = false;
+            this.initialized    = true;
+            // Private members for internal usage only (convenience)
+            this.url            = 'https://www.tumangaonline.com';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                headers: {
+                    'cache-mode': 'no-cache',
+                    'referer': this.url
+                }
+            } );
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config         = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += '/api/v1/mangas';
+            options['qs'] = {
+                //categorias: '[]',
+                defecto: 1, // TODO: what is this ???
+                //generos: '[]',
+                itemsPerPage: 1000, // TODO: this has no effect, alwys 20 per page ???
+                page: 1,
+                puntuacion: 0,
+                searchBy: 'nombre',
+                sortedBy: 'nombre',
+                sortDir: 'desc'
+            };
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                console.log( JSON.parse( content ).data.length, response );
+                callback( new Error( 'Not supported yet!' ), [] );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += '/api/v1/mangas/' + manga.id + '/capitulos';
+            options['qs'] = {
+                page: 2,
+                tomo: -1 // TODO: what is this ???
+            };
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                console.log( JSON.parse( content ).data.length, response );
+                callback( new Error( 'Not supported yet!' ), [] );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += '/api/v1/imagenes';
+            options['qs'] = {
+                //
+            };
+            callback( new Error( 'Not supported yet!' ), [] );
+        }
+    }
+
+</script>
