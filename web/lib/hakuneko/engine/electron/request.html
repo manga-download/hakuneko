@@ -19,7 +19,7 @@
             this.agentHTTP = this.electronRemote.require( 'http' ).globalAgent;
             this.agentHTTPS = this.electronRemote.require( 'https' ).globalAgent;
             this.crypto = this.electronRemote.require( 'crypto' );
-            //this.browser = this.electronRemote.BrowserWindow;
+            this.browser = this.electronRemote.BrowserWindow;
             this.reconnectDelay = 1000; // average value ± 50% random distribution
             this.reconnectErrors = [
                 'ETIMEDOUT',
@@ -125,26 +125,43 @@
             } );
         }
 
-        /*
-        uiWindow() {
+        /**
+         *
+         */
+        fetchUI( options, script, callback ) {
             let win = new this.browser( {
-                width: 420,
-                height: 680,
-                menu: false,
-                frame: true,
-                show: true,
+                show: false,
                 webPreferences: {
                     nodeIntegration: false,
                     webSecurity: true
                 }
             } );
-            win.setMenu( null );
-            win.loadURL( 'https://crunchyroll.com/login' );
-            setTimeout( () => {
-                console.log( 'COOKIES', win.webContents.session.cookies );
-            }, 5000 )
+            let abortAction = setTimeout( () => {
+                win.close();
+                callback( new Error( `Failed to load '${options.url}'` ), undefined, undefined );
+            }, 10000 );
+            win.webContents.on( 'dom-ready', ( e ) => {
+                let redirectCheck = `
+                    let meta = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
+                    let cf = document.querySelector( 'form#challenge-form' );
+                    ( meta || cf );
+                `;
+                win.webContents.executeJavaScript( redirectCheck, ( redirect ) => {
+                    if( !redirect ) {
+                        win.webContents.executeJavaScript( script, ( result ) => {
+                            clearTimeout( abortAction );
+                            callback( null, undefined, result );
+                            win.close();
+                        } );
+                    }
+                } );
+            } );
+            let opts = {
+                httpReferrer: options.url,
+                userAgent: this.userAgent
+            };
+            win.loadURL( options.url, opts );
         }
-        */
 
         /**
          * Generate content of 'Chrome-Proxy' header field for use with google data saver
