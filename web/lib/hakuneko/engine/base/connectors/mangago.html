@@ -157,6 +157,27 @@
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
+            let script = `
+                let result = {
+                    pages: imgsrcs,
+                    deskeys: []
+                };
+                for( let key in _deskeys ) {
+                    result.deskeys.push ( {
+                        id: key,
+                        pattern: _deskeys[key]
+                    } );
+                }
+                result
+            `
+            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
+                this.desKeys = ( content && content.deskeys ? content.deskeys : this.desKeys );
+                let pages = (content && content.pages ? content.pages : [] );
+                callback( error, this._urifyLinks( pages ) );
+            } );
+            /*
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += chapter.id;
             Engine.Request.cloudflare( options, ( error, response, content ) => {
                 let pages = [];
                 if( error ) {
@@ -197,6 +218,7 @@
                     } );
                 } );
             } );
+            */
         }
 
         /**
