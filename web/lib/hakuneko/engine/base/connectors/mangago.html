@@ -159,14 +159,16 @@
             options.url += chapter.id;
             let script = `
                 let result = {
-                    pages: imgsrcs,
+                    pages: ( imgsrcs ? imgsrcs : [] ),
                     deskeys: []
                 };
-                for( let key in _deskeys ) {
-                    result.deskeys.push ( {
-                        id: key,
-                        pattern: _deskeys[key]
-                    } );
+                if( _deskeys ) {
+                    for( let key in _deskeys ) {
+                        result.deskeys.push ( {
+                            id: key,
+                            pattern: _deskeys[key]
+                        } );
+                    }
                 }
                 result
             `
