@@ -107,10 +107,10 @@
         </table>
         <ul class="list" >
             <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
-                <li class="notification">Manga list is empty<br>Click &nbsp;<i class="fa fa-refresh refresh" style="cursor: auto !important;"></i>&nbsp; button to update list</li>
+                <li class="notification">Manga list is loading or empty<br>Click &nbsp;<i class="fa fa-refresh refresh" style="cursor: auto !important;"></i>&nbsp; button to update list</li>
             </template>
-            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}" initial-count="500" target-framerate="5">
-                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" style$="" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
         <!--
