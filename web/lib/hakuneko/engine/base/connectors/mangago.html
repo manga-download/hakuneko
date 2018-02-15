@@ -50,12 +50,10 @@
             // initialization: solve cloudflare for all known domains
             let domains = [
                 this.url,
-                /*
                 'http://www.mnggo.net/c/1/1/1',
                 'http://www.fashionlib.net/c/1/1/1',
                 'http://www.lady-first.me/c/1/1/1',
-                'http://www.mangapicgallery.com'
-                */
+                //'http://www.mangapicgallery.com'
             ];
 
             // register a protocol handler to intercept requests (with custom 'mangago' protocol) and decrypt images
@@ -102,14 +100,20 @@
                 } );
             } );
 
-            // process acloudflare challenge for all domains during initialization phase
+            // process cloudflare challenge for all domains during initialization phase
             for(let domain of domains) {
                 let options = JSON.parse( this.reqOptionsJSON );
                 options.url = domain;
-                Engine.Request.cloudflare( options, ( error, content ) => {
+                Engine.Request.fetchUI( options, '', ( error, response, content ) => {
                     domains.pop();
                     this.initialized = ( domains.length < 1 );
                 } );
+                /*
+                Engine.Request.cloudflare( options, ( error, response, content ) => {
+                    domains.pop();
+                    this.initialized = ( domains.length < 1 );
+                } );
+                */
             }
         }
 
@@ -128,6 +132,19 @@
         _getChapterList( manga, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += manga.id;
+            let script = `[...dom.querySelectorAll( '#chapter_table * a.chico' )]`
+            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
+                let chapters = (content ? content : [] ).map( ( element ) => {
+                    //this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'en'
+                    };
+                } );
+                callback( error, chapters );
+            } );
+            /*
             Engine.Request.cloudflare( options, ( error, response, content ) => {
                 if( error ) {
                     callback( error, [] );
@@ -149,6 +166,7 @@
                 } );
                 callback( error, chapters );
             } );
+            */
         }
 
         /**
