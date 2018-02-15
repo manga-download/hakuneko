@@ -1,0 +1,49 @@
+<link rel="import" href="../connector.html">
+<link rel="import" href="../promise.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaDex extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id            = 'mangadex';
+            super.label         = 'MangaDex';
+            super.isLocked      = false;
+            this.initialized    = undefined;
+            // Private members for internal usage only (convenience)
+            this.url            = 'http://mangadex...';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            callback( new Error( 'Not implemented!' ), [] );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            callback( new Error( 'Not implemented!' ), [] );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            callback( new Error( 'Not implemented!' ), [] );
+        }
+    }
+
+</script>
