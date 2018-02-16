@@ -66,7 +66,12 @@
                         callback( errorScript, chapterList );
                         return;
                     }
-                    script.match( /\[\s*"(.+?"\s*,\s*".+?)"\s*\]/g ).forEach( function( match ) {
+                    let entries = script.match( /\[\s*"(.+?"\s*,\s*".+?)"\s*\]/g );
+                    if( !entries ) {
+                        callback( new Error( 'No chapters found!' ), chapterList );
+                        return;
+                    }
+                    entries.forEach( function( match ) {
                         let chapter = JSON.parse( match );
                         chapterList.push( {
                             id: chapter[1] + '/1.html',
