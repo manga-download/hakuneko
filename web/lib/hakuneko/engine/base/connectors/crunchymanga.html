@@ -190,6 +190,8 @@
                         this.initialized = undefined;
                         return;
                     }
+                    // prevent svg, images and iframes from loading
+                    content = content.replace( /<use[^<]*?>/g, '<use>');
                     content = content.replace( /<img[^<]*?>/g, '<img>');
                     content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                     let dom = document.createElement( 'html' );
