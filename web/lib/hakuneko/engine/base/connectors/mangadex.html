@@ -1,0 +1,103 @@
+<link rel="import" href="../connector.html">
+<link rel="import" href="../promise.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaDex extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id            = 'mangadex';
+            super.label         = 'MangaDex';
+            super.isLocked      = false;
+            this.initialized    = undefined;
+            // Private members for internal usage only (convenience)
+            this.url            = 'https://mangadex.com';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Engine.Request.fetch( 'http://static.hakuneko.download/mangadex/mangas.json', ( error, response, content ) => {
+                callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
+            });
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.cloudflare( this.url + manga.id, ( error, response, content) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
+                // prevent images and iframes from loading
+                content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                let dom = document.createElement( 'html' );
+                dom.innerHTML = content;
+                let chapterList = [...dom.querySelectorAll( 'div.table-responsive tr[id]' )];
+                if( !chapterList ) {
+                    callback( new Error( 'No chapters found!' ), [] );
+                    return;
+                }
+                chapterList = chapterList.map( ( element ) => {
+                    let chapterInfo = element.querySelector( 'td:first-of-type a' );
+                    let languageInfo = element.querySelector( 'td:nth-of-type(2) img' );
+                    let scanlatorInfo = element.querySelector( 'td:nth-of-type(3) a' );
+                    return {
+                        id: this.getRelativeLink( chapterInfo ),
+                        title: `Vol. ${chapterInfo.dataset.volumeNum} Ch. ${chapterInfo.dataset.chapterNum} - ${chapterInfo.dataset.chapterName} [${scanlatorInfo.text.trim()}]`,
+                        language: languageInfo.title
+                    };
+                });
+                callback( error, chapterList );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.cloudflare( this.url + chapter.id, ( error, response, content) => {
+                if( error ) {
+                    callback( error, [] );
+                    return;
+                }
+                // var server = '/data/';
+                // var server = 'https://s2.mangadex.com/';
+                let path = content.match( /var\s+server\s*=\s*['"]{1}(.+?)['"]{1}/ );
+                // var dataurl = '8f82a8b8a5e6a095e2a4f0aa7aaf7fed';
+                let id = content.match( /var\s+dataurl\s*=.+?([a-f0-9)]+)/ );
+                // var page_array = ['x1.png','x2.png','x3.png','x4.png','x5.png','x6.png','x7.png','x8.png','x9.png','x10.png','x11.png','x12.png','x13.png','x14.png','x15.png','x16.png','x17.png','x18.png','x19.png','x20.png','x21.png','x22.png','x23.png','x24.png','x25.png','x26.png','x27.png','x28.png','x29.png','x30.png',];
+                let pages = content.match( /var\s+page_array\s*=\s*\[\s*(.+?)\s*\]/ );
+                if( !path || path.length < 2 || !id || id.length < 2 || !pages || pages.length < 2 ) {
+                    callback( new Error( 'Failed to determine page links!' ), [] );
+                    return;
+                }
+                pages = pages[1].replace( /['"]/g, '' ).split( ',' );
+                if( !pages || pages.length < 1 ) {
+                    callback( new Error( 'No pages found!' ), [] );
+                    return;
+                }
+                // filter: remove empty entries
+                let pageList = pages.filter( p => p ).map( ( page ) => {
+                    return ( path[1].indexOf('/') === 0 ? this.url : '' ) + path[1] + id[1] + '/' + page;
+                });
+                callback( error, pageList );
+            } );
+        }
+    }
+
+</script>
