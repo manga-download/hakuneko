@@ -127,7 +127,11 @@
             let resolution = parseInt( identifier[1] );
             let options = {
                 method: 'GET',
-                url: this.api.cms + '/episodes/' + id
+                url: this.api.cms + '/episodes/' + id,
+                headers: {
+                    // vrv blocks any request with forwarded ip addresses => prevent Forwarded from being auto generated
+                    'Forwarded': null
+                }
             };
             this._mergePolicyParams( options );
             Engine.Request.fetch( options, ( error, response, content ) => {
@@ -312,6 +316,8 @@
             };
             
             options.headers = this.oauth.toHeader( this.oauth.authorize( options ) );
+            // vrv blocks any request with forwarded ip addresses => prevent Forwarded from being auto generated
+            options.headers['Forwarded'] = null;
             Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content );
                 if( error ) {
@@ -355,6 +361,8 @@
                 data: {}
             };
             options.headers = this.oauth.toHeader( this.oauth.authorize( options, this.token ) );
+            // vrv blocks any request with forwarded ip addresses => prevent Forwarded from being auto generated
+            options.headers['Forwarded'] = null;
             Engine.Request.fetch( options, ( error, response, content ) => {
                 error = this._getRequestError( error, response, content );
                 if( error ) {
