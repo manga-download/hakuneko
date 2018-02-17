@@ -301,7 +301,8 @@
                     return null;
                 }
                 return ( manga ) => {
-                    return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                    let p = pattern.toLowerCase();
+                    return ( manga.title.toLowerCase().indexOf( p ) > -1 || manga.connector.label.toLowerCase().indexOf( p ) > -1 );
                 };
             }
 
