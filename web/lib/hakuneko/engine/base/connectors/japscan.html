@@ -88,7 +88,7 @@
                     return;
                 }
                 // prevent images and iframes from loading
-                //content = content.replace( /<img[^<]*?>/g, '<img>');
+                content = content.replace( /<img(?:(?!id)[^<])*?>/g, '<img>');
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
