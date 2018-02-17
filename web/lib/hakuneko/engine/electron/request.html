@@ -124,7 +124,37 @@
                 }
             } );
         }
-
+        /**
+         * Browser intern fetch API
+         */
+/*
+        fetchCR( options, retries ) {
+            fetch( options.url, options )
+            .then( ( response ) => {
+                console.log( 'FETCH', response );
+                //console.log(response.headers.get('Content-Type'));
+                //console.log(response.headers.get('Date'));
+                //console.log(response.status);
+                //console.log(response.statusText);
+                //console.log(response.type);
+                //console.log(response.url);
+                // response.ok // true, false
+                // response.status
+                // response.json().then(...)
+                response.text()
+                .then( ( data ) => {
+                    callback( null, response, data );
+                } )
+                .catch( ( error ) => {
+                    callback( error, undefined, undefined );
+                } );
+            } )
+            .catch( ( error ) => {
+                console.log( 'FETCH', error );
+                callback( error, undefined, undefined );
+            } );
+        }
+*/
         /**
          *
          */
