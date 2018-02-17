@@ -1,0 +1,179 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class TuMangaOnline extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id            = 'tumangaonline';
+            super.label         = 'TuMangaOnline';
+            super.isLocked      = false;
+            this.initialized    = true;
+            // Private members for internal usage only (convenience)
+            this.url            = 'https://www.tumangaonline.com';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                headers: {
+                    'cache-mode': 'no-cache',
+                    'referer': this.url
+                }
+            } );
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config         = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback, pageFrom, pageTo, mangaList ) {
+            pageFrom = pageFrom || 1;
+            pageTo = pageTo || 9999;
+            mangaList = mangaList || [];
+            if( pageFrom > pageTo ) {
+                callback( null, mangaList );
+                return;
+            }
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += '/api/v1/mangas';
+            options['qs'] = {
+                //categorias: '[]',
+                defecto: 1, // TODO: what is this ???
+                //generos: '[]',
+                itemsPerPage: 1500, // 1750,
+                page: pageFrom,
+                puntuacion: 0,
+                searchBy: 'nombre',
+                sortDir: 'desc'
+            };
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Partial manga list responded with status code: ${response.statusCode}` );
+                    }
+                    content = JSON.parse( content );
+                    let mangas = content.data.map( ( manga ) => {
+                        return {
+                            id: manga.id,
+                            title: manga.nombre
+                        };
+                    } );
+                    if( !mangas || mangas.length < 1 ) {
+                        throw new Error( 'Partial manga list is invalid!' );
+                    }
+                    pageTo = content.last_page;
+                    mangaList = mangaList.concat( mangas );
+                    //console.log( 'Page:', content.current_page, '/', content.last_page, 'From:', content.from, '-', content.to, '(', content.data.length, ')', 'of', content.total );
+                } catch ( e ) {
+                    callback( e, mangaList );
+                    return;
+                }
+                this._getMangaList( callback, pageFrom + 1, pageTo, mangaList );
+            } );
+        }
+ 
+        /**
+         *
+         */
+        _getChapterList( manga, callback, pageFrom, pageTo, chapterList ) {
+            pageFrom = pageFrom || 1;
+            pageTo = pageTo || 9999;
+            chapterList = chapterList || [];
+            if( pageFrom > pageTo ) {
+                callback( null, chapterList );
+                return;
+            }
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += `/api/v1/mangas/${manga.id}/capitulos`;
+            options['qs'] = {
+                tomo: -1, // => volume number
+                itemsPerPage: 50, // does not apply (always 25)
+                page: pageFrom,
+            };
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Partial chapter list responded with status code: ${response.statusCode}` );
+                    }
+                    content = JSON.parse( content );
+                    let chapters = content.data.reduce( ( result, chapter ) => {
+                        let vol = ( chapter.tomo && chapter.tomo.tomo ? `Vol.${chapter.tomo.tomo} ` : '' );
+                        let ch = `Ch.${chapter.numCapitulo}`;
+                        let title = ( chapter.nombre ? ` - ${chapter.nombre}` : '' );
+                        let translations = chapter.subidas.map( ( translation ) => {
+                            let scanlator = ( translation.scanlation.nombre ? ` [${translation.scanlation.nombre}]` : '' );
+                            return {
+                                id: `${manga.id}/${chapter.numCapitulo}/${translation.idScan}`,
+                                title: vol + ch + title + scanlator,
+                                language: translation.idioma.idioma,
+                                //scanlator: translation.scanlation.nombre
+                            };
+                        } );
+                        return result.concat( translations );
+                    }, [] ); // [] is the initial value for the result, if not provided => first item in array is initil value
+                    if( !chapters || chapters.length < 1 ) {
+                        throw new Error( 'Partial chapter list is invalid!' );
+                    }
+                    pageTo = content.last_page;
+                    chapterList = chapterList.concat( chapters );
+                    //console.log( 'Page:', content.current_page, '/', content.last_page, 'From:', content.from, '-', content.to, '(', content.data.length, ')', 'of', content.total );
+                } catch ( e ) {
+                    callback( e, chapterList );
+                    return;
+                }
+                this._getChapterList( manga, callback, pageFrom + 1, pageTo, chapterList );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            let query = chapter.id.split( '/' );
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += '/api/v1/imagenes';
+            options['qs'] = {
+                // visto: true,// TODO: what is this ???
+                idManga: query[0],
+                numeroCapitulo: query[1],
+                idScanlation: query[2]
+            };
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Page list responded with status code: ${response.statusCode}` );
+                    }
+                    content = JSON.parse( content );
+                    content = JSON.parse( content.imagenes );
+                    let pages = content.map( ( page ) => {
+                        // image host hardcoded in: https://www.tumangaonline.com/js/controllers.js
+                        return `https://img1.tumangaonline.com/subidas/${query[0]}/${query[1]}/${query[2]}/${page}`;
+                    } );
+                    if( !pages || pages.length < 1 ) {
+                        throw new Error( 'Page list is invalid!' );
+                    }
+                    callback( error, pages );
+                } catch ( e ) {
+                    callback( e, [] );
+                }
+            } );
+        }
+    }
+
+</script>
