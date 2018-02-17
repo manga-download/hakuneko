@@ -106,6 +106,9 @@
                     callback( err, [] );
                     return;
                 }
+                // prevent images and iframes from loading
+                content = content.replace( /(<img.+?)src=".*?"/g, '$1' );
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
                 if( dom.querySelector('.alsotitle') ) {
