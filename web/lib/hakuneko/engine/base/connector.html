@@ -35,8 +35,10 @@
             }
             this.isUpdating = true;
             this._getMangaList( ( error, mangas ) => {
-                if( !mangas ) {
-                    callback( null, undefined );
+                if( error || !mangas ) {
+                    console.error( ( error ? error.message : 'Failed updating mangas!' ) );
+                    this.isUpdating = false;
+                    callback( error, undefined );
                     return;
                 }
                 mangas.sort( ( a, b ) => {
@@ -50,7 +52,7 @@
                     if( error ) {
                         // update failed
                         console.error( error.message );
-                        callback( null, undefined );
+                        callback( error, undefined );
                     } else {
                         // de-serialize manga list from local storage
                         this.getMangas( callback );

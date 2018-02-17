@@ -236,7 +236,9 @@
                 connector.updateMangas( ( error, mangas ) => {
                     // check if executing connector is still the selected connector (visible)
                     if( connector === this.selectedConnector ) {
-                        this.set( 'mangaList', mangas );
+                        if( !error ) {
+                            this.set( 'mangaList', mangas );
+                        }
                         // trigger update for refresh button style (update completed)
                         this.notifyPath( 'selectedConnector.isUpdating' );
                     }
