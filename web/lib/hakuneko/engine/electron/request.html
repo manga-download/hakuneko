@@ -188,8 +188,10 @@
                 return Math.floor( Math.random() * ( max - min + 1 ) ) + min;
             };
             let count = rd( 1, amount );
+            // us ip blocks: https://www.nirsoft.net/countryip/us.html
+            let usBlocks = [3,4,6,7,8,9,11,12,15,16,17,18,19,20,21,22,26,28,29,30,33,34,38,44,48,55,56,73,214,215];
             for(let i=0; i<count; i++) {
-                let ip = [ rd( 32, 224 ), rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ) ];
+                let ip = [ usBlocks[ rd( 0, usBlocks.length - 1 ) ], rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ) ];
                 result.push( ip.join( '.' ) );
             }
             return result;
@@ -210,10 +212,14 @@
             }
             let uri = new URL( options.url );
             options['headers'] = ( options['headers'] ? options['headers'] : {} );
-            options['headers']['User-Agent'] = this.userAgent;
+            options['headers']['User-Agent'] = options['headers']['User-Agent'] || this.userAgent;
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
-            options['headers']['X-Forwarded-For'] = this.ipChain.join( ',' );
-            options['headers']['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
+            if( options['headers']['X-Forwarded-For'] === undefined ) {
+                options['headers']['X-Forwarded-For'] = this.ipChain.join( ',' );
+            }
+            if( options['headers']['Forwarded'] === undefined ) {
+                options['headers']['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
+            }
             // use google data saver proxy server
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 //
@@ -232,9 +238,14 @@
             details = JSON.parse( details );
             let uri = new URL( details.url );
             // details.url
-            details.requestHeaders['User-Agent'] = this.userAgent;
-            details.requestHeaders['X-Forwarded-For'] = this.ipChain.join( ',' );
-            details.requestHeaders['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ', ' );
+            details.requestHeaders['User-Agent'] = details.requestHeaders['User-Agent'] || this.userAgent;
+            // it cannot hurt to pretend the request already passed through some other proxy servers ...
+            if( details.requestHeaders['X-Forwarded-For'] === undefined ) {
+                details.requestHeaders['X-Forwarded-For'] = this.ipChain.join( ',' );
+            }
+            if( details.requestHeaders['Forwarded'] === undefined ) {
+                details.requestHeaders['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
+            }
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
