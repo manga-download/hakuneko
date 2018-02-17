@@ -33,26 +33,59 @@
         /**
          *
          */
-        _getMangaList( callback ) {
+        _getMangaList( callback, pageFrom, pageTo, mangaList ) {
+            pageFrom = pageFrom || 1;
+            pageTo = pageTo || 9999;
+            mangaList = mangaList || [];
+            if( pageFrom > pageTo ) {
+                callback( null, mangaList );
+                return;
+            }
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += '/api/v1/mangas';
             options['qs'] = {
                 //categorias: '[]',
                 defecto: 1, // TODO: what is this ???
                 //generos: '[]',
-                itemsPerPage: 1000, // TODO: this has no effect, alwys 20 per page ???
-                page: 1,
+                itemsPerPage: 1500, // 1750,
+                page: pageFrom,
                 puntuacion: 0,
                 searchBy: 'nombre',
-                sortedBy: 'nombre',
                 sortDir: 'desc'
             };
             Engine.Request.cloudflare( options, ( error, response, content ) => {
-                console.log( JSON.parse( content ).data.length, response );
-                callback( new Error( 'Not supported yet!' ), [] );
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Partial manga list responded with status code: ${response.statusCode}` );
+                    }
+                    content = JSON.parse( content );
+                    if( !content || !content.data || content.data.length < 1 ) {
+                        console.log( pageFrom, pageTo );
+                        throw new Error( 'Partial manga list cannot be parsed!' );
+                    }
+                    let mangas = content.data.map( ( manga ) => {
+                        return {
+                            id: manga.id,
+                            title: manga.nombre
+                        };
+                    } );
+                    if( !mangas || mangas.length < 1 ) {
+                        throw new Error( 'Partial manga list is invalid!' );
+                    }
+                    pageTo = content.last_page;
+                    mangaList = mangaList.concat( mangas );
+                    //console.log( 'Page:', content.current_page, '/', content.last_page, 'From:', content.from, '-', content.to, '(', content.data.length, ')', 'of', content.total );
+                } catch ( e ) {
+                    callback( e, mangaList );
+                    return;
+                }
+                this._getMangaList( callback, pageFrom + 1, pageTo, mangaList );
             } );
         }
-
+ 
         /**
          *
          */
@@ -60,7 +93,7 @@
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += '/api/v1/mangas/' + manga.id + '/capitulos';
             options['qs'] = {
-                page: 2,
+                page: 1,
                 tomo: -1 // TODO: what is this ???
             };
             Engine.Request.cloudflare( options, ( error, response, content ) => {
