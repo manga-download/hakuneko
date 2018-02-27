@@ -58,27 +58,27 @@
         downloadPages( directory, callback ) {
             this.setStatus( DownloadStatus.downloading );
             this.chapter.getPages( ( error, data ) => {
-                if( error || !data ) {
-                    if( error ) {
-                        this.errors.push( error );
-                    } else {
-                        this.errors.push( new Error( 'Page list is empty' ) );
+                if( !error && data ) {
+                    // manga pages
+                    if( data.length ) {
+                        this._downloadPages( data, directory, callback );
+                        return;
                     }
-                    this.setStatus( DownloadStatus.failed );
-                    this.setProgress( 100 );
-                    callback();
-                    return;
+                    // anime playlist
+                    if( data.playlist ) {
+                        this._downloadPlaylistHLS( data, directory, callback );
+                        return;
+                    }
                 }
 
-                if( data.length ) {
-                    this._downloadPages( data, directory, callback );
-                    return;
+                if( error ) {
+                    this.errors.push( error );
+                } else {
+                    this.errors.push( new Error( 'Page list is empty' ) );
                 }
-
-                if( data.playlist ) {
-                    this._downloadPlaylistHLS( data, directory, callback );
-                    return;
-                }
+                this.setStatus( DownloadStatus.failed );
+                this.setProgress( 100 );
+                callback();
             } );
         }
 
