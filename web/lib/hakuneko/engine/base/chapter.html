@@ -77,7 +77,7 @@
                 }
                 // get page list directly from the connector interface and cache them
                 this.manga.connector._getPageList( this.manga, this, ( error, pages ) => {
-                    if( !error ) {
+                    if( !error && pages && ( pages.length || pages.playlist ) ) {
                         this.pageCache = pages;
                     }
                     callback( error, this.pageCache );
