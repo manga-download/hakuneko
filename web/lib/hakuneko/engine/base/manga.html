@@ -59,7 +59,7 @@
             Engine.Storage.getExistingChapterTitles( this, ( error, existingChapterTitles ) => {
                 this.existingChapters = existingChapterTitles;
                 // check if chapter list is cached
-                if( this.chapterCache && this.chapterCache.length > 0 ) {
+                if( this.chapterCache && this.chapterCache.length ) {
                     this.chapterCache.forEach( ( chapter ) => {
                         chapter.updateStatus();
                     });
@@ -68,13 +68,14 @@
                 }
                 // get chapter list directly from the connector interface and cache them or from the manga directory when connector not reachable (offline mode)
                 this.connector._getChapterList( this, ( error, chapters ) => {
+                    this.chapterCache = [];
                     if( error ) {
-                        // disable chapter cache in offline mode
-                        this.chapterCache = [];
+                        // do not use chapter cache in offline mode (will always try to get chapterlist from web first)
+                        chapters = [];
                         for( let chapter in this.existingChapters ) {
-                            this.chapterCache.push( new Chapter( this, Symbol(), chapter, undefined, DownloadStatus.offline ) );
+                            chapters.push( new Chapter( this, Symbol(), chapter, undefined, DownloadStatus.offline ) );
                         }
-                        callback( null, this.chapterCache );
+                        callback( null, chapters );
                     } else {
                         let chapterFormat = Engine.Settings.chapterTitleFormat.value;
                         // de-serialize chapters into objects
