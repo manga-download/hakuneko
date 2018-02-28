@@ -197,7 +197,7 @@
                                         promise.resolve( storageKey );
                                     });
                                 }
-                                this.setProgress( 100 * index/links.length );
+                                this.setProgress( this.progress + 100/links.length );
                                 promise.resolve( key );
                             } );
                         }, index * 1000 );
