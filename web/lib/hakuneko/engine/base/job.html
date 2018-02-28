@@ -114,7 +114,7 @@
             pages.forEach( ( page, index ) => {
                 let key = promise.defer();
                 setTimeout( () => {
-                    Engine.Request.cloudflare( { url: page, encoding: null }, ( error, response, content ) => {
+                    Engine.Request.cloudflare( { url: page, encoding: null, timeout: 1*60*1000 }, ( error, response, content ) => {
                         if( error ) {
                             this.errors.push( error );
                         } else {
