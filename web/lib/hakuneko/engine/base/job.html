@@ -183,7 +183,7 @@
                         content = content.replace( link, file.replace( /\\/g, '/' ) );
                         let key = promise.defer();
                         setTimeout( () => {
-                            Engine.Request.fetch( { url: link, encoding: null }, ( error, response, content ) => {
+                            Engine.Request.fetch( { url: link, encoding: null, timeout: 1*60*1000 }, ( error, response, content ) => {
                                 if( error ) {
                                     this.errors.push( error );
                                 } else if( response.statusCode !== 200 ) {
