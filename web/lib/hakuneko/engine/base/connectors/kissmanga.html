@@ -21,7 +21,7 @@
             this.reqOptionsJSON = JSON.stringify( {
                 url: this.url,
                 headers: {
-                    'User-Agent': 'Mozilla/5.0'
+                    //'User-Agent': 'Mozilla/5.0'
                 }
             } );
             this.sandbox        = new Worker( '/js/sandbox.js' );
@@ -55,7 +55,7 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.cloudflare( 'http://static.hakuneko.download/kissmanga/mangas.json', ( error, response, content ) => {
+            Engine.Request.cloudflare( 'https://manga-download.github.io/kissmanga/cdn/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
@@ -79,7 +79,7 @@
                 }
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
-                    console.error( '[ERROR: CAPTCHA required]', settings.url );
+                    console.error( '[ERROR: CAPTCHA required]', options.url );
                     callback( new Error( 'Failed to get chapter from ' + this.label + ' due to captcha protection!' ), chapterList );
                     return;
                 }
@@ -133,7 +133,7 @@
                 }
                 // on captcha request => abort
                 if( content.indexOf( 'g-recaptcha' ) > -1 || content.indexOf( 'sweetcaptcha' ) > -1 || content.indexOf( 'http://api.solvemedia.com') > -1  ) {
-                    console.error( '[ERROR: CAPTCHA required]', settings.url );
+                    console.error( content, '[ERROR: CAPTCHA required]', options.url );
                     callback( new Error( 'Failed to get chapter from ' + this.label + ' due to captcha protection!' ), pageList );
                     return;
                 }

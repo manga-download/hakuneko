@@ -26,7 +26,7 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.fetch( 'http://static.hakuneko.download/manganel/mangas.json', ( error, response, content ) => {
+            Engine.Request.fetch( 'https://manga-download.github.io/manganel/cdn/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
