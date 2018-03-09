@@ -19,7 +19,7 @@
             super.isLocked      = false;
             this.initialized    = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://mangadex.com';
+            this.url            = 'https://mangadex.org/';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -53,9 +53,9 @@
                     return;
                 }
                 chapterList = chapterList.map( ( element ) => {
-                    let chapterInfo = element.querySelector( 'td:first-of-type a' );
-                    let languageInfo = element.querySelector( 'td:nth-of-type(2) img' );
-                    let scanlatorInfo = element.querySelector( 'td:nth-of-type(3) a' );
+                    let chapterInfo = element.querySelector( 'td:nth-of-type(2) a' );
+                    let languageInfo = element.querySelector( 'td:nth-of-type(3) img' );
+                    let scanlatorInfo = element.querySelector( 'td:nth-of-type(4) a' );
                     return {
                         id: this.getRelativeLink( chapterInfo ),
                         title: `Vol. ${chapterInfo.dataset.volumeNum} Ch. ${chapterInfo.dataset.chapterNum} - ${chapterInfo.dataset.chapterName} [${scanlatorInfo.text.trim()}]`,
