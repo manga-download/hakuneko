@@ -5,7 +5,7 @@
     /**
      *
      */
-    class CrunchyrollVRV extends Connector {
+    class VRVFunimation extends Connector {
 
         /**
          *
@@ -13,12 +13,12 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id         = 'crunchyroll-vrv';
-            super.label      = 'VRV Premium* (Crunchyroll)';
+            super.id         = 'funimation-vrv';
+            super.label      = 'VRV Premium* (Funimation)';
             super.isLocked   = false;
             this.initialized = false;
             // Private members for internal usage only (convenience)
-            this.url       = 'https://manga-download.github.io/vrv-crunchyroll/cdn';
+            this.url       = 'https://manga-download.github.io/vrv-funimation/cdn';
             this.api       = {
                 base: 'https://api.vrv.co',
                 core: 'https://api.vrv.co/core',
@@ -26,7 +26,7 @@
                 public: undefined,
                 private: undefined
             };
-            this.subscriptionID = 'crunchyroll';
+            this.subscriptionID = 'funimation';
             this.subscription   = false;
             this.regionBlock    = true;
             this.token          = null;
@@ -249,7 +249,7 @@
                 return new Error( 'VRV service is not available in your country!' );
             }
             if( !this.subscription ) {
-                return new Error( 'In order to access the content, a paid VRV (Crunchyroll channel) subscription is required!\nDisclaimer: HakuNeko may drop support for VRV at any time.' );
+                return new Error( 'In order to access the content, a paid VRV (Funimation channel) subscription is required!\nDisclaimer: HakuNeko may drop support for VRV at any time.' );
             }
             return null;
         }
