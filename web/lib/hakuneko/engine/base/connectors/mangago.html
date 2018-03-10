@@ -183,6 +183,12 @@
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
             let script = `
+                if( imgsrcs && imgsrcs.indexOf( ',' ) > -1 ) {
+                    if( !imgsrcs.startsWith( 'http' ) ) {
+                        imgsrcs = dorder( imgsrcs, '6875' );
+                    }
+                    imgsrcs = imgsrcs.split( ',' );
+                }
                 let result = {
                     pages: ( imgsrcs ? imgsrcs : [] ),
                     deskeys: []
@@ -196,7 +202,7 @@
                     }
                 }
                 result
-            `
+            `;
             Engine.Request.fetchUI( options, script, ( error, response, content ) => {
                 this.desKeys = ( content && content.deskeys ? content.deskeys : this.desKeys );
                 let pages = (content && content.pages ? content.pages : [] );
