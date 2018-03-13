@@ -23,7 +23,7 @@
                 url: this.url
             } );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            //this.sandbox        = new Worker( '/js/sandbox.js' );
+            this.sandbox        = new Worker( '/js/sandbox.js' );
             this.desKeys        = [
                 //{ id: 'default',                          pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
                 { id: '60a2b0ed56cd458c4633d04b1b76b7e9', pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
@@ -182,31 +182,56 @@
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
-            let script = `
-                if( imgsrcs && imgsrcs.indexOf( ',' ) > -1 ) {
-                    if( !imgsrcs.startsWith( 'http' ) ) {
-                        imgsrcs = dorder( imgsrcs, '6875' );
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
                     }
-                    imgsrcs = imgsrcs.split( ',' );
-                }
-                let result = {
-                    pages: ( imgsrcs ? imgsrcs : [] ),
-                    deskeys: []
-                };
-                if( _deskeys ) {
-                    for( let key in _deskeys ) {
-                        result.deskeys.push ( {
-                            id: key,
-                            pattern: _deskeys[key]
-                        } );
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `${response.statusCode}` );
                     }
+                    this._deobfuscateScript( content, ( error, content ) => {
+                        try {
+                            if( error ) {
+                                throw error;
+                            }
+                            let match = /dorder\s*\(\s*imgsrcs\s*,\s*(['"]{1}\d+['"]{1})\s*\)/.exec( content );
+                            if( !match || match.length < 2 ) {
+                                throw new Error( 'Failed to extract re-order key!' );
+                            }
+                            let script = `
+                                if( imgsrcs && imgsrcs.indexOf( ',' ) > -1 ) {
+                                    if( !imgsrcs.startsWith( 'http' ) ) {
+                                        imgsrcs = dorder( imgsrcs, ${match[1]} );
+                                    }
+                                    imgsrcs = imgsrcs.split( ',' );
+                                }
+                                let result = {
+                                    pages: ( imgsrcs ? imgsrcs : [] ),
+                                    deskeys: []
+                                };
+                                if( _deskeys ) {
+                                    for( let key in _deskeys ) {
+                                        result.deskeys.push ( {
+                                            id: key,
+                                            pattern: _deskeys[key]
+                                        } );
+                                    }
+                                }
+                                result
+                            `;
+                            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
+                                this.desKeys = ( content && content.deskeys ? content.deskeys : this.desKeys );
+                                let pages = (content && content.pages ? content.pages : [] );
+                                callback( error, this._urifyLinks( pages ) );
+                            } );
+                        } catch( e ) {
+                            callback( e, undefined );
+                        }
+                    } );
+                } catch( e ) {
+                    callback( e, undefined );
                 }
-                result
-            `;
-            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
-                this.desKeys = ( content && content.deskeys ? content.deskeys : this.desKeys );
-                let pages = (content && content.pages ? content.pages : [] );
-                callback( error, this._urifyLinks( pages ) );
             } );
         }
 
@@ -230,9 +255,50 @@
         }
 
         /**
-         * 
+         * Deobfuscate Dean Edwards’s base62 Javascript Compressor
          */
-        _descrambleImage( blob, pattern, mimeOut, quality, callback ) {
+         _deobfuscateScript( content, callback ) {
+            try {
+                let match = /src\s*=\s*['"]{1}(.*?chapter\.js\?\d+)['"]{1}/.exec( content );
+                if( !match || match.length < 2 ) {
+                    throw new Error( 'Failed to extract chapter script!' );
+                }
+                let options = JSON.parse( this.reqOptionsJSON );
+                options.url = match[1];
+                Engine.Request.cloudflare( options, ( error, response, content ) => {
+                    try {
+                        let script = content;
+                        if( script.indexOf( 'eval' ) !== 0 && script.indexOf( 'window["\\x65\\x76\\x61\\x6c"](' ) !== 0 ) {
+                            throw new Error( 'Unknown script obfuscation!' );
+                        }
+                        script = script.replace( /eval/g, 'var rawCode = ' );
+                        script = script.replace( /window\["\\x65\\x76\\x61\\x6c"\]/g, 'var rawCode = ' );
+                        script = script.replace( /window\["\\x70\\x61\\x72\\x73\\x65\\x49\\x6e\\x74"\]/g, 'parseInt' );
+                        script = script.replace( /window\["\\x53\\x74\\x72\\x69\\x6e\\x67"\]/g, 'String' );
+                        script = script.replace( /window\["\\x52\\x65\\x67\\x45\\x78\\x70"\]/g, 'RegExp' );
+                        let messageID = Math.random();
+                        let eventListener = ( e ) => {
+                            if( e.data.id === messageID ) {
+                                this.sandbox.removeEventListener( 'message', eventListener );
+                                callback( null, e.data.content[ 'rawCode' ] );
+                            }
+                        };
+                        this.sandbox.addEventListener( 'message', eventListener, false );
+                        this.sandbox.postMessage( { id: messageID, content: script, return: ['rawCode'] } );
+                    } catch( e ) {
+                        callback( e, undefined );
+                    }
+                } );
+            } catch( e ) {
+                callback( e, undefined );
+            }
+        }
+
+        /**************************
+         *** MANGAGO CODE BEGIN ***
+        *************************/
+
+         _descrambleImage( blob, pattern, mimeOut, quality, callback ) {
             createImageBitmap( blob )
             .then( ( bitmap ) => {
                 let canvas = document.createElement( 'canvas' );
@@ -265,6 +331,10 @@
                 callaback( undefined );
             } );
         }
+
+        /************************
+         *** MANGAGO CODE END ***
+        ***********************/
     }
 
 </script>
