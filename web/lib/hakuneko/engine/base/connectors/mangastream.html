@@ -127,8 +127,51 @@
                     uri.protocol = this.id;
                     return uri.href;
                 });
+                pageList = this._interpolatePages( pageList );
                 callback( error, pageList );
             });
+        }
+
+        /**
+         * Try to interpolate missing pages between last page and its preceding page
+         */
+        _interpolatePages( pageList ) {
+            let result = pageList;
+            try {
+                let last = result.length - 1;
+                let forelast = result.length - 2;
+                if( forelast < 0 ) {
+                    throw new Error( 'Cannot interpolate less than two pages!' );
+                }
+
+                let partsForelast = result[forelast].split( '/' );
+                forelast = parseInt( partsForelast.pop() );
+                partsForelast = partsForelast.join( '/' );
+
+                let partsLast = result[last].split( '/' );
+                last = parseInt( partsLast.pop() );
+                partsLast = partsLast.join( '/' );
+
+                if( partsForelast !== partsLast ) {
+                    throw new Error( 'Cannot interpolate non-sequiential URLs!' );
+                }
+                if( isNaN(last) || isNaN(forelast) ) {
+                    throw new Error( 'Cannot interpolate non-numeric sequences!' );
+                }
+                if( last - forelast < 2 ) {
+                    throw new Error( 'Cannot interpolate between consecutive numbers!' );
+                }
+                if( last - forelast > 100 ) {
+                    throw new Error( 'Cannot interpolate more than 100 pages (might be an unsupported sequence rule)!' );
+                }
+
+                result.pop();
+                for( let i = forelast+1; i<=last; i++ ) {
+                    result.push( `${partsLast}/${i}` );
+                }
+            } finally {
+                return result;
+            }
         }
     }
 
