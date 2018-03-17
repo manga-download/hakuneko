@@ -28,7 +28,7 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( 'https://manga-download.github.io/mangadex/cdn/mangas.json', ( error, response, content ) => {
+            Engine.Request.fetch( 'http://mangadex.hakuneko.download/cdn/mangas.json', ( error, response, content ) => {
                 callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
             });
         }
