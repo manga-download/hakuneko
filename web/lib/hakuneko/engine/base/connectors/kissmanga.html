@@ -70,7 +70,7 @@
                 return;
             }
             let options = JSON.parse( this.reqOptionsJSON );
-            options.url += `/Manga/${manga.id}`;
+            options.url += manga.id;
             Engine.Request.cloudflare( options, ( error, response, content ) => {
                 let chapterList = [];
                 if( error ) {

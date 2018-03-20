@@ -131,7 +131,7 @@
          */
         _getChapterList( manga, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
-            options.url += `/read-manga/${manga.id}`;
+            options.url += manga.id;
             let script = `
                 [...document.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
                     return {
