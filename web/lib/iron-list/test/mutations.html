@@ -45,7 +45,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script>
-
+    'use strict';
     suite('mutations to the collection of items', function() {
       var list, container;
 
@@ -170,6 +170,22 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         list.splice('items', 0, setSize, buildItem(phrase));
         PolymerFlush();
         assert.equal(list.items.length, 1);
+        assert.equal(getFirstItemFromList(list).textContent, phrase);
+      });
+
+      test('Issue #496: handle addedCount of splice', function() {
+        var phrase = 'It works!'
+        list.items = buildDataSet(100);
+        list.scrollToIndex(45);
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, '45');
+        var spliceItems = new Array(50);
+        var item = buildItem(phrase);
+        for (var i = 0; i < 50; ++i) {
+          spliceItems[i] = item;
+        }
+        list.splice.apply(list, ['items', 0, 50].concat(spliceItems));
+        PolymerFlush();
         assert.equal(getFirstItemFromList(list).textContent, phrase);
       });
 
@@ -352,7 +368,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('should not use dirty checking if mutableData is true', function() {
         /**
          * This feature and Polymer.OptionalMutableDataBehavior is only available
-         * with Polymer 2.0. 
+         * with Polymer 2.0.
          */
         if (!Polymer.OptionalMutableDataBehavior.properties) {
           return;

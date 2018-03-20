@@ -33,7 +33,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script>
-
+    'use strict';
     suite('selection', function() {
       var list, container;
 
@@ -303,7 +303,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(list.selectedItems.length, 0, 'multiple selection 2');
       });
 
-      // This is no longer supported. 
+      // This is no longer supported.
       // Mutating the item value will deselect that item.
       // test('modify primitive item while being selected', function() {
       //   list.primitive = true;

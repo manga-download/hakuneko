@@ -38,7 +38,7 @@ explicitly sized parent. By "explicitly sized", we mean it either has an explici
 CSS `height` property set via a class or inline style, or else is sized by other
 layout means (e.g. the `flex` or `fit` classes).
 
-#### Flexbox - [jsbin](http://jsbin.com/kokaki/edit?html,output)
+#### Flexbox - [jsbin](https://jsbin.com/vejoni/edit?html,output)
 
 ```html
 <template is="x-list">
@@ -63,7 +63,7 @@ layout means (e.g. the `flex` or `fit` classes).
   </iron-list>
 </template>
 ```
-#### Explicit size - [jsbin](http://jsbin.com/pibefo/edit?html,output)
+#### Explicit size - [jsbin](https://jsbin.com/vopucus/edit?html,output)
 ```html
 <template is="x-list">
   <style>
@@ -84,7 +84,7 @@ layout means (e.g. the `flex` or `fit` classes).
   </iron-list>
 </template>
 ```
-#### Main document scrolling - [jsbin](http://jsbin.com/cojuli/edit?html,output)
+#### Main document scrolling - [jsbin](https://jsbin.com/wevirow/edit?html,output)
 ```html
 <head>
   <style>

@@ -18,7 +18,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="../../web-component-tester/browser.js"></script>
   <script src="../../test-fixture/test-fixture-mocha.js"></script>
   <script src="../../iron-test-helpers/mock-interactions.js"></script>
-  
+
   <link rel="import" href="fixtures/helpers.html">
   <link rel="import" href="fixtures/x-list.html">
 
@@ -32,7 +32,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
 <script>
-
+  'use strict';
   suite('basic features', function() {
     var list, container;
 
@@ -116,11 +116,27 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var button = document.createElement('button');
         list.parentNode.appendChild(button);
         button.focus();
-        // getFirstItemFromList(list).focus();
 
         assert.notEqual(document.activeElement, document.body);
 
         list.items = buildDataSet(100);
+
+        assert.notEqual(document.activeElement, document.body);
+        done();
+      });
+    });
+
+    test('don\'t blur when activeElement is not a descendant of the list (#505, #507)', function(done) {
+      list.items = buildDataSet(100);
+
+      flush(function() {
+        var button = document.createElement('button');
+        list.parentNode.appendChild(button);
+        button.focus();
+
+        assert.notEqual(document.activeElement, document.body);
+
+        list.splice('items', 0, 1);
 
         assert.notEqual(document.activeElement, document.body);
         done();

@@ -3,6 +3,10 @@ sudo: required
 before_script:
   - npm install -g bower polymer-cli
   - polymer install --variants
+  - >-
+    npm run update-types && git diff --exit-code || (echo -e
+    '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
+    update-types".' && false)
 env:
   global:
     - secure: >-
@@ -19,5 +23,7 @@ addons:
       - google-chrome-stable
 script:
   - xvfb-run polymer test
-  - 'if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s ''default''; fi'
+  - >-
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
+    fi
 dist: trusty

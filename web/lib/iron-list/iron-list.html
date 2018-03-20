@@ -34,7 +34,7 @@ explicitly sized parent. By "explicitly sized", we mean it either has an explici
 CSS `height` property set via a class or inline style, or else is sized by other
 layout means (e.g. the `flex` or `fit` classes).
 
-#### Flexbox - [jsbin](http://jsbin.com/kokaki/edit?html,output)
+#### Flexbox - [jsbin](https://jsbin.com/vejoni/edit?html,output)
 
 ```html
 <template is="x-list">
@@ -60,7 +60,7 @@ layout means (e.g. the `flex` or `fit` classes).
   </iron-list>
 </template>
 ```
-#### Explicit size - [jsbin](http://jsbin.com/pibefo/edit?html,output)
+#### Explicit size - [jsbin](https://jsbin.com/vopucus/edit?html,output)
 ```html
 <template is="x-list">
   <style>
@@ -81,7 +81,7 @@ layout means (e.g. the `flex` or `fit` classes).
   </iron-list>
 </template>
 ```
-#### Main document scrolling - [jsbin](http://jsbin.com/cojuli/edit?html,output)
+#### Main document scrolling - [jsbin](https://jsbin.com/wevirow/edit?html,output)
 ```html
 <head>
   <style>
@@ -426,7 +426,7 @@ will only render 20.
 
     /**
      * The ratio of hidden tiles that should remain in the scroll direction.
-     * Recommended value ~0.5, so it will distribute tiles evely in both directions.
+     * Recommended value ~0.5, so it will distribute tiles evenly in both directions.
      */
     _ratio: 0.5,
 
@@ -1066,7 +1066,7 @@ will only render 20.
     },
 
     /**
-     * Called when the items have changed. That is, ressignments
+     * Called when the items have changed. That is, reassignments
      * to `items`, splices or updates to a single item.
      */
     _itemsChanged: function(change) {
@@ -1091,9 +1091,13 @@ will only render 20.
       } else if (change.path === 'items.splices') {
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
+        // Only blur activeElement if it is a descendant of the list (#505, #507).
+        var activeElement = this._getActiveElement();
+        if (this.contains(activeElement)) activeElement.blur();
         // Render only if the affected index is rendered.
         var affectedIndexRendered = change.value.indexSplices.some(function(splice) {
-          return this._isIndexRendered(splice.index);
+          return splice.index + splice.addedCount >= this._virtualStart &&
+              splice.index <= this._virtualEnd;
         }, this);
         if (!this._isClientFull() || affectedIndexRendered) {
           this._debounce('_render', this._render, ANIMATION_FRAME);
@@ -1169,7 +1173,6 @@ will only render 20.
       // remove the current focused item
       if (this._focusedItem && this.modelForElement(this._focusedItem)[this.as] === item) {
         this._removeFocusedItem();
-        document.activeElement && document.activeElement.blur && document.activeElement.blur();
       }
     },
 
@@ -1607,8 +1610,7 @@ will only render 20.
       }
       var modelTabIndex, activeElTabIndex;
       var target = Polymer.dom(e).path[0];
-      var itemsHost = this._itemsParent.node.domHost;
-      var activeEl = Polymer.dom(itemsHost ? itemsHost.root : document).activeElement;
+      var activeEl = this._getActiveElement();
       var physicalItem = this._physicalItems[this._getPhysicalIndex(model[this.indexAs])];
       // Safari does not focus certain form controls via mouse
       // https://bugs.webkit.org/show_bug.cgi?id=118043
@@ -1937,6 +1939,12 @@ will only render 20.
             this.modelForElement(item)[prop] = value;
           }
         }, this);
+    },
+
+    /* Gets the activeElement of the shadow root/host that contains the list. */
+    _getActiveElement: function() {
+      var itemsHost = this._itemsParent.node.domHost;
+      return Polymer.dom(itemsHost ? itemsHost.root : document).activeElement;
     }
 
   });

@@ -20,3 +20,6 @@ var exports;
 
 var ShadyDOM;
 var WebComponents;
+
+/** @type !Function */
+Promise.cast;

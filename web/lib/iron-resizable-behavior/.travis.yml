@@ -3,6 +3,10 @@ sudo: required
 before_script:
   - npm install -g polymer-cli
   - polymer install --variants
+  - >-
+    npm run update-types && git diff --exit-code || (echo -e
+    '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
+    update-types".' && false)
 env:
   global:
     - secure: >-

@@ -16,6 +16,11 @@ to work around https://github.com/webcomponents/webcomponentsjs/issues/837
 */
 if (!window.Promise) {
   window.Promise = ES6Promise;
-  // save catch function with a string name to prevent renaming and dead code eliminiation with closure
+  // save Promise API
   ES6Promise.prototype['catch'] = ES6Promise.prototype.catch;
+  ES6Promise.prototype['then'] = ES6Promise.prototype.then;
+  ES6Promise['all'] = ES6Promise.all;
+  ES6Promise['race'] = ES6Promise.race;
+  ES6Promise['resolve'] = ES6Promise.resolve;
+  ES6Promise['reject'] = ES6Promise.reject;
 }

@@ -59,14 +59,7 @@ export default class ScopingShim {
     return StyleUtil.toCssText(ast);
   }
   _gatherStyles(template) {
-    let styles = template.content.querySelectorAll('style');
-    let cssText = [];
-    for (let i = 0; i < styles.length; i++) {
-      let s = styles[i];
-      cssText.push(s.textContent);
-      s.parentNode.removeChild(s);
-    }
-    return cssText.join('').trim();
+    return StyleUtil.gatherStyleText(template.content);
   }
   _getCssBuild(template) {
     let style = template.content.querySelector('style');

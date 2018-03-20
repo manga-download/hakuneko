@@ -26,7 +26,7 @@
   ],
   "devDependencies": {
     "web-component-tester": "^6",
-    "es6-promise": "stefanpenner/es6-promise#^4.0.0",
+    "es6-promise": "stefanpenner/es6-promise#~4.1.0",
     "template": "webcomponents/template#^1.0.0",
     "html-imports": "webcomponents/html-imports#^1.0.0",
     "custom-elements": "webcomponents/custom-elements#^1.0.0",

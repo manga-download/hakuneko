@@ -9,7 +9,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 -->
 
 <script>
-  function findElementInList(container, selector) {
+  window.findElementInList = function(container, selector) {
     var i = 0;
     var children = container._children;
     var ms = Polymer.DomApi.matchesSelector;
@@ -22,13 +22,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     return null;
   }
 
-  function buildItem(index) {
+  window.buildItem = function(index) {
     return {
       index: index
     };
   }
 
-  function buildDataSet(size) {
+  window.buildDataSet = function(size) {
     var data = [];
     while (data.length < size) {
       data.push(buildItem(data.length));
@@ -36,7 +36,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     return data;
   }
 
-  function simulateScroll(config) {
+  window.simulateScroll = function(config) {
     var list = config.list;
     var target = config.target;
     var contribution = Math.abs(config.contribution) || 10;
@@ -44,7 +44,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     if (target < list.scrollTop) {
       contribution = -contribution;
     }
-    function scrollHandler() {
+    window.scrollHandler = function() {
       var minScrollTop = 0;
       var maxScrollTop = list.scrollHeight - list.clientHeight;
       var nextScrollTop = list.scrollTop + contribution;
@@ -69,7 +69,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     scrollHandler();
   }
 
-  function deepElementFromPoint(x, y) {
+  window.deepElementFromPoint = function(x, y) {
     var r, el;
     var root = document;
     while (root && root.elementFromPoint) {
@@ -80,11 +80,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     return r;
   }
 
-  function getGridRowFromIndex(grid, index) {
+  window.getGridRowFromIndex = function(grid, index) {
     return Math.floor(index / grid._itemsPerRow);
   }
 
-  function getNthItemFromGrid(grid, n, itemSize) {
+  window.getNthItemFromGrid = function(grid, n, itemSize) {
     itemSize = itemSize || 100;
     var gridRect = grid.getBoundingClientRect();
     var x = gridRect.left + ((n % grid._itemsPerRow) * itemSize) + (itemSize / 2);
@@ -92,7 +92,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     return deepElementFromPoint(x, y);
   }
 
-  function getNthItemFromRTLGrid(grid, n, itemSize) {
+  window.getNthItemFromRTLGrid = function(grid, n, itemSize) {
     itemSize = itemSize || 100;
     var gridRect = grid.getBoundingClientRect();
     var x = gridRect.left + gridRect.width - ((n % grid._itemsPerRow) * itemSize) - (itemSize / 2);
@@ -100,12 +100,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     return document.elementFromPoint(x, y);
   }
 
-  function getFirstItemFromList(list) {
+  window.getFirstItemFromList = function(list) {
     var listRect = list.getBoundingClientRect();
     return deepElementFromPoint(listRect.left + 100, listRect.top + 1);
   }
 
-  function getNthItemFromList(list, n, itemHeight) {
+  window.getNthItemFromList = function(list, n, itemHeight) {
     itemHeight = itemHeight || 100;
     var listRect = list.getBoundingClientRect();
     var x = listRect.left + 1;
@@ -113,12 +113,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     return deepElementFromPoint(x, y);
   }
 
-  function getLastItemFromList(list) {
+  window.getLastItemFromList = function(list) {
     var listRect = list.getBoundingClientRect();
     return deepElementFromPoint(listRect.left + 100, listRect.top + listRect.height - 1);
   }
 
-  function isFullOfItems(list) {
+  window.isFullOfItems = function(list) {
     var listRect = list.getBoundingClientRect();
     var listHeight = listRect.height - 1;
     var item, y = listRect.top + 1;
@@ -137,10 +137,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     return true;
   }
 
-  function checkRepeatedItems(list) {
+  window.checkRepeatedItems = function(list) {
     var listRect = list.getBoundingClientRect();
     var listHeight = list.offsetHeight;
     var listItems = {};
+    var item;
 
     return function() {
       var itemKey;
@@ -161,11 +162,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     };
   }
 
-  function getNthItemRowStart(grid, n) {
+  window.getNthItemRowStart = function(grid, n) {
     return n - (n % grid._itemsPerRow);
   }
 
-  function PolymerFlush() {
+  window.PolymerFlush = function() {
     if (Polymer.flush) {
       Polymer.flush();
     } else if (Polymer.dom.flush) {

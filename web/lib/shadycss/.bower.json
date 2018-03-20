@@ -26,21 +26,21 @@
   ],
   "devDependencies": {
     "web-component-tester": "^6",
-    "es6-promise": "stefanpenner/es6-promise#^4.0.0",
+    "es6-promise": "stefanpenner/es6-promise#~4.1.0",
     "template": "webcomponents/template#^1.0.0",
     "html-imports": "webcomponents/html-imports#^1.0.0",
     "custom-elements": "webcomponents/custom-elements#^1.0.0",
     "shadydom": "webcomponents/shadydom#^1.0.0",
     "webcomponents-platform": "webcomponents/webcomponents-platform#^1.0.0"
   },
-  "version": "1.0.6",
-  "_release": "1.0.6",
+  "version": "1.1.1",
+  "_release": "1.1.1",
   "_resolution": {
     "type": "version",
-    "tag": "v1.0.6",
-    "commit": "5b2a1be3ee5118bd440139e43a34ea8ddfca6fd8"
+    "tag": "v1.1.1",
+    "commit": "de07897166484a04d16740d176cd8e7e5fafe639"
   },
   "_source": "https://github.com/webcomponents/shadycss.git",
-  "_target": "^v1.0.0",
+  "_target": "^v1.1.0",
   "_originalSource": "webcomponents/shadycss"
 }

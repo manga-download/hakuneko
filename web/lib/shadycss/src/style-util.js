@@ -13,6 +13,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 import {nativeShadow, nativeCssVariables} from './style-settings.js';
 import {parse, stringify, types, StyleNode} from './css-parse.js'; // eslint-disable-line no-unused-vars
 import {MEDIA_MATCH} from './common-regex.js';
+import {processUnscopedStyle, isUnscopedStyle} from './unscoped-style-handler.js';
 
 /**
  * @param {string|StyleNode} rules
@@ -267,4 +268,27 @@ export function getIsExtends(element) {
     typeExtension = /** @type {?} */(element).extends;
   }
   return {is, typeExtension};
+}
+
+/**
+ * @param {Element|DocumentFragment} element
+ * @return {string}
+ */
+export function gatherStyleText(element) {
+  /** @type {!Array<string>} */
+  const styleTextParts = [];
+  const styles = /** @type {!NodeList<!HTMLStyleElement>} */(element.querySelectorAll('style'));
+  for (let i = 0; i < styles.length; i++) {
+    const style = styles[i];
+    if (isUnscopedStyle(style)) {
+      if (!nativeShadow) {
+        processUnscopedStyle(style);
+        style.parentNode.removeChild(style);
+      }
+    } else {
+      styleTextParts.push(style.textContent);
+      style.parentNode.removeChild(style);
+    }
+  }
+  return styleTextParts.join('').trim();
 }
