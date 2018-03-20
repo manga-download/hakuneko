@@ -63,4 +63,5 @@ function compress {
 set -e
 
 cd "$(dirname $0)"
+rm -r -f "build"
 mkdir -p "build"
