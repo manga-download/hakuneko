@@ -29,7 +29,6 @@ function app_changelog {
 function app_desktop {
 	mkdir -p "build/$1/usr/share/applications"
 	echo "[Desktop Entry]" > "build/$1/usr/share/applications/${PACKAGE}.desktop"
-	
 	echo "Version=1.0" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
 	echo "Type=Application" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
 	echo "Name=${PRODUCT}" >> "build/$1/usr/share/applications/${PACKAGE}.desktop"
@@ -95,11 +94,20 @@ function rpm_spec {
 	#echo "Requires: libc" >> build/specfile.spec
 	echo "Summary: ${DESCRIPTION_SHORT}" >> build/specfile.spec
 	echo "" >> build/specfile.spec
+	echo "Autoreq: no" >> build/specfile.spec
+	#echo "AutoReqProv: no" >> build/specfile.spec
+	echo "" >> build/specfile.spec
 	echo "%description" >> build/specfile.spec
 	echo "${DESCRIPTION_LONG}" >> build/specfile.spec
 	echo "" >> build/specfile.spec
 	echo "%files" >> build/specfile.spec
 	find "build/$1" -type f | sed "s/build\/$1//g" >> build/specfile.spec
+	echo "" >> build/specfile.spec
+	echo "%post" >> build/specfile.spec
+	echo "if [ ! -f /usr/bin/hakuneko-desktop ] ; then ln -s /usr/lib/hakuneko-desktop/hakuneko /usr/bin/hakuneko-desktop ; fi" >> build/specfile.spec
+	echo "" >> build/specfile.spec
+	echo "%postun" >> build/specfile.spec
+	echo "if [ -f /usr/bin/hakuneko-desktop ] ; then rm -f /usr/bin/hakuneko-desktop ; fi" >> build/specfile.spec
 }
 
 function build_rpm {
