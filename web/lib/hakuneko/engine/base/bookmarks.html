@@ -12,6 +12,31 @@
         }
 
         /**
+         *
+         */
+        exportBookmarks() {
+            return this.bookmarks/*.map( b => b.key )*/;
+        }
+
+        /**
+         *
+         */
+        importBookmarks( bookmarks ) {
+            bookmarks.forEach( ( bookmark ) => {
+                // TODO: check if all properties are defined properly!
+                // check if bookmark does not exist
+                let index = this.bookmarks.findIndex( ( b ) => {
+                    return ( bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector );
+                });
+                if( index < 0 ) {
+                    this.bookmarks.push( bookmark );
+                }
+            } );
+            this.bookmarks.sort( this.compareBookmarks );
+            this.saveProfile( 'default', undefined );
+        }
+
+        /**
          * Load and apply the bookmarks from the given profile.
          * Callback will be executed after the data has been loaded.
          * Callback will be provided with an error (or null if no error).
