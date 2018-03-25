@@ -21,6 +21,15 @@
             this.path = require( 'path' );
             this.temp = this.path.join( require('os').tmpdir(), 'hakuneko' );
             this._createDirectoryChain( this.temp );
+
+            this.fileURISubstitutions = {
+                rgx: /['#\?]/g,
+                map: {
+                    '\'': '%27',
+                    '#': '%23',
+                    '?': '%3F',
+                }
+            };
         }
 
         /**
@@ -265,7 +274,9 @@
          * 
          */
         _makeValidFileURL( directory, file ) {
-            return encodeURI( 'file://' + this.path.join( directory, file ).replace(/\\/g, '/') ).replace(/#/g, '%23').replace(/'/g, '%27');
+            return encodeURI( 'file://' + this.path.join( directory, file ).replace( /\\/g, '/' ) )
+            // some special cases are not covered with encodeURI and needs to be replaced manually
+            .replace( this.fileURISubstitutions.rgx, m => this.fileURISubstitutions.map[m] );
         }
 
         /**
