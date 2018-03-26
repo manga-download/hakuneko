@@ -84,7 +84,7 @@
                             return ( uri.pathname.indexOf( key.id ) > -1 );
                         } ) || this.desKeys[0];
                         let blob = new Blob( [content], { type: response.headers['content-type'] } );
-                        this._descrambleImage( blob, desKey.pattern, 'image/jpeg', 0.90, ( data ) => {
+                        this._descrambleImage( blob, 'image/jpeg', 0.90, desKey.pattern, ( data ) => {
                             var fs = new FileReader();
                             fs.onload = ( e ) => {
                                 callback( {
@@ -298,14 +298,14 @@
          *** MANGAGO CODE BEGIN ***
         *************************/
 
-         _descrambleImage( blob, pattern, mimeOut, quality, callback ) {
+        _descrambleImage( blob, mimeOut, quality, params, callback ) {
             createImageBitmap( blob )
             .then( ( bitmap ) => {
                 let canvas = document.createElement( 'canvas' );
                 canvas.width = bitmap.width;
                 canvas.height = bitmap.height;
                 var ctx = canvas.getContext( '2d' );
-                let partMap = pattern.split( 'a' );
+                let partMap = params.split( 'a' );
                 let widthnum = 9;
                 let heightnum = 9;
                 let partWidth = bitmap.width / widthnum;
@@ -328,7 +328,7 @@
                 }, mimeOut, quality );
             } )
             .catch( ( error ) => {
-                callaback( undefined );
+                callback( undefined );
             } );
         }
 
