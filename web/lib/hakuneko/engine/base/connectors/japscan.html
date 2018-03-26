@@ -17,8 +17,12 @@
             super.label          = 'JapScan';
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.japscan.cc';
+            this.urlCDN         = 'http://c.japscan.cc/cr_images';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'mangago' protocol) and decrypt images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -92,27 +96,132 @@
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
                 let dom = document.createElement( 'html' );
                 dom.innerHTML = content;
-                content = '';
-                let baseUrl = dom.querySelector( '#image' );
-                if(!baseUrl){
-                    baseUrl = dom.querySelector( '#first_img' );
-                    if(!baseUrl){
-                        callback( new Error( 'Couldn\'t find image links' ), [] );
-                        return;
-                    }
-                }
-                baseUrl = baseUrl.src;
-                let imageList = [...dom.querySelectorAll( '#pages option' )].map(  ( element ) => {
-                    return element.getAttribute( 'data-img' );
+                let pageLinks = [...dom.querySelectorAll( '#pages option' )].map(  ( element ) => {
+                    let uri = new URL( this.url + element.value );
+                    uri.protocol = this.id;
+                    return uri.href;
                 });
-                imageList.splice(2, 1);  //Remove 2nd and last images
-                imageList.splice(-1, 1);
-                baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf('/') + 1);
-                imageList = imageList.map( (element) => {
-                    return baseUrl + element;
-                });
-                callback( error, imageList );
+                //Remove 2nd and last images
+                pageLinks.splice(2, 1);  
+                pageLinks.splice(-1, 1);
+                callback( error, pageLinks );
             });
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            let opts = {
+                url: uri.href,
+                encoding: undefined
+            };
+            Engine.Request.cloudflare( opts, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to get image '${uri.href}'` );
+                    }
+                    // prevent images and iframes from loading
+                    //content = content.replace( /<img[^<]*?>/g, '<img>');
+                    content = content.replace( /<img/g, '<source');
+                    content = content.replace( /<\/img>/g, '</source>');
+                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                    let dom = document.createElement( 'html' );
+                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                    dom.innerHTML = content;
+                    let tag = dom.querySelector( '#image' );
+                    if( !tag ) {
+                        throw new Error( 'No element with id #image found in page!' );
+                    }
+                    opts.encoding = null;
+                    if( tag.src ) {
+                        // get raw image data
+                        opts.url = tag.src;
+                        Engine.Request.cloudflare( opts, ( error, response, content ) => {
+                            // TODO: error handling ...
+                            callback( {
+                                mimeType: response.headers['content-type'],
+                                data: content
+                            } );
+                        } );
+                    } else {
+                        // get descrambled image data
+                        let manga = dom.querySelector( 'select#mangas' ).dataset;
+                        manga = ( manga['nom'] || manga['uri'] ).replace( '/', '_' ).replace( '?', '' );
+                        let chapter = dom.querySelector( 'select#chapitres' ).dataset;
+                        chapter = chapter['nom'] || chapter['uri'];
+                        let page = tag.dataset['img'];
+                        opts.url = `${this.urlCDN}/${manga}/${chapter}/${tag.dataset['img']}`;
+                        Engine.Request.cloudflare( opts, ( error, response, content ) => {
+                            // TODO: error handling ...
+                            let blob = new Blob( [content], { type: response.headers['content-type'] } );
+                            this._descrambleImage( blob, 'image/jpeg', 0.90, {}, callback );
+                        } );
+                    }
+                } catch ( e ) {
+                    console.error( e.message );
+                    callback( undefined );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _descrambleImage( blob, mimeOut, quality, params, callback ) {
+            createImageBitmap( blob )
+            .then( ( bitmap ) => {
+                try {
+                    let width = bitmap.width;
+                    let height = bitmap.height;
+
+                    // stuff from japscan script
+                    let w_p = Math.floor( width / 5 );
+                    let h_p = Math.floor( height / 5 );
+                    let r_w = width - ( w_p * 5 );
+                    let r_h = height - ( h_p * 5 );
+                    let offsetsX = [w_p*2, w_p*4, width, (w_p*8 + r_w), (w_p*6 + r_w)];
+                    let offsetsY = [h_p*4, h_p*3, h_p*2, h_p, 0];
+
+                    let partWidth = w_p;
+                    let partHeight = h_p;
+                    // normalize background repeats
+                    offsetsX = offsetsX.map( offset => ( offset % width ) );
+                    offsetsY = offsetsY.map( offset => offset % height );
+
+                    let canvas = document.createElement( 'canvas' );
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                    var ctx = canvas.getContext( '2d' );
+                    for (let y = 0; y < offsetsY.length; y++) {
+                        for (let x = 0; x < offsetsX.length; x++) {
+                            ctx.drawImage( bitmap, offsetsX[x], offsetsY[y], partWidth, partHeight, x * partWidth, y * partHeight, partWidth, partHeight );
+                        }		
+                    }
+                    canvas.toBlob( ( data ) => {
+                        let fs = new FileReader();
+                        fs.onload = ( evt ) => {
+                            callback( {
+                                mimeType: data.type,
+                                data: new Uint8Array( evt.target.result )
+                            } );
+                        };
+                        fs.readAsArrayBuffer( data );
+                    }, mimeOut, quality );
+                } catch ( e ) {
+                    console.error( e.message );
+                    callback( undefined );
+                }
+            } )
+            .catch( ( e ) => {
+                console.error( e.message );
+                callback( undefined );
+            } );
         }
     }
 
