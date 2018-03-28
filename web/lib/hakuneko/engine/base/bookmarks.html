@@ -22,6 +22,9 @@
          *
          */
         importBookmarks( bookmarks ) {
+            if( !bookmarks ) {
+                return;
+            }
             bookmarks.forEach( ( bookmark ) => {
                 // TODO: check if all properties are defined properly!
                 // check if bookmark does not exist
