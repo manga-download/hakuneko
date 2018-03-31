@@ -199,6 +199,7 @@
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onRequestChapterUp, this.onRequestChapterUp.bind( this ) );
                 document.addEventListener( EventListener.onRequestChapterDown, this.onRequestChapterDown.bind( this ) );
+                document.addEventListener( EventListener.onChaptermarksChanged, this.onChaptermarksChanged.bind( this ) );
             }
 
             /**
@@ -218,14 +219,8 @@
                 if( !this.selectedConnector || !manga ) {
                     return;
                 }
-                // load marked chapter
-                Engine.Storage.loadFromDB( 'chaptermarks', [ manga.connector.id, manga.id ], (value, error) => {
-                    if( !error && value ) {
-                        this.set( 'markedChapterID', value.chapterID);
-                    } else {
-                        this.set( 'markedChapterID', undefined );
-                    }
-                });
+                // load marked chapter for this manga
+                this.onChaptermarksChanged( undefined );
                 // load chapterlist
                 let statusID = this.$.status.addToQueue( 'Loading chapter list (' + manga.title + ')' );
                 manga.getChapters( ( error, chapters ) => {
@@ -435,24 +430,18 @@
                     return;
                 }
                 if( this.markedChapterID === chapter.id ) {
-                    // delete from object store
-                    Engine.Storage.deleteFromDB( 'chaptermarks', [chapter.manga.connector.id, chapter.manga.id], ( error ) => {
-                        if( !error ) {
-                            this.markedChapterID = undefined;
-                        }
-                    });
+                    Engine.ChaptermarkManager.deleteChaptermark( chapter );
                 } else {
-                    // update in object store
-                    Engine.Storage.saveToDB( 'chaptermarks', undefined, {
-                        connectorID: chapter.manga.connector.id,
-                        mangaID: chapter.manga.id,
-                        chapterID: chapter.id
-                    }, ( error ) => {
-                        if( !error ) {
-                            this.markedChapterID = chapter.id;
-                        }
-                    });
+                    Engine.ChaptermarkManager.addChaptermark( chapter );
                 }
+            }
+
+            /**
+             *
+             */
+            onChaptermarksChanged( e ) {
+                let chaptermark = Engine.ChaptermarkManager.getChaptermark( this.selectedManga );
+                this.set( 'markedChapterID', ( chaptermark ? chaptermark.chapterID : undefined ) );
             }
 
             /**
