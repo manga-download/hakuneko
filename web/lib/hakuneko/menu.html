@@ -325,7 +325,7 @@
             exportSettings( event ) {
                 let settings = {
                     bookmarks: Engine.BookmarkManager.exportBookmarks(),
-                    chaptermarks: []
+                    chaptermarks: Engine.ChaptermarkManager.exportChaptermarks()
                 };
                 settings = btoa( JSON.stringify( settings, null, 2 ) );
                 let link = document.createElement( 'a' );
@@ -371,7 +371,9 @@
              */
             onImportFileLoad( event ) {
                 try {
-                    Engine.BookmarkManager.importBookmarks( JSON.parse( event.currentTarget.result ).bookmarks );
+                    let settings = JSON.parse( event.currentTarget.result );
+                    Engine.BookmarkManager.importBookmarks( settings['bookmarks'] );
+                    Engine.ChaptermarkManager.importChaptermarks( settings['chaptermarks'] );
                     // reset input file field or it cannot be used again
                     this.$.importFile.value = null;
                 } catch ( e ) {

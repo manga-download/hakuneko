@@ -12,15 +12,36 @@
         /**
          *
          */
-        exportChaptermarks( callback ) {
-            //return this.chaptermarks;
+        exportChaptermarks() {
+            return this.chaptermarks;
         }
 
         /**
          *
          */
         importChaptermarks( chaptermarks ) {
-            //
+            if( !chaptermarks ) {
+                return;
+            }
+            let promises = chaptermarks.length;
+            chaptermarks.forEach( ( chaptermark ) => {
+                // check if chaptermark already exist
+                let index = this.chaptermarks.findIndex( ( c ) => {
+                    return ( chaptermark.mangaID === c.mangaID && chaptermark.connectorID === c.connectorID );
+                });
+                if( index < 0 ) {
+                    // insert chaptermark
+                    Engine.Storage.saveToDB( 'chaptermarks', undefined, chaptermark, ( error ) => {
+                        if( --promises < 1 ) {
+                            // re-load internal chapterlist from indexedDB and fire event notification
+                            this.loadChaptermarks( undefined );
+                        }
+                    } );
+                } else {
+                    // decrease counter of processed imported chaptermarks
+                    promises--;
+                }
+            } );
         }
 
         /**
