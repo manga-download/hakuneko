@@ -1,0 +1,90 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaGoCDN extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id       = 'mangago-cdn';
+            super.label    = 'MangaGo (CDN)';
+            super.isLocked = false;
+            // Private members for internal usage only (convenience)
+            this.url       = 'http://mangago.hakuneko.download/cdn';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Engine.Request.fetch( `${this.url}/mangas.json`, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    callback( null, JSON.parse( content ) );
+                } catch( e ) {
+                    callback( e, undefined );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/chapters.json`, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                    }
+                    callback( null, JSON.parse( content ) );
+                } catch( e ) {
+                    callback( e, undefined );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/${chapter.id}.json`, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
+                    }
+                    let mangago = Engine.Connectors.find( ( connector ) => { return ( connector instanceof MangaGo ); } );
+                    // use the mangago protocol for images (=> de-scramble images with mangago connector)
+                    let pages = JSON.parse( content ).map( ( page ) => {
+                        let uri = new URL( page );
+                        uri.protocol = mangago.id;
+                        return uri.href;
+                    } );
+                    callback( null, pages );
+                } catch( e ) {
+                    callback( e, undefined );
+                }
+            } );
+        }
+    }
+
+</script>
