@@ -74,7 +74,7 @@
                 tx.oncomplete = function() {
                     db.close();
                 };
-                if( callback ) {
+                if( typeof( callback ) === typeof( Function ) ) {
                     callback( null );
                 }
             }
@@ -107,6 +107,28 @@
         }
 
         /**
+         * 
+         */
+        loadCollectionFromDB( collection, callback ) {
+            let scheme = ( window.indexedDB || window.mozIndexedDB || window.msIndexedDB ).open( this.databaseName, this.databaseVersion );
+            scheme.onupgradeneeded = this.createIndexedDBScheme;
+            scheme.onsuccess = function( event ) {
+                let db = event.target.result;
+                let tx = db.transaction( collection, 'readonly' );
+                tx.objectStore( collection ).getAll().onsuccess = function( event ) {
+                    if( event.target.result ) {
+                        callback( null, event.target.result );
+                    } else {
+                        callback( new Error( `Failed to get collection '${collection}' from indexedDB` ), undefined );
+                    }
+                };
+                tx.oncomplete = function() {
+                    db.close();
+                };
+            }
+        }
+
+        /**
          * Provides acces to delete data from the browser's indexedDB.
          * Callback will be executed after the data has been deleted.
          * Callback will be provided with an error (or null if no error).
@@ -123,7 +145,7 @@
                 tx.oncomplete = function() {
                     db.close();
                 };
-                if( callback ) {
+                if( typeof( callback ) === typeof( Function ) ) {
                     callback( null );
                 }
             }

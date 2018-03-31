@@ -1,0 +1,97 @@
+<script>
+
+    /**
+     * Base class for common BookmarkManager class implementation
+     */
+    class ChaptermarkManager {
+
+        constructor() {
+            this.chaptermarks = [];
+        }
+
+        /**
+         *
+         */
+        exportChaptermarks( callback ) {
+            //return this.chaptermarks;
+        }
+
+        /**
+         *
+         */
+        importChaptermarks( chaptermarks ) {
+            //
+        }
+
+        /**
+         *
+         */
+        loadChaptermarks( callback ) {
+            Engine.Storage.loadCollectionFromDB( 'chaptermarks', ( error, data ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( !data ) {
+                        throw new Error( 'Invalid chaptermark lst!' );
+                    }
+                    this.chaptermarks = data;
+                    document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( null );
+                    }
+                } catch ( e ) {
+                    console.error( 'Failed to load chaptermarks:', e.message );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( e );
+                    }
+                }
+            } );
+        }
+
+        /**
+         * Mark the given chapter (replace any existing marked chapter for this connector/manga)
+         */
+        addChaptermark( chapter ) {
+            if( !chapter || !chapter.manga || !chapter.manga.connector ) {
+                return;
+            }
+            let chaptermark = {
+                connectorID: chapter.manga.connector.id,
+                mangaID: chapter.manga.id,
+                chapterID: chapter.id
+            };
+            // do not provide a key for the indexedDB collection, because they are defined inline (from the properties of the chaptermark)
+            Engine.Storage.saveToDB( 'chaptermarks', undefined, chaptermark, ( error ) => {
+                if( !error ) {
+                    this.loadChaptermarks( undefined );
+                } else {
+                    console.error( 'Failed to add chaptermark:', chaptermark );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        deleteChaptermark( chapter ) {
+            if( !chapter || !chapter.manga || !chapter.manga.connector ) {
+                return;
+            }
+            let chaptermark = {
+                connectorID: chapter.manga.connector.id,
+                mangaID: chapter.manga.id,
+                chapterID: chapter.id
+            };
+            Engine.Storage.deleteFromDB( 'chaptermarks', [chaptermark.connectorID, chaptermark.mangaID], ( error ) => {
+                if( !error ) {
+                    this.loadChaptermarks( undefined );
+                } else {
+                    console.error( 'Failed to remove chaptermark:', chaptermark );
+                }
+            } );
+        }
+    }
+    ChaptermarkManager; // reference the class to prevent removal of the class through js-minify
+
+</script>

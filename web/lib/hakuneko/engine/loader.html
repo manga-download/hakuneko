@@ -4,6 +4,7 @@
 <link rel="import" href="base/downloader.html">
 <link rel="import" href="base/connectors.html">
 <link rel="import" href="base/bookmarks.html">
+<link rel="import" href="base/chaptermarks.html">
 
 <script>
 
@@ -34,13 +35,23 @@
         }
 
         /**
-         *
-         */
+        *
+        */
         static get BookmarkManager() {
             if( !this._instanceBookmarkManager ) {
                 this._instanceBookmarkManager = new BookmarkManager();
             }
             return this._instanceBookmarkManager;
+        }
+
+        /**
+        *
+        */
+        static get ChaptermarkManager() {
+            if( !this._instanceChaptermarkManager ) {
+                this._instanceChaptermarkManager = new ChaptermarkManager();
+            }
+            return this._instanceChaptermarkManager;
         }
 
         /**
@@ -87,5 +98,6 @@
 
     Engine.Settings.loadProfile( 'default', undefined );
     Engine.BookmarkManager.loadProfile( 'default', undefined );
+    Engine.ChaptermarkManager.loadChaptermarks( undefined );
 
 </script>
