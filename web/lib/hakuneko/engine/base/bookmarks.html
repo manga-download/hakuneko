@@ -46,12 +46,25 @@
          */
         loadProfile( profile, callback ) {
             Engine.Storage.loadFromDB( 'bookmarks', profile, ( data, error) => {
-                if( !error && data && data.length && data.length > 0 ) {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( !data || !data.length || data.length === 0 ) {
+                        throw new Error( 'Invalid bookmark list!' );
+                    }
                     this.bookmarks = data;
                     this.bookmarks.sort( this.compareBookmarks );
+                    document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( null );
+                    }
+                } catch( e ) {
+                    console.error( 'Failed to load bookmarks:', e.message );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( e );
+                    }
                 }
-                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
-                ( callback ? callback( error ) : undefined );
             });
         }
 
@@ -62,12 +75,27 @@
          */
         saveProfile( profile, callback ) {
             Engine.Storage.saveToDB( 'bookmarks', profile, this.bookmarks, ( error) => {
-                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
-                (callback ? callback( error ) : undefined );
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( null );
+                    }
+                } catch( e ) {
+                    console.error( 'Failed to save bookmarks:', e.message );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( e );
+                    }
+                }
             });
 
         }
 
+        /**
+         *
+         */
         addBookmark( manga ) {
             if( !manga || ! manga.connector ) {
                 return false;
@@ -84,6 +112,9 @@
             return false;
         }
 
+        /**
+         *
+         */
         deleteBookmark( bookmark ) {
             let index = this.bookmarks.findIndex( ( b ) => {
                 return ( b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector );
