@@ -50,6 +50,18 @@
         }
 
         /**
+         * Get the chapter mark for the given manga (or undefined if no chapter is marked for the manga)
+         */
+        getChaptermark( manga ) {
+            if( manga ) {
+                return this.chaptermarks.find( ( chaptermark ) => {
+                    return ( chaptermark.mangaID === manga.id && chaptermark.connectorID === manga.connector.id ); 
+                } );
+            }
+            return undefined;
+        }
+
+        /**
          * Mark the given chapter (replace any existing marked chapter for this connector/manga)
          */
         addChaptermark( chapter ) {
