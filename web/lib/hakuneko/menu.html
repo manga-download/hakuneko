@@ -355,7 +355,7 @@
                     if( file.size < 2 ) {
                         throw new Error( `Invalid file size: ${file.size}` );
                     }
-                    if( file.type !== 'application/json' ) {
+                    if( file.type !== 'application/json' && !file.name.endsWith( '.json' ) ) {
                         throw new Error( `Invalid file format: ${file.type}` );
                     }
                     let fileReader = new FileReader();
@@ -363,6 +363,9 @@
                     fileReader.readAsText( file );
                 } catch( e ) {
                     alert( e.message );
+                } finally {
+                    // reset input file field or it cannot be used again
+                    this.$.importFile.value = null;
                 }
             }
 
@@ -374,8 +377,6 @@
                     let settings = JSON.parse( event.currentTarget.result );
                     Engine.BookmarkManager.importBookmarks( settings['bookmarks'] );
                     Engine.ChaptermarkManager.importChaptermarks( settings['chaptermarks'] );
-                    // reset input file field or it cannot be used again
-                    this.$.importFile.value = null;
                 } catch ( e ) {
                     alert( e.message );
                 }
