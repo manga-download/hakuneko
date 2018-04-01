@@ -327,12 +327,16 @@
                     bookmarks: Engine.BookmarkManager.exportBookmarks(),
                     chaptermarks: Engine.ChaptermarkManager.exportChaptermarks()
                 };
-                settings = btoa( JSON.stringify( settings, null, 2 ) );
-                let link = document.createElement( 'a' );
-                link.download = 'hakuneko-export.json';
-                // use base64 instead of 'charset=UTF-8' to preserve linebreaks
-                link.href = `data:application/json;base64,${settings}`;
-                link.click();
+                settings = JSON.stringify( settings, null, 2 );
+                let blob = new Blob( [settings], { type : 'application/json' } );
+                var fileReader = new FileReader();
+                fileReader.onload = function( e ) {
+                    let link = document.createElement( 'a' );
+                    link.download = 'hakuneko-export.json';
+                    link.href = e.target.result;
+                    link.click();
+                };
+                fileReader.readAsDataURL(blob);
             }
 
             /**
