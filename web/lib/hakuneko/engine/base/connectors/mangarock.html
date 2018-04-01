@@ -117,7 +117,7 @@
             let options = JSON.parse( this.reqOptionsJSON );
             options['url'] += '/query/web400/info';
             options['qs'] = {
-                'oid': manga.id.replace( '/manga/', '' )
+                'oid': manga.id
             };
             console.log( options );
             Engine.Request.fetch( options, ( error, response, content ) => {
