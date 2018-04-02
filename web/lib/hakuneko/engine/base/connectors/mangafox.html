@@ -104,7 +104,7 @@
                     // FIXME: very dangerous, might end up in endless recursion !!!
                     if( response.statusCode === 503 || response.statusCode === 504 ) {
                         setTimeout( () => {
-                            this.getPages( manga, chapter, callback );
+                            this._getPageList( manga, chapter, callback );
                         }, this.pageLoadDelay );
                         return;
                     }
