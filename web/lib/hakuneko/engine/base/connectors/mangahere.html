@@ -18,38 +18,45 @@
             super.label          = 'MangaHere';
             // Private members for internal usage only (convenience)
             this.url             = 'http://www.mangahere.cc';
-            this.urlm            = 'http://m.mangahere.cc';
+            this.pageLock        = false;
+            this.pageLockDelay   = 500;
+            this.pageLoadDelay   = 50;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'mangahere' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( this.url + '/mangalist/', ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            Engine.Request.cloudflare( this.url + '/mangalist/', ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    if( content.indexOf( 'has been licensed' ) > -1 ) {
+                        throw new Error( 'The manga is licensed and not available in your country!' );
+                    }
+                    let dom = this.createDOM( content );
+                    let mangaList = [...dom.querySelectorAll( 'a.manga_info' )].map(  ( element ) => {
+                        // TODO (2017-12-20): sometimes the links are still pointing to the old domain => replace old domain until this is fixed on the website
+                        element.href = element.href.replace( 'mangahere.co', 'mangahere.cc' );
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: element.text.trim()
+                        };
+                    });
+                    callback( null, mangaList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, [] );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                //console.log(dom.innerHTML);
-                let mangaList = [...dom.querySelectorAll( 'a.manga_info' )].map(  ( element ) => {
-                    // TODO (2017-12-20): sometimes the links are still pointing to the old domain => replace old domain until this is fixed on the website
-                    element.href = element.href.replace( 'mangahere.co', 'mangahere.cc' );
-                    return {
-                        // as mentioned before, the eventually added host prefix must be removed
-                        // for full qualified domain name, the host (dynasty-scans) can also be removed
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                });
-                callback( error, mangaList );
             });
         }
 
@@ -57,35 +64,38 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
-                }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                let chapterList = [...dom.querySelectorAll( 'div.detail_list ul li span.left' )].map(  ( element ) => {
-                    let link = element.getElementsByTagName( 'a' )[0];
-                    let title = link.text.replace( manga.title, '' ).trim();
-                    let volume = element.querySelector( 'span.mr6' );
-                    if( volume) {
-                        volume = volume.textContent;
-                        //volume = volume.replace(/Vol ?/i, '');
-                        if( volume.length ) {
-                            title = '[' + volume + '] ' + title;
-                        }
+            Engine.Request.cloudflare( this.url + manga.id, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
                     }
-                    return {
-                        id: this.getRelativeLink( link ),
-                        title: title,
-                        language: 'en'
-                    };
-                });
-                callback( error, chapterList );
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                    }
+                    if( content.indexOf( 'has been licensed' ) > -1 ) {
+                        throw new Error( 'The manga is licensed and not available in your country!' );
+                    }
+                    let dom = this.createDOM( content );
+                    let chapterList = [...dom.querySelectorAll( 'div.detail_list ul li span.left' )].map(  ( element ) => {
+                        let a = element.querySelector( 'a' );
+                        let span = element.querySelector( 'span.mr6' );
+                        let text = ( element.lastChild !== a && element.lastChild !== span ? element.lastChild : undefined );
+                        let title = ( span && span.innerText ? `[${span.innerText}] ` : '');
+                        title += ( a ? a.text + ' ' : '');
+                        title += ( title && text ? ' - ' : '' );
+                        title += ( text ? text.textContent : '');
+                        title = title.replace( manga.title, '' ).trim();
+                        return {
+                            id: this.getRelativeLink( a ),
+                            title: title,
+                            language: 'en'
+                        };
+                    });
+                    callback( null, chapterList );
+                } catch( e ) {
+                    console.error( e.message, manga );
+                    callback( e, [] );
+                }
             });
         }
 
@@ -93,26 +103,115 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( ( this.url + chapter.id ).replace( this.url + '/manga', this.urlm + '/roll_manga' ), ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            Engine.Request.cloudflare( this.url + chapter.id, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    // FIXME: very dangerous, might end up in endless recursion !!!
+                    if( response.statusCode === 503 || response.statusCode === 504 ) {
+                        setTimeout( () => {
+                            this._getPageList( manga, chapter, callback );
+                        }, this.pageLoadDelay );
+                        return;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
+                    }
+                    if( content.indexOf( 'has been licensed' ) > -1 ) {
+                        throw new Error( 'The manga is licensed and not available in your country!' );
+                    }
+                    let dom = this.createDOM( content );
+                    let pageList = [...dom.querySelectorAll( 'section.readpage_top div.go_page span.right select option' )].filter( ( element ) => {
+                        return ( element.text.indexOf( 'Featured' ) < 0 );
+                    } );
+                    pageList = pageList.map( ( element ) => {
+                        /*
+                        let uri = new URL( 'http:' + element.value );
+                        uri.protocol = this.id;
+                        return uri.href;
+                        */
+                        return ( this.id + ':' + element.value );
+                    } );
+                    callback( null, pageList );
+                } catch( e ) {
+                    console.error( e.message, chapter );
+                    callback( e, [] );
                 }
-                if( content.indexOf( 'has been licensed' ) > -1 ) {
-                    let err = new Error( 'The manga is licensed and not available in your country!' );
-                    console.error( err );
-                    callback( err, [] );
-                    return;
-                }
-                // prevent images from being loaded
-                content = content.replace( /src=/g, 'data-src=');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                let pageList = [...dom.querySelectorAll( 'img[data-original]' )].map( ( element ) => {
-                    return ( element.dataset.original );
-                });
-                callback( error, pageList );
             });
+        }
+
+        /**
+         * 
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            if( !this.isPageRequestValid( request ) ) {
+                //callback( undefined );
+                return;
+            }
+            if( this.pageLock ) {
+                setTimeout( () => {
+                    this._pageProtocolHandler( request, callback );
+                }, this.pageLockDelay );
+                return;
+            }
+            this.pageLock = true;
+            Engine.Request.cloudflare( uri.href, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    // FIXME: very dangerous, might end up in endless recursion !!!
+                    if( response.statusCode === 503 || response.statusCode === 504 ) {
+                        setTimeout( () => {
+                            this._pageProtocolHandler( request, callback );
+                        }, this.pageLoadDelay );
+                        return;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive page (status code: ${response.statusCode})` );
+                    }
+                    if( content.indexOf( 'has been licensed' ) > -1 ) {
+                        throw new Error( 'The manga is licensed and not available in your country!' );
+                    }
+                    let dom = this.createDOM( content );
+                    let imageLink = this.getRelativeLink( dom.querySelector( '#image' ) );
+                    if( !imageLink ) {
+                        throw new Error( 'Failed to extract image!' );
+                    }
+                    this._dowmloadImage( imageLink, callback );
+                } catch( e ) {
+                    console.warn( e.message, uri.href );
+                    callback( undefined );
+                } finally {
+                    this.pageLock = false;
+                }
+            } );
+        }
+
+        /**
+         * 
+         */
+        _dowmloadImage( link, callback ) {
+            Engine.Request.cloudflare( { url: link, encoding: null }, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive image (status code: ${response.statusCode})` );
+                    }
+                    callback( {
+                        mimeType: response.headers['content-type'],
+                        data: content
+                    } );
+                } catch( e ) {
+                    console.warn( e.message, uri.href );
+                    callback( undefined );
+                }
+            } );
         }
     }
 
