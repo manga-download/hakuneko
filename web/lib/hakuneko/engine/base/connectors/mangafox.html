@@ -55,32 +55,31 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
-                let chapterList = [];
-                if( error ) {
-                    callback( error, chapterList );
-                    return;
-                }
-                let sid = content.match( /sid\s*=\s*([0-9]+)/ )[1];
-                Engine.Request.fetch( this.url + '/media/js/list.' + sid + '.js', ( errorScript, responseScript, script ) => {
-                    if( errorScript ) {
-                        callback( errorScript, chapterList );
-                        return;
+                try{
+                    if( error ) {
+                        throw error;
                     }
-                    let entries = script.match( /\[\s*"(.+?"\s*,\s*".+?)"\s*\]/g );
-                    if( !entries ) {
-                        callback( new Error( 'No chapters found!' ), chapterList );
-                        return;
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
                     }
-                    entries.forEach( function( match ) {
-                        let chapter = JSON.parse( match );
-                        chapterList.push( {
-                            id: chapter[1] + '/1.html',
-                            title: chapter[0],
+                    // prevent images and iframes from loading
+                    content = content.replace( /<img[^<]*?>/g, '<img>');
+                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+                    let dom = document.createElement( 'html' );
+                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
+                    dom.innerHTML = content;
+                    let chapterList = [...dom.querySelectorAll( 'div#chapters li a.tips' )].map(  ( element ) => {
+                        this.cfMailDecrypt( element );
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: element.text.replace( manga.title, '' ).trim(),
                             language: 'en'
-                        });
+                        };
                     });
-                    callback( errorScript, chapterList );
-                });
+                    callback( null, chapterList );
+                } catch( e ) {
+                    callback( e, [] );
+                }
             });
         }
 
