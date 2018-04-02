@@ -167,6 +167,28 @@
                 }
             }
         }
+
+        /**
+         * Create DOM (HTML element) from the given content.
+         * Image tags can be replaced with source tags to prevent the 'src' attribute from loading its content (save bandwith, improve performance).
+         * Atributes from iframe tags (espacially 'src') can be removed to prevent it from loading its content (save bandwith, improve performance).
+         * NOTE: When loading content into DOM, all links without a full qualified domain name will be expanded using the hostname of this app
+         *       => do not forget to remove this prefix from the links!
+         */
+        createDOM( content, replaceImageTags, clearIframettributes ) {
+            replaceImageTags = ( replaceImageTags !== undefined ? replaceImageTags : true );
+            clearIframettributes = ( clearIframettributes !== undefined ? clearIframettributes : true );
+            if( replaceImageTags ) {
+                content = content.replace( /<img/g, '<source');
+                content = content.replace( /<\/img/g, '</source');
+            }
+            if( clearIframettributes ) {
+                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+            }
+            let dom = document.createElement( 'html' );
+            dom.innerHTML = content;
+            return dom;
+        }
     }
     Connector; // reference the class to prevent removal of the class through js-minify
 
