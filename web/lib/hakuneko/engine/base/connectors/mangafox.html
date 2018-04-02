@@ -33,19 +33,29 @@
          */
         _getMangaList( callback ) {
             Engine.Request.fetch( this.url + '/manga', ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    if( content.indexOf( 'its licensed' ) > -1 ) {
+                        throw new Error( 'The manga is licensed and not available in your country!' );
+                    }
+                    let dom = this.createDOM( content );
+                    let mangaList = [...dom.querySelectorAll( '.manga_list ul li a' )].map(  ( element ) => {
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: element.text.trim()
+                        };
+                    } );
+                    callback( null, mangaList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, [] );
                 }
-                let dom = this.createDOM( content );
-                let mangaList = [...dom.querySelectorAll( '.manga_list ul li a' )].map(  ( element ) => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                });
-                callback( error, mangaList );
-            });
+            } );
         }
 
         /**
@@ -73,13 +83,13 @@
                             title: a.text.replace( manga.title, '' ).trim() + ( span ? ' - ' + span.innerText.trim() : '' ),
                             language: 'en'
                         };
-                    });
+                    } );
                     callback( null, chapterList );
                 } catch( e ) {
                     console.error( e.message, manga );
                     callback( e, [] );
                 }
-            });
+            } );
         }
 
         /**
@@ -118,7 +128,7 @@
                     console.error( e.message, chapter );
                     callback( e, [] );
                 }
-            });
+            } );
         }
 
         /**
@@ -128,7 +138,6 @@
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
             if( !this.isPageRequestValid( request ) ) {
-                console.log( 'CHAPTER CHANGED' );
                 //callback( undefined );
                 return;
             }
