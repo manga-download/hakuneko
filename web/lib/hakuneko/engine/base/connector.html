@@ -189,6 +189,26 @@
             dom.innerHTML = content;
             return dom;
         }
+
+        /**
+         * Determine if the request for the page is valid.
+         * A request is invalid when it is made by the electron browser and
+         * when the page for which this request is made is not part of the selected chapter
+         * (in fact: the user changed the chapter while the browser still requests pages from the previous selected chapter).
+         */
+        isPageRequestValid( request ) {
+            try {
+                // is the request not from electron browser?
+                if( !request.headers || !request.headers['User-Agent'] || request.headers['User-Agent'].indexOf( /*'hakuneko-desktop'*/ 'Electron' ) < 0 ) {
+                    return true;
+                }
+                // is the currently selected chapter the one for which the page is requested?
+                let index = request.url.indexOf( document.querySelector( HakunekoApp.is ).shadowRoot.querySelector( HakunekoPages.is ).selectedChapter.id );
+                return ( index > -1 );
+            } catch( e ) {
+                return false;
+            }
+        }
     }
     Connector; // reference the class to prevent removal of the class through js-minify
 
