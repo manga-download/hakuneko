@@ -32,7 +32,7 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( this.url + '/manga', ( error, response, content ) => {
+            Engine.Request.cloudflare( this.url + '/manga', ( error, response, content ) => {
                 try {
                     if( error ) {
                         throw error;
@@ -62,7 +62,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
+            Engine.Request.cloudflare( this.url + manga.id, ( error, response, content ) => {
                 try {
                     if( error ) {
                         throw error;
@@ -96,7 +96,7 @@
          *
          */
          _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( this.url + chapter.id, ( error, response, content ) => {
+            Engine.Request.cloudflare( this.url + chapter.id, ( error, response, content ) => {
                 try {
                     if( error ) {
                         throw error;
@@ -148,7 +148,7 @@
                 return;
             }
             this.pageLock = true;
-            Engine.Request.fetch( uri.href, ( error, response, content ) => {
+            Engine.Request.cloudflare( uri.href, ( error, response, content ) => {
                 try {
                     if( error ) {
                         throw error;
@@ -185,7 +185,7 @@
          * 
          */
         _dowmloadImage( link, callback ) {
-            Engine.Request.fetch( { url: link, encoding: null }, ( error, response, content ) => {
+            Engine.Request.cloudflare( { url: link, encoding: null }, ( error, response, content ) => {
                 try {
                     if( error ) {
                         throw error;
