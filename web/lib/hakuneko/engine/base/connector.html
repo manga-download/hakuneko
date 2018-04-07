@@ -181,6 +181,8 @@
             if( replaceImageTags ) {
                 content = content.replace( /<img/g, '<source');
                 content = content.replace( /<\/img/g, '</source');
+                content = content.replace( /<use/g, '<source');
+                content = content.replace( /<\/use/g, '</source');
             }
             if( clearIframettributes ) {
                 content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
