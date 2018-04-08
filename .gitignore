@@ -4,6 +4,11 @@ package-lock.json
 /daemon
 /electron/build
 /electron/redist/*.zip
+/fmd/.vs
+/fmd/packages
+/fmd/*/bin
+/fmd/*/obj
+/fmd/*.user
 /web/*.pem
 /web/*.key
 /web/build
