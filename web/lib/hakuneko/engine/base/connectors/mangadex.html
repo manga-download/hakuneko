@@ -50,7 +50,7 @@
         _getChapterList( manga, callback, chapterList, page ) {
             chapterList = chapterList || [];
             page = page || 1;
-            Engine.Request.cloudflare( `${this.url}${manga.id}/${page}/`, ( error, response, content) => {
+            Engine.Request.cloudflare( `${this.url}${manga.id}/chapters/${page}/`, ( error, response, content) => {
                 try {
                     if( error ) {
                         throw error;
@@ -60,6 +60,7 @@
                     }
                     let dom = this.createDOM( content );
                     let chapters = [...dom.querySelectorAll( 'div.table-responsive tr[id]' )];
+                    // abort when there are no chapters
                     if( !chapters || chapters.length === 0 ) {
                         callback( null, chapterList );
                         return;
@@ -74,6 +75,11 @@
                             language: languageInfo.title
                         };
                     });
+                    // abort when the first chapter is already in the chapter list (already processed this chapter list)
+                    if( chapterList.find( c => c.id === chapters[0].id ) ) {
+                        callback( null, chapterList );
+                        return;
+                    }
                     chapterList = chapterList.concat( chapters );
                     this._getChapterList( manga, callback, chapterList, page+1 );
                 } catch( e ) {
