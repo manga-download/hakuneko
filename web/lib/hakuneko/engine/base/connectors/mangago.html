@@ -71,6 +71,9 @@
                     uri.hostname = 'www.mnggo.net';
                     opts['headers']['Referer'] = uri.href;
                 }
+                if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
+                    opts['headers']['Referer'] = undefined;
+                }
                 Engine.Request.cloudflare( opts, ( error, response, content ) => {
                     if( !error ) {
                         if( uri.pathname.indexOf( 'cspiclink' ) < 0 ) {
