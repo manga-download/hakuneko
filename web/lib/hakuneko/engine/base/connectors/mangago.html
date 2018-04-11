@@ -22,6 +22,8 @@
             this.reqOptionsJSON = JSON.stringify( {
                 url: this.url
             } );
+            this.pageLock       = false;
+            this.pageLockDelay  = 500;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.sandbox        = new Worker( '/js/sandbox.js' );
             this.desKeys        = [
@@ -47,6 +49,15 @@
             ];
             this.config = undefined;
 
+            this._initializeConnector();
+            // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        _initializeConnector() {
             // initialization: solve cloudflare for all known domains
             let domains = [
                 this.url,
@@ -55,53 +66,6 @@
                 'http://www.lady-first.me/c/1/1/1',
                 //'http://www.mangapicgallery.com'
             ];
-
-            // register a protocol handler to intercept requests (with custom 'mangago' protocol) and decrypt images
-            Engine.Request.registerProtocol( this.id, ( request, callback ) => {
-                let uri = new URL( request.url );
-                uri.protocol = ( new URL( this.url ) ).protocol;
-                let opts = {
-                    url: uri.href,
-                    headers: {
-                        'Referer': this.url
-                    },
-                    encoding: null
-                }
-                if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
-                    uri.hostname = 'www.mnggo.net';
-                    opts['headers']['Referer'] = uri.href;
-                }
-                if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
-                    opts['headers']['Referer'] = undefined;
-                }
-                Engine.Request.cloudflare( opts, ( error, response, content ) => {
-                    if( !error ) {
-                        if( uri.pathname.indexOf( 'cspiclink' ) < 0 ) {
-                            callback( {
-                                mimeType: response.headers['content-type'],
-                                data: content
-                            } );
-                            return;
-                        }
-                        let desKey = this.desKeys.find( ( key ) => {
-                            return ( uri.pathname.indexOf( key.id ) > -1 );
-                        } ) || this.desKeys[0];
-                        let blob = new Blob( [content], { type: response.headers['content-type'] } );
-                        this._descrambleImage( blob, 'image/jpeg', 0.90, desKey.pattern, ( data ) => {
-                            var fs = new FileReader();
-                            fs.onload = ( e ) => {
-                                callback( {
-                                    mimeType: data.type,
-                                    data: new Uint8Array( e.target.result )
-                                } );
-                            };
-                            fs.readAsArrayBuffer( data );
-                        } );
-                    } else {
-                        callback( undefined );
-                    }
-                } );
-            } );
 
             // process cloudflare challenge for all domains during initialization phase
             for(let domain of domains) {
@@ -125,7 +89,19 @@
          */
         _getMangaList( callback ) {
             Engine.Request.fetch( 'http://mangago.hakuneko.download/cdn/mangas.json', ( error, response, content ) => {
-                callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    let mangaList = JSON.parse( content );
+                    callback( null, mangaList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, [] );
+                }
             });
         }
 
@@ -144,15 +120,28 @@
                 } )
             `;
             Engine.Request.fetchUI( options, script, ( error, response, content ) => {
-                let chapters = (content ? content : [] ).map( ( chapter ) => {
-                    //this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( { href: chapter.id } ),
-                        title: chapter.title.replace( manga.title, '' ).trim(),
-                        language: 'en'
-                    };
-                } );
-                callback( error, chapters );
+                try {
+                    /*
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                    }
+                    */
+                    let chapterList = (content ? content : [] ).map( ( chapter ) => {
+                        //this.cfMailDecrypt( element );
+                        return {
+                            id: this.getRelativeLink( { href: chapter.id } ),
+                            title: chapter.title.replace( manga.title, '' ).trim(),
+                            language: 'en'
+                        };
+                    } );
+                    callback( null, chapterList );
+                } catch( e ) {
+                    console.error( e.message, manga );
+                    callback( e, [] );
+                }
             } );
             /*
             Engine.Request.cloudflare( options, ( error, response, content ) => {
@@ -224,16 +213,106 @@
                                 result
                             `;
                             Engine.Request.fetchUI( options, script, ( error, response, content ) => {
-                                this.desKeys = ( content && content.deskeys ? content.deskeys : this.desKeys );
-                                let pages = (content && content.pages ? content.pages : [] );
-                                callback( error, this._urifyLinks( pages ) );
+                                try {
+                                    /*
+                                    if( error ) {
+                                        throw error;
+                                    }
+                                    if( response.statusCode !== 200 ) {
+                                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                                    }
+                                    */
+                                    if( !content || !content.pages ) {
+                                        throw new Error( 'Failed to get page list!' );
+                                    }
+                                    this.desKeys = ( content.deskeys ? content.deskeys : this.desKeys );
+                                    let pageList = content.pages;
+                                    callback( null, this._urifyLinks( pageList ) );
+                                } catch( e ) {
+                                    console.error( e.message, chapter );
+                                    callback( e, [] );
+                                }
                             } );
                         } catch( e ) {
-                            callback( e, undefined );
+                            console.error( e.message, chapter );
+                            callback( e, [] );
                         }
                     } );
                 } catch( e ) {
-                    callback( e, undefined );
+                    console.error( e.message, chapter );
+                    callback( e, [] );
+                }
+            } );
+        }
+
+        /**
+         * 
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            let opts = {
+                url: uri.href,
+                headers: {
+                    'Referer': this.url
+                },
+                encoding: null
+            }
+            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
+                uri.hostname = 'www.mnggo.net';
+                opts['headers']['Referer'] = uri.href;
+            }
+            if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
+                opts['headers']['Referer'] = undefined;
+            }
+            if( !this.isPageRequestValid( request ) ) {
+                //callback( undefined );
+                return;
+            }
+            if( this.pageLock ) {
+                setTimeout( () => {
+                    this._pageProtocolHandler( request, callback );
+                }, this.pageLockDelay );
+                return;
+            }
+            this.pageLock = true;
+            Engine.Request.cloudflare( opts, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive page (status code: ${response.statusCode})` );
+                    }
+                    if( content.indexOf( 'its licensed' ) > -1 ) {
+                        throw new Error( 'The manga is licensed and not available in your country!' );
+                    }
+                    if( uri.pathname.indexOf( 'cspiclink' ) < 0 ) {
+                        callback( {
+                            mimeType: response.headers['content-type'],
+                            data: content
+                        } );
+                        return;
+                    }
+                    let desKey = this.desKeys.find( ( key ) => {
+                        return ( uri.pathname.indexOf( key.id ) > -1 );
+                    } ) || this.desKeys[0];
+                    let blob = new Blob( [content], { type: response.headers['content-type'] } );
+                    this._descrambleImage( blob, 'image/jpeg', 0.90, desKey.pattern, ( data ) => {
+                        var fs = new FileReader();
+                        fs.onload = ( e ) => {
+                            callback( {
+                                mimeType: data.type,
+                                data: new Uint8Array( e.target.result )
+                            } );
+                        };
+                        fs.readAsArrayBuffer( data );
+                    } );
+                } catch( e ) {
+                    console.warn( e.message, uri.href );
+                    callback( undefined );
+                } finally {
+                    this.pageLock = false;
                 }
             } );
         }
