@@ -65,7 +65,19 @@
          */
         _getMangaList( callback ) {
             Engine.Request.fetch( `${this.url}/mangas.json`, ( error, response, content ) => {
-                callback( error, ( !error && content ? JSON.parse( content ) : undefined ) );
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    let mangaList = JSON.parse( content );
+                    callback( null, mangaList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, [] );
+                }
             });
         }
 
@@ -74,42 +86,49 @@
          */
         _getChapterList( manga, callback ) {
             Engine.Request.fetch( `${this.url}/${manga.id}/chapters.json`, ( error, response, content ) => {
-                if( error && !content ) {
-                    callback( error, [] );
-                    return;
-                }
-                let chapters = [];
-                JSON.parse( content ).forEach( ( chapter ) => {
-                    let prefix = '';
-                    let season = ( chapter.volume ? 'S' + ( '0' + chapter.volume ).slice( -2 ) : '' );
-                    let episode = ( chapter.number ? 'E' + ( '00' + chapter.number ).slice( -3 ) : '' );
-                    prefix += season;
-                    prefix += ( season.length > 0 && episode.length > 0 ? '.' : '' );
-                    prefix += episode;
-                    prefix += ( prefix.length > 0 ? ' - ' : '' );
-                    chapter.pages.forEach( ( page ) => {
-                        chapters.push( {
-                            id: chapter.id + '.' + page,
-                            title: prefix + chapter.title + ' [' + page + 'p]',
-                            language: chapter.language,
-                            volume: chapter.volume,
-                            number: chapter.number,
-                            group: chapter.group,
-                            pages: [ page ]
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                    }
+                    let chapterList = [];
+                    JSON.parse( content ).forEach( ( chapter ) => {
+                        let prefix = '';
+                        let season = ( chapter.volume ? 'S' + ( '0' + chapter.volume ).slice( -2 ) : '' );
+                        let episode = ( chapter.number ? 'E' + ( '00' + chapter.number ).slice( -3 ) : '' );
+                        prefix += season;
+                        prefix += ( season.length > 0 && episode.length > 0 ? '.' : '' );
+                        prefix += episode;
+                        prefix += ( prefix.length > 0 ? ' - ' : '' );
+                        chapter.pages.forEach( ( page ) => {
+                            chapterList.push( {
+                                id: chapter.id + '.' + page,
+                                title: prefix + chapter.title + ' [' + page + 'p]',
+                                language: chapter.language,
+                                volume: chapter.volume,
+                                number: chapter.number,
+                                group: chapter.group,
+                                pages: [ page ]
+                            } );
                         } );
                     } );
-                } );
-                chapters.sort( ( a, b ) => {
-                    if( a.volume !== b.volume ) {
-                        return ( b.volume - a.volume );
-                    }
-                    if ( a.number !== b.number ) {
-                        return ( b.number - a.number );
-                    }
-                    //return ( a.pages[0] > b.pages[0] ? 1 :-1 );
-                    return ( parseInt( b.pages[0] ) - parseInt( a.pages[0] ) );
-                } );
-                callback( error, chapters );
+                    chapterList.sort( ( a, b ) => {
+                        if( a.volume !== b.volume ) {
+                            return ( b.volume - a.volume );
+                        }
+                        if ( a.number !== b.number ) {
+                            return ( b.number - a.number );
+                        }
+                        //return ( a.pages[0] > b.pages[0] ? 1 :-1 );
+                        return ( parseInt( b.pages[0] ) - parseInt( a.pages[0] ) );
+                    } );
+                    callback( error, chapterList );
+                } catch( e ) {
+                    console.error( e.message, manga );
+                    callback( e, [] );
+                }
             });
         }
 
@@ -117,45 +136,49 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let authError = this._validateAuthorization();
-            if( authError ) {
-                callback( authError, [] );
-                return;
-            }
-            let identifier = chapter.id.split( '.' );
-            let id = identifier[0];
-            let resolution = parseInt( identifier[1] );
-            let options = {
-                method: 'GET',
-                url: this.api.cms + '/episodes/' + id,
-                headers: {
-                    // vrv blocks any request with forwarded ip addresses => prevent Forwarded from being auto generated
-                    'Forwarded': null
+            try {
+                let authError = this._validateAuthorization();
+                if( authError ) {
+                    throw authError;
                 }
-            };
-            this._mergePolicyParams( options );
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                error = this._getRequestError( error, response, content );
-                if( error ) {
-                    // try to get movie info
-                    options.url = this.api.cms + '/movies/' + id;
-                    this._mergePolicyParams( options );
-                    Engine.Request.fetch( options, ( error, response, content ) => {
-                        error = this._getRequestError( error, response, content );
-                        if( error ) {
-                            callback( error, [] );
-                            return;
-                        }
+                let identifier = chapter.id.split( '.' );
+                let id = identifier[0];
+                let resolution = parseInt( identifier[1] );
+                let options = {
+                    method: 'GET',
+                    url: this.api.cms + '/episodes/' + id,
+                    headers: {
+                        // vrv blocks any request with forwarded ip addresses => prevent Forwarded from being auto generated
+                        'Forwarded': null
+                    }
+                };
+                this._mergePolicyParams( options );
+                Engine.Request.fetch( options, ( error, response, content ) => {
+                    error = this._getRequestError( error, response, content );
+                    if( error ) {
+                        // try to get movie info
+                        options.url = this.api.cms + '/movies/' + id;
+                        this._mergePolicyParams( options );
+                        Engine.Request.fetch( options, ( error, response, content ) => {
+                            error = this._getRequestError( error, response, content );
+                            if( error ) {
+                                callback( error, [] );
+                                return;
+                            }
+                            let item = JSON.parse( content );
+                            let streamsURL = ( item.__links__.streams ? this.api.base + item.__links__.streams.href : undefined );
+                            this._getMedia( streamsURL, resolution, callback );
+                        } );
+                    } else {
                         let item = JSON.parse( content );
                         let streamsURL = ( item.__links__.streams ? this.api.base + item.__links__.streams.href : undefined );
                         this._getMedia( streamsURL, resolution, callback );
-                    } );
-                } else {
-                    let item = JSON.parse( content );
-                    let streamsURL = ( item.__links__.streams ? this.api.base + item.__links__.streams.href : undefined );
-                    this._getMedia( streamsURL, resolution, callback );
-                }
-            } );
+                    }
+                } );
+            } catch( e ) {
+                console.error( e.message, chapter );
+                callback( e, [] );
+            }
         }
 
         /**
