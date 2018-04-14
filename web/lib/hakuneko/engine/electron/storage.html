@@ -334,8 +334,9 @@
                     mime: this._pageFileMime( page.name )
                 });
             });
-            let uid = btoa( encodeURIComponent( ebook ) ).replace(/[^a-zA-Z]/g, '');;
-            oebps.file( 'content.opf', EbookGenerator.createContentOPF( uid, '', params ) );
+            let uid = btoa( encodeURIComponent( ebook ) ).replace(/[^a-zA-Z]/g, '');
+            let title = `${this.path.basename( this.path.dirname( ebook ) )} ${this.path.sep} ${this.path.basename( ebook, ChapterFormat.epub )}`;
+            oebps.file( 'content.opf', EbookGenerator.createContentOPF( uid, title, params ) );
             oebps.file( 'toc.ncx', EbookGenerator.createTocNCX( uid, '', params ) );
             zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
                 this.fs.writeFile( ebook, data, function( error ) {
