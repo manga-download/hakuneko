@@ -22,32 +22,9 @@
                 url: this.url,
                 json: {} // => use to automatically parse a response as json
             } );
-            // register a protocol handler to intercept requests (with custom 'mangarock' protocol) and decrypt images
-            Engine.Request.registerProtocol( this.id, ( request, callback ) => {
-                let uri = new URL( request.url );
-                uri.protocol = ( new URL( this.url ) ).protocol;
-                let options = JSON.parse( this.reqOptionsJSON );
-                options['url'] = uri.href;
-                options['json'] = undefined;
-                options['encoding'] = null;
-                Engine.Request.fetch( options, ( error, response, content ) => {
-                    if( error || response.statusCode != 200 ) {
-                        callback( undefined );
-                        return;
-                    }
-                    if( content[0] === 69 ) {
-                        callback( {
-                            mimeType: 'image/webp', // response.headers['content-type']
-                            data: this._decryptImage( content, 0x65 )
-                        } );
-                    } else {
-                        callback( {
-                            mimeType: response.headers['content-type'],
-                            data: content
-                        } );
-                    }
-                } );
-            } );
+
+            // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -84,30 +61,38 @@
                 status: 'all'
             };
             Engine.Request.fetch( options, ( error, response, content ) => {
-                error = this._getRequestError( error, response, content);
-                if( error ) {
-                    callback( error, [] );
-                    return;
-                }
-                options['url'] = this.url + '/meta';
-                options['json'] = content.data;
-                Engine.Request.fetch( options, ( error, response, content ) => {
-                    error = this._getRequestError( error, response, content);
+                try {
+                    error = this._getRequestError( error, response, content );
                     if( error ) {
-                        callback( error, [] );
-                        return;
+                        throw error;
                     }
-                    let metas = content.data;
-                    let mangas = options['json'].map( ( id ) => {
-                        let manga = metas[ id ];
-                        return {
-                            id: manga.oid,
-                            title: manga.name
+                    options['url'] = this.url + '/meta';
+                    options['json'] = content.data;
+                    Engine.Request.fetch( options, ( error, response, content ) => {
+                        try {
+                            error = this._getRequestError( error, response, content );
+                            if( error ) {
+                                throw error;
+                            }
+                            let metas = content.data;
+                            let mangas = options['json'].map( ( id ) => {
+                                let manga = metas[ id ];
+                                return {
+                                    id: manga.oid,
+                                    title: manga.name
+                                }
+                            } );
+                            callback( null, mangas );
+                        } catch( e ) {
+                            console.error( e.message );
+                            callback( e, [] );
                         }
                     } );
-                    callback( null, mangas );
-                });
-            });
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, [] );
+                }
+            } );
         }
 
         /**
@@ -119,21 +104,25 @@
             options['qs'] = {
                 'oid': manga.id
             };
-            console.log( options );
             Engine.Request.fetch( options, ( error, response, content ) => {
-                error = this._getRequestError( error, response, content);
-                if( error ) {
-                    callback( error, [] );
-                    return;
+                try {
+                    error = this._getRequestError( error, response, content );
+                    if( error ) {
+                        throw error;
+                    }
+                    let chapterList = content.data.chapters.reverse().map( ( chapter ) => {
+                        return {
+                            id: chapter.oid,
+                            title: chapter.name,
+                            language: 'en'
+                        };
+                    } );
+                    callback( null, chapterList );
+                } catch( e ) {
+                    console.error( e.message, manga );
+                    callback( e, [] );
                 }
-                callback( error, ( !error ? content.data.chapters.reverse().map( ( chapter ) => {
-                    return {
-                        id: chapter.oid,
-                        title: chapter.name,
-                        language: 'en'
-                    };
-                } ) : [] ) );
-            });
+            } );
         }
 
         /**
@@ -146,18 +135,60 @@
                 'oid': chapter.id
             };
             Engine.Request.fetch( options, ( error, response, content ) => {
-                error = this._getRequestError( error, response, content);
-                if( error ) {
-                    callback( error, [] );
-                    return;
+                try {
+                    error = this._getRequestError( error, response, content );
+                    if( error ) {
+                        throw error;
+                    }
+                    let pageList = content.data.map( ( link ) => {
+                        let uri = new URL( link );
+                        uri.protocol = this.id;
+                        return uri.href;
+                    } );
+                    callback( null, pageList );
+                } catch( e ) {
+                    console.error( e.message, manga );
+                    callback( e, [] );
                 }
-                let pages = content.data.map( ( link ) => {
-                    let uri = new URL( link );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
-                callback( error, ( !error ? pages : [] ) );
-            });
+            } );
+        }
+
+        /**
+         *
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            let options = JSON.parse( this.reqOptionsJSON );
+            options['url'] = uri.href;
+            options['json'] = undefined;
+            options['encoding'] = null;
+            Engine.Request.fetch( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode != 200 ) {
+                        throw new Error( `Response status code: ${response.statusCode}!` );
+                    }
+                    if( content[0] === 69 ) {
+                        callback( {
+                            mimeType: 'image/webp',
+                            data: this._decryptImage( content, 0x65 )
+                        } );
+                    } else {
+                        callback( {
+                            mimeType: response.headers['content-type'],
+                            data: content
+                        } );
+                    }
+                } catch( e ) {
+                    console.warn( e.message, uri.href );
+                    callback( undefined );
+                } finally {
+                    this.pageLock = false;
+                }
+            } );
         }
 
         /**

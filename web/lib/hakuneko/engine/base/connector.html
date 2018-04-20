@@ -205,6 +205,7 @@
                     return true;
                 }
                 // is the currently selected chapter the one for which the page is requested?
+                // FIXME: some page urls does not include the chapter url (e.g. images fom mangarock)
                 let index = request.url.indexOf( document.querySelector( HakunekoApp.is ).shadowRoot.querySelector( HakunekoPages.is ).selectedChapter.id );
                 return ( index > -1 );
             } catch( e ) {
