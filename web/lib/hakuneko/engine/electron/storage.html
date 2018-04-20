@@ -303,8 +303,8 @@
                 this._saveChapterPagesCBZ( output, pageData, callback );
             }
             if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
-                //this._createDirectoryChain( this.path.dirname( output ) );
-                //this._saveChapterPagesPDF( output, pageData, callback );
+                this._createDirectoryChain( this.path.dirname( output ) );
+                this._saveChapterPagesPDF( output, pageData, callback );
             }
             if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
                 this._createDirectoryChain( this.path.dirname( output ) );
@@ -343,6 +343,78 @@
                     callback( error );
                 });
             });
+        }
+
+        /**
+         * Create and save pages to the given portable document file.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
+         */
+        _saveChapterPagesPDF( pdf, pageData, callback ) {
+            let doc = new jspdf()
+            doc.deletePage(1);
+            this._addImageToPDF( doc, pageData, ( error ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    let data = doc.output( 'arraybuffer' /* 'blob' */ );
+                    data = Buffer.from/*new Uint8Array*/( data );
+                    this.fs.writeFile( pdf, data, ( error ) => {
+                        callback( error );
+                    } );
+                } catch( e ) {
+                    console.error( e );
+                    callback( e );
+                }
+            } );
+        }
+
+        /**
+         * Helper function to add images to a PDF document (recursive)
+         */
+        _addImageToPDF( pdfDocument, pageData, callback, pageIndex ) {
+            try {
+                if( pageIndex === undefined || pageIndex === null ) {
+                    pageIndex = 0;
+                }
+                if( pageIndex >= pageData.length ) {
+                    // operation complete
+                    callback( null );
+                    return;
+                }
+                if( !pdfDocument ) {
+                    throw new Error( 'Source document is not a valid PDF!' );
+                }
+                let page = pageData[pageIndex];
+                createImageBitmap( new Blob( [page.data], { type: this._pageFileMime( page.name ) } ) )
+                .then( ( bitmap ) => {
+                    try {
+                        let data = page.data;
+                        let pdfImgType = this._pdfImageType( page.name );
+                        if( !pdfImgType ) {
+                            pdfImgType = 'JPEG';
+                            let canvas = document.createElement( 'canvas' );
+                            canvas.width = bitmap.width;
+                            canvas.height = bitmap.height;
+                            let ctx = canvas.getContext( '2d' );
+                            ctx.drawImage( bitmap, 0, 0 );
+                            data = canvas.toDataURL( 'image/jpeg', 0.90 );
+                        }
+                        pdfDocument.addPage ( bitmap.width, bitmap.height );
+                        // use page.name as image alias, to prevent imge repeat bug: https://github.com/MrRio/jsPDF/issues/998
+                        pdfDocument.addImage( data, pdfImgType, 0, 0, bitmap.width, bitmap.height, page.name );
+                        // process next image
+                        this._addImageToPDF( pdfDocument, pageData, callback, pageIndex+1 );
+                    } catch( e ) {
+                        callback( e );
+                    }
+                } )
+                .catch( ( e ) => {
+                    callback( e );
+                } );
+            } catch( e ) {
+                callback( e );
+            }
         }
 
         /**
@@ -523,6 +595,9 @@
             if( extension === '.webp' ) {
                 return 'image/webp';
             }
+            if( extension === '.jpeg' ) {
+                return 'image/jpeg';
+            }
             if( extension === '.jpg' ) {
                 return 'image/jpeg';
             }
@@ -539,6 +614,23 @@
                 return 'image/';
             }
             return 'application/octet-stream';
+        }
+
+        /**
+         * Helper function to get the image type for jsPDF of the given file name.
+         */
+        _pdfImageType( file ) {
+            let extension = this.path.extname( file );
+            if( extension === '.jpeg' ) {
+                return 'JPEG';
+            }
+            if( extension === '.jpg' ) {
+                return 'JPEG';
+            }
+            if( extension === '.png' ) {
+                return 'PNG';
+            }
+            return undefined;
         }
     }
 
