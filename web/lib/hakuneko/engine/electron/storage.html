@@ -131,7 +131,7 @@
                 return this._loadChapterPagesEPUB( path, callback );
             }
             if( path.endsWith( ChapterFormat.pdf ) ) {
-                //return this._loadChapterPagesPDF( path, callback );
+                return this._loadChapterPagesPDF( path, callback );
             }
             if( path.endsWith( ChapterFormat.cbz ) ) {
                 return this._loadChapterPagesCBZ( path, callback );
@@ -215,6 +215,15 @@
                     });
                 });
             }).bind( this ) );
+        }
+
+        /**
+         * Read image data from portable document format.
+         * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured)
+         * and a reference to the page list (undefined on error).
+         */
+        _loadChapterPagesPDF( pdf, callback ) {
+            callback( new Error( 'PDF preview not yet supported!' ), undefined );
         }
 
         /**
