@@ -13,15 +13,17 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id       = 'mangarock';
-            super.label    = 'MangaRock';
-            super.isLocked = false;
+            super.id            = 'mangarock';
+            super.label         = 'MangaRock';
+            super.isLocked      = false;
             // Private members for internal usage only (convenience)
-            this.url       = 'https://api.mangarockhd.com';
+            this.url            = 'https://api.mangarockhd.com';
             this.reqOptionsJSON = JSON.stringify( {
                 url: this.url,
                 json: {} // => use to automatically parse a response as json
             } );
+            this.pageLock       = 0;
+            this.pageLockDelay  = 500;
 
             // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
@@ -163,6 +165,17 @@
             options['url'] = uri.href;
             options['json'] = undefined;
             options['encoding'] = null;
+            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
+                //callback( undefined );
+                return;
+            }
+            if( this.pageLock > 3 ) {
+                setTimeout( () => {
+                    this._pageProtocolHandler( request, callback );
+                }, this.pageLockDelay );
+                return;
+            }
+            this.pageLock++;
             Engine.Request.fetch( options, ( error, response, content ) => {
                 try {
                     if( error ) {
@@ -186,7 +199,7 @@
                     console.warn( e.message, uri.href );
                     callback( undefined );
                 } finally {
-                    this.pageLock = false;
+                    this.pageLock--;
                 }
             } );
         }
