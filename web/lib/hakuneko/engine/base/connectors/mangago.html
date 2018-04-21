@@ -192,7 +192,7 @@
                                 throw new Error( 'Failed to extract re-order key!' );
                             }
                             let script = `
-                                if( imgsrcs && imgsrcs.indexOf( ',' ) > -1 ) {
+                                if( imgsrcs && typeof(imgsrcs) === 'string' ) {
                                     if( !imgsrcs.startsWith( 'http' ) ) {
                                         imgsrcs = dorder( imgsrcs, ${match[1]} );
                                     }
