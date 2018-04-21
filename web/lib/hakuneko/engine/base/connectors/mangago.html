@@ -265,7 +265,7 @@
             if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
                 opts['headers']['Referer'] = undefined;
             }
-            if( !this.isPageRequestValid( request ) ) {
+            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
                 //callback( undefined );
                 return;
             }

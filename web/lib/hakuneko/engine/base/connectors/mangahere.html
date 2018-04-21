@@ -147,7 +147,7 @@
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            if( !this.isPageRequestValid( request ) ) {
+            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
                 //callback( undefined );
                 return;
             }

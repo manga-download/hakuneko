@@ -198,16 +198,15 @@
          * when the page for which this request is made is not part of the selected chapter
          * (in fact: the user changed the chapter while the browser still requests pages from the previous selected chapter).
          */
-        isPageRequestValid( request ) {
+        isPageRequestNotFromElectronOrSelectedChapter( request ) {
             try {
                 // is the request not from electron browser?
                 if( !request.headers || !request.headers['User-Agent'] || request.headers['User-Agent'].indexOf( /*'hakuneko-desktop'*/ 'Electron' ) < 0 ) {
                     return true;
                 }
                 // is the currently selected chapter the one for which the page is requested?
-                // FIXME: some page urls does not include the chapter url (e.g. images fom mangarock)
-                let index = request.url.indexOf( document.querySelector( HakunekoApp.is ).shadowRoot.querySelector( HakunekoPages.is ).selectedChapter.id );
-                return ( index > -1 );
+                let selectedChapterPages = document.querySelector( HakunekoApp.is ).shadowRoot.querySelector( HakunekoPages.is ).selectedChapter.pageCache;
+                return ( selectedChapterPages.indexOf( request.url ) > -1 );
             } catch( e ) {
                 return false;
             }
