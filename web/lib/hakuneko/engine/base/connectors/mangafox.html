@@ -96,7 +96,10 @@
          *
          */
          _getPageList( manga, chapter, callback ) {
-            Engine.Request.cloudflare( this.url + chapter.id, ( error, response, content ) => {
+            let uri = new URL( this.url + chapter.id );
+            uri.hostname = 'm.' + uri.hostname;
+            uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
+            Engine.Request.cloudflare( uri.href, ( error, response, content ) => {
                 try {
                     if( error ) {
                         throw error;
@@ -115,6 +118,7 @@
                         throw new Error( 'The manga is licensed and not available in your country!' );
                     }
                     let dom = this.createDOM( content );
+                    /*
                     let pageList = [...dom.querySelectorAll( 'form#top_bar div div.l select.m option' )].filter( ( element ) => {
                         return ( element.text.indexOf( 'Comment' ) < 0 );
                     } );
@@ -122,6 +126,11 @@
                         let uri = new URL( this.url + chapter.id + element.value + '.html' );
                         uri.protocol = this.id;
                         return uri.href;
+                    } );
+                    */
+                    let pageList = [...dom.querySelectorAll( 'div#viewer source' )];
+                    pageList = pageList.map( ( element ) => {
+                        return element.dataset.original;
                     } );
                     callback( null, pageList );
                 } catch( e ) {
