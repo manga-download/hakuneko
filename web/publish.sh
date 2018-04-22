@@ -2,6 +2,7 @@
 
 DIR=./build/htdocs
 KEY=../../hakuneko.key
+DST=../../../../app-releases/0.3.1
 REV=$(git log -1 --format="%H")
 VER=$(echo $REV | cut -c 1-6)
 
@@ -18,3 +19,11 @@ cp -f ./js/*.min.js $DIR/js/
 cd $DIR
 zip -r $VER.zip .
 echo -n $VER.zip?signature=$(openssl dgst -sha256 -hex -sign $KEY $VER.zip | cut -d' ' -f2) > latest
+
+# publish
+rm -r -f $DST/*
+cp latest $VER.zip $DST
+cd $DST
+git add .
+git commit -m 'updated releases'
+git push github master
