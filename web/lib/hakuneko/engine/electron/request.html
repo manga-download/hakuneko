@@ -81,6 +81,7 @@
             }
             let request = {
                 url: options.url, //url String
+                // TODO: check for referer in options.headers
                 referrer: options.url, //referrer String
                 //method: '', //method String
                 //uploadData: [], //uploadData UploadData[]
@@ -97,7 +98,7 @@
                     }
                 };
                 callback( null, response, data.data );
-            });
+            } );
             return true;
         }
 
