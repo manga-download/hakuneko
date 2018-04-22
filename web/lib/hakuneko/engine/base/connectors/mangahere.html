@@ -79,11 +79,11 @@
                     let chapterList = [...dom.querySelectorAll( 'div.detail_list ul li span.left' )].map(  ( element ) => {
                         let a = element.querySelector( 'a' );
                         let span = element.querySelector( 'span.mr6' );
-                        let text = ( element.lastChild !== a && element.lastChild !== span ? element.lastChild : undefined );
-                        let title = ( span && span.innerText ? `[${span.innerText}] ` : '');
+                        let text = ( element.lastChild !== a && element.lastChild !== span ? element.lastChild.textContent.replace( 'Read Online', '' ) : undefined );
+                        let title = ( span && span.innerText ? `[${span.innerText}] ` : '' );
                         title += ( a ? a.text + ' ' : '');
                         title += ( title && text ? ' - ' : '' );
-                        title += ( text ? text.textContent : '');
+                        title += ( text ? text : '');
                         title = title.replace( manga.title, '' ).trim();
                         return {
                             id: this.getRelativeLink( a ),
