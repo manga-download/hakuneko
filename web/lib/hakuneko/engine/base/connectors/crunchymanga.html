@@ -154,7 +154,7 @@
                         //let uri = new URL( page.locale.enUS['image_url'] ); // this seems to be the raw image (png), but access is forbidden
                         //let uri = new URL( page.locale.enUS['composed_image_url'] ); // access is forbidden
                         //let uri = new URL( page.locale.enUS['encrypted_mobile_image_url'] ); // smaller size
-                        let uri = new URL( page.locale.enUS['encrypted_composed_image_url'] );
+                        let uri = new URL( page.locale['enUS']['encrypted_composed_image_url'] || page.locale['enUS']['encrypted_mobile_image_url'] );
                         // use dedicated protocol handler for image decryption from crunchyroll
                         uri.protocol = this.id;
                         return uri.href;
