@@ -95,7 +95,7 @@
         /**
          *
          */
-         _getPageList( manga, chapter, callback ) {
+        _getPageList( manga, chapter, callback ) {
             let uri = new URL( this.url + chapter.id );
             uri.hostname = 'm.' + uri.hostname;
             uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
@@ -112,7 +112,7 @@
                         return;
                     }
                     if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
                     }
                     if( content.indexOf( 'its licensed' ) > -1 ) {
                         throw new Error( 'The manga is licensed and not available in your country!' );
