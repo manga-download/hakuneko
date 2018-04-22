@@ -115,20 +115,23 @@
                 let key = promise.defer();
                 setTimeout( () => {
                     Engine.Request.cloudflare( { url: page, encoding: null, timeout: 1*60*1000 }, ( error, response, content ) => {
-                        if( error ) {
-                            this.errors.push( error );
-                        } else {
-                            if( response.statusCode !== 200 ) {
-                                this.errors.push( new Error( 'Page "' + page + '" returned status code ' + response.statusCode ) );
-                            } else {
-                                pageData[index] = {
-                                    type: response.headers['Content-Type'] || response.headers['content-type'],
-                                    data: content
-                                };
+                        try {
+                            if( error ) {
+                                throw error;
                             }
+                            if( response.statusCode !== 200 ) {
+                                throw new Error( 'Page "' + page + '" returned status code ' + response.statusCode );
+                            }
+                            pageData[index] = {
+                                type: response.headers['Content-Type'] || response.headers['content-type'],
+                                data: content
+                            };
+                        } catch( e ) {
+                            this.errors.push( e );
+                        } finally {
+                            this.setProgress( this.progress + ( pages.length ? 100/pages.length : 0 ) );
+                            promise.resolve( key );
                         }
-                        this.setProgress( this.progress + 100/pages.length );
-                        promise.resolve( key );
                     }, 5 );
                 }, index * 250 );
             });
