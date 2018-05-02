@@ -329,7 +329,7 @@
                     return params;
                 }, options.qs /* existing params as initial accumulator */ );
             } catch( e ) {
-                console.error( 'Failed to apply policy parameters to request options', options, this.policies );
+                console.error( 'Failed to apply policy parameters to request options', options, this.policies, e );
             }
         };
 
