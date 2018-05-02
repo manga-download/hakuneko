@@ -233,32 +233,37 @@
          * Set options & headers for NPM request module (does not apply to electron browser window).
          */
         _prepareHeaders( options ) {
-            if( typeof options === 'string' ) {
-                options = {
-                    url: options
-                };
+            try {
+                if( typeof options === 'string' ) {
+                    options = {
+                        url: options
+                    };
+                }
+                if( options['gzip'] === undefined ) {
+                    options['gzip'] = true;
+                }
+                let uri = new URL( options.url );
+                options['headers'] = ( options['headers'] ? options['headers'] : {} );
+                options['headers']['User-Agent'] = options['headers']['User-Agent'] || this.userAgent;
+                // it cannot hurt to pretend the request already passed through some other proxy servers ...
+                if( options['headers']['X-Forwarded-For'] === undefined ) {
+                    options['headers']['X-Forwarded-For'] = this.ipChain.join( ',' );
+                }
+                if( options['headers']['Forwarded'] === undefined ) {
+                    options['headers']['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
+                }
+                // use google data saver proxy server
+                if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
+                    //
+                    options['proxy'] = 'http://proxy.googlezip.net:80';
+                    options['headers']['Chrome-Proxy'] = this._getDataSaverHeader();
+                    options['gzip'] = true;
+                }
+            } catch( e ) {
+                console.error( e );
+            } finally {
+                return options;
             }
-            if( options['gzip'] === undefined ) {
-                options['gzip'] = true;
-            }
-            let uri = new URL( options.url );
-            options['headers'] = ( options['headers'] ? options['headers'] : {} );
-            options['headers']['User-Agent'] = options['headers']['User-Agent'] || this.userAgent;
-            // it cannot hurt to pretend the request already passed through some other proxy servers ...
-            if( options['headers']['X-Forwarded-For'] === undefined ) {
-                options['headers']['X-Forwarded-For'] = this.ipChain.join( ',' );
-            }
-            if( options['headers']['Forwarded'] === undefined ) {
-                options['headers']['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
-            }
-            // use google data saver proxy server
-            if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
-                //
-                options['proxy'] = 'http://proxy.googlezip.net:80';
-                options['headers']['Chrome-Proxy'] = this._getDataSaverHeader();
-                options['gzip'] = true;
-            }
-            return options;
         }
 
         /**
