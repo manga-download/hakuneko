@@ -1,0 +1,107 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class ReadComicBooksOnline extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id            = 'readcomicbooksonline';
+            super.label         = 'ReadComicBooksOnline';
+            super.isLocked      = false;
+            // Private members for internal usage only (convenience)
+            this.url            = 'https://readcomicbooksonline.org';
+            this.pageLock       = 0;
+            this.pageLockDelay  = 500;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config         = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Engine.Request.fetch( this.url + '/comics-list', ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    let dom = this.createDOM( content );
+                    let mangaList = [...dom.querySelectorAll( 'div.content table tr td span a' )].map( ( element ) => {
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: element.text.trim()
+                        };
+                    } );
+                    callback( null, mangaList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, undefined );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                    }
+                    let dom = this.createDOM( content );
+                    let chapterList = [...dom.querySelectorAll( '#chapterlist li.chapter a' )].map( ( element ) => {
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: element.text.trim(),
+                            language: 'en'
+                        };
+                    } );
+                    callback( null, chapterList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, undefined );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.fetch( this.url + chapter.id + '/?q=fullchapter', ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
+                    }
+                    let dom = this.createDOM( content );
+                    let pageList = [...dom.querySelectorAll( 'table tr:nth-child(3) td source' )].map( ( element ) => {
+                        return ( this.url + '/reader' + this.getRelativeLink( element ) );
+                    } );
+                    callback( null, pageList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, undefined );
+                }
+            } );
+        }
+    }
+
+</script>
