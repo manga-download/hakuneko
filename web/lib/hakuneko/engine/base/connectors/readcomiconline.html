@@ -1,0 +1,31 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class ReadComicOnline extends Connector { // KissManga
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id            = 'readcomiconline';
+            super.label         = 'ReadComicOnline';
+            super.isLocked      = false;
+            // Private members for internal usage only (convenience)
+            this.url = 'http://readcomiconline.to';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                headers: {
+                    //'User-Agent': 'Mozilla/5.0'
+                    Cookie: 'rco_quality=hq; rco_readType=1;'
+                }
+            } );
+        }
+    }
+
+</script>
