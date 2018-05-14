@@ -30,6 +30,13 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config  = undefined;
 
+            this._initializeConnector();
+        }
+
+        /**
+         *
+         */
+        _initializeConnector() {
             // initialization: bypass cloudflare and get encryption scripts
             Engine.Request.cloudflare( this.url + '/Scripts/ca.js', ( error, response, content ) => {
                 if( !error && response.statusCode === 200 ) {
@@ -40,24 +47,36 @@
                             this.sandbox.postMessage( { id: 1, content: script, return: [] } );
                             this.initialized = true;
                         } else {
-                            console.error( '[ERROR: Failed to load KissManga script]', this.url + '/Scripts/lo.js' );
+                            console.error( `[ERROR: Failed to load ${this.label} script]`, this.url + '/Scripts/lo.js' );
                             this.initialized = undefined;
                         }
-                    });
+                    } );
                 } else {
                     console.error( '[ERROR: Failed to load CryptoJS script]', this.url + '/Scripts/ca.js' );
                     this.initialized = undefined;
                 }
-            });
+            } );
         }
 
         /**
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.cloudflare( 'http://kissmanga.hakuneko.download/cdn/mangas.json', ( error, response, content ) => {
-                callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
-            });
+            Engine.Request.fetch( `http://${this.id}.hakuneko.download/cdn/mangas.json`, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    let mangaList = JSON.parse( content );
+                    callback( null, mangaList );
+                } catch( e ) {
+                    console.error( e.message );
+                    callback( e, [] );
+                }
+            } );
         }
 
         /**
@@ -83,12 +102,7 @@
                     callback( new Error( 'Failed to get chapter from ' + this.label + ' due to captcha protection!' ), chapterList );
                     return;
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
+                let dom = this.createDOM( content );
                 [...dom.querySelectorAll( 'table.listing tr' )].forEach(  ( element ) => {
                     let td = element.querySelector( 'td' );
                     if( td ) {
@@ -98,7 +112,7 @@
                             this.cfMailDecrypt( a );
                             chapterList.push( {
                                 // as mentioned before, the eventually added host prefix must be removed
-                                // for full qualified domain name, the host (kissmanga) can also be removed
+                                // for full qualified domain name, the hostname can also be removed
                                 id: encodeURI( a.href.trim().replace( /\s+/, '' ).replace( this.url, '' ).replace( window.location.origin, '' ) ),
                                 title: a.text.replace( /read online/i, '' ).replace( manga.title, '' ).trim(),
                                 language: 'en'
@@ -115,7 +129,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             if( this.isLocked ) {
-                console.warn( '[WARN: KissManga, too many requests]' );
+                console.warn( `[WARN: ${this.label}, too many requests]` );
                 callback( new Error( 'Request to ' + this.label + ' has been skipped to prevent the client from beeing blocked for to many requests!' ), [] );
                 return;
             }
@@ -137,12 +151,7 @@
                     callback( new Error( 'Failed to get chapter from ' + this.label + ' due to captcha protection!' ), pageList );
                     return;
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
+                let dom = this.createDOM( content );
                 let noScript = true;
                 [...dom.querySelectorAll( 'script' )].forEach(  ( element ) => {
                     let script = element.innerHTML;
