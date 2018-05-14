@@ -18,6 +18,7 @@
             super.isLocked      = false;
             // Private members for internal usage only (convenience)
             this.url            = 'https://readcomicbooksonline.org';
+            this.urlOld         = 'http://readcomicbooksonline.com';
             this.pageLock       = 0;
             this.pageLockDelay  = 500;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
@@ -39,7 +40,7 @@
                     let dom = this.createDOM( content );
                     let mangaList = [...dom.querySelectorAll( 'div.content table tr td span a' )].map( ( element ) => {
                         return {
-                            id: this.getRelativeLink( element ),
+                            id: this.getRelativeLink( element ).replace( this.urlOld, '' ),
                             title: element.text.trim()
                         };
                     } );
@@ -66,7 +67,7 @@
                     let dom = this.createDOM( content );
                     let chapterList = [...dom.querySelectorAll( '#chapterlist li.chapter a' )].map( ( element ) => {
                         return {
-                            id: this.getRelativeLink( element ),
+                            id: this.getRelativeLink( element ).replace( this.urlOld, '' ),
                             title: element.text.trim(),
                             language: 'en'
                         };
@@ -93,7 +94,7 @@
                     }
                     let dom = this.createDOM( content );
                     let pageList = [...dom.querySelectorAll( 'table tr:nth-child(3) td source' )].map( ( element ) => {
-                        return ( this.url + '/reader' + this.getRelativeLink( element ) );
+                        return ( this.url + '/reader' + this.getRelativeLink( element ).replace( this.urlOld, '' ) );
                     } );
                     callback( null, pageList );
                 } catch( e ) {
