@@ -285,15 +285,19 @@
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
+
             // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images (ticket #2, commit [758df9])
             // => overwrite the referer for each request directly made through the electron browser
             // BUT: some other connectors like mangago require to keep the original referer
             //details.requestHeaders['Referer'] = details.url;
-            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
-                uri.hostname = 'www.mnggo.net';
-                details.requestHeaders['Referer'] = uri.href;
-            } else {
-                details.requestHeaders['Referer'] = details.url;
+            switch ( true ) {
+                case ( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ):
+                    uri.hostname = 'www.mnggo.net';
+                    details.requestHeaders['Referer'] = uri.href;
+                    break;
+                default:
+                    details.requestHeaders['Referer'] = details.url;
+                    break;
             }
 
             return details;
