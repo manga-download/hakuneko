@@ -1,0 +1,116 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class RawSenManga extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id       = 'rawsenmanga';
+            super.label    = 'RawSenManga';
+            super.isLocked = false;
+            // Private members for internal usage only (convenience)
+            this.url       = 'https://raw.senmanga.com';
+            this.reqOptionsJSON = JSON.stringify( {
+                url: this.url,
+                headers: {
+                    Cookie: 'viewer=1;'
+                }
+            } );
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += '/directory/text_version';
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
+                    }
+                    let dom = this.createDOM( content );
+                    let mangaList = [...dom.querySelectorAll( 'div.list table tr td.series_title a' )].map( ( element ) => {
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: element.text.trim()
+                        };
+                    } );
+                    callback( null, mangaList );
+                } catch( e ) {
+                    callback( e, undefined );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += manga.id;
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
+                    }
+                    let dom = this.createDOM( content );
+                    let chapterList = [...dom.querySelectorAll( 'div.list div.element div.title a' )].map( ( element ) => {
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: element.text.trim(),
+                            language: 'jp'
+                        };
+                    } );
+                    callback( null, chapterList );
+                } catch( e ) {
+                    callback( e, undefined );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url += chapter.id;
+            Engine.Request.cloudflare( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    if( response.statusCode !== 200 ) {
+                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
+                    }
+                    let pageList = [];
+                    let match = undefined;
+                    let regex = new RegExp( /{\s*url\s*:\s*"(http.*?)"\s*}/g );
+                    while( match = regex.exec( content ) ) {
+                        pageList.push( match[1] );
+                    }
+                    callback( null, pageList );
+                } catch( e ) {
+                    callback( e, undefined );
+                }
+            } );
+        }
+    }
+
+</script>

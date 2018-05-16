@@ -15,7 +15,8 @@
             this.electronRemote = require( 'electron' ).remote;
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             let req = this.electronRemote.require( 'request' );
-            this.request = req.defaults( { jar: req.jar() } ); // cookies should be enabled
+            this.cookies = req.jar();
+            this.request = req.defaults( { jar: this.cookies } ); // cookies should be enabled
             this.agentHTTP = this.electronRemote.require( 'http' ).globalAgent;
             this.agentHTTPS = this.electronRemote.require( 'https' ).globalAgent;
             this.crypto = this.electronRemote.require( 'crypto' );
@@ -294,6 +295,10 @@
                 case ( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ):
                     uri.hostname = 'www.mnggo.net';
                     details.requestHeaders['Referer'] = uri.href;
+                    break;
+                case ( uri.hostname.indexOf( 'senmanga' ) > -1 && uri.search.indexOf( 'token=' ) > -1 ):
+                    // token in query string must match the PHP session id (both from request module)
+                    details.requestHeaders['Cookie'] = this.cookies.getCookieString( uri );
                     break;
                 default:
                     details.requestHeaders['Referer'] = details.url;
