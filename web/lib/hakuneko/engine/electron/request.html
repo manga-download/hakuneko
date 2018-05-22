@@ -192,6 +192,14 @@
                     }
                 } );
             } );
+            /*
+            win.webContents.on( 'did-get-response-details', ( e ) => {
+                //
+            } );
+            win.webContents.on( 'did-fail-load', ( e ) => {
+                //
+            } );
+            */
             let opts = {
                 httpReferrer: options.url,
                 userAgent: this.userAgent
