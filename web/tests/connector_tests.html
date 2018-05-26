@@ -26,6 +26,9 @@
             let mail = template.content.firstChild;
             connector.cfMailDecrypt( mail );
             Assert.equal( expected, mail.text, 'Failed to decrypt cloudflare mail protection!' );
+            if( mail.title ) {
+                Assert.equal( expected, mail.title, 'Failed to decrypt cloudflare mail protection!' );
+            }
         }
 
         test.run( 'lock', lock_test );
@@ -86,7 +89,7 @@
                     Assert.nequal( undefined, pages, 'Failed to get page list from ' + connector.label );
                     Assert.nequal( undefined, pages.length, 'Invalid length of page list from ' + connector.label );
                     Assert.nequal( 0, pages.length, 'Empty page list from ' + connector.label );
-                    Assert.equal( undefined, pages.find( p => p.indexOf( 'http' ) !== 0 && p.indexOf( connector.id ) !== 0 ), 'Any page URL is invlaid (not starting with "http" or connector protocol)!' );
+                    Assert.equal( undefined, pages.find( p => p.indexOf( 'http' ) !== 0 && p.indexOf( connector.id.replace( '-cdn', '' ) ) !== 0 ), `Any page URL is invlaid (not starting with &quot;http&quot; or &lt;${connector.id}&gt; connector protocol)!` );
                     if( callback ) {
                         callback( pages );
                     }
