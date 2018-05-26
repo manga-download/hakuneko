@@ -179,22 +179,39 @@
             }, 10000 );
 
             win.webContents.on( 'dom-ready', ( e ) => {
-                let redirectCheck = `
+                let check = `
+                    let code = document.querySelector( '.cf-error-code' );
+                    code = ( code ? code.innerText : null );
+                    let message = document.querySelector( 'h2[data-translate]' );
+                    message = ( message && message.nextElementSibling ? message.nextElementSibling.innerText : null );
+                    let error = ( code ? 'CF Error ' + code + ' => ' + message : null );
+
                     let meta = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
                     let cf = document.querySelector( 'form#challenge-form' );
-                    ( meta || cf );
+
+                    let result = {
+                        error: error,
+                        redirect: ( meta || cf )
+                    };
+                    result;
                 `;
                 //console.log( 'DOM-READY' );
-                win.webContents.executeJavaScript( redirectCheck, ( redirect ) => {
+                win.webContents.executeJavaScript( check, ( result ) => {
                     //console.log( '  REDIRECT', redirect );
-                    if( !redirect ) {
-                        //console.log( '    INJECT', script );
-                        preventCallback = true; // no other event shall execute the callback function anymore!
-                        win.webContents.executeJavaScript( script, ( result ) => {
-                            //console.log( '      RESULT', result );
+                    if( !result.redirect ) {
+                        if( result.error ) {
+                            //console.log( '      CLOUDFLARE', result.error, options.url );
                             this._fetchUICleanup( win, abortAction );
-                            callback( null, undefined, result );
-                        } );
+                            callback( new Error( result.error ), undefined, undefined );
+                        } else {
+                            //console.log( '    INJECT', script );
+                            preventCallback = true; // no other event shall execute the callback function anymore!
+                            win.webContents.executeJavaScript( script, ( result ) => {
+                                //console.log( '      RESULT', result, options.url );
+                                this._fetchUICleanup( win, abortAction );
+                                callback( null, undefined, result );
+                            } );
+                        }
                     }
                 } );
             } );

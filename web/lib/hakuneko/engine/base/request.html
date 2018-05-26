@@ -24,6 +24,16 @@
                     callback( new Error( 'Page blocked by cloudflare re-captcha!' ), response, content );
                     return;
                 }
+                if( content && content.indexOf( 'cf-error-code' ) > -1 ) {
+                    let message = 'CF Error';
+                    try {
+                        message += ' ' + ( /cf-error-code[^>]*?>(\d+)</g ).exec( content )[1];
+                        message += ' => ' + ( /what_happened[\s\S]*?<p>([^<]*)</gm ).exec( content )[1];
+                    } finally {
+                        callback( new Error( message ), response, content );
+                        return;
+                    }
+                }
                 if( error || !content || content.indexOf( 'document.getElementById(\'jschl-answer\');' ) < 0 ) {
                     callback( error, response, content );
                     return;
