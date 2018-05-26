@@ -27,6 +27,18 @@
             this.pageLoadDelay  = 5000;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config  = undefined;
+
+            this._initializeConnector();
+        }
+
+        /**
+         *
+         */
+        _initializeConnector() {
+            let options = JSON.parse( this.reqOptionsJSON );
+            Engine.Request.fetchUI( options, '', ( error, response, content ) => {
+                this.initialized = true;
+            } );
         }
 
         /**
@@ -113,7 +125,10 @@
             options.url += chapter.id;
             Engine.Request.fetchUI( options, 'lstImages', ( error, response, content ) => {
                 try {
-                    callback( error, content );
+                    if( error ) {
+                        throw error;
+                    }
+                    callback( null, content );
                 } catch( e ) {
                     callback( e, [] );
                 }
