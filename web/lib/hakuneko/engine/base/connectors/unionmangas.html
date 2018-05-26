@@ -63,12 +63,7 @@
                     if( response.statusCode !== 200 ) {
                         throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
                     }
-                    // prevent images and iframes from loading
-                    content = content.replace( /<img[^<]*?>/g, '<img>');
-                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                    let dom = document.createElement( 'html' );
-                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                    dom.innerHTML = content;
+                    let dom = this.createDOM( content );
                     let chapters = [...dom.querySelectorAll( 'div.row.lancamento-linha div:first-of-type a:first-of-type' )].map( ( element ) => {
                         this.cfMailDecrypt( element );
                         return {
@@ -98,13 +93,7 @@
                     if( response.statusCode !== 200 ) {
                         throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
                     }
-                    // prevent images and iframes from loading
-                    content = content.replace( /<img/g, '<source');
-                    content = content.replace( /<\/img>/g, '<\/source>');
-                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                    let dom = document.createElement( 'html' );
-                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                    dom.innerHTML = content;
+                    let dom = this.createDOM( content );
                     let pages = [...dom.querySelectorAll( 'source[pag]' )].map( ( element ) => {
                         let uri = new URL( element.src );
                         uri.protocol = ( new URL( this.url ) ).protocol;
