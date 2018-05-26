@@ -168,10 +168,16 @@
                     webSecurity: true
                 }
             } );
+
+            let preventCallback = false;
+
             let abortAction = setTimeout( () => {
-                win.close();
-                callback( new Error( `Failed to load '${options.url}'` ), undefined, undefined );
+                this._fetchUICleanup( win, abortAction );
+                if( !preventCallback ) {
+                    callback( new Error( `Failed to load '${options.url}'` ), undefined, undefined );
+                }
             }, 10000 );
+
             win.webContents.on( 'dom-ready', ( e ) => {
                 let redirectCheck = `
                     let meta = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
@@ -183,25 +189,20 @@
                     //console.log( '  REDIRECT', redirect );
                     if( !redirect ) {
                         //console.log( '    INJECT', script );
+                        preventCallback = true; // no other event shall execute the callback function anymore!
                         win.webContents.executeJavaScript( script, ( result ) => {
                             //console.log( '      RESULT', result );
-                            if( this._tryCloseWindow( win ) ) {
-                                clearTimeout( abortAction );
-                                callback( null, undefined, result );
-                            }
+                            this._fetchUICleanup( win, abortAction );
+                            callback( null, undefined, result );
                         } );
                     }
                 } );
             } );
-            /*
-            win.webContents.on( 'did-get-response-details', ( e ) => {
-                //console.log( 'did-get-response-details', e );
-            } );
-            */
+
             win.webContents.on( 'did-fail-load', ( e, c, message, uri ) => {
                 //console.log( '      ERROR', message, uri );
-                if( this._tryCloseWindow( win ) ) {
-                    clearTimeout( abortAction );
+                if( !preventCallback ) {
+                    this._fetchUICleanup( win, abortAction );
                     callback( new Error( message + ' ' + uri ), undefined, undefined );
                 }
             } );
@@ -214,20 +215,20 @@
         }
 
         /**
-         *
+         * Close window and clear the given timeout function
          */
-        _tryCloseWindow( browserWindow ) {
+        _fetchUICleanup( browserWindow, timeout ) {
             try {
+                if( timeout ) {
+                    clearTimeout( timeout );
+                }
+                timeout = null;
                 if( browserWindow ) {
-                    //browserWindow.close();
+                    browserWindow.close();
                 }
                 browserWindow = null;
-                // window was closed by the code above
-                return true;
-            }
-            catch( e ) {
-                // window has already been closed by something else
-                return false;
+            } catch( e ) {
+                //
             }
         }
 
