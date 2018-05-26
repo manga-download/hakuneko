@@ -1,3 +1,5 @@
+<link rel="import" href="useragent.html">
+
 <script>
 
     /**
@@ -10,19 +12,9 @@
          */
         constructor() {
             // default agent used for requests
-            this.userAgent = 'Mozilla/5.0 (Windows NT 6.2; Win64; x64; rv:56.0) Gecko/20100101 Firefox/56.0';
+            this.userAgent = UserAgent.random();
         }
-/*
-        Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36
-        Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/46.0.2490.86 Safari/537.36
-        Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36
 
-        _randomAgentOS() {
-            let versions = ['5.0', '5.1', '6.0', '6.1', '6.2', '6.3', '10.0'];
-            let arch = ['Win64; x64', 'WOW64'];
-            return `Windows NT ${versions[0]}; ${arch[0]}`;
-        }
-*/
         /**
          * 
          */
