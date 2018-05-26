@@ -332,9 +332,16 @@
          * DO NOT RENAME THIS METHOD!
          */
         getRequestHeaders( details ) {
-            details = JSON.parse( details );
+            // calling this method from electron main by ipcRenderer evaluation, escaped characters in JSON strings will break
+            // e.g. '{ "cookie" : "token=\"a23f2bc345\"; user=guest;" }' => '{ "cookie" : "token="a23f2bc345"; user=guest;" }'
+            // as a result JSON parse will fail (happens rarely, e.g. when some advertisements use cookies with quotes)
+            try {
+                details = JSON.parse( details );
+            } catch( e ) {
+                console.log( details, e );
+                return undefined;
+            }
             let uri = new URL( details.url );
-            // details.url
             details.requestHeaders['User-Agent'] = details.requestHeaders['User-Agent'] || this.userAgent;
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
             if( details.requestHeaders['X-Forwarded-For'] === undefined ) {
