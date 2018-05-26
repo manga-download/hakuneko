@@ -172,6 +172,7 @@
             let preventCallback = false;
 
             let abortAction = setTimeout( () => {
+                //console.log( '  TIMEOUT', options.url );
                 this._fetchUICleanup( win, abortAction );
                 if( !preventCallback ) {
                     callback( new Error( `Failed to load '${options.url}'` ), undefined, undefined );
@@ -179,25 +180,34 @@
             }, 10000 );
 
             win.webContents.on( 'dom-ready', ( e ) => {
+                // ensure variables in this script does not appear in the page or other injected script
+                let uVar = [
+                    '_c13367', // 'code',
+                    '_d8fd50', // 'message',
+                    '_cb5e10', // 'error',
+                    '_e9a23c', // 'meta',
+                    '_d9904d', // 'cf',
+                    '_b4a884', // 'result',
+                ];
                 let check = `
-                    let code = document.querySelector( '.cf-error-code' );
-                    code = ( code ? code.innerText : null );
-                    let message = document.querySelector( 'h2[data-translate]' );
-                    message = ( message && message.nextElementSibling ? message.nextElementSibling.innerText : null );
-                    let error = ( code ? 'CF Error ' + code + ' => ' + message : null );
+                    let ${uVar[0]} = document.querySelector( '.cf-error-code' );
+                    ${uVar[0]} = ( ${uVar[0]} ? ${uVar[0]}.innerText : null );
+                    let ${uVar[1]} = document.querySelector( 'h2[data-translate]' );
+                    ${uVar[1]} = ( ${uVar[1]} && ${uVar[1]}.nextElementSibling ? ${uVar[1]}.nextElementSibling.innerText : null );
+                    let ${uVar[2]} = ( ${uVar[0]} ? 'CF Error ' + ${uVar[0]} + ' => ' + ${uVar[1]} : null );
 
-                    let meta = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
-                    let cf = document.querySelector( 'form#challenge-form' );
+                    let ${uVar[3]} = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
+                    let ${uVar[4]} = document.querySelector( 'form#challenge-form' );
 
-                    let result = {
-                        error: error,
-                        redirect: ( meta || cf )
+                    let ${uVar[5]} = {
+                        error: ${uVar[0]},
+                        redirect: ( ${uVar[3]} || ${uVar[4]} )
                     };
-                    result;
+                    ${uVar[5]};
                 `;
                 //console.log( 'DOM-READY' );
                 win.webContents.executeJavaScript( check, ( result ) => {
-                    //console.log( '  REDIRECT', redirect );
+                    //console.log( '  REDIRECT', result.redirect );
                     if( !result.redirect ) {
                         if( result.error ) {
                             //console.log( '      CLOUDFLARE', result.error, options.url );
