@@ -115,17 +115,33 @@
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
-                // disable loading screen when all connectors with initialization state are initialized
-                let disableLoadingScreen = () => {
-                    for( let connector of Engine.Connectors) {
-                        if( connector.initialized !== undefined && connector.initialized === false ) {
-                            setTimeout( disableLoadingScreen.bind( this ), 1000 );
-                            return;
+                // disable loading screen when all connectors with initialization state are initialized or the timeout is reached
+                let loadingInterval = setInterval( () => {
+                    if( this._checkConnectorInitialization() ) {
+                        clearTimeout( loadingTimeout);
+                        clearInterval( loadingInterval );
+                        this.$.loader.parentNode.removeChild( this.$.loader );
+                    }
+                }, 750 );
+                let loadingTimeout = setTimeout( () => {
+                    this._checkConnectorInitialization( true );
+                    clearTimeout( loadingTimeout);
+                    clearInterval( loadingInterval );
+                    this.$.loader.parentNode.removeChild( this.$.loader );
+                }, 15000 );
+            }
+
+            _checkConnectorInitialization( log ) {
+                let result = true;
+                for( let connector of Engine.Connectors) {
+                    if( connector.initialized !== undefined && connector.initialized === false ) {
+                        result = false;
+                        if( log ) {
+                            console.warn( 'Initialization:', connector.label, '=>', connector.initialized );
                         }
                     }
-                    this.$.loader.parentNode.removeChild( this.$.loader );
-                };
-                disableLoadingScreen();
+                }
+                return result;
             }
 
             /**
