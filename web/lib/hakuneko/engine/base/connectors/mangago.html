@@ -1,4 +1,5 @@
 <link rel="import" href="../connector.html">
+<link rel="import" href="../useragent.html">
 
 <script>
 
@@ -20,7 +21,10 @@
             // Private members for internal usage only (convenience)
             this.url            = 'http://www.mangago.me';
             this.reqOptionsJSON = JSON.stringify( {
-                url: this.url
+                url: this.url,
+                headers: {
+                    'User-Agent': UserAgent.random()
+                }
             } );
             this.pageLock       = false;
             this.pageLockDelay  = 500;
@@ -174,8 +178,7 @@
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
-            options['headers'] = options['headers'] || {};
-            options['headers']['User-Agent'] = Math.random() + '' + Date.now();
+            options.headers['User-Agent'] = UserAgent.random();
             Engine.Request.cloudflare( options, ( error, response, content ) => {
                 try {
                     if( error ) {
