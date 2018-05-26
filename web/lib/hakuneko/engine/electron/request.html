@@ -185,26 +185,50 @@
                         //console.log( '    INJECT', script );
                         win.webContents.executeJavaScript( script, ( result ) => {
                             //console.log( '      RESULT', result );
-                            clearTimeout( abortAction );
-                            callback( null, undefined, result );
-                            win.close();
+                            if( this._tryCloseWindow( win ) ) {
+                                clearTimeout( abortAction );
+                                callback( null, undefined, result );
+                            }
                         } );
                     }
                 } );
             } );
             /*
             win.webContents.on( 'did-get-response-details', ( e ) => {
-                //
-            } );
-            win.webContents.on( 'did-fail-load', ( e ) => {
-                //
+                //console.log( 'did-get-response-details', e );
             } );
             */
+            win.webContents.on( 'did-fail-load', ( e, c, message, uri ) => {
+                //console.log( '      ERROR', message, uri );
+                if( this._tryCloseWindow( win ) ) {
+                    clearTimeout( abortAction );
+                    callback( new Error( message + ' ' + uri ), undefined, undefined );
+                }
+            } );
+            
             let opts = {
                 httpReferrer: options.url,
                 userAgent: ( options.headers && options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent )
             };
             win.loadURL( options.url, opts );
+        }
+
+        /**
+         *
+         */
+        _tryCloseWindow( browserWindow ) {
+            try {
+                if( browserWindow ) {
+                    //browserWindow.close();
+                }
+                browserWindow = null;
+                // window was closed by the code above
+                return true;
+            }
+            catch( e ) {
+                // window has already been closed by something else
+                return false;
+            }
         }
 
         /**
