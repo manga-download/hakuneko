@@ -178,7 +178,6 @@
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
-            options.headers['User-Agent'] = UserAgent.random();
             Engine.Request.cloudflare( options, ( error, response, content ) => {
                 try {
                     if( error ) {
