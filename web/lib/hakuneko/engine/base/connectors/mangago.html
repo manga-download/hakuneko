@@ -180,19 +180,20 @@
                     if( response.statusCode !== 200 ) {
                         throw new Error( `${response.statusCode}` );
                     }
-                    this._deobfuscateScript( content, ( error, content ) => {
+                    //this._deobfuscateScript( content, ( error, content ) => {
                         try {
-                            if( error ) {
-                                throw error;
-                            }
-                            let match = /dorder\s*\(\s*imgsrcs\s*,\s*(['"]{1}\d+['"]{1})\s*\)/.exec( content );
-                            if( !match || match.length < 2 ) {
-                                throw new Error( 'Failed to extract re-order key!' );
-                            }
+                    //        if( error ) {
+                    //            throw error;
+                    //        }
+                    //        let match = /dorder\s*\(\s*imgsrcs\s*,\s*(['"]{1}\d+['"]{1})\s*\)/.exec( content );
+                    //        if( !match || match.length < 2 ) {
+                    //            throw new Error( 'Failed to extract re-order key!' );
+                    //        }
+                            let match = ['2617', '2617'];
                             let script = `
                                 if( imgsrcs && typeof(imgsrcs) === 'string' ) {
                                     if( !imgsrcs.startsWith( 'http' ) ) {
-                                        imgsrcs = dorder( imgsrcs, ${match[1]} );
+                                        imgsrcs = dorder( imgsrcs, '2617' );
                                     }
                                     imgsrcs = imgsrcs.split( ',' );
                                 }
@@ -223,7 +224,7 @@
                                     if( !content || !content.pages ) {
                                         throw new Error( 'Failed to get page list!' );
                                     }
-                                    this.desKeys = ( content.deskeys ? content.deskeys : this.desKeys );
+                                    this.desKeys = ( content.deskeys && content.deskeys.length > 0 ? content.deskeys : this.desKeys );
                                     let pageList = content.pages;
                                     callback( null, this._urifyLinks( pageList ) );
                                 } catch( e ) {
@@ -235,7 +236,7 @@
                             console.error( e.message, chapter );
                             callback( e, [] );
                         }
-                    } );
+                    //} );
                 } catch( e ) {
                     console.error( e.message, chapter );
                     callback( e, [] );
