@@ -180,63 +180,49 @@
                     if( response.statusCode !== 200 ) {
                         throw new Error( `${response.statusCode}` );
                     }
-                    //this._deobfuscateScript( content, ( error, content ) => {
-                        try {
-                    //        if( error ) {
-                    //            throw error;
-                    //        }
-                    //        let match = /dorder\s*\(\s*imgsrcs\s*,\s*(['"]{1}\d+['"]{1})\s*\)/.exec( content );
-                    //        if( !match || match.length < 2 ) {
-                    //            throw new Error( 'Failed to extract re-order key!' );
-                    //        }
-                            let match = ['2617', '2617'];
-                            let script = `
-                                if( imgsrcs && typeof(imgsrcs) === 'string' ) {
-                                    if( !imgsrcs.startsWith( 'http' ) ) {
-                                        imgsrcs = dorder( imgsrcs, '2617' );
-                                    }
-                                    imgsrcs = imgsrcs.split( ',' );
+                    try {
+                        let script = `
+                            let result = {
+                                shuffled: imgsrcs,
+                                sorted: document['fe89h4ef7e'],
+                                patterns: []
+                            };
+                            try {
+                                result.patterns = Object.keys( _deskeys ).map( key => ( { id: key, pattern: _deskeys[key] } ) );
+                            } finally {}
+                            result
+                        `;
+                        Engine.Request.fetchUI( options, script, ( error, response, content ) => {
+                            try {
+                                if( error ) {
+                                    throw error;
                                 }
-                                let result = {
-                                    pages: ( imgsrcs ? imgsrcs : [] ),
-                                    deskeys: []
-                                };
-                                if( _deskeys ) {
-                                    for( let key in _deskeys ) {
-                                        result.deskeys.push ( {
-                                            id: key,
-                                            pattern: _deskeys[key]
-                                        } );
-                                    }
+                                /*
+                                if( response.statusCode !== 200 ) {
+                                    throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
                                 }
-                                result
-                            `;
-                            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
-                                try {
-                                    if( error ) {
-                                        throw error;
-                                    }
-                                    /*
-                                    if( response.statusCode !== 200 ) {
-                                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
-                                    }
-                                    */
-                                    if( !content || !content.pages ) {
-                                        throw new Error( 'Failed to get page list!' );
-                                    }
-                                    this.desKeys = ( content.deskeys && content.deskeys.length > 0 ? content.deskeys : this.desKeys );
-                                    let pageList = content.pages;
-                                    callback( null, this._urifyLinks( pageList ) );
-                                } catch( e ) {
-                                    console.error( e.message, chapter );
-                                    callback( e, [] );
+                                */
+                                if( !content ) {
+                                    throw new Error( 'Failed to get page list!' );
                                 }
-                            } );
-                        } catch( e ) {
-                            console.error( e.message, chapter );
-                            callback( e, [] );
-                        }
-                    //} );
+                                let pageList = content.sorted || content.shuffled;
+                                if( !pageList || typeof( pageList ) !== 'string' || !pageList.startsWith( 'http' ) ) {
+                                    throw new Error( 'Page list is invalid!' );
+                                }
+                                pageList = pageList.split( ',' );
+                                if( content.patterns && content.patterns.length > 0 ) {
+                                    this.desKeys = content.patterns;
+                                }
+                                callback( null, this._urifyLinks( pageList ) );
+                            } catch( e ) {
+                                console.error( e.message, chapter );
+                                callback( e, [] );
+                            }
+                        } );
+                    } catch( e ) {
+                        console.error( e.message, chapter );
+                        callback( e, [] );
+                    }
                 } catch( e ) {
                     console.error( e.message, chapter );
                     callback( e, [] );
