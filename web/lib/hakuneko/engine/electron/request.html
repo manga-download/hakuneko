@@ -232,7 +232,7 @@
 
             win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
                 //console.log( '      ERROR', event, errCode, errMessage, uri, isMain, options.url );
-                if( !preventCallback && /* errCode && errCode !== -3 && */ ( isMain || uri === options.url ) ) {
+                if( !preventCallback && errCode && errCode !== -3 && ( isMain || uri === options.url ) ) {
                     this._fetchUICleanup( win, abortAction );
                     callback( new Error( errMessage + ' ' + uri ), undefined, undefined );
                 }
