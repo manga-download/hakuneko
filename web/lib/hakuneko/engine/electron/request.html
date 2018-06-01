@@ -178,8 +178,12 @@
                     callback( new Error( `Failed to load '${options.url}'` ), undefined, undefined );
                 }
             }, 10000 );
+            
+            win.webContents.session.webRequest.onBeforeRequest( { urls: ['http://*/js/eff/jquery.min.js*'] }, ( details, callback ) => {
+                callback( { redirectURL: 'cache://hakuneko/js/mangago.jquery.js' } );
+            } );
 
-            win.webContents.on( 'dom-ready', ( e ) => {
+            win.webContents.on( 'did-finish-load', ( e ) => {
                 // ensure variables in this script does not appear in the page or other injected script
                 let uVar = [
                     '_c13367', // 'code',
@@ -226,11 +230,11 @@
                 } );
             } );
 
-            win.webContents.on( 'did-fail-load', ( e, c, message, uri ) => {
-                //console.log( '      ERROR', message, uri );
-                if( !preventCallback ) {
+            win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
+                //console.log( '      ERROR', event, errCode, errMessage, uri, isMain, options.url );
+                if( !preventCallback && /* errCode && errCode !== -3 && */ ( isMain || uri === options.url ) ) {
                     this._fetchUICleanup( win, abortAction );
-                    callback( new Error( message + ' ' + uri ), undefined, undefined );
+                    callback( new Error( errMessage + ' ' + uri ), undefined, undefined );
                 }
             } );
             
