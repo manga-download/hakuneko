@@ -311,9 +311,12 @@
                 options['headers'] = ( options['headers'] ? options['headers'] : {} );
                 options['headers']['User-Agent'] = options['headers']['User-Agent'] || this.userAgent;
                 // it cannot hurt to pretend the request already passed through some other proxy servers ...
+                /*
+                Disabled, because rejected by MangaDex
                 if( options['headers']['X-Forwarded-For'] === undefined ) {
                     options['headers']['X-Forwarded-For'] = this.ipChain.join( ',' );
                 }
+                */
                 if( options['headers']['Forwarded'] === undefined ) {
                     options['headers']['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
                 }
@@ -348,9 +351,12 @@
             let uri = new URL( details.url );
             details.requestHeaders['User-Agent'] = details.requestHeaders['User-Agent'] || this.userAgent;
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
+            /*
+            Disabled, because rejected by MangaDex
             if( details.requestHeaders['X-Forwarded-For'] === undefined ) {
                 details.requestHeaders['X-Forwarded-For'] = this.ipChain.join( ',' );
             }
+            */
             if( details.requestHeaders['Forwarded'] === undefined ) {
                 details.requestHeaders['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
             }
