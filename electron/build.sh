@@ -15,7 +15,7 @@ BIN_LINUX="hakuneko"
 function build {
     rm -r -f "build/$2"
     mkdir -p "build/$2"
-    unzip "redist/electron-v1.*-$1.zip" -d "build/$2"
+    unzip "redist/electron-v*.*-$1.zip" -d "build/$2"
     rm -f "build/$2/version"
     rm -f "build/$2/LICENSE"*
     if [[ $2 =~ linux.* ]]
