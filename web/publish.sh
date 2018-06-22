@@ -2,7 +2,7 @@
 
 DIR=./build/htdocs
 KEY=../../hakuneko.key
-DST=../../../../app-releases/0.3.1
+DST=../../../../app-releases/0.3.2
 REV=$(git log -1 --format="%H")
 VER=$(echo $REV | cut -c 1-6)
 
