@@ -230,14 +230,15 @@
             /**
              *
              */
-            onBeforeClose( e ) {
+            onBeforeClose( event ) {
                 // check if any job is running
                 let index = this.jobList.findIndex( ( job ) => {
                     return ( job.status === DownloadStatus.queued || job.status === DownloadStatus.downloading );
                 });
                 if( index > -1 && !confirm( 'Downloads are still in progress.\nClose application anyway?' ) ) {
-                    // prevent window frombeeing closed
-                    e.returnValue = true;
+                    // prevent window from being closed
+                    event.returnValue = true;
+                    event.preventDefault();
                 }
             }
         }
