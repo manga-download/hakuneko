@@ -47,7 +47,8 @@ function activateWindow() {
         if( win && win.webContents && !win.webContents.isLoading() ) {
             // inject javascript: looks stupid, but is a working solution to call a function
             // directly within the render process (without dealing with ipcRenderer)
-            win.webContents.executeJavaScript( `Engine.Request.getRequestHeaders('${JSON.stringify( details ).replace(/'/g, `\\'`)}');` )
+            let payload = Buffer.from( JSON.stringify( details ) ).toString( 'base64' );
+            win.webContents.executeJavaScript( `Engine.Request.getRequestHeaders('${payload}');` )
             .then( ( result ) => {
                 callback( {
                     cancel: false,
