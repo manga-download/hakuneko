@@ -237,8 +237,8 @@
                 });
                 if( index > -1 && !confirm( 'Downloads are still in progress.\nClose application anyway?' ) ) {
                     // prevent window from being closed
-                    event.returnValue = true;
-                    event.preventDefault();
+                    event.returnValue = false;
+                    //event.preventDefault();
                 }
             }
         }
