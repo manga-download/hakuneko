@@ -29,7 +29,6 @@
             this.pageLock       = false;
             this.pageLockDelay  = 500;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.sandbox        = new Worker( '/js/sandbox.js' );
             this.desKeys        = [
                 //{ id: 'default',                          pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
                 { id: '60a2b0ed56cd458c4633d04b1b76b7e9', pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
@@ -141,29 +140,6 @@
                     callback( e, [] );
                 }
             } );
-            /*
-            Engine.Request.cloudflare( options, ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
-                }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                let chapters = [...dom.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'en'
-                    };
-                } );
-                callback( error, chapters );
-            } );
-            */
         }
 
         /**
@@ -172,57 +148,16 @@
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += chapter.id;
-            Engine.Request.cloudflare( options, ( error, response, content ) => {
+            let script = `imgsrcs`;
+            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
                 try {
                     if( error ) {
                         throw error;
                     }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `${response.statusCode}` );
+                    if( !( content instanceof Array ) ) {
+                        throw new Error( 'Page list is invalid!' );
                     }
-                    try {
-                        let script = `
-                            let result = {
-                                shuffled: imgsrcs,
-                                sorted: document['fe89h4ef7e'],
-                                patterns: []
-                            };
-                            try {
-                                result.patterns = Object.keys( _deskeys ).map( key => ( { id: key, pattern: _deskeys[key] } ) );
-                            } finally {}
-                            result
-                        `;
-                        Engine.Request.fetchUI( options, script, ( error, response, content ) => {
-                            try {
-                                if( error ) {
-                                    throw error;
-                                }
-                                /*
-                                if( response.statusCode !== 200 ) {
-                                    throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
-                                }
-                                */
-                                if( !content ) {
-                                    throw new Error( 'Failed to get page list!' );
-                                }
-                                let pageList = content.sorted || content.shuffled;
-                                if( !pageList || typeof( pageList ) !== 'string' || !pageList.startsWith( 'http' ) ) {
-                                    throw new Error( 'Page list is invalid!' );
-                                }
-                                pageList = pageList.split( ',' );
-                                if( content.patterns && content.patterns.length > 0 ) {
-                                    this.desKeys = content.patterns;
-                                }
-                                callback( null, this._urifyLinks( pageList ) );
-                            } catch( e ) {
-                                console.error( e.message, chapter );
-                                callback( e, [] );
-                            }
-                        } );
-                    } catch( e ) {
-                        console.error( e.message, chapter );
-                        callback( e, [] );
-                    }
+                    callback( null, this._urifyLinks( content ) );
                 } catch( e ) {
                     console.error( e.message, chapter );
                     callback( e, [] );
@@ -319,46 +254,6 @@
                 uri.protocol = this.id;
                 return uri.href;
             } );
-        }
-
-        /**
-         * Deobfuscate Dean Edwards’s base62 Javascript Compressor
-         */
-         _deobfuscateScript( content, callback ) {
-            try {
-                let match = /src\s*=\s*['"]{1}(.*?chapter\.js\?\d+)['"]{1}/.exec( content );
-                if( !match || match.length < 2 ) {
-                    throw new Error( 'Failed to extract chapter script!' );
-                }
-                let options = JSON.parse( this.reqOptionsJSON );
-                options.url = match[1];
-                Engine.Request.cloudflare( options, ( error, response, content ) => {
-                    try {
-                        let script = content;
-                        if( script.indexOf( 'eval' ) !== 0 && script.indexOf( 'window["\\x65\\x76\\x61\\x6c"](' ) !== 0 ) {
-                            throw new Error( 'Unknown script obfuscation!' );
-                        }
-                        script = script.replace( /eval/g, 'var rawCode = ' );
-                        script = script.replace( /window\["\\x65\\x76\\x61\\x6c"\]/g, 'var rawCode = ' );
-                        script = script.replace( /window\["\\x70\\x61\\x72\\x73\\x65\\x49\\x6e\\x74"\]/g, 'parseInt' );
-                        script = script.replace( /window\["\\x53\\x74\\x72\\x69\\x6e\\x67"\]/g, 'String' );
-                        script = script.replace( /window\["\\x52\\x65\\x67\\x45\\x78\\x70"\]/g, 'RegExp' );
-                        let messageID = Math.random();
-                        let eventListener = ( e ) => {
-                            if( e.data.id === messageID ) {
-                                this.sandbox.removeEventListener( 'message', eventListener );
-                                callback( null, e.data.content[ 'rawCode' ] );
-                            }
-                        };
-                        this.sandbox.addEventListener( 'message', eventListener, false );
-                        this.sandbox.postMessage( { id: messageID, content: script, return: ['rawCode'] } );
-                    } catch( e ) {
-                        callback( e, undefined );
-                    }
-                } );
-            } catch( e ) {
-                callback( e, undefined );
-            }
         }
 
         /**************************
