@@ -50,7 +50,7 @@
         _getChapterList( manga, callback, chapterList, page ) {
             chapterList = chapterList || [];
             page = page || 1;
-            Engine.Request.cloudflare( `${this.url}${manga.id}`, ( error, response, content) => {
+            Engine.Request.cloudflare( `${this.url}${manga.id}/chapters/${page}/`, ( error, response, content) => {
                 try {
                     if( error ) {
                         throw error;
