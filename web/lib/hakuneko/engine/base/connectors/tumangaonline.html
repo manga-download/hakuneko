@@ -18,12 +18,13 @@
             super.isLocked      = false;
             this.initialized    = true;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://www.tumangaonline.com';
+            this.url            = 'https://tumangaonline.me';
             this.reqOptionsJSON = JSON.stringify( {
                 url: this.url,
                 headers: {
-                    'cache-mode': 'no-cache',
-                    'referer': this.url
+                    //'Cache-Mode': 'no-cache',
+                    'User-Agent': 'Mozilla/5.0',
+                    'Referer': this.url
                 }
             } );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
@@ -34,6 +35,7 @@
          *
          */
         _getMangaList( callback, pageFrom, pageTo, mangaList ) {
+            // https://tumangaonline.me/library?order_item=alphabetically&order_dir=desc&page=123
             pageFrom = pageFrom || 1;
             pageTo = pageTo || 9999;
             mangaList = mangaList || [];
@@ -58,6 +60,7 @@
                     if( error ) {
                         throw error;
                     }
+                    console.log(content,options.url);
                     if( response.statusCode !== 200 ) {
                         throw new Error( `Partial manga list responded with status code: ${response.statusCode}` );
                     }
@@ -142,6 +145,8 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            // https://tumangaonline.me/viewer/5b0bb2d1cddd8/paginated
+            // https://tumangaonline.me/viewer/5b0bb2d1cddd8/cascade
             let query = chapter.id.split( '/' );
             let options = JSON.parse( this.reqOptionsJSON );
             options.url += '/api/v1/imagenes';
@@ -163,7 +168,7 @@
                     content = JSON.parse( content.imagenes );
                     let pages = content.map( ( page ) => {
                         // image host hardcoded in: https://www.tumangaonline.com/js/controllers.js
-                        return `https://img1.tumangaonline.com/subidas/${query[0]}/${query[1]}/${query[2]}/${page}`;
+                        return `https://img1.tumangaonline.me/subidas/${query[0]}/${query[1]}/${query[2]}/${page}`;
                     } );
                     if( !pages || pages.length < 1 ) {
                         throw new Error( 'Page list is invalid!' );
