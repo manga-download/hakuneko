@@ -76,39 +76,9 @@
                 }
             } )
             .catch( error => {
-                //if( typeof( callback ) === typeof( Function ) ) {
-                //    callback( error );
-                //}
-                console.log( 'Migrating "chaptermarks" from indexedDB to persistant storage ...' );
-                // [OBSOLETE] This call is only available for migration from indexedDB to persistant storage
-                // >>>
-                // can be removed in the next release > 0.3.1
-                Engine.Storage.loadCollectionFromDB( 'chaptermarks', ( error, data ) => {
-                    try {
-                        if( error ) {
-                            throw error;
-                        }
-                        if( !data ) {
-                            throw new Error( 'Invalid chaptermark lst!' );
-                        }
-                        this.chaptermarks = data;
-                        document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
-                        if( typeof( callback ) === typeof( Function ) ) {
-                            callback( null );
-                        }
-                        Engine.Storage.saveConfig( 'chaptermarks', data )
-                        .catch( error => {
-                            console.warn( 'Failed to copy "chaptermarks" from indexedDB into persistant storage', error );
-                            alert( 'Failed to copy your chaptermarks to the new persistant storage.\nIt would be helpful if you report this problem along with the console output.\n\nhttps://sourceforge.net/p/hakuneko/discussion/support/' );
-                        } );
-                    } catch ( e ) {
-                        console.error( 'Failed to load chaptermarks:', e.message );
-                        if( typeof( callback ) === typeof( Function ) ) {
-                            callback( e );
-                        }
-                    }
-                } );
-                // <<<
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( error );
+                }
             } );
         }
 
