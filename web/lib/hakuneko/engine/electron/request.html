@@ -179,8 +179,8 @@
                 }
             }, 10000 );
             
-            win.webContents.session.webRequest.onBeforeRequest( { urls: ['http://*/js/eff/jquery.min.js*'] }, ( details, callback ) => {
-                callback( { redirectURL: 'cache://hakuneko/js/mangago.jquery.js' } );
+            win.webContents.session.webRequest.onBeforeRequest( { urls: ['http://*/mobi/js/chapter.js*'] }, ( details, callback ) => {
+                callback( { redirectURL: 'cache://hakuneko/js/chapter.js' } );
             } );
 
             win.webContents.on( 'did-finish-load', ( e ) => {
