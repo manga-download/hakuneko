@@ -19,6 +19,7 @@
             this.jszip = electron.remote.require( 'jszip' );
             this.fs = require( 'fs' );
             this.path = require( 'path' );
+            this.config = this.path.join( electron.remote.require( './config.js' ).app.userdata, 'hakuneko.' );
             this.temp = this.path.join( require('os').tmpdir(), 'hakuneko' );
             this._createDirectoryChain( this.temp );
 
@@ -30,6 +31,41 @@
                     '?': '%3F',
                 }
             };
+        }
+
+        /**
+         * Save the given value for the given key in the persistant storage
+         */
+        saveConfig( key, value ) {
+            // NOTE: use the browsers promise implementation instead of HakuNeko's obsoltete promise implementation
+            return new window.Promise( ( resolve, reject ) => {
+                this.fs.writeFile( this.config + key, JSON.stringify( value ), function( error ) {
+                    if( error ) {
+                        reject( error );
+                    } else {
+                        resolve();
+                    }
+                } );
+            } );
+        }
+
+        /**
+         * Load the value for the given key from the persistant storage
+         */
+        loadConfig( key ) {
+            // NOTE: use the browsers promise implementation instead of HakuNeko's obsolete promise implementation
+            return new window.Promise( ( resolve, reject ) => {
+                this.fs.readFile( this.config + key, 'utf8', ( error, data ) => {
+                    try {
+                        if( error ) {
+                            throw error;
+                        }
+                        resolve( JSON.parse( data ) );
+                    } catch( e ) {
+                        reject( e );
+                    }
+                } );
+            } );
         }
 
         /**
