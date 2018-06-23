@@ -16,20 +16,6 @@
         }
 
         /**
-         * Convenience function wrapping key value saving for mangas collection
-         */
-        saveMangaList( connectorID, mangas, callback ) {
-            this.saveToDB( 'mangas', connectorID, mangas, callback );
-        }
-
-        /**
-         * Convenience function wrapping key value loading for mangas collection
-         */
-        loadMangaList( connectorID, callback ) {
-            this.loadFromDB( 'mangas', connectorID, callback );
-        }
-
-        /**
          * Helper function to create scheme for IndexedDB if not exist
          * and perform update of data layout for new scheme versions.
          */

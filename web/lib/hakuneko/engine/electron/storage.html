@@ -69,6 +69,56 @@
         }
 
         /**
+         * Convenience function wrapping key value saving for mangas collection
+         */
+        saveMangaList( connectorID, mangas, callback ) {
+            this.saveConfig( 'mangas.' + connectorID, mangas )
+            .then( () => {
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
+                }
+            } )
+            .catch( error  => {
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( error );
+                }
+            } );
+        }
+
+        /**
+         * Convenience function wrapping key value loading for mangas collection
+         */
+        loadMangaList( connectorID, callback ) {
+            this.loadConfig( 'mangas.' + connectorID )
+            .then( data => {
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( data, null );
+                }
+            } )
+            .catch( error => {
+                //if( typeof( callback ) === typeof( Function ) ) {
+                //    callback( undefined, error );
+                //}
+                console.log( 'Migrating "mangas.' + connectorID + '" from indexedDB to persistant storage ...' );
+                // [OBSOLETE] This call is only available for migration from indexedDB to persistant storage
+                // >>>
+                // can be removed in the next release > 0.3.1
+                this.loadFromDB( 'mangas', connectorID, ( mangas, error ) => {
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( mangas, error );
+                    }
+                    this.saveConfig( 'mangas.' + connectorID, mangas )
+                        .catch( error => {
+                            console.warn( 'Failed to copy "mangas.' + connectorID + '" from indexedDB into persistant storage', error );
+                            alert( 'Failed to copy your mangas to the new persistant storage.\nIt would be helpful if you report this problem along with the console output.\n\nhttps://sourceforge.net/p/hakuneko/discussion/support/' );
+                        } );
+                } );
+                // <<<
+            } );
+            
+        }
+
+        /**
          * https://github.com/electron/electron/blob/master/docs/api/dialog.md
          */
         folderBrowser( rootPath ) {
