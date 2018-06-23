@@ -38,7 +38,8 @@
          * Callback will be provided with an error (or null if no error).
          */
         loadProfile( profile, callback ) {
-            Engine.Storage.loadFromDB( 'settings', profile, ( data, error) => {
+            Engine.Storage.loadConfig( 'settings' )
+            .then( data => {
                 // apply general settings
                 for( let property in this) {
                     if( data && property in data ) {
@@ -52,10 +53,41 @@
                             connector.config[property].value = this._getDecryptedValue( connector.config[property].input, data.connectors[connector.id][property] );
                         }
                     }
-                });
+                } );
                 document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
                 ( callback ? callback( error ) : undefined );
-            });
+            } )
+            .catch( error => {
+                //( callback ? callback( error ) : undefined );
+                console.log( 'Migrating "settings" from indexedDB to persistant storage ...' );
+                // [OBSOLETE] This call is only available for migration from indexedDB to persistant storage
+                // >>>
+                // can be removed in the next release > 0.3.1
+                Engine.Storage.loadFromDB( 'settings', profile, ( data, error) => {
+                    // apply general settings
+                    for( let property in this) {
+                        if( data && property in data ) {
+                            this[property].value = this._getDecryptedValue( this[property].input, data[property] );
+                        }
+                    }
+                    // apply settings to each connector
+                    Engine.Connectors.forEach( ( connector ) => {
+                        for( let property in connector.config ) {
+                            if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
+                                connector.config[property].value = this._getDecryptedValue( connector.config[property].input, data.connectors[connector.id][property] );
+                            }
+                        }
+                    });
+                    document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
+                    ( callback ? callback( error ) : undefined );
+                    Engine.Storage.saveConfig( 'settings', data )
+                    .catch( error => {
+                        console.warn( 'Failed to copy "settings" from indexedDB into persistant storage', error );
+                        alert( 'Failed to copy your settings to the new persistant storage.\nIt would be helpful if you report this problem along with the console output.\n\nhttps://sourceforge.net/p/hakuneko/discussion/support/' );
+                    } );
+                } );
+                // <<<
+            } );
         }
 
         /**
@@ -65,7 +97,7 @@
          */
         saveProfile( profile, callback ) {
             let data = {
-                connectors: []
+                connectors: {}
             };
             // gather general settings
             for( let property in this) {
@@ -79,10 +111,15 @@
                     data.connectors[connector.id][property] = this._getEncryptedValue( connector.config[property].input, connector.config[property].value );
                 }
             });
-            Engine.Storage.saveToDB( 'settings', profile, data, ( error) => {
+
+            Engine.Storage.saveConfig( 'settings', data )
+            .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
-                (callback ? callback( error ) : undefined );
-            });
+                ( callback ? callback( null ) : undefined );
+            } )
+            .catch( error => {
+                ( callback ? callback( error ) : undefined );
+            } );
         }
 
         /**
