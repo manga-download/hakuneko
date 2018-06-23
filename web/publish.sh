@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd "$(dirname $0)"
+
 DIR=./build/htdocs
 KEY=../../hakuneko.key
 DST=../../../../app-releases/0.3.1
