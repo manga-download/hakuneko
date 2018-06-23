@@ -45,11 +45,9 @@
          * Callback will be provided with an error (or null if no error).
          */
         loadProfile( profile, callback ) {
-            Engine.Storage.loadFromDB( 'bookmarks', profile, ( data, error) => {
+            Engine.Storage.loadConfig( 'bookmarks' )
+            .then( data => {
                 try {
-                    if( error ) {
-                        throw error;
-                    }
                     if( !data || !data.length || data.length === 0 ) {
                         throw new Error( 'Invalid bookmark list!' );
                     }
@@ -65,7 +63,43 @@
                         callback( e );
                     }
                 }
-            });
+            } )
+            .catch( error => {
+                //if( typeof( callback ) === typeof( Function ) ) {
+                //    callback( error );
+                //}
+                console.log( 'Migrating "bookmarks" from indexedDB to persistant storage ...' );
+                // [OBSOLETE] This call is only available for migration from indexedDB to persistant storage
+                // >>>
+                // can be removed in the next release > 0.3.1
+                Engine.Storage.loadFromDB( 'bookmarks', profile, ( data, error) => {
+                    try {
+                        if( error ) {
+                            throw error;
+                        }
+                        if( !data || !data.length || data.length === 0 ) {
+                            throw new Error( 'Invalid bookmark list!' );
+                        }
+                        this.bookmarks = data;
+                        this.bookmarks.sort( this.compareBookmarks );
+                        document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                        if( typeof( callback ) === typeof( Function ) ) {
+                            callback( null );
+                        }
+                        Engine.Storage.saveConfig( 'bookmarks', data )
+                        .catch( error => {
+                            console.warn( 'Failed to copy "bookmarks" from indexedDB into persistant storage', error );
+                            alert( 'Failed to copy your bookmarks to the new persistant storage.\nIt would be helpful if you report this problem along with the console output.\n\nhttps://sourceforge.net/p/hakuneko/discussion/support/' );
+                        } );
+                    } catch( e ) {
+                        console.error( 'Failed to load bookmarks:', e.message );
+                        if( typeof( callback ) === typeof( Function ) ) {
+                            callback( e );
+                        }
+                    }
+                } );
+                // <<<
+            } );
         }
 
         /**
@@ -74,23 +108,19 @@
          * Callback will be provided with an error (or null if no error).
          */
         saveProfile( profile, callback ) {
-            Engine.Storage.saveToDB( 'bookmarks', profile, this.bookmarks, ( error) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
-                    if( typeof( callback ) === typeof( Function ) ) {
-                        callback( null );
-                    }
-                } catch( e ) {
-                    console.error( 'Failed to save bookmarks:', e.message );
-                    if( typeof( callback ) === typeof( Function ) ) {
-                        callback( e );
-                    }
+            Engine.Storage.saveConfig( 'bookmarks', this.bookmarks )
+            .then( () => {
+                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
                 }
-            });
-
+            } )
+            .catch( error => {
+                console.error( 'Failed to save bookmarks:', error.message );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( error );
+                }
+            } );
         }
 
         /**
