@@ -23,50 +23,92 @@
             if( !chaptermarks ) {
                 return;
             }
-            let promises = chaptermarks.length;
-            chaptermarks.forEach( ( chaptermark ) => {
-                // check if chaptermark already exist
-                let index = this.chaptermarks.findIndex( ( c ) => {
-                    return ( chaptermark.mangaID === c.mangaID && chaptermark.connectorID === c.connectorID );
-                });
-                if( index < 0 ) {
-                    // insert chaptermark
-                    Engine.Storage.saveToDB( 'chaptermarks', undefined, chaptermark, ( error ) => {
-                        if( --promises < 1 ) {
-                            // re-load internal chapterlist from indexedDB and fire event notification
-                            this.loadChaptermarks( undefined );
-                        }
-                    } );
-                } else {
-                    // decrease counter of processed imported chaptermarks
-                    promises--;
+            
+            let marks = chaptermarks.filter( c => this._findIndex( c ) < 0 );
+            this.chaptermarks = this.chaptermarks.concat( marks );
+            this._syncChaptermarks( undefined );
+        }
+
+        /**
+         *
+         */
+        _findIndex( chaptermark ) {
+            return this.chaptermarks.findIndex( c => c.connectorID === chaptermark.connectorID && c.mangaID === chaptermark.mangaID );
+        }
+
+        /**
+         * Try to save the current chaptermarks.
+         * Will reset chaptermarks when saving fails.
+         */
+        _syncChaptermarks( callback ) {
+            Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks )
+            .then( () => {
+                document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
                 }
-            } );
+            } )
+            .catch( error => {
+                this.loadChaptermarks( callback );
+             } );
         }
 
         /**
          *
          */
         loadChaptermarks( callback ) {
-            Engine.Storage.loadCollectionFromDB( 'chaptermarks', ( error, data ) => {
+            Engine.Storage.loadConfig( 'chaptermarks' )
+            .then( data => {
                 try {
-                    if( error ) {
-                        throw error;
-                    }
                     if( !data ) {
-                        throw new Error( 'Invalid chaptermark lst!' );
+                        throw new Error( 'Invalid chaptermark list!' );
                     }
                     this.chaptermarks = data;
                     document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
                     if( typeof( callback ) === typeof( Function ) ) {
                         callback( null );
                     }
-                } catch ( e ) {
+                } catch( e ) {
                     console.error( 'Failed to load chaptermarks:', e.message );
                     if( typeof( callback ) === typeof( Function ) ) {
                         callback( e );
                     }
                 }
+            } )
+            .catch( error => {
+                //if( typeof( callback ) === typeof( Function ) ) {
+                //    callback( error );
+                //}
+                console.log( 'Migrating "chaptermarks" from indexedDB to persistant storage ...' );
+                // [OBSOLETE] This call is only available for migration from indexedDB to persistant storage
+                // >>>
+                // can be removed in the next release > 0.3.1
+                Engine.Storage.loadCollectionFromDB( 'chaptermarks', ( error, data ) => {
+                    try {
+                        if( error ) {
+                            throw error;
+                        }
+                        if( !data ) {
+                            throw new Error( 'Invalid chaptermark lst!' );
+                        }
+                        this.chaptermarks = data;
+                        document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                        if( typeof( callback ) === typeof( Function ) ) {
+                            callback( null );
+                        }
+                        Engine.Storage.saveConfig( 'chaptermarks', data )
+                        .catch( error => {
+                            console.warn( 'Failed to copy "chaptermarks" from indexedDB into persistant storage', error );
+                            alert( 'Failed to copy your chaptermarks to the new persistant storage.\nIt would be helpful if you report this problem along with the console output.\n\nhttps://sourceforge.net/p/hakuneko/discussion/support/' );
+                        } );
+                    } catch ( e ) {
+                        console.error( 'Failed to load chaptermarks:', e.message );
+                        if( typeof( callback ) === typeof( Function ) ) {
+                            callback( e );
+                        }
+                    }
+                } );
+                // <<<
             } );
         }
 
@@ -94,14 +136,13 @@
                 mangaID: chapter.manga.id,
                 chapterID: chapter.id
             };
-            // do not provide a key for the indexedDB collection, because they are defined inline (from the properties of the chaptermark)
-            Engine.Storage.saveToDB( 'chaptermarks', undefined, chaptermark, ( error ) => {
-                if( !error ) {
-                    this.loadChaptermarks( undefined );
-                } else {
-                    console.error( 'Failed to add chaptermark:', chaptermark );
-                }
-            } );
+            let index = this._findIndex( chaptermark );
+            if( this._findIndex( chaptermark ) > -1 ) {
+                this.chaptermarks[index] = chaptermark;
+            } else { 
+                this.chaptermarks.push( chaptermark );
+            }
+            this._syncChaptermarks();
         }
 
         /**
@@ -116,13 +157,11 @@
                 mangaID: chapter.manga.id,
                 chapterID: chapter.id
             };
-            Engine.Storage.deleteFromDB( 'chaptermarks', [chaptermark.connectorID, chaptermark.mangaID], ( error ) => {
-                if( !error ) {
-                    this.loadChaptermarks( undefined );
-                } else {
-                    console.error( 'Failed to remove chaptermark:', chaptermark );
-                }
-            } );
+            let index = this._findIndex( chaptermark );
+            if( index > -1 ) {
+                this.chaptermarks.splice( index, 1 );
+                this._syncChaptermarks();
+            }
         }
     }
     ChaptermarkManager; // reference the class to prevent removal of the class through js-minify

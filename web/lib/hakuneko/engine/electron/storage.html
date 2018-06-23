@@ -19,6 +19,7 @@
             this.jszip = electron.remote.require( 'jszip' );
             this.fs = require( 'fs' );
             this.path = require( 'path' );
+            this.config = this.path.join( electron.remote.require( './config.js' ).app.userdata, 'hakuneko.' );
             this.temp = this.path.join( require('os').tmpdir(), 'hakuneko' );
             this._createDirectoryChain( this.temp );
 
@@ -30,6 +31,91 @@
                     '?': '%3F',
                 }
             };
+        }
+
+        /**
+         * Save the given value for the given key in the persistant storage
+         */
+        saveConfig( key, value ) {
+            // NOTE: use the browsers promise implementation instead of HakuNeko's obsoltete promise implementation
+            return new window.Promise( ( resolve, reject ) => {
+                this.fs.writeFile( this.config + key, JSON.stringify( value ), function( error ) {
+                    if( error ) {
+                        reject( error );
+                    } else {
+                        resolve();
+                    }
+                } );
+            } );
+        }
+
+        /**
+         * Load the value for the given key from the persistant storage
+         */
+        loadConfig( key ) {
+            // NOTE: use the browsers promise implementation instead of HakuNeko's obsolete promise implementation
+            return new window.Promise( ( resolve, reject ) => {
+                this.fs.readFile( this.config + key, 'utf8', ( error, data ) => {
+                    try {
+                        if( error ) {
+                            throw error;
+                        }
+                        resolve( JSON.parse( data ) );
+                    } catch( e ) {
+                        reject( e );
+                    }
+                } );
+            } );
+        }
+
+        /**
+         * Convenience function wrapping key value saving for mangas collection
+         */
+        saveMangaList( connectorID, mangas, callback ) {
+            this.saveConfig( 'mangas.' + connectorID, mangas )
+            .then( () => {
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
+                }
+            } )
+            .catch( error  => {
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( error );
+                }
+            } );
+        }
+
+        /**
+         * Convenience function wrapping key value loading for mangas collection
+         */
+        loadMangaList( connectorID, callback ) {
+            this.loadConfig( 'mangas.' + connectorID )
+            .then( data => {
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( data, null );
+                }
+            } )
+            .catch( error => {
+                //if( typeof( callback ) === typeof( Function ) ) {
+                //    callback( undefined, error );
+                //}
+                console.log( 'Migrating "mangas.' + connectorID + '" from indexedDB to persistant storage ...' );
+                // [OBSOLETE] This call is only available for migration from indexedDB to persistant storage
+                // >>>
+                // can be removed in the next release > 0.3.1
+                this.loadFromDB( 'mangas', connectorID, ( mangas, error ) => {
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( mangas, error );
+                    }
+                    this.saveConfig( 'mangas.' + connectorID, mangas )
+                        .catch( error => {
+                            console.warn( 'Failed to copy "mangas.' + connectorID + '" from indexedDB into persistant storage', error );
+                            alert( 'Failed to copy your mangas to the new persistant storage.\nIt would be helpful if you report this problem along with the console output.\n\nhttps://sourceforge.net/p/hakuneko/discussion/support/' );
+                        } );
+                } );
+                // <<<
+            } );
+            
         }
 
         /**
