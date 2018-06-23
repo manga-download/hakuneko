@@ -96,26 +96,10 @@
                 }
             } )
             .catch( error => {
-                //if( typeof( callback ) === typeof( Function ) ) {
-                //    callback( undefined, error );
-                //}
-                console.log( 'Migrating "mangas.' + connectorID + '" from indexedDB to persistant storage ...' );
-                // [OBSOLETE] This call is only available for migration from indexedDB to persistant storage
-                // >>>
-                // can be removed in the next release > 0.3.1
-                this.loadFromDB( 'mangas', connectorID, ( mangas, error ) => {
-                    if( typeof( callback ) === typeof( Function ) ) {
-                        callback( mangas, error );
-                    }
-                    this.saveConfig( 'mangas.' + connectorID, mangas )
-                        .catch( error => {
-                            console.warn( 'Failed to copy "mangas.' + connectorID + '" from indexedDB into persistant storage', error );
-                            alert( 'Failed to copy your mangas to the new persistant storage.\nIt would be helpful if you report this problem along with the console output.\n\nhttps://sourceforge.net/p/hakuneko/discussion/support/' );
-                        } );
-                } );
-                // <<<
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( undefined, error );
+                }
             } );
-            
         }
 
         /**
