@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="v1.8.4"
+VER="v2.0.3"
 
 rm -f *.zip
 
