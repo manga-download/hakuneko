@@ -1,5 +1,4 @@
 <link rel="import" href="../connector.html">
-<link rel="import" href="../promise.html">
 
 <script>
 
@@ -27,39 +26,34 @@
          *
          */
         _getMangaList( callback ) {
-            let mangaList = [];
-            let errMessage = '';
-            let prms = new Promise(() => {
-                let err = ( errMessage.length > 0 ? new Error( errMessage ) : null );
-                callback( err, mangaList );
-                return;
-            });
-            ['/series', '/anthologies', '/issues'].forEach((page) => {
-                let key = prms.defer();
-                Engine.Request.fetch( this.url + page, ( error, response, content ) => {
-                    if( error ) {
-                        errMessage += error.message + '\n';
-                        prms.resolve( key );
-                        return;
-                    }
-                    // prevent images and iframes from loading
-                    content = content.replace( /<img[^<]*?>/g, '<img>');
-                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                    let dom = document.createElement( 'html' );
-                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                    dom.innerHTML = content;
-                    content = '';
-                    mangaList = mangaList.concat([...dom.querySelectorAll( '.tag-list dd a' )].map(  ( element ) => {
-                        return {
-                            // as mentioned before, the eventually added host prefix must be removed
-                            // for full qualified domain name, the host (dynasty-scans) can also be removed
-                            id: this.getRelativeLink( element ),
-                            title: element.text.trim()
-                        };
-                    }));
-                    prms.resolve( key );
-                });
-            });
+            let promises = ['/series', '/anthologies', '/issues'].map( ( page ) => {
+                return new Promise( ( resolve, reject ) => {
+                    Engine.Request.fetch( this.url + page, ( error, response, content ) => {
+                        try {
+                            if( error ) {
+                                throw error;
+                            }
+                            let dom = this.createDOM( content );
+                            let mangaList = [...dom.querySelectorAll( '.tag-list dd a' )].map(  ( element ) => {
+                                return {
+                                    id: this.getRelativeLink( element ),
+                                    title: element.text.trim()
+                                };
+                            } );
+                            resolve( mangaList );
+                        } catch( e ) {
+                            reject( e );
+                        }
+                    } );
+                } );
+            } );
+            Promise.all( promises )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                callback( error, undefined );
+            } );
         }
 
         /**
