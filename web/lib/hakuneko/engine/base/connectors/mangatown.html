@@ -23,9 +23,13 @@
                 gzip: true,
                 rejectUnauthorized: false // ignore broken https certificate chain from mangatown
             } );
-            this.pageLoadDelay  = 250;
+            this.pageLock  = false;
+            this.pageLockDelay  = 250;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
         
         /**
@@ -48,12 +52,7 @@
                     callback( error, [] );
                     return;
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML =content;
+                let dom = this.createDOM( content );
                 let chapterList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map(  ( element ) => {
                     let link = element.getElementsByTagName( 'a' )[0];
                     let title = link.text.replace( manga.title, '' ).trim();
@@ -83,85 +82,78 @@
          */
         _getPageList( manga, chapter, callback ) {
             let options = JSON.parse( this.reqOptionsJSON );
-            if(chapter.id.match(/https?:\/\//i)) {
+            if( /^https?:/.test( chapter.id ) ) {
                 options.url = chapter.id;
             } else {
                 options.url += chapter.id
             }
             Engine.Request.fetch( options, ( error, response, content ) => {
-                let imageList = [];
-                if( error ) {
-                    callback( error, imageList );
-                    return;
-                }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                content = '';
-                let pageList = [...dom.querySelector('div.page_select:first-of-type').querySelectorAll( 'select option' )].map(  ( element ) => {    //All pages of chapter
-                    // missing protocol in option.value
-                    if( element.value.indexOf( '//' ) === 0 ) {
-                        return ( ( new URL( this.url ) ).protocol + element.value );
+                try {
+                    if( error ) {
+                        throw error;
                     }
-                    return element.value;
-                });
-                
-                let errorMessage = '';
-                let prms = new Promise(() => {
-                    let err = ( errorMessage.length > 0 ? new Error( errorMessage ) : null );
-                    callback( err, imageList );
-                });
-                
-                let dlImgFct = function(page, i, key, retries) {
-                    let options = JSON.parse( this.reqOptionsJSON );
-                    options.url = page;
-                    Engine.Request.fetch( options, ( errorImage, response, content ) => {
-                        if( errorImage ) {
-                            errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + errorImage.message;
-                            prms.resolve( key );
-                            return;
+                    let dom = this.createDOM( content );
+                    let pageList = [...dom.querySelector( 'div.page_select' ).querySelectorAll( 'select option' )].map(  ( element ) => {
+                        // missing protocol in option.value
+                        if( element.value.startsWith( '//' ) ) {
+                            return ( this.id + ':' + element.value );
                         }
-                        
-                        if( response.statusCode != 200 ) {
-                            if( retries > 0 ) {
-                                setTimeout(dlImgFct, 2500, page, i, key, retries - 1);
-                            } else {
-                                errorMessage += ( errorMessage.length > 0 ? '\n' : '' ) + 'Couldn\'t get image for page ' + page;
-                                prms.resolve( key );
-                            }
-                            return;
-                        }
-                        
-                        // prevent images (without id attribute) and iframes from loading
-                        content = content.replace( /<img(?:(?!id)[^<])*?>/g, '<img>');
-                        content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                        let dom = document.createElement( 'html' );
-                        dom.innerHTML = content;
-                        let img = dom.querySelector( 'img#image' );
-                        if( img ) {
-                            imageList[i] = img.src;    //Conserve order even using async processing
-                        } else {
-                            console.log( error, response );
-                            errorMessage += 'Couldn\'t get image for page ' + page + '\n';
-                        }
-                        
-                        prms.resolve( key );
-                    });
-                }.bind( this );
-                
-                //Remove additionnal 'featured' page, that causes duplicate of first picture at end of chapter
-                if(pageList.length > 0 && pageList[pageList.length - 1].endsWith('featured.html')) {
-                    pageList.pop();
+                        let uri = new URL( element.value );
+                        uri.protocol = this.id;
+                        return uri.href;
+                    } ).filter( page => !page.endsWith( 'featured.html' ) );
+                    callback( null, pageList );
+                } catch( e ) {
+                    callback( error, undefined );
                 }
-                
-                pageList.forEach((page, i) => {    //Get image on each page
-                    let key = prms.defer();
-                    // delay downloads to prevent 503 status (for to many requests)
-                    setTimeout( dlImgFct, i * this.pageLoadDelay, page, i, key, 5 );
-                });
-            });
+            } );
+        }
+
+        /**
+         * 
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            let options = JSON.parse( this.reqOptionsJSON );
+            options.url = uri.href;
+            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
+                return;
+            }
+            if( this.pageLock ) {
+                setTimeout( () => {
+                    this._pageProtocolHandler( request, callback );
+                }, this.pageLockDelay );
+                return;
+            }
+            this.pageLock = true;
+            Engine.Request.fetch( options, ( error, response, content ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    let dom = this.createDOM( content );
+                    let img = dom.querySelector( 'source#image' ).src;
+                    Engine.Request.fetch( { url: img, encoding: null }, ( error, response, content ) => {
+                        try {
+                            callback( {
+                                mimeType: response.headers['content-type'] || response.headers['Content-Type'],
+                                data: content
+                            } );
+                        } catch( e ) {
+                            console.warn( e.message, uri.href );
+                            callback( undefined );
+                        } finally {
+                            this.pageLock = false;
+                        }
+                    } );
+                } catch( e ) {
+                    console.warn( e.message, uri.href );
+                    callback( undefined );
+                } finally {
+                    this.pageLock = false;
+                }
+            } );
         }
     }
 
