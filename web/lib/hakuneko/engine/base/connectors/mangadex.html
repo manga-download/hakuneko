@@ -19,6 +19,15 @@
             this.initialized    = undefined;
             // Private members for internal usage only (convenience)
             this.url            = 'https://mangadex.org';
+            this.request        = {
+                //method: 'GET', 
+                //mode: 'cors', 
+                redirect: 'follow',
+                credentials: 'include', // required to use browsers cookies (e.g. cloudflare challenge)
+                //headers: new Headers( {
+                //    'User-Agent': 'Mozilla/5.0'
+                //}
+            };
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -27,21 +36,20 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( 'http://mangadex.hakuneko.download/cdn/mangas.json', ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Response status code: ${response.statusCode}` );
-                    }
-                    let mangaList = JSON.parse( content );
-                    callback( null, mangaList );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, [] );
+            window.fetch( 'http://mangadex.hakuneko.download/cdn/mangas.json' )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-            });
+                return response.json();
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error );
+                callback( error, undefined );
+            } );
         }
 
         /**
@@ -50,15 +58,15 @@
         _getChapterList( manga, callback, chapterList, page ) {
             chapterList = chapterList || [];
             page = page || 1;
-            Engine.Request.cloudflare( `${this.url}${manga.id}/chapters/${page}/`, ( error, response, content) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Response status code: ${response.statusCode}` );
-                    }
-                    let dom = this.createDOM( content );
+            window.fetch( `${this.url}${manga.id}/chapters/${page}/`, this.request )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                    let dom = this.createDOM( data );
                     let chapters = [...dom.querySelectorAll( 'div.table-responsive tr[id]' )];
                     // abort when there are no chapters
                     if( !chapters || chapters.length === 0 ) {
@@ -82,10 +90,10 @@
                     }
                     chapterList = chapterList.concat( chapters );
                     this._getChapterList( manga, callback, chapterList, page+1 );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, chapterList );
-                }
+            } )
+            .catch( error => {
+                console.error( error );
+                callback( error, undefined );
             } );
         }
 
@@ -93,33 +101,33 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.cloudflare( this.url + chapter.id, ( error, response, content) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Response status code: ${response.statusCode}` );
-                    }
-                    let path = content.match( /var\s+server\s*=\s*['"]{1}(.+?)['"]{1}/ );
-                    let id = content.match( /var\s+dataurl\s*=.+?([a-f0-9)]+)/ );
-                    let pages = content.match( /var\s+page_array\s*=\s*\[\s*(.+?)\s*\]/ );
-                    if( !path || path.length < 2 || !id || id.length < 2 || !pages || pages.length < 2 ) {
-                        throw new Error( 'Failed to determine page links!' );
-                    }
-                    pages = pages[1].replace( /['"]/g, '' ).split( ',' );
-                    if( !pages || pages.length < 1 ) {
-                        throw new Error( 'No pages found!' );
-                    }
-                    // remove empty entries
-                    let pageList = pages.filter( p => p ).map( ( page ) => {
-                        return ( path[1].indexOf('/') === 0 ? this.url : '' ) + path[1] + id[1] + '/' + page;
-                    });
-                    callback( null, pageList );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, [] );
+            window.fetch( this.url + chapter.id, this.request )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.text();
+            } )
+            .then( data => {
+                let path = data.match( /var\s+server\s*=\s*['"]{1}(.+?)['"]{1}/ );
+                let id = data.match( /var\s+dataurl\s*=.+?([a-f0-9)]+)/ );
+                let pages = data.match( /var\s+page_array\s*=\s*\[\s*(.+?)\s*\]/ );
+                if( !path || path.length < 2 || !id || id.length < 2 || !pages || pages.length < 2 ) {
+                    throw new Error( 'Failed to determine page links!' );
+                }
+                pages = pages[1].replace( /['"]/g, '' ).split( ',' );
+                if( !pages || pages.length < 1 ) {
+                    throw new Error( 'No pages found!' );
+                }
+                // remove empty entries
+                let pageList = pages.filter( p => p ).map( ( page ) => {
+                    return ( path[1].indexOf('/') === 0 ? this.url : '' ) + path[1] + id[1] + '/' + page;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error );
+                callback( error, undefined );
             } );
         }
     }
