@@ -26,18 +26,18 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( `${this.url}/mangas.json`, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
-                    }
-                    callback( null, JSON.parse( content ) );
-                } catch( e ) {
-                    callback( e, undefined );
+            window.fetch( `${this.url}/mangas.json` )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.json();
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                callback( error, undefined );
             } );
         }
 
@@ -45,18 +45,18 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/chapters.json`, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
-                    }
-                    callback( null, JSON.parse( content ) );
-                } catch( e ) {
-                    callback( e, undefined );
+            window.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/chapters.json` )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.json();
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                callback( error, undefined );
             } );
         }
 
@@ -64,25 +64,25 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/${chapter.id}.json`, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
-                    }
-                    let mangago = Engine.Connectors.find( ( connector ) => { return ( connector instanceof MangaGo ); } );
-                    // use the mangago protocol for images (=> de-scramble images with mangago connector)
-                    let pages = JSON.parse( content ).map( ( page ) => {
-                        let uri = new URL( page );
-                        uri.protocol = mangago.id;
-                        return uri.href;
-                    } );
-                    callback( null, pages );
-                } catch( e ) {
-                    callback( e, undefined );
+            window.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/${chapter.id}.json` )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.json();
+            } )
+            .then( data => {
+                // use the mangago protocol for images (=> de-scramble images with mangago connector)
+                let mangago = Engine.Connectors.find( connector => ( connector instanceof MangaGo ) );
+                let pages = data.map( page => {
+                    let uri = new URL( page );
+                    uri.protocol = mangago.id;
+                    return uri.href;
+                } );
+                callback( null, pages );
+            } )
+            .catch( error => {
+                callback( error, undefined );
             } );
         }
     }
