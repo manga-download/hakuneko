@@ -23,38 +23,35 @@
             this.pageLoadDelay  = 50;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.cloudflare( this.url + '/manga', ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
-                    }
-                    if( content.indexOf( 'its licensed' ) > -1 ) {
-                        throw new Error( 'The manga is licensed and not available in your country!' );
-                    }
-                    let dom = this.createDOM( content );
-                    let mangaList = [...dom.querySelectorAll( '.manga_list ul li a' )].map(  ( element ) => {
-                        return {
-                            id: this.getRelativeLink( element ),
-                            title: element.text.trim()
-                        };
-                    } );
-                    callback( null, mangaList );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, [] );
+            window.fetch( this.url + '/manga' )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.text();
+            } )
+            .then( data => {
+                if( data.indexOf( 'its licensed' ) > -1 ) {
+                    throw new Error( 'The manga is licensed and not available in your country!' );
+                }
+                let dom = this.createDOM( data );
+                let mangaList = [...dom.querySelectorAll( '.manga_list ul li a' )].map(  ( element ) => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error );
+                callback( error, undefined );
             } );
         }
 
@@ -62,33 +59,33 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.cloudflare( this.url + manga.id, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
-                    }
-                    if( content.indexOf( 'its licensed' ) > -1 ) {
-                        throw new Error( 'The manga is licensed and not available in your country!' );
-                    }
-                    let dom = this.createDOM( content );
-                    let chapterList = [...dom.querySelectorAll( 'div#chapters li' )].map(  ( element ) => {
-                        let a = element.querySelector( 'a.tips' );
-                        let span = element.querySelector( 'span.title' );
-                        this.cfMailDecrypt( a );
-                        return {
-                            id: this.getRelativeLink( a ).replace( /\d+\.html$/, '' ),
-                            title: a.text.replace( manga.title, '' ).trim() + ( span ? ' - ' + span.innerText.trim() : '' ),
-                            language: 'en'
-                        };
-                    } );
-                    callback( null, chapterList );
-                } catch( e ) {
-                    console.error( e.message, manga );
-                    callback( e, [] );
+            window.fetch( this.url + manga.id )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.text();
+            } )
+            .then( data => {
+                if( data.indexOf( 'its licensed' ) > -1 ) {
+                    throw new Error( 'The manga is licensed and not available in your country!' );
+                }
+                let dom = this.createDOM( data );
+                let chapterList = [...dom.querySelectorAll( 'div#chapters li' )].map(  ( element ) => {
+                    let a = element.querySelector( 'a.tips' );
+                    let span = element.querySelector( 'span.title' );
+                    this.cfMailDecrypt( a );
+                    return {
+                        id: this.getRelativeLink( a ).replace( /\d+\.html$/, '' ),
+                        title: a.text.replace( manga.title, '' ).trim() + ( span ? ' - ' + span.innerText.trim() : '' ),
+                        language: 'en'
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error );
+                callback( error, undefined );
             } );
         }
 
@@ -99,119 +96,36 @@
             let uri = new URL( this.url + chapter.id );
             uri.hostname = 'm.' + uri.hostname;
             uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
-            Engine.Request.cloudflare( uri.href, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    // FIXME: very dangerous, might end up in endless recursion !!!
-                    if( response.statusCode === 503 || response.statusCode === 504 ) {
-                        setTimeout( () => {
-                            this._getPageList( manga, chapter, callback );
-                        }, this.pageLoadDelay );
-                        return;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
-                    }
-                    if( content.indexOf( 'its licensed' ) > -1 ) {
-                        throw new Error( 'The manga is licensed and not available in your country!' );
-                    }
-                    let dom = this.createDOM( content );
-                    /*
-                    let pageList = [...dom.querySelectorAll( 'form#top_bar div div.l select.m option' )].filter( ( element ) => {
-                        return ( element.text.indexOf( 'Comment' ) < 0 );
-                    } );
-                    pageList = pageList.map( ( element ) => {
-                        let uri = new URL( this.url + chapter.id + element.value + '.html' );
-                        uri.protocol = this.id;
-                        return uri.href;
-                    } );
-                    */
-                    let pageList = [...dom.querySelectorAll( 'div#viewer source' )];
-                    pageList = pageList.map( ( element ) => {
-                        return element.dataset.original;
-                    } );
-                    callback( null, pageList );
-                } catch( e ) {
-                    console.error( e.message, chapter );
-                    callback( e, [] );
+            window.fetch( uri.href )
+            .then( response => {
+                // FIXME: very dangerous, might end up in endless recursion !!!
+                if( response.status === 503 || response.status === 504 ) {
+                    setTimeout( () => {
+                        this._getPageList( manga, chapter, callback );
+                    }, this.pageLoadDelay );
+                    return;
                 }
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                if( data.indexOf( 'its licensed' ) > -1 ) {
+                    throw new Error( 'The manga is licensed and not available in your country!' );
+                }
+                let dom = this.createDOM( data );
+                let pageList = [...dom.querySelectorAll( 'div#viewer source' )];
+                pageList = pageList.map( ( element ) => {
+                    return element.dataset.original;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error );
+                callback( error, undefined );
             } );
         }
-
-        /**
-         * 
-         */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
-                //callback( undefined );
-                return;
-            }
-            if( this.pageLock ) {
-                setTimeout( () => {
-                    this._pageProtocolHandler( request, callback );
-                }, this.pageLockDelay );
-                return;
-            }
-            this.pageLock = true;
-            Engine.Request.cloudflare( uri.href, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    // FIXME: very dangerous, might end up in endless recursion !!!
-                    if( response.statusCode === 503 || response.statusCode === 504 ) {
-                        setTimeout( () => {
-                            this._pageProtocolHandler( request, callback );
-                        }, this.pageLoadDelay );
-                        return;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive page (status code: ${response.statusCode})` );
-                    }
-                    if( content.indexOf( 'its licensed' ) > -1 ) {
-                        throw new Error( 'The manga is licensed and not available in your country!' );
-                    }
-                    let dom = this.createDOM( content );
-                    let imageLink = this.getRelativeLink( dom.querySelector( '#image' ) );
-                    if( !imageLink ) {
-                        throw new Error( 'Failed to extract image!' );
-                    }
-                    this._dowmloadImage( imageLink, callback );
-                } catch( e ) {
-                    console.warn( e.message, uri.href );
-                    callback( undefined );
-                } finally {
-                    this.pageLock = false;
-                }
-            } );
-        }
-
-        /**
-         * 
-         */
-        _dowmloadImage( link, callback ) {
-            Engine.Request.cloudflare( { url: link, encoding: null }, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive image (status code: ${response.statusCode})` );
-                    }
-                    callback( {
-                        mimeType: response.headers['content-type'],
-                        data: content
-                    } );
-                } catch( e ) {
-                    console.warn( e.message, uri.href );
-                    callback( undefined );
-                }
-            } );
-         }
     }
 
 </script>
