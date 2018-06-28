@@ -61,7 +61,7 @@
             window.fetch( `${this.url}${manga.id}/chapters/${page}/`, this.request )
             .then( response => {
                 if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
                 return response.text();
             } )
