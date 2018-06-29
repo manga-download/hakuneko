@@ -1,5 +1,4 @@
 <link rel="import" href="../connector.html">
-<link rel="import" href="../useragent.html">
 
 <script>
 
@@ -14,14 +13,15 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id       = 'kissmanga-cdn';
-            super.label    = 'KissManga (CDN)';
-            super.isLocked = false;
+            super.id         = 'kissmanga-cdn';
+            super.label      = 'KissManga (CDN)';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url       = 'http://kissmanga.hakuneko.download/cdn';
-            this.requestOptions   = {
-                method: 'GET', 
-                mode: 'cors', 
+            this.url         = 'http://kissmanga.hakuneko.download/cdn';
+            this.requestOptions = {
+                method: 'GET',
+                mode: 'cors',
                 redirect: 'follow',
                 // include credentials to apply cookies from browser window
                 credentials: 'include',

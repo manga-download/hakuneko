@@ -13,17 +13,18 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id       = 'mangago-cdn';
-            super.label    = 'MangaGo (CDN)';
-            super.isLocked = false;
+            super.id         = 'mangago-cdn';
+            super.label      = 'MangaGo (CDN)';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url       = 'http://mangago.hakuneko.download/cdn';
-            this.requestOptions   = {
-                method: 'GET', 
-                mode: 'cors', 
+            this.url         = 'http://mangago.hakuneko.download/cdn';
+            this.requestOptions = {
+                method: 'GET',
+                mode: 'cors',
                 redirect: 'follow',
                 // include credentials to apply cookies from browser window
-                credentials: 'include',
+                credentials: 'include', 
                 headers: new Headers( {
                     // Due to a bug in chrome user-agent cannot be set
                     // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
