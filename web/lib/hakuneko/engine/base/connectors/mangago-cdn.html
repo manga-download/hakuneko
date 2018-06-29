@@ -18,6 +18,18 @@
             super.isLocked = false;
             // Private members for internal usage only (convenience)
             this.url       = 'http://mangago.hakuneko.download/cdn';
+            this.requestOptions   = {
+                method: 'GET', 
+                mode: 'cors', 
+                redirect: 'follow',
+                // include credentials to apply cookies from browser window
+                credentials: 'include',
+                headers: new Headers( {
+                    // Due to a bug in chrome user-agent cannot be set
+                    // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
+                    'X-User-Agent': UserAgent.random()
+                } )
+            };
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -26,7 +38,7 @@
          *
          */
         _getMangaList( callback ) {
-            window.fetch( `${this.url}/mangas.json` )
+            window.fetch( this.url + 'mangas.json', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -37,7 +49,7 @@
                 callback( null, data );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, this );
                 callback( error, undefined );
             } );
         }
@@ -46,7 +58,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            window.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/chapters.json` )
+            window.fetch( this.url + manga.id.replace( '/read-manga', '' ) + '/chapters.json', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
@@ -57,7 +69,7 @@
                 callback( null, data );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, manga );
                 callback( error, undefined );
             } );
         }
@@ -66,7 +78,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            window.fetch( `${this.url}${manga.id.replace( '/read-manga', '' )}/${chapter.id}.json` )
+            window.fetch( this.url + manga.id.replace( '/read-manga', '' ) + '/' + chapter.id + '.json', this.requestOptions  )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
@@ -84,7 +96,7 @@
                 callback( null, pages );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, chapter );
                 callback( error, undefined );
             } );
         }
