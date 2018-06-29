@@ -1,5 +1,3 @@
-<link rel="import" href="cloud.html">
-<link rel="import" href="daemon.html">
 <link rel="import" href="electron.html">
 <link rel="import" href="base/downloader.html">
 <link rel="import" href="base/connectors.html">
@@ -19,7 +17,7 @@
          */
         static get Connectors() {
             if( !this._instanceConnectors ) {
-                this._instanceConnectors = this.CreateInstance( Connectors, Connectors, undefined ).list;
+                this._instanceConnectors = ( new Connectors() ).list;
             }
             return this._instanceConnectors;
         }
@@ -59,7 +57,7 @@
          */
         static get Request() {
             if( !this._instanceRequest ) {
-                this._instanceRequest = this.CreateInstance( RequestCloud, RequestElectron, undefined );
+                this._instanceRequest = new RequestElectron();
             }
             return this._instanceRequest;
         }
@@ -69,7 +67,7 @@
          */
         static get Settings() {
             if( !this._instanceSettings ) {
-                this._instanceSettings = this.CreateInstance( SettingsCloud, SettingsElectron, undefined );
+                this._instanceSettings = new SettingsElectron();
             }
             return this._instanceSettings;
         }
@@ -79,20 +77,9 @@
          */
         static get Storage() {
             if( !this._instanceStorage ) {
-                this._instanceStorage = this.CreateInstance( StorageCloud, StorageElectron, undefined );
+                this._instanceStorage = new StorageElectron();
             }
             return this._instanceStorage;
-        }
-
-        /**
-         * Determine the underlying platform and return the corresponding type
-         */
-        static CreateInstance( TypeCloud, TypeElectron, TypeDaemon ) {
-            if( typeof(process) !== 'undefined' && process.versions && process.versions.electron ) {
-                return ( new TypeElectron() );
-            } else {
-                return ( new TypeCloud() );
-            }
         }
     }
 
