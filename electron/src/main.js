@@ -38,9 +38,9 @@ function activateWindow() {
             nodeIntegration: true,
             webSecurity: false // required to open local images in browser
         }
-    });
+    } );
 
-    // inject headers before a request is made (send to webapp to do the dirty work)
+    // inject headers before a request is made (call the handler in the webapp to do the dirty work)
     electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
         // prevent from injecting javascript into the webpage while the webcontent is not yet ready
         // => required for loading initial page over http protocol (e.g. local hosted test page)
@@ -48,14 +48,14 @@ function activateWindow() {
             // inject javascript: looks stupid, but is a working solution to call a function
             // directly within the render process (without dealing with ipcRenderer)
             let payload = Buffer.from( JSON.stringify( details ) ).toString( 'base64' );
-            win.webContents.executeJavaScript( `Engine.Request.getRequestHeaders('${payload}');` )
-            .then( ( result ) => {
+            win.webContents.executeJavaScript( `Engine.Request.onBeforeSendHeadersHandler('${payload}');` )
+            .then( result => {
                 callback( {
                     cancel: false,
                     requestHeaders: result.requestHeaders
                 } );
             } )
-            .catch( ( error ) => {
+            .catch( error => {
                 callback( {
                     cancel: false,
                     requestHeaders: details.requestHeaders
@@ -67,7 +67,7 @@ function activateWindow() {
                 requestHeaders: details.requestHeaders
             } );
         }
-    });
+    } );
     
     win.setMenu( null );
 
@@ -77,7 +77,7 @@ function activateWindow() {
 
     cache.update( config.app.url.href, config.cache.directory, ( error ) => {
         win.loadURL( config.cache.url.href );
-    });
+    } );
 
     /**
      * Replace any existing event listener function registered by previous browser window that would be released when reloding page.
@@ -87,13 +87,13 @@ function activateWindow() {
         // no longer required to clear the event, because callback from renderer is no longer linked directly,
         // it is now called by injecting javascript name)
         //electron.session.defaultSession.webRequest.onBeforeSendHeaders( null, null );
-    });
+    } );
 
     win.on( 'closed', () => {
         // close all existing windows
         electron.BrowserWindow.getAllWindows().forEach( ( w ) => { w.close(); });
         win = null;
-    });
+    } );
 }
 
 /**
