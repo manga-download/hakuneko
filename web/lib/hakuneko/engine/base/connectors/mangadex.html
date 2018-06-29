@@ -13,20 +13,23 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'mangadex';
-            super.label         = 'MangaDex';
-            super.isLocked      = false;
-            this.initialized    = undefined;
+            super.id         = 'mangadex';
+            super.label      = 'MangaDex';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://mangadex.org';
-            this.request        = {
-                //method: 'GET', 
-                //mode: 'cors', 
+            this.url         = 'https://mangadex.org';
+            this.requestOptions = {
+                method: 'GET',
+                mode: 'cors',
                 redirect: 'follow',
-                credentials: 'include', // required to use browsers cookies (e.g. cloudflare challenge)
-                //headers: new Headers( {
-                //    'User-Agent': 'Mozilla/5.0'
-                //}
+                // include credentials to apply cookies from browser window
+                credentials: 'include',
+                headers: new Headers( {
+                    // Due to a bug in chrome user-agent cannot be set
+                    // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
+                    'X-User-Agent': UserAgent.random()
+                } )
             };
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
@@ -36,7 +39,7 @@
          *
          */
         _getMangaList( callback ) {
-            window.fetch( 'http://mangadex.hakuneko.download/cdn/mangas.json' )
+            window.fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -47,7 +50,7 @@
                 callback( null, data );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, this );
                 callback( error, undefined );
             } );
         }
@@ -58,7 +61,7 @@
         _getChapterList( manga, callback, chapterList, page ) {
             chapterList = chapterList || [];
             page = page || 1;
-            window.fetch( `${this.url}${manga.id}/chapters/${page}/`, this.request )
+            window.fetch( this.url + manga.id + '/chapters/' + page + '/', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
@@ -92,7 +95,7 @@
                     this._getChapterList( manga, callback, chapterList, page+1 );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, manga );
                 callback( error, undefined );
             } );
         }
@@ -101,7 +104,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            window.fetch( this.url + chapter.id, this.request )
+            window.fetch( this.url + chapter.id, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
@@ -126,7 +129,7 @@
                 callback( null, pageList );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, chapter );
                 callback( error, undefined );
             } );
         }
