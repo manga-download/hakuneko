@@ -1,5 +1,8 @@
 <script>
 
+    /**
+     * Class for creating random and valid user agent strings
+     */
     class UserAgent {
 
         static _rn( min, max ) {
@@ -30,11 +33,6 @@
         static get _osWindows() {
             let $ = UserAgent;
             let arch = ['', '; WOW64', '; Win64; x64'];
-            /*
-            let major = ['5', '6', '10'];
-            let minor = ['0', '1', '2', '3'];
-            let version = $._rd( major ) + '.' + $._rd( minor );
-            */
             let version = $._rd( ['5.0', '5.1', '5.2', '6.0', '6.1', '6.2', '6.3', '10.0', '10.1'] );
             return 'Windows NT ' + version + $._rd( arch );
         }
@@ -57,13 +55,6 @@
             return 'Mozilla/5.0 (' + $._os + '; rv:' + version + '.0) Gecko/20100101 Firefox/' + version + '.0';
         }
 
-        /*
-        static get _browserEdge() {
-            let $ = UserAgent;
-            return 'EDGE ' + $._osWindows;
-        }
-        */
-
         static get _browserIE() {
             let $ = UserAgent;
             let version = $._rn( 8, 10 ) + '.0';
@@ -77,13 +68,6 @@
             ] );
             return 'Mozilla/5.0 (' + prefix + $._osWindows + '; Trident/' + trident + rv + ')' + suffix;
         }
-
-        /*
-        static get _browserSafari() {
-            let $ = UserAgent;
-            return 'SAFARI ' + $._osMacOSX;
-        }
-        */
 
         /**
          *
