@@ -1,11 +1,12 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
 <link rel="import" href="engine/loader.html">
 <link rel="import" href="menu.html">
 <link rel="import" href="mangas.html">
 <link rel="import" href="chapters.html">
 <link rel="import" href="pages.html">
 <link rel="import" href="jobs.html">
-<link rel="import" href="fortune.html">
+<link rel="import" href="quotes.html">
 
 <dom-module id="hakuneko-app">
 
@@ -57,7 +58,7 @@
                 overflow-x: hidden;
             }
 
-            #loader{
+            #loader {
                 position: fixed;
                 color: var(--app-loading-screen-color);
                 background-color: var(--app-loading-screen-background-color);
@@ -70,22 +71,57 @@
                 right: 0%;
                 z-index: 9999;
             }
+
+            .quote {
+                display: inline-block;
+                max-width: 75%;
+                text-align: left;
+            }
+
+            .quoteText {
+                border-left: var(--app-loading-screen-quote-border);
+                padding-left: 0.5em;
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+                font-weight: bold;
+                font-style: italic;
+            }
+
+            .quoteAuthor {
+                text-align: right;
+                font-style: italic;
+            }
+
+            .suggestion {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                margin: 0.25em;
+                color: var(--app-loading-screen-link-color);
+                font-size: 0.75em;
+                text-decoration: none;
+            }
         </style>
         <div id="loader">
             <p style="font-size: 2em;">
                 Initializing <i class="fa fa-cog fa-spin"></i> Connectors
             </p>
             <hr width="75%">
-            <p>
-                Today's quote:
-            </p>
-            <p style="font-weight: bold; font-style: italic;">
-                &ldquo;[[ loadingMessage.text ]]&rdquo;<br>
-                &mdash; [[ loadingMessage.author ]]
-            </p>
+            <div class="quote">
+                <p>Today's quote:</p>
+                <div class="quoteText">
+                    <template is="dom-repeat" items="[[ loadingMessage.lines ]]">
+                        <span>[[ item ]]</span><br>
+                    </template>
+                </div>
+                <div class="quoteAuthor">&mdash; [[ loadingMessage.author ]]</div>
+            </div>
+            <a class="suggestion" href="https://sourceforge.net/p/hakuneko/discussion/development/thread/6af6b66c/" target="_blank" title="HakuNeko Discussion: Loading Screen Quotes - User Suggestions">
+                » Your quote on the loading screen…
+            </a>
         </div>
         <div class$="control [[ getControlClass(selectedMediaIndex) ]]">
-            <hakuneko-menu ></hakuneko-menu>
+            <hakuneko-menu></hakuneko-menu>
             <div class="mangas">
                 <hakuneko-mangas style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
                 <hakuneko-chapters style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
