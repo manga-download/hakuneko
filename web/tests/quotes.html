@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>HakuNeko S - Quotes Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.16/vue.min.js"></script>
+    <script src="../lib/webcomponentsjs/webcomponents-loader.js"></script>
+    <link rel="import" href="../lib/hakuneko/quotes.html">
+    <script>
+        // initialize vue components before body loaded
+        Vue.component( 'app-quote', {
+            data: () => {
+                return {}
+            },
+            props: {
+                quote: {
+                    type: Object,
+                    //default: { lines: ['Text'], author: 'Author' },
+                    //required: true,
+                    //validator: value => ( value instanceof Object )
+                }
+            },
+            template: `
+                <div>
+                    <hr>
+                    <p>
+                        Today's Quote:
+                    </p>
+                    <div style="display: inline-block; margin-bottom: 1em; font-size: 1.0em; font-style: italic;">
+                        <div style="border-left: 8px solid #e0e0e0; padding-left: 0.75em; font-weight: bold;">
+                            <div v-for="line in quote.lines">{{ line }}</div>
+                        </div>
+                        <div style="margin-top: 0.5em; text-align: right;">&mdash; {{ quote.author }}</div>
+                    </div>
+                </div>
+            `
+        } );
+    </script>
+    <style>
+        html, body {
+            font-family: 'Sans', 'Arial';
+            padding: 1em;
+            color: #808080;
+            background-color: #fbfbfb;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <app-quote v-for="quote in quotes" v-bind:quote="quote"></app-quote>
+    </div>
+    <script>
+        // initialize vue app after body loaded
+        var appViewModel = new Vue( {
+            el: '#app',
+            data: {
+                quotes: quotes
+            }
+        } );
+    </script>
+</body>
+
+</html>
