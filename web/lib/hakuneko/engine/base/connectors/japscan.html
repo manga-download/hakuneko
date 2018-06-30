@@ -13,13 +13,47 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id             = 'japscan';
-            super.label          = 'JapScan';
+            super.id         = 'japscan';
+            super.label      = 'JapScan';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://www.japscan.cc';
-            this.urlCDN         = 'http://c.japscan.cc/cr_images';
+            this.url         = 'http://www.japscan.cc';
+            this.urlCDN      = 'https://c.japscan.cc/cr_images';
+            this.requestOptions = {
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'follow',
+                // include credentials to apply cookies from browser window
+                credentials: 'include',
+                headers: new Headers( {
+                    // Due to a bug in chrome user-agent cannot be set
+                    // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
+                    'X-User-Agent': UserAgent.random()
+                } )
+            };
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config = {
+                format: {
+                    label: 'De-Scrambling Format',
+                    description: 'Select the re-compression format that shall be used for scrambled images.\nOnly applies to scrambled images!\nUnscrambled images are stored natively (no re-compression will be applied).',
+                    input: Input.select,
+                    options: [
+                        { value: 'image/webp', name: 'WEBP (*.webp)' },
+                        { value: 'image/jpeg', name: 'JPEG (*.jpg)' },
+                        { value: 'image/png', name: 'PNG (*.png)' },
+                    ],
+                    value: 'image/jpeg'
+                },
+                quality: {
+                    label: 'De-Scrambling Quality',
+                    description: 'Select the re-compression quality that shall be used for scrambled images.\nOnly applies to WEBP and JPEG, has no effect on PNG (which is lossless).',
+                    input: Input.numeric,
+                    min: 50,
+                    max: 100,
+                    value: 90
+                }
+            };
 
             // register a protocol handler to intercept requests (with custom 'mangago' protocol) and decrypt images
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
@@ -29,47 +63,44 @@
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( this.url + '/mangas/', ( error, response, content ) => {
-                if( error ) {
-                    callback(error, [] );
-                    return;
+            window.fetch( this.url + '/mangas/', this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                //console.log(dom.innerHTML);
-                let mangaList = [...dom.querySelectorAll( '#liste_mangas div.row div:first-of-type a' )].map(  ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let mangaList = [...dom.querySelectorAll( '#liste_mangas div.row div:first-of-type a' )].map( element => {
                     this.cfMailDecrypt( element );
                     return {
-                        // as mentioned before, the eventually added host prefix must be removed
-                        // for full qualified domain name, the host (dynasty-scans) can also be removed
                         id: this.getRelativeLink( element ),
                         title: element.text.trim()
                     };
-                });
-                callback( error, mangaList );
-            });
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            window.fetch( this.url + manga.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                let chapterList = [...dom.querySelectorAll( '#liste_chapitres ul li a' )].map(  ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let chapterList = [...dom.querySelectorAll( '#liste_chapitres ul li a' )].map( element => {
                     this.cfMailDecrypt( element );
                     element.text = element.text.replace( 'Scan', '' ).replace( 'VF', '' );
                     return {
@@ -77,35 +108,42 @@
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: 'fr'
                     };
-                });
-                callback( error, chapterList );
-            });
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( ( this.url + chapter.id ), ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            window.fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images (without id attribute) and iframes from loading
-                content = content.replace( /<img(?:(?!id)[^<])*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                let pageLinks = [...dom.querySelectorAll( '#pages option' )].map(  ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let pageLinks = [...dom.querySelectorAll( '#pages option' )].map( element => {
                     let uri = new URL( this.url + element.value );
                     uri.protocol = this.id;
                     return uri.href;
-                });
-                //Remove 2nd and last images
-                //pageLinks.splice(2, 1);  
-                pageLinks.splice(-1, 1);
-                callback( error, pageLinks );
-            });
+                } );
+                // remove 2nd and last image
+                //pageLinks.splice( 2, 1 );  
+                pageLinks.splice( -1, 1 );
+                callback( null, pageLinks );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } ); 
         }
 
         /**
@@ -114,69 +152,90 @@
         _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            let opts = {
-                url: uri.href,
-                encoding: undefined
-            };
-            Engine.Request.cloudflare( opts, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to get image '${uri.href}'` );
-                    }
-                    // prevent images and iframes from loading
-                    //content = content.replace( /<img[^<]*?>/g, '<img>');
-                    content = content.replace( /<img/g, '<source');
-                    content = content.replace( /<\/img>/g, '</source>');
-                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                    let dom = document.createElement( 'html' );
-                    // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                    dom.innerHTML = content;
-                    let tag = dom.querySelector( '#image' );
-                    if( !tag ) {
-                        throw new Error( 'No element with id #image found in page!' );
-                    }
-                    opts.encoding = null;
-                    if( tag.src ) {
-                        // get raw image data
-                        opts.url = tag.src;
-                        Engine.Request.cloudflare( opts, ( error, response, content ) => {
-                            // TODO: error handling ...
-                            callback( {
-                                mimeType: response.headers['content-type'],
-                                data: content
-                            } );
-                        } );
-                    } else {
-                        // get descrambled image data
-                        let manga = dom.querySelector( 'select#mangas' ).dataset;
-                        manga = ( manga['nom'] || manga['uri'] ).replace( '/', '_' ).replace( '?', '' );
-                        let chapter = dom.querySelector( 'select#chapitres' ).dataset;
-                        chapter = chapter['nom'] || chapter['uri'];
-                        let page = tag.dataset['img'];
-                        opts.url = `${this.urlCDN}/${manga}/${chapter}/${tag.dataset['img']}`;
-                        Engine.Request.cloudflare( opts, ( error, response, content ) => {
-                            // TODO: error handling ...
-                            let blob = new Blob( [content], { type: response.headers['content-type'] } );
-                            this._descrambleImage( blob, 'image/jpeg', 0.90, {}, callback );
-                        } );
-                    }
-                } catch ( e ) {
-                    console.error( e.message );
-                    callback( undefined );
+            window.fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let img = dom.querySelector( '#image' );
+                if( !img ) {
+                    throw new Error( 'No element with id #image found in page!' );
+                }
+                if( img.src ) {
+                    return this._getImageRaw( img.src );
+                } else {
+                    let manga = dom.querySelector( 'select#mangas' ).dataset;
+                    manga = ( manga['nom'] || manga['uri'] ).replace( '/', '_' ).replace( '?', '' );
+                    let chapter = dom.querySelector( 'select#chapitres' ).dataset;
+                    chapter = chapter['nom'] || chapter['uri'];
+                    let page = img.dataset['img'];
+                    return this._getImageDescrambled( [this.urlCDN, manga, chapter, page].join( '/' ) );
+                }
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+
+        /**
+         * Helper function to convert a Blob to a MimeTypedBuffer
+         * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
+         */
+        _blobToBuffer( blob ) {
+            return new Promise( ( resolve, reject ) => {
+                let reader = new FileReader();
+                reader.onload = event => {
+                    resolve( {
+                        mimeType: blob.type,
+                        // NOTE: Uint8Array() seems slightly better than Buffer.from(), but both are blazing fast
+                        data: Buffer.from( event.target.result ) // new Uint8Array( event.target.result )
+                    } );
+                };
+                reader.onerror = event => {
+                    reject( event.target.error );
+                }
+                reader.readAsArrayBuffer( blob );
             } );
         }
 
         /**
          *
          */
-        _descrambleImage( blob, mimeOut, quality, params, callback ) {
-            createImageBitmap( blob )
-            .then( ( bitmap ) => {
-                try {
+        _getImageRaw( url ) {
+            return window.fetch( url, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                return this._blobToBuffer( data );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getImageDescrambled( url ) {
+            return window.fetch( url, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => createImageBitmap( data ) )
+            .then( bitmap => {
+                return new Promise( ( resolve, reject ) => {
                     let width = bitmap.width;
                     let height = bitmap.height;
 
@@ -203,25 +262,12 @@
                             ctx.drawImage( bitmap, offsetsX[x], offsetsY[y], partWidth, partHeight, x * partWidth, y * partHeight, partWidth, partHeight );
                         }		
                     }
-                    canvas.toBlob( ( data ) => {
-                        let fs = new FileReader();
-                        fs.onload = ( evt ) => {
-                            callback( {
-                                mimeType: data.type,
-                                data: new Uint8Array( evt.target.result )
-                            } );
-                        };
-                        fs.readAsArrayBuffer( data );
-                    }, mimeOut, quality );
-                } catch ( e ) {
-                    console.error( e.message );
-                    callback( undefined );
-                }
+                    canvas.toBlob( data => {
+                        resolve( data );
+                    }, this.config.format.value, parseFloat( this.config.quality.value )/100 );
+                } );
             } )
-            .catch( ( e ) => {
-                console.error( e.message );
-                callback( undefined );
-            } );
+            .then( data => this._blobToBuffer( data ) );
         }
     }
 
