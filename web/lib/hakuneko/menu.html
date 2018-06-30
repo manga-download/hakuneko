@@ -250,6 +250,8 @@
                         description: Engine.Settings[property].description,
                         input: Engine.Settings[property].input,
                         options: Engine.Settings[property].options,
+                        min: Engine.Settings[property].min,
+                        max: Engine.Settings[property].max,
                         value: Engine.Settings[property].value
                     });
                 }
@@ -269,6 +271,9 @@
                             label: connector.config[property].label,
                             description: connector.config[property].description,
                             input: connector.config[property].input,
+                            options: connector.config[property].options,
+                            min: connector.config[property].min,
+                            max: connector.config[property].max,
                             value: connector.config[property].value
                         });
                     }
