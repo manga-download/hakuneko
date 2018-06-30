@@ -40,7 +40,7 @@
          *
          */
         _getMangaList( callback ) {
-            window.fetch( this.url + '/manga', this.requestOptions )
+            fetch( this.url + '/manga', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -70,7 +70,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            window.fetch( this.url + manga.id, this.requestOptions )
+            fetch( this.url + manga.id, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
@@ -107,7 +107,7 @@
             let uri = new URL( this.url + chapter.id );
             uri.hostname = 'm.' + uri.hostname;
             uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
-            window.fetch( uri.href, this.requestOptions )
+            fetch( uri.href, this.requestOptions )
             .then( response => {
                 // FIXME: very dangerous, might end up in endless recursion !!!
                 if( response.status === 503 || response.status === 504 ) {

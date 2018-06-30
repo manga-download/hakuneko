@@ -230,7 +230,7 @@
                             if( sub.content ) {
                                 this.ass = new ASS( sub.content, element );
                             } else {
-                                window.fetch( sub.url )
+                                fetch( sub.url )
                                 .then( response => {
                                     if( response.status !== 200 ) {
                                         throw new Error();

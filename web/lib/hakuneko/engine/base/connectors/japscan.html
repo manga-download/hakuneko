@@ -63,7 +63,7 @@
          *
          */
         _getMangaList( callback ) {
-            window.fetch( this.url + '/mangas/', this.requestOptions )
+            fetch( this.url + '/mangas/', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -91,7 +91,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            window.fetch( this.url + manga.id, this.requestOptions )
+            fetch( this.url + manga.id, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
@@ -121,7 +121,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            window.fetch( this.url + chapter.id, this.requestOptions )
+            fetch( this.url + chapter.id, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
@@ -154,7 +154,7 @@
             uri.protocol = ( new URL( this.url ) ).protocol;
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            window.fetch( uri.href, this.requestOptions )
+            fetch( uri.href, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
@@ -191,7 +191,7 @@
          *
          */
         _getImageRaw( url ) {
-            return window.fetch( url, this.requestOptions )
+            return fetch( url, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
@@ -207,7 +207,7 @@
          *
          */
         _getImageDescrambled( url ) {
-            return window.fetch( url, this.requestOptions )
+            return fetch( url, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
