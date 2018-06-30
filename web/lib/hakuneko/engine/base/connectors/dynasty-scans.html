@@ -112,7 +112,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            window.fetch( this.url + chapter.id, this.requestOptions  )
+            window.fetch( this.url + chapter.id, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );

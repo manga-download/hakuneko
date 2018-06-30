@@ -79,7 +79,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            window.fetch( this.url + manga.id.replace( '/read-manga', '' ) + '/' + chapter.id + '.json', this.requestOptions  )
+            window.fetch( this.url + manga.id.replace( '/read-manga', '' ) + '/' + chapter.id + '.json', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );

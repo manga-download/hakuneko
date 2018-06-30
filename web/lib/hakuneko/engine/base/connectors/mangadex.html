@@ -123,8 +123,8 @@
                     throw new Error( 'No pages found!' );
                 }
                 // remove empty entries
-                let pageList = pages.filter( p => p ).map( ( page ) => {
-                    return ( path[1].indexOf('/') === 0 ? this.url : '' ) + path[1] + id[1] + '/' + page;
+                let pageList = pages.filter( p => p ).map( page => {
+                    return ( path[1].indexOf( '/' ) === 0 ? this.url : '' ) + path[1] + id[1] + '/' + page;
                 } );
                 callback( null, pageList );
             } )
