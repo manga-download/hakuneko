@@ -13,14 +13,25 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'mangafox';
-            super.label         = 'MangaFox';
-            super.isLocked      = false;
+            super.id         = 'mangafox';
+            super.label      = 'MangaFox';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://fanfox.net';
-            this.pageLock       = false;
-            this.pageLockDelay  = 500;
-            this.pageLoadDelay  = 50;
+            this.url         = 'http://fanfox.net';
+            this.requestOptions = {
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'follow',
+                // include credentials to apply cookies from browser window
+                credentials: 'include',
+                headers: new Headers( {
+                    // Due to a bug in chrome user-agent cannot be set
+                    // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
+                    'X-User-Agent': UserAgent.random()
+                } )
+            };
+            this.pageLoadDelay = 50;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -29,7 +40,7 @@
          *
          */
         _getMangaList( callback ) {
-            window.fetch( this.url + '/manga' )
+            window.fetch( this.url + '/manga', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -59,7 +70,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            window.fetch( this.url + manga.id )
+            window.fetch( this.url + manga.id, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
@@ -84,7 +95,7 @@
                 callback( null, chapterList );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, manga );
                 callback( error, undefined );
             } );
         }
@@ -96,7 +107,7 @@
             let uri = new URL( this.url + chapter.id );
             uri.hostname = 'm.' + uri.hostname;
             uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
-            window.fetch( uri.href )
+            window.fetch( uri.href, this.requestOptions )
             .then( response => {
                 // FIXME: very dangerous, might end up in endless recursion !!!
                 if( response.status === 503 || response.status === 504 ) {
@@ -122,7 +133,7 @@
                 callback( null, pageList );
             } )
             .catch( error => {
-                console.error( error );
+                console.error( error, chapter );
                 callback( error, undefined );
             } );
         }
