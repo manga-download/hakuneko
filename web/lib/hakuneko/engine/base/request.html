@@ -18,7 +18,7 @@
          */
         cloudflare( url, requestOptions ) {
             // promises are nested intentionally, so we can access the response variable in the scope of the 2nd inner promise
-            return window.fetch( url, requestOptions )
+            return fetch( url, requestOptions )
             .then( response => {
                 if( response.status === 200 ) {
                     // no cloudflare interception => pass response through

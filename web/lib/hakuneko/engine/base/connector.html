@@ -24,6 +24,19 @@
             this.mangaCache = undefined;
             //
             this.existingMangas = [];
+            // initialize the default request options
+            this.requestOptions = {
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'follow',
+                // include credentials to apply cookies from browser window
+                credentials: 'include',
+                headers: new Headers( {
+                    // Due to a bug in chrome user-agent cannot be set
+                    // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
+                    'X-User-Agent': UserAgent.random()
+                } )
+            };
         }
 
         /**
