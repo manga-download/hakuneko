@@ -1,5 +1,4 @@
 <link rel="import" href="../connector.html">
-<link rel="import" href="../useragent.html">
 
 <script>
 
@@ -14,22 +13,48 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'mangago';
-            super.label         = 'MangaGo';
-            super.isLocked      = false;
-            this.initialized    = false;
+            super.id         = 'mangago';
+            super.label      = 'MangaGo';
+            super.isLocked   = false;
+            this.initialized = false;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://www.mangago.me';
-            this.reqOptionsJSON = JSON.stringify( {
-                url: this.url,
-                headers: {
-                    'User-Agent': UserAgent.random()
-                }
-            } );
-            this.pageLock       = false;
-            this.pageLockDelay  = 500;
+            this.url         = 'http://www.mangago.me';
+            this.requestOptions = {
+                method: 'GET',
+                mode: 'cors',
+                redirect: 'follow',
+                // include credentials to apply cookies from browser window
+                credentials: 'include',
+                headers: new Headers( {
+                    // Due to a bug in chrome user-agent cannot be set
+                    // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
+                    'X-User-Agent': UserAgent.random()
+                } )
+            };
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.desKeys        = [
+            this.config = {
+                format: {
+                    label: 'De-Scrambling Format',
+                    description: 'Select the re-compression format that shall be used for scrambled images.\nOnly applies to scrambled images!\nUnscrambled images are stored natively (no re-compression will be applied).',
+                    input: Input.select,
+                    options: [
+                        { value: 'image/webp', name: 'WEBP (*.webp)' },
+                        { value: 'image/jpeg', name: 'JPEG (*.jpg)' },
+                        { value: 'image/png', name: 'PNG (*.png)' },
+                    ],
+                    value: 'image/jpeg'
+                },
+                quality: {
+                    label: 'De-Scrambling Quality',
+                    description: 'Select the re-compression quality that shall be used for scrambled images.\nOnly applies to WEBP and JPEG, has no effect on PNG (which is lossless).',
+                    input: Input.numeric,
+                    min: 50,
+                    max: 100,
+                    value: 90
+                }
+            };
+
+            this.desKeys = [
                 //{ id: 'default',                          pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
                 { id: '60a2b0ed56cd458c4633d04b1b76b7e9', pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
                 { id: '400df5e8817565e28b2e141c533ed7db', pattern: '61a74a10a45a3a37a72a22a57a39a25a56a52a29a70a60a67a41a63a55a27a28a43a18a5a9a8a40a17a48a44a79a38a47a32a73a4a6a13a34a33a49a2a42a50a76a54a36a35a14a58a7a69a46a16a30a21a11aa51a53a77a26a31a1a19a20a80a24a62a68a59a66a75a12a64a78a71a15a65a23' },
@@ -53,10 +78,9 @@
                 { id: '1796550d20f64decb317f9b770ba0e78', pattern: '37a55a39a79a2a53a75a1a30a32a3a13a25a49a45a5a60a62a71a78a63a24a27a33a19a64a67a57a0a8a54a9a41a61a50a73a7a65a58a51a15a14a43a4a35a77a68a72a34a80a22a17a48a10a70a46a40a28a20a74a52a23a38a76a42a18a66a11a59a6a69a31a56a16a47a21a12a44a36a29a26' },
                 { id: 'bf53be6753a0037c6d80ca670f5d12d5', pattern: '55a41a18a19a4a13a36a12a56a69a64a80a30a39a57a50a48a26a46a73a17a52a49a66a11a25a61a51a68a24a70a7a67a53a43a8a29a75a65a42a38a58a9a28a0a78a54a31a22a5a15a3a79a77a59a23a45a40a47a44a6a2a1a35a14a62a63a76a20a16a32a21a71a10a74a60a34a37a33a72a27' },
             ];
-            this.config = undefined;
 
             this._initializeConnector();
-            // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
+            // register a protocol handler to intercept requests (with custom 'mangago' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
@@ -72,36 +96,35 @@
                 //'http://www.lady-first.me/c/1/1/1',
                 //'http://www.mangapicgallery.com'
             ];
-
             // process cloudflare challenge for all domains during initialization phase
-            for(let domain of domains) {
-                let options = JSON.parse( this.reqOptionsJSON );
-                options.url = domain;
-                Engine.Request.fetchUI( options, '', ( error, response, content ) => {
-                    domains.pop();
-                    this.initialized = ( domains.length < 1 );
-                } );
-            }
+            let promises = domains.map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '' ) );
+            Promise.all( promises )
+            .then( result => {
+                this.initialized = true;
+            } )
+            .catch( error => {
+                console.error( error, this );
+                this.initialized = undefined;
+            } );
         }
 
         /**
          * 
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( `http://${this.id}.hakuneko.download/cdn/mangas.json`, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
-                    }
-                    let mangaList = JSON.parse( content );
-                    callback( null, mangaList );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, [] );
+            window.fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.json();
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
             } );
         }
 
@@ -109,39 +132,29 @@
          *
          */
         _getChapterList( manga, callback ) {
-            let options = JSON.parse( this.reqOptionsJSON );
-            options.url += manga.id;
             let script = `
-                [...document.querySelectorAll( '#chapter_table * a.chico' )].map( ( element ) => {
+                [...document.querySelectorAll( '#chapter_table * a.chico' )].map( element => {
                     return {
                         id: element.href,
                         title: element.text.trim()
                     };
                 } )
             `;
-            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    /*
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
-                    }
-                    */
-                    let chapterList = (content ? content : [] ).map( ( chapter ) => {
-                        //this.cfMailDecrypt( element );
-                        return {
-                            id: this.getRelativeLink( { href: chapter.id } ),
-                            title: chapter.title.replace( manga.title, '' ).trim(),
-                            language: 'en'
-                        };
-                    } );
-                    callback( null, chapterList );
-                } catch( e ) {
-                    console.error( e.message, manga );
-                    callback( e, [] );
-                }
+            Engine.Request.fetchUI( this.url + manga.id, this.requestOptions, script )
+            .then( result => {
+                let chapterList = ( result ? result : [] ).map( chapter => {
+                    //this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( { href: chapter.id } ),
+                        title: chapter.title.replace( manga.title, '' ).trim(),
+                        language: 'en'
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
         }
 
@@ -149,22 +162,30 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let options = JSON.parse( this.reqOptionsJSON );
-            options.url += chapter.id;
             let script = `imgsrcs`;
-            Engine.Request.fetchUI( options, script, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( !( content instanceof Array ) ) {
-                        throw new Error( 'Page list is invalid!' );
-                    }
-                    callback( null, this._urifyLinks( content ) );
-                } catch( e ) {
-                    console.error( e.message, chapter );
-                    callback( e, [] );
+            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, script )
+            .then( result => {
+                if( !( result instanceof Array ) ) {
+                    throw new Error( 'Page list is invalid (incompatible variable type)!' );
                 }
+                let pageLinks = result.filter( link => {
+                    try {
+                        new URL( link );
+                        return true;
+                    } catch ( error ) {
+                        console.warn( 'Invalid image URL (skipped): ' + link );
+                        return false;
+                    }
+                } ).map( link => {
+                    let uri = new URL( link );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageLinks );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
             } );
         }
 
@@ -174,88 +195,40 @@
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            let opts = {
-                url: uri.href,
-                headers: {
-                    'Referer': this.url
-                },
-                encoding: null
-            }
-            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
-                uri.hostname = 'www.mnggo.net';
-                opts['headers']['Referer'] = uri.href;
-            }
+            this.requestOptions.headers.set( 'x-referer', this.url );
             if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
-                opts['headers']['Referer'] = undefined;
+                this.requestOptions.headers.delete( 'x-referer' );
             }
-            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
-                //callback( undefined );
-                return;
-            }
-            if( this.pageLock ) {
-                setTimeout( () => {
-                    this._pageProtocolHandler( request, callback );
-                }, this.pageLockDelay );
-                return;
-            }
-            this.pageLock = true;
-            Engine.Request.cloudflare( opts, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive page (status code: ${response.statusCode})` );
-                    }
-                    if( content.indexOf( 'its licensed' ) > -1 ) {
-                        throw new Error( 'The manga is licensed and not available in your country!' );
-                    }
-                    if( uri.pathname.indexOf( 'cspiclink' ) < 0 ) {
-                        callback( {
-                            mimeType: response.headers['content-type'],
-                            data: content
-                        } );
-                        return;
-                    }
-                    let desKey = this.desKeys.find( ( key ) => {
-                        return ( uri.pathname.indexOf( key.id ) > -1 );
-                    } ) || this.desKeys[0];
-                    let blob = new Blob( [content], { type: response.headers['content-type'] } );
-                    this._descrambleImage( blob, 'image/jpeg', 0.90, desKey.pattern, ( data ) => {
-                        var fs = new FileReader();
-                        fs.onload = ( e ) => {
-                            callback( {
-                                mimeType: data.type,
-                                data: new Uint8Array( e.target.result )
-                            } );
-                        };
-                        fs.readAsArrayBuffer( data );
-                    } );
-                } catch( e ) {
-                    console.warn( e.message, uri.href );
-                    callback( undefined );
-                } finally {
-                    this.pageLock = false;
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            // TODO: to many concurrent requests may lead to IP ban
+            Engine.Request.cloudflare( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
                 }
-            } );
-        }
-
-        /**
-         * Remove invalid links from the list and add the mangago protocol
-         */
-        _urifyLinks( imgLinks ) {
-            return imgLinks.filter( ( link ) => {
-                try {
-                    new URL( link );
-                    return true;
-                } catch ( e ) {
-                    console.warn( 'Invalid image URL (skipped): ' + link );
-                    return false;
+                // TODO: check for licensed ...
+                /*
+                if( content.indexOf( 'its licensed' ) > -1 ) {
+                    throw new Error( 'The manga is licensed and not available in your country!' );
                 }
-            }).map( ( link ) => {
-                let uri = new URL( link );
-                uri.protocol = this.id;
-                return uri.href;
+                */
+                return response.blob();
+            } )
+            .then( data => {
+                if( uri.pathname.indexOf( 'cspiclink' ) < 0 ) {
+                    return this._blobToBuffer( data );
+                } else {
+                    let desKey = this.desKeys.find( key => uri.pathname.indexOf( key.id ) > -1 ) || this.desKeys[0];
+                    return this._descrambleImage( data, desKey.pattern ).then( data => this._blobToBuffer( data ) )
+                }
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
             } );
         }
 
@@ -263,37 +236,36 @@
          *** MANGAGO CODE BEGIN ***
         *************************/
 
-        _descrambleImage( blob, mimeOut, quality, params, callback ) {
-            createImageBitmap( blob )
-            .then( ( bitmap ) => {
-                let canvas = document.createElement( 'canvas' );
-                canvas.width = bitmap.width;
-                canvas.height = bitmap.height;
-                var ctx = canvas.getContext( '2d' );
-                let partMap = params.split( 'a' );
-                let widthnum = 9;
-                let heightnum = 9;
-                let partWidth = bitmap.width / widthnum;
-                let partHeight = bitmap.height / heightnum;
-                let row, col, targetPosY, targetPosX, sourcePosY, sourcePosX;
-                for ( let index = 0; index < partMap.length; index++ ) {
-                    //
-                    row = Math.floor( partMap[index] / heightnum );
-                    targetPosY = row * partHeight;
-                    targetPosX = ( partMap[index] - row * widthnum ) * partWidth;
-                    //
-                    col = Math.floor( index / widthnum );
-                    sourcePosY = col * partHeight;
-                    sourcePosX = ( index - col * widthnum ) * partWidth;
-                    //
-                    ctx.drawImage( bitmap, sourcePosX, sourcePosY, partWidth, partHeight, targetPosX, targetPosY, partWidth, partHeight );
-                }
-                canvas.toBlob( ( response ) => {
-                    callback( response );
-                }, mimeOut, quality );
-            } )
-            .catch( ( error ) => {
-                callback( undefined );
+        _descrambleImage( blob, params ) {
+            return createImageBitmap( blob )
+            .then( bitmap => {
+                return new Promise( ( resolve, reject ) => {
+                    let canvas = document.createElement( 'canvas' );
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                    var ctx = canvas.getContext( '2d' );
+                    let partMap = params.split( 'a' );
+                    let widthnum = 9;
+                    let heightnum = 9;
+                    let partWidth = bitmap.width / widthnum;
+                    let partHeight = bitmap.height / heightnum;
+                    let row, col, targetPosY, targetPosX, sourcePosY, sourcePosX;
+                    for ( let index = 0; index < partMap.length; index++ ) {
+                        //
+                        row = Math.floor( partMap[index] / heightnum );
+                        targetPosY = row * partHeight;
+                        targetPosX = ( partMap[index] - row * widthnum ) * partWidth;
+                        //
+                        col = Math.floor( index / widthnum );
+                        sourcePosY = col * partHeight;
+                        sourcePosX = ( index - col * widthnum ) * partWidth;
+                        //
+                        ctx.drawImage( bitmap, sourcePosX, sourcePosY, partWidth, partHeight, targetPosX, targetPosY, partWidth, partHeight );
+                    }
+                    canvas.toBlob( data => {
+                        resolve( data );
+                    }, this.config.format.value, parseFloat( this.config.quality.value )/100 );
+                } );
             } );
         }
 
