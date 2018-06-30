@@ -55,7 +55,7 @@
                 }
             };
 
-            // register a protocol handler to intercept requests (with custom 'mangago' protocol) and decrypt images
+            // register a protocol handler to intercept requests (with custom 'japscan' protocol) and decrypt images
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
@@ -152,6 +152,8 @@
         _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
             window.fetch( uri.href, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
@@ -182,27 +184,6 @@
             .catch( error => {
                 console.error( error, uri.href );
                 callback( undefined );
-            } );
-        }
-
-        /**
-         * Helper function to convert a Blob to a MimeTypedBuffer
-         * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
-         */
-        _blobToBuffer( blob ) {
-            return new Promise( ( resolve, reject ) => {
-                let reader = new FileReader();
-                reader.onload = event => {
-                    resolve( {
-                        mimeType: blob.type,
-                        // NOTE: Uint8Array() seems slightly better than Buffer.from(), but both are blazing fast
-                        data: Buffer.from( event.target.result ) // new Uint8Array( event.target.result )
-                    } );
-                };
-                reader.onerror = event => {
-                    reject( event.target.error );
-                }
-                reader.readAsArrayBuffer( blob );
             } );
         }
 
