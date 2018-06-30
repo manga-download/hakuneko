@@ -311,12 +311,24 @@
          onBeforeSendHeadersHandler( details ) {
             try {
                 details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
-            } catch( e ) {
-                console.log( details, e );
+            } catch( error ) {
+                console.log( details, error );
                 return undefined;
             }
             let uri = new URL( details.url );
-            details.requestHeaders['User-Agent'] = details.requestHeaders['User-Agent'] || this.userAgent;
+            //console.log( 'URL:', details.url );
+            // force the request to use the User-Agent set by the options
+            if( details.requestHeaders['x-user-agent'] ) {
+                details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
+                delete details.requestHeaders['x-user-agent'];
+                //console.log( '  => USER AGENT:', details.requestHeaders['User-Agent'] );
+            }
+            // force the request to use the Referer set by the options
+            if( details.requestHeaders['x-referer'] ) {
+                details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
+                delete details.requestHeaders['x-referer'];
+                //console.log( '  => REFERER:', details.requestHeaders['Referer'] );
+            }
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
             /*
             Disabled, because rejected by MangaDex
