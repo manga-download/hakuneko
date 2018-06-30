@@ -48,14 +48,16 @@
                     return response.text();
                 } )
                 .then( data => {
-                    let dom = this.createDOM( content );
+                    let dom = this.createDOM( data );
                     let mangaList = [...dom.querySelectorAll( '.tag-list dd a' )].map( element => {
                         return {
                             id: this.getRelativeLink( element ),
                             title: element.text.trim()
                         };
                     } );
-                    resolve( mangaList );
+                    return new Promise( ( resolve, reject ) => {
+                        resolve( mangaList );
+                    } );
                 } );
             } );
 
