@@ -130,107 +130,104 @@
         /**
          *
          */
-        fetchUI( options, script, callback ) {
-            let win = new this.browser( {
-                show: false,
-                webPreferences: {
-                    nodeIntegration: false,
-                    webSecurity: true
-                }
-            } );
+        _cfCheckScript() {
+            // ensure variables in this script does not appear in the page or other injected script
+            let uVar = [
+                '_c13367', // 'code',
+                '_d8fd50', // 'message',
+                '_cb5e10', // 'error',
+                '_e9a23c', // 'meta',
+                '_d9904d', // 'cf',
+                '_b4a884', // 'result',
+            ];
+            return `
+                let ${uVar[0]} = document.querySelector( '.cf-error-code' );
+                ${uVar[0]} = ( ${uVar[0]} ? ${uVar[0]}.innerText : null );
+                let ${uVar[1]} = document.querySelector( 'h2[data-translate]' );
+                ${uVar[1]} = ( ${uVar[1]} && ${uVar[1]}.nextElementSibling ? ${uVar[1]}.nextElementSibling.innerText : null );
+                let ${uVar[2]} = ( ${uVar[0]} ? 'CF Error ' + ${uVar[0]} + ' => ' + ${uVar[1]} : null );
 
-            let preventCallback = false;
+                let ${uVar[3]} = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
+                let ${uVar[4]} = document.querySelector( 'form#challenge-form' );
 
-            let abortAction = setTimeout( () => {
-                //console.log( '  TIMEOUT', options.url );
-                this._fetchUICleanup( win, abortAction );
-                if( !preventCallback ) {
-                    callback( new Error( `Failed to load '${options.url}'` ), undefined, undefined );
-                }
-            }, 10000 );
-            
-            win.webContents.session.webRequest.onBeforeRequest( { urls: ['http://*/mobi/js/chapter.js*'] }, ( details, callback ) => {
-                callback( { redirectURL: 'cache://hakuneko/js/chapter.js' } );
-            } );
+                let ${uVar[5]} = {
+                    error: ${uVar[0]},
+                    redirect: ( ${uVar[3]} || ${uVar[4]} )
+                };
+                ${uVar[5]};
+            `;
+        }
 
-            win.webContents.on( 'did-finish-load', ( e ) => {
-                // ensure variables in this script does not appear in the page or other injected script
-                let uVar = [
-                    '_c13367', // 'code',
-                    '_d8fd50', // 'message',
-                    '_cb5e10', // 'error',
-                    '_e9a23c', // 'meta',
-                    '_d9904d', // 'cf',
-                    '_b4a884', // 'result',
-                ];
-                let check = `
-                    let ${uVar[0]} = document.querySelector( '.cf-error-code' );
-                    ${uVar[0]} = ( ${uVar[0]} ? ${uVar[0]}.innerText : null );
-                    let ${uVar[1]} = document.querySelector( 'h2[data-translate]' );
-                    ${uVar[1]} = ( ${uVar[1]} && ${uVar[1]}.nextElementSibling ? ${uVar[1]}.nextElementSibling.innerText : null );
-                    let ${uVar[2]} = ( ${uVar[0]} ? 'CF Error ' + ${uVar[0]} + ' => ' + ${uVar[1]} : null );
-
-                    let ${uVar[3]} = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
-                    let ${uVar[4]} = document.querySelector( 'form#challenge-form' );
-
-                    let ${uVar[5]} = {
-                        error: ${uVar[0]},
-                        redirect: ( ${uVar[3]} || ${uVar[4]} )
-                    };
-                    ${uVar[5]};
-                `;
-                //console.log( 'DOM-READY' );
-                win.webContents.executeJavaScript( check, ( result ) => {
-                    //console.log( '  REDIRECT', result.redirect );
-                    if( !result.redirect ) {
-                        if( result.error ) {
-                            //console.log( '      CLOUDFLARE', result.error, options.url );
-                            this._fetchUICleanup( win, abortAction );
-                            callback( new Error( result.error ), undefined, undefined );
-                        } else {
-                            //console.log( '    INJECT', script );
-                            preventCallback = true; // no other event shall execute the callback function anymore!
-                            win.webContents.executeJavaScript( script, ( result ) => {
-                                //console.log( '      RESULT', result, options.url );
-                                this._fetchUICleanup( win, abortAction );
-                                callback( null, undefined, result );
-                            } );
-                        }
+        /**
+         *
+         */
+        fetchUI( url, requestOptions, injectionScript ) {
+            return new Promise( ( resolve, reject ) => {
+                let win = new this.browser( {
+                    show: false,
+                    webPreferences: {
+                        nodeIntegration: false,
+                        webSecurity: true
                     }
                 } );
-            } );
 
-            win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
-                //console.log( '      ERROR', event, errCode, errMessage, uri, isMain, options.url );
-                if( !preventCallback && errCode && errCode !== -3 && ( isMain || uri === options.url ) ) {
+                let preventCallback = false;
+
+                let abortAction = setTimeout( () => {
                     this._fetchUICleanup( win, abortAction );
-                    callback( new Error( errMessage + ' ' + uri ), undefined, undefined );
-                }
+                    if( !preventCallback ) {
+                        reject( new Error( 'Failed to load ' + url ) );
+                    }
+                }, 15000 );
+                
+                win.webContents.session.webRequest.onBeforeRequest( { urls: ['http://*/mobi/js/chapter.js*'] }, ( details, callback ) => {
+                    callback( { redirectURL: 'cache://hakuneko/js/chapter.js' } );
+                } );
+
+                win.webContents.on( 'did-finish-load', event => {
+                    win.webContents.executeJavaScript( this._cfCheckScript(), result => {
+                        if( !result.redirect ) {
+                            if( result.error ) {
+                                this._fetchUICleanup( win, abortAction );
+                                reject( result.error );
+                            } else {
+                                preventCallback = true; // no other event shall resolve/reject this promise anymore
+                                win.webContents.executeJavaScript( injectionScript, ( result ) => {
+                                    this._fetchUICleanup( win, abortAction );
+                                    resolve( result );
+                                } );
+                            }
+                        }
+                    } );
+                } );
+
+                win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
+                    if( !preventCallback && errCode && errCode !== -3 && ( isMain || uri === url ) ) {
+                        this._fetchUICleanup( win, abortAction );
+                        reject( new Error( errMessage + ' ' + uri ) );
+                    }
+                } );
+                
+                let options = {
+                    httpReferrer: requestOptions.headers.get( 'x-referer' ) || url,
+                    userAgent: requestOptions.headers.get( 'x-user-agent' )
+                };
+                win.loadURL( url, options );
             } );
-            
-            let opts = {
-                httpReferrer: options.url,
-                userAgent: ( options.headers && options.headers['User-Agent'] ? options.headers['User-Agent'] : this.userAgent )
-            };
-            win.loadURL( options.url, opts );
         }
 
         /**
          * Close window and clear the given timeout function
          */
         _fetchUICleanup( browserWindow, timeout ) {
-            try {
-                if( timeout ) {
-                    clearTimeout( timeout );
-                }
-                timeout = null;
-                if( browserWindow ) {
-                    browserWindow.close();
-                }
-                browserWindow = null;
-            } catch( e ) {
-                //
+            if( timeout ) {
+                clearTimeout( timeout );
             }
+            timeout = null;
+            if( browserWindow ) {
+                browserWindow.close();
+            }
+            browserWindow = null;
         }
 
         /**
