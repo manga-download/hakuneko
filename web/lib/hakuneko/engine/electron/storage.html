@@ -16,7 +16,6 @@
             this.dialog = electron.remote.dialog;
             this.platform = electron.remote.process.platform;
             this.exec = electron.remote.require( 'child_process' ).exec;
-            this.jszip = electron.remote.require( 'jszip' );
             this.fs = require( 'fs' );
             this.path = require( 'path' );
             this.config = this.path.join( electron.remote.require( './config.js' ).app.userdata, 'hakuneko.' );
@@ -37,8 +36,7 @@
          * Save the given value for the given key in the persistant storage
          */
         saveConfig( key, value ) {
-            // NOTE: use the browsers promise implementation instead of HakuNeko's obsoltete promise implementation
-            return new window.Promise( ( resolve, reject ) => {
+            return new Promise( ( resolve, reject ) => {
                 this.fs.writeFile( this.config + key, JSON.stringify( value ), function( error ) {
                     if( error ) {
                         reject( error );
@@ -53,8 +51,7 @@
          * Load the value for the given key from the persistant storage
          */
         loadConfig( key ) {
-            // NOTE: use the browsers promise implementation instead of HakuNeko's obsolete promise implementation
-            return new window.Promise( ( resolve, reject ) => {
+            return new Promise( ( resolve, reject ) => {
                 this.fs.readFile( this.config + key, 'utf8', ( error, data ) => {
                     try {
                         if( error ) {
