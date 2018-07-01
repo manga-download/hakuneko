@@ -12,7 +12,9 @@
          */
         constructor() {
             super();
-            this.electronRemote = require( 'electron' ).remote;
+            let electron = require( 'electron' );
+            this.webframe = electron.webFrame;
+            this.electronRemote = electron.remote;
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             this.crypto = this.electronRemote.require( 'crypto' );
             this.browser = this.electronRemote.BrowserWindow;
@@ -42,6 +44,8 @@
          *
          */
         registerProtocol( scheme, callback ) {
+            // register as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
+            this.webframe.registerURLSchemeAsPrivileged( scheme );
             // register callback for electron process (when callback becomes unavailable by e.g. by reloading page,
             // the previous registered handler must be removed)
             this.protocol.isProtocolHandled( scheme, error => {
@@ -199,6 +203,7 @@
                 console.log( details, error );
                 return undefined;
             }
+            console.log( 'Request.onBeforeSendHeadersHandler():', details );
             let uri = new URL( details.url );
             //console.log( 'URL:', details.url );
             // force the request to use the User-Agent set by the options
@@ -227,6 +232,7 @@
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
 
+            // TODO: move this to mangago connector ...
             // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images (ticket #2, commit [758df9])
             // => overwrite the referer for each request directly made through the electron browser
             // BUT: some other connectors like mangago require to keep the original referer
