@@ -68,7 +68,14 @@
          */
         getPages( callback ) {
             if( this.status === DownloadStatus.offline || this.status === DownloadStatus.completed ) {
-                Engine.Storage.loadChapterPages( this, callback );
+                Engine.Storage.loadChapterPages( this )
+                .then( pages => {
+                    callback( null, pages );
+                 } )
+                .catch( error => {
+                    console.error( error, this );
+                    callback( error, undefined );
+                 } );
             } else {
                 // check if page list is cached
                 if( this.pageCache && this.pageCache.length ) {
