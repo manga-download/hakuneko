@@ -4,6 +4,7 @@ package-lock.json
 /daemon
 /electron/build
 /electron/redist/*.zip
+/electron/src/node_modules
 /fmd/.vs
 /fmd/packages
 /fmd/*/bin
