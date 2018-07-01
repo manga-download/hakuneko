@@ -252,7 +252,7 @@
         }
 
         /**
-         * Return a promse with the loaded opened zip archive data
+         * Return a promise with the loaded opened zip archive data
          */
         _openZipArchive( file ) {
             return new Promise( ( resolve, reject ) => {
@@ -379,31 +379,40 @@
          * The given content is a list of raw data for each corresponding page in the chapter.
          * The storage decides depending on the engine and available settings where the pages will be stored!
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
+         * 
+         * content is an array of blobs
          */
-        saveChapterPages( chapter, content, callback ) {
-            let pageData = content.map( ( page, index ) => {
-                return {
-                    name: this._pageFileName( index + 1, page.type ),
-                    data: page.data
-                }
-            });
+        saveChapterPages( chapter, content ) {
+            try {
+                let pageData = content.map( ( page, index ) => {
+                    return {
+                        name: this._pageFileName( index + 1, page.type ),
+                        type: page.type,
+                        data: page
+                    }
+                });
+                let output = this._chapterOutputPath( chapter );
 
-            let output = this._chapterOutputPath( chapter );
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
-                this._createDirectoryChain( output );
-                this._saveChapterPagesFolder( output, pageData, callback );
-            }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
-                this._createDirectoryChain( this.path.dirname( output ) );
-                this._saveChapterPagesCBZ( output, pageData, callback );
-            }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
-                this._createDirectoryChain( this.path.dirname( output ) );
-                this._saveChapterPagesPDF( output, pageData, callback );
-            }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
-                this._createDirectoryChain( this.path.dirname( output ) );
-                this._saveChapterPagesEPUB( output, pageData, callback );
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
+                    this._createDirectoryChain( output );
+                    return this._saveChapterPagesFolder( output, pageData );
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
+                    this._createDirectoryChain( this.path.dirname( output ) );
+                    return this._saveChapterPagesCBZ( output, pageData );
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
+                    this._createDirectoryChain( this.path.dirname( output ) );
+                    return this._saveChapterPagesPDF( output, pageData );
+                }
+                if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
+                    this._createDirectoryChain( this.path.dirname( output ) );
+                    return this._saveChapterPagesEPUB( output, pageData );
+                }
+
+                throw new Error( 'Unsupported output format: ' + Engine.Settings.chapterFormat.value );
+            } catch( error ) {
+                Promise.reject( error );
             }
         }
 
@@ -411,8 +420,8 @@
          * Create and save pages to the given e-book file.
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
-        _saveChapterPagesEPUB( ebook, pageData, callback ) {
-            let zip = new this.jszip();
+        _saveChapterPagesEPUB( ebook, pageData ) {
+            let zip = new JSZip();
             zip.file( 'mimetype', EbookGenerator.createMimetype() );
             zip.folder( 'META-INF' ).file( 'container.xml', EbookGenerator.createContainerXML() );
             let oebps = zip.folder('OEBPS');
@@ -426,127 +435,152 @@
                 params.push({
                     img: page.name,
                     xhtml: index + '.xhtml',
-                    mime: this._pageFileMime( page.name )
-                });
-            });
+                    mime: page.type
+                } );
+            } );
             let uid = btoa( encodeURIComponent( ebook ) ).replace(/[^a-zA-Z]/g, '');
             let title = `${this.path.basename( this.path.dirname( ebook ) )} ${this.path.sep} ${this.path.basename( ebook, ChapterFormat.epub )}`;
             oebps.file( 'content.opf', EbookGenerator.createContentOPF( uid, title, params ) );
             oebps.file( 'toc.ncx', EbookGenerator.createTocNCX( uid, '', params ) );
-            zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
-                this.fs.writeFile( ebook, data, function( error ) {
-                    callback( error );
-                });
-            });
+            return zip.generateAsync( { compression: 'STORE', type: 'uint8array' } )
+            .then( data => {
+                return this._writeFile( ebook, data );
+            } );
         }
 
         /**
          * Create and save pages to the given portable document file.
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
-        _saveChapterPagesPDF( pdf, pageData, callback ) {
+        _saveChapterPagesPDF( pdf, pageData ) {
             let doc = new jspdf()
             doc.deletePage(1);
-            this._addImageToPDF( doc, pageData, ( error ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    let data = doc.output( 'arraybuffer' /* 'blob' */ );
-                    data = Buffer.from/*new Uint8Array*/( data );
-                    this.fs.writeFile( pdf, data, ( error ) => {
-                        callback( error );
-                    } );
-                } catch( e ) {
-                    console.error( e );
-                    callback( e );
-                }
+            return this._addImagesToPDF( doc, pageData )
+            .then( () => {
+                let data = new Uint8Array( doc.output( 'arraybuffer' ) );
+                return this._writeFile( pdf, data );
             } );
         }
 
         /**
-         * Helper function to add images to a PDF document (recursive)
+         * Add all images as PDF pages to the given document.
          */
-        _addImageToPDF( pdfDocument, pageData, callback, pageIndex ) {
-            try {
-                if( pageIndex === undefined || pageIndex === null ) {
-                    pageIndex = 0;
-                }
-                if( pageIndex >= pageData.length ) {
-                    // operation complete
-                    callback( null );
-                    return;
-                }
-                if( !pdfDocument ) {
-                    throw new Error( 'Source document is not a valid PDF!' );
-                }
-                let page = pageData[pageIndex];
-                createImageBitmap( new Blob( [page.data], { type: this._pageFileMime( page.name ) } ) )
-                .then( ( bitmap ) => {
-                    try {
-                        let data = page.data;
-                        let pdfImgType = this._pdfImageType( page.name );
-                        if( !pdfImgType ) {
-                            pdfImgType = 'JPEG';
-                            let canvas = document.createElement( 'canvas' );
-                            canvas.width = bitmap.width;
-                            canvas.height = bitmap.height;
-                            let ctx = canvas.getContext( '2d' );
-                            ctx.drawImage( bitmap, 0, 0 );
-                            data = canvas.toDataURL( 'image/jpeg', 0.90 );
-                        }
-                        pdfDocument.addPage ( bitmap.width, bitmap.height );
-                        // use page.name as image alias, to prevent imge repeat bug: https://github.com/MrRio/jsPDF/issues/998
-                        pdfDocument.addImage( data, pdfImgType, 0, 0, bitmap.width, bitmap.height, page.name );
-                        // process next image
-                        this._addImageToPDF( pdfDocument, pageData, callback, pageIndex+1 );
-                    } catch( e ) {
-                        callback( e );
-                    }
-                } )
-                .catch( ( e ) => {
-                    callback( e );
-                } );
-            } catch( e ) {
-                callback( e );
+        _addImagesToPDF( pdfDocument, pageData, pageIndex ) {
+            if( typeof( pageIndex ) !== 'number' ) {
+                pageIndex = 0;
             }
+            if( pageIndex < 0 ) {
+                return Promise.reject( new Error( 'PDF page index out of range: ' + pageIndex ) );
+            }
+            if( pageIndex >= pageData.length ) {
+                return Promise.resolve();
+            }
+            return this._addImageToPDF( pdfDocument, pageData[pageIndex] )
+            .then( () => {
+                return this._addImagesToPDF( pdfDocument, pageData, pageIndex+1 )
+            } );
+        }
+
+        /**
+         * Add a single image as PDF page to the given document.
+         */
+        _addImageToPDF( pdfDocument, page ) {
+            return createImageBitmap( page.data )
+            .then( bitmap => {
+                let promise;
+                let pdfImgType = this._pdfImageType( page.type );
+                if( !pdfImgType ) {
+                    pdfImgType = 'JPEG';
+                    let canvas = document.createElement( 'canvas' );
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                    let ctx = canvas.getContext( '2d' );
+                    ctx.drawImage( bitmap, 0, 0 );
+                    promise = new Promise( ( resolve, reject ) => {
+                        canvas.toBlob( data => {
+                            resolve( data );
+                        }, 'image/jpeg', 0.90 );
+                    } );
+                } else {
+                    promise = Promise.resolve( page.data );
+                }
+                return promise.then( blob => {
+                    return this._blobToBytes( blob )
+                    .then( bytes => {
+                        try {
+                            pdfDocument.addPage( bitmap.width, bitmap.height );
+                            // use page.name as image alias, to prevent image repeat bug: https://github.com/MrRio/jsPDF/issues/998
+                            pdfDocument.addImage( bytes, pdfImgType, 0, 0, bitmap.width, bitmap.height, page.name );
+                            return Promise.resolve();
+                        } catch( error ) {
+                            return Promise.reject( error );
+                        }
+                    } );
+                } )
+            } );
         }
 
         /**
          * Create and save pages to the given archive file.
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
-        _saveChapterPagesCBZ( archive, pageData, callback ) {
-            let zip = new this.jszip();
-            pageData.forEach( ( page ) => {
+        _saveChapterPagesCBZ( archive, pageData ) {
+            let zip = new JSZip();
+            pageData.forEach( page => {
                 zip.file( page.name, page.data );
-            });
-            zip.generateAsync( { compression: 'STORE', type: 'uint8array' } ).then( ( data ) => {
-                this.fs.writeFile( archive, data, function( error ) {
-                    callback( error );
-                });
-            });
+            } );
+            return zip.generateAsync( { compression: 'STORE', type: 'uint8array' } )
+            .then( data => {
+                return this._writeFile( archive, data );
+            } );
         }
 
         /**
          * Save pages to the given directory.
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
-        _saveChapterPagesFolder( directory, pageData, callback ) {
-            let promises = pageData.map( ( page ) => {
-                return new Promise( ( resolve, reject ) => {
-                    this.fs.writeFile( this.path.join( directory, page.name ), page.data, function( error ) {
-                        if( error ) {
-                            reject( error );
-                        } else {
-                            resolve();
-                        }
-                    } );
+        _saveChapterPagesFolder( directory, pageData ) {
+            let promises = pageData.map( page => {
+                return this._blobToBytes( page.data )
+                .then( data => {
+                    return this._writeFile( this.path.join( directory, page.name ), data );
+                } )
+            } );
+            return Promise.all( promises );
+        }
+
+        /**
+         * Helper function to convert a Blob to an Uint8Array
+         * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
+         */
+         _blobToBytes( blob ) {
+            return new Promise( ( resolve, reject ) => {
+                let reader = new FileReader();
+                reader.onload = event => {
+                    // NOTE: Uint8Array() seems slightly better than Buffer.from(), but both are blazing fast
+                    resolve( new Uint8Array( event.target.result ) );
+                    //resolve( Buffer.from( event.target.result ) );
+                };
+                reader.onerror = event => {
+                    reject( event.target.error );
+                }
+                reader.readAsArrayBuffer( blob );
+            } );
+        }
+
+        /**
+         * Wrap the async write file function into a promise
+         */
+        _writeFile( path, data ) {
+            return new Promise( ( resolve, reject ) => {
+                this.fs.writeFile( path, data, error => {
+                    if( error ) {
+                        reject( error );
+                    } else {
+                        resolve();
+                    }
                 } );
             } );
-            Promise.all( promises )
-            .then( () => callback( null ) )
-            .catch( error => callback( error ) );
         }
 
         /**
@@ -709,17 +743,14 @@
         }
 
         /**
-         * Helper function to get the image type for jsPDF of the given file name.
+         * Helper function to get the image type for jsPDF of the given mime type.
+         * If the mime is not a spported PDF image format undefined will be returned.
          */
-        _pdfImageType( file ) {
-            let extension = this.path.extname( file );
-            if( extension === '.jpeg' ) {
+        _pdfImageType( mime ) {
+            if( mime === 'image/jpeg' ) {
                 return 'JPEG';
             }
-            if( extension === '.jpg' ) {
-                return 'JPEG';
-            }
-            if( extension === '.png' ) {
+            if( mime === 'image/png' ) {
                 return 'PNG';
             }
             return undefined;
