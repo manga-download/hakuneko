@@ -18,6 +18,7 @@
                 manga: chapter.manga.title,
                 chapter: chapter.title
             };
+            this.requestOptions = chapter.manga.connector.requestOptions || {};
             this.status = undefined;
             this.progress = 0;
             this.errors = [];
@@ -82,12 +83,24 @@
         }
 
         /**
+         * Return a promise that will be resolved after the given amount of time in milliseconds
+         */
+        _wait( time ) {
+            return new Promise( ( resolve, reject ) => {
+                setTimeout( resolve, time );
+            } );
+        }
+
+        /**
          *
          */
         _downloadPages( pages, directory, callback ) {
             // get data for all pages of chapter
             let promises = pages.map( ( page, index ) => {
-                return Engine.Request.cloudflare( page, this.chapter.manga.connector.requestOptions || {} )
+                return this._wait( index * 50 )
+                .then( () => {
+                    return Engine.Request.cloudflare( page, this.requestOptions );
+                } )
                 .then( response => {
                     if( response.status !== 200 ) {
                         throw new Error( 'Page "' + page + '" returned status: ' + response.status + ' - ' + response.statusText );
@@ -129,7 +142,7 @@
                 metas: []
             };
             // download playlist
-            fetch( episode.playlist )
+            fetch( episode.playlist, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( 'Playlist "' + episode.playlist + '" returned status: ' + response.status + ' - ' + response.statusText );
@@ -156,7 +169,10 @@
             // download all packets
             .then( packets => {
                 let promises = packets.map( ( packet, index ) => {
-                    return fetch( packet.source )
+                    return this._wait( index * 250 )
+                    .then( () => {
+                        return fetch( packet.source, this.requestOptions );
+                    } )
                     .then( response => {
                         if( response.status !== 200 ) {
                             throw new Error( 'Packet "' + packet.link + '" returned status: ' + response.status + ' - ' + response.statusText );
@@ -183,7 +199,10 @@
                     if( subtitle.locale.toLowerCase() === 'en-us' ) {
                         ffmpeg.metas.push( '-disposition:s:' + index, 'default' );
                     }
-                    return fetch( subtitle.url )
+                    return this._wait( index * 50 )
+                    .then( () => {
+                        return fetch( subtitle.url, this.requestOptions );
+                    } )
                     .then( response => {
                         if( response.status !== 200 ) {
                             throw new Error( 'Subtitle "' + subtitle.url + '" returned status: ' + response.status + ' - ' + response.statusText );
