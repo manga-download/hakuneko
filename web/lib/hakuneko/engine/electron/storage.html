@@ -348,7 +348,7 @@
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured)
          * and a reference to the page list (undefined on error).
          */
-        _loadChapterPagesFolder( directory, callback ) {
+        _loadChapterPagesFolder( directory ) {
             return ( new Promise( ( resolve, reject  ) => {
                 this.fs.readdir( directory, ( error, files ) => {
                     if( error ) {
@@ -552,7 +552,7 @@
          * Helper function to convert a Blob to an Uint8Array
          * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
          */
-         _blobToBytes( blob ) {
+        _blobToBytes( blob ) {
             return new Promise( ( resolve, reject ) => {
                 let reader = new FileReader();
                 reader.onload = event => {
@@ -585,14 +585,16 @@
         /**
          * Store a file directly in the chapter directory
          */
-        saveChapterFileM3U8( chapter, content, callback ) {
-            let file = this._mangaOutputPath( chapter.manga );
-            file = this.path.join( file, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
-            this._createDirectoryChain( file );
-            file = this.path.join( file, this.sanatizePath( content.name ) );
-            this.fs.writeFile( file, content.data, function( error ) {
-                callback( error );
-            });
+        saveChapterFileM3U8( chapter, content ) {
+            try {
+                let file = this._mangaOutputPath( chapter.manga );
+                file = this.path.join( file, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
+                this._createDirectoryChain( file );
+                file = this.path.join( file, this.sanatizePath( content.name ) );
+                return _writeFile( file, content.data );
+            } catch( error ) {
+                return Promise.reject( error );
+            }
         }
 
         /**
@@ -600,13 +602,21 @@
          * The chapter directory is the working directory, and will be deleted after muxing.
          * The output file will be stored directly in the manga directory.
          */
-        muxPlaylistM3U8( chapter, ffmpeg, callback ) {
-            let directory = this._mangaOutputPath( chapter.manga );
-            this._createDirectoryChain( directory );
-            let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mkv ) );
-            directory = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
-            ffmpeg += ' -f matroska -y "' + file + '"';
-            this.exec( ffmpeg, { cwd: directory, windowsHide: true }, callback );
+        muxPlaylistM3U8( chapter, ffmpeg ) {
+            return new Promise( ( resolve, reject ) => {
+                let directory = this._mangaOutputPath( chapter.manga );
+                this._createDirectoryChain( directory );
+                let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mkv ) );
+                directory = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
+                ffmpeg += ' -f matroska -y "' + file + '"';
+                this.exec( ffmpeg, { cwd: directory, windowsHide: true }, error => {
+                    if( error ) {
+                        reject( error );
+                    } else {
+                        resolve();
+                    }
+                } );
+            } );
         }
 
         /**
