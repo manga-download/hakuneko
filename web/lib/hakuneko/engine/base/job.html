@@ -87,41 +87,21 @@
         _downloadPages( pages, directory, callback ) {
             // get data for all pages of chapter
             let promises = pages.map( ( page, index ) => {
-                return new Promise( ( resolve, reject ) => {
-                    setTimeout( () => {
-                        Engine.Request.cloudflare( { url: page, encoding: null, timeout: 1*60*1000 }, ( error, response, content ) => {
-                            try {
-                                if( error ) {
-                                    throw error;
-                                }
-                                if( response.statusCode !== 200 ) {
-                                    throw new Error( 'Page "' + page + '" returned status code ' + response.statusCode );
-                                }
-                                let pageData = {
-                                    type: response.headers['Content-Type'] || response.headers['content-type'],
-                                    data: content
-                                };
-                                this.setProgress( this.progress + ( pages.length ? 100/pages.length : 0 ) );
-                                resolve( pageData );
-                            } catch( e ) {
-                                console.error( 'Download failed!', e );
-                                reject( e );
-                            }
-                        }, 5 );
-                    }, index * 250 );
+                return Engine.Request.cloudflare( page, this.chapter.manga.connector.requestOptions || {} )
+                .then( response => {
+                    if( response.status !== 200 ) {
+                        throw new Error( 'Page "' + page + '" returned status: ' + response.status + ' - ' + response.statusText );
+                    }
+                    return response.blob();
+                } )
+                .then( data => {
+                    this.setProgress( this.progress + ( pages.length ? 100/pages.length : 0 ) );
+                    return Promise.resolve( data );
                 } );
             } );
             Promise.all( promises )
             .then( values => {
-                return new Promise( ( resolve, reject ) => {
-                    Engine.Storage.saveChapterPages( this.chapter, values, ( error ) => {
-                        if( error ) {
-                            reject( error );
-                        } else {
-                            resolve();
-                        }
-                    } );
-                } );
+                return Engine.Storage.saveChapterPages( this.chapter, values );
             } )
             .then( () => {
                 this.setProgress( 100 );
@@ -129,6 +109,9 @@
                 callback();
             } )
             .catch( error => {
+                // TODO: abort/block all other page downloads that are still running for this job ...
+                // https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
+                console.error( error, pages );
                 this.setProgress( 100 );
                 this.setStatus( DownloadStatus.failed );
                 callback();
@@ -146,70 +129,46 @@
                 metas: []
             };
             // download playlist
-            ( new Promise( ( resolve, reject ) => {
-                Engine.Request.fetch( episode.playlist, ( error, response, content ) => {
-                    try {
-                        if( error ) {
-                            throw error;
-                        }
-                        if( response.statusCode !== 200 ) {
-                            throw new Error( 'Playlist "' + episode.playlist + '" returned status code ' + response.statusCode );
-                        }
-                        resolve( content );
-                    } catch( e ) {
-                        reject( e );
-                    }
-                } );
-            } ) )
+            fetch( episode.playlist )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( 'Playlist "' + episode.playlist + '" returned status: ' + response.status + ' - ' + response.statusText );
+                }
+                return response.text();
+            } )
             .then( playlist => {
-                return new Promise( ( resolve, reject ) => {
-                    // parse links and adjust playlist
-                    let packets = playlist.match( /http[s]?:\/\/[^\s\"]+/g ).map( link => {
-                        let file = this.chapter.id + '.' + ( new URL( link ) ).pathname.split( '/' ).pop();
-                        // ffmpeg does not support backslashes => replace with slashes
-                        playlist = playlist.replace( link, file.replace( /\\/g, '/' ) );
-                        return {
-                            source: link,
-                            target: file
-                        };
-                    } );
-                    ffmpeg.inputs.push( '-i', '"' + this.chapter.id + '.m3u8"' );
-                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: this.chapter.id + '.m3u8', data: playlist }, ( error ) => {
-                        if( error ) {
-                            reject( error );
-                        } else {
-                            resolve( packets );
-                        }
-                    } );
+                // parse links and adjust playlist
+                let packets = playlist.match( /http[s]?:\/\/[^\s\"]+/g ).map( link => {
+                    let file = this.chapter.id + '.' + ( new URL( link ) ).pathname.split( '/' ).pop();
+                    // ffmpeg does not support backslashes => replace with slashes
+                    playlist = playlist.replace( link, file.replace( /\\/g, '/' ) );
+                    return {
+                        source: link,
+                        target: file
+                    };
                 } );
+                ffmpeg.inputs.push( '-i', '"' + this.chapter.id + '.m3u8"' );
+                return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: this.chapter.id + '.m3u8', data: playlist } )
+                .then( () => {
+                    return Promise.resolve( packets );
+                 } );
             } )
             // download all packets
             .then( packets => {
                 let promises = packets.map( ( packet, index ) => {
-                    return ( new Promise( ( resolve, reject ) => {
-                        setTimeout( () => {
-                            Engine.Request.fetch( { url: packet.source, encoding: null, timeout: 1*60*1000 }, ( error, response, content ) => {
-                                try {
-                                    if( error ) {
-                                        throw error;
-                                    }
-                                    if( response.statusCode !== 200 ) {
-                                        throw new Error( 'Packet "' + packet.link + '" returned status code ' + response.statusCode );
-                                    }
-                                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: packet.target, data: content }, ( error ) => {
-                                        this.setProgress( this.progress + 100/packets.length );
-                                        if( error ) {
-                                            reject( error );
-                                        } else {
-                                            resolve();
-                                        }
-                                    } );
-                                } catch( e ) {
-                                    reject( e );
-                                }
-                            } );
-                        }, index * 1500 );
-                    } ) );
+                    return fetch( packet.source )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( 'Packet "' + packet.link + '" returned status: ' + response.status + ' - ' + response.statusText );
+                        }
+                        return response.arrayBuffer();
+                    } )
+                    .then( data => {
+                        return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: packet.target, data: new Uint8Array( data ) } );
+                    } )
+                    .then( () => {
+                        this.setProgress( this.progress + 100/packets.length );
+                    } );
                 } );
                 return Promise.all( promises );
             } )
@@ -224,60 +183,41 @@
                     if( subtitle.locale.toLowerCase() === 'en-us' ) {
                         ffmpeg.metas.push( '-disposition:s:' + index, 'default' );
                     }
-                    return new Promise( ( resolve, reject ) => {
-                        setTimeout( () => {
-                            Engine.Request.fetch( subtitle.url, ( error, response, content ) => {
-                                try {
-                                    if( error ) {
-                                        throw error;
-                                    }
-                                    if( response.statusCode !== 200 ) {
-                                        throw new Error( 'Subtitle "' + subtitle.url + '" returned status code ' + response.statusCode );
-                                    }
-                                    Engine.Storage.saveChapterFileM3U8( this.chapter, { name: file, data: content }, ( error ) => {
-                                        if( error ) {
-                                            reject( error );
-                                        } else {
-                                            resolve();
-                                        }
-                                    } );
-                                } catch( e ) {
-                                    reject( e );
-                                }
-                            } );
-                        }, index * 200 );
+                    return fetch( subtitle.url )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( 'Subtitle "' + subtitle.url + '" returned status: ' + response.status + ' - ' + response.statusText );
+                        }
+                        return response.text();
+                    } )
+                    .then( data => {
+                        return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: file, data: data } );
                     } );
                 } );
                 return Promise.all( promises );
             } )
             // multiplex
             .then( () => {
-                return new Promise( ( resolve, reject ) => {
-                    // compose ffmpeg command for multiplexing
-                    let args = ffmpeg.command;
-                    args = args.concat( ffmpeg.inputs );
-                    args = args.concat( ffmpeg.maps );
-                    args = args.concat( ffmpeg.metas );
-                    args = args.concat( [ '-c', 'copy' ] );
-                    // multiplex media
-                    Engine.Storage.muxPlaylistM3U8( this.chapter, args.join( ' ' ), ( error ) => {
-                        if( error ) {
-                            reject( error );
-                        } else {
-                            resolve();
-                        }
-                    } );
-                } );
+                // compose ffmpeg command for multiplexing
+                let args = ffmpeg.command;
+                args = args.concat( ffmpeg.inputs );
+                args = args.concat( ffmpeg.maps );
+                args = args.concat( ffmpeg.metas );
+                args = args.concat( [ '-c', 'copy' ] );
+                // multiplex media
+                return Engine.Storage.muxPlaylistM3U8( this.chapter, args.join( ' ' ) );
             } )
             // finalize
-            .then( error => {
+            .then( () => {
                 this.setProgress( 100 );
                 this.setStatus( DownloadStatus.completed );
                 callback();
             } )
             // process error
             .catch( error => {
-                console.error( error );
+                // TODO: abort/block all other packet downloads that are still running for this job ...
+                // https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
+                console.error( error, episode );
                 this.setProgress( 100 );
                 this.setStatus( DownloadStatus.failed );
                 callback();
