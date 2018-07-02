@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="mangareader.html">
 
 <script>
 
     /**
      * @author Neogeek
      */
-    class MangaPanda extends Connector {
+    class MangaPanda extends MangaReader {
 
         /**
          *
@@ -24,123 +24,6 @@
 
             // register a protocol handler to intercept requests (with custom 'mangago' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
-        }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            fetch( this.url + '/alphabetical', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let mangaList = [...dom.querySelectorAll( 'ul.series_alpha li a' )].map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( '#listing tbody tr td a' )].map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'en'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( '#pageMenu option' )].map( element => {
-                    let uri = new URL( this.url + element.value );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         * 
-         */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let image = dom.querySelector( '#img' );
-                return fetch( image.src, this.requestOptions );
-            } )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => {
-                return this._blobToBuffer( data );
-            } )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
         }
     }
 
