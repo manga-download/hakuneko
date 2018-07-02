@@ -205,49 +205,37 @@
             }
             console.log( 'Request.onBeforeSendHeadersHandler():', details );
             let uri = new URL( details.url );
-            //console.log( 'URL:', details.url );
-            // force the request to use the User-Agent set by the options
+            // Overwrite the User-Agent header
             if( details.requestHeaders['x-user-agent'] ) {
                 details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
                 delete details.requestHeaders['x-user-agent'];
-                //console.log( '  => USER AGENT:', details.requestHeaders['User-Agent'] );
             }
-            // force the request to use the Referer set by the options
-            if( details.requestHeaders['x-referer'] ) {
-                details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
-                delete details.requestHeaders['x-referer'];
-                //console.log( '  => REFERER:', details.requestHeaders['Referer'] );
+            // Overwrite the Referer header, but
+            // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
+            if( !uri.pathname.endsWith( 'chk_jschl' ) ) {
+                // use referer provided by connector
+                if( details.requestHeaders['x-referer'] ) {
+                    details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
+                    delete details.requestHeaders['x-referer'];
+                } else {
+                    // some manga connectors (e.g. DynastyScans) require a referer of the same origin for images (ticket #2, commit [758df9])
+                    // => overwrite the referer for each request
+                    details.requestHeaders['Referer'] = details.url;
+                }
             }
+            //console.log( '  => REFERER:', details.requestHeaders['Referer'] );
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
             /*
             Disabled, because rejected by MangaDex
             if( details.requestHeaders['X-Forwarded-For'] === undefined ) {
                 details.requestHeaders['X-Forwarded-For'] = this.ipChain.join( ',' );
             }
-            */
             if( details.requestHeaders['Forwarded'] === undefined ) {
                 details.requestHeaders['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
             }
+            */
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
-            }
-
-            // TODO: move this to mangago connector ...
-            // some manga connectors (e.g. DynastyScans) require a referer of the same origin for embeded images (ticket #2, commit [758df9])
-            // => overwrite the referer for each request directly made through the electron browser
-            // BUT: some other connectors like mangago require to keep the original referer
-            //details.requestHeaders['Referer'] = details.url;
-            switch ( true ) {
-                case ( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ):
-                    uri.hostname = 'www.mnggo.net';
-                    details.requestHeaders['Referer'] = uri.href;
-                    break;
-                default:
-                    // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
-                    if( !details.requestHeaders['Referer'] && !uri.pathname.endsWith( 'chk_jschl' ) ) {
-                        details.requestHeaders['Referer'] = details.url;
-                    }
-                    break;
             }
 
             return details;

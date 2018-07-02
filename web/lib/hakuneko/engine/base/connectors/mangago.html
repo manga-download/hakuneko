@@ -187,6 +187,14 @@
             if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
                 this.requestOptions.headers.delete( 'x-referer' );
             }
+            // TODO: is the replacement of mangapicgallery still necessary?
+            /*
+            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 )
+            {
+                //uri.hostname = 'www.mnggo.net';
+                this.requestOptions.headers.set( 'x-referer', 'www.mnggo.net' );
+            }
+            */
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             // TODO: to many concurrent requests may lead to IP ban
