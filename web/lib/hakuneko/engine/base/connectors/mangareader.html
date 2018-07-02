@@ -13,122 +13,134 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id             = 'mangareader';
-            super.label          = 'MangaReader';
+            super.id         = 'mangareader';
+            super.label      = 'MangaReader';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'http://www.mangareader.net';
+            this.url         = 'http://www.mangareader.net';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
-            // register a protocol handler to intercept requests (with custom 'mangapanda' protocol) and parse images from html pages
-            Engine.Request.registerProtocol( this.id, ( request, callback ) => {
-                let uri = new URL( request.url );
-                uri.protocol = ( new URL( this.url ) ).protocol;
-                Engine.Request.fetch( uri.href, ( error, response, content ) => {
-                    if( error || response.statusCode != 200 ) {
-                        callback( undefined );
-                        return;
-                    }
-                    // prevent images and iframes from loading
-                    content = content.replace( /<img/g, '<source').replace( /<\/img/g, '<\/source');
-                    content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                    let dom = document.createElement( 'html' );
-                    dom.innerHTML = content;
-                    let image = dom.querySelector( '#imgholder a #img' );
-                    if( !image ) {
-                        callback( undefined );
-                        return;
-                    }
-                    Engine.Request.fetch( { url: image.src, encoding: null }, ( error, response, content ) => {
-                        if( error || response.statusCode != 200 ) {
-                            callback( undefined );
-                            return;
-                        }
-                        callback( {
-                            mimeType: response.headers['content-type'],
-                            data: content
-                        } );
-                    } );
-                } );
-            } );
+            // register a protocol handler to intercept requests (with custom 'mangago' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( this.url + '/alphabetical', ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            fetch( this.url + '/alphabetical', this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                //console.log(dom.innerHTML);
-                let mangaList = [...dom.querySelectorAll( 'ul.series_alpha li a' )].map( ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let mangaList = [...dom.querySelectorAll( 'ul.series_alpha li a' )].map( element => {
                     return {
-                        // as mentioned before, the eventually added host prefix must be removed
-                        // for full qualified domain name, the host (dynasty-scans) can also be removed
                         id: this.getRelativeLink( element ),
                         title: element.text.trim()
                     };
-                });
-                callback( error, mangaList );
-            });
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                let chapterList = [...dom.querySelectorAll( '#listing tbody tr td a' )].map( ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let chapterList = [...dom.querySelectorAll( '#listing tbody tr td a' )].map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: 'en'
                     };
-                });
-                callback( error, chapterList );
-            });
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( this.url + chapter.id, ( error, response, content ) => {
-                let imageList = [];
-                if( error ) {
-                    callback( error, imageList );
-                    return;
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                dom.innerHTML = content;
-                let pageList = [...dom.querySelectorAll( '#pageMenu option' )].map( ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let pageList = [...dom.querySelectorAll( '#pageMenu option' )].map( element => {
                     let uri = new URL( this.url + element.value );
                     uri.protocol = this.id;
                     return uri.href;
-                });
-                callback( error, pageList );
-            });
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let image = dom.querySelector( '#imgholder #img' );
+                return fetch( image.src, this.requestOptions );
+            } )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                return this._blobToBuffer( data );
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
         }
     }
 
