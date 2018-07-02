@@ -13,87 +13,67 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'mangarock';
-            super.label         = 'MangaRock';
-            super.isLocked      = false;
+            super.id         = 'mangarock';
+            super.label      = 'MangaRock';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://api.mangarockhd.com';
-            this.reqOptionsJSON = JSON.stringify( {
-                url: this.url,
-                json: {} // => use to automatically parse a response as json
-            } );
-            this.pageLock       = 0;
-            this.pageLockDelay  = 500;
+            this.url         = 'https://api.mangarockhd.com';
+            this.requestOptions.headers.set( 'content-type', 'application/json' );
+            this.requestOptions.headers.set( 'x-origin', 'https://mangarock.com' );
+            this.pageLock      = 0;
+            this.pageLockDelay = 500;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
 
             // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
-        /**
-         *
-         */
-        _getRequestError( error, response, content ) {
-            if( error ) {
-                return error;
+        _getJsonResponse( response, type ) {
+            if( response.status !== 200 ) {
+                throw new Error( `Failed to receive ${type} list (status: ${response.status}) - ${response.statusText}` );
             }
-            if( response.statusCode !== 200 ) {
-                return new Error( `Response status code: ${response.statusCode}!` );
-            }
-            try {
-                if( content.code !== 0 ) {
-                    return new Error( 'Content is invalid JSON!' )
+            return response.json()
+            .then( data => {
+                if( data.code !== 0 ) {
+                    throw new Error( this.label + ' error: ' + data.code );
                 }
-            } catch ( e ) {
-                return new Error( '[' + response.statusCode + '] ' + e.message );
-            }
-            return null;
+                return Promise.resolve( data.data );
+            } );
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            let options = JSON.parse( this.reqOptionsJSON );
-            options['method'] = 'POST';
-            options['url'] += '/query/web400/mrs_filter';
-            options['json'] = {
+            this.requestOptions.method = 'POST';
+            this.requestOptions.body = JSON.stringify( {
                 genres: {},
                 order: 'name',
                 rank: 'all',
                 status: 'all'
-            };
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                try {
-                    error = this._getRequestError( error, response, content );
-                    if( error ) {
-                        throw error;
+            } );
+            fetch( this.url + '/query/web400/mrs_filter', this.requestOptions )
+            .then( response => this._getJsonResponse( response, 'manga' ) )
+            .then( data => {
+                this.requestOptions.body = JSON.stringify( data.slice( 0, 5000 ) );
+                return fetch( this.url + '/meta', this.requestOptions );
+            } )
+            .then( response => this._getJsonResponse( response, 'manga' ) )
+            .then( data => {
+                let mangaList = JSON.parse( this.requestOptions.body ).map( id => {
+                    let manga = data[id];
+                    return {
+                        id: manga.oid,
+                        title: manga.name
                     }
-                    options['url'] = this.url + '/meta';
-                    options['json'] = content.data;
-                    Engine.Request.fetch( options, ( error, response, content ) => {
-                        try {
-                            error = this._getRequestError( error, response, content );
-                            if( error ) {
-                                throw error;
-                            }
-                            let metas = content.data;
-                            let mangas = options['json'].map( ( id ) => {
-                                let manga = metas[ id ];
-                                return {
-                                    id: manga.oid,
-                                    title: manga.name
-                                }
-                            } );
-                            callback( null, mangas );
-                        } catch( e ) {
-                            console.error( e.message );
-                            callback( e, [] );
-                        }
-                    } );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, [] );
-                }
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
             } );
         }
 
@@ -101,29 +81,23 @@
          *
          */
         _getChapterList( manga, callback ) {
-            let options = JSON.parse( this.reqOptionsJSON );
-            options['url'] += '/query/web400/info';
-            options['qs'] = {
-                'oid': manga.id
-            };
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                try {
-                    error = this._getRequestError( error, response, content );
-                    if( error ) {
-                        throw error;
-                    }
-                    let chapterList = content.data.chapters.reverse().map( ( chapter ) => {
-                        return {
-                            id: chapter.oid,
-                            title: chapter.name,
-                            language: 'en'
-                        };
-                    } );
-                    callback( null, chapterList );
-                } catch( e ) {
-                    console.error( e.message, manga );
-                    callback( e, [] );
-                }
+            this.requestOptions.method = 'GET';
+            this.requestOptions.body = undefined;
+            fetch( this.url + '/query/web400/info?oid=' + manga.id, this.requestOptions )
+            .then( response => this._getJsonResponse( response, 'chapter' ) )
+            .then( data => {
+                let chapterList = data.chapters.reverse().map( chapter => {
+                    return {
+                        id: chapter.oid,
+                        title: chapter.name,
+                        language: 'en'
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
         }
 
@@ -131,27 +105,21 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let options = JSON.parse( this.reqOptionsJSON );
-            options['url'] += '/query/web400/pages';
-            options['qs'] = {
-                'oid': chapter.id
-            };
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                try {
-                    error = this._getRequestError( error, response, content );
-                    if( error ) {
-                        throw error;
-                    }
-                    let pageList = content.data.map( ( link ) => {
-                        let uri = new URL( link );
-                        uri.protocol = this.id;
-                        return uri.href;
-                    } );
-                    callback( null, pageList );
-                } catch( e ) {
-                    console.error( e.message, manga );
-                    callback( e, [] );
-                }
+            this.requestOptions.method = 'GET';
+            this.requestOptions.body = undefined;
+            fetch( this.url + '/query/web400/pages?oid=' + chapter.id, this.requestOptions )
+            .then( response => this._getJsonResponse( response, 'page' ) )
+            .then( data => {
+                let pageList = data.map( link => {
+                    let uri = new URL( link );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
             } );
         }
 
@@ -159,64 +127,56 @@
          *
          */
         _pageProtocolHandler( request, callback ) {
+            this.requestOptions.method = 'GET';
+            this.requestOptions.body = undefined;
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            let options = JSON.parse( this.reqOptionsJSON );
-            options['url'] = uri.href;
-            options['json'] = undefined;
-            options['encoding'] = null;
-            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
-                //callback( undefined );
-                return;
-            }
-            if( this.pageLock > 3 ) {
-                setTimeout( () => {
-                    this._pageProtocolHandler( request, callback );
-                }, this.pageLockDelay );
-                return;
-            }
-            this.pageLock++;
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode != 200 ) {
-                        throw new Error( `Response status code: ${response.statusCode}!` );
-                    }
-                    if( content[0] === 69 ) {
-                        callback( {
-                            mimeType: 'image/webp',
-                            data: this._decryptImage( content, 0x65 )
-                        } );
-                    } else {
-                        callback( {
-                            mimeType: response.headers['content-type'],
-                            data: content
-                        } );
-                    }
-                } catch( e ) {
-                    console.warn( e.message, uri.href );
-                    callback( undefined );
-                } finally {
-                    this.pageLock--;
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
                 }
+                // promises nested intentionally to give innerpromise access to scoped response.headers
+                return response.arrayBuffer()
+                .then( data => {
+                    data = new Uint8Array( data );
+                    if( data[0] === 69 ) {
+                        return this._decryptImage( data, 0x65, 'image/webp' );
+                    } else {
+                        return Promise.resolve( {
+                            mimeType: response.headers.get( 'content-type' ),
+                            data: data
+                        } );
+                    }
+                } );
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( error, undefined );
             } );
         }
 
         /**
          *
          */
-        _decryptImage( encrypted, key ) {
-            let decrypted = new Uint8Array( encrypted.length + 15 );
-            let n = encrypted.length + 7;
-            let header = Uint8Array.of( 82, 73, 70, 70, n & 255, n >> 8 & 255, n >> 16 & 255, n >> 24 & 255, 87, 69, 66, 80, 86, 80, 56 );
-            let data = encrypted.map( ( byte ) => {
-                return ( key ^ byte );
+        _decryptImage( encrypted, key, mime ) {
+            return new Promise( ( resolve, reject ) => {
+                let decrypted = new Uint8Array( encrypted.length + 15 );
+                let n = encrypted.length + 7;
+                let header = Uint8Array.of( 82, 73, 70, 70, n & 255, n >> 8 & 255, n >> 16 & 255, n >> 24 & 255, 87, 69, 66, 80, 86, 80, 56 );
+                let data = encrypted.map( byte => {
+                    return ( key ^ byte );
+                } );
+                decrypted.set( header, 0 );
+                decrypted.set( data, header.length );
+                resolve( {
+                    mimeType: mime,
+                    data: decrypted
+                } );
             } );
-            decrypted.set( header, 0 );
-            decrypted.set( data, header.length );
-            return decrypted;
         }
     }
 
