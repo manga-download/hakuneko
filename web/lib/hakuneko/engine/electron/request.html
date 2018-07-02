@@ -223,6 +223,11 @@
                     details.requestHeaders['Referer'] = details.url;
                 }
             }
+            // Overwrite the Origin header
+            if( details.requestHeaders['x-origin'] ) {
+                details.requestHeaders['Origin'] = details.requestHeaders['x-origin'];
+                delete details.requestHeaders['x-origin'];
+            }
             //console.log( '  => REFERER:', details.requestHeaders['Referer'] );
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
             /*
