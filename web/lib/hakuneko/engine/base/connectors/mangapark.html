@@ -13,80 +13,91 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'mangapark';
-            super.label         = 'MangaPark';
-            super.isLocked      = false;
+            super.id         = 'mangapark';
+            super.label      = 'MangaPark';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://mangapark.me';
+            this.url         = 'https://mangapark.me';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
         
         /**
-         * Parameters mangalist and page should never be used by external calls.
+         * 
          */
-        _getMangaList( callback, mangaList, page ) {
-            Engine.Request.fetch( 'http://mangapark.hakuneko.download/cdn/mangas.json', ( error, response, content ) => {
-                callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
-            });
+        _getMangaList( callback ) {
+            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.json();
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
-                let mangaList = [];
-                if( error ) {
-                    callback( error, mangaList );
-                    return;
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                
-                //TODO Some chapter have a title
-                dom.querySelectorAll( '.stream' ).forEach ( (version, idx) => {
-                    mangaList[idx] = [...version.querySelectorAll( 'li span a' )].map(  ( element ) => {
-                        let titleVersion = '[Ver ' + (idx + 1) + '] ' + element.text.replace( manga.title, '' ).trim();
-                        element.href = element.href.substring( 0, element.href.lastIndexOf( '/' ) + 1 );
+                return response.text();
+            } )
+            .then( data => {
+                let chapterList = [];
+                let dom = this.createDOM( data );
+                dom.querySelectorAll( '.stream' ).forEach ( ( stream, index ) => {
+                    chapterList = chapterList.concat([...stream.querySelectorAll( 'li span a' )].map( element => {
+                        let titleVersion = '[Ver ' + ( index + 1 ) + '] ' + element.text.replace( manga.title, '' ).trim();
+                        element.href = element.href.replace( /\/[^/]*$/, '' );
 	                    return {
 	                        id: this.getRelativeLink( element ),
 	                        title: titleVersion,
 	                        language: 'en'
 	                    };
-	                });
-                });
-                mangaList = [].concat.apply([], mangaList); //Merge all version in one array
-                callback(error, mangaList);
-            });
+	                } ) );
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( ( this.url + chapter.id ), ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
                 }
-                // prevent images and iframes from loading
-                content = content.replace( /<img[^<]*?>/g, '<img>');
-                content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
-                let dom = document.createElement( 'html' );
-                // NOTE: all links without a full qualified domain name will be prefixed with host of this app => do not forget to remove this prefix from the links!
-                dom.innerHTML = content;
-                
-                let img_url_list = [...dom.querySelectorAll( '.img-num' )].map(  ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let pageList = [...dom.querySelectorAll( '.img-num' )].map( element => {
                     return element.href.replace( 'cache://', ( new URL( this.url ) ).protocol + '//' );
-                });
-                
-                callback( error, img_url_list );
-            });
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
         }
     }
 
