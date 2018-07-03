@@ -55,20 +55,31 @@
                 status: 'all'
             } );
             fetch( this.url + '/query/web400/mrs_filter', this.requestOptions )
-            .then( response => this._getJsonResponse( response, 'manga' ) )
+            .then( response => {
+                return this._getJsonResponse( response, 'manga' );
+             } )
             .then( data => {
-                this.requestOptions.body = JSON.stringify( data.slice( 0, 5000 ) );
-                return fetch( this.url + '/meta', this.requestOptions );
+                // NOTE: mangarock limits the amount of manga requests => split into 5k queries
+                let promises = [];
+                while( data.length > 0 ) {
+                    this.requestOptions.body = JSON.stringify( data.splice( 0, 5000 ) );
+                    promises.push(
+                        fetch( this.url + '/meta', this.requestOptions )
+                        .then( response => this._getJsonResponse( response, 'manga' ) )
+                    );
+                }
+                return Promise.all( promises );
             } )
-            .then( response => this._getJsonResponse( response, 'manga' ) )
             .then( data => {
-                let mangaList = JSON.parse( this.requestOptions.body ).map( id => {
-                    let manga = data[id];
-                    return {
-                        id: manga.oid,
-                        title: manga.name
-                    }
-                } );
+                let object2array = ( value ) => {
+                    return Object.entries( value ).map( kvp => {
+                        return {
+                            id: kvp[1].oid,
+                            title: kvp[1].name
+                        };
+                    } );
+                };
+                let mangaList = data.reduce( ( accumulator, value ) => accumulator.concat( object2array( value ) ), [] );
                 callback( null, mangaList );
             } )
             .catch( error => {
