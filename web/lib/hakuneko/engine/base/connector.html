@@ -30,7 +30,7 @@
                 mode: 'cors',
                 redirect: 'follow',
                 // include credentials to apply cookies from browser window
-                credentials: 'include',
+                credentials: 'same-origin', // 'include',
                 headers: new Headers( {
                     // Due to a bug in chrome user-agent cannot be set
                     // => use a custom header to overwrite the agent in the 'onBeforeSendHeaders' event
