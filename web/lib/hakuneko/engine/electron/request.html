@@ -139,10 +139,16 @@
                         reject( new Error( errMessage + ' ' + uri ) );
                     }
                 } );
-                
+
                 let options = {
                     httpReferrer: requestOptions.headers.get( 'x-referer' ) || url,
-                    userAgent: requestOptions.headers.get( 'x-user-agent' )
+                    userAgent: requestOptions.headers.get( 'x-user-agent' )/*,
+                    // extraHeaders String (optional) - Extra headers separated by "\n"
+                    // TODO: add all headers from request options ...
+                    extraHeaders: 'X-Forwarded-For: ' + requestOptions.headers.get( 'x-forwarded-for' )
+                                  + '\nForwarded: ' + requestOptions.headers.get( 'forwarded' )
+                                  + '\nCookie: PHPSESSID=' + Math.random() + ';'
+                    */
                 };
                 win.loadURL( url, options );
             } );
@@ -182,11 +188,11 @@
             let rd = ( min, max ) => {
                 return Math.floor( Math.random() * ( max - min + 1 ) ) + min;
             };
-            let count = rd( 1, amount );
+            let count = amount; // rd( 1, amount );
             // us ip blocks: https://www.nirsoft.net/countryip/us.html
-            let usBlocks = [3,4,6,7,8,9,11,12,15,16,17,18,19,20,21,22,26,28,29,30,33,34,38,44,48,55,56,73,214,215];
+            //let usBlocks = [3,4,6,7,8,9,11,12,15,16,17,18,19,20,21,22,26,28,29,30,33,34,38,44,48,55,56,73,214,215];
             for(let i=0; i<count; i++) {
-                let ip = [ usBlocks[ rd( 0, usBlocks.length - 1 ) ], rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ) ];
+                let ip = [ rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ) ];
                 result.push( ip.join( '.' ) );
             }
             return result;
@@ -200,16 +206,18 @@
             try {
                 details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
             } catch( error ) {
-                console.log( details, error );
+                console.log( error, details );
                 return undefined;
             }
             console.log( 'Request.onBeforeSendHeadersHandler():', details );
             let uri = new URL( details.url );
+
             // Overwrite the User-Agent header
             if( details.requestHeaders['x-user-agent'] ) {
                 details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
                 delete details.requestHeaders['x-user-agent'];
             }
+
             // Overwrite the Referer header, but
             // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
             if( !uri.pathname.endsWith( 'chk_jschl' ) ) {
@@ -223,13 +231,24 @@
                     details.requestHeaders['Referer'] = details.url;
                 }
             }
+
             // Overwrite the Origin header
             if( details.requestHeaders['x-origin'] ) {
                 details.requestHeaders['Origin'] = details.requestHeaders['x-origin'];
                 delete details.requestHeaders['x-origin'];
             }
+
+            // Append Cookie header
+            if( details.requestHeaders['x-cookie'] ) {
+                let cookiesORG = ( details.requestHeaders['Cookie'] || '' ).split( ';' ).map( c => c.trim() );
+                let cookiesNEW = details.requestHeaders['x-cookie'].split( ';' ).map( c => c.trim() );
+                details.requestHeaders['Cookie'] = cookiesORG.concat( cookiesNEW ).join( '; ' );
+                delete details.requestHeaders['x-cookie'];
+            }
+
             //console.log( '  => REFERER:', details.requestHeaders['Referer'] );
             // it cannot hurt to pretend the request already passed through some other proxy servers ...
+            
             /*
             Disabled, because rejected by MangaDex
             if( details.requestHeaders['X-Forwarded-For'] === undefined ) {
