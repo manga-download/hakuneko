@@ -13,11 +13,12 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'mangatown';
-            super.label         = 'MangaTown';
-            super.isLocked      = false;
+            super.id         = 'mangatown';
+            super.label      = 'MangaTown';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://www.mangatown.com';
+            this.url         = 'https://www.mangatown.com';
             this.reqOptionsJSON = JSON.stringify( {
                 url: this.url,
                 gzip: true,
@@ -36,30 +37,42 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            Engine.Request.fetch( 'http://mangatown.hakuneko.download/cdn/mangas.json', ( error, response, content ) => {
-                callback( error, ( !error && content ? JSON.parse( content ) : [] ) );
-            });
+            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.json();
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getChapterList( manga, callback ) {
-            let options = JSON.parse( this.reqOptionsJSON );
-            options.url += manga.id;
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                if( error ) {
-                    callback( error, [] );
-                    return;
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
-                let dom = this.createDOM( content );
-                let chapterList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map(  ( element ) => {
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let chapterList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map( element => {
                     let link = element.getElementsByTagName( 'a' )[0];
                     let title = link.text.replace( manga.title, '' ).trim();
                     let texts = element.getElementsByTagName( 'span' );
-                    for(let i = 0; i < texts.length; i++) {
-                        if(texts[i].getAttribute('class') != 'time'){
-                            if(texts[i].textContent.match(/^Vol \d+/i)){
+                    for( let i = 0; i < texts.length; i++ ) {
+                        if( texts[i].getAttribute( 'class' ) != 'time' ) {
+                            if( texts[i].textContent.match( /^Vol \d+/i ) ) {
                                 title = '[' + texts[i].textContent + '] ' + title;
                             } else {
                                 title = title + ' ' + texts[i].textContent;
@@ -71,41 +84,41 @@
                         title: title,
                         language: 'en'
                     };
-                });
-                
-                callback(error, chapterList);
-            });
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
         }
 
         /**
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let options = JSON.parse( this.reqOptionsJSON );
-            if( /^https?:/.test( chapter.id ) ) {
-                options.url = chapter.id;
-            } else {
-                options.url += chapter.id
-            }
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    let dom = this.createDOM( content );
-                    let pageList = [...dom.querySelector( 'div.page_select' ).querySelectorAll( 'select option' )].map(  ( element ) => {
-                        // missing protocol in option.value
-                        if( element.value.startsWith( '//' ) ) {
-                            return ( this.id + ':' + element.value );
-                        }
-                        let uri = new URL( element.value );
-                        uri.protocol = this.id;
-                        return uri.href;
-                    } ).filter( page => !page.endsWith( 'featured.html' ) );
-                    callback( null, pageList );
-                } catch( e ) {
-                    callback( error, undefined );
+            fetch( ( chapter.id.startsWith( 'http' ) ? chapter.id : this.url + chapter.id ), this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let pageList = [...dom.querySelector( 'div.page_select' ).querySelectorAll( 'select option' )].map( element => {
+                    if( element.value.startsWith( '//' ) ) {
+                        return ( this.id + ':' + element.value );
+                    }
+                    let uri = new URL( element.value );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } ).filter( page => !page.endsWith( 'featured.html' ) );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
             } );
         }
 
@@ -115,44 +128,33 @@
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            let options = JSON.parse( this.reqOptionsJSON );
-            options.url = uri.href;
-            if( !this.isPageRequestNotFromElectronOrSelectedChapter( request ) ) {
-                return;
-            }
-            if( this.pageLock ) {
-                setTimeout( () => {
-                    this._pageProtocolHandler( request, callback );
-                }, this.pageLockDelay );
-                return;
-            }
-            this.pageLock = true;
-            Engine.Request.fetch( options, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    let dom = this.createDOM( content );
-                    let img = dom.querySelector( 'source#image' ).src;
-                    Engine.Request.fetch( { url: img, encoding: null }, ( error, response, content ) => {
-                        try {
-                            callback( {
-                                mimeType: response.headers['content-type'] || response.headers['Content-Type'],
-                                data: content
-                            } );
-                        } catch( e ) {
-                            console.warn( e.message, uri.href );
-                            callback( undefined );
-                        } finally {
-                            this.pageLock = false;
-                        }
-                    } );
-                } catch( e ) {
-                    console.warn( e.message, uri.href );
-                    callback( undefined );
-                } finally {
-                    this.pageLock = false;
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let image = dom.querySelector( 'source#image' );
+                return fetch( image.src, this.requestOptions );
+            } )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                return this._blobToBuffer( data );
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
             } );
         }
     }
