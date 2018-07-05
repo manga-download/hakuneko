@@ -16,9 +16,9 @@
             super.id         = 'mangastream';
             super.label      = 'MangaStream';
             super.isLocked   = false;
-            this.initialized = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://readms.net/';
+            this.url         = 'https://readms.net';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
@@ -166,11 +166,8 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let img = this.getRelativeLink( dom.querySelector( '#manga-page' ) );
-                if( !img ) {
-                    throw new Error( 'No element with id #manga-page found in page!' );
-                }
-                return fetch( img, this.requestOptions );
+                let source = this.getRelativeLink( dom.querySelector( '#manga-page' ) );
+                return fetch( source, this.requestOptions );
             } )
             .then( response => {
                 if( response.status !== 200 ) {
