@@ -13,42 +13,48 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'readcomicbooksonline';
-            super.label         = 'ReadComicBooksOnline';
-            super.isLocked      = false;
+            super.id         = 'readcomicbooksonline';
+            super.label      = 'ReadComicBooksOnline';
+            super.isLocked   = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://readcomicbooksonline.org';
-            this.urlOld         = 'http://readcomicbooksonline.com';
-            this.pageLock       = 0;
-            this.pageLockDelay  = 500;
+            this.url         = 'https://readcomicbooksonline.org';
+            this.urlOld      = 'http://readcomicbooksonline.com';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config         = undefined;
+            this.config = undefined;
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            Engine.Request.fetch( this.url + '/comics-list', ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
+            let promises = ['/comics-list', '/manga-list'].map( page => {
+                return fetch( this.url + page, this.requestOptions )
+                .then( response => {
+                    if( response.status !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                     }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive manga list (status code: ${response.statusCode})` );
-                    }
-                    let dom = this.createDOM( content );
-                    let mangaList = [...dom.querySelectorAll( 'div.content table tr td span a' )].map( ( element ) => {
+                    return response.text();
+                } )
+                .then( data => {
+                    let dom = this.createDOM( data );
+                    let mangaList = [...dom.querySelectorAll( 'div.content table tr td span a' )].map( element => {
                         return {
                             id: this.getRelativeLink( element ).replace( this.urlOld, '' ),
                             title: element.text.trim()
                         };
                     } );
-                    callback( null, mangaList );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, undefined );
-                }
+                    return Promise.resolve( mangaList );
+                } );
+            } );
+
+            Promise.all( promises )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
             } );
         }
 
@@ -56,27 +62,28 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetch( this.url + manga.id, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive chapter list (status code: ${response.statusCode})` );
-                    }
-                    let dom = this.createDOM( content );
-                    let chapterList = [...dom.querySelectorAll( '#chapterlist li.chapter a' )].map( ( element ) => {
-                        return {
-                            id: this.getRelativeLink( element ).replace( this.urlOld, '' ),
-                            title: element.text.trim(),
-                            language: 'en'
-                        };
-                    } );
-                    callback( null, chapterList );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, undefined );
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let chapterList = [...dom.querySelectorAll( 'div[id$="chapterlist"] li.chapter a' )].map( element => {
+                    let id = this.getRelativeLink( element ).replace( this.urlOld, '' );
+                    return {
+                        id: id + ( id.startsWith( '/readmanga/' ) ? '' : '/?q=fullchapter' ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'en'
+                    };
+                } ).filter( c => c.title !== '' );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
         }
 
@@ -84,23 +91,31 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetch( this.url + chapter.id + '/?q=fullchapter', ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Failed to receive page list (status code: ${response.statusCode})` );
-                    }
-                    let dom = this.createDOM( content );
-                    let pageList = [...dom.querySelectorAll( 'table tr:nth-child(3) td source' )].map( ( element ) => {
+            let isManga = chapter.id.startsWith( '/readmanga/' );
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let pageList = [];
+                if( isManga ) {
+                    pageList = [...dom.querySelectorAll( 'source.mangapic' )].map( element => {
+                        return ( element.src.replace( this.urlOld, '' ) );
+                    } );
+                } else {
+                    pageList = [...dom.querySelectorAll( 'table tr:nth-child(3) td source' )].map( element => {
                         return ( this.url + '/reader' + this.getRelativeLink( element ).replace( this.urlOld, '' ) );
                     } );
-                    callback( null, pageList );
-                } catch( e ) {
-                    console.error( e.message );
-                    callback( e, undefined );
                 }
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
             } );
         }
     }
