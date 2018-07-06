@@ -212,10 +212,23 @@
             console.log( 'Request.onBeforeSendHeadersHandler():', details );
             let uri = new URL( details.url );
 
-            // Overwrite the User-Agent header
+            // Overwrite the User-Agent header with the one provided by the connector
             if( details.requestHeaders['x-user-agent'] ) {
                 details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
                 delete details.requestHeaders['x-user-agent'];
+            } else {
+                // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ... chrome ... hakuneko ..." ) 
+                // with the random User-Agent
+
+                // FIXME: check if the request was made directly by the main browser window (e.g. img.src)
+                //        => contains "electron" and "hekuneko" keywords
+                // replace the user agent by the one that would be provided by the corresponding connector
+                // (some connectors need the same agent for all requests because of cloudflare bypass)
+                // or replace by default user agent if none is found ...
+
+                // PROBLEM: which connector's user agent must be used?
+
+                details.requestHeaders['User-Agent'] = this.userAgent;
             }
 
             // Overwrite the Referer header, but
