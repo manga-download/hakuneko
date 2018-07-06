@@ -43,9 +43,7 @@
                             title: element.text.trim()
                         };
                     } );
-                    return new Promise( ( resolve, reject ) => {
-                        resolve( mangaList );
-                    } );
+                    return Promise.resolve( mangaList );
                 } );
             } );
 
