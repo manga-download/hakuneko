@@ -16,15 +16,15 @@
   "builds": [
     {
       "name": "htdocs",
-      "bundle": true,
+      "bundle": false,
       "js": {
-        "minify": true
+        "minify": false
       },
       "css": {
-        "minify": true
+        "minify": false
       },
       "html": {
-        "minify": true
+        "minify": false
       }
     }
   ]
