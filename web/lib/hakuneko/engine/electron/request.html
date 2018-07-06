@@ -139,16 +139,12 @@
                         reject( new Error( errMessage + ' ' + uri ) );
                     }
                 } );
-
                 let options = {
                     httpReferrer: requestOptions.headers.get( 'x-referer' ) || url,
-                    userAgent: requestOptions.headers.get( 'x-user-agent' )/*,
-                    // extraHeaders String (optional) - Extra headers separated by "\n"
+                    // Assign the X-User-Agent header from the corresponding connector (cloudflare challenge consistency)
+                    userAgent: requestOptions.headers.get( 'x-user-agent' ),
                     // TODO: add all headers from request options ...
-                    extraHeaders: 'X-Forwarded-For: ' + requestOptions.headers.get( 'x-forwarded-for' )
-                                  + '\nForwarded: ' + requestOptions.headers.get( 'forwarded' )
-                                  + '\nCookie: PHPSESSID=' + Math.random() + ';'
-                    */
+                    //extraHeaders: 
                 };
                 win.loadURL( url, options );
             } );
@@ -216,21 +212,13 @@
             if( details.requestHeaders['x-user-agent'] ) {
                 details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
                 delete details.requestHeaders['x-user-agent'];
-            } else {
-                // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ... chrome ... hakuneko ..." ) 
-                // with the random User-Agent
-
-                // FIXME: check if the request was made directly by the main browser window (e.g. img.src)
-                //        => contains "electron" and "hekuneko" keywords
-                // replace the user agent by the one that would be provided by the corresponding connector
-                // (some connectors need the same agent for all requests because of cloudflare bypass)
-                // or replace by default user agent if none is found ...
-
-                // PROBLEM: which connector's user agent must be used?
-
+            }
+            // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ..." )
+            if( details.requestHeaders['User-Agent'].indexOf( 'electron' ) > -1 ) {
+                // FIXME: detect correspondng connector for this request ...
+                // Assign the X-User-Agent header from the corresponding connector (cloudflare challenge consistency)
                 details.requestHeaders['User-Agent'] = this.userAgent;
             }
-
             // Overwrite the Referer header, but
             // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
             if( !uri.pathname.endsWith( 'chk_jschl' ) ) {
@@ -239,8 +227,8 @@
                     details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
                     delete details.requestHeaders['x-referer'];
                 } else {
-                    // some manga connectors (e.g. DynastyScans) require a referer of the same origin for images (ticket #2, commit [758df9])
-                    // => overwrite the referer for each request
+                    // some manga connectors (e.g. DynastyScans) require a referer of the same origin for images
+                    // (ticket #2, commit [758df9]) => overwrite the referer for each request
                     details.requestHeaders['Referer'] = details.url;
                 }
             }
@@ -271,6 +259,7 @@
                 details.requestHeaders['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
             }
             */
+
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
