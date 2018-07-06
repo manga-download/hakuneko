@@ -13,131 +13,112 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id            = 'tumangaonline';
-            super.label         = 'TuMangaOnline';
-            super.isLocked      = false;
-            this.initialized    = true;
+            super.id         = 'tumangaonline';
+            super.label      = 'TuMangaOnline';
+            super.isLocked   = false;
+            this.initialized = false;
             // Private members for internal usage only (convenience)
-            this.url            = 'https://tumangaonline.me';
-            this.reqOptionsJSON = JSON.stringify( {
-                url: this.url,
-                headers: {
-                    //'Cache-Mode': 'no-cache',
-                    'User-Agent': 'Mozilla/5.0',
-                    'Referer': this.url
-                }
-            } );
+            this.url         = 'https://tumangaonline.me';
+            this.requestOptions.headers.set( 'x-referer', this.url );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config         = undefined;
+            this.config = undefined;
+
+            this._initializeConnector();
+            // register a protocol handler to intercept requests (with custom 'tumangaonline' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
          *
          */
-        _getMangaList( callback, pageFrom, pageTo, mangaList ) {
-            // https://tumangaonline.me/library?order_item=alphabetically&order_dir=desc&page=123
-            pageFrom = pageFrom || 1;
-            pageTo = pageTo || 9999;
-            mangaList = mangaList || [];
-            if( pageFrom > pageTo ) {
-                callback( null, mangaList );
-                return;
-            }
-            let options = JSON.parse( this.reqOptionsJSON );
-            options.url += '/api/v1/mangas';
-            options['qs'] = {
-                //categorias: '[]',
-                defecto: 1, // TODO: what is this ???
-                //generos: '[]',
-                itemsPerPage: 1500, // 1750,
-                page: pageFrom,
-                puntuacion: 0,
-                searchBy: 'nombre',
-                sortDir: 'desc'
-            };
-            Engine.Request.cloudflare( options, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
+        _initializeConnector() {
+            let domains = [
+                this.url,
+                'https://img1.tumangaonline.me'
+            ];
+            let promises = domains.map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '' ) );
+            Promise.all( promises )
+            .then( result => {
+                this.initialized = true;
+            } )
+            .catch( error => {
+                console.error( error, this );
+                this.initialized = undefined;
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let pageCount = 580; //650; // 584
+            let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                return fetch( this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ), this.requestOptions )
+                .then( response => {
+                    if( response.status !== 200 ) {
+                        throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                     }
-                    console.log(content,options.url);
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Partial manga list responded with status code: ${response.statusCode}` );
-                    }
-                    content = JSON.parse( content );
-                    let mangas = content.data.map( ( manga ) => {
+                    return response.text();
+                } )
+                .then( data => {
+                    let dom = this.createDOM( data );
+                    let mangaList = [...dom.querySelectorAll( 'div.row div.element a' )].map( element => {
+                        // use title attribute to avoid cf-mail decryption
                         return {
-                            id: manga.id,
-                            title: manga.nombre
+                            id: this.getRelativeLink( element ),
+                            title: element.querySelector( 'h4' ).title.trim()
                         };
                     } );
-                    if( !mangas || mangas.length < 1 ) {
-                        throw new Error( 'Partial manga list is invalid!' );
-                    }
-                    pageTo = content.last_page;
-                    mangaList = mangaList.concat( mangas );
-                    //console.log( 'Page:', content.current_page, '/', content.last_page, 'From:', content.from, '-', content.to, '(', content.data.length, ')', 'of', content.total );
-                } catch ( e ) {
-                    callback( e, mangaList );
-                    return;
+                    return Promise.resolve( mangaList );
+                } )
+            } );
+
+            Promise.all( promises )
+            .then( mangas => {
+                if( mangas[mangas.length-1].length > 0 ) {
+                    throw new Error( 'The predefined manga page count of ' + pageCount + ' has been reached, but there are still more mangas available!' );
                 }
-                this._getMangaList( callback, pageFrom + 1, pageTo, mangaList );
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
             } );
         }
  
         /**
          *
          */
-        _getChapterList( manga, callback, pageFrom, pageTo, chapterList ) {
-            pageFrom = pageFrom || 1;
-            pageTo = pageTo || 9999;
-            chapterList = chapterList || [];
-            if( pageFrom > pageTo ) {
-                callback( null, chapterList );
-                return;
-            }
-            let options = JSON.parse( this.reqOptionsJSON );
-            options.url += `/api/v1/mangas/${manga.id}/capitulos`;
-            options['qs'] = {
-                tomo: -1, // => volume number
-                itemsPerPage: 50, // does not apply (always 25)
-                page: pageFrom,
-            };
-            Engine.Request.cloudflare( options, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Partial chapter list responded with status code: ${response.statusCode}` );
-                    }
-                    content = JSON.parse( content );
-                    let chapters = content.data.reduce( ( result, chapter ) => {
-                        let vol = ( chapter.tomo && chapter.tomo.tomo ? `Vol.${chapter.tomo.tomo} ` : '' );
-                        let ch = `Ch.${chapter.numCapitulo}`;
-                        let title = ( chapter.nombre ? ` - ${chapter.nombre}` : '' );
-                        let translations = chapter.subidas.map( ( translation ) => {
-                            let scanlator = ( translation.scanlation.nombre ? ` [${translation.scanlation.nombre}]` : '' );
-                            return {
-                                id: `${manga.id}/${chapter.numCapitulo}/${translation.idScan}`,
-                                title: vol + ch + title + scanlator,
-                                language: translation.idioma.idioma,
-                                //scanlator: translation.scanlation.nombre
-                            };
-                        } );
-                        return result.concat( translations );
-                    }, [] ); // [] is the initial value for the result, if not provided => first item in array is initil value
-                    if( !chapters || chapters.length < 1 ) {
-                        throw new Error( 'Partial chapter list is invalid!' );
-                    }
-                    pageTo = content.last_page;
-                    chapterList = chapterList.concat( chapters );
-                    //console.log( 'Page:', content.current_page, '/', content.last_page, 'From:', content.from, '-', content.to, '(', content.data.length, ')', 'of', content.total );
-                } catch ( e ) {
-                    callback( e, chapterList );
-                    return;
+        _getChapterList( manga, callback ) {
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
                 }
-                this._getChapterList( manga, callback, pageFrom + 1, pageTo, chapterList );
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let chapterList = [...dom.querySelectorAll( 'div.chapters ul.list-group li.list-group-item.p-0' )].reduce( ( accumulator, element ) => {
+                    let title = element.querySelector( 'h4  a' ).text;
+                    let chapters = [...element.querySelectorAll( 'ul.chapter-list li.list-group-item' )].map( element => {
+                        let id = element.querySelector( 'div.text-right a' );
+                        let language = element.querySelector( 'i.flag-icon' );
+                        let scanlator = element.querySelector( 'div.text-truncate a' ).text.trim();
+                        scanlator = ( scanlator ? ' [' + scanlator + ']' : '' );
+                        return {
+                            id: this.getRelativeLink( id ).replace( /paginated[\/]?\d*$/, '/cascade' ),
+                            title: title.replace( manga.title, '' ).trim() + scanlator,
+                            language: language.className.match( /flag-icon-([a-z]+)/ )[1]
+                        };
+                    } );
+                    return accumulator.concat( chapters );
+                }, [] );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
         }
 
@@ -145,38 +126,59 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            // https://tumangaonline.me/viewer/5b0bb2d1cddd8/paginated
-            // https://tumangaonline.me/viewer/5b0bb2d1cddd8/cascade
-            let query = chapter.id.split( '/' );
-            let options = JSON.parse( this.reqOptionsJSON );
-            options.url += '/api/v1/imagenes';
-            options['qs'] = {
-                // visto: true,// TODO: what is this ???
-                idManga: query[0],
-                numeroCapitulo: query[1],
-                idScanlation: query[2]
-            };
-            Engine.Request.cloudflare( options, ( error, response, content ) => {
-                try {
-                    if( error ) {
-                        throw error;
-                    }
-                    if( response.statusCode !== 200 ) {
-                        throw new Error( `Page list responded with status code: ${response.statusCode}` );
-                    }
-                    content = JSON.parse( content );
-                    content = JSON.parse( content.imagenes );
-                    let pages = content.map( ( page ) => {
-                        // image host hardcoded in: https://www.tumangaonline.com/js/controllers.js
-                        return `https://img1.tumangaonline.me/subidas/${query[0]}/${query[1]}/${query[2]}/${page}`;
-                    } );
-                    if( !pages || pages.length < 1 ) {
-                        throw new Error( 'Page list is invalid!' );
-                    }
-                    callback( error, pages );
-                } catch ( e ) {
-                    callback( e, [] );
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( !response.redirected ) {
+                    throw new Error( 'No redirect detected ...' + response.url );
                 }
+                return fetch( response.url.replace( /paginated[\/]?\d*$/, 'cascade' ), this.requestOptions );
+            } )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let pageList = [...dom.querySelectorAll( 'div.viewer-container source.viewer-image' )].map( element => {
+                    // NOTE: Use custom protocol and protocol handler to assign the X-User-Agent
+                    //       header from this connector (cloudflare challenge consistency)
+                    let uri = new URL( element.src );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         * This protocol handler is just a workaround, because requests made by the BrowserWindow
+         * may not use the same User-Agent which was used to solve cloudflare ...
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                return this._blobToBuffer( data );
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
             } );
         }
     }
