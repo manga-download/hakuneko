@@ -55,6 +55,9 @@
             }
         }
 
+        /**
+         *
+         */
         downloadPages( directory, callback ) {
             this.setStatus( DownloadStatus.downloading );
             this.chapter.getPages( ( error, data ) => {
