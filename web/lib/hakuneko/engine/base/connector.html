@@ -50,14 +50,13 @@
             this.isUpdating = true;
             this._getMangaList( ( error, mangas ) => {
                 if( error || !mangas ) {
-                    console.error( ( error ? error.message : 'Failed updating mangas!' ) );
                     this.isUpdating = false;
                     callback( error, undefined );
                     return;
                 }
                 mangas.sort( ( a, b ) => {
                     return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
-                });
+                } );
                 // save manga list to local storage
                 Engine.Storage.saveMangaList( this.id, mangas, ( error ) => {
                     // callback function may access update status, so set it before executing callback
@@ -71,8 +70,8 @@
                         // de-serialize manga list from local storage
                         this.getMangas( callback );
                     }
-                });
-            });
+                } );
+            } );
         }
 
         /**

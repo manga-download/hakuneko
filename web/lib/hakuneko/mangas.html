@@ -243,7 +243,10 @@
                         this.notifyPath( 'selectedConnector.isUpdating' );
                     }
                     this.$.status.removeFromQueue( statusID );
-                });
+                    if( error ) {
+                        alert( 'Failed to update manga list for ' + connector.label + '\n\n' + error.message );
+                    }
+                } );
                 // trigger update for refresh button style (update started)
                 this.notifyPath( 'selectedConnector.isUpdating' );
             }
