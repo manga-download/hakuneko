@@ -51,7 +51,7 @@
          *
          */
         _getMangaList( callback ) {
-            let pageCount = 650; // 584
+            let pageCount = 750; // 584
             let promises = [...( new Array( pageCount ) ).keys()].map( page => {
                 return fetch( this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ), this.requestOptions )
                 .then( response => {
