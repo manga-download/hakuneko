@@ -5,7 +5,6 @@
     "author": "Ronny Wegener <wegener.ronny@gmail.com>",
     "main": "main.js",
     "dependencies": {
-        "jszip": "",
-        "request": ""
+        "jszip": ""
     }
 }

@@ -71,12 +71,34 @@ function activateWindow() {
     
     win.setMenu( null );
 
-    if( config.app.developer ) {
-        win.webContents.openDevTools();
-    }
-
-    cache.update( config.app.url.href, config.cache.directory, ( error ) => {
+    let load = () => {
         win.loadURL( config.cache.url.href );
+        if( config.app.developer ) {
+            win.webContents.openDevTools();
+        }
+    };
+
+    cache.update( config.app.url.href, config.cache.directory )
+    .then( version => {
+        load();
+        electron.dialog.showMessageBox( win, {
+            type: 'info',
+            message: 'HakuNeko has been updated\nrev.' + version,
+            buttons: ['OK']
+        }, ( button, checkbox ) => {} );
+    } )
+    .catch( error => {
+        load();
+        if( error ) {
+            console.error( error );
+            /*
+            electron.dialog.showMessageBox( win, {
+                type: 'error',
+                message: 'HakuNeko update failed\n' + error,
+                buttons: ['OK']
+            }, ( button, checkbox ) => {} );
+            */
+        }
     } );
 
     /**

@@ -89,7 +89,7 @@ module.exports = {
         key: pubkey
     },
     cache: {
-        url: ( testURL ? getURL( testURL ) : getURL( cacheURL )), // ( <is online> ? getURL( appURL ) : getURL( cacheURL ) ),
+        url: ( testURL ? getURL( testURL ) : getURL( cacheURL ) ), // ( <is online> ? getURL( appURL ) : getURL( cacheURL ) ),
         directory: getCacheDirectory()
     }
 };

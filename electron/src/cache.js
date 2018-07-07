@@ -2,165 +2,210 @@ const fs = require( 'fs' );
 const path = require( 'path' );
 const jszip = require( 'jszip' );
 const url = require( 'url' );
-const request = require( 'request' );
+const http = require( 'http' );
 const crypto = require( 'crypto' );
 const config = require( './config' );
 
 var cache = {};
 
 /**
- * 
- * @param {*} directory 
+ * Helper function to delete a file or directory with all its content.
+ * @param {*} entry 
  */
 function deleteFileEntry( entry ) {
-    if( fs.existsSync( entry ) ) {
-        let info = fs.lstatSync( entry );
-        if( info.isDirectory() ) {
-            let children = fs.readdirSync( entry );
-            for( let child of children ) {
-                deleteFileEntry( path.join( entry, child ) )
+    // TODO: rewrite to async ...
+    try {
+        if( fs.existsSync( entry ) ) {
+            let info = fs.lstatSync( entry );
+            if( info.isDirectory() ) {
+                let children = fs.readdirSync( entry );
+                for( let child of children ) {
+                    deleteFileEntry( path.join( entry, child ) )
+                }
+                fs.rmdirSync( entry );
             }
-            fs.rmdirSync( entry );
+            if( info.isFile() ) {
+                fs.unlinkSync( entry );
+            }
         }
-        if( info.isFile() ) {
-            fs.unlinkSync( entry );
-        }
+        console.log( 'Deleted:', entry );
+        return Promise.resolve();
+    } catch( error ) {
+        return Promise.reject( error );
     }
 }
 
 /**
  * Helper function to recursively create all non-existing folders of the given path.
+ * @param {*} directory 
  */
 function createDirectoryChain( directory ) {
-    if( fs.existsSync( directory ) || directory === path.parse( directory ).root ) {
-        return;
+    // TODO: rewrite to async ...
+    try {
+        if( fs.existsSync( directory ) || directory === path.parse( directory ).root ) {
+            return;
+        }
+        createDirectoryChain( path.dirname( directory ) );
+        fs.mkdirSync( directory, '0755', true );
+        console.log( 'Created:', directory );
+        return Promise.resolve();
+    } catch( error ) {
+        return Promise.reject( error );
     }
-    createDirectoryChain( path.dirname( directory ) );
-    fs.mkdirSync( directory, '0755', true );
 }
 
 /**
- * 
- * @param {*} archiveData 
- * @param {*} ouputDirectory 
+ * Extract an entry fron an archive to the given directory
+ * and resolve a promise with the path to the extracted file.
+ * @param {*} archive 
+ * @param {*} directory 
+ * @param {*} entry 
  */
-function extractArchive( archiveData, ouputDirectory, callback ) {
-    let zip = new jszip();
-    zip.loadAsync( archiveData, {} ).then( ( unzip ) => {
-        deleteFileEntry( ouputDirectory );
-        let promises = [];
-        unzip.forEach( ( name, entry ) => {
-            promises.push( new Promise( ( resolve, reject ) => {
-                name = path.join( ouputDirectory, name );
-                if( entry.dir ) {
-                    createDirectoryChain( name );
-                    resolve();
-                } else {
-                    createDirectoryChain( path.dirname( name ) );
-                    entry.async( 'uint8array' ).then( ( data ) => {
-                        fs.writeFile( name, data, function( error ) {
-                            if( error ) {
-                                reject( error );
-                            } else {
-                                resolve();
-                            }
-                        });
-                    }).catch( ( error ) => {
+function extractZipEntry( archive, directory, entry ) {
+    let file = path.join( directory, entry );
+    if( archive.files[entry].dir ) {
+        return createDirectoryChain( file );
+    } else {
+        return archive.files[entry].async( 'uint8array' )
+        .then( data => {
+            return new Promise( ( resolve, reject ) => {
+                fs.writeFile( file, data, error => {
+                    if( error ) {
                         reject( error );
-                    });
-                }
-            }));
-        });
-        Promise.all( promises ).then( (data ) => {
-            callback( null );
-        }).catch( ( error ) => {
-            callback( error );
-        });
-    }).catch( ( error ) => {
-        callback( error );
-    });
-}
-
-/**
- * 
- * @param {string} appVersionFile - 
- * @param {string} cacheVersionFile - 
- * @param {cache~updateRequiredCallback} callback 
- */
-function updateRequired( appVersionFile, cacheVersionFile, callback ) {
-    // get latest version from web
-    request.get( appVersionFile, ( error, response, content ) => {
-        if( !error && response.statusCode === 200 ) {
-            let appVersion = content.substring( 0, 6 );
-            // get current version from cache
-            fs.readFile( cacheVersionFile, 'utf8', ( error, data ) => {
-                if( error || appVersion !== data.trim() ) {
-                    callback( null, appVersion, url.resolve( appVersionFile, content ) );
-                } else {
-                    callback( new Error( 'Cached revision is already the same as the online revision' ), undefined, undefined );
-                }
-            });
-        } else {
-            callback( error, undefined, undefined );
-        }
-    });
-}
-
-/**
- * 
- * @param {*} revision 
- * @param {*} callback 
- */
-function getArchive( appArchiveFileURL, callback ) {
-    request.get( { url: appArchiveFileURL, encoding: null }, ( error, response, archive ) => {
-        if( !error && response.statusCode === 200 ) {
-            callback( null, archive );
-        } else {
-            callback( error, undefined );
-        }
-    });
-};
-
-/**
- * Download latest version of the web app and store to the local application cache
- * @param {string} appArchiveURL - URL where the archive, public key and signature are stored (must have a trailing slash).
- * @param {string} cacheDirectory - Directory where the web app is installed locally.
- * @param {*} callback Function that will be executed after the update process is complete.
- */
-cache.update = ( appArchiveURL, cacheDirectory, callback ) => {
-    // never update when in developer mode
-    if( config.app.developer ) {
-        callback( /*new Error( 'Update prohibited while in developer mode' )*/ null );
-        return;
-    }
-    let cacheVersionFile = path.join( cacheDirectory, 'version' );
-    //
-    updateRequired( appArchiveURL, cacheVersionFile, ( error, archiveVersion, archiveURL ) => {
-        //
-        if( !error && archiveURL ) {
-            getArchive( archiveURL, ( error, archive ) => {
-                if( !error && archive ) {
-                    let signature = url.parse( archiveURL, true ).query.signature;
-                    let verify = crypto.createVerify( 'RSA-SHA256' );
-                    verify.update( archive );
-                    if( verify.verify( config.app.key, Buffer.from( signature, 'hex' ) ) ) {
-                        extractArchive( archive, cacheDirectory, ( error ) => {
-                            if( !error ) {
-                                fs.writeFileSync( cacheVersionFile, archiveVersion );
-                            }
-                            callback( error );
-                        });
                     } else {
-                        callback( new Error( 'Application archive on server has invalid signature: ' + signature ) );
+                        console.log( 'Extracted:', file );
+                        resolve( file );
                     }
-                } else {
-                    callback( error );
-                }
-            });
-        } else {
-            callback( error );
+                } );
+            } );
+        } );
+    }
+}
+
+/**
+ * Extract the files from a raw archive buffer to the given directory.
+ * @param {*} buffer 
+ * @param {*} directory 
+ */
+function extractArchive( buffer, directory ) {
+    let zip = new jszip();
+    return zip.loadAsync( buffer, {} )
+    .then( archive => {
+        return deleteFileEntry( directory )
+        .then( () => Promise.resolve( archive ) );
+    } )
+    .then( archive => {
+        let promises = Object.keys( archive.files ).map( entry => extractZipEntry( archive, directory, entry ) );
+        return Promise.all( promises );
+    } );
+}
+
+/**
+ * Download content via HTTP.
+ * @param {*} options 
+ */
+function request( options ) {
+    return new Promise( ( resolve, reject ) => {
+        let request = http.request( options, response => {
+            if( response.statusCode !== 200 ) {
+                reject( new Error( 'Status: ' + response.statusCode ) );
+            }
+            let data = [];
+            //response.setEncoding( 'utf8' );
+            response.on( 'data', chunk => data.push( chunk ) );
+            response.on( 'end', () => resolve( Buffer.concat( data ) ) );
+        } );
+        request.on( 'error', error => reject( error ) );
+        //request.write( /* REQUEST BODY */ );
+        request.end();
+    } );
+}
+
+/**
+ * Get the version of the currently installed HakuNeko web-app.
+ * @param {*} file 
+ */
+function getLocalVersionNumber( file ) {
+    return new Promise( ( resolve, reject ) => {
+        fs.readFile( file, 'utf8', ( error, data ) => {
+            if( error ) {
+                resolve( undefined );
+            } else {
+                resolve( data.trim() );
+            }
+        } );
+    } );
+}
+
+/**
+ * Get the info for the latest available update of the HakuNeko web-app.
+ * @param {*} uri 
+ */
+function getRemoteUpdateInfo( uri ) {
+    return request( uri )
+    .then( data => {
+        let link = data.toString( 'utf8' );
+        let update = {
+            version: link.substring( 0, 6 ),
+            signature: url.parse( link, true ).query.signature,
+            link: url.resolve( uri, link )
         }
-    });
+        return Promise.resolve( update );
+    } );
+}
+
+/**
+ * Download the latest version of the HakuNeko web-app.
+ * @param {string} updateURL - URL containing the latest update info.
+ * @param {string} cacheDirectory - Directory where the web-app is installed locally.
+ */
+cache.update = ( updateURL, cacheDirectory ) => {
+
+    if( config.app.developer ) {
+        return Promise.reject( 'Automatic updates are disabled when in developer mode!' );
+    }
+
+    let cacheVersionFile = path.join( cacheDirectory, 'version' );
+    console.log( 'Checking for update:', updateURL );
+    return getLocalVersionNumber( cacheVersionFile )
+    .then( version => {
+        console.log( 'Local revision:', version );
+        return getRemoteUpdateInfo( updateURL )
+        .then( update => {
+            console.log( 'Remote revision:', update.version );
+            if( update.version === version ) {
+                return Promise.reject( null );
+            } else {
+                return Promise.resolve( update );
+            }
+        } )
+    } )
+    .then( update => {
+        console.log( 'Updating...' );
+        return request( update.link )
+        .then( data => {
+            let validator = crypto.createVerify( 'RSA-SHA256' );
+            validator.update( data );
+            if( !validator.verify( config.app.key, Buffer.from( update.signature, 'hex' ) ) ) {
+                throw new Error( 'Integrity check of update failed! The signature does not match the update package.' );
+            } else {
+                return extractArchive( data, cacheDirectory )
+                .then( () => Promise.resolve( update.version ) );
+            }
+        } );
+    } )
+    .then( version => {
+        console.log( 'Update complete' );
+        return new Promise( ( resolve, reject ) => {
+            fs.writeFile( cacheVersionFile, version, error => {
+                if( error ) {
+                    reject( error );
+                } else {
+                    resolve( version );
+                }
+            } );
+        } );
+    } );
 }
 
 module.exports = cache;
