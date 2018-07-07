@@ -91,24 +91,7 @@ function activateWindow() {
         load();
         if( error ) {
             console.error( error );
-            /*
-            electron.dialog.showMessageBox( win, {
-                type: 'error',
-                message: 'HakuNeko update failed\n' + error,
-                buttons: ['OK']
-            }, ( button, checkbox ) => {} );
-            */
         }
-    } );
-
-    /**
-     * Replace any existing event listener function registered by previous browser window that would be released when reloding page.
-     * This prevents the "Attempting to call a function in a renderer window that has been closed or released" error.
-     */
-    win.webContents.on( 'devtools-reload-page', () => {
-        // no longer required to clear the event, because callback from renderer is no longer linked directly,
-        // it is now called by injecting javascript name)
-        //electron.session.defaultSession.webRequest.onBeforeSendHeaders( null, null );
     } );
 
     win.on( 'closed', () => {
@@ -122,9 +105,7 @@ function activateWindow() {
  * Quit aplication, except for OSX
  */
 function closeWindow () {
-    //if( process.platform !== 'darwin' ) {
-        electron.app.quit();
-    //}
+    electron.app.quit();
 }
 
 /************************
