@@ -37,7 +37,7 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( 'div.group-page a.page:last-of-type' );
+                let pageCount = dom.querySelector( 'div.phan-trang a.page:last-of-type' );
                 pageCount = parseInt( new URL( pageCount.href ).searchParams.get( 'page' ) );
                 return Promise.resolve( pageCount );
             } )
