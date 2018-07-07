@@ -1,0 +1,16 @@
+{
+  "plugins": {
+    "local": {
+      "browserOptions": {
+        "chrome": [
+          "no-sandbox",
+          "headless",
+          "disable-gpu"
+        ],
+        "firefox": [
+          "-headless"
+        ]
+      }
+    }
+  }
+}

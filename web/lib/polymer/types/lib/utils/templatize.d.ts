@@ -71,8 +71,9 @@ declare class TemplateInstanceBase extends
    * dispatch events safely no-op.
    *
    * @param event Event to dispatch
+   * @returns Always true.
    */
-  dispatchEvent(event: Event|null): any;
+  dispatchEvent(event: Event|null): boolean;
 }
 
 declare namespace templateInfo {
@@ -83,6 +84,39 @@ declare namespace templateInfo {
 
 declare namespace Polymer {
 
+  /**
+   * Module for preparing and stamping instances of templates that utilize
+   * Polymer's data-binding and declarative event listener features.
+   *
+   * Example:
+   *
+   *     // Get a template from somewhere, e.g. light DOM
+   *     let template = this.querySelector('template');
+   *     // Prepare the template
+   *     let TemplateClass = Polymer.Templatize.templatize(template);
+   *     // Instance the template with an initial data model
+   *     let instance = new TemplateClass({myProp: 'initial'});
+   *     // Insert the instance's DOM somewhere, e.g. element's shadow DOM
+   *     this.shadowRoot.appendChild(instance.root);
+   *     // Changing a property on the instance will propagate to bindings
+   *     // in the template
+   *     instance.myProp = 'new value';
+   *
+   * The `options` dictionary passed to `templatize` allows for customizing
+   * features of the generated template class, including how outer-scope host
+   * properties should be forwarded into template instances, how any instance
+   * properties added into the template's scope should be notified out to
+   * the host, and whether the instance should be decorated as a "parent model"
+   * of any event handlers.
+   *
+   *     // Customize property forwarding and event model decoration
+   *     let TemplateClass = Polymer.Templatize.templatize(template, this, {
+   *       parentModel: true,
+   *       forwardHostProp(property, value) {...},
+   *       instanceProps: {...},
+   *       notifyInstanceProp(instance, property, value) {...},
+   *     });
+   */
   namespace Templatize {
 
 
@@ -129,6 +163,11 @@ declare namespace Polymer {
      *   from `instance.parentModel` in cases where template instance nesting
      *   causes an inner model to shadow an outer model.
      *
+     * All callbacks are called bound to the `owner`. Any context
+     * needed for the callbacks (such as references to `instances` stamped)
+     * should be stored on the `owner` such that they can be retrieved via
+     * `this`.
+     *
      * When `options.forwardHostProp` is declared as an option, any properties
      * referenced in the template will be automatically forwarded from the host of
      * the `<template>` to instances, with the exception of any properties listed in
@@ -138,14 +177,18 @@ declare namespace Polymer {
      * always be set to the instance (regardless of whether they would normally
      * be forwarded from the host).
      *
-     * Note that the class returned from `templatize` is generated only once
-     * for a given `<template>` using `options` from the first call for that
-     * template, and the cached class is returned for all subsequent calls to
-     * `templatize` for that template.  As such, `options` callbacks should not
-     * close over owner-specific properties since only the first `options` is
-     * used; rather, callbacks are called bound to the `owner`, and so context
-     * needed from the callbacks (such as references to `instances` stamped)
-     * should be stored on the `owner` such that they can be retrieved via `this`.
+     * Note that `templatize()` can be run only once for a given `<template>`.
+     * Further calls will result in an error. Also, there is a special
+     * behavior if the template was duplicated through a mechanism such as
+     * `<dom-repeat>` or `<test-fixture>`. In this case, all calls to
+     * `templatize()` return the same class for all duplicates of a template.
+     * The class returned from `templatize()` is generated only once using
+     * the `options` from the first call. This means that any `options`
+     * provided to subsequent calls will be ignored. Therefore, it is very
+     * important not to close over any variables inside the callbacks. Also,
+     * arrow functions must be avoided because they bind the outer `this`.
+     * Inside the callbacks, any contextual information can be accessed
+     * through `this`, which points to the `owner`.
      *
      * @returns Generated class bound to the template
      *   provided

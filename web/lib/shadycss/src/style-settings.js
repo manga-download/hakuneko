@@ -10,15 +10,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-export let nativeShadow = !(window['ShadyDOM'] && window['ShadyDOM']['inUse']);
-export let nativeCssVariables;
+export const nativeShadow = !(window['ShadyDOM'] && window['ShadyDOM']['inUse']);
+let nativeCssVariables_;
 
 /**
  * @param {(ShadyCSSOptions | ShadyCSSInterface)=} settings
  */
 function calcCssVariables(settings) {
   if (settings && settings['shimcssproperties']) {
-    nativeCssVariables = false;
+    nativeCssVariables_ = false;
   } else {
     // chrome 49 has semi-working css vars, check if box-shadow works
     // safari 9.1 has a recalc bug: https://bugs.webkit.org/show_bug.cgi?id=155782
@@ -26,13 +26,13 @@ function calcCssVariables(settings) {
     // so fall back on native if we do not detect ShadyDOM
     // Edge 15: custom properties used in ::before and ::after will also be used in the parent element
     // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/12414257/
-    nativeCssVariables = nativeShadow || Boolean(!navigator.userAgent.match(/AppleWebKit\/601|Edge\/15/) &&
+    nativeCssVariables_ = nativeShadow || Boolean(!navigator.userAgent.match(/AppleWebKit\/601|Edge\/15/) &&
       window.CSS && CSS.supports && CSS.supports('box-shadow', '0 0 0 var(--foo)'));
   }
 }
 
 if (window.ShadyCSS && window.ShadyCSS.nativeCss !== undefined) {
-  nativeCssVariables = window.ShadyCSS.nativeCss;
+  nativeCssVariables_ = window.ShadyCSS.nativeCss;
 } else if (window.ShadyCSS) {
   calcCssVariables(window.ShadyCSS);
   // reset window variable to let ShadyCSS API take its place
@@ -40,3 +40,8 @@ if (window.ShadyCSS && window.ShadyCSS.nativeCss !== undefined) {
 } else {
   calcCssVariables(window['WebComponents'] && window['WebComponents']['flags']);
 }
+
+// Hack for type error under new type inference which doesn't like that
+// nativeCssVariables is updated in a function and assigns the type
+// `function(): ?` instead of `boolean`.
+export const nativeCssVariables = /** @type {boolean} */(nativeCssVariables_);

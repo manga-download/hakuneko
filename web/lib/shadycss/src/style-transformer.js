@@ -40,8 +40,13 @@ class StyleTransformer {
   get SCOPE_NAME() {
     return SCOPE_NAME;
   }
-  // Given a node and scope name, add a scoping class to each node
-  // in the tree. This facilitates transforming css into scoped rules.
+  /**
+   * Given a node and scope name, add a scoping class to each node
+   * in the tree. This facilitates transforming css into scoped rules.
+   * @param {?} node
+   * @param {?} scope
+   * @param {?=} shouldRemoveScope
+   */
   dom(node, scope, shouldRemoveScope) {
     // one time optimization to skip scoping...
     if (node['__styleScoped']) {
@@ -56,7 +61,9 @@ class StyleTransformer {
       this.element(node, selector, shouldRemoveScope);
     }
     let c$ = (node.localName === 'template') ?
-      (node.content || node._content).childNodes :
+      // In case the template is in svg context, fall back to the node
+      // since it won't be an HTMLTemplateElement with a .content property
+      (node.content || node._content || node).childNodes :
       node.children || node.childNodes;
     if (c$) {
       for (let i=0; i<c$.length; i++) {
@@ -64,7 +71,11 @@ class StyleTransformer {
       }
     }
   }
-
+  /**
+   * @param {?} element
+   * @param {?} scope
+   * @param {?=} shouldRemoveScope
+   */
   element(element, scope, shouldRemoveScope) {
     // note: if using classes, we add both the general 'style-scope' class
     // as well as the specific scope. This enables easy filtering of all
@@ -94,6 +105,11 @@ class StyleTransformer {
     }
   }
 
+  /**
+   * @param {?} element
+   * @param {?} styleRules
+   * @param {?=} callback
+   */
   elementStyles(element, styleRules, callback) {
     let cssBuildType = element['__cssBuild'];
     // no need to shim selectors if settings.useNativeShadow, also

@@ -63,7 +63,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script>
-
     suite('basic features', function() {
       var scrollingRegion, xScroll;
 
@@ -78,7 +77,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         assert.equal(xScroll._scrollTargetWidth, 0, '_scrollTargetWidth');
         assert.equal(xScroll._scrollTargetHeight, 0, '_scrollTargetHeight');
         assert.equal(xScroll.scrollTarget, null, 'scrollTarget');
-        assert.equal(xScroll._defaultScrollTarget, xScroll.scrollTarget, '_defaultScrollTarget');
+        assert.equal(
+            xScroll._defaultScrollTarget,
+            xScroll.scrollTarget,
+            '_defaultScrollTarget');
       });
 
       test('invalid `scrollTarget` selector', function(done) {
@@ -104,13 +106,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           xScroll.scroll(0, 100);
           xScroll.toggleScrollListener(true);
           setTimeout(function() {
-            assert.isTrue(xScroll._scrollHandler.called, '_scrollHandler should be called');
+            assert.isTrue(
+                xScroll._scrollHandler.called, '_scrollHandler should be called');
             xScroll._scrollHandler.reset();
             assert.isFalse(xScroll._scrollHandler.called);
             xScroll.toggleScrollListener(false);
             xScroll.scroll(0, 200);
             setTimeout(function() {
-              assert.isFalse(xScroll._scrollHandler.called, '_scrollHandler should not be called');
+              assert.isFalse(
+                  xScroll._scrollHandler.called,
+                  '_scrollHandler should not be called');
               done();
             }, 100);
           }, 100);
@@ -164,8 +169,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           assert.equal(xScrollable._scrollTop, 50, '_scrollTop');
           assert.equal(xScrollable._scrollLeft, 50, '_scrollLeft');
-          assert.equal(xScrollable._scrollTargetWidth, scrollingRegion.offsetWidth, '_scrollTargetWidth');
-          assert.equal(xScrollable._scrollTargetHeight, scrollingRegion.offsetHeight, '_scrollTargetHeight');
+          assert.equal(
+              xScrollable._scrollTargetWidth,
+              scrollingRegion.offsetWidth,
+              '_scrollTargetWidth');
+          assert.equal(
+              xScrollable._scrollTargetHeight,
+              scrollingRegion.offsetHeight,
+              '_scrollTargetHeight');
 
           done();
         });
@@ -225,8 +236,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
           assert.equal(xScrollable._scrollTop, 50, '_scrollTop');
           assert.equal(xScrollable._scrollLeft, 50, '_scrollLeft');
-          assert.equal(xScrollable._scrollTargetWidth, window.innerWidth, '_scrollTargetWidth');
-          assert.equal(xScrollable._scrollTargetHeight, window.innerHeight, '_scrollTargetHeight');
+          assert.equal(
+              xScrollable._scrollTargetWidth,
+              window.innerWidth,
+              '_scrollTargetWidth');
+          assert.equal(
+              xScrollable._scrollTargetHeight,
+              window.innerHeight,
+              '_scrollTargetHeight');
 
           done();
         });
@@ -234,7 +251,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('scroll method', function(done) {
         flush(function() {
-
           xScrollable.scroll(1, 2);
 
           assert.equal(xScrollable._scrollLeft, 1);
@@ -298,7 +314,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       test('scroll method', function(done) {
         flush(function() {
-
           xScrollable.scroll(1, 2);
 
           assert.equal(xScrollable._scrollLeft, 1);
@@ -313,7 +328,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         });
       });
     });
-
   </script>
 
 </body>

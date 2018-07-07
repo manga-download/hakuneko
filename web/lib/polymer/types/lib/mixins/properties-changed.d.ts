@@ -56,7 +56,7 @@ declare namespace Polymer {
      *
      * @param name Name of property
      */
-    typeForProperty(name: string): any;
+    typeForProperty(name: string): void;
   }
 
   interface PropertiesChanged {
@@ -84,7 +84,7 @@ declare namespace Polymer {
      *
      * @param property Name of the property
      */
-    _addPropertyToAttributeMap(property: string): any;
+    _addPropertyToAttributeMap(property: string): void;
 
     /**
      * Defines a property accessor for the given property.
@@ -181,6 +181,21 @@ declare namespace Polymer {
      * should not be called in user code.
      */
     _flushProperties(): void;
+
+    /**
+     * Called in `_flushProperties` to determine if `_propertiesChanged`
+     * should be called. The default implementation returns true if
+     * properties are pending. Override to customize when
+     * `_propertiesChanged` is called.
+     *
+     * @param currentProps Bag of all current accessor values
+     * @param changedProps Bag of properties changed since the last
+     *   call to `_propertiesChanged`
+     * @param oldProps Bag of previous values for each property
+     *   in `changedProps`
+     * @returns true if changedProps is truthy
+     */
+    _shouldPropertiesChange(currentProps: object, changedProps: object, oldProps: object): boolean;
 
     /**
      * Callback called when any properties with accessors created via

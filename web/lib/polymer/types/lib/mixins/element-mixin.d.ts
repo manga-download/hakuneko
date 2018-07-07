@@ -76,7 +76,7 @@ declare namespace Polymer {
    *   `observedAttributes` implementation will automatically return an array
    *   of dash-cased attributes based on `properties`)
    */
-  function ElementMixin<T extends new (...args: any[]) => {}>(base: T): T & ElementMixinConstructor & Polymer.PropertyEffectsConstructor & Polymer.PropertiesMixinConstructor;
+  function ElementMixin<T extends new (...args: any[]) => {}>(base: T): T & ElementMixinConstructor & Polymer.PropertyEffectsConstructor & Polymer.TemplateStampConstructor & Polymer.PropertyAccessorsConstructor & Polymer.PropertiesChangedConstructor & Polymer.PropertiesMixinConstructor;
 
   interface ElementMixinConstructor {
     new(...args: any[]): ElementMixin;
@@ -197,6 +197,9 @@ declare namespace Polymer {
      * Example: `this.updateStyles({'--color': 'blue'})`
      *
      * These properties are retained unless a value of `null` is set.
+     *
+     * Note: This function does not support updating CSS mixins.
+     * You can not dynamically change the value of an `@apply`.
      *
      * @param properties Bag of custom property key/values to
      *   apply to this element.

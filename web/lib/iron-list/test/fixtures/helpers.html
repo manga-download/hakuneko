@@ -74,6 +74,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     var root = document;
     while (root && root.elementFromPoint) {
       el = root.elementFromPoint(x, y);
+      // In Safari, root.elementFromPoint() will return the host if nothing matches
+      // in the shadow root (https://bugs.webkit.org/show_bug.cgi?id=170743).
+      if (el === r) break;
       r = el || r;
       root = el ? el.shadowRoot : null;
     }

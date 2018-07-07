@@ -14,9 +14,10 @@ declare namespace Polymer {
 
   /**
    * `Polymer.IronA11yKeysBehavior` provides a normalized interface for processing
-   * keyboard commands that pertain to [WAI-ARIA best practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding).
-   * The element takes care of browser differences with respect to Keyboard events
-   * and uses an expressive syntax to filter key presses.
+   * keyboard commands that pertain to [WAI-ARIA best
+   * practices](http://www.w3.org/TR/wai-aria-practices/#kbd_general_binding). The
+   * element takes care of browser differences with respect to Keyboard events and
+   * uses an expressive syntax to filter key presses.
    *
    * Use the `keyBindings` prototype property to express what combination of keys
    * will trigger the callback. A key binding has the format
@@ -30,7 +31,8 @@ declare namespace Polymer {
    *        'esc:keyup': '_onKeyup'
    *      }
    *
-   * The callback will receive with an event containing the following information in `event.detail`:
+   * The callback will receive with an event containing the following information
+   * in `event.detail`:
    *
    *      _onKeydown: function(event) {
    *        console.log(event.detail.combo); // KEY+MODIFIER, e.g. "shift+tab"
@@ -42,7 +44,8 @@ declare namespace Polymer {
    * Use the `keyEventTarget` attribute to set up event handlers on a specific
    * node.
    *
-   * See the [demo source code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)
+   * See the [demo source
+   * code](https://github.com/PolymerElements/iron-a11y-keys-behavior/blob/master/demo/x-key-aware.html)
    * for an example.
    */
   interface IronA11yKeysBehavior {

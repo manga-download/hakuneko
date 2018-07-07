@@ -1091,9 +1091,17 @@ will only render 20.
       } else if (change.path === 'items.splices') {
         this._adjustVirtualIndex(change.value.indexSplices);
         this._virtualCount = this.items ? this.items.length : 0;
-        // Only blur activeElement if it is a descendant of the list (#505, #507).
-        var activeElement = this._getActiveElement();
-        if (this.contains(activeElement)) activeElement.blur();
+        // Only blur if at least one item is added or removed.
+        var itemAddedOrRemoved = change.value.indexSplices.some(function(splice) {
+          return splice.addedCount > 0 || splice.removed.length > 0;
+        });
+        if (itemAddedOrRemoved) {
+          // Only blur activeElement if it is a descendant of the list (#505, #507).
+          var activeElement = this._getActiveElement();
+          if (this.contains(activeElement)) {
+            activeElement.blur();
+          }
+        }
         // Render only if the affected index is rendered.
         var affectedIndexRendered = change.value.indexSplices.some(function(splice) {
           return splice.index + splice.addedCount >= this._virtualStart &&
@@ -1109,32 +1117,42 @@ will only render 20.
 
     _forwardItemPath: function(path, value) {
       path = path.slice(6); // 'items.'.length == 6
-      var dot = path.indexOf('.') + 1;
-      if (dot === 0) {
+      var dot = path.indexOf('.');
+      if (dot === -1) {
         dot = path.length;
       }
-      var vidx = IS_V2
-          ? parseInt(path.substring(0, dot), 10)
-          // Extract `#` from `path`.
-          : parseInt(path.substring(1, dot), 10);
-      var offscreenItem = this._offscreenFocusedItem;
-      var isIndexRendered = this._isIndexRendered(vidx);
-      var inst;
+      var isIndexRendered;
       var pidx;
+      var inst;
+      var offscreenInstance = this.modelForElement(this._offscreenFocusedItem);
+      if (IS_V2) {
+        var vidx = parseInt(path.substring(0, dot), 10);
+        isIndexRendered = this._isIndexRendered(vidx);
+        if (isIndexRendered) {
+          pidx = this._getPhysicalIndex(vidx);
+          inst = this.modelForElement(this._physicalItems[pidx]);
+        } else if (offscreenInstance) {
+          inst = offscreenInstance;
+        }
 
-      if (isIndexRendered) {
-        pidx = this._getPhysicalIndex(vidx);
-        inst = this.modelForElement(this._physicalItems[pidx]);
-      } else if (offscreenItem) {
-        inst = this.modelForElement(offscreenItem);
-      }
-      if (!inst || inst[this.indexAs] !== vidx) {
-        // NOTE: consider valid instance if it has correct __key__ (Polymer 1.x).
-        if (!inst || inst.__key__ !== '#' + vidx) {
+        if (!inst || inst[this.indexAs] !== vidx) {
           return;
         }
+      } else {
+        // Polymer 1.x - get physical instance by key (`#1`), not index.
+        var key = path.substring(0, dot);
+        if (offscreenInstance && offscreenInstance.__key__ === key) {
+          inst = offscreenInstance;
+        } else {
+          pidx = this._physicalIndexForKey[key];
+          inst = this.modelForElement(this._physicalItems[pidx]);
+
+          if (!inst || inst.__key__ !== key) {
+            return;
+          }
+        }
       }
-      path = path.substring(dot);
+      path = path.substring(dot + 1);
       path = this.as + (path ? '.' + path : '');
       IS_V2
         ? inst._setPendingPropertyOrPath(path, value, false, true)
@@ -1709,7 +1727,7 @@ will only render 20.
     _getPhysicalIndex: function(vidx) {
       return IS_V2
         ? (this._physicalStart + (vidx - this._virtualStart)) % this._physicalCount
-        : this._physicalIndexForKey['#' + vidx];
+        : this._physicalIndexForKey[this._collection.getKey(this.items[vidx])];
     },
 
     focusItem: function(idx) {
@@ -1858,7 +1876,7 @@ will only render 20.
           break;
         case /* ENTER */ 13:
           this._focusPhysicalItem(this._focusedVirtualIndex);
-          this._selectionHandler(e);
+          if (this.selectionEnabled) this._selectionHandler(e);
           break;
       }
     },

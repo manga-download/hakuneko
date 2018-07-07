@@ -26,6 +26,19 @@ if (!window.ShadyCSS) {
     prepareTemplate(template, elementName, elementExtends) {}, // eslint-disable-line no-unused-vars
 
     /**
+     * @param {HTMLTemplateElement} template
+     * @param {string} elementName
+     */
+    prepareTemplateDom(template, elementName) {}, // eslint-disable-line no-unused-vars
+
+    /**
+     * @param {HTMLTemplateElement} template
+     * @param {string} elementName
+     * @param {string=} elementExtends
+     */
+    prepareTemplateStyles(template, elementName, elementExtends) {}, // eslint-disable-line no-unused-vars
+
+    /**
      * @param {Element} element
      * @param {Object=} properties
      */
@@ -57,6 +70,8 @@ if (!window.ShadyCSS) {
     getComputedStyleValue(element, property) {
       return getComputedStyleValue(element, property);
     },
+
+    flushCustomStyles() {},
     nativeCss: nativeCssVariables,
     nativeShadow: nativeShadow
   }

@@ -31,56 +31,85 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </test-fixture>
 
   <script>
+    suite('iron-resizable-behavior', function() {
+      var resizable;
 
-  suite('iron-resizable-behavior', function() {
-    var resizable;
-
-    suite('events across shadow boundaries', function() {
-      setup(function() {
-        resizable = fixture('ResizableAndShadowBoundaries');
-      });
-
-      suite('ancestor\'s iron-resize', function() {
-        test('only fires once for a notifying shadow descendent', function() {
-          resizable.$.childResizable1.notifyResize();
-
-          expect(resizable.ironResizeCount).to.be.equal(2);
+      suite('events across shadow boundaries', function() {
+        setup(function() {
+          resizable = fixture('ResizableAndShadowBoundaries');
         });
 
-        test('only fires once when notifying descendent observables', function() {
-          resizable.notifyResize();
+        suite('ancestor\'s iron-resize', function() {
+          test('only fires once for a notifying shadow descendent', function() {
+            var initialCount = resizable.ironResizeCount;
 
-          expect(resizable.ironResizeCount).to.be.equal(2);
+            resizable.$.childResizable1.notifyResize();
+
+            expect(resizable.ironResizeCount - initialCount).to.be.equal(1);
+          });
+
+          test('only fires once when notifying descendent observables', function() {
+            var initialCount = resizable.ironResizeCount;
+
+            resizable.notifyResize();
+
+            expect(resizable.ironResizeCount - initialCount).to.be.equal(1);
+          });
         });
-      });
 
-      suite('descendant\'s iron-resize', function() {
-        test('only fires once for a notifying shadow root', function() {
-          resizable.notifyResize();
+        suite('descendant\'s iron-resize', function() {
+          test('only fires once for a notifying shadow root', function() {
+            var childResizable1InitialCount =
+                resizable.$.childResizable1.ironResizeCount;
+            var childResizable2InitialCount =
+                resizable.$.childResizable2.ironResizeCount;
 
-          expect(resizable.$.childResizable1.ironResizeCount).to.be.equal(2);
-          expect(resizable.$.childResizable2.ironResizeCount).to.be.equal(2);
+            resizable.notifyResize();
+
+            expect(
+                resizable.$.childResizable1.ironResizeCount -
+                childResizable1InitialCount)
+                .to.be.equal(1);
+            expect(
+                resizable.$.childResizable2.ironResizeCount -
+                childResizable2InitialCount)
+                .to.be.equal(1);
+          });
+
+          test('only fires once for a notifying descendent observable', function() {
+            var initialCount = resizable.$.childResizable1.ironResizeCount;
+
+            resizable.$.childResizable1.notifyResize();
+
+            expect(resizable.$.childResizable1.ironResizeCount - initialCount)
+                .to.be.equal(1);
+          });
         });
 
-        test('only fires once for a notifying descendent observable', function() {
-          resizable.$.childResizable1.notifyResize();
+        suite('window\'s resize', function() {
+          test('causes all iron-resize events to fire once', function() {
+            var rootInitialCount = resizable.ironResizeCount;
+            var childResizable1InitialCount =
+                resizable.$.childResizable1.ironResizeCount;
+            var childResizable2InitialCount =
+                resizable.$.childResizable2.ironResizeCount;
 
-          expect(resizable.$.childResizable1.ironResizeCount).to.be.equal(2);
-        });
-      });
+            window.dispatchEvent(new CustomEvent('resize'));
+            Polymer.dom.flush();
 
-      suite('window\'s resize', function() {
-        test('causes all iron-resize events to fire once', function() {
-          window.dispatchEvent(new CustomEvent('resize'));
-          Polymer.dom.flush();
-          expect(resizable.ironResizeCount).to.be.equal(2);
-          expect(resizable.$.childResizable1.ironResizeCount).to.be.equal(2);
-          expect(resizable.$.childResizable2.ironResizeCount).to.be.equal(2);
+            expect(resizable.ironResizeCount - rootInitialCount).to.be.equal(1);
+            expect(
+                resizable.$.childResizable1.ironResizeCount -
+                childResizable1InitialCount)
+                .to.be.equal(1);
+            expect(
+                resizable.$.childResizable2.ironResizeCount -
+                childResizable2InitialCount)
+                .to.be.equal(1);
+          });
         });
       });
     });
-
-  });
   </script>
 </body>
 </html>

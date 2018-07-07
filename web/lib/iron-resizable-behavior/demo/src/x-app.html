@@ -26,30 +26,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 
 <script>
-
   Polymer({
 
     is: 'x-puck',
 
-    behaviors: [
-      Polymer.IronResizableBehavior
-    ],
+    behaviors: [Polymer.IronResizableBehavior],
 
     properties: {
-      x: {
-        type: Number,
-        value: 0
-      },
+      x: {type: Number, value: 0},
 
-      y: {
-        type: Number,
-        value: 0
-      }
+      y: {type: Number, value: 0}
     },
 
-    listeners: {
-      'iron-resize': '_onIronResize'
-    },
+    listeners: {'iron-resize': '_onIronResize'},
 
     attached: function() {
       this.async(this.notifyResize, 1);
@@ -70,7 +59,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       this.translate3d(x + 'px', y + 'px', 0);
     }
   });
-
 </script>
 
 <dom-module id="x-app">
@@ -92,14 +80,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 
 <script>
-
   Polymer({
 
     is: 'x-app',
 
-    behaviors: [
-      Polymer.IronResizableBehavior
-    ]
+    behaviors: [Polymer.IronResizableBehavior]
   });
-
 </script>

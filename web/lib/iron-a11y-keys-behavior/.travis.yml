@@ -7,6 +7,9 @@ before_script:
     npm run update-types && git diff --exit-code || (echo -e
     '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
     update-types".' && false)
+  - >-
+    npm run format && git diff --exit-code || (echo -e '\n\033[31mERROR:\033[0m
+    Typings are stale. Please run "npm run format".' && false)
 env:
   global:
     - secure: >-

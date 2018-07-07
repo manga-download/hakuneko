@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+   <script>
+    WCT = {waitFor: function (cb) {HTMLImports.whenReady(cb)}}
+  </script>
+  <script src="./test-flags.js"></script>
+  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
+  <script src="../node_modules/@webcomponents/webcomponents-platform/webcomponents-platform.js"></script>
+  <script src="../node_modules/es6-promise/dist/es6-promise.auto.min.js"></script>
+  <script src="../node_modules/@webcomponents/template/template.js"></script>
+  <script src="../node_modules/@webcomponents/html-imports/html-imports.min.js"></script>
+  <script src="../node_modules/@webcomponents/shadydom/shadydom.min.js"></script>
+  <script src="../node_modules/@webcomponents/custom-elements/custom-elements.min.js"></script>
+  <script src="../scoping-shim.min.js"></script>
+  <script src="../apply-shim.min.js"></script>
+  <script src="../custom-style-interface.min.js"></script>
+  <script src="module/generated/make-element.js"></script>
+</head>
+<body>
+
+  <style>
+    x-container, x-sample {
+      display: block;
+      padding: 10px;
+      margin: 10px;
+      border: 1px solid black;
+    }
+
+    .target {
+      background-color: rgb(0, 255, 0);
+    }
+  </style>
+
+  <template id="x-sample">
+    <style>
+      .target {
+        background-color: rgb(255, 0, 0);
+      }
+    </style>
+    <h2></h2>
+    <p>here .target elements are red</p>
+    <div class="target">I'm red</div>
+    <template id="renderer">
+      <div class="target"></div>
+    </template>
+  </template>
+
+  <template id="x-container">
+    <style>
+      .target {
+        background-color: rgb(123, 123, 123);
+      }
+    </style>
+    <h1>x-container</h1>
+    <p>here .target elements are gray</p>
+    <div class="target">I'm gray</div>
+    <slot></slot>
+  </template>
+
+  <h2>body</h2>
+  <p>here .target elements are green</p>
+
+  <div class="target">I'm green</div>
+
+  <x-sample id="inBody"></x-sample>
+
+  <x-sample id="inContainer"></x-sample>
+
+  <x-container></x-container>
+
+  <template id="x-dynamic">
+    <style>
+      span {
+        background-color: rgb(123, 123, 123);
+      }
+    </style>
+    <div id="container">
+    </div>
+  </template>
+
+  <x-dynamic></x-dynamic>
+
+  <template id="out-of-band">
+    <style>
+      div {
+        color: var(--foo);
+      }
+    </style>
+    <div>oob shadowed</div>
+  </template>
+
+  <template id="oob-parent">
+    <style>
+      out-of-band {
+        --foo: rgb(0, 0, 255);
+      }
+    </style>
+    <out-of-band></out-of-band>
+  </template>
+
+  <template id="oob-other-parent">
+    <style>
+      out-of-band {
+        --foo: rgb(255, 0, 0);
+      }
+    </style>
+  </template>
+
+  <oob-parent></oob-parent>
+  <oob-other-parent></oob-other-parent>
+
+  <script>
+    suite('Dynamic Scoping', () => {
+      function stamp(parent, host) {
+        let template = host.shadowRoot.querySelector('template#renderer')
+        let el = template.content.cloneNode(true).querySelector('div.target');
+        el.textContent = `stamped by ${host.id}`;
+        parent.appendChild(el);
+        return el;
+      }
+      test('DOM is scoped correctly when stamped from an element into document', (done) => {
+        let inBody = document.querySelector('x-sample#inBody');
+        let inContainer = document.querySelector('x-sample#inContainer');
+        makeElement('x-sample', function() {
+          this.shadowRoot.querySelector('h2').textContent = `${this.id}`;
+        });
+        makeElement('x-container');
+        setTimeout(() => {
+          let body = stamp(document.body, inBody);
+          let container = stamp(document.querySelector('x-container').shadowRoot, inContainer);
+          requestAnimationFrame(() => {
+            assert.equal(getComputedStyle(body).backgroundColor, 'rgb(0, 255, 0)');
+            assert.equal(getComputedStyle(container).backgroundColor, 'rgb(123, 123, 123)')
+            done();
+          });
+        }, 300);
+      });
+      test('DOM is scoped correctly when created dynamically inside a scoped container', (done) => {
+        makeElement('x-dynamic', function() {
+          let div = this.shadowRoot.querySelector('#container');
+          let newDiv = div.cloneNode(true);
+          let span = document.createElement('span');
+          span.textContent = 'created dynamically';
+          newDiv.appendChild(span);
+          this.shadowRoot.appendChild(newDiv);
+          requestAnimationFrame(() => {
+            assert.equal(getComputedStyle(span).backgroundColor, 'rgb(123, 123, 123)');
+            done();
+          })
+        });
+      });
+      test('moving a custom element between scopes recalculates correctly', function(done) {
+        makeElement('out-of-band');
+        makeElement('oob-parent');
+        makeElement('oob-other-parent');
+        let parent = document.querySelector('oob-parent');
+        let newParent = document.querySelector('oob-other-parent');
+        let oob = parent.shadowRoot.querySelector('out-of-band');
+        let shadowDiv = oob.shadowRoot.querySelector('div');
+        newParent.shadowRoot.appendChild(oob);
+        requestAnimationFrame(() => {
+          assert.equal(getComputedStyle(shadowDiv).getPropertyValue('color').trim(), 'rgb(255, 0, 0)');
+          done();
+        });
+      })
+    });
+  </script>
+</body>
+</html>

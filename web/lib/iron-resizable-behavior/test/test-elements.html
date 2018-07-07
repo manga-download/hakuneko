@@ -12,23 +12,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="x-resizable.html">
 
 <script>
-
   Polymer({
 
     is: 'x-resizer-parent-filtered',
 
     active: null,
 
-    behaviors: [
-      Polymer.IronResizableBehavior
-    ],
+    behaviors: [Polymer.IronResizableBehavior],
 
     resizerShouldNotify: function(el) {
       return (el == this.active);
     }
 
   });
-
 </script>
 
 <dom-module id="x-resizable-in-shadow">
@@ -44,13 +40,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 
 <script>
-
   Polymer({
 
     is: 'x-resizable-in-shadow'
 
   });
-
 </script>
 
 <dom-module id='test-element'>
@@ -86,27 +80,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </dom-module>
 
 <script>
-
   Polymer({
 
     is: 'test-element'
 
   });
-
 </script>
 <script>
   /** @polymerBehavior */
   Polymer.ObserveIronResizeBehavior = {
-    properties: {
-      ironResizeCount: {
-        type: Number,
-        value: 0
-      }
-    },
+    properties: {ironResizeCount: {type: Number, value: 0}},
 
-    listeners: {
-      'iron-resize': '_incrementIronResizeCount'
-    },
+    listeners: {'iron-resize': '_incrementIronResizeCount'},
 
     _incrementIronResizeCount: function() {
       this.ironResizeCount++;
@@ -122,10 +107,8 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   Polymer({
     is: 'x-shadow-resizable',
 
-    behaviors: [
-      Polymer.IronResizableBehavior,
-      Polymer.ObserveIronResizeBehavior
-    ]
+    behaviors:
+        [Polymer.IronResizableBehavior, Polymer.ObserveIronResizeBehavior]
   });
 </script>
 
@@ -139,9 +122,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   Polymer({
     is: 'x-light-resizable',
 
-    behaviors: [
-      Polymer.IronResizableBehavior,
-      Polymer.ObserveIronResizeBehavior
-    ]
+    behaviors:
+        [Polymer.IronResizableBehavior, Polymer.ObserveIronResizeBehavior]
   });
 </script>

@@ -7,7 +7,7 @@
     "list",
     "virtual-list"
   ],
-  "version": "2.0.13",
+  "version": "2.0.17",
   "homepage": "https://github.com/PolymerElements/iron-list",
   "authors": [
     "The Polymer Authors"
@@ -81,11 +81,11 @@
   "resolutions": {
     "webcomponentsjs": "^1.0.0"
   },
-  "_release": "2.0.13",
+  "_release": "2.0.17",
   "_resolution": {
     "type": "version",
-    "tag": "v2.0.13",
-    "commit": "0c9a66999bfe2208bb756d429217c2c87b4b0854"
+    "tag": "v2.0.17",
+    "commit": "22db7465ceb477491eb87df6c69c4ffb7abadd1c"
   },
   "_source": "https://github.com/PolymerElements/iron-list.git",
   "_target": "^2.0.3",

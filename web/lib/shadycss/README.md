@@ -93,6 +93,37 @@ ApplyShim provides a shim for the `@apply` syntax proposed at https://tabatkins.
 
 This is done by transforming the block definition into a set of CSS Custom Properties, and replacing uses of `@apply` with consumption of those custom properties.
 
+### Status:
+
+The `@apply` proposal has been abandoned in favor of the ::part/::theme [Shadow Parts spec](https://tabatkins.github.io/specs/css-shadow-parts/). Therefore, the ApplyShim library is deprecated and provided only for backwards compatibility. Support going forward will be limited to critical bug fixes.
+
+### Known Issues:
+
+* Mixin properties cannot be modified at runtime.
+* Nested mixins are not supported.
+* Shorthand properties are not expanded and may conflict with more explicit properties. Whenever shorthand notations are used in conjunction with their expanded forms in `@apply`, depending in the order of usage of the mixins, properties can be overridden. This means that using both `background-color: green;` and `background: red;` in two separate CSS selectors
+ can result in `background-color: transparent` in the selector that `background: red;` is specified.
+ 
+   ```css
+   #nonexistent {
+     --my-mixin: {
+       background: red;
+     }
+   }
+   ```
+   with an element style definition of
+   ```css
+   :host {
+     display: block;
+     background-color: green;
+     @apply(--my-mixin);
+   }
+   ```
+   results in the background being `transparent`, as an empty `background` definition replaces
+   the `@apply` definition. 
+ 
+   For this reason, we recommend avoiding shorthand properties.
+
 ### Example:
 
 Here we define a block called `--mixin` at the document level, and apply that block to `my-element` somewhere in the page.
@@ -315,8 +346,10 @@ ShadyCSS.styleSubtree(el, {'--content-color' : 'red'});
 
 ### Selector scoping
 
-You must have a selector to the left of the `::slotted`
+You must have a selector for ascendants of the `<slot>` element when using the `::slotted`
 pseudo-element.
+
+You cannot use any selector for the `<slot>` element. Rules like `.foo .bar::slotted(*)` are not supported.
 
 ### Custom properties and `@apply`
 

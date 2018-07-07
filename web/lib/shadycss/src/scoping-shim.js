@@ -21,7 +21,6 @@ import StyleCache from './style-cache.js';
 import {flush as watcherFlush} from './document-watcher.js';
 import templateMap from './template-map.js';
 import * as ApplyShimUtils from './apply-shim-utils.js';
-import documentWait from './document-wait.js';
 import {updateNativeProperties, detectMixin} from './common-utils.js';
 import {CustomStyleInterfaceInterface} from './custom-style-interface.js'; // eslint-disable-line no-unused-vars
 
@@ -41,9 +40,6 @@ export default class ScopingShim {
     this._applyShim = null;
     /** @type {?CustomStyleInterfaceInterface} */
     this._customStyleInterface = null;
-    documentWait(() => {
-      this._ensure();
-    });
   }
   flush() {
     watcherFlush();
@@ -76,6 +72,16 @@ export default class ScopingShim {
    * @param {string=} typeExtension
    */
   prepareTemplate(template, elementName, typeExtension) {
+    this.prepareTemplateDom(template, elementName);
+    this.prepareTemplateStyles(template, elementName, typeExtension);
+  }
+  /**
+   * Prepare styling for the given element type
+   * @param {HTMLTemplateElement} template
+   * @param {string} elementName
+   * @param {string=} typeExtension
+   */
+  prepareTemplateStyles(template, elementName, typeExtension) {
     if (template._prepared) {
       return;
     }
@@ -90,9 +96,6 @@ export default class ScopingShim {
       extends: typeExtension,
       __cssBuild: cssBuild,
     };
-    if (!nativeShadow) {
-      StyleTransformer.dom(template.content, elementName);
-    }
     // check if the styling has mixin definitions or uses
     this._ensure();
     let hasMixins = detectMixin(cssText)
@@ -106,7 +109,7 @@ export default class ScopingShim {
 
     let ownPropertyNames = [];
     if (!nativeCssVariables) {
-      ownPropertyNames = StyleProperties.decorateStyles(template['_styleAst'], info);
+      ownPropertyNames = StyleProperties.decorateStyles(template['_styleAst']);
     }
     if (!ownPropertyNames.length || nativeCssVariables) {
       let root = nativeShadow ? template.content : null;
@@ -115,6 +118,17 @@ export default class ScopingShim {
       template._style = style;
     }
     template._ownPropertyNames = ownPropertyNames;
+  }
+  /**
+   * Prepare template for the given element type
+   * @param {HTMLTemplateElement} template
+   * @param {string} elementName
+   */
+  prepareTemplateDom(template, elementName) {
+    if (!nativeShadow && !template._domPrepared) {
+      template._domPrepared = true;
+      StyleTransformer.dom(template.content, elementName);
+    }
   }
   _generateStaticStyle(info, rules, shadowroot, placeholder) {
     let cssText = StyleTransformer.elementStyles(info, rules);
@@ -220,7 +234,8 @@ export default class ScopingShim {
       Object.assign(styleInfo.overrideStyleProperties, overrideProps);
     }
     if (!nativeCssVariables) {
-     this._updateProperties(host, styleInfo);
+      this.flush();
+      this._updateProperties(host, styleInfo);
       if (styleInfo.ownStylePropertyNames && styleInfo.ownStylePropertyNames.length) {
         this._applyStyleProperties(host, styleInfo);
       }
@@ -385,7 +400,7 @@ export default class ScopingShim {
     if (nativeCssVariables) {
       style.textContent = StyleUtil.toCssText(ast);
     } else {
-      this._documentOwnerStyleInfo.styleRules.rules.push(ast);
+      this._documentOwnerStyleInfo.styleRules['rules'].push(ast);
     }
   }
   _revalidateApplyShim(style) {

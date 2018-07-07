@@ -82,6 +82,15 @@ Polymer_PropertiesChanged.prototype._flushProperties = function(){};
   call to `_propertiesChanged`
 * @param {!Object} oldProps Bag of previous values for each property
   in `changedProps`
+* @return {boolean}
+*/
+Polymer_PropertiesChanged.prototype._shouldPropertiesChange = function(currentProps, changedProps, oldProps){};
+/**
+* @param {!Object} currentProps Bag of all current accessor values
+* @param {!Object} changedProps Bag of properties changed since the last
+  call to `_propertiesChanged`
+* @param {!Object} oldProps Bag of previous values for each property
+  in `changedProps`
 * @return {void}
 */
 Polymer_PropertiesChanged.prototype._propertiesChanged = function(currentProps, changedProps, oldProps){};
@@ -1366,3 +1375,28 @@ Polymer_ArraySelectorMixin.prototype.select = function(item){};
 * @return {void}
 */
 Polymer_ArraySelectorMixin.prototype.selectIndex = function(idx){};
+/**
+* @interface
+* @extends {Polymer_ElementMixin}
+*/
+function Polymer_DisableUpgradeMixin(){}
+/**
+* @override
+*/
+Polymer_DisableUpgradeMixin.prototype._initializeProperties = function(){};
+/**
+* @override
+*/
+Polymer_DisableUpgradeMixin.prototype._enableProperties = function(){};
+/**
+* @override
+*/
+Polymer_DisableUpgradeMixin.prototype.attributeChangedCallback = function(name, old, value){};
+/**
+* @override
+*/
+Polymer_DisableUpgradeMixin.prototype.connectedCallback = function(){};
+/**
+* @override
+*/
+Polymer_DisableUpgradeMixin.prototype.disconnectedCallback = function(){};

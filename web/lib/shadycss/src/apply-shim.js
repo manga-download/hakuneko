@@ -78,6 +78,7 @@ import {StyleNode} from './css-parse.js'; // eslint-disable-line no-unused-vars
 
 const APPLY_NAME_CLEAN = /;\s*/m;
 const INITIAL_INHERIT = /^\s*(initial)|(inherit)\s*$/;
+const IMPORTANT = /\s*!important/;
 
 // separator used between mixin-name and mixin-property-name when producing properties
 // NOTE: plain '-' may cause collisions in user styles
@@ -307,13 +308,17 @@ class ApplyShim {
         mixinEntry.dependants[this._currentElement] = true;
       }
       let p, parts, f;
-      for (p in mixinEntry.properties) {
+      const properties = mixinEntry.properties;
+      for (p in properties) {
         f = fallbacks && fallbacks[p];
         parts = [p, ': var(', mixinName, MIXIN_VAR_SEP, p];
         if (f) {
-          parts.push(',', f);
+          parts.push(',', f.replace(IMPORTANT, ''));
         }
         parts.push(')');
+        if (IMPORTANT.test(properties[p])) {
+          parts.push(' !important');
+        }
         vars.push(parts.join(''));
       }
     }
@@ -404,7 +409,7 @@ class ApplyShim {
     if (!valueMixin) {
       return matchText;
     }
-    let mixinAsProperties = this._consumeCssProperties(valueMixin);
+    let mixinAsProperties = this._consumeCssProperties('' + valueMixin);
     let prefix = matchText.slice(0, matchText.indexOf('--'));
     let mixinValues = this._cssTextToMap(mixinAsProperties);
     let combinedProps = mixinValues;

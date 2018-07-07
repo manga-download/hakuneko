@@ -29,12 +29,11 @@ if (ce && !nativeShadow) {
    * @param {string} name
    * @param {function(new:HTMLElement)} clazz
    * @param {{extends: string}=} options
-   * @return {function(new:HTMLElement)}
    */
   const wrappedDefine = (name, clazz, options) => {
     placeholderMap[name] = applyStylePlaceHolder(name);
-    return origDefine.call(/** @type {!CustomElementRegistry} */(ce), name, clazz, options);
-  }
+    origDefine.call(/** @type {!CustomElementRegistry} */(ce), name, clazz, options);
+  };
   ce['define'] = wrappedDefine;
 }
 

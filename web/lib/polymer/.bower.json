@@ -21,23 +21,24 @@
   },
   "dependencies": {
     "shadycss": "webcomponents/shadycss#^v1.1.0",
-    "webcomponentsjs": "webcomponents/webcomponentsjs#^v1.0.19"
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^v1.1.0"
   },
   "devDependencies": {
     "web-component-tester": "^6.0.0",
-    "test-fixture": "PolymerElements/test-fixture#3.0.0-rc.1"
+    "test-fixture": "PolymerElements/test-fixture#3.0.0-rc.1",
+    "iron-component-page": "PolymerElements/iron-component-page#^3.0.1"
   },
   "private": true,
   "resolutions": {
     "test-fixture": "3.0.0-rc.1"
   },
   "homepage": "https://github.com/Polymer/polymer",
-  "version": "2.5.0",
-  "_release": "2.5.0",
+  "version": "2.6.0",
+  "_release": "2.6.0",
   "_resolution": {
     "type": "version",
-    "tag": "v2.5.0",
-    "commit": "e7108bb0360e05df5a5daa4324bdfe2066b8a15d"
+    "tag": "v2.6.0",
+    "commit": "00d510f17a19b5b2ffed2fab5c2220b562b69b4f"
   },
   "_source": "https://github.com/Polymer/polymer.git",
   "_target": "1.9 - 2",

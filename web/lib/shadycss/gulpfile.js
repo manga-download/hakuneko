@@ -58,7 +58,6 @@ function closurify(entry) {
     return gulp.src(['src/*.js', 'entrypoints/*.js'], {base: './'})
     .pipe(sourcemaps.init())
     .pipe(closure({
-      new_type_inf: true,
       compilation_level: 'ADVANCED',
       language_in: 'ES6_STRICT',
       language_out: 'ES5_STRICT',

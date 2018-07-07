@@ -14,7 +14,6 @@ import ApplyShim from '../src/apply-shim.js';
 import templateMap from '../src/template-map.js';
 import {getIsExtends, toCssText} from '../src/style-util.js';
 import * as ApplyShimUtils from '../src/apply-shim-utils.js';
-import documentWait from '../src/document-wait.js';
 import {getComputedStyleValue, updateNativeProperties} from '../src/common-utils.js';
 import {CustomStyleInterfaceInterface} from '../src/custom-style-interface.js'; // eslint-disable-line no-unused-vars
 import {nativeCssVariables, nativeShadow} from '../src/style-settings.js';
@@ -26,9 +25,6 @@ class ApplyShimInterface {
   constructor() {
     /** @type {?CustomStyleInterfaceInterface} */
     this.customStyleInterface = null;
-    documentWait(() => {
-      this.ensure();
-    });
     applyShim['invalidCallback'] = ApplyShimUtils.invalidate;
   }
   ensure() {
@@ -138,6 +134,7 @@ if (!window.ShadyCSS || !window.ShadyCSS.ScopingShim) {
   const applyShimInterface = new ApplyShimInterface();
   let CustomStyleInterface = window.ShadyCSS && window.ShadyCSS.CustomStyleInterface;
 
+  /** @suppress {duplicate} */
   window.ShadyCSS = {
     /**
      * @param {!HTMLTemplateElement} template
@@ -146,8 +143,23 @@ if (!window.ShadyCSS || !window.ShadyCSS.ScopingShim) {
      */
     prepareTemplate(template, elementName, elementExtends) { // eslint-disable-line no-unused-vars
       applyShimInterface.flushCustomStyles();
-      applyShimInterface.prepareTemplate(template, elementName)
+      applyShimInterface.prepareTemplate(template, elementName);
     },
+
+    /**
+     * @param {!HTMLTemplateElement} template
+     * @param {string} elementName
+     * @param {string=} elementExtends
+     */
+    prepareTemplateStyles(template, elementName, elementExtends) {
+      this.prepareTemplate(template, elementName, elementExtends);
+    },
+
+    /**
+     * @param {HTMLTemplateElement} template
+     * @param {string} elementName
+     */
+    prepareTemplateDom(template, elementName) {}, // eslint-disable-line no-unused-vars
 
     /**
      * @param {!HTMLElement} element
@@ -182,6 +194,11 @@ if (!window.ShadyCSS || !window.ShadyCSS.ScopingShim) {
     getComputedStyleValue(element, property) {
       return getComputedStyleValue(element, property);
     },
+
+    flushCustomStyles() {
+      applyShimInterface.flushCustomStyles();
+    },
+
     nativeCss: nativeCssVariables,
     nativeShadow: nativeShadow
   };

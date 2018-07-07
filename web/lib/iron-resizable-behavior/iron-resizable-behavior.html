@@ -11,18 +11,23 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/polymer.html">
 
 <script>
+  (function() {
+
+  // Contains all connected resizables that do not have a parent.
+  var ORPHANS = new Set();
+
   /**
    * `IronResizableBehavior` is a behavior that can be used in Polymer elements to
-   * coordinate the flow of resize events between "resizers" (elements that control the
-   * size or hidden state of their children) and "resizables" (elements that need to be
-   * notified when they are resized or un-hidden by their parents in order to take
-   * action on their new measurements).
+   * coordinate the flow of resize events between "resizers" (elements that
+   *control the size or hidden state of their children) and "resizables" (elements
+   *that need to be notified when they are resized or un-hidden by their parents
+   *in order to take action on their new measurements).
    *
-   * Elements that perform measurement should add the `IronResizableBehavior` behavior to
-   * their element definition and listen for the `iron-resize` event on themselves.
-   * This event will be fired when they become showing after having been hidden,
-   * when they are resized explicitly by another resizable, or when the window has been
-   * resized.
+   * Elements that perform measurement should add the `IronResizableBehavior`
+   *behavior to their element definition and listen for the `iron-resize` event on
+   *themselves. This event will be fired when they become showing after having
+   *been hidden, when they are resized explicitly by another resizable, or when
+   *the window has been resized.
    *
    * Note, the `iron-resize` event is non-bubbling.
    *
@@ -34,19 +39,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       /**
        * The closest ancestor element that implements `IronResizableBehavior`.
        */
-      _parentResizable: {
-        type: Object,
-        observer: '_parentResizableChanged'
-      },
+      _parentResizable: {type: Object, observer: '_parentResizableChanged'},
 
       /**
        * True if this element is currently notifying its descendant elements of
        * resize.
        */
-      _notifyingDescendant: {
-        type: Boolean,
-        value: false
-      }
+      _notifyingDescendant: {type: Boolean, value: false}
     },
 
     listeners: {
@@ -68,6 +67,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       if (this._parentResizable) {
         this._parentResizable.stopResizeNotificationsFor(this);
       } else {
+        ORPHANS.delete(this);
         window.removeEventListener('resize', this._boundNotifyResize);
       }
 
@@ -97,7 +97,17 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * if the ancestor detects a request for notifications.
      */
     assignParentResizable: function(parentResizable) {
+      if (this._parentResizable) {
+        this._parentResizable.stopResizeNotificationsFor(this);
+      }
+
       this._parentResizable = parentResizable;
+
+      if (parentResizable &&
+          parentResizable._interestedResizables.indexOf(this) === -1) {
+        parentResizable._interestedResizables.push(this);
+        parentResizable.listen(this, 'iron-resize', '_onDescendantIronResize');
+      }
     },
 
     /**
@@ -122,7 +132,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * implements `IronResizableBehavior`.
      * @return {boolean} True if the `element` should be notified of resize.
      */
-    resizerShouldNotify: function(element) { return true; },
+    resizerShouldNotify: function(element) {
+      return true;
+    },
 
     _onDescendantIronResize: function(event) {
       if (this._notifyingDescendant) {
@@ -139,21 +151,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     },
 
     _fireResize: function() {
-      this.fire('iron-resize', null, {
-        node: this,
-        bubbles: false
-      });
+      this.fire('iron-resize', null, {node: this, bubbles: false});
     },
 
     _onIronRequestResizeNotifications: function(event) {
       var target = /** @type {!EventTarget} */ (Polymer.dom(event).rootTarget);
       if (target === this) {
         return;
-      }
-
-      if (this._interestedResizables.indexOf(target) === -1) {
-        this._interestedResizables.push(target);
-        this.listen(target, 'iron-resize', '_onDescendantIronResize');
       }
 
       target.assignParentResizable(this);
@@ -180,35 +184,67 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       descendant.notifyResize();
       this._notifyingDescendant = false;
     },
-    
+
     _requestResizeNotifications: function() {
       if (!this.isAttached)
         return;
-      
+
       // NOTE(valdrin) In CustomElements v1 with native HTMLImports, the order
-      // of imports affects the order of `attached` callbacks (see webcomponents/custom-elements#15).
-      // This might cause a child to notify parents too early (as the parent
-      // still has to be upgraded), resulting in a parent not able to keep track
-      // of the `_interestedResizables`. To solve this, we wait for the document
-      // to be done loading before firing the event.
+      // of imports affects the order of `attached` callbacks (see
+      // webcomponents/custom-elements#15). This might cause a child to notify
+      // parents too early (as the parent still has to be upgraded), resulting in
+      // a parent not able to keep track of the `_interestedResizables`. To solve
+      // this, we wait for the document to be done loading before firing the
+      // event.
       if (document.readyState === 'loading') {
-        var _requestResizeNotifications = this._requestResizeNotifications.bind(this);
-        document.addEventListener('readystatechange', function readystatechanged() {
-          document.removeEventListener('readystatechange', readystatechanged);
-          _requestResizeNotifications();
-        });
+        var _requestResizeNotifications =
+            this._requestResizeNotifications.bind(this);
+        document.addEventListener(
+            'readystatechange', function readystatechanged() {
+              document.removeEventListener('readystatechange', readystatechanged);
+              _requestResizeNotifications();
+            });
       } else {
-        this.fire('iron-request-resize-notifications', null, {
-          node: this,
-          bubbles: true,
-          cancelable: true
-        });
+        this._findParent();
 
         if (!this._parentResizable) {
+          // If this resizable is an orphan, tell other orphans to try to find
+          // their parent again, in case it's this resizable.
+          ORPHANS.forEach(function(orphan) {
+            if (orphan !== this) {
+              orphan._findParent();
+            }
+          }, this);
+
           window.addEventListener('resize', this._boundNotifyResize);
           this.notifyResize();
-        } 
+        } else {
+          // If this resizable has a parent, tell other child resizables of
+          // that parent to try finding their parent again, in case it's this
+          // resizable.
+          this._parentResizable._interestedResizables
+              .forEach(function(resizable) {
+                if (resizable !== this) {
+                  resizable._findParent();
+                }
+              }, this);
+        }
+      }
+    },
+
+    _findParent: function() {
+      this.assignParentResizable(null);
+      this.fire(
+          'iron-request-resize-notifications',
+          null,
+          {node: this, bubbles: true, cancelable: true});
+
+      if (!this._parentResizable) {
+        ORPHANS.add(this);
+      } else {
+        ORPHANS.delete(this);
       }
     }
   };
+  })();
 </script>
