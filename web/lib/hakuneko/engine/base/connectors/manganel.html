@@ -4,7 +4,7 @@
 
     /**
      * @author Neogeek
-     * Similar to MangaKakalot, MangaSupa, ...
+     * Aliases: MangaKakalot, MangaBat (prev. MangaSupa), MangaHereIO, MangaFoxCom
      */
     class MangaNel extends Connector {
 
@@ -21,7 +21,21 @@
             // Private members for internal usage only (convenience)
             this.url         = 'http://manganelo.com';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config = {
+                throttle: {
+                    label: 'Throttle Requests [ms]',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 503 errors during manga list update.\nThrottle of 50 ms => approx. 50 seconds manga list update.',
+                    input: Input.numeric,
+                    min: 5,
+                    max: 250,
+                    value: 25
+                }
+            };
+
+            this.queryMangasPageCount = 'div.group-page a.page:last-of-type';
+            this.queryMangas = 'div.truyen-list h3 a';
+            this.queryChapters = 'div.chapter-list div.row span a';
+            this.queryPages = '#vungdoc source';
         }
 
         /**
@@ -37,13 +51,16 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( 'div.phan-trang a.page:last-of-type' );
+                let pageCount = dom.querySelector( this.queryMangasPageCount );
                 pageCount = parseInt( new URL( pageCount.href ).searchParams.get( 'page' ) );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ), this.requestOptions )
+                    return this.wait( this.config.throttle.value * page )
+                    .then( () => {
+                        return fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ), this.requestOptions );
+                    } )
                     .then( response => {
                         if( response.status !== 200 ) {
                             throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -52,11 +69,11 @@
                     } )
                     .then( data => {
                         let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'div.list-truyen-item-wrap h3 a' )].map( element => {
-                            // use title attribute to avoid cf-mail decryption
+                        let mangaList = [...dom.querySelectorAll( this.queryMangas )].map( element => {
+                            this.cfMailDecrypt( element );
                             return {
                                 id: this.getRelativeLink( element ),
-                                title: element.title.trim()
+                                title: element.text.trim()
                             };
                         } );
                         return Promise.resolve( mangaList );
@@ -86,10 +103,11 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( '.chapter-list div.row span a' )].map( element => {
+                let chapterList = [...dom.querySelectorAll( this.queryChapters )].map( element => {
+                    this.cfMailDecrypt( element );
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text,
+                        title: element.text.trim(),
                         language: 'en'
                     };
                 } );
@@ -114,7 +132,7 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( '#vungdoc source' )].map( element => element.src );
+                let pageList = [...dom.querySelectorAll( this.queryPages )].map( element => element.src );
                 callback( null, pageList );
             } )
             .catch( error => {
