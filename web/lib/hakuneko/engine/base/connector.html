@@ -109,6 +109,15 @@
         }
 
         /**
+         * Return a promise that will be resolved after the given amount of time in milliseconds
+         */
+        wait( time ) {
+            return new Promise( ( resolve, reject ) => {
+                setTimeout( resolve, time );
+            } );
+        }
+
+        /**
          * Switch the connector to lock mode.
          * In lock mode the connector may limit concurrent access.
          * The limitation depends on the connector implementation.
