@@ -28,15 +28,44 @@
          * 
          */
         _getMangaList( callback ) {
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=1', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-                return response.json();
+                return response.text();
             } )
             .then( data => {
-                callback( null, data );
+                let dom = this.createDOM( data );
+                let pageCount = dom.querySelector( 'div.group-page a.page:last-of-type' );
+                pageCount = parseInt( new URL( pageCount.href ).searchParams.get( 'page' ) );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ), this.requestOptions )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        }
+                        return response.text();
+                    } )
+                    .then( data => {
+                        let dom = this.createDOM( data );
+                        let mangaList = [...dom.querySelectorAll( 'div.list-truyen-item-wrap h3 a' )].map( element => {
+                            // use title attribute to avoid cf-mail decryption
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.title.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
             } )
             .catch( error => {
                 console.error( error, this );
