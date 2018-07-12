@@ -19,6 +19,7 @@
                 chapter: chapter.title
             };
             this.requestOptions = chapter.manga.connector.requestOptions || {};
+            this.throttle = ( chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50 );
             this.status = undefined;
             this.progress = 0;
             this.errors = [];
@@ -100,7 +101,7 @@
         _downloadPages( pages, directory, callback ) {
             // get data for all pages of chapter
             let promises = pages.map( ( page, index ) => {
-                return this._wait( index * 50 )
+                return this._wait( index * this.throttle )
                 .then( () => {
                     return Engine.Request.cloudflare( page, this.requestOptions );
                 } )
@@ -172,7 +173,7 @@
             // download all packets
             .then( packets => {
                 let promises = packets.map( ( packet, index ) => {
-                    return this._wait( index * 250 )
+                    return this._wait( index * this.throttle )
                     .then( () => {
                         return fetch( packet.source, this.requestOptions );
                     } )
