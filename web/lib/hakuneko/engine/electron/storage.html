@@ -223,7 +223,7 @@
                 let playlist = files.find( file => file.endsWith( EpisodeFormat.m3u8 ) );
                 let subtitles = files.filter( file => file.endsWith( '.ass' ) || file.endsWith( '.ssa' ) );
                 let media = {
-                    playlist: this._makeValidFileURL( directory, playlist ),
+                    mirrors: [ this._makeValidFileURL( directory, playlist ) ],
                     subtitles: subtitles.sort().map( subtitle => {
                         let parts = subtitle.split( '.' );
                         return {

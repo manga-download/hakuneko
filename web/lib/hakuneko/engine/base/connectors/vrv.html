@@ -39,7 +39,7 @@
                     return CryptoJS.HmacSHA1( data, key ).toString( CryptoJS.enc.Base64 );
                 }
             } );
-            this.oauthTtoken  = undefined;
+            this.oauthToken  = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config         = {
                 username: {
@@ -53,6 +53,14 @@
                     description: 'Password for login with VRV premium account.\nDisclaimer: HakuNeko may drop support for VRV at any time.',
                     input: Input.password,
                     value: ''
+                },
+                throttle: {
+                    label: 'Throttle Requests [ms]',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting errors during episode/movie download.',
+                    input: Input.numeric,
+                    min: 100,
+                    max: 5000,
+                    value: 250
                 }
             };
 
@@ -64,6 +72,7 @@
          *
          */
         _getMangaList( callback ) {
+            // TODO: Is it possible to use fetch API to get all episodes instead of getting them from CDN?
             fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
@@ -84,46 +93,48 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/' + manga.id + '/chapters.json', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive episode list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.json();
-            } )
+            // TODO: embed region check in promise pattern
+            if( this.regionBlock ) {
+                throw new Error( this.label + ' is not available in your country!\nYou need an US vpn in order to access the content.' );
+            }
+            // anime could be episodes or movies => request both
+            let episodeURI = new URL( this.api.cms + '/episodes' );
+            episodeURI.searchParams.append( 'season_id', manga.id );
+            let movieURI = new URL( this.api.cms + '/movies' );
+            movieURI.searchParams.append( 'movie_listing_id', manga.id );
+
+            let promises = [episodeURI, movieURI].map( uri => {
+                return this._mergePolicyParams( uri.href )
+                .then( href => fetch( href, this.requestOptions ) )
+                .then( response => this._getResponseJSON( response ) )
+                .catch( error => Promise.resolve( error) );
+            } );
+            Promise.all( promises )
             .then( data => {
-                    let chapterList = [];
-                    data.forEach( chapter => {
-                        let prefix = '';
-                        let season = ( chapter.volume ? 'S' + ( '0' + chapter.volume ).slice( -2 ) : '' );
-                        let episode = ( chapter.number ? 'E' + ( '00' + chapter.number ).slice( -3 ) : '' );
-                        prefix += season;
-                        prefix += ( season.length > 0 && episode.length > 0 ? '.' : '' );
-                        prefix += episode;
-                        prefix += ( prefix.length > 0 ? ' - ' : '' );
-                        chapter.pages.forEach( ( page ) => {
-                            chapterList.push( {
-                                id: chapter.id + '.' + page,
-                                title: prefix + chapter.title + ' [' + page + 'p]',
-                                language: chapter.language,
-                                volume: chapter.volume,
-                                number: chapter.number,
-                                group: chapter.group,
-                                pages: [ page ]
-                            } );
-                        } );
-                    } );
-                    chapterList.sort( ( a, b ) => {
-                        if( a.volume !== b.volume ) {
-                            return ( b.volume - a.volume );
-                        }
-                        if ( a.number !== b.number ) {
-                            return ( b.number - a.number );
-                        }
-                        //return ( a.pages[0] > b.pages[0] ? 1 :-1 );
-                        return ( parseInt( b.pages[0] ) - parseInt( a.pages[0] ) );
-                    } );
-                    callback( null, chapterList );
+                let episodes = data.reduce( ( accumulator, media ) => {
+                    if( !( media instanceof Error ) && ( media.items instanceof Array ) ) {
+                        accumulator = accumulator.concat( media.items );
+                    }
+                    return accumulator;
+                }, [] );
+                return Promise.resolve( episodes );
+            } )
+            .then( episodes => {
+                let promises = episodes.filter( episode => {
+                    return (
+                        ( !episode.is_premium_only || this.subscription )
+                        && ( !episode.is_mature || this.oauthToken )
+                        && episode.__links__.streams
+                    );
+                } )
+                .map( episode => {
+                    return this._replicateEpisodeByStreams( episode );
+                } );
+                return Promise.all( promises );
+            } )
+            .then( episodes => {
+                let episodeList = episodes.reduce( ( accumulator, current ) => accumulator.concat( current ), [] );
+                callback( null, episodeList );
             } )
             .catch( error => {
                 console.error( error, manga );
@@ -135,119 +146,108 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let id;
-            let resolution;
-            ( new Promise( ( resolve, reject ) => {
-                // FIXME: throw when country is not supported
-                // FIXME: throw when not logged in but content of chapter is flagged as mature
-                // FIXME: throw when not logged in or no premium subscription for channel but content of chapter is flagged as premium
-
-console.log( 'REGION BLOCKED!', this.regionBlock );
-if( this.regionBlock ) {
-    throw new Error( 'Not available in your country!' );
-}
-
-                // get chapter info ...
-
-                /*
-                let authError = this._validateAuthorization();
-                if( authError ) {
-                    throw authError;
-                }
-                */
-                let identifier = chapter.id.split( '.' );
-                id = identifier[0];
-                resolution = parseInt( identifier[1] );
-                resolve();
-            } ) )
-            .then( () => {
-console.log( 'GetEpisodes...', this.api.cms + '/episodes/' + id );
-                return this._mergePolicyParams( this.api.cms + '/episodes/' + id )
-                .then( href => fetch( href, this.requestOptions ) )
-                .then( response => this._getResponseJSON( response ) );
-            } )
-            .catch( error => {
-console.log( 'GetMovies...' );
-                return this._mergePolicyParams( this.api.cms + '/movies/' + id )
-                .then( href => fetch( href, this.requestOptions ) )
-                .then( response => this._getResponseJSON( response ) );
-            } )
-            .then( data => {
-if( data.is_mature && !this.oauthTtoken ) {
-    throw new Error( 'This content is flagged as mature!\nYou need to be logged in with your account to view this content.' );
-}
-if( data.is_premium_only && !this.subscription ) {
-    throw new Error( 'This content is flagged as premium!\nYou need to be logged in with your account\nand have a subscription to view this content.' );
-}
-                let streamsURL = ( data.__links__.streams ? this.api.base + data.__links__.streams.href : undefined );
-                return this._getMedia( streamsURL, resolution );
-            } )
-            .then( data => {
-console.log( 'CALLBACK', data );
-                callback( null, data );
-            } )
-            .catch( error => {
+            try {
+                callback( null, JSON.parse( chapter.id ) );
+            } catch( error ) {
                 console.error( error, chapter );
                 callback( error, undefined );
-            } );
+            }
         }
 
         /**
-         * 
+         * Split the given episode in multiple episodes for each audio langauge and each corresponding resolution.
          */
-        _getMedia( url, resolution ) {
-            return this._mergePolicyParams( url )
+        _replicateEpisodeByStreams( episode ) {
+            return this._getAllStreams( this.api.base + episode.__links__.streams.href )
+            .then( meta => {
+                let prefix = '';
+                let volume = ( episode.season_number ? 'S' + ( '0' + episode.season_number ).slice( -2 ) : '' );
+                let number = ( episode.episode_number ? 'E' + ( '00' + episode.episode_number ).slice( -3 ) : '' );
+                prefix += volume;
+                prefix += ( prefix.length > 0 && number.length > 0 ? '.' : '' );
+                prefix += number;
+                prefix += ( prefix.length > 0 ? ' - ' : '' );
+                prefix += episode.title;
+                let reproducedEpisodes = meta.streams.reduce( ( accumulator, localizedStream ) => {
+                    let lng = ( localizedStream.locale ? ' (' + localizedStream.locale + ')' : '' );
+                    let episodeStreams = localizedStream.resolutions.map( resolution => {
+                        let res = ( resolution.height ? ' [' + resolution.height + 'p]' : '' );
+                        return {
+                            id: JSON.stringify( {
+                                mirrors: resolution.mirrors,
+                                subtitles: meta.subtitles
+                            } ),
+                            title: prefix + lng + res,
+                            language: localizedStream.locale
+                        }
+                    } );
+                    return accumulator.concat( episodeStreams );
+                }, [] );
+                return Promise.resolve( reproducedEpisodes );
+            } )
+            // TODO: on error resolve with empty streams?
+            //.catch( error => console.error( error )/*Promise.resolve( error )*/ );
+        }
+
+        /**
+         * Return a promise that resolves with all hardsub localized streams including
+         * all their resolutions and the corresponding m3u8 playlist mirrors for the given episode.
+         */
+        _getAllStreams( episodeURL ) {
+            return this._mergePolicyParams( episodeURL )
             .then( href => fetch( href, this.requestOptions ) )
             .then( response => this._getResponseJSON( response ) )
-            .then( data => {
-                let subtitles = Object.keys( data.subtitles ).map( key => data.subtitles[key] );
-                let link = ( data.streams.adaptive_hls[''] ? data.streams.adaptive_hls[''].url : data.streams.adaptive_hls['en-US'].url );
-                return this._getPlaylistURL( link, resolution )
-                .then( playlist => {
-                    return Promise.resolve( { playlist: playlist, subtitles: subtitles } );
+            .then( meta => {
+                let subtitles = Object.keys( meta.subtitles ).map( key => meta.subtitles[ key ] );
+                let localizedStreams = Object.keys( meta.streams.adaptive_hls ).map( key => meta.streams.adaptive_hls[ key ] );
+                let promises = localizedStreams.map( stream => this._getStreamWithResolutions( stream ) );
+                return Promise.all( promises )
+                .then( streams => {
+                    return Promise.resolve( {
+                        subtitles: subtitles,
+                        streams: streams
+                    } );
                 } );
             } );
         }
 
         /**
-         * 
+         * Return a promise that resolves with all resolutions and
+         * all their corresponding m3u8 playlist mirrors for the given localized stream.
          */
-        _getPlaylistURL( url, resolution ) {
-            return fetch( url, this.requestOptions )
+        _getStreamWithResolutions( stream ) {
+            return fetch( stream.url, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive playlist (status: ${response.status}) - ${response.statusText}` );
+                    throw new Error( `Failed to receive episode streams (status: ${response.status}) - ${response.statusText}` );
                 }
                 return response.text();
             } )
             .then( data => {
-                // TODO: use .filter and .map() instead of for-loop?
-                let streams = [];
-                let entries = data.split( '#EXT-X-STREAM-INF:' );
-                for( let entry of entries ) {
-                    entry = entry.trim();
-                    if( entry.indexOf( 'RESOLUTION' ) > -1 ) {
-                        let lines = entry.split( '\n' );
-                        let resolution = lines[0].trim().match( /RESOLUTION=(\d+)x(\d+),/i );
-                        streams.push( {
-                            height: parseInt( resolution[2] ),
-                            playlist: lines[1].trim()
+                let resolutions = data.split( '#EXT-X-STREAM-INF:' )
+                .filter( entry => entry.indexOf( 'RESOLUTION' ) > -1 )
+                .map( entry => {
+                    return {
+                        height: parseInt( entry.match( /RESOLUTION=(\d+)x(\d+),/i )[2] ),
+                        playlist: entry.split( '\n' )[1].trim()
+                    };
+                } )
+                .reduce( ( accumulator, current ) => {
+                    let entry = accumulator.find( entry => entry.height === current.height );
+                    if( !entry ) {
+                        accumulator.push( {
+                            height: current.height,
+                            mirrors: [ current.playlist ]
                         } );
-                    }
-                }
-                // find playlist for stream with desired resolution and pick the first available mirror ...
-                streams.sort( ( a, b ) => {
-                    if( a.height !== b.height ) {
-                        return ( a.height - b.height );
                     } else {
-                        return ( a.mirror > b.mirror ? 1 : -1 );
+                        entry.mirrors.push( current.playlist );
                     }
+                    return accumulator;
+                }, [] )
+                return Promise.resolve( {
+                    locale: stream.hardsub_locale,
+                    resolutions: resolutions
                 } );
-                // TODO: use random mirror for load balancing?
-                let stream = streams.find( ( s ) => {
-                    return ( s.height >= resolution );
-                } ) || streams[streams.length-1];
-                return Promise.resolve( stream.playlist );
             } );
         }
 
@@ -265,21 +265,6 @@ console.log( 'CALLBACK', data );
                 console.warn( this.label + ' initialization failed!', error );
             } );
         }
-
-        /**
-         * 
-         */
-        /*
-        _validateAuthorization() {
-            if( this.regionBlock ) {
-                return new Error( 'VRV service is not available in your country!' );
-            }
-            if( !this.subscription ) {
-                return new Error( `In order to access the content, a paid VRV (${this.subscriptionID} channel) subscription is required!\nDisclaimer: HakuNeko may drop support for VRV at any time.` );
-            }
-            return null;
-        }
-        */
 
         /**
          * 
@@ -306,7 +291,6 @@ console.log( 'CALLBACK', data );
          */
         _mergePolicyParams( url ) {
             try {
-console.log( 'PolicyURL:', url );
                 let uri = new URL( url );
                 let path = uri.pathname;
                 this.policies.filter( policy => {
@@ -343,7 +327,7 @@ console.log( 'PolicyURL:', url );
                     }, new URLSearchParams() ).toString();
                     this.requestOptions.headers.set( 'content-type' , 'application/x-www-form-urlencoded' );
                 }
-                let oauthHeaders = this.oauth.toHeader( this.oauth.authorize( oauthRequest, this.oauthTtoken ) );
+                let oauthHeaders = this.oauth.toHeader( this.oauth.authorize( oauthRequest, this.oauthToken ) );
                 this.requestOptions.headers.set( 'authorization' , oauthHeaders['Authorization'] );
 
                 // NOTE: vrv blocks any request with forwarded ip address header
@@ -387,7 +371,7 @@ console.log( 'PolicyURL:', url );
             } )
             .then( response => this._getResponseJSON( response ) )
             .then( data => {
-                this.oauthTtoken = {
+                this.oauthToken = {
                     key: data.oauth_token,
                     secret: data.oauth_token_secret
                 };
@@ -399,7 +383,7 @@ console.log( 'PolicyURL:', url );
          * 
          */
         _logout() {
-            this.oauthTtoken = undefined;
+            this.oauthToken = undefined;
             this.api.cms = undefined;
             this.api.public = undefined;
             this.api.private = undefined;
@@ -435,7 +419,6 @@ console.log( 'PolicyURL:', url );
                     this.subscription = ( this.api.private.indexOf( this.subscriptionID ) > -1 );
                     this.regionBlock = !data.service_available;
                     this.initialized = true;
-                    console.log( 'API:', this.api.core + '/index', this.api );
                     return Promise.resolve( this.initialized );
                 } );
             } catch( error ) {

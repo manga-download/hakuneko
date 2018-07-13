@@ -69,7 +69,7 @@
                         return;
                     }
                     // anime playlist
-                    if( data.playlist ) {
+                    if( data.mirrors ) {
                         this._downloadPlaylistHLS( data, directory, callback );
                         return;
                     }
@@ -145,18 +145,30 @@
                 maps: ['-map', '0:v', '-map', '0:a'],
                 metas: []
             };
-            // download playlist
-            fetch( episode.playlist, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( 'Playlist "' + episode.playlist + '" returned status: ' + response.status + ' - ' + response.statusText );
-                }
-                return response.text();
-            } )
+            let promises = episode.mirrors.map( mirror => {
+                return fetch( mirror, this.requestOptions )
+                .then( response => {
+                    if( response.status !== 200 ) {
+                        throw new Error( 'Playlist "' + mirror + '" returned status: ' + response.status + ' - ' + response.statusText );
+                    }
+                    return response.text();
+                } )
+                // swap resolve and reject so we can use Promise.all to get the first "resolved" promise
+                .then( data => {
+                    //console.log( 'Mirror valid:', mirror );
+                    return Promise.reject( data );
+                }, error => {
+                    //console.log( 'Mirror invalid:', mirror );
+                    return Promise.resolve( error );
+                } );
+            } );
+            Promise.all( promises )
+            // swap the rejected promise back to its initial resolved state
+            .catch( data => Promise.resolve( data ) )
             .then( playlist => {
                 // parse links and adjust playlist
                 let packets = playlist.match( /http[s]?:\/\/[^\s\"]+/g ).map( link => {
-                    let file = this.chapter.id + '.' + ( new URL( link ) ).pathname.split( '/' ).pop();
+                    let file = 'media.' + ( new URL( link ) ).pathname.split( '/' ).pop();
                     // ffmpeg does not support backslashes => replace with slashes
                     playlist = playlist.replace( link, file.replace( /\\/g, '/' ) );
                     return {
@@ -164,8 +176,8 @@
                         target: file
                     };
                 } );
-                ffmpeg.inputs.push( '-i', '"' + this.chapter.id + '.m3u8"' );
-                return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: this.chapter.id + '.m3u8', data: playlist } )
+                ffmpeg.inputs.push( '-i', '"media.m3u8"' );
+                return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: 'media.m3u8', data: playlist } )
                 .then( () => {
                     return Promise.resolve( packets );
                  } );
@@ -195,7 +207,7 @@
             // download all subtitles
             .then( () => {
                 let promises = episode.subtitles.map( ( subtitle, index ) => {
-                    let file = this.chapter.id + '.' + subtitle.locale + '.' + subtitle.format;
+                    let file = 'media.' + subtitle.locale + '.' + subtitle.format;
                     ffmpeg.inputs.push( '-i', '"' + file + '"' );
                     ffmpeg.maps.push( '-map', ( index + 1 ) + ':s' );
                     ffmpeg.metas.push( '-metadata:s:s:' + index, 'language=' + subtitle.locale );

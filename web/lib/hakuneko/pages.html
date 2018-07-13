@@ -210,9 +210,11 @@
             /**
              *
              */
-            onSelectedSubtitleChanged( e ) {
-                let element = e.path[0];
+            onSelectedSubtitleChanged( event ) {
+//console.log( 'onSelectedSubtitleChanged:', event );
+                let element = event.path[0];
                 let tracks = element.textTracks;
+                // Yield with timeout, so UI can update its element before we access it ...
                 setTimeout( () => {
                     // assumption: tracks are in same order as subtitles ...
                     let subtitle = -1;
@@ -227,6 +229,7 @@
                         this.selectedSubtitle = subtitle;
                         if( subtitle > -1 ) {
                             let sub = this.media.subtitles[this.selectedSubtitle];
+//console.log( 'SUBTITLE:', sub );
                             if( sub.content ) {
                                 this.ass = new ASS( sub.content, element );
                             } else {
@@ -296,7 +299,7 @@
              *
              */
             videoViewMode( media, selectedMedia ) {
-                return ( media && ( media.playlist || media.video ) );
+                return ( media && ( media.mirrors || media.video ) );
             }
 
             /**
@@ -305,6 +308,7 @@
             onVideoElementChanged( event ) {
                 this.resetSubtitles( true );
                 let element = this.shadowRoot.querySelector( '#video' );
+//console.log( 'VIDEO', element, element.querySelector( 'input::-webkit-media-controls-toggle-closed-captions-button' ) );
                 if( element ) {
                     element.pause();
                     // destroying seems the only way to flush buffers and prevent packets from the previous stream being played
@@ -312,10 +316,11 @@
                         this.hls.destroy();
                     }
                     element.src = '';
-                    if( this.media && this.media.playlist ) {
+                    if( this.media && this.media.mirrors ) {
+                        // TODO: select random mirror?
                         this.hls = new Hls();
                         this.hls.attachMedia( element );
-                        this.hls.loadSource( this.media.playlist );
+                        this.hls.loadSource( this.media.mirrors[0] );
                     }
                     if( this.media && this.media.video ) {
                         element.src = this.media.video;
