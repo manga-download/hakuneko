@@ -66,7 +66,7 @@
                 let chapterList = [...dom.querySelectorAll( 'td a.chapter' )].map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text.trim(),
+                        title: element.text.replace( manga.title, '' ).replace( /^\s*-\s*/, '' ).trim(),
                         language: 'jp'
                     };
                 } );
