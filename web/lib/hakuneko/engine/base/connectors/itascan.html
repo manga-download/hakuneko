@@ -1,0 +1,161 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class ItaScan extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'itascan';
+            super.label      = 'itaScan';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://itascan.info';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'itascan' protocol) and set headers
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            fetch( this.url + '/directory/', this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let pageCount = dom.querySelector( 'ul.pagination li:nth-last-child(2) a' );
+                pageCount = parseInt( pageCount.text.trim() );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return fetch( this.url + '/directory/?&page=' + ( page + 1 ), this.requestOptions )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        }
+                        return response.text();
+                    } )
+                    .then( data => {
+                        let dom = this.createDOM( data );
+                        let mangaList = [...dom.querySelectorAll( 'div.row h4 a' )].map( element => {
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.text.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let chapterList = [...dom.querySelectorAll( 'table tr td a[rel="nofollow"]' )].map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.replace( manga.title, '' ).replace( /^:\s*/, '' ).trim(),
+                        language: 'it'
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let pages = /"source"\s*:\s*(\[.*?\])/.exec( data )[1];
+                let pageList = JSON.parse( pages ).map( p => this.id + ':' + p.image );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } ); 
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            // TODO: clone requestOptions
+            // set required headers
+            this.requestOptions.headers.set( 'authority', 'images.itascan.info' );
+            this.requestOptions.headers.set( 'x-referer', this.url );
+            // add timestamp to disable server side cache
+            fetch( uri.href + '?ts=' + Date.now(), this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.arrayBuffer()
+                .then( data => {
+                    return Promise.resolve( {
+                        mimeType: response.headers.get( 'content-type' ),
+                        data: new Uint8Array( data )
+                    } );
+                } )
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+    }
+
+</script>
