@@ -93,23 +93,25 @@
          *
          */
         _getChapterList( manga, callback ) {
-            // TODO: embed region check in promise pattern
-            if( this.regionBlock ) {
-                throw new Error( this.label + ' is not available in your country!\nYou need an US vpn in order to access the content.' );
-            }
-            // anime could be episodes or movies => request both
-            let episodeURI = new URL( this.api.cms + '/episodes' );
-            episodeURI.searchParams.append( 'season_id', manga.id );
-            let movieURI = new URL( this.api.cms + '/movies' );
-            movieURI.searchParams.append( 'movie_listing_id', manga.id );
+            Promise.resolve()
+            .then( () => {
+                if( this.regionBlock ) {
+                    throw new Error( this.label + ' is not available in your country!\nYou need an US vpn in order to access the content.' );
+                }
+                // anime could be episodes or movies => request both
+                let episodeURI = new URL( this.api.cms + '/episodes' );
+                episodeURI.searchParams.append( 'season_id', manga.id );
+                let movieURI = new URL( this.api.cms + '/movies' );
+                movieURI.searchParams.append( 'movie_listing_id', manga.id );
 
-            let promises = [episodeURI, movieURI].map( uri => {
-                return this._mergePolicyParams( uri.href )
-                .then( href => fetch( href, this.requestOptions ) )
-                .then( response => this._getResponseJSON( response ) )
-                .catch( error => Promise.resolve( error) );
-            } );
-            Promise.all( promises )
+                let promises = [episodeURI, movieURI].map( uri => {
+                    return this._mergePolicyParams( uri.href )
+                    .then( href => fetch( href, this.requestOptions ) )
+                    .then( response => this._getResponseJSON( response ) )
+                    .catch( error => Promise.resolve( error) );
+                } );
+                return Promise.all( promises );
+            } )
             .then( data => {
                 let episodes = data.reduce( ( accumulator, media ) => {
                     if( !( media instanceof Error ) && ( media.items instanceof Array ) ) {
