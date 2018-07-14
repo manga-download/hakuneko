@@ -3,10 +3,9 @@
 <script>
 
     /**
-     * @author Neogeek
-     * Aliases: MangaKakalot, MangaBat (prev. MangaSupa), MangaHereIO, MangaFoxCom
+     * 
      */
-    class MangaNel extends Connector {
+    class ReadManga extends Connector {
 
         /**
          *
@@ -14,35 +13,32 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id         = 'manganel';
-            super.label      = 'MangaNel';
+            super.id         = 'readmanga';
+            super.label      = 'ReadManga';
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://manganelo.com';
+            this.url         = 'http://readmanga.me';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 throttle: {
                     label: 'Throttle Requests [ms]',
-                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 503 errors during manga list update.\nThrottle of 50 ms => approx. 1 minute manga list update.',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 429 errors during manga list update.\nThrottle of 1000 ms => approx. 4 minutes manga list update.',
                     input: Input.numeric,
-                    min: 5,
-                    max: 250,
-                    value: 25
+                    min: 500,
+                    max: 2500,
+                    value: 1000
                 }
             };
 
-            this.queryMangasPageCount = 'div.group-page a.page:last-of-type';
-            this.queryMangas = 'div.truyen-list h3 a';
-            this.queryChapters = 'div.chapter-list div.row span a';
-            this.queryPages = '#vungdoc source';
+            this.preferSubtitleAsMangaTitle = true;
         }
 
         /**
-         * 
+         *
          */
         _getMangaList( callback ) {
-            fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=1', this.requestOptions )
+            fetch( this.url + '/list', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -51,15 +47,15 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( this.queryMangasPageCount );
-                pageCount = parseInt( new URL( pageCount.href ).searchParams.get( 'page' ) );
+                let pageCount = dom.querySelector( 'span.pagination a:nth-last-child(2)' );
+                pageCount = parseInt( pageCount.text.trim() );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
                     return this.wait( this.config.throttle.value * page )
                     .then( () => {
-                        return fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ), this.requestOptions );
+                        return fetch( this.url + '/list?offset=' + ( page * 70 ), this.requestOptions )
                     } )
                     .then( response => {
                         if( response.status !== 200 ) {
@@ -69,13 +65,15 @@
                     } )
                     .then( data => {
                         let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( this.queryMangas )].map( element => {
-                            this.cfMailDecrypt( element );
+                        let mangaList = [...dom.querySelectorAll( 'div.tile div.desc' )].map( element => {
+                            let a = element.querySelector( 'h3 a' );
+                            let h4 = element.querySelector( 'h4' );
                             return {
-                                id: this.getRelativeLink( element ),
-                                title: element.text.trim()
+                                id: this.getRelativeLink( a ),
+                                title: ( this.preferSubtitleAsMangaTitle && h4 ? h4.title : a.title )
                             };
                         } );
+                        // TODO: use english titles instead of russian titles?
                         return Promise.resolve( mangaList );
                     } )
                 } );
@@ -103,12 +101,11 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( this.queryChapters )].map( element => {
-                    this.cfMailDecrypt( element );
+                let chapterList = [...dom.querySelectorAll( 'div.chapters-link table tr td a' )].map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text.trim(),
-                        language: 'en'
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'ru'
                     };
                 } );
                 callback( null, chapterList );
@@ -123,7 +120,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
+            fetch( this.url + chapter.id + '?mtr=1', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
@@ -131,14 +128,14 @@
                 return response.text();
             } )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( this.queryPages )].map( element => element.src );
+                let pages = /init\s*\(\s*(\[\[.*?\]\])/.exec( data )[1];
+                let pageList = JSON.parse( pages.replace( /'/g, '"' ) ).map( p => p[1] + p[2] );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
-            } );
+            } ); 
         }
     }
 
