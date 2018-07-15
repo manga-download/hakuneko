@@ -63,11 +63,19 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
+                let language = dom.querySelector( 'ul.manga-info h1 span.flag-icon' );
+                language = ( language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : 'jp' );
+                console.log( language );
                 let chapterList = [...dom.querySelectorAll( 'td a.chapter' )].map( element => {
+                    let title = element.text.replace( manga.title, '' );
+                    title = title.replace( manga.title.replace( /\s*-\s*RAW$/, '' ), '' );
+                    title = title.replace( /^\s*-\s*/, '' );
+                    title = title.replace( /-\s*-\s*Read\s*Online\s*$/, '' );
+                    title = title.trim();
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).replace( /^\s*-\s*/, '' ).trim(),
-                        language: 'jp'
+                        title: title,
+                        language: language
                     };
                 } );
                 callback( null, chapterList );
@@ -93,7 +101,8 @@
                 let dom = this.createDOM( data );
                 let pageLinks = [...dom.querySelectorAll( 'source.chapter-img' )].map( element => {
                     return element.src;
-                } );
+                } )
+                .filter( page => !page.match( /3282f6a4b7_o/ ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {
