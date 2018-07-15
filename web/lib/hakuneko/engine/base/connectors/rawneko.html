@@ -55,7 +55,7 @@
                         let mangaList = [...dom.querySelectorAll( 'div.page-content-listing div.post-title h5 a' )].map( element => {
                             return {
                                 id: this.getRelativeLink( element ),
-                                title: element.text.replace( /Manga\s*$/, '' ).trim()
+                                title: element.text.trim()
                             };
                         } );
                         return Promise.resolve( mangaList );
