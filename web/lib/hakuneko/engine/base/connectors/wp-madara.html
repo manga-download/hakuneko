@@ -21,13 +21,24 @@
             this.url         = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            this.formManga = new URLSearchParams();
+            this.formManga.append( 'action', 'madara_load_more' );
+            this.formManga.append( 'page', '0' );
+            this.formManga.append( 'template', 'madara-core/content/content-archive' );
+            this.formManga.append( 'vars[post_type]', 'wp-manga' );
+            this.formManga.append( 'vars[posts_per_page]', '512' );
+            this.formManga = this.formManga.toString();
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            fetch( this.url + '/manga/?m_orderby=alphabet', this.requestOptions )
+            this.requestOptions.method = 'POST';
+            this.requestOptions.body = this.formManga;
+            this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
+            fetch( this.url + '/wp-admin/admin-ajax.php', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -35,41 +46,22 @@
                 return response.text();
             } )
             .then( data => {
-                let pageCount = 20;
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( 250 * page )
-                    .then( () => {
-                        return fetch( this.url + '/manga/page/' + ( page + 1 ) + '/?m_orderby=alphabet', this.requestOptions );
-                    } )
-                    .then( response => {
-                        if( response.status !== 200 && response.status !== 404 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                        }
-                        return response.text();
-                    } )
-                    .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'div.page-content-listing div.post-title h5 a' )].map( element => {
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.text.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
+                let dom = this.createDOM( data );
+                let mangaList = [...dom.querySelectorAll( 'div.post-title h5 a' )].map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
                 } );
-                return Promise.all( promises ); 
-            } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+                callback( null, mangaList );
             } )
             .catch( error => {
                 console.error( error, this );
                 callback( error, undefined );
             } );
+            this.requestOptions.headers.delete( 'content-type' );
+            delete this.requestOptions.body;
+            this.requestOptions.method = 'GET';
         }
 
         /**
