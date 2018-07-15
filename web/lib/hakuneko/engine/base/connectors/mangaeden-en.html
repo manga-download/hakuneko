@@ -1,0 +1,26 @@
+<link rel="import" href="mangaeden.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class MangaEdenEN extends MangaEden {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'mangaeden-en';
+            super.label      = 'MangaEdenEN';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://www.mangaeden.com';
+            this.urlMangas   = '/en/en-directory/';
+        }
+    }
+
+</script>
