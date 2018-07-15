@@ -327,10 +327,10 @@
                         params.append( key, oauthRequest.data[key] );
                         return params;
                     }, new URLSearchParams() ).toString();
-                    this.requestOptions.headers.set( 'content-type' , 'application/x-www-form-urlencoded' );
+                    this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
                 }
                 let oauthHeaders = this.oauth.toHeader( this.oauth.authorize( oauthRequest, this.oauthToken ) );
-                this.requestOptions.headers.set( 'authorization' , oauthHeaders['Authorization'] );
+                this.requestOptions.headers.set( 'authorization', oauthHeaders['Authorization'] );
 
                 // NOTE: vrv blocks any request with forwarded ip address header
                 let promise = fetch( oauthRequest.url, this.requestOptions );
