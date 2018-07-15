@@ -20,7 +20,16 @@
             // Private members for internal usage only (convenience)
             this.url         = 'http://www.mangasail.com';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config = {
+                throttle: {
+                    label: 'Throttle Requests [ms]',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 500 errors during manga list update.\nThrottle of 250 ms => approx. 1 minute manga list update.',
+                    input: Input.numeric,
+                    min: 100,
+                    max: 2500,
+                    value: 250
+                }
+            };
         }
 
         /**
@@ -44,7 +53,10 @@
             } )
             .then( pageCount => {
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return fetch( this.url + '/directory?page=' + page, this.requestOptions )
+                    return this.wait( this.config.throttle.value * page )
+                    .then( () => {
+                        return fetch( this.url + '/directory?page=' + page, this.requestOptions );
+                    } )
                     .then( response => {
                         if( response.status !== 200 ) {
                             throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
