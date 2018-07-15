@@ -36,8 +36,6 @@
          *
          */
         _getMangaList( callback ) {
-            // http://www.mangasail.com/directory?page=0
-
             fetch( this.url + '/directory?page=9999', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
