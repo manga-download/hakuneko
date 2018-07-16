@@ -1,0 +1,25 @@
+<link rel="import" href="rawlh.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class LHScan extends RawLH {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'lhscan';
+            super.label      = 'LHScan';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'http://lhscan.net';
+        }
+    }
+
+</script>
