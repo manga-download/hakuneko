@@ -16,12 +16,12 @@
             this.webframe = electron.webFrame;
             this.electronRemote = electron.remote;
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
-            this.crypto = this.electronRemote.require( 'crypto' );
             this.browser = this.electronRemote.BrowserWindow;
-            this.ipChain = this._randIP( 3 );
-            this.protocolTable = [];
 
-            //
+            // register 'cache' as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
+            // this cannot be done in main process of electron, so it is done here ...
+            this.webframe.registerURLSchemeAsPrivileged( 'cache' );
+            
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
@@ -44,7 +44,7 @@
          *
          */
         registerProtocol( scheme, callback ) {
-            // register as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
+            // register scheme as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
             this.webframe.registerURLSchemeAsPrivileged( scheme );
             // register callback for electron process (when callback becomes unavailable by e.g. by reloading page,
             // the previous registered handler must be removed)
@@ -91,9 +91,10 @@
         }
 
         /**
-         *
+         * If timeout [ms] is given, the window will be kept open until timout, otherwise
+         * it will be closed after injecting the script (or after 25 seconds in case an error occured)
          */
-        fetchUI( url, requestOptions, injectionScript ) {
+        fetchUI( url, requestOptions, injectionScript, timeout ) {
             return new Promise( ( resolve, reject ) => {
                 let win = new this.browser( {
                     show: false,
@@ -102,6 +103,7 @@
                         webSecurity: true
                     }
                 } );
+                //win.webContents.openDevTools();
 
                 let preventCallback = false;
 
@@ -110,11 +112,7 @@
                     if( !preventCallback ) {
                         reject( new Error( 'Failed to load ' + url ) );
                     }
-                }, 15000 );
-                
-                win.webContents.session.webRequest.onBeforeRequest( { urls: ['http://*/mobi/js/chapter.js*'] }, ( details, callback ) => {
-                    callback( { redirectURL: 'cache://hakuneko/js/chapter.js' } );
-                } );
+                }, ( timeout ? timeout : 25000 ) );
 
                 win.webContents.on( 'did-finish-load', event => {
                     win.webContents.executeJavaScript( this._cfCheckScript(), result => {
@@ -125,7 +123,9 @@
                             } else {
                                 preventCallback = true; // no other event shall resolve/reject this promise anymore
                                 win.webContents.executeJavaScript( injectionScript, ( result ) => {
-                                    this._fetchUICleanup( win, abortAction );
+                                    if( !timeout ) {
+                                        this._fetchUICleanup( win, abortAction );
+                                    }
                                     resolve( result );
                                 } );
                             }
@@ -139,14 +139,18 @@
                         reject( new Error( errMessage + ' ' + uri ) );
                     }
                 } );
+
+                // all request go through onBeforeSendHeadersHandler() => no options required
+                /*
                 let options = {
                     httpReferrer: requestOptions.headers.get( 'x-referer' ) || url,
-                    // Assign the X-User-Agent header from the corresponding connector (cloudflare challenge consistency)
-                    userAgent: requestOptions.headers.get( 'x-user-agent' ),
+                    // Assign the X-User-Agent header from the corresponding connector or default (cloudflare challenge consistency)
+                    userAgent: requestOptions.headers.get( 'x-user-agent' ) || this.userAgent,
                     // TODO: add all headers from request options ...
                     //extraHeaders: 
                 };
-                win.loadURL( url, options );
+                */
+                win.loadURL( url/*, options*/ );
             } );
         }
 
@@ -170,28 +174,10 @@
         _getDataSaverHeader() {
             let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
             let ts = Math.floor( Date.now() / 1000 );
-            let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
+            //let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
+            let hash = CryptoJS.MD5( ts + key + ts ).toString( CryptoJS.enc.Hex );
             let rd = Math.floor( 9999 * Math.random() );
             return 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
-        }
-
-        /**
-         * Generate random IPs ( 1 ~ amount )
-         */
-        _randIP( amount ) {
-            amount = amount || 1;
-            let result = [];
-            let rd = ( min, max ) => {
-                return Math.floor( Math.random() * ( max - min + 1 ) ) + min;
-            };
-            let count = amount; // rd( 1, amount );
-            // us ip blocks: https://www.nirsoft.net/countryip/us.html
-            //let usBlocks = [3,4,6,7,8,9,11,12,15,16,17,18,19,20,21,22,26,28,29,30,33,34,38,44,48,55,56,73,214,215];
-            for(let i=0; i<count; i++) {
-                let ip = [ rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ), rd( 1, 255 ) ];
-                result.push( ip.join( '.' ) );
-            }
-            return result;
         }
 
         /**
@@ -205,65 +191,51 @@
                 console.log( error, details );
                 return undefined;
             }
-            console.log( 'Request.onBeforeSendHeadersHandler():', details );
             let uri = new URL( details.url );
 
+            // remove accidently added headers from opened developer console
+            for( let header in details.requestHeaders ) {
+                if( header.startsWith( 'X-DevTools' )  ) {
+                    delete details.requestHeaders[header];
+                }
+            }
+
+            // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ..." )
+            if( details.requestHeaders['User-Agent'].toLowerCase().indexOf( 'electron' ) > -1 ) {
+                details.requestHeaders['User-Agent'] = this.userAgent;
+            }
             // Overwrite the User-Agent header with the one provided by the connector
             if( details.requestHeaders['x-user-agent'] ) {
                 details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
-                delete details.requestHeaders['x-user-agent'];
             }
-            // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ..." )
-            if( details.requestHeaders['User-Agent'].indexOf( 'electron' ) > -1 ) {
-                // FIXME: detect correspondng connector for this request ...
-                // Assign the X-User-Agent header from the corresponding connector (cloudflare challenge consistency)
-                details.requestHeaders['User-Agent'] = this.userAgent;
-            }
+            delete details.requestHeaders['x-user-agent'];
+
             // Overwrite the Referer header, but
             // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
-            if( !uri.pathname.endsWith( 'chk_jschl' ) ) {
+            if( !uri.pathname.endsWith( 'chk_jschl' ) && details.requestHeaders['x-referer'] ) {
                 // use referer provided by connector
-                if( details.requestHeaders['x-referer'] ) {
-                    details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
-                    delete details.requestHeaders['x-referer'];
-                } else {
-                    // some manga connectors (e.g. DynastyScans) require a referer of the same origin for images
-                    // (ticket #2, commit [758df9]) => overwrite the referer for each request
-                    details.requestHeaders['Referer'] = details.url;
-                }
+                details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
             }
+            delete details.requestHeaders['x-referer'];
 
             // Overwrite the Origin header
             if( details.requestHeaders['x-origin'] ) {
                 details.requestHeaders['Origin'] = details.requestHeaders['x-origin'];
-                delete details.requestHeaders['x-origin'];
             }
+            delete details.requestHeaders['x-origin'];
 
             // Append Cookie header
             if( details.requestHeaders['x-cookie'] ) {
                 let cookiesORG = ( details.requestHeaders['Cookie'] || '' ).split( ';' ).map( c => c.trim() );
                 let cookiesNEW = details.requestHeaders['x-cookie'].split( ';' ).map( c => c.trim() );
                 details.requestHeaders['Cookie'] = cookiesORG.concat( cookiesNEW ).join( '; ' );
-                delete details.requestHeaders['x-cookie'];
             }
-
-            //console.log( '  => REFERER:', details.requestHeaders['Referer'] );
-            // it cannot hurt to pretend the request already passed through some other proxy servers ...
-            
-            /*
-            Disabled, because rejected by MangaDex
-            if( details.requestHeaders['X-Forwarded-For'] === undefined ) {
-                details.requestHeaders['X-Forwarded-For'] = this.ipChain.join( ',' );
-            }
-            if( details.requestHeaders['Forwarded'] === undefined ) {
-                details.requestHeaders['Forwarded'] = this.ipChain.map( ip => 'for=' + ip ).join( ',' );
-            }
-            */
+            delete details.requestHeaders['x-cookie'];
 
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
-
+console.log( 'HEADERS:', details.url, details.requestHeaders );
             return details;
         }
     }
