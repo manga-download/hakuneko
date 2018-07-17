@@ -42,6 +42,8 @@
                 }
             };
 
+            this.script = '';
+            this.hash = 'e7c1d159f0b676427e3709e8972e010e';
             this.desKeys = [
                 //{ id: 'default',                          pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
                 { id: '60a2b0ed56cd458c4633d04b1b76b7e9', pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
@@ -76,23 +78,44 @@
          *
          */
         _initializeConnector() {
-            // initialization: solve cloudflare for all known domains
-            let domains = [
-                this.url,
-                //'http://www.mnggo.net/c/1/1/1',
-                //'http://www.fashionlib.net/c/1/1/1',
-                //'http://www.lady-first.me/c/1/1/1',
-                //'http://www.mangapicgallery.com'
-            ];
-            // process cloudflare challenge for all domains during initialization phase
-            let promises = domains.map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '' ) );
-            Promise.all( promises )
-            .then( result => {
+            fetch( 'cache://hakuneko/js/chapter.js' )
+            .then( response => response.text() )
+            .then( data => {
+                this.script = data;
+                let promises = [
+                    this.url,
+                    'http://www.mnggo.net/c/1/1/1/',
+                    'http://www.fashionlib.net/c/1/1/1/',
+                    'http://www.lady-first.me/c/1/1/1/'
+                ].map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '', 25000 ) );
+                return Promise.all( promises );
+            } )
+            .then( () => {
+                return this._validateScript();
+            } )
+            .then( () => {
                 this.initialized = true;
             } )
             .catch( error => {
                 console.error( error, this );
-                this.initialized = undefined;
+                this.initialized = false;
+            } );
+        }
+
+        /**
+         *
+         */
+        _validateScript() {
+            return fetch( 'http://www.mnggo.net/mobi/js/chapter.js', this.requestOptions )
+            .then( response => {
+                return response.text();
+            } )
+            .then( data => {
+                let hash = CryptoJS.MD5( data ).toString( CryptoJS.enc.Hex );
+                if( this.hash !== hash ) {
+                    throw new Error( this.label + ' has updated the encryption!\nYou will not be able to get valid images.' );
+                }
+                return Promise.resolve();
             } );
         }
 
@@ -150,8 +173,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let script = `imgsrcs`;
-            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, script )
+            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, this.script )
             .then( result => {
                 if( !( result instanceof Array ) ) {
                     throw new Error( 'Page list is invalid (incompatible variable type)!' );
@@ -164,9 +186,11 @@
                         console.warn( 'Invalid image URL (skipped): ' + link );
                         return false;
                     }
-                } ).map( link => {
+                } ).map( ( link, index ) => {
                     let uri = new URL( link );
                     uri.protocol = this.id;
+                    uri.searchParams.append( 'referer', this.url + chapter.id );
+                    uri.searchParams.append( 'delay', index * 50 );
                     return uri.href;
                 } );
                 callback( null, pageLinks );
@@ -183,40 +207,29 @@
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            this.requestOptions.headers.set( 'x-referer', this.url );
+            let delay = parseInt( uri.searchParams.get( 'delay' ) );
+            uri.searchParams.delete( 'delay' );
             if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
                 this.requestOptions.headers.delete( 'x-referer' );
+            } else {
+                this.requestOptions.headers.set( 'x-referer', uri.searchParams.get( 'referer' ) );
             }
-            // TODO: is the replacement of mangapicgallery still necessary?
-            /*
-            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 )
-            {
-                //uri.hostname = 'www.mnggo.net';
-                this.requestOptions.headers.set( 'x-referer', 'www.mnggo.net' );
-            }
-            */
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            // TODO: to many concurrent requests may lead to IP ban
-            Engine.Request.cloudflare( uri.href, this.requestOptions )
+            uri.searchParams.delete( 'referer' );
+
+            this.wait( delay )
+            .then( () => fetch( uri.href, this.requestOptions ) )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
                 }
-                // TODO: check for licensed ...
-                /*
-                if( content.indexOf( 'its licensed' ) > -1 ) {
-                    throw new Error( 'The manga is licensed and not available in your country!' );
-                }
-                */
                 return response.blob();
             } )
             .then( data => {
-                if( uri.pathname.indexOf( 'cspiclink' ) < 0 ) {
-                    return this._blobToBuffer( data );
-                } else {
+                if( uri.pathname.indexOf( 'cspiclink' ) > -1 ) {
                     let desKey = this.desKeys.find( key => uri.pathname.indexOf( key.id ) > -1 ) || this.desKeys[0];
-                    return this._descrambleImage( data, desKey.pattern ).then( data => this._blobToBuffer( data ) )
+                    return this._descrambleImage( data, desKey.pattern ).then( data => this._blobToBuffer( data ) );
+                } else {
+                    return this._blobToBuffer( data );
                 }
             } )
             .then( data => {
@@ -230,7 +243,7 @@
 
         /**************************
          *** MANGAGO CODE BEGIN ***
-        *************************/
+         *************************/
 
         _descrambleImage( blob, params ) {
             return createImageBitmap( blob )
@@ -267,7 +280,7 @@
 
         /************************
          *** MANGAGO CODE END ***
-        ***********************/
+         ***********************/
     }
 
 </script>
