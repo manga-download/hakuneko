@@ -16,7 +16,7 @@ function registerCacheProtocol( protocol, directory ) {
     electron.protocol.registerFileProtocol( protocol, ( request, callback ) => {
         // build full path (replace backslashes by forward slashes)
         callback( { path: path.normalize( path.join( directory, url.parse( request.url ).pathname ) ) } );
-    });
+    } );
 }
 
 /**
@@ -42,31 +42,33 @@ function activateWindow() {
 
     // inject headers before a request is made (call the handler in the webapp to do the dirty work)
     electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-        // prevent from injecting javascript into the webpage while the webcontent is not yet ready
-        // => required for loading initial page over http protocol (e.g. local hosted test page)
-        if( win && win.webContents && !win.webContents.isLoading() ) {
+        ( new Promise( (resolve, reject ) => {
+            // prevent from injecting javascript into the webpage while the webcontent is not yet ready
+            // => required for loading initial page over http protocol (e.g. local hosted test page)
+            if( win && win.webContents && !win.webContents.isLoading() ) {
+                resolve();
+            } else {
+                throw new Error( 'Cannot inject javascript while web-app is not yet ready!' );
+            }
+        } ) )
+        .then( () => {
             // inject javascript: looks stupid, but is a working solution to call a function
             // directly within the render process (without dealing with ipcRenderer)
             let payload = Buffer.from( JSON.stringify( details ) ).toString( 'base64' );
-            win.webContents.executeJavaScript( `Engine.Request.onBeforeSendHeadersHandler('${payload}');` )
-            .then( result => {
-                callback( {
-                    cancel: false,
-                    requestHeaders: result.requestHeaders
-                } );
-            } )
-            .catch( error => {
-                callback( {
-                    cancel: false,
-                    requestHeaders: details.requestHeaders
-                } );
+            return win.webContents.executeJavaScript( `Engine.Request.onBeforeSendHeadersHandler('${payload}');` );
+        } )
+        .then( result => {
+            callback( {
+                cancel: false,
+                requestHeaders: result.requestHeaders
             } );
-        } else {
+        } )
+        .catch( error => {
             callback( {
                 cancel: false,
                 requestHeaders: details.requestHeaders
             } );
-        }
+        } );
     } );
     
     win.setMenu( null );
