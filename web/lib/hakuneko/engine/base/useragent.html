@@ -74,7 +74,11 @@
          */
         static random() {
             let $ = UserAgent;
-            return $._rd( [$._browserChrome, $._browserFirefox, $._browserIE] );
+            //return $._rd( [$._browserChrome, $._browserFirefox, $._browserIE] );
+            // only return chrome because it has over 7E+014 signature possibilites
+            // => low chance of duplicate calls
+            // (firefox only has 0.6E+006 signature possiblities)
+            return $._browserChrome;
         }
     }
 
