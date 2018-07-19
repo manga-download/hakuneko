@@ -18,24 +18,65 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://mangadex.org';
+            this.url         = 'http://beta.mangadex.org';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config = {
+                throttle: {
+                    label: 'Throttle Requests [ms]',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many concurrent requests.\nThrottle of 500 ms => approx. 5 minutes manga list update.',
+                    input: Input.numeric,
+                    min: 250,
+                    max: 1000,
+                    value: 500
+                }
+            };
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            fetch( this.url + '/titles', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-                return response.json();
+                return response.text();
             } )
             .then( data => {
-                callback( null, data );
+                let dom = this.createDOM( data );
+                let pageCount = dom.querySelector( 'nav ul.pagination li.paging:last-of-type a.page-link' );
+                pageCount = parseInt( pageCount.href.match(/(\d+)\/$/)[1] );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( this.config.throttle.value * page )
+                    .then( () => {
+                        return fetch( this.url + '/titles/0/' + ( page + 1 ) + '/', this.requestOptions );
+                    } )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        }
+                        return response.text();
+                    } )
+                    .then( data => {
+                        let dom = this.createDOM( data );
+                        let mangaList = [...dom.querySelectorAll( 'div.mb-1 a.ml-1' )].map( element => {
+                            this.cfMailDecrypt( element );
+                            return {
+                                id: element.href.match( /\/(\d+)\// )[1],
+                                title: element.text.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -46,41 +87,34 @@
         /**
          *
          */
-        _getChapterList( manga, callback, chapterList, page ) {
-            chapterList = chapterList || [];
-            page = page || 1;
-            fetch( this.url + manga.id + '/chapters/' + page + '/', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+        _getChapterList( manga, callback, chapterList ) {
+            this._requestAPI( this.url + '/api/manga/' + manga.id, this.requestOptions, 'chapter' )
             .then( data => {
-                    let dom = this.createDOM( data );
-                    let chapters = [...dom.querySelectorAll( 'div.table-responsive tr[id]' )];
-                    // abort when there are no chapters
-                    if( !chapters || chapters.length === 0 ) {
-                        callback( null, chapterList );
-                        return;
+                let chapterList = Object.keys( data.chapter ).map( id => {
+                    let chapter = data.chapter[id];
+                    let title = '';
+                    if( chapter.volume ) { // => string, not a number
+                        title += 'Vol.' + ( '00' + chapter.volume ).slice( -2 );
                     }
-                    chapters = chapters.map( ( element ) => {
-                        let chapterInfo = element.querySelector( 'td:nth-of-type(2) a' );
-                        let languageInfo = element.querySelector( 'td:nth-of-type(4) source' );
-                        let scanlatorInfo = element.querySelector( 'td:nth-of-type(5) a' );
-                        return {
-                            id: this.getRelativeLink( chapterInfo ),
-                            title: `Vol. ${chapterInfo.dataset.volumeNum} Ch. ${chapterInfo.dataset.chapterNum} - ${chapterInfo.dataset.chapterName} [${scanlatorInfo.text.trim()}]`,
-                            language: languageInfo.title
-                        };
-                    });
-                    // abort when the first chapter is already in the chapter list (already processed this chapter list)
-                    if( chapterList.find( c => c.id === chapters[0].id ) ) {
-                        callback( null, chapterList );
-                        return;
+                    if( chapter.chapter ) { // => string, not a number
+                        title += ' Ch.' + ( '0000' + chapter.chapter ).slice( -4 );
                     }
-                    chapterList = chapterList.concat( chapters );
-                    this._getChapterList( manga, callback, chapterList, page+1 );
+                    if( chapter.title ) {
+                        title += ( title ? ' - ' : '' ) + chapter.title;
+                    }
+                    if( chapter.lang_code ) {
+                        title += ' (' + chapter.lang_code + ')';
+                    }
+                    if( chapter.group_name ) {
+                        title += ' [' + chapter.group_name + ']';
+                    }
+                    return {
+                        id: id,
+                        title: title.trim(),
+                        language: chapter.lang_code
+                    };
+                } );
+                callback( null, chapterList );
             } )
             .catch( error => {
                 console.error( error, manga );
@@ -92,33 +126,33 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this._requestAPI( this.url + '/api/chapter/' + chapter.id, this.requestOptions, 'page' )
             .then( data => {
-                let path = data.match( /var\s+server\s*=\s*['"]{1}(.+?)['"]{1}/ );
-                let id = data.match( /var\s+dataurl\s*=.+?([a-f0-9)]+)/ );
-                let pages = data.match( /var\s+page_array\s*=\s*\[\s*(.+?)\s*\]/ );
-                if( !path || path.length < 2 || !id || id.length < 2 || !pages || pages.length < 2 ) {
-                    throw new Error( 'Failed to determine page links!' );
-                }
-                pages = pages[1].replace( /['"]/g, '' ).split( ',' );
-                if( !pages || pages.length < 1 ) {
-                    throw new Error( 'No pages found!' );
-                }
-                // remove empty entries
-                let pageList = pages.filter( p => p ).map( page => {
-                    return ( path[1].indexOf( '/' ) === 0 ? this.url : '' ) + path[1] + id[1] + '/' + page;
-                } );
+                let pageList = data.page_array.map( page => data.server + data.hash + '/' + page );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _requestAPI( url, requestOptions, label ) {
+            return fetch( url, requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive ${label} list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.json();
+            } )
+            .then( data => {
+                if( data.status !== 'OK' ) {
+                    throw new Error( `Failed to receive ${label} list (status: ${data.status}) - ${data.message}` );
+                }
+                return Promise.resolve( data );
             } );
         }
     }
