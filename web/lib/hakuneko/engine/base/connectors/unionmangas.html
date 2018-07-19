@@ -18,7 +18,7 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://unionmangas.site'; // 'http://85.93.89.57';
+            this.url         = 'http://unionmangas.site';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -27,15 +27,47 @@
          *
          */
         _getMangaList( callback ) {
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            fetch( this.url + '/mangas/visualizacoes', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-                return response.json();
+                return response.text();
             } )
             .then( data => {
-                callback( null, data );
+                let dom = this.createDOM( data );
+                let pageCount = dom.querySelector( 'nav ul.pagination li:last-of-type a' );
+                pageCount = parseInt( pageCount.href.match(/(\d+)$/)[1] );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( 100 * page )
+                    .then( () => {
+                        return fetch( this.url + '/mangas/visualizacoes/' + ( page + 1 ), this.requestOptions );
+                    } )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        }
+                        return response.text();
+                    } )
+                    .then( data => {
+                        let dom = this.createDOM( data );
+                        let mangaList = [...dom.querySelectorAll( 'div.bloco-manga a:nth-of-type(2)' )].map( element => {
+                            this.cfMailDecrypt( element );
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.text.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
             } )
             .catch( error => {
                 console.error( error, this );
