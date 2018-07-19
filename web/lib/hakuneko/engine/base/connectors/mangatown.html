@@ -29,7 +29,7 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
-            // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
+            // register a protocol handler to intercept requests (with custom 'mangatown' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
         
@@ -37,15 +37,46 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            fetch( this.url + '/directory/', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-                return response.json();
+                return response.text();
             } )
             .then( data => {
-                callback( null, data );
+                let dom = this.createDOM( data );
+                let pageCount = dom.querySelector( 'div.next-page a:nth-last-child(3)' );
+                pageCount = parseInt( pageCount.text );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( 100 * page )
+                    .then( () => {
+                        return fetch( this.url + '/directory/0-0-0-0-0-0/' + ( page + 1 ) + '.htm', this.requestOptions );
+                    } )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        }
+                        return response.text();
+                    } )
+                    .then( data => {
+                        let dom = this.createDOM( data );
+                        let mangaList = [...dom.querySelectorAll( 'ul.manga_pic_list li p.title a' )].map( element => {
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.title.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
             } )
             .catch( error => {
                 console.error( error, this );
