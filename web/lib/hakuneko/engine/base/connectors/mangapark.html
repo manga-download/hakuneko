@@ -18,7 +18,7 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://mangapark.me';
+            this.url         = 'https://mangapark.org'; // 'https://mangapark.me';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -27,15 +27,47 @@
          * 
          */
         _getMangaList( callback ) {
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            fetch( this.url + '/browse', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
                 }
-                return response.json();
+                return response.text();
             } )
             .then( data => {
-                callback( null, data );
+                let dom = this.createDOM( data );
+                let pageCount = dom.querySelector( 'nav.d-md-block ul.pagination li:nth-last-child(2) a' );
+                pageCount = parseInt( pageCount.text );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( 500 * page )
+                    .then( () => {
+                        return fetch( this.url + '/browse?page=' + ( page + 1 ), this.requestOptions );
+                    } )
+                    .then( response => {
+                        if( response.status !== 200 ) {
+                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        }
+                        return response.text();
+                    } )
+                    .then( data => {
+                        let dom = this.createDOM( data );
+                        let mangaList = [...dom.querySelectorAll( 'div#browse h6 a' )].map( element => {
+                            this.cfMailDecrypt( element );
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.text.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -57,14 +89,17 @@
             .then( data => {
                 let chapterList = [];
                 let dom = this.createDOM( data );
-                dom.querySelectorAll( '.stream' ).forEach ( ( stream, index ) => {
-                    chapterList = chapterList.concat([...stream.querySelectorAll( 'li span a' )].map( element => {
-                        let titleVersion = '[Ver ' + ( index + 1 ) + '] ' + element.text.replace( manga.title, '' ).trim();
+                dom.querySelectorAll( 'div.card' ).forEach ( card => {
+                    let info = card.querySelector( 'div.card-header a.ml-1' ).text;
+                    let locale = info.match( /\[(.*?)\]/ )[1];
+                    let source = info.match( /\[.*?\]\s*(.*)$/ )[1];
+                    chapterList = chapterList.concat([...card.querySelectorAll( 'div.card-body ul li div:first-of-type a.ml-2' )].map( element => {
+                        let title = element.text.replace( manga.title, '' ).trim() + ` (${locale}) [${source}]`;
                         element.href = element.href.replace( /\/[^/]*$/, '' );
 	                    return {
 	                        id: this.getRelativeLink( element ),
-	                        title: titleVersion,
-	                        language: 'en'
+	                        title: title,
+	                        language: locale
 	                    };
 	                } ) );
                 } );
@@ -88,10 +123,8 @@
                 return response.text();
             } )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( '.img-num' )].map( element => {
-                    return element.href.replace( 'cache://', ( new URL( this.url ) ).protocol + '//' );
-                } );
+                let pages = data.match( /images\s*=\s*(\[.*?\])\s*;/ )[1];
+                let pageList = JSON.parse( pages );
                 callback( null, pageList );
             } )
             .catch( error => {
