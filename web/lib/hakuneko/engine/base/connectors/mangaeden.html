@@ -114,7 +114,7 @@
                 if( data.indexOf( 'licensed in your country' ) > -1 ) {
                     throw new Error( 'The manga is licensed and not available in your country!' );
                 }
-                let pages = /pages\s*=\s*(\[.*?\])\s*;/.exec( data )[1];
+                let pages = data.match( /pages\s*=\s*(\[.*?\])\s*;/ )[1];
                 let pageList = JSON.parse( pages ).map( p => 'https:' + p.fs );
                 callback( null, pageList );
             } )

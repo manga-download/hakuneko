@@ -106,7 +106,7 @@
                 return response.text();
             } )
             .then( data => {
-                let pages = /var\s+pages\s*=\s*(\[.*?\])\s*;/.exec( data )[1];
+                let pages = data.match( /var\s+pages\s*=\s*(\[.*?\])\s*;/ )[1];
                 let pageList = JSON.parse( pages ).map( p => this.url + p.image );
                 callback( null, pageList );
             } )

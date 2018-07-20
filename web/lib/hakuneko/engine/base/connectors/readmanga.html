@@ -128,7 +128,7 @@
                 return response.text();
             } )
             .then( data => {
-                let pages = /init\s*\(\s*(\[\[.*?\]\])/.exec( data )[1];
+                let pages = data.match( /init\s*\(\s*(\[\[.*?\]\])/ )[1];
                 let pageList = JSON.parse( pages.replace( /'/g, '"' ) ).map( p => p[1] + p[2] );
                 callback( null, pageList );
             } )

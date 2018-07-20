@@ -114,7 +114,7 @@
                 return response.text();
             } )
             .then( data => {
-                let pages = /"source"\s*:\s*(\[.*?\])/.exec( data )[1];
+                let pages = data.match( /"source"\s*:\s*(\[.*?\])/ )[1];
                 let pageList = JSON.parse( pages ).map( p => this.id + ':' + p.image );
                 callback( null, pageList );
             } )
