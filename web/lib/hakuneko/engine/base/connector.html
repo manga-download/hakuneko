@@ -18,6 +18,7 @@
             // READONLY: lock state may used to prevent to many concurrent requests per second
             // do not set directly, use lock() and unlock()
             this.isLocked = false;
+            this.initialized = undefined;
             //
             this.isUpdating = false;
             //
