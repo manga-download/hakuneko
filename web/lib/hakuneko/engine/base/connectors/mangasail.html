@@ -124,7 +124,6 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                console.log();
                 let pageLinks = [...dom.querySelectorAll( 'div#images a source' )].map( element => element.src );
                 callback( null, pageLinks );
             } )

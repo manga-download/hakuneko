@@ -35,7 +35,7 @@
                 this.initialized = true; 
             } )
             .catch( error => {
-                console.log( error, this ); 
+                console.error( error, this ); 
                 this.initialized = undefined;
             } );
         }
@@ -118,7 +118,7 @@
                 callback( null, result );
             } )
             .catch( error => {
-                console.log( error, chapter );
+                console.error( error, chapter );
                 callback( error, undefined );
              } );
         }

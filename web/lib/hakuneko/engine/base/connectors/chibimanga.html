@@ -35,7 +35,6 @@
                 return response.text();
             } )
             .then( data => {
-                console.log( data );
                 let dom = this.createDOM( data );
                 let mangaList = [...dom.querySelectorAll( 'ul.manga-list li a' )].map( element => {
                     return {
