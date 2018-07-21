@@ -23,7 +23,7 @@
             this.config = undefined;
 
             //this.queryMangasPageCount = '';
-            this.pageCount = 900;
+            this.pageCount = 950;
             this.queryMangas = 'div.clistChr ul li div.intro h2 a';
             this.queryChapters = 'div.chapter_list table tr td:first-of-type a';
             this.queryPages = 'select#page option';
@@ -45,11 +45,16 @@
                         return this.fetchDOM( this.url + '/search/?completed_series=either&page=' + ( page + 1 ), this.queryMangas );
                     } )
                     .then( data => {
-                        let mangaList = data.map( element => {
-                            this.cfMailDecrypt( element );
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.text.trim()
+                        // TenManga repeats the second manga list page instead of
+                        // returning an empty list when the last page is exceeded
+                        // => duplicate check required => use dictionary instead of array
+                        let mangaList = {};
+                        data.forEach( element => {
+                            //this.cfMailDecrypt( element );
+                            let id = this.getRelativeLink( element );
+                            mangaList[id] = {
+                                id: id,
+                                title: element.title.trim()
                             };
                         } );
                         return Promise.resolve( mangaList );
@@ -58,7 +63,18 @@
                 return Promise.all( promises ); 
             } )
             .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+                let mangaList = {};
+                mangas.forEach( dictionary => {
+                    Object.keys( dictionary ).forEach( id => {
+                        if( !mangaList[id] ) {
+                            mangaList[id] = dictionary[id];
+                        } else {
+                            console.log( 'DUPLICATE:', dictionary[id].title );
+                        }
+                    } );
+                } );
+                mangaList = Object.keys( mangaList ).map( id => mangaList[id] );
+                callback( null, mangaList );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -70,13 +86,15 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, this.queryChapters )
+            let uri = new URL( this.url + manga.id );
+            uri.searchParams.append( 'warning', '1' );
+            this.fetchDOM( uri.href, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
                     this.cfMailDecrypt( element );
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
+                        title: element.text.replace( manga.title, '' ).replace( /\s*new$/, '' ).trim(),
                         language: ''
                     };
                 } );
