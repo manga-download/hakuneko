@@ -1,0 +1,25 @@
+<link rel="import" href="wp-emanga.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class KomikCast extends WordPressEManga {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'komikcast';
+            super.label      = 'KomikCast';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://komikcast.com';
+        }
+    }
+
+</script>
