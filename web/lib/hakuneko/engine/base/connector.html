@@ -211,6 +211,24 @@
         }
 
         /**
+         * Get the content based on the configured requestOptions and the given URI
+         * and search for all elements matching the given CSS selector.
+         */
+        fetchDOM( uri, selector ) {
+            return fetch( uri, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive content from "${uri}" (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let dom = this.createDOM( data );
+                return Promise.resolve( [...dom.querySelectorAll( selector )] );
+            } );
+        }
+
+        /**
          * Protected helper function to convert a Blob to a MimeTypedBuffer
          * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
          */
