@@ -1,0 +1,37 @@
+<link rel="import" href="taadd.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class WieManga extends TAADD {
+
+        /**
+         *
+         */
+        constructor() {
+            // NOTE: calling super() will trigger the protocol registration of the base class again
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'wiemanga';
+            super.label      = 'WieManga';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://www.wiemanga.com';
+            this.requestOptions.headers.set( 'x-referer', this.url );
+
+            //this.queryMangasPageCount = '';
+            this.pageCount = 50;
+            this.queryMangas = 'table tr td a.resultbookname';
+            this.queryChapters = 'div.chapterlist table tr td.col1 a';
+            this.queryPages = 'select#page';
+            this.queryImages = 'source#comicpic';
+
+            // register a protocol handler to intercept requests (with custom 'wiemanga' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
+        }
+    }
+
+</script>
