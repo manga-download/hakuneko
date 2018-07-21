@@ -1,0 +1,136 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class TAADD extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'taadd';
+            super.label      = 'TAADD';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://www.taadd.com';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            //this.queryMangasPageCount = '';
+            this.pageCount = 900;
+            this.queryMangas = 'div.clistChr ul li div.intro h2 a';
+            this.queryChapters = 'div.chapter_list table tr td:first-of-type a';
+            this.queryPages = 'select#page option';
+            this.queryImages = 'source#comicpic';
+
+            // register a protocol handler to intercept requests (with custom 'taadd' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
+        }
+
+        /**
+         * 
+         */
+        _getMangaList( callback ) {
+            return Promise.resolve( this.pageCount )
+            .then( pageCount => {
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( 50 * page )
+                    .then( () => {
+                        return this.fetchDOM( this.url + '/search/?completed_series=either&page=' + ( page + 1 ), this.queryMangas );
+                    } )
+                    .then( data => {
+                        let mangaList = data.map( element => {
+                            this.cfMailDecrypt( element );
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.text.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, this.queryChapters )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: ''
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( this.url + chapter.id, this.queryPages )
+            .then( data => {
+                let pageList = data.map( element => {
+                    let uri = new URL( element.value );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+
+            this.fetchDOM( uri.href, this.queryImages )
+            .then( data => fetch( data[0].src, this.requestOptions ) )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+    }
+
+</script>
