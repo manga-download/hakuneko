@@ -22,6 +22,9 @@
             this.urlOld      = 'http://readcomicbooksonline.com';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'readcomicbooksonline' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -107,8 +110,12 @@
                         return ( element.src.replace( this.urlOld, '' ) );
                     } );
                 } else {
-                    pageList = [...dom.querySelectorAll( 'table tr:nth-child(3) td source' )].map( element => {
-                        return ( this.url + '/reader' + this.getRelativeLink( element ).replace( this.urlOld, '' ) );
+                    pageList = [...dom.querySelectorAll( 'table tr:nth-of-type(3) td source' )].map( ( element, index ) => {
+                        let uri = new URL( this.url + '/reader' + this.getRelativeLink( element ).replace( this.urlOld, '' ) );
+                        uri.protocol = this.id;
+                        uri.searchParams.append( 'referer', this.url + chapter.id );
+                        uri.searchParams.append( 'delay', index * 100 );
+                        return uri.href;
                     } );
                 }
                 callback( null, pageList );
@@ -116,6 +123,37 @@
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            let delay = parseInt( uri.searchParams.get( 'delay' ) );
+            uri.searchParams.delete( 'delay' );
+            this.requestOptions.headers.set( 'x-referer', uri.searchParams.get( 'referer' ) );
+            uri.searchParams.delete( 'referer' );
+
+            this.wait( delay )
+            .then( () => fetch( uri.href, this.requestOptions ) )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                return this._blobToBuffer( data );
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
             } );
         }
     }
