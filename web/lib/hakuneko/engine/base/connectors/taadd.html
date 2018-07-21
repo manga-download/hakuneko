@@ -45,15 +45,10 @@
                         return this.fetchDOM( this.url + '/search/?completed_series=either&page=' + ( page + 1 ), this.queryMangas );
                     } )
                     .then( data => {
-                        // TenManga repeats the second manga list page instead of
-                        // returning an empty list when the last page is exceeded
-                        // => duplicate check required => use dictionary instead of array
-                        let mangaList = {};
-                        data.forEach( element => {
+                        let mangaList = data.map( element => {
                             //this.cfMailDecrypt( element );
-                            let id = this.getRelativeLink( element );
-                            mangaList[id] = {
-                                id: id,
+                            return {
+                                id: this.getRelativeLink( element ),
                                 title: element.title.trim()
                             };
                         } );
@@ -63,17 +58,14 @@
                 return Promise.all( promises ); 
             } )
             .then( mangas => {
-                let mangaList = {};
-                mangas.forEach( dictionary => {
-                    Object.keys( dictionary ).forEach( id => {
-                        if( !mangaList[id] ) {
-                            mangaList[id] = dictionary[id];
-                        } else {
-                            console.log( 'DUPLICATE:', dictionary[id].title );
-                        }
-                    } );
+                let mangaList = [];
+                let exists = {};
+                [].concat( ... mangas ).forEach( manga => {
+                    if( !exists[manga.id] ) {
+                        mangaList.push( manga );
+                    }
+                    exists[manga.id] = true;
                 } );
-                mangaList = Object.keys( mangaList ).map( id => mangaList[id] );
                 callback( null, mangaList );
             } )
             .catch( error => {
