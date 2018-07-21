@@ -93,7 +93,7 @@
                     let info = card.querySelector( 'div.card-header a.ml-1' ).text;
                     let locale = info.match( /\[(.*?)\]/ )[1];
                     let source = info.match( /\[.*?\]\s*(.*)$/ )[1];
-                    chapterList = chapterList.concat([...card.querySelectorAll( 'div.card-body ul li div:first-of-type a.ml-2' )].map( element => {
+                    let chapters = [...card.querySelectorAll( 'div.card-body ul li div:first-of-type a.ml-2' )].map( element => {
                         let title = element.text.replace( manga.title, '' ).trim() + ` (${locale}) [${source}]`;
                         element.href = element.href.replace( /\/[^/]*$/, '' );
 	                    return {
@@ -101,7 +101,8 @@
 	                        title: title,
 	                        language: locale
 	                    };
-	                } ) );
+	                } );
+                    chapterList = chapterList.concat( chapters );
                 } );
                 callback( null, chapterList );
             } )
