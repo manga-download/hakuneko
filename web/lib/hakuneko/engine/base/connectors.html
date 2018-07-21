@@ -49,6 +49,8 @@
 <link rel="import" href="connectors/readcomics.html">
 <link rel="import" href="connectors/komikcast.html">
 <link rel="import" href="connectors/taadd.html">
+<link rel="import" href="connectors/tenmanga.html">
+<link rel="import" href="connectors/mangarussia.html">
 
 <script>
 
@@ -112,7 +114,9 @@
             this.register( new MangaTube() );
             this.register( new ReadComics() );
             this.register( new KomikCast() );
-            //this.register( new TAADD() );
+            this.register( new TAADD() );
+            this.register( new TenManga() );
+            this.register( new MangaRussia() );
         }
 
         /**
@@ -120,7 +124,7 @@
          */
         register( connector ) {
             // determine if connector is already registered
-            if( this.list.find( ( c ) => { return ( c.id === connector.id ); } ) ) {
+            if( this.list.find( c => c.id === connector.id ) ) {
                 return;
             }
             this.list.push( connector );
@@ -128,7 +132,6 @@
                 return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
             });
         }
-
     }
     Connectors; // reference the class to prevent removal of the class through js-minify
 

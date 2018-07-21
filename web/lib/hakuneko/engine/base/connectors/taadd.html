@@ -79,7 +79,9 @@
          */
         _getChapterList( manga, callback ) {
             let uri = new URL( this.url + manga.id );
-            uri.searchParams.append( 'warning', '1' );
+            if( this.id === 'tenmanga' ) {
+                uri.searchParams.append( 'warning', '1' );
+            }
             this.fetchDOM( uri.href, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
