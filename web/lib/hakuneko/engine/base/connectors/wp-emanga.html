@@ -1,0 +1,93 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class WordPressEManga extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = undefined;
+            super.label      = undefined;
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = undefined;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            return this.fetchDOM( this.url + '/project-list/', 'div.wp-pagenavi a.last' )
+            .then( data => {
+                let pageCount = parseInt( data[0].href.match(/(\d+)\/$/)[1] );
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.fetchDOM( this.url + '/project-list/page/' + ( page + 1 ) + '/', 'div.cpp div.lmt h2 a' )
+                    .then( data => {
+                        let mangaList = data.map( element => {
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.text.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            return this.fetchDOM( this.url + manga.id, 'div.cl ul li span.leftoff a' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim(),
+                        language: 'id'
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            return this.fetchDOM( this.url + chapter.id, 'a[imageanchor="1"] source' )
+            .then( data => {
+                let pageLinks = data.map( element => element.src );
+                callback( null, pageLinks );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
