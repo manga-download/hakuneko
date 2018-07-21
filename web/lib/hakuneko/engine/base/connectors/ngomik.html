@@ -1,0 +1,25 @@
+<link rel="import" href="wp-madara.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class Ngomik extends WordPressMadara {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'ngomik';
+            super.label      = 'Ngomik';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'http://ngomik.in';
+        }
+    }
+
+</script>
