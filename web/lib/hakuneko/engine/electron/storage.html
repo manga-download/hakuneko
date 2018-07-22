@@ -449,8 +449,8 @@
          * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
          */
         _saveChapterPagesPDF( pdf, pageData ) {
-            let doc = new jspdf()
-            doc.deletePage(1);
+            let doc = new jsPDF()
+            doc.deletePage( 1 );
             return this._addImagesToPDF( doc, pageData )
             .then( () => {
                 let data = new Uint8Array( doc.output( 'arraybuffer' ) );
@@ -500,19 +500,13 @@
                 } else {
                     promise = Promise.resolve( page.data );
                 }
-                return promise.then( blob => {
-                    return this._blobToBytes( blob )
-                    .then( bytes => {
-                        try {
-                            pdfDocument.addPage( bitmap.width, bitmap.height );
-                            // use page.name as image alias, to prevent image repeat bug: https://github.com/MrRio/jsPDF/issues/998
-                            pdfDocument.addImage( bytes, pdfImgType, 0, 0, bitmap.width, bitmap.height, page.name );
-                            return Promise.resolve();
-                        } catch( error ) {
-                            return Promise.reject( error );
-                        }
-                    } );
-                } )
+                return promise.then( blob => this._blobToBytes( blob ) )
+                .then( bytes => {
+                    pdfDocument.addPage( bitmap.width, bitmap.height );
+                    // use page.name as image alias, to prevent image repeat bug: https://github.com/MrRio/jsPDF/issues/998
+                    pdfDocument.addImage( bytes, pdfImgType, 0, 0, bitmap.width, bitmap.height, page.name );
+                    return Promise.resolve();
+                } );
             } );
         }
 
