@@ -46,7 +46,7 @@
         registerProtocol( scheme, callback ) {
             // register scheme as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
             this.webframe.registerURLSchemeAsPrivileged( scheme );
-            // register callback for electron process (when callback becomes unavailable by e.g. by reloading page,
+            // register callback for electron process (when callback becomes unavailable by e.g. reloading page,
             // the previous registered handler must be removed)
             this.protocol.isProtocolHandled( scheme, error => {
                 if( error ) {
@@ -115,21 +115,31 @@
                 }, ( timeout ? timeout : 25000 ) );
 
                 win.webContents.on( 'did-finish-load', event => {
-                    win.webContents.executeJavaScript( this._cfCheckScript(), result => {
-                        if( !result.redirect ) {
+                    win.webContents.executeJavaScript( this._cfCheckScript() )
+                    .then( result => {
+                        if( result.redirect ) {
+                            // neither reject nor resolve the promise (wait for next callback after redirect)
+                        } else {
                             if( result.error ) {
-                                this._fetchUICleanup( win, abortAction );
-                                reject( result.error );
+                                throw new Error( result.error );
                             } else {
-                                preventCallback = true; // no other event shall resolve/reject this promise anymore
-                                win.webContents.executeJavaScript( injectionScript, ( result ) => {
-                                    if( !timeout ) {
-                                        this._fetchUICleanup( win, abortAction );
-                                    }
-                                    resolve( result );
-                                } );
+                                return Promise.resolve( result );
                             }
                         }
+                    } )
+                    .then( result => {
+                        preventCallback = true; // no other event shall resolve/reject this promise anymore
+                        return win.webContents.executeJavaScript( injectionScript );
+                    } )
+                    .then( result => {
+                        if( !timeout ) {
+                            this._fetchUICleanup( win, abortAction );
+                        }
+                        resolve( result );
+                    } )
+                    .catch( error => {
+                        this._fetchUICleanup( win, abortAction );
+                        reject( result.error );
                     } );
                 } );
 
@@ -140,16 +150,6 @@
                     }
                 } );
 
-                // all request go through onBeforeSendHeadersHandler() => no options required
-                /*
-                let options = {
-                    httpReferrer: requestOptions.headers.get( 'x-referer' ) || url,
-                    // Assign the X-User-Agent header from the corresponding connector or default (cloudflare challenge consistency)
-                    userAgent: requestOptions.headers.get( 'x-user-agent' ) || this.userAgent,
-                    // TODO: add all headers from request options ...
-                    //extraHeaders: 
-                };
-                */
                 win.loadURL( url/*, options*/ );
             } );
         }
@@ -157,11 +157,11 @@
         /**
          * Close window and clear the given timeout function
          */
-        _fetchUICleanup( browserWindow, timeout ) {
-            if( timeout ) {
-                clearTimeout( timeout );
+        _fetchUICleanup( browserWindow, abortAction ) {
+            if( abortAction ) {
+                clearTimeout( abortAction );
             }
-            timeout = null;
+            abortAction = null;
             if( browserWindow ) {
                 browserWindow.close();
             }
@@ -235,7 +235,7 @@
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
-console.log( 'HEADERS:', details.url, details.requestHeaders );
+//console.log( 'HEADERS:', details.url, details.requestHeaders );
             return details;
         }
     }
