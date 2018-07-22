@@ -1,28 +1,16 @@
+# https://doujindownloader.com/supported-sites-222/
+# https://sourceforge.net/projects/newfmd/files/data/
 # https://sourceforge.net/p/hakuneko/discussion/support/thread/b82345a2/
 
 # do not add, no downloads ...
 #http://proxer.me/manga/mangaseries/title/all/17?format=raw
 
-https://manga-tube.me/ajax POST
-  content-type:application/x-www-form-urlencoded;
-  action:load_series_list_entries
-  parameter[page]:6
-  parameter[letter]:
-  parameter[sortby]:popularity
-  parameter[order]:asc
-https://manga-tube.me/series/eden_s_zero
-https://manga-tube.me/series/eden_s_zero/read/10866/1
-  cookie: reader_type=vertical
+# fakku requires paid subscription
+#https://www.fakku.net
 
-https://readcomics.io
-
-https://www.taadd.com
-  http://www.tenmanga.com
-  http://www.wiemanga.com/search/?completed_series=either&page=1.html
-  http://ninemanga.com
-    http://www.ninemanga.com
-    http://es.ninemanga.com
-    http://ru.ninemanga.com
-    http://de.ninemanga.com
-    http://it.ninemanga.com
-    http://br.ninemanga.com
+https://neumanga.tv/manga
+http://leomanga.com/directorio-manga
+https://e-hentai.org/
+https://hentai2read.com/hentai-list/
+https://hitomi.la/allseries-a.html
+http://apdreadonline.netsons.org/reader/directory/
