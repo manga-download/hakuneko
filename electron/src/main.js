@@ -115,7 +115,9 @@ function closeWindow () {
  ************************/
 
 // Disabling GPU acceleration to possibly prevent chromiums 'blank screen' bug
-electron.app.disableHardwareAcceleration();
+// it seems the --disable-gpu flag did not solve problems for windows user (blank screen)
+// => no need to disable gpu if it still not solves the problem ...
+//electron.app.disableHardwareAcceleration();
 
 // add HakuNeko's application directory to the environment variable path (make ffmpeg available on windows)
 process.env.PATH += ( process.platform === 'win32' ? ';' : ':' ) + path.dirname( process.execPath );
