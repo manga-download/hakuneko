@@ -139,7 +139,7 @@
                     } )
                     .catch( error => {
                         this._fetchUICleanup( win, abortAction );
-                        reject( result.error );
+                        reject( error );
                     } );
                 } );
 
