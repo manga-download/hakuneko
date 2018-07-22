@@ -46,10 +46,10 @@
                     } )
                     .then( data => {
                         let mangaList = data.map( element => {
-                            //this.cfMailDecrypt( element );
+                            this.cfMailDecrypt( element );
                             return {
                                 id: this.getRelativeLink( element ),
-                                title: element.title.trim()
+                                title: element.title.trim() || element.text.trim()
                             };
                         } );
                         return Promise.resolve( mangaList );
@@ -107,7 +107,7 @@
             this.fetchDOM( this.url + chapter.id, this.queryPages )
             .then( data => {
                 let pageList = [...data[0].querySelectorAll( 'option' )].map( element => {
-                    let uri = new URL( element.value );
+                    let uri = new URL( ( element.value.startsWith( '/' ) ? this.url : '' ) + element.value );
                     uri.protocol = this.id;
                     return uri.href;
                 } );
