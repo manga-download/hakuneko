@@ -1,0 +1,29 @@
+<link rel="import" href="ninemanga.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class NineMangaEN extends NineManga {
+
+        /**
+         *
+         */
+        constructor() {
+            // NOTE: calling super() will trigger the protocol registration of the base class again
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'ninemanga-en';
+            super.label      = 'NineMangaEN';
+            // Private members for internal usage only (convenience)
+            this.url         = 'http://en.ninemanga.com';
+
+            this.pageCount = 950;
+
+            // register a protocol handler to intercept requests (with custom 'ninemanga-en' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
+        }
+    }
+
+</script>
