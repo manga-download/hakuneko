@@ -43,6 +43,7 @@
             };
 
             this.script = '';
+            this.shuffled = undefined;
             this.hash = 'e7c1d159f0b676427e3709e8972e010e';
             this.desKeys = [
                 //{ id: 'default',                          pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
@@ -88,6 +89,7 @@
                     'http://www.fashionlib.net/c/1/1/1/',
                     'http://www.lady-first.me/c/1/1/1/'
                 ].map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '', 25000 ) );
+                setTimeout( this._validateOrder.bind( this ), 25000 );
                 return Promise.all( promises );
             } )
             .then( () => {
@@ -120,6 +122,32 @@
         }
 
         /**
+         *
+         */
+        _validateOrder() {
+            // TODO: provide random testees through a server ...
+            let testees = [
+                '/read-manga/cosmic_boy/uu/cosmic_boy-chapter-35',
+                '/read-manga/cosmic_boy/uu/cosmic_boy-chapter-36'
+            ].forEach( ( testee, index ) => {
+                setTimeout( () => {
+                    this._getPageList( {}, { id: testee }, ( error, pages ) => {
+                        pages = pages
+                        .filter( page => page.indexOf( '/cspiclink/' ) === -1 )
+                        .map( page => {
+                            let uri = new URL( page );
+                            return uri.pathname.split( '/' ).pop();
+                        } );
+                        if( !this.shuffled && pages.join( ',' ) !== pages.sort().join( ',' ) ) {
+                            this.shuffled = new Error( this.label + ' has flagged HakuNeko as bot (the usual cat-and-mouse game),\nas a result ' + this.label + ' will provide pages in shuffled (wrong) order!' );
+                            console.warn( this.shuffled );
+                        }
+                    } );
+                }, index * 5000 );
+            } );
+        }
+
+        /**
          * 
          */
         _getMangaList( callback ) {
@@ -143,6 +171,10 @@
          *
          */
         _getChapterList( manga, callback ) {
+            if( this.shuffled ) {
+                alert( this.shuffled.message + '\n\nThis message will not be shown again during this session.' );
+                this.shuffled = false;
+            }
             let script = `
                 [...document.querySelectorAll( '#chapter_table * a.chico' )].map( element => {
                     return {
