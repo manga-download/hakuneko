@@ -55,7 +55,26 @@ function createDirectoryChain( directory ) {
 }
 
 /**
- * Extract an entry fron an archive to the given directory
+ * Helper function to write the given data to the given file.
+ * Simple promise wrapper for callback based writeFile() in fs module.
+ * @param {} file 
+ * @param {*} data 
+ */
+function writeFile( file, data ) {
+    return new Promise( ( resolve, reject ) => {
+        fs.writeFile( file, data, error => {
+            if( error ) {
+                reject( error );
+            } else {
+                console.log( 'Extracted:', file );
+                resolve( file );
+            }
+        } );
+    } );
+}
+
+/**
+ * Extract an entry from an archive to the given directory
  * and resolve a promise with the path to the extracted file.
  * @param {*} archive 
  * @param {*} directory 
@@ -67,18 +86,7 @@ function extractZipEntry( archive, directory, entry ) {
         return createDirectoryChain( file );
     } else {
         return archive.files[entry].async( 'uint8array' )
-        .then( data => {
-            return new Promise( ( resolve, reject ) => {
-                fs.writeFile( file, data, error => {
-                    if( error ) {
-                        reject( error );
-                    } else {
-                        console.log( 'Extracted:', file );
-                        resolve( file );
-                    }
-                } );
-            } );
-        } );
+        .then( data => writeFile( file, data ) );
     }
 }
 

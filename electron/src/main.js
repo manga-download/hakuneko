@@ -98,7 +98,7 @@ function activateWindow() {
 
     win.on( 'closed', () => {
         // close all existing windows
-        electron.BrowserWindow.getAllWindows().forEach( ( w ) => { w.close(); });
+        electron.BrowserWindow.getAllWindows().forEach( window => window.close() );
         win = null;
     } );
 }

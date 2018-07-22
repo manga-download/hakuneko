@@ -6,7 +6,7 @@ const args = require( './args.js' );
 // indicate whether the settings should be saved in the application directory or in the user directory
 var portable = false;
 // indicate whether the application was started in development environment or production mode (detected by name of the executable)
-var developer = ( process.argv && process.argv.length > 0 && process.argv[0].match(/electron(?:\.exe)?$/i) !== null );
+var developer = ( process.argv && process.argv.length > 0 && process.argv[0].startsWith( 'electron' ) !== null );
 // url with tests that should be run (hakuneko will ne started in test mode when test !== undefined)
 var testURL = args.getArg( '-t', '--test' );
 // online repository where the latest version of the app is stored
