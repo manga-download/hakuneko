@@ -1,0 +1,41 @@
+<script>
+
+    /**
+     * 
+     */
+    class Blacklist {
+        // https://developer.chrome.com/extensions/match_patterns
+        // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Match_patterns
+        static get patterns() {
+            return [
+                '*://*.cloudfront.net/*',
+                '*://*.google.com/ads/*',
+                '*://*.googletagservices.com/*',
+                '*://*.contributor.google.com/*',
+                '*://*.fundingchoices.google.com/*',
+                '*://*.google-analytics.com/*',
+                '*://*.adservice.google.com/*',
+                '*://*.apis.google.com/*',
+                '*://*.accounts.google.com/*',
+                '*://*.googlesyndication.com/*',
+                '*://*.googletagmanager.com/*',
+                '*://*.gstatic.com/*',
+                '*://*.doubleclick.net/*',
+                '*://*.adnxs.com/*',
+                '*://*.admixer.net/*',
+                '*://*.adform.net/*',
+                '*://*.pubmatic.com/*',
+                '*://*.adriver.ru/*',
+                '*://*.veruta.com/*',
+                '*://*.contextweb.com/*',
+                '*://*.buysellads.com/*',
+                '*://*.onclasrv.com/*',
+                '*://*.cobalten.com/*',
+                '*://*.facebook.com/*',
+                '*://*.fbcdn.net/*',
+                '*://*.2mdnsys.com/*',
+            ];
+        }
+    }
+
+</script>

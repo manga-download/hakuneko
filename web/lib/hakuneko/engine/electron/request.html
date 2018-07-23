@@ -1,5 +1,6 @@
 <link rel="import" href="../base/request.html">
 <link rel="import" href="../base/useragent.html">
+<link rel="import" href="blacklist.html">
 
 <script>
 
@@ -19,6 +20,7 @@
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             this.browser = this.electronRemote.BrowserWindow;
             this.userAgent = UserAgent.random();
+            this.blacklist = Blacklist.patterns;
 
             // register 'cache' as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
             // this cannot be done in main process of electron, so it is done here ...
@@ -104,6 +106,10 @@
                         nodeIntegration: false,
                         webSecurity: true
                     }
+                } );
+                win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist }, ( details, callback ) => {
+                    console.warn( 'BLOCKED:', details.url );
+                    callback( { cancel: true } );
                 } );
                 //win.webContents.openDevTools();
 
