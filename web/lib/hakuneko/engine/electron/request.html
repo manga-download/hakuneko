@@ -108,7 +108,7 @@
                     }
                 } );
                 win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist }, ( details, callback ) => {
-                    console.warn( 'BLOCKED:', details.url );
+//console.warn( 'BLOCKED:', details.url );
                     callback( { cancel: true } );
                 } );
                 //win.webContents.openDevTools();
@@ -218,7 +218,7 @@
             }
             // Overwrite the User-Agent header for certain domains
             if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.indexOf( uri.host ) > -1 ) {
-console.log( 'HEADERS:', details.url, details.requestHeaders );
+//console.log( 'HEADERS:', details.url, details.requestHeaders );
                 details.requestHeaders['User-Agent'] = UserAgent.random();
             }
             delete details.requestHeaders['x-user-agent'];
