@@ -116,7 +116,7 @@
         <!--
         <iron-list class="list" items="[[ filteredMangas(mangaList,searchPattern) ]]">
             <template>
-                <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]" on-click="onMangaClicked">[[ item.title ]]</div>
+                <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
             </template>
         </iron-list>
         -->
@@ -295,8 +295,9 @@
                 if( !mangas || !pattern || pattern.length < 3 ) {
                     return mangas;
                 }
-                return mangas.filter( ( manga ) => {
-                    return ( manga.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                let p = pattern.toLowerCase();
+                return mangas.filter( manga => {
+                    return ( manga.title.toLowerCase().indexOf( p ) > -1 );
                 });
             }
             */
