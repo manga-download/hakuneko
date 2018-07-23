@@ -128,7 +128,8 @@
         _getPageList( manga, chapter, callback ) {
             this._requestAPI( this.url + '/api/chapter/' + chapter.id, this.requestOptions, 'page' )
             .then( data => {
-                let pageList = data.page_array.map( page => data.server + data.hash + '/' + page );
+                let baseURL = ( data.server.startsWith( '/' ) ? this.url : '' ) + data.server + data.hash + '/';
+                let pageList = data.page_array.map( page => baseURL + page );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -143,13 +144,13 @@
         _requestAPI( url, requestOptions, label ) {
             return fetch( url, requestOptions )
             .then( response => {
-                if( response.status !== 200 ) {
+                if( response.status !== 200 && response.status !== 409 ) {
                     throw new Error( `Failed to receive ${label} list (status: ${response.status}) - ${response.statusText}` );
                 }
                 return response.json();
             } )
             .then( data => {
-                if( data.status !== 'OK' ) {
+                if( data.status.toLowerCase() !== 'ok' ) {
                     throw new Error( `Failed to receive ${label} list (status: ${data.status}) - ${data.message}` );
                 }
                 return Promise.resolve( data );
