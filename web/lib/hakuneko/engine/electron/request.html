@@ -1,4 +1,5 @@
 <link rel="import" href="../base/request.html">
+<link rel="import" href="../base/useragent.html">
 
 <script>
 
@@ -17,6 +18,7 @@
             this.electronRemote = electron.remote;
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             this.browser = this.electronRemote.BrowserWindow;
+            this.userAgent = UserAgent.random();
 
             // register 'cache' as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
             // this cannot be done in main process of electron, so it is done here ...
@@ -207,6 +209,11 @@
             // Overwrite the User-Agent header with the one provided by the connector
             if( details.requestHeaders['x-user-agent'] ) {
                 details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
+            }
+            // Overwrite the User-Agent header for certain domains
+            if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.indexOf( uri.host ) > -1 ) {
+console.log( 'HEADERS:', details.url, details.requestHeaders );
+                details.requestHeaders['User-Agent'] = UserAgent.random();
             }
             delete details.requestHeaders['x-user-agent'];
 
