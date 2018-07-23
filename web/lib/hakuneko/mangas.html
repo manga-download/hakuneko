@@ -113,6 +113,7 @@
                 <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
+        <!-- https://github.com/PolymerElements/iron-list/issues/536 -->
         <!--
         <iron-list class="list" items="[[ filteredMangas(mangaList,searchPattern) ]]">
             <template>
