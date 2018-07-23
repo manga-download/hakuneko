@@ -127,7 +127,7 @@ export default class ScopingShim {
   prepareTemplateDom(template, elementName) {
     if (!nativeShadow && !template._domPrepared) {
       template._domPrepared = true;
-      StyleTransformer.dom(template.content, elementName);
+      StyleTransformer.domAddScope(template.content, elementName);
     }
   }
   _generateStaticStyle(info, rules, shadowroot, placeholder) {

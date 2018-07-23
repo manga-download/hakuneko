@@ -252,7 +252,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
     });
 
-    test('Issue #411', function(done) {
+    test('first click recognized in long lists (#411)', function(done) {
       list.items = buildDataSet(100);
 
       Polymer.dom.flush();
@@ -272,6 +272,30 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           assert.isNull(lastOffscreenFocusedItem.parentNode,
             'Should remove the last offscreen focused item');
           done();
+        });
+      });
+    });
+
+    test('focus is correctly restored after scrolling off screen (#537)', function(done) {
+      list.items = buildDataSet(100);
+
+      flush(function() {
+        list.scroll(0, 5000);
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            var item = getFirstItemFromList(list);
+            assert.equal(item.tabIndex, -1);
+            MockInteractions.focus(item);
+            assert.equal(item.tabIndex, 0);
+            list.scroll(0, 0);
+            requestAnimationFrame(function() {
+              setTimeout(function() {
+                MockInteractions.focus(item);
+                assert.equal(list._focusedItem, item.parentElement);
+                done();
+              });
+            });
+          });
         });
       });
     });

@@ -1,6 +1,6 @@
 {
   "name": "@webcomponents/webcomponentsjs",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Web Components Polyfills",
   "main": "webcomponents-lite.js",
   "directories": {
@@ -27,10 +27,10 @@
   },
   "homepage": "https://webcomponents.org/polyfills",
   "devDependencies": {
-    "@webcomponents/custom-elements": "^1.1.2",
+    "@webcomponents/custom-elements": "^1.1.3",
     "@webcomponents/html-imports": "^1.2.0",
-    "@webcomponents/shadycss": "^1.3.1",
-    "@webcomponents/shadydom": "^1.1.0",
+    "@webcomponents/shadycss": "^1.3.5",
+    "@webcomponents/shadydom": "^1.1.2",
     "@webcomponents/template": "^1.3.1",
     "@webcomponents/webcomponents-platform": "^1.0.0",
     "babel-preset-minify": "^0.2.0",
@@ -44,6 +44,7 @@
     "gulp-rename": "^1.3.0",
     "gulp-sourcemaps": "^2.6.4",
     "rollup-plugin-babel": "^2.7.1",
+    "rollup-plugin-license": "^0.6.0",
     "rollup-stream": "=1.23",
     "run-sequence": "^2.2.1",
     "vinyl-buffer": "^1.0.1",

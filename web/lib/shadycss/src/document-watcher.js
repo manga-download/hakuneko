@@ -63,7 +63,7 @@ function handler(mxns) {
       let currentScope = getCurrentScope(n);
       // node was scoped, but now is in document
       if (currentScope && root === n.ownerDocument) {
-        StyleTransformer.dom(n, currentScope, true);
+        StyleTransformer.domRemoveScope(n, currentScope);
       } else if (root.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
         let newScope;
         let host = /** @type {ShadowRoot} */(root).host;
@@ -72,19 +72,31 @@ function handler(mxns) {
           continue;
         }
         newScope = getIsExtends(host).is;
-        if (currentScope === newScope) {
-          // make sure all the subtree elements are scoped correctly
-          let unscoped = window['ShadyDOM']['nativeMethods']['querySelectorAll'].call(
-            n, `:not(.${StyleTransformer.SCOPE_NAME})`);
-          for (let j = 0; j < unscoped.length; j++) {
-            StyleTransformer.element(unscoped[j], currentScope);
+        // rescope current node and subtree if necessary
+        if (newScope !== currentScope) {
+          StyleTransformer.domReplaceScope(n, currentScope, newScope);
+        }
+        // make sure all the subtree elements are scoped correctly
+        let unscopedNodes = window['ShadyDOM']['nativeMethods']['querySelectorAll'].call(
+          n, `:not(.${StyleTransformer.SCOPE_NAME})`);
+        for (let j = 0; j < unscopedNodes.length; j++) {
+          // it's possible, during large batch inserts, that nodes that aren't
+          // scoped within the current scope were added.
+          // To make sure that any unscoped nodes that were inserted in the current batch are correctly styled,
+          // query all unscoped nodes and force their style-scope to be applied.
+          // This could happen if a sub-element appended an unscoped node in its shadowroot and this function
+          // runs on a parent element of the host of that unscoped node:
+          // parent-element -> element -> unscoped node
+          // Here unscoped node should have the style-scope element, not parent-element.
+          const unscopedNode = unscopedNodes[j];
+          const rootForUnscopedNode = unscopedNode.getRootNode();
+          const hostForUnscopedNode = rootForUnscopedNode.host;
+          if (!hostForUnscopedNode) {
+            continue;
           }
-          continue;
+          const scopeForPreviouslyUnscopedNode = getIsExtends(hostForUnscopedNode).is;
+          StyleTransformer.element(unscopedNode, scopeForPreviouslyUnscopedNode);
         }
-        if (currentScope) {
-          StyleTransformer.dom(n, currentScope, true);
-        }
-        StyleTransformer.dom(n, newScope);
       }
     }
   }

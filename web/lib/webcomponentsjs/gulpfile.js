@@ -22,6 +22,7 @@ const del = require('del');
 const runseq = require('run-sequence');
 const closure = require('google-closure-compiler').gulp();
 const babel = require('rollup-plugin-babel');
+const license = require('rollup-plugin-license');
 
 function debugify(sourceName, fileName, extraRollupOptions) {
   if (!fileName)
@@ -150,23 +151,20 @@ gulp.task('closurify-sd', () => {
   return closurify('webcomponents-sd')
 })
 
-function singleLicenseComment() {
-  let hasLicense = false;
-  return (comment) => {
-    if (hasLicense) {
-      return false;
-    }
-    return hasLicense = /@license/.test(comment);
-  }
-}
-
 const babelOptions = {
   presets: 'minify',
-  shouldPrintComment: singleLicenseComment()
 };
 
 gulp.task('debugify-ce-es5-adapter', () => {
-  return debugify('custom-elements-es5-adapter', '', {plugins: [babel(babelOptions)]});
+  return debugify('custom-elements-es5-adapter', '', {
+    plugins: [
+      babel(babelOptions),
+      license({
+        banner: {
+          file: './license-header.txt'
+        }
+      })
+    ]});
 });
 
 gulp.task('default', ['closure']);
