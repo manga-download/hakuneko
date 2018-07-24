@@ -115,23 +115,23 @@ function installer {
 }
 
 build "win32-x64" "$DIR_64_PORTABLE" true
-deployFFMPEG "ffmpeg-3.*.*-win64-static" "$DIR_64_PORTABLE"
+deployFFMPEG "ffmpeg-*-win64-static" "$DIR_64_PORTABLE"
 rcedit "$DIR_64_PORTABLE"
 compress "$DIR_64_PORTABLE"
 
 build "win32-ia32" "$DIR_32_PORTABLE" true
-deployFFMPEG "ffmpeg-3.*.*-win32-static" "$DIR_32_PORTABLE"
+deployFFMPEG "ffmpeg-*-win32-static" "$DIR_32_PORTABLE"
 rcedit "$DIR_32_PORTABLE"
 compress "$DIR_32_PORTABLE"
 
 build "win32-x64" "$DIR_64" false
-deployFFMPEG "ffmpeg-3.*.*-win64-static" "$DIR_64"
+deployFFMPEG "ffmpeg-*-win64-static" "$DIR_64"
 rcedit "$DIR_64"
 setup "$DIR_64"
 #installer "$DIR_64"
 
 build "win32-ia32" "$DIR_32" false
-deployFFMPEG "ffmpeg-3.*.*-win32-static" "$DIR_32"
+deployFFMPEG "ffmpeg-*-win32-static" "$DIR_32"
 rcedit "$DIR_32"
 setup "$DIR_32"
 #installer "$DIR_32"

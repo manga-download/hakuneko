@@ -2,7 +2,7 @@
 
 VER="v2.0.5"
 
-rm -f *.zip
+rm -f electron-*.zip
 
 case "$OSTYPE" in
   solaris*) SYS=() ;;
