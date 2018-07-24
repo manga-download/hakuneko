@@ -28,7 +28,7 @@ function build {
     fi
     if [[ $2 =~ windows.* ]]
     then
-        rm -r -f "build/$2/locales"
+        #rm -r -f "build/$2/locales"
         rm -r -f "build/$2/resources/default_app.asar"
         if [[ "$3" = true ]]
         then
