@@ -8,6 +8,22 @@ const cache = require( './cache.js' );
 var win = null;
 
 /**
+ * 
+ */
+function info() {
+    let separator = '------------------------';
+    console.log();
+    console.log( separator );
+    console.log( 'Framework Version Info' );
+    console.log( separator );
+    console.log( 'Electron :', process.versions.electron );
+    console.log( 'Chrome   :', process.versions.chrome );
+    console.log( 'Node     :', process.versions.node );
+    console.log( separator );
+    console.log();
+}
+
+/**
  * Register a custom file protocol handler that will open files from the given directory
  * @param {*} protocol 
  * @param {*} directory 
@@ -113,6 +129,8 @@ function closeWindow () {
 /************************
  *** MAIN ENTRY POINT ***
  ************************/
+
+info();
 
 // Disabling GPU acceleration to possibly prevent chromiums 'blank screen' bug
 // it seems the --disable-gpu flag did not solve problems for windows user (blank screen)
