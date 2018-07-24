@@ -80,7 +80,7 @@
          *
          */
         _initializeConnector() {
-            fetch( 'cache://hakuneko/js/chapter.js' )
+            fetch( './js/chapter.js' )
             .then( response => response.text() )
             .then( data => {
                 this.script = data;
