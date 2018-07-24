@@ -20,7 +20,7 @@ function build {
     rm -f "build/$2/LICENSE"*
     if [[ $2 =~ linux.* ]]
     then
-        rm -r -f "build/$2/locales"
+        #rm -r -f "build/$2/locales"
         rm -r -f "build/$2/resources/default_app.asar"
         asar pack "src" "build/$2/resources/app.asar"
         # or without asar: cp -r "src" "build/$2/resources/app"
