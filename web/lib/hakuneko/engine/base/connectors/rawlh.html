@@ -65,7 +65,7 @@
                 let dom = this.createDOM( data );
                 let language = dom.querySelector( 'ul.manga-info h1 span.flag-icon' );
                 language = ( language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : 'jp' );
-                let chapterList = [...dom.querySelectorAll( 'td a.chapter' )].map( element => {
+                let chapterList = [...dom.querySelectorAll( 'div.list-chapters span.titleLink a.chapter' )].map( element => {
                     let title = element.text.replace( manga.title, '' );
                     title = title.replace( manga.title.replace( /\s*-\s*RAW$/, '' ), '' );
                     title = title.replace( /^\s*-\s*/, '' );
