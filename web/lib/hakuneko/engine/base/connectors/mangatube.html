@@ -43,10 +43,10 @@
                 let params = new URLSearchParams();
                 params.append( 'action', 'load_series_list_entries' );
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    params.set( 'parameter[page]', page + 1 );
-                    this.requestOptions.body = params.toString();
-                    return this.wait( 100 * page )
+                    return this.wait( 150 * page )
                     .then( () => {
+                        params.set( 'parameter[page]', page + 1 );
+                        this.requestOptions.body = params.toString();
                         return fetch( this.url + '/ajax', this.requestOptions );
                     } )
                     .then( response => {
