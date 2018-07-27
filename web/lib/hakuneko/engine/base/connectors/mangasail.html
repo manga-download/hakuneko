@@ -25,9 +25,9 @@
                     label: 'Throttle Requests [ms]',
                     description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 500 errors during manga list update.\nThrottle of 250 ms => approx. 1 minute manga list update.',
                     input: Input.numeric,
-                    min: 100,
+                    min: 250,
                     max: 2500,
-                    value: 250
+                    value: 500
                 }
             };
         }
