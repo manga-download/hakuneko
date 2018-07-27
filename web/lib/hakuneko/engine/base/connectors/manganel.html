@@ -19,16 +19,16 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://manganelo.com';
+            this.url         = 'https://manganelo.com';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 throttle: {
                     label: 'Throttle Requests [ms]',
-                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 503 errors during manga list update.\nThrottle of 50 ms => approx. 1 minute manga list update.',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 5XX errors during manga list update.\nThrottle of 50 ms => approx. 1 minute manga list update.',
                     input: Input.numeric,
-                    min: 5,
+                    min: 50,
                     max: 250,
-                    value: 25
+                    value: 150
                 }
             };
 
