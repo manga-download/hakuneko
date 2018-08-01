@@ -32,7 +32,8 @@
         }
 
         test.run( 'lock', lock_test );
-        Engine.Request.cloudflare( 'http://test.hakuneko.download/cfmail.html', ( error, response, content ) => {
+        // TODO: use fetchUI
+        Engine.Request.cloudflare( 'http://cf.hakuneko.download/test/cfmail.html', ( error, response, content ) => {
             test.run( 'cfMailDecrypt', () => {
                 Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
                 Assert.nequal( undefined, content, 'Invalid content' );
@@ -50,91 +51,94 @@
 
     // wrap in scope to ensure declared variables/functions do not collide with other tests
     {
-        function _getMangaList_test( test, testID, connector, callback ) {
-            connector._getMangaList( ( error, mangas ) => {
-                test.run( testID, () => {
-                    Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
-                    Assert.nequal( undefined, mangas, 'Failed to get manga list from ' + connector.label );
-                    Assert.nequal( undefined, mangas.length, 'Invalid length of manga list from ' + connector.label );
-                    Assert.nequal( 0, mangas.length, 'Empty manga list from ' + connector.label );
-                    // TODO (2017-10-05): iterate through all mangas and check valid url
-                    if( callback ) {
-                        callback( mangas );
-                    }
-                });
-            });
-        }
-
-        function _getChapterList_test( test, testID, connector, manga, callback ) {
-            //console.log( connector.id, manga );
-            connector._getChapterList( manga, ( error, chapters ) => {
-                test.run( testID, () => {
-                    Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
-                    Assert.nequal( undefined, chapters, 'Failed to get chapter list from ' + connector.label );
-                    Assert.nequal( undefined, chapters.length, 'Invalid length of chapter list from ' + connector.label );
-                    Assert.nequal( 0, chapters.length, 'Empty chapter list from ' + connector.label );
-                    // TODO (2017-10-05): iterate through all chapters and check valid url
-                    if( callback ) {
-                        callback( chapters );
-                    }
-                });
-            });
-        }
-
-        function _getPageList_test( test, testID, connector, manga, chapter, callback ) {
-            //console.log( connector.id, manga, chapter );
-            connector._getPageList( manga, chapter, ( error, pages ) => {
-                test.run( testID, () => {
-                    Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
-                    Assert.nequal( undefined, pages, 'Failed to get page list from ' + connector.label );
-                    Assert.nequal( undefined, pages.length, 'Invalid length of page list from ' + connector.label );
-                    Assert.nequal( 0, pages.length, 'Empty page list from ' + connector.label );
-                    Assert.equal( undefined, pages.find( p => p.indexOf( 'http' ) !== 0 && p.indexOf( connector.id.replace( '-cdn', '' ) ) !== 0 ), `Any page URL is invlaid (not starting with &quot;http&quot; or &lt;${connector.id}&gt; connector protocol)!` );
-                    if( callback ) {
-                        callback( pages );
-                    }
-                });
-            });
-        }
-
         function connector_test( connector ) {
             let test = new TestCollection( connector.label + ' Tests' );
             test.register( '_getMangaList' );
-            _getMangaList_test( test, '_getMangaList', connector, ( mangas ) => {
-                if( !mangas || !mangas.length ) {
-                    return;
-                }
-                test.register( '_getChapterList' );
-                let manga = mangas[Math.floor( Math.random() * mangas.length )];
-                _getChapterList_test( test, '_getChapterList', connector, manga, ( chapters ) => {
-                    if( !chapters || !chapters.length ) {
-                        return;
-                    }
-                    test.register( '_getPageList' );
-                    let chapter = chapters[Math.floor( Math.random() * chapters.length )];
-                    _getPageList_test( test, '_getPageList', connector, manga, chapter, ( pages ) => {
-                        //
-                    });
-                });
-            });
+            test.register( '_getChapterList' );
+            test.register( '_getPageList' );
+
+            let strlen = connector.label.length + 8;
+            console.log( '+'.repeat( strlen ) );
+            console.log( '+++', connector.label, '+++' );
+            console.log( '+'.repeat( strlen ) );
+
+            return Promise.resolve()
+            // get manga list
+            .then( () => {
+                return ( new Promise( ( resolve, reject ) => {
+                    connector._getMangaList( ( error, mangas ) => {
+                        console.log( '_getMangaList:', connector, mangas );
+                        test.run( '_getMangaList', () => {
+                            Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
+                            Assert.nequal( undefined, mangas, 'Failed to get manga list from ' + connector.label );
+                            Assert.nequal( undefined, mangas.length, 'Invalid length of manga list from ' + connector.label );
+                            Assert.nequal( 0, mangas.length, 'Empty manga list from ' + connector.label );
+                            // TODO (2017-10-05): iterate through all mangas and check valid url
+                        } );
+                        resolve( mangas );
+                    } );
+                } ) );
+            } )
+            // get chapter list
+            .then( mangas => {
+                return ( new Promise( ( resolve, reject ) => {
+                    // TODO: what when mangas undefined? => currently exception ...
+                    let manga = ( mangas ? mangas[Math.floor( Math.random() * mangas.length )] : { id: '' } );
+                    connector._getChapterList( manga, ( error, chapters ) => {
+                        console.log( '_getChapterList:', manga, chapters );
+                        test.run( '_getChapterList', () => {
+                            Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
+                            Assert.nequal( undefined, chapters, 'Failed to get chapter list from ' + connector.label );
+                            Assert.nequal( undefined, chapters.length, 'Invalid length of chapter list from ' + connector.label );
+                            Assert.nequal( 0, chapters.length, 'Empty chapter list from ' + connector.label );
+                            // TODO (2017-10-05): iterate through all chapters and check valid url
+                        } );
+                        resolve( chapters );
+                    } );
+                } ) );
+            } )
+            // get page list
+            .then( chapters => {
+                return ( new Promise( ( resolve, reject ) => {
+                    // TODO: what when chapters undefined? => currently exception ...
+                    let chapter = ( chapters ? chapters[Math.floor( Math.random() * chapters.length )] : { id: '', manga: { id: '' } } );
+                    connector._getPageList( chapter.manga, chapter, ( error, pages ) => {
+                        console.log( '_getPageList:', chapter, pages );
+                        test.run( '_getPageList', () => {
+                            Assert.equal( null, error, ( error ? error.message : 'Invalid error object' ) );
+                            Assert.nequal( undefined, pages, 'Failed to get page list from ' + connector.label );
+                            Assert.nequal( undefined, pages.length, 'Invalid length of page list from ' + connector.label );
+                            Assert.nequal( 0, pages.length, 'Empty page list from ' + connector.label );
+                            Assert.equal( undefined, pages.find( p => p.indexOf( 'http' ) !== 0 && p.indexOf( connector.id.replace( '-cdn', '' ) ) !== 0 ), `Any page URL is invlaid (not starting with &quot;http&quot; or &lt;${connector.id}&gt; connector protocol)!` );
+                        } );
+                        resolve( pages );
+                    } );
+                } ) );
+            } )
+            // finalize ...
+            .then( pages => {
+                console.log();
+            } )
+            // do not block other chained promises
+            .catch( error => {
+                console.error( 'Failed to run test for: ' + connector.label, error );
+                test.finalize( true );
+                return Promise.resolve();
+            } );
         }
 
         function connectorInitialization() {
-            for( let connector of Engine.Connectors) {
+            // wait until all connectors have been initialized ...
+            for( let connector of Engine.Connectors ) {
                 if( connector.initialized !== undefined && connector.initialized === false ) {
-                    setTimeout( connectorInitialization.bind( this ), 1000 );
+                    setTimeout( connectorInitialization.bind( this ), 2500 );
                     return;
                 }
             }
-            for( let index in Engine.Connectors) {
-                let connector = Engine.Connectors[index];
-                if( connector.id === 'bookmarks' ) {
-                    continue;
-                }
-                // run connector tests delayed to prevent to many concurrent connections
-                setTimeout( () => {
-                    connector_test( connector );
-                }, index*2500 );
+
+            let promise = Promise.resolve();
+            for( let connector of Engine.Connectors.filter( c => c.id !== 'bookmarks' ) ) {
+                promise = promise.then( () => connector_test( connector ) );
             }
         };
         
