@@ -45,7 +45,7 @@
 
             this.script = '';
             this.shuffled = undefined;
-            this.hash = '10b00110072192719a45d1c298ecac59';
+            this.hash = '30ba20d8c2a164b020a7fb3e9a7ea23c';
             this.desKeys = [
                 //{ id: 'default',                          pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
                 { id: '60a2b0ed56cd458c4633d04b1b76b7e9', pattern: '18a72a69a64a13a1a43a3aa42a23a66a26a19a51a54a78a34a17a31a35a15a58a29a61a48a73a74a44a52a60a24a63a20a32a7a45a53a75a55a62a59a41a76a68a2a36a21a10a38a33a71a40a67a22a4a50a80a65a27a37a47a70a14a28a16a6a56a30a57a5a11a79a9a77a46a39a25a49a8a12' },
@@ -80,25 +80,17 @@
          *
          */
         _initializeConnector() {
-            fetch( '/js/chapter.js' )
-            .then( response => {
-                //console.log( 'URL:', response.url );
-                return response.text(); } )
-            .then( data => {
-                this.script = data;
-                let promises = [
-                    this.url,
-                    'http://www.mnggo.net/c/1/1/1/',
-                    'http://www.fashionlib.net/c/1/1/1/',
-                    'http://www.lady-first.me/c/1/1/1/'
-                ].map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '', 25000 ) );
-                setTimeout( this._validateOrder.bind( this ), 25000 );
-                return Promise.all( promises );
-            } )
-            .then( () => {
-                return this._validateScript();
-            } )
-            .then( () => {
+            let promises = [
+                this.url,
+                'http://www.mnggo.net/c/1/1/1/',
+                'http://www.fashionlib.net/c/1/1/1/',
+                'http://www.lady-first.me/c/1/1/1/'
+            ].map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '', 25000 ) );
+            setTimeout( this._validateOrder.bind( this ), 25000 );
+            Promise.all( promises )
+            .then( () => this._validateScript() )
+            .then( hash => {
+                console.log( 'Cached encryption script: ' + hash );
                 this.initialized = true;
             } )
             .catch( error => {
@@ -111,16 +103,19 @@
          *
          */
         _validateScript() {
-            return fetch( 'http://www.mnggo.net/mobi/js/chapter.js', this.requestOptions )
-            .then( response => {
-                return response.text();
-            } )
+            return fetch( 'http://www.mnggo.net/mobi/js/chapter.js?666', this.requestOptions )
+            .then( response => response.text() )
             .then( data => {
+                let match = data.match( /(nimgsrc\s*=\s*)(_0x[0-9a-f]+)\s*\[\s*current_page\s*\]/ );
+                let term = match[2];
+                let original = match[1] + term;
+                let replacement = 'imgsrcs=' + term + ';' + original;
+                this.script = data.replace( new RegExp( original, 'g' ), replacement ) + 'imgsrcs';
                 let hash = CryptoJS.MD5( data ).toString( CryptoJS.enc.Hex );
                 if( this.hash !== hash ) {
                     throw new Error( this.label + ' has updated the encryption!\nYou will not be able to get valid images.\nHash: ' + hash );
                 }
-                return Promise.resolve();
+                return Promise.resolve( hash );
             } );
         }
 
