@@ -167,7 +167,6 @@
                 }
             } )
             .then( data => {
-                // FIXME: MimedTypeBuffer will not change the response content-type header ...
                 this._applyRealMime( data );
                 callback( data );
             } )
