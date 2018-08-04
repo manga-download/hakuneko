@@ -36,7 +36,7 @@
                 this.url
                 //'https://img1.tumangaonline.me'
             ];
-            let promises = domains.map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '' ) );
+            let promises = domains.map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '', 25000 ) );
             Promise.all( promises )
             .then( result => {
                 this.initialized = true;
@@ -53,16 +53,12 @@
         _getMangaList( callback ) {
             let pageCount = 750; // 584
             let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                return fetch( this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ), this.requestOptions )
-                .then( response => {
-                    if( response.status !== 200 ) {
-                        throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                    }
-                    return response.text();
+                return this.wait( 500 * page )
+                .then( () => {
+                    return this.fetchDOM( this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ), 'div.row div.element a' );
                 } )
                 .then( data => {
-                    let dom = this.createDOM( data );
-                    let mangaList = [...dom.querySelectorAll( 'div.row div.element a' )].map( element => {
+                    let mangaList = data.map( element => {
                         // use title attribute to avoid cf-mail decryption
                         return {
                             id: this.getRelativeLink( element ),
@@ -90,18 +86,11 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, 'div.chapters ul.list-group li.list-group-item.p-0' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( 'div.chapters ul.list-group li.list-group-item.p-0' )].reduce( ( accumulator, element ) => {
-                    let title = element.querySelector( 'h4  a' ).text;
-                    let chapters = [...element.querySelectorAll( 'ul.chapter-list li.list-group-item' )].map( element => {
+                let chapterList = data.reduce( ( accumulator, element ) => {
+                    let title = element.querySelector( 'h4  a[role="button"]' ).text;
+                    let chapters = [...element.querySelectorAll( 'ul.chapter-list li.list-group-item:not([style])' )].map( element => {
                         let id = element.querySelector( 'div.text-right a' );
                         let language = element.querySelector( 'i.flag-icon' );
                         let scanlator = element.querySelector( 'div.text-truncate a' ).text.trim();
@@ -131,17 +120,10 @@
                 if( !response.redirected ) {
                     throw new Error( 'No redirect detected ...' + response.url );
                 }
-                return fetch( response.url.replace( /paginated[\/]?\d*$/, 'cascade' ), this.requestOptions );
-            } )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
+                return this.fetchDOM( response.url.replace( /paginated[\/]?\d*$/, 'cascade' ), 'div.viewer-container source.viewer-image' )
             } )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( 'div.viewer-container source.viewer-image' )].map( element => {
+                let pageList = data.map( element => {
                     // NOTE: Use custom protocol and protocol handler to assign the X-User-Agent
                     //       header from this connector (cloudflare challenge consistency)
                     let uri = new URL( element.src );
