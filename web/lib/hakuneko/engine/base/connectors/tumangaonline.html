@@ -52,10 +52,17 @@
          */
         _getMangaList( callback ) {
             let pageCount = 750; // 584
+            let aborted = false;
             let promises = [...( new Array( pageCount ) ).keys()].map( page => {
                 return this.wait( 500 * page )
                 .then( () => {
-                    return this.fetchDOM( this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ), 'div.row div.element a' );
+                    // do not perform any further requests if one of them already failed
+                    if( aborted ) {
+                        console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                        return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                    } else {
+                        return this.fetchDOM( this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ), 'div.row div.element a' );
+                    }
                 } )
                 .then( data => {
                     let mangaList = data.map( element => {
@@ -67,6 +74,10 @@
                     } );
                     return Promise.resolve( mangaList );
                 } )
+                .catch( error => {
+                    aborted = true;
+                    throw error;
+                } );
             } );
 
             Promise.all( promises )
