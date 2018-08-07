@@ -26,9 +26,9 @@
                     label: 'Throttle Requests [ms]',
                     description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 5XX errors during manga list update.\nThrottle of 50 ms => approx. 1 minute manga list update.',
                     input: Input.numeric,
-                    min: 50,
-                    max: 250,
-                    value: 150
+                    min: 100,
+                    max: 500,
+                    value: 250
                 }
             };
 
@@ -42,34 +42,26 @@
          * 
          */
         _getMangaList( callback ) {
-            fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=1', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all', this.queryMangasPageCount )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( this.queryMangasPageCount );
-                pageCount = parseInt( new URL( pageCount.href ).searchParams.get( 'page' ) );
+                let pageCount = parseInt( new URL( data[0].href ).searchParams.get( 'page' ) );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
+                let aborted = false;
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
                     return this.wait( this.config.throttle.value * page )
                     .then( () => {
-                        return fetch( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ), this.requestOptions );
-                    } )
-                    .then( response => {
-                        if( response.status !== 200 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        // do not perform any further requests if one of them already failed
+                        if( aborted ) {
+                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                        } else {
+                            return this.fetchDOM( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ), this.queryMangas );
                         }
-                        return response.text();
                     } )
                     .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( this.queryMangas )].map( element => {
+                        let mangaList = data.map( element => {
                             this.cfMailDecrypt( element );
                             return {
                                 id: this.getRelativeLink( element ),
@@ -78,6 +70,10 @@
                         } );
                         return Promise.resolve( mangaList );
                     } )
+                    .catch( error => {
+                        aborted = true;
+                        throw error;
+                    } );
                 } );
                 return Promise.all( promises ); 
             } )
@@ -94,16 +90,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, this.queryChapters )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( this.queryChapters )].map( element => {
+                let chapterList = data.map( element => {
                     this.cfMailDecrypt( element );
                     return {
                         id: this.getRelativeLink( element ),
@@ -123,16 +112,9 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + chapter.id, this.queryPages )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( this.queryPages )].map( element => element.src );
+                let pageList = data.map( element => element.src );
                 callback( null, pageList );
             } )
             .catch( error => {
