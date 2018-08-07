@@ -19,16 +19,16 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://beta.mangadex.org';
+            this.url         = 'https://mangadex.org';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 throttle: {
                     label: 'Throttle Requests [ms]',
-                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many concurrent requests.\nThrottle of 500 ms => approx. 5 minutes manga list update.',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many concurrent requests.\nThrottle of 1000 ms => approx. 10 minutes manga list update.',
                     input: Input.numeric,
-                    min: 250,
-                    max: 1000,
-                    value: 500
+                    min: 500,
+                    max: 5000,
+                    value: 1000
                 }
             };
         }
@@ -37,34 +37,26 @@
          *
          */
         _getMangaList( callback ) {
-            fetch( this.url + '/titles', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + '/titles', 'nav ul.pagination li.paging:last-of-type a.page-link' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( 'nav ul.pagination li.paging:last-of-type a.page-link' );
-                pageCount = parseInt( pageCount.href.match(/(\d+)\/$/)[1] );
+                let pageCount = parseInt( data[0].href.match(/(\d+)\/$/)[1] );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
+                let aborted = false;
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
                     return this.wait( this.config.throttle.value * page )
                     .then( () => {
-                        return fetch( this.url + '/titles/0/' + ( page + 1 ) + '/', this.requestOptions );
-                    } )
-                    .then( response => {
-                        if( response.status !== 200 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                        // do not perform any further requests if one of them already failed
+                        if( aborted ) {
+                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                        } else {
+                            return this.fetchDOM( this.url + '/titles/0/' + ( page + 1 ) + '/', 'div.mb-1 a.ml-1' );
                         }
-                        return response.text();
                     } )
                     .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'div.mb-1 a.ml-1' )].map( element => {
+                        let mangaList = data.map( element => {
                             this.cfMailDecrypt( element );
                             return {
                                 id: element.href.match( /\/(\d+)\// )[1],
@@ -73,6 +65,10 @@
                         } );
                         return Promise.resolve( mangaList );
                     } )
+                    .catch( error => {
+                        aborted = true;
+                        throw error;
+                    } );
                 } );
                 return Promise.all( promises ); 
             } )
