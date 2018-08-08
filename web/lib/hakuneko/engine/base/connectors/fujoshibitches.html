@@ -12,20 +12,12 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'fujoshibitches';
             super.label      = 'FujoshiBitches';
             this.tags        = [ 'manga', 'hight-quality', 'english', 'scanlation' ];
-            super.isLocked   = false;
-            this.initialized = undefined;
-            // Private members for internal usage only (convenience)
             this.url         = 'http://fujoshibitches.shounen-ai.net';
-
-            //this.queryMangasPageCount = '';
-            //this.queryMangas = '';
-            //this.queryChapters = '';
-            //this.queryPages = '';
-            this.language = 'english';
+            this.path        = '/reader/directory/'; 
+            this.language    = 'english';
         }
     }
 
