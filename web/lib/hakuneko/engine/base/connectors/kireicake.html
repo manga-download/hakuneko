@@ -1,0 +1,26 @@
+<link rel="import" href="foolslide.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class KireiCake extends FoolSlide {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'kireicake';
+            super.label      = 'KireiCake';
+            this.tags        = [ 'manga', 'hight-quality', 'english', 'scanlation' ];
+            this.url         = 'https://reader.kireicake.com';
+            //this.path        = '/directory/';
+            this.language    = 'english';
+
+            this.queryChapters = 'div.list div.element div.title a';
+        }
+    }
+
+</script>
