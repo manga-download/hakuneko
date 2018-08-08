@@ -1,0 +1,126 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class FoolSlide extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = undefined;
+            super.label      = undefined;
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = undefined;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            this.queryMangasPageCount = 'div.prevnext div.next a:first-of-type';
+            this.queryMangas = 'div.list div.group > div.title a';
+            this.queryChapters = 'div.list div.group div.element div.title a';
+            //this.queryPages = '';
+            this.language = '';
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            return this.fetchDOM( this.url + '/reader/directory/', this.queryMangasPageCount )
+            .then( data => {
+                let pageCount = parseInt( data[0].href.match(/(\d+)\/$/)[1] );
+                let aborted = false;
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( 500 * page )
+                    .then( () => {
+                        // do not perform any further requests if one of them already failed
+                        if( aborted ) {
+                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                        } else {
+                            return this.fetchDOM( this.url + '/reader/directory/' + ( page + 1 ) + '/', this.queryMangas );
+                        }
+                    } )
+                    .then( data => {
+                        let mangaList = data.map( element => {
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: element.text.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                    .catch( error => {
+                        aborted = true;
+                        throw error;
+                    } );
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.requestOptions.method = 'POST';
+            this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
+            this.requestOptions.body = 'adult=true';
+            return this.fetchDOM( this.url + manga.id, this.queryChapters )
+            .then( data => {
+                this.requestOptions.method = 'GET';
+                this.requestOptions.headers.delete( 'content-type' );
+                this.requestOptions.body = undefined;
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim(),
+                        language: this.language
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let pages = data.match( /pages\s*=\s*(\[.*?\])\s*;/ )[1];
+                let pageList = JSON.parse( pages ).map( p => p.url );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } ); 
+        }
+    }
+
+</script>
