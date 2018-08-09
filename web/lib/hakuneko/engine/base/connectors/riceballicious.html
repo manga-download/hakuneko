@@ -1,0 +1,26 @@
+<link rel="import" href="foolslide.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class Riceballicious extends FoolSlide {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'riceballicious';
+            super.label      = 'Riceballicious';
+            this.tags        = [ 'manga', 'hight-quality', 'english', 'scanlation' ];
+            this.url         = 'http://riceballicious.info';
+            this.path        = '/fs/reader/list/';
+            this.language    = 'english';
+
+            this.queryChapters = 'div.list div.element div.title a';
+        }
+    }
+
+</script>
