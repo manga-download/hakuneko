@@ -1,0 +1,26 @@
+<link rel="import" href="foolslide.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class SilentSkyScans extends FoolSlide {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'silentskyscans';
+            super.label      = 'SilentSkyScans';
+            this.tags        = [ 'manga', 'hight-quality', 'english', 'scanlation' ];
+            this.url         = 'http://reader.silentsky-scans.net';
+            //this.path        = '/directory/';
+            this.language    = 'english';
+
+            this.queryChapters = 'div.list div.element div.title a';
+        }
+    }
+
+</script>
