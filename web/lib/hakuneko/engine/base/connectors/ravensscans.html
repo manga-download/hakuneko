@@ -1,0 +1,93 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class RavensScans /*FoolSlide2*/ extends Connector  {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = undefined;
+            super.label      = undefined;
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = undefined;
+            this.path        = '/lector/';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            this.language = 'en';
+        }
+
+        _getJsonResponse( response, type ) {
+            if( response.status !== 200 ) {
+                throw new Error( `Failed to receive ${type} list (status: ${response.status}) - ${response.statusText}` );
+            }
+            return response.json()
+            .then( data => {
+                if( data[ 'error' ] ) {
+                    throw new Error( this.label + ' error: ' + data.error );
+                }
+                return Promise.resolve( data );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            fetch( this.url + this.path + 'api/v2/comics?lang=' + this.language + '&orderby=asc_name&per_page=120&page=1', this.requestOptions )
+            .then( response => this._getJsonResponse( response, 'manga' ) )
+            .then( data => {
+                let mangaList = data.map( manga => {
+                    return {
+                        id: manga.stub,
+                        title: manga.name
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            fetch( this.url + this.path + 'api/v2/chapters?stub=' + manga.id + '&lang=' + this.language + '&per_page=120&page=1', this.requestOptions )
+            .then( response => this._getJsonResponse( response, 'chapter' ) )
+            .then( data => {
+                let chapterList = data.map( chapter => {
+                    return {
+                        id: chapter.pages.map( page => page.url ),
+                        title: chapter.title,
+                        language: this.language
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            callback( null, chapter.id );
+        }
+    }
+
+</script>
