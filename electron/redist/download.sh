@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VER="v2.0.6"
+VER="v2.0.7"
 
 rm -f electron-*.zip
 
