@@ -108,10 +108,8 @@
                     }
                 } );
                 win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist }, ( details, callback ) => {
-//console.warn( 'BLOCKED:', details.url );
                     callback( { cancel: true } );
                 } );
-                //win.webContents.openDevTools();
 
                 let preventCallback = false;
 
@@ -218,7 +216,6 @@
             }
             // Overwrite the User-Agent header for certain domains
             if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.indexOf( uri.host ) > -1 ) {
-//console.log( 'HEADERS:', details.url, details.requestHeaders );
                 details.requestHeaders['User-Agent'] = UserAgent.random();
             }
             delete details.requestHeaders['x-user-agent'];
@@ -248,7 +245,10 @@
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
-//console.log( 'HEADERS:', details.url, details.requestHeaders );
+/*
+if( 'mangapicgallery'.indexOf( uri.host ) > -1 && uri.pathname.endsWith( '/1/' ) ) {
+// console.log( uri, details );
+*/
             return details;
         }
     }
