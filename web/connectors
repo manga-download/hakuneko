@@ -15,72 +15,186 @@ https://hentai2read.com/hentai-list/
 https://hitomi.la/allseries-a.html
 http://apdreadonline.netsons.org/reader/directory/
 
-  local cat = 'English-Scanlation'
-✓  AddWebsiteModule('PowerManga', 'http://read.powermanga.org', cat)
-✓  AddWebsiteModule('Shoujosense', 'http://reader.shoujosense.com', cat)
-  AddWebsiteModule('GoManga', 'http://gomanga.co', 'English')
-✓  AddWebsiteModule('OneTimeScans', 'http://otscans.com', cat)
-✓  AddWebsiteModule('SenseScans', 'http://reader.sensescans.com', cat)
-✓  AddWebsiteModule('Jaiminisbox', 'https://jaiminisbox.com', cat)
-✓  AddWebsiteModule('KireiCake', 'https://reader.kireicake.com', cat)
-✓  AddWebsiteModule('HelveticaScans', 'http://helveticascans.com', cat)
-  AddWebsiteModule('WhiteoutScans', 'http://reader.whiteoutscans.com', cat)
-  AddWebsiteModule('DokiFansubs', 'https://kobato.hologfx.com', cat)
-  AddWebsiteModule('AtelierDuNoir', 'http://atelierdunoir.org', cat)
-  AddWebsiteModule('ChampionScans', 'http://reader.championscans.com', cat)
-  AddWebsiteModule('WorldThree', 'http://www.slide.world-three.org', cat)
-  AddWebsiteModule('S2Scans', 'https://reader.s2smanga.com', cat)
-  AddWebsiteModule('HotChocolateScans', 'http://hotchocolatescans.com', cat)
-  AddWebsiteModule('LetItGoScans', 'http://reader.letitgo.scans.today', cat)
-  AddWebsiteModule('TripleSevenScan', 'http://triplesevenscans.com', cat)
-  AddWebsiteModule('SeaOtterScans', 'https://reader.seaotterscans.com', cat)
-  AddWebsiteModule('AntisenseScans', 'http://antisensescans.com', cat)
-  AddWebsiteModule('TheCatScans', 'https://reader.thecatscans.com', cat)
-  AddWebsiteModule('DeathTollScans', 'https://reader.deathtollscans.net', cat)
-  AddWebsiteModule('MangaichiScan', 'http://mangaichiscans.mokkori.fr', cat)
-  AddWebsiteModule('ForgottenScans', 'http://reader.fos-scans.com', cat)
-  AddWebsiteModule('Riceballicious', 'http://riceballicious.info', cat)
-  AddWebsiteModule('PhoenixSerenade', 'https://reader.serenade.moe', cat)
-  AddWebsiteModule('VortexScans', 'https://reader.vortex-scans.com', cat)
-  AddWebsiteModule('RoseliaScanlations', 'http://reader.roseliascans.com', cat)
-  AddWebsiteModule('SaikoScans', 'http://saikoscans.ml', cat)
-  AddWebsiteModule('Yuri-ism', 'https://www.yuri-ism.net', cat)
-  AddWebsiteModule('SilentSkyScans', 'http://reader.silentsky-scans.net', cat)
-  AddWebsiteModule('BunnysScans', 'http://bns.shounen-ai.net', cat)
-  AddWebsiteModule('CanisMajorScans', 'http://cm-scans.shounen-ai.net', cat)
-  AddWebsiteModule('HoshikuzuuScans', 'http://hoshiscans.shounen-ai.net', cat)
-  AddWebsiteModule('YaoiIsLife', 'http://yaoislife.shounen-ai.net', cat)
-✓  AddWebsiteModule('FujoshiBitches', 'http://fujoshibitches.shounen-ai.net', cat)
-  AddWebsiteModule('TwistedHelScans', 'http://www.twistedhelscans.com', cat)
-  AddWebsiteModule('TapTrans', 'https://taptaptaptaptap.net', cat)
-  AddWebsiteModule('EvilFlowers', 'http://reader.evilflowers.com', cat)
-  AddWebsiteModule('IlluminatiManga', 'http://reader.manga-download.org', cat)
-  
-  cat = 'Italian-Scanlation'  
-  AddWebsiteModule('DigitalTeam', 'http://digitalteamreader.netsons.org', cat)
-  
-  -- es-sc
-  cat = 'Spanish-Scanlation'
-  AddWebsiteModule('DangoOnlineNoFansub', 'http://lector.dangolinenofansub.com', cat)
-  AddWebsiteModule('DejameProbar', 'http://dejameprobar.es', cat)
-  AddWebsiteModule('HoshinoFansub', 'http://manga.animefrontline.com', cat)
-  AddWebsiteModule('MenudoFansub', 'http://www.menudo-fansub.com', cat)
-  AddWebsiteModule('NeoProjectScan', 'http://npscan.mangaea.net', cat)
-  AddWebsiteModule('Pzykosis666HFansub', 'https://pzykosis666hfansub.com', cat)
-  AddWebsiteModule('SantosScan', 'http://santosfansub.com', cat)
-  AddWebsiteModule('SeinagiFansub', 'https://seinagi.org', cat)
-  AddWebsiteModule('SeinagiAdultoFansub', 'https://adulto.seinagi.org', cat)
-  AddWebsiteModule('SolitarioNoFansub', 'http://snf.mangaea.net', cat)
-  AddWebsiteModule('RavensScans', 'http://ravens-scans.com', cat)
-  AddWebsiteModule('KirishimaFansub', 'http://lector.kirishimafansub.com', cat)
-  AddWebsiteModule('NoraNoFansub', 'https://www.noranofansub.com', cat)
-  AddWebsiteModule('YamiTenshiNoFansub', 'http://lector.ytnofan.com', cat)
-  AddWebsiteModule('XAnimeSeduccion', 'http://xanime-seduccion.com', cat)
-  AddWebsiteModule('JokerFansub', 'http://reader.jokerfansub.com', cat)
-  AddWebsiteModule('PatyScans', 'http://lector.patyscans.com', cat)
-  AddWebsiteModule('PCNet', 'http://pcnet.patyscans.com', cat)
-  AddWebsiteModule('IdkScans', 'http://reader.idkscans.com', cat)
-  AddWebsiteModule('Nightow', 'http://nightow.net', cat)
-  AddWebsiteModule('TrueColorsScan', 'https://truecolorsscans.miocio.org', cat)
-  AddWebsiteModule('MangajinNoFansub', 'https://www.mangajinnofansub.com', cat)
-  AddWebsiteModule('LoliVault', 'https://lolivault.net', cat)
+https://www.simply-hentai.com/series/69
+
++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++ Websites supported by FMD but not by HakuNeko +++
++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  AcademyVN
+  AnimeA
+  AnimeStory
+  AnimExtremist
+  AtelierDuNoir
+  Authrone
+  Bamtoki
+  Batoto
+  Batoto.old
+  BlogTruyen
+  CentralDeMangas
+  Centrum-Mangi_PL
+  Comico
+  ComicoCoID
+  CoYuHi
+  DarkSkyScan
+  DesuMe
+  DigitalTeamAltervista
+  Doujin-Moe
+  Dynasty-Scans
+  E-Hentai
+  EatManga
+  EGScans
+  ESMangaHere
+  ExtremeMangas
+  EyeOnManga
+  Fakku
+  FallenAngelsScans
+  FunManga
+  GameofScanlation
+  GManga
+  GodsRealmScan
+  GoManga
+  GoodManga
+  Hakihome
+  HatigarmScans
+  HeavenManga
+  Hentai2Read
+  HentaiCafe
+  HeyManga
+  HitomiLa
+  HugeManga
+  I-Komik
+  IdkScans
+  IMangaScans
+  InManga
+  Japan-Shin
+  Kivmanga
+  KomikGue
+  Komikid
+  KomikStation
+  Lecture-En-Ligne
+  LeoManga
+  LHTranslation
+  LoneManga
+  Luscious
+  Mabuns
+  Madokami
+  Manga-Lib_PL
+  Manga-Tr
+  Manga24h
+  Manga2u
+  Manga99
+  MangaAe
+  MangaAll
+  MangaAr
+  MangaAt
+  MangaBB
+  MangaBird
+  MangaBoom
+  Mangacan
+  MangaCap
+  MangaCool
+  MangaCow
+  Mangacow
+  MangaDeep
+  MangaDenizi
+  MangaDesu
+  MangaDoom
+  MangaDoor
+  MangaEsta
+  Mangaf
+  MangaFoxCom
+  MangaFrame
+  MangaHispano
+  MangaHome
+  MangaHost
+  MangaHubIO
+  MangaHubRU
+  MangaID
+  MangaIndo
+  MangaInn
+  MangaKita
+  MangaKoi
+  MangaKu
+  MangaMint
+  MangaOku
+  MangaOnlineBR
+  MangaRawOnline
+  MangaREADER_POR
+  MangaSaurus
+  MangaShiro
+  MangasPROJECT
+  MangaStreamTo
+  MangaTraders
+  MangaTrue
+  MangaVadisi
+  MangaWindow
+  MangaWorksFansub
+  MangaZukiRaws
+  ManhuaTr
+  ManhwaCo
+  MasterPieceScans
+  MeinManga
+  MerakiScans
+  Mexat
+  mh160
+  MyReadingManga
+  MyReadingMangaInfo
+  NeoProjectScan
+  NeuManga
+  NHentai
+  NineManga_CN
+  NineManga_Last
+  NineMangaBR
+  NineMangaDE
+  NineMangaIT
+  NozominoFansub
+  OneManga
+  PecintaKomik
+  PervEden
+  PornComix
+  PornComixIC
+  PornComixRE
+  PornXXXComics
+  PsychoPlay
+  Pururin
+  Puzzmos
+  R15TeamScanlation
+  Rawdevart
+  RawMangaUpdate
+  RawQQ
+  RawYoManga
+  ReadComicOnline
+  ReadHentaiManga
+  ReadMangaToday
+  RedHawkScans
+  S2scanlations
+  SaikoScans
+  SantosScan
+  ScanManga
+  SenManga
+  SenMangaRAW
+  SiberOwl
+  SKSubs
+  SOSScanlation
+  Starkana
+  Subapics
+  SubManga
+  SubManga.old
+  SundayWebry
+  TonarinoYoungJump
+  Toonkor
+  TripleSevenScan
+  TruyenTranhTuan
+  Tsumino
+  Turkcraft
+  UnixManga
+  VnSharing
+  Webtoons
+  WebtoonTr
+  WestManga
+  WhiteCloudPavilion
+  XXComics
+  XXComics3D
+  XXComicsMT
+  YoManga
