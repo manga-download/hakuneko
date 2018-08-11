@@ -93,7 +93,7 @@
         <div id="container" style$="background-color: [[ getContainerColor(selectedMedia) ]];">
             <template is="dom-if" if="[[ thumbnailViewMode(media,selectedMedia) ]]">
                 <template is="dom-repeat" items="[[ media ]]">
-                    <div class="thumbnail" style$="background-image: url('[[ item ]]');" on-click="showViewer" title$="Page [[ index ]]"></div>
+                    <div class="thumbnail" style$="background-image: url('[[ escapeBackgroundURI(item) ]]');" on-click="showViewer" title$="Page [[ index ]]"></div>
                 </template>
             </template>
             <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
@@ -300,6 +300,13 @@
              */
             videoViewMode( media, selectedMedia ) {
                 return ( media && ( media.mirrors || media.video ) );
+            }
+
+            /**
+             * 
+             */
+            escapeBackgroundURI( uri ) {
+                return uri.replace( /'/g, '\\\'' );
             }
 
             /**
