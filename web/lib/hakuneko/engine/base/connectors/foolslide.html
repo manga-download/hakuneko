@@ -23,6 +23,7 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
+            this.defaultPageCount = 1; // pages when no link was found
             this.queryMangasPageCount = 'div.prevnext div.next a:first-of-type';
             this.queryMangas = 'div.list div.group > div.title a';
             this.queryChapters = 'div.list div.element div.title a';
@@ -36,7 +37,7 @@
         _getMangaList( callback ) {
             return this.fetchDOM( this.url + this.path, this.queryMangasPageCount )
             .then( data => {
-                let pageCount = ( data.length === 0 ? 1 : parseInt( data[0].href.match(/(\d+)\/$/)[1] ) );
+                let pageCount = ( data.length === 0 ? this.defaultPageCount : parseInt( data[0].href.match(/(\d+)\/$/)[1] ) );
                 let aborted = false;
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
                     return this.wait( 500 * page )
