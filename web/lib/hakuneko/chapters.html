@@ -495,7 +495,7 @@
                     } else {
                         matchTitle = !pattern || ( chapter.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
                     }
-                    let matchLanguage = !language || ( chapter.language.toLowerCase().indexOf( language.toLowerCase() ) > -1 );
+                    let matchLanguage = !language || ( chapter.language.toLowerCase() === language.toLowerCase() );
                     return ( matchTitle && matchLanguage );
                 };
             }
