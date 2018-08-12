@@ -1,0 +1,126 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class LeoManga extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'leomanga';
+            super.label      = 'LeoManga';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'http://leomanga.com';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = {
+                throttle: {
+                    label: 'Throttle Requests [ms]',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 5XX errors during manga list update.\nThrottle of 500 ms => approx. 1 minute manga list update.',
+                    input: Input.numeric,
+                    min: 250,
+                    max: 2500,
+                    value: 500
+                }
+            };
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/directorio-manga?orden=alfabetico', 'nav.the-pagination ul.pagination li:nth-last-child(2) a' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.trim() );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let aborted = false;
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( this.config.throttle.value * page )
+                    .then( () => {
+                        // do not perform any further requests if one of them already failed
+                        if( aborted ) {
+                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                        } else {
+                            return this.fetchDOM( this.url + '/directorio-manga?orden=alfabetico&pagina=' + ( page + 1 ), 'div.manga-directory ul.list-inline li.manga-all a' );
+                        }
+                    } )
+                    .then( data => {
+                        let mangaList = data.map( element => {
+                            let title = element.querySelector( 'h2.title-dirmanga' ).firstChild.textContent;
+                            return {
+                                id: this.getRelativeLink( element ),
+                                title: title.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                    .catch( error => {
+                        aborted = true;
+                        throw error;
+                    } );
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'ul.ul-chapter li a' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'spanish'
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( this.url + chapter.id, 'a.cap-option' )
+            .then( data => {
+                if( data.length === 0 ) {
+                    throw new Error( 'No pages found for this chapter!' );
+                }
+                return this.fetchDOM( this.url + this.getRelativeLink( data[0] ), 'div#cascade-images source' );
+            } )
+            .then( data => {
+                let pageList = data.map( img => this.url + this.getRelativeLink( img ) );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
