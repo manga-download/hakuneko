@@ -123,25 +123,22 @@
                 win.webContents.on( 'did-finish-load', event => {
                     win.webContents.executeJavaScript( this._cfCheckScript() )
                     .then( result => {
-                        if( result.redirect ) {
-                            // neither reject nor resolve the promise (wait for next callback after redirect)
-                        } else {
+                        if( !result.redirect ) {
                             if( result.error ) {
                                 throw new Error( result.error );
                             } else {
-                                return Promise.resolve( result );
+                                preventCallback = true; // no other event shall resolve/reject this promise anymore
+                                win.webContents.executeJavaScript( injectionScript )
+                                .then( result => {
+                                    if( !timeout ) {
+                                        this._fetchUICleanup( win, abortAction );
+                                    }
+                                    resolve( result );
+                                } );
                             }
+                        } else {
+                            // neither reject nor resolve the promise (wait for next callback after getting redirected)
                         }
-                    } )
-                    .then( result => {
-                        preventCallback = true; // no other event shall resolve/reject this promise anymore
-                        return win.webContents.executeJavaScript( injectionScript );
-                    } )
-                    .then( result => {
-                        if( !timeout ) {
-                            this._fetchUICleanup( win, abortAction );
-                        }
-                        resolve( result );
                     } )
                     .catch( error => {
                         this._fetchUICleanup( win, abortAction );
@@ -150,6 +147,7 @@
                 } );
 
                 win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
+                    // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
                     if( !preventCallback && errCode && errCode !== -3 && ( isMain || uri === url ) ) {
                         this._fetchUICleanup( win, abortAction );
                         reject( new Error( errMessage + ' ' + uri ) );
