@@ -65,7 +65,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.cloudflare( this.url + manga.id, this.requestOptions )
+            fetch( this.url + manga.id, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
