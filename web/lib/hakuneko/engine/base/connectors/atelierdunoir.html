@@ -1,0 +1,72 @@
+<link rel="import" href="foolslide.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class AtelierDuNoir extends FoolSlide {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'atelierdunoir';
+            super.label      = 'AtelierDuNoir';
+            this.tags        = [ 'manga', 'hight-quality', 'english', 'scanlation' ];
+            this.url         = 'http://atelierdunoir.org';
+            this.path        = '/reader/directory/'; 
+            this.language    = 'english';
+
+            this.queryMangas = 'div.row div.thumbnail div.caption';
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            return this.fetchDOM( this.url + this.path, this.queryMangasPageCount )
+            .then( data => {
+                let pageCount = ( data.length === 0 ? 1 : parseInt( data[0].href.match(/(\d+)\/$/)[1] ) );
+                let aborted = false;
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( 500 * page )
+                    .then( () => {
+                        // do not perform any further requests if one of them already failed
+                        if( aborted ) {
+                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                        } else {
+                            return this.fetchDOM( this.url + this.path + ( page + 1 ) + '/', this.queryMangas );
+                        }
+                    } )
+                    .then( data => {
+                        let mangaList = data.map( element => {
+                            let title = element.querySelector( 'h4' ).innerText;
+                            let a = element.querySelector( 'a' );
+                            return {
+                                id: this.getRelativeLink( a ),
+                                title: title.trim()
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                    .catch( error => {
+                        aborted = true;
+                        throw error;
+                    } );
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
