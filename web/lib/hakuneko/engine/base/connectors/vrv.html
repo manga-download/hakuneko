@@ -180,7 +180,7 @@
                                 subtitles: meta.subtitles
                             } ),
                             title: prefix + lng + res,
-                            language: localizedStream.locale
+                            language: localizedStream.locale || '- NO HARDSUB -' 
                         }
                     } );
                     return accumulator.concat( episodeStreams );
