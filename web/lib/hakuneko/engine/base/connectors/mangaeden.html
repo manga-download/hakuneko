@@ -20,7 +20,16 @@
             // Private members for internal usage only (convenience)
             this.url         = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config = {
+                throttle: {
+                    label: 'Throttle Requests [ms]',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 5XX errors during manga list update.\nThrottle of 1500 ms => approx. 5 minutes manga list update.',
+                    input: Input.numeric,
+                    min: 250,
+                    max: 5000,
+                    value: 1500
+                }
+            };
         }
 
         /**
@@ -41,17 +50,20 @@
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
+                let aborted = false;
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return fetch( this.url + this.urlMangas + '?page=' + ( page + 1 ), this.requestOptions )
-                    .then( response => {
-                        if( response.status !== 200 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
+                    return this.wait( this.config.throttle.value * page )
+                    .then( () => {
+                        // do not perform any further requests if one of them already failed
+                        if( aborted ) {
+                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                        } else {
+                            return this.fetchDOM( this.url + this.urlMangas + '?page=' + ( page + 1 ), 'table#mangaList tr td:first-of-type a' );
                         }
-                        return response.text();
                     } )
                     .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'table#mangaList tr td:first-of-type a' )].map( element => {
+                        let mangaList = data.map( element => {
                             return {
                                 id: this.getRelativeLink( element ),
                                 title: element.text.trim()
@@ -59,6 +71,10 @@
                         } );
                         return Promise.resolve( mangaList );
                     } )
+                    .catch( error => {
+                        aborted = true;
+                        throw error;
+                    } );
                 } );
                 return Promise.all( promises ); 
             } )
