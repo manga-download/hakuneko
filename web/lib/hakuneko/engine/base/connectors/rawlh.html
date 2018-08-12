@@ -27,16 +27,9 @@
          *
          */
         _getMangaList( callback ) {
-            fetch( this.url + '/manga-list.html?listType=allABC', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + '/manga-list.html?listType=allABC', 'span[data-toggle="mangapop"] a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let mangaList = [...dom.querySelectorAll( 'span[data-toggle="mangapop"] a' )].map( element => {
+                let mangaList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.trim()
@@ -65,7 +58,7 @@
                 let dom = this.createDOM( data );
                 let language = dom.querySelector( 'ul.manga-info h1 span.flag-icon' );
                 language = ( language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : 'jp' );
-                let chapterList = [...dom.querySelectorAll( 'div.list-chapters span.titleLink a.chapter' )].map( element => {
+                let chapterList = [...dom.querySelectorAll( 'div.list-chapters span[class^="title"] a.chapter' )].map( element => {
                     let title = element.text.replace( manga.title, '' );
                     title = title.replace( manga.title.replace( /\s*-\s*RAW$/, '' ), '' );
                     title = title.replace( /^\s*-\s*/, '' );
