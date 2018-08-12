@@ -124,10 +124,10 @@
                     win.webContents.executeJavaScript( this._cfCheckScript() )
                     .then( result => {
                         if( !result.redirect ) {
+                            preventCallback = true; // no other event shall resolve/reject this promise anymore
                             if( result.error ) {
                                 throw new Error( result.error );
                             } else {
-                                preventCallback = true; // no other event shall resolve/reject this promise anymore
                                 win.webContents.executeJavaScript( injectionScript )
                                 .then( result => {
                                     if( !timeout ) {
