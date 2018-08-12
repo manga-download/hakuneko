@@ -128,6 +128,7 @@
             .catch( error => {
                 // TODO: abort/block all other page downloads that are still running for this job ...
                 // https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
+                this.errors.push( error );
                 console.error( error, pages );
                 this.setProgress( 100 );
                 this.setStatus( DownloadStatus.failed );
@@ -252,6 +253,7 @@
             .catch( error => {
                 // TODO: abort/block all other packet downloads that are still running for this job ...
                 // https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
+                this.errors.push( error );
                 console.error( error, episode );
                 this.setProgress( 100 );
                 this.setStatus( DownloadStatus.failed );
