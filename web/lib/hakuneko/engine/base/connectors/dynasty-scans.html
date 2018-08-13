@@ -15,6 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'dynasty-scans';
             super.label      = 'DynastyScans';
+            this.tags        = [ 'manga', 'english' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
@@ -28,16 +29,9 @@
          */
         _getMangaList( callback ) {
             let promises = ['/series', '/anthologies', '/issues'].map( page => {
-                return fetch( this.url + page, this.requestOptions )
-                .then( response => {
-                    if( response.status !== 200 ) {
-                        throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                    }
-                    return response.text();
-                } )
+                return this.fetchDOM( this.url + page, '.tag-list dd a' )
                 .then( data => {
-                    let dom = this.createDOM( data );
-                    let mangaList = [...dom.querySelectorAll( '.tag-list dd a' )].map( element => {
+                    let mangaList = data.map( element => {
                         return {
                             id: this.getRelativeLink( element ),
                             title: element.text.trim()
@@ -61,16 +55,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, '.chapter-list dd a[class="name"]' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( '.chapter-list dd a[class="name"]' )].map( element => {
+                let chapterList = data.map( element => {
                     let title = element.text.replace( manga.title, '' ).trim();
                     return {
                         id: this.getRelativeLink( element ),
