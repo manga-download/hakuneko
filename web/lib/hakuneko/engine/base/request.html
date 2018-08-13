@@ -17,6 +17,7 @@
         /**
          * 
          */
+        /*
         cloudflare( url, requestOptions ) {
             // promises are nested intentionally, so we can access the response variable in the scope of the 2nd inner promise
             return fetch( url, requestOptions )
@@ -49,10 +50,12 @@
                 }
             } )
         }
+        */
 
         /**
          * 
          */
+        /*
         _solveCloudflareChallenge( url, requestOptions, content ) {
             return ( new Promise( ( resolve, reject ) => {
                 let uri = new URL( url );
@@ -70,6 +73,7 @@
                 // The Referer header is protected in chrome for fetch API
                 // => use a custom header to overwrite the Referer in the 'onBeforeSendHeaders' event
                 //requestOptions.headers.set( 'Referer', url );
+                // FIXME: this will modify the original requestOptions and may intervene at places where a referer is not desired (e.g. blogspot links)
                 requestOptions.headers.set( 'X-Referer', url );
 
                 setTimeout( () => {
@@ -82,6 +86,7 @@
                 return this.cloudflare( result.url, result.options );
              } );
         }
+        */
     }
     RequestBase; // reference the class to prevent removal of the class through js-minify
 

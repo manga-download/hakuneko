@@ -102,9 +102,7 @@
             // get data for all pages of chapter
             let promises = pages.map( ( page, index ) => {
                 return this._wait( index * this.throttle )
-                .then( () => {
-                    return Engine.Request.cloudflare( page, this.requestOptions );
-                } )
+                .then( () => fetch( page, this.requestOptions ) )
                 .then( response => {
                     if( response.status !== 200 ) {
                         throw new Error( 'Page "' + page + '" returned status: ' + response.status + ' - ' + response.statusText );
