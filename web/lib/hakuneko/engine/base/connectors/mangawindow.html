@@ -1,0 +1,132 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaWindow extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'mangawindow';
+            super.label      = 'MangaWindow';
+            this.tags        = [ 'manga', 'multi-lingual' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://mangawindow.net';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = {
+                throttle: {
+                    label: 'Throttle Requests [ms]',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 5XX errors during manga list update.\nThrottle of 1500 ms => approx. 25 minute(s) manga list update.',
+                    input: Input.numeric,
+                    min: 500,
+                    max: 5000,
+                    value: 1500
+                }
+            };
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/browse?sort=title', 'nav.pager ul.pagination li.page-item:nth-last-child(2) a.page-link' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.trim() );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let aborted = false;
+                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                    return this.wait( this.config.throttle.value * page )
+                    .then( () => {
+                        // do not perform any further requests if one of them already failed
+                        if( aborted ) {
+                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
+                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
+                        } else {
+                            return this.fetchDOM( this.url + '/browse?sort=title&page=' + ( page + 1 ), 'div#series-list div.item-text' );
+                        }
+                    } )
+                    .then( data => {
+                        let mangaList = data.map( element => {
+                            let a = element.querySelector( 'a.item-title' );
+                            let language = element.querySelector( 'span.item-flag' );
+                            language = language ? ' (' + language.className.match( /flag_([_a-z]*)/ )[1].replace( /_/g, '-' ) + ')' : '';
+                            this.cfMailDecrypt( a );
+                            return {
+                                id: this.getRelativeLink( a ),
+                                title: a.text.trim() + language
+                            };
+                        } );
+                        return Promise.resolve( mangaList );
+                    } )
+                    .catch( error => {
+                        aborted = true;
+                        throw error;
+                    } );
+                } );
+                return Promise.all( promises ); 
+            } )
+            .then( mangas => {
+                callback( null, [].concat( ... mangas ) );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'div.chapter-list div.main a.chapt' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.replace( /-?\s+Read\s+Online/i, '' ).trim(),
+                        language: ''
+                    };
+                } );             
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let pages = data.match( /var\s+images\s*=\s*(\{.*\})\s*;/ )[1];
+                let pageList = Object.values( JSON.parse( pages ) );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
