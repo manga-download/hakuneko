@@ -38,16 +38,9 @@
             this.requestOptions.method = 'POST';
             this.requestOptions.body = this.formManga;
             this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
-            fetch( this.url + '/wp-admin/admin-ajax.php', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + '/wp-admin/admin-ajax.php', 'div.post-title h5 a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let mangaList = [...dom.querySelectorAll( 'div.post-title h5 a' )].map( element => {
+                let mangaList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.trim()
@@ -68,16 +61,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, 'ul.main li a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( 'ul.main li a' )].map( element => {
+                let chapterList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.trim(),
@@ -98,16 +84,9 @@
         _getPageList( manga, chapter, callback ) {
             let uri = new URL( this.url + chapter.id );
             uri.searchParams.set( 'style', 'list' );
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( uri.href, 'div.page-break source' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageLinks = [...dom.querySelectorAll( 'div.page-break source' )].map( element => element.src );
+                let pageLinks = data.map( element => element.src );
                 callback( null, pageLinks );
             } )
             .catch( error => {
