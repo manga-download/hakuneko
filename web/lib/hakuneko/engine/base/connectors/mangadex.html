@@ -85,7 +85,7 @@
          *
          */
         _getChapterList( manga, callback, chapterList ) {
-            this._requestAPI( this.url + '/api/manga/' + manga.id, this.requestOptions, 'chapter' )
+            this._requestAPI( this.url + '/api/manga/' + this._migratedMangaID( manga.id ), this.requestOptions, 'chapter' )
             .then( data => {
                 let chapterList = Object.keys( data.chapter ).map( id => {
                     let chapter = data.chapter[id];
@@ -152,6 +152,22 @@
                 }
                 return Promise.resolve( data );
             } );
+        }
+
+        /**
+         * Try to convert old manga IDs to the latest version (e.g. when stored as bookmark).
+         */
+        _migratedMangaID( mangaID ) {
+            // /manga/8466/darwin-s-game
+            let v1 = mangaID.match( /^\/manga\/(\d+)\/.*$/ );
+            if( v1 ) {
+                return v1[1];
+            }
+            let v2 = mangaID.match( /^\d+$/ );
+            if( v2 ) {
+                return v2[0];
+            }
+            return mangaID
         }
     }
 
