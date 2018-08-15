@@ -1,0 +1,63 @@
+<link rel="import" href="bookmark.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class BookmarkImporter {
+
+        constructor() {
+            //
+        }
+
+        /**
+         *
+         */
+        importBookmarks( file ) {
+            if( file.length !== 1 ) {
+                throw new Error( `Invalid number of files: ${file.length}` );
+            }
+            file = file[0];
+            if( file.size < 2 ) {
+                throw new Error( `Invalid file size: ${file.size}` );
+            }
+            /*
+            if( file.type !== 'application/json' && !file.name.endsWith( '.json' ) ) {
+                throw new Error( `Invalid file format: ${file.type}` );
+            }
+            let fileReader = new FileReader();
+            fileReader.onload = this.onImportFileLoadFMD.bind( this );
+            fileReader.readAsText( file );
+            */
+           this._importBookmarksFMD( file );
+        }
+
+        _importBookmarksFMD( file ) {
+
+            console.log( file.type, file.name );
+            if( file.type !== 'application/sqlite' && !file.name.endsWith( '.db' ) ) {
+                throw new Error( `Invalid file format: ${file.type}` );
+            }
+            throw new Error( `Not Implemented` );
+        }
+
+        /**
+         *
+         */
+        _onImportFileLoadFMD( event ) {
+            try {
+                console.log( 'File Loaded', event.currentTarget.result );
+                /*
+                let settings = JSON.parse( event.currentTarget.result );
+                Engine.BookmarkManager.mergeBookmarks( settings['bookmarks'] );
+                Engine.ChaptermarkManager.mergeChaptermarks( settings['chaptermarks'] );
+                */
+            } catch ( e ) {
+                alert( e.message );
+            }
+        }
+    }
+    BookmarkImporter; // reference the class to prevent removal of the class through js-minify
+
+</script>

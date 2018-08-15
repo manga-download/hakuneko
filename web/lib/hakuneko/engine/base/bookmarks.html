@@ -21,16 +21,16 @@
         /**
          *
          */
-        importBookmarks( bookmarks ) {
+        mergeBookmarks( bookmarks ) {
             if( !bookmarks ) {
                 return;
             }
             bookmarks.forEach( ( bookmark ) => {
                 // TODO: check if all properties are defined properly!
                 // check if bookmark does not exist
-                let index = this.bookmarks.findIndex( ( b ) => {
+                let index = this.bookmarks.findIndex( b => {
                     return ( bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector );
-                });
+                } );
                 if( index < 0 ) {
                     this.bookmarks.push( bookmark );
                 }
