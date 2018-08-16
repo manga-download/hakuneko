@@ -36,12 +36,15 @@
          *
          */
         _importBoommarksJSON( file ) {
+            throw new Error( 'Not implemented!' );
+            /*
             console.log( '_importBoommarksJSON' );
             let fileReader = new FileReader();
             fileReader.onload = event => {
                 console.log( 'File Loaded (JSON)', event.currentTarget.result );
             };
             fileReader.readAsText( file );
+            */
         }
 
         /**
@@ -52,13 +55,32 @@
             let fileReader = new FileReader();
             fileReader.onload = event => {
                 console.log( 'File Loaded (SQLite3)', event.currentTarget.result );
-                /*
-                var arrayBuffer = e.target.result;
-                var bytes = new Uint8Array(arrayBuffer);
-                console.log(bytes);
-                */
+                let db = new window.SQL.Database( new Uint8Array( event.target.result ) );
+                let query = 'SELECT `websitelink` AS `key.combined`, `website` AS `title.connector`, `title` AS `title.manga`, `link` AS `key.manga` FROM `favorites`;';
+                let result = db.exec( query );
+                console.log( result );
             };
             fileReader.readAsArrayBuffer( file );
+        }
+
+        /**
+         * Find the corresponding HakuNeko connector ID for the given FMD website ID
+         */
+        mapFMDConnectorID( connectorFMD ) {
+            switch( connectorFMD ) {
+                case 'mangadex': return 'mangadex';
+                default: return connectorFMD;
+            }
+        }
+
+        /**
+         * Find the corresponding HakuNeko connector ID for the given FMD website ID
+         */
+        mapFMDMangaID( connectorFMD, mangaFMD ) {
+            switch( connectorFMD ) {
+                case 'mangadex': return mangaFMD.match( /manga\/\d+\/$/ )[0];
+                default: return mangaFMD;
+            }
         }
     }
     BookmarkImporter; // reference the class to prevent removal of the class through js-minify
