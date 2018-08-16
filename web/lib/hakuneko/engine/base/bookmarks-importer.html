@@ -14,48 +14,51 @@
         /**
          *
          */
-        importBookmarks( file ) {
-            if( file.length !== 1 ) {
-                throw new Error( `Invalid number of files: ${file.length}` );
+        importBookmarks( files ) {
+            if( !files ) {
+                throw new Error( 'No file(s) provided' );
             }
-            file = file[0];
-            if( file.size < 2 ) {
-                throw new Error( `Invalid file size: ${file.size}` );
+            for( let file of files ) {
+                console.log( 'File:', file.type, file.name );
+                if( file.size < 2 ) {
+                    throw new Error( `Invalid file size: ${file.size}` );
+                }
+                if( file.type === 'application/json' || file.name.endsWith( '.json' ) ) {
+                    this._importBoommarksJSON( file );
+                }
+                if( file.type === 'application/x-sqlite3' || file.name.endsWith( '.db' ) ) {
+                    this._importBookmarksFMD( file );
+                }
             }
-            /*
-            if( file.type !== 'application/json' && !file.name.endsWith( '.json' ) ) {
-                throw new Error( `Invalid file format: ${file.type}` );
-            }
-            let fileReader = new FileReader();
-            fileReader.onload = this.onImportFileLoadFMD.bind( this );
-            fileReader.readAsText( file );
-            */
-           this._importBookmarksFMD( file );
-        }
-
-        _importBookmarksFMD( file ) {
-
-            console.log( file.type, file.name );
-            if( file.type !== 'application/sqlite' && !file.name.endsWith( '.db' ) ) {
-                throw new Error( `Invalid file format: ${file.type}` );
-            }
-            throw new Error( `Not Implemented` );
         }
 
         /**
          *
          */
-        _onImportFileLoadFMD( event ) {
-            try {
-                console.log( 'File Loaded', event.currentTarget.result );
+        _importBoommarksJSON( file ) {
+            console.log( '_importBoommarksJSON' );
+            let fileReader = new FileReader();
+            fileReader.onload = event => {
+                console.log( 'File Loaded (JSON)', event.currentTarget.result );
+            };
+            fileReader.readAsText( file );
+        }
+
+        /**
+         *
+         */
+        _importBookmarksFMD( file ) {
+            console.log( '_importBookmarksFMD' );
+            let fileReader = new FileReader();
+            fileReader.onload = event => {
+                console.log( 'File Loaded (SQLite3)', event.currentTarget.result );
                 /*
-                let settings = JSON.parse( event.currentTarget.result );
-                Engine.BookmarkManager.mergeBookmarks( settings['bookmarks'] );
-                Engine.ChaptermarkManager.mergeChaptermarks( settings['chaptermarks'] );
+                var arrayBuffer = e.target.result;
+                var bytes = new Uint8Array(arrayBuffer);
+                console.log(bytes);
                 */
-            } catch ( e ) {
-                alert( e.message );
-            }
+            };
+            fileReader.readAsArrayBuffer( file );
         }
     }
     BookmarkImporter; // reference the class to prevent removal of the class through js-minify
