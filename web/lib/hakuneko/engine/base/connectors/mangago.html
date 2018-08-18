@@ -94,7 +94,7 @@
                 this.initialized = true;
             } )
             .catch( error => {
-                console.error( error, this );
+                console.warn( error, this );
                 this.initialized = false;
             } );
         }
