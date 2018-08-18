@@ -216,17 +216,24 @@
          * Get the content based on the configured requestOptions and the given URI
          * and search for all elements matching the given CSS selector.
          */
-        fetchDOM( uri, selector ) {
+        fetchDOM( uri, selector, retries ) {
+            if( retries === undefined ) {
+                retries = 0;
+            }
             return fetch( uri, this.requestOptions )
             .then( response => {
+                if( response.status >= 500 && retries > 0 ) {
+                    return this.wait( 7500 )
+                    .then( () => this.fetchDOM( uri, selector, retries - 1 ) );
+                }
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive content from "${uri}" (status: ${response.status}) - ${response.statusText}` );
                 }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                return Promise.resolve( [...dom.querySelectorAll( selector )] );
+                return response.text()
+                .then( data => {
+                    let dom = this.createDOM( data );
+                    return Promise.resolve( [...dom.querySelectorAll( selector )] );
+                } );
             } );
         }
 
