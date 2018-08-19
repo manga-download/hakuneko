@@ -48,28 +48,6 @@
                 }
             } );
         }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            this.fetchDOM( this.url + this.path, this.queryMangasPageCount )
-            .then( data => {
-                let pageCount = ( data.length === 0 ? 1 : parseInt( data[0].href.match(/(\d+)\/$/)[1] ) );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
     }
 
 </script>
