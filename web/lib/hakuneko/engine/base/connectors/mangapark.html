@@ -23,59 +23,55 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
-        
+
         /**
-         * 
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div#browse h6 a', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
          */
         _getMangaList( callback ) {
-            fetch( this.url + '/browse', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + '/browse', 'nav.d-md-block ul.pagination li:nth-last-child(2) a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( 'nav.d-md-block ul.pagination li:nth-last-child(2) a' );
-                pageCount = parseInt( pageCount.text );
+                let pageCount = parseInt( data[0].text.trim() );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( 500 * page )
-                    .then( () => {
-                        return fetch( this.url + '/browse?page=' + ( page + 1 ), this.requestOptions );
-                    } )
-                    .then( response => {
-                        if( response.status !== 200 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                        }
-                        return response.text();
-                    } )
-                    .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'div#browse h6 a' )].map( element => {
-                            this.cfMailDecrypt( element );
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.text.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                } );
-                return Promise.all( promises ); 
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/browse?page=' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
                 callback( error, undefined );
             } );
         }
-
+        
         /**
          *
          */
