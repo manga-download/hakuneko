@@ -223,17 +223,17 @@
             return fetch( uri, this.requestOptions )
             .then( response => {
                 if( response.status >= 500 && retries > 0 ) {
-                    return this.wait( 7500 )
+                    return this.wait( 5000 )
                     .then( () => this.fetchDOM( uri, selector, retries - 1 ) );
                 }
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive content from "${uri}" (status: ${response.status}) - ${response.statusText}` );
+                if( response.status === 200 ) {
+                    return response.text()
+                    .then( data => {
+                        let dom = this.createDOM( data );
+                        return Promise.resolve( [...dom.querySelectorAll( selector )] );
+                    } );
                 }
-                return response.text()
-                .then( data => {
-                    let dom = this.createDOM( data );
-                    return Promise.resolve( [...dom.querySelectorAll( selector )] );
-                } );
+                throw new Error( `Failed to receive content from "${uri}" (status: ${response.status}) - ${response.statusText}` );
             } );
         }
 
