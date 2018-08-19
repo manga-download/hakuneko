@@ -15,6 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'taadd';
             super.label      = 'TAADD';
+            this.tags        = [ 'manga', 'english' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
@@ -34,39 +35,42 @@
         }
 
         /**
-         * 
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], this.queryMangas, 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.title.trim() || element.text.trim()
+                    };
+                } );
+                if( mangaList.length > 0 && index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
          */
         _getMangaList( callback ) {
             return Promise.resolve( this.pageCount )
             .then( pageCount => {
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( 50 * page )
-                    .then( () => {
-                        return this.fetchDOM( this.url + '/search/?completed_series=either&page=' + ( page + 1 ), this.queryMangas );
-                    } )
-                    .then( data => {
-                        let mangaList = data.map( element => {
-                            this.cfMailDecrypt( element );
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.title.trim() || element.text.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                } );
-                return Promise.all( promises ); 
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/search/?completed_series=either&page=' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
             } )
-            .then( mangas => {
-                let mangaList = [];
-                let exists = {};
-                [].concat( ... mangas ).forEach( manga => {
-                    if( !exists[manga.id] ) {
-                        mangaList.push( manga );
-                    }
-                    exists[manga.id] = true;
-                } );
-                callback( null, mangaList );
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -79,8 +83,10 @@
          */
         _getChapterList( manga, callback ) {
             let uri = new URL( this.url + manga.id );
-            if( this.id === 'tenmanga' ) {
+            if( this.id === 'tenmanga' || this.id.startsWith( 'ninemanga' ) ) {
                 uri.searchParams.append( 'warning', '1' );
+                // fix query parameter typo for ninemanga
+                uri.searchParams.append( 'waring', '1' );
             }
             this.fetchDOM( uri.href, this.queryChapters )
             .then( data => {
