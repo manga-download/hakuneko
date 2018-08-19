@@ -15,6 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'readmanga';
             super.label      = 'ReadManga';
+            this.tags        = [ 'manga', 'russian' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
@@ -23,11 +24,11 @@
             this.config = {
                 throttle: {
                     label: 'Throttle Requests [ms]',
-                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 429 errors during manga list update.\nThrottle of 1000 ms => approx. 4 minutes manga list update.',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 429 errors during manga list update.',
                     input: Input.numeric,
-                    min: 500,
-                    max: 2500,
-                    value: 1000
+                    min: 0,
+                    max: 5000,
+                    value: 1500
                 }
             };
 
@@ -37,50 +38,46 @@
         /**
          *
          */
-        _getMangaList( callback ) {
-            fetch( this.url + '/list', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( this.config.throttle.value )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.tile div.desc', 5 ) )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( 'span.pagination a:nth-last-child(2)' );
-                pageCount = parseInt( pageCount.text.trim() );
+                // TODO: use english titles instead of russian titles?
+                let mangaList = data.map( element => {
+                    let a = element.querySelector( 'h3 a' );
+                    let h4 = element.querySelector( 'h4' );
+                    return {
+                        id: this.getRelativeLink( a ),
+                        title: ( this.preferSubtitleAsMangaTitle && h4 ? h4.title : a.title )
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/list', 'span.pagination a:nth-last-child(2)' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.trim() );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( this.config.throttle.value * page )
-                    .then( () => {
-                        return fetch( this.url + '/list?offset=' + ( page * 70 ), this.requestOptions )
-                    } )
-                    .then( response => {
-                        if( response.status !== 200 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                        }
-                        return response.text();
-                    } )
-                    .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'div.tile div.desc' )].map( element => {
-                            let a = element.querySelector( 'h3 a' );
-                            let h4 = element.querySelector( 'h4' );
-                            return {
-                                id: this.getRelativeLink( a ),
-                                title: ( this.preferSubtitleAsMangaTitle && h4 ? h4.title : a.title )
-                            };
-                        } );
-                        // TODO: use english titles instead of russian titles?
-                        return Promise.resolve( mangaList );
-                    } )
-                } );
-                return Promise.all( promises ); 
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/list?offset=' + ( page * 70 ) );
+                return this._getMangaListFromPages( pageLinks );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -92,16 +89,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, 'div.chapters-link table tr td a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( 'div.chapters-link table tr td a' )].map( element => {
+                let chapterList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim(),
