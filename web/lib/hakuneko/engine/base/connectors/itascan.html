@@ -30,44 +30,43 @@
         /**
          *
          */
-        _getMangaList( callback ) {
-            fetch( this.url + '/directory/', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.row h4 a', 5 ) )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( 'ul.pagination li:nth-last-child(2) a' );
-                pageCount = parseInt( pageCount.text.trim() );
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/directory/', 'ul.pagination li:nth-last-child(2) a' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.trim() );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return fetch( this.url + '/directory/?&page=' + ( page + 1 ), this.requestOptions )
-                    .then( response => {
-                        if( response.status !== 200 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                        }
-                        return response.text();
-                    } )
-                    .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'div.row h4 a' )].map( element => {
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.text.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                } );
-                return Promise.all( promises ); 
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory/?&page=' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -79,16 +78,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, 'table tr td a[rel="nofollow"]' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( 'table tr td a[rel="nofollow"]' )].map( element => {
+                let chapterList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).replace( /^:\s*/, '' ).trim(),
