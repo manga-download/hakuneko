@@ -15,6 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'mangatown';
             super.label      = 'MangaTown';
+            this.tags        = [ 'manga', 'english' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
@@ -32,51 +33,47 @@
             // register a protocol handler to intercept requests (with custom 'mangatown' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
-        
+
         /**
-         * Parameters mangalist and page should never be used by external calls.
+         *
          */
-        _getMangaList( callback, mangaList, page ) {
-            fetch( this.url + '/directory/', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'ul.manga_pic_list li p.title a', 5 ) )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageCount = dom.querySelector( 'div.next-page a:nth-last-child(3)' );
-                pageCount = parseInt( pageCount.text );
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.title.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/directory/', 'div.next-page a:nth-last-child(3)' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.trim() );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( 100 * page )
-                    .then( () => {
-                        return fetch( this.url + '/directory/0-0-0-0-0-0/' + ( page + 1 ) + '.htm', this.requestOptions );
-                    } )
-                    .then( response => {
-                        if( response.status !== 200 ) {
-                            throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                        }
-                        return response.text();
-                    } )
-                    .then( data => {
-                        let dom = this.createDOM( data );
-                        let mangaList = [...dom.querySelectorAll( 'ul.manga_pic_list li p.title a' )].map( element => {
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.title.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                } );
-                return Promise.all( promises ); 
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory/0-0-0-0-0-0/' + ( page + 1 ) + '.htm' );
+                return this._getMangaListFromPages( pageLinks );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -88,16 +85,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, 'ul.chapter_list li' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( 'ul.chapter_list li' )].map( element => {
+                let chapterList = data.map( element => {
                     let link = element.getElementsByTagName( 'a' )[0];
                     let title = link.text.replace( manga.title, '' ).trim();
                     let texts = element.getElementsByTagName( 'span' );
@@ -128,16 +118,9 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( ( chapter.id.startsWith( 'http' ) ? chapter.id : this.url + chapter.id ), this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( ( chapter.id.startsWith( 'http' ) ? chapter.id : this.url + chapter.id ), 'div.manga_read_footer div.page_select select option' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelector( 'div.page_select' ).querySelectorAll( 'select option' )].map( element => {
+                let pageList = data.map( element => {
                     if( element.value.startsWith( '//' ) ) {
                         return ( this.id + ':' + element.value );
                     }
