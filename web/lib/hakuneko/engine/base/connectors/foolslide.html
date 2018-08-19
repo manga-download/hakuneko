@@ -34,40 +34,43 @@
         /**
          *
          */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], this.queryMangas, 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
         _getMangaList( callback ) {
-            return this.fetchDOM( this.url + this.path, this.queryMangasPageCount )
+            this.fetchDOM( this.url + this.path, this.queryMangasPageCount )
             .then( data => {
                 let pageCount = ( data.length === 0 ? this.defaultPageCount : parseInt( data[0].href.match(/(\d+)\/$/)[1] ) );
-                let aborted = false;
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( 500 * page )
-                    .then( () => {
-                        // do not perform any further requests if one of them already failed
-                        if( aborted ) {
-                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
-                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
-                        } else {
-                            return this.fetchDOM( this.url + this.path + ( page + 1 ) + '/', this.queryMangas );
-                        }
-                    } )
-                    .then( data => {
-                        let mangaList = data.map( element => {
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.text.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                    .catch( error => {
-                        aborted = true;
-                        throw error;
-                    } );
-                } );
-                return Promise.all( promises ); 
+                return Promise.resolve( pageCount );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
