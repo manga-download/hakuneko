@@ -21,16 +21,7 @@
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangawindow.net';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = {
-                throttle: {
-                    label: 'Throttle Requests [ms]',
-                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 5XX errors during manga list update.',
-                    input: Input.numeric,
-                    min: 0,
-                    max: 5000,
-                    value: 50
-                }
-            };
+            this.config = undefined;
         }
 
         /**
@@ -40,7 +31,7 @@
             if( index === undefined ) {
                 index = 0;
             }
-            return this.wait( this.config.throttle.value )
+            return this.wait( 0 )
             .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div#series-list div.item-text', 5 ) )
             .then( data => {
                 let mangaList = data.map( element => {
