@@ -22,6 +22,7 @@
             this.temp = this.path.join( require('os').tmpdir(), 'hakuneko' );
             this._createDirectoryChain( this.temp );
 
+            this.pdfTargetHeight = 160; // [mm]
             this.fileURISubstitutions = {
                 rgx: /['#\?]/g,
                 map: {
@@ -346,7 +347,7 @@
          * and a reference to the page list (undefined on error).
          */
         _loadChapterPagesFolder( directory ) {
-            return ( new Promise( ( resolve, reject  ) => {
+            return ( new Promise( ( resolve, reject ) => {
                 this.fs.readdir( directory, ( error, files ) => {
                     if( error ) {
                         reject( error );
@@ -502,9 +503,10 @@
                 }
                 return promise.then( blob => this._blobToBytes( blob ) )
                 .then( bytes => {
-                    pdfDocument.addPage( bitmap.width, bitmap.height );
+                    let pdfTargetWidth = this.pdfTargetHeight * bitmap.width / bitmap.height;
+                    pdfDocument.addPage( pdfTargetWidth, this.pdfTargetHeight );
                     // use page.name as image alias, to prevent image repeat bug: https://github.com/MrRio/jsPDF/issues/998
-                    pdfDocument.addImage( bytes, pdfImgType, 0, 0, bitmap.width, bitmap.height, page.name );
+                    pdfDocument.addImage( bytes, pdfImgType, 0, 0, pdfTargetWidth, this.pdfTargetHeight, page.name );
                     return Promise.resolve();
                 } );
             } );
