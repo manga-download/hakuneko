@@ -19,7 +19,7 @@
             // A map of converter functions to transform FMD manga IDs to HakuNeko manga IDs
             // The key is based on HakuNeko connector IDs
             this._mangaMap = {
-                'mangadex': id => id.match( /manga\/\d+\/$/ )[0],
+                'mangadex': id => id.match( /^\/manga\/(\d+)\/.*$/ )[1],
                 'mangarock': id => id, // return Array.FindLast(mangalink.Split('/'), s => !string.IsNullOrEmpty(s));
                 'tumangaonline': id => id // return Array.FindLast(mangalink.Split('/'), s => int.TryParse(s, out int n));
             };
@@ -74,13 +74,14 @@
                 rows.push( [ 'manganelo/test', '/test', 'MangaNel', 'Test' ] );
                 let bookmarks = rows.map( row => {
                     let connectorID = this._mapFMDConnectorID( row[0].split( '/' )[0] );
+                    let mangaID = this._mapFMDMangaID( connectorID, row[1] );
                     return {
                         key: {
                             connector: connectorID,
-                            manga: row[1]
+                            manga: mangaID
                         },
                         title: {
-                            connector: this._mapFMDMangaID( connectorID, row[2] ),
+                            connector: row[2],
                             manga: row[3]
                         }
                     };
