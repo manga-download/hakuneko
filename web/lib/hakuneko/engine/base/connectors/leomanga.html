@@ -15,21 +15,39 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'leomanga';
             super.label      = 'LeoManga';
+            this.tags        = [ 'manga', 'spanish' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'http://leomanga.com';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = {
-                throttle: {
-                    label: 'Throttle Requests [ms]',
-                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting 5XX errors during manga list update.\nThrottle of 500 ms => approx. 1 minute manga list update.',
-                    input: Input.numeric,
-                    min: 250,
-                    max: 2500,
-                    value: 500
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.manga-directory ul.list-inline li.manga-all a', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    let title = element.querySelector( 'h2.title-dirmanga' ).firstChild.textContent;
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: title.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
                 }
-            };
+            } );
         }
 
         /**
@@ -42,37 +60,11 @@
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let aborted = false;
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( this.config.throttle.value * page )
-                    .then( () => {
-                        // do not perform any further requests if one of them already failed
-                        if( aborted ) {
-                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
-                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
-                        } else {
-                            return this.fetchDOM( this.url + '/directorio-manga?orden=alfabetico&pagina=' + ( page + 1 ), 'div.manga-directory ul.list-inline li.manga-all a' );
-                        }
-                    } )
-                    .then( data => {
-                        let mangaList = data.map( element => {
-                            let title = element.querySelector( 'h2.title-dirmanga' ).firstChild.textContent;
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: title.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                    .catch( error => {
-                        aborted = true;
-                        throw error;
-                    } );
-                } );
-                return Promise.all( promises ); 
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directorio-manga?orden=alfabetico&pagina=' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
