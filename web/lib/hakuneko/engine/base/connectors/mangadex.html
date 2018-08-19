@@ -24,13 +24,39 @@
             this.config = {
                 throttle: {
                     label: 'Throttle Requests [ms]',
-                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many concurrent requests.\nThrottle of 1000 ms => approx. 10 minutes manga list update.',
+                    description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecuitive requests.',
                     input: Input.numeric,
-                    min: 500,
+                    min: 0,
                     max: 5000,
-                    value: 1000
+                    value: 500
                 }
             };
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( this.config.throttle.value )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.mb-1 a.ml-1', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    this.cfMailDecrypt( element );
+                    return {
+                        id: element.href.match( /\/(\d+)\// )[1],
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
         }
 
         /**
@@ -43,44 +69,18 @@
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let aborted = false;
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( this.config.throttle.value * page )
-                    .then( () => {
-                        // do not perform any further requests if one of them already failed
-                        if( aborted ) {
-                            console.warn( 'ABORTED:', this.label, '_getMangaList', page );
-                            return Promise.reject( 'Request was aborted due to an error of a previous request!' );
-                        } else {
-                            return this.fetchDOM( this.url + '/titles/0/' + ( page + 1 ) + '/', 'div.mb-1 a.ml-1' );
-                        }
-                    } )
-                    .then( data => {
-                        let mangaList = data.map( element => {
-                            this.cfMailDecrypt( element );
-                            return {
-                                id: element.href.match( /\/(\d+)\// )[1],
-                                title: element.text.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                    .catch( error => {
-                        aborted = true;
-                        throw error;
-                    } );
-                } );
-                return Promise.all( promises ); 
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/titles/0/' + ( page + 1 ) + '/' );
+                return this._getMangaListFromPages( pageLinks );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
                 callback( error, undefined );
             } );
         }
-
+        
         /**
          *
          */
