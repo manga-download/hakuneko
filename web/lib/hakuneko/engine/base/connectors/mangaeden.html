@@ -94,7 +94,6 @@
         /**
          *
          */
-        // FIXME: to many requests to images will reult in CloudFlare 503 errors ...
         _getPageList( manga, chapter, callback ) {
             fetch( this.url + chapter.id, this.requestOptions )
             .then( response => {
@@ -108,13 +107,49 @@
                     throw new Error( 'The manga is licensed and not available in your country!' );
                 }
                 let pages = data.match( /pages\s*=\s*(\[.*?\])\s*;/ )[1];
-                let pageList = JSON.parse( pages ).map( p => 'https:' + p.fs );
+                let pageList = JSON.parse( pages ).map( p => {
+                    let uri = new URL( ( new URL( this.url ) ).protocol + p.fs );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
             } ); 
+        }
+
+        /**
+         * 
+         */
+        _pageProtocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            // NOTE: hostname did not work with URL parsed from custom protocol
+            // => parse again with supported protocol
+            uri = new URL( uri.href );
+            if( uri.hostname === 'cdn.mangaeden.com' ) {
+                this.requestOptions.headers.set( 'x-host', uri.hostname );
+                uri.hostname = '188.165.13.96';
+                uri.protocol = 'http';
+            }
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+            this.requestOptions.headers.delete( 'x-host' );
         }
     }
 

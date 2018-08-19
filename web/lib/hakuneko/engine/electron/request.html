@@ -204,6 +204,12 @@
                 }
             }
 
+            // Overwrite the Host header with the one provided by the connector
+            if( details.requestHeaders['x-host'] ) {
+                details.requestHeaders['Host'] = details.requestHeaders['x-host'];
+            }
+            delete details.requestHeaders['x-host'];
+
             // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ..." )
             if( details.requestHeaders['User-Agent'].toLowerCase().indexOf( 'electron' ) > -1 ) {
                 details.requestHeaders['User-Agent'] = this.userAgent;

@@ -21,6 +21,9 @@
             // Private members for internal usage only (convenience)
             this.url         = 'https://www.mangaeden.com';
             this.urlMangas   = '/en/en-directory/';
+
+            // register a protocol handler to intercept requests (with custom 'mangaeden' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, super._pageProtocolHandler.bind( this ) );
         }
     }
 
