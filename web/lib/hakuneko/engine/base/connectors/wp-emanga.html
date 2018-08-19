@@ -26,26 +26,43 @@
         /**
          *
          */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.cpp div.lmt h2 a', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
         _getMangaList( callback ) {
-            return this.fetchDOM( this.url + '/project-list/', 'div.wp-pagenavi a.last' )
+            this.fetchDOM( this.url + '/project-list/', 'div.wp-pagenavi a.last' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match(/(\d+)\/$/)[1] );
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.fetchDOM( this.url + '/project-list/page/' + ( page + 1 ) + '/', 'div.cpp div.lmt h2 a' )
-                    .then( data => {
-                        let mangaList = data.map( element => {
-                            return {
-                                id: this.getRelativeLink( element ),
-                                title: element.text.trim()
-                            };
-                        } );
-                        return Promise.resolve( mangaList );
-                    } )
-                } );
-                return Promise.all( promises ); 
+                return Promise.resolve( pageCount );
             } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/project-list/page/' + ( page + 1 ) + '/' );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
