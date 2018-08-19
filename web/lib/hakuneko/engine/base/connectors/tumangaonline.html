@@ -15,6 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'tumangaonline';
             super.label      = 'TuMangaOnline';
+            this.tags        = [ 'manga', 'spanish' ];
             super.isLocked   = false;
             this.initialized = false;
             // Private members for internal usage only (convenience)
@@ -24,6 +25,7 @@
             this.config = undefined;
 
             this._initializeConnector();
+
             // register a protocol handler to intercept requests (with custom 'tumangaonline' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
@@ -50,42 +52,40 @@
         /**
          *
          */
-        _getMangaList( callback ) {
-            let pageCount = 750; // 584
-            let aborted = false;
-            let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                return this.wait( 500 * page )
-                .then( () => {
-                    // do not perform any further requests if one of them already failed
-                    if( aborted ) {
-                        console.warn( 'ABORTED:', this.label, '_getMangaList', page );
-                        return Promise.reject( 'Request was aborted due to an error of a previous request!' );
-                    } else {
-                        return this.fetchDOM( this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ), 'div.row div.element a' );
-                    }
-                } )
-                .then( data => {
-                    let mangaList = data.map( element => {
-                        // use title attribute to avoid cf-mail decryption
-                        return {
-                            id: this.getRelativeLink( element ),
-                            title: element.querySelector( 'h4' ).title.trim()
-                        };
-                    } );
-                    return Promise.resolve( mangaList );
-                } )
-                .catch( error => {
-                    aborted = true;
-                    throw error;
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.row div.element a', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    // use title attribute to avoid cf-mail decryption
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.querySelector( 'h4' ).title.trim()
+                    };
                 } );
-            } );
-
-            Promise.all( promises )
-            .then( mangas => {
-                if( mangas[mangas.length-1].length > 0 ) {
-                    throw new Error( 'The predefined manga page count of ' + pageCount + ' has been reached, but there are still more mangas available!' );
+                if( mangaList.length > 0 && index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
                 }
-                callback( null, [].concat( ... mangas ) );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Promise.resolve( 800 )
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
