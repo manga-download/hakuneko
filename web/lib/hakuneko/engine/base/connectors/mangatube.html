@@ -15,6 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'mangatube';
             super.label      = 'MangaTube';
+            this.tags        = [ 'manga', 'german' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
@@ -43,7 +44,7 @@
                 let params = new URLSearchParams();
                 params.append( 'action', 'load_series_list_entries' );
                 let promises = [...( new Array( pageCount ) ).keys()].map( page => {
-                    return this.wait( 150 * page )
+                    return this.wait( 50 * page )
                     .then( () => {
                         params.set( 'parameter[page]', page + 1 );
                         this.requestOptions.body = params.toString();
@@ -83,17 +84,10 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + '/series/' + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + '/series/' + manga.id, 'div#chapter div.vol-container' )
             .then( data => {
                 let chapterList = [];
-                let dom = this.createDOM( data );
-                dom.querySelectorAll( 'div#chapter div.vol-container' ).forEach( card => {
+                data.forEach( card => {
                     let volume = card.querySelector( 'a.btn' ).text.trim();
                     let chapters = [...card.querySelectorAll( 'ul.chapter-list li > a:nth-of-type(2)' )].map( element => {
                         let number = element.querySelector( 'b' );
