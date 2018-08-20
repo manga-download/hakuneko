@@ -83,7 +83,7 @@
          */
         _getChapterList( manga, callback ) {
             let uri = new URL( this.url + manga.id );
-            if( this.id === 'tenmanga' || this.id.startsWith( 'ninemanga' ) ) {
+            if( this.id === 'taadd' || this.id === 'tenmanga' || this.id.startsWith( 'ninemanga' ) ) {
                 uri.searchParams.append( 'warning', '1' );
                 // fix query parameter typo for ninemanga
                 uri.searchParams.append( 'waring', '1' );
