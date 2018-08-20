@@ -71,7 +71,6 @@
                 let result = db.exec( query );
                 //let columns = result[0].columns;
                 let rows = result[0].values;
-                rows.push( [ 'manganelo/test', '/test', 'MangaNel', 'Test' ] );
                 let bookmarks = rows.map( row => {
                     let connectorID = this._mapFMDConnectorID( row[0].split( '/' )[0] );
                     let mangaID = this._mapFMDMangaID( connectorID, row[1] );
@@ -86,7 +85,7 @@
                         }
                     };
                 } );
-                console.log( bookmarks );
+                Engine.BookmarkManager.mergeBookmarks( bookmarks );
             };
             fileReader.readAsArrayBuffer( file );
         }
