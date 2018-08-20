@@ -14,14 +14,16 @@
             this._connectorMap = {
                 'dynastyscans': 'dynasty-scans',
                 'manganelo': 'manganel',
-                'mangasupa': 'mangabat'
+                'mangasupa': 'mangabat',
+                'mangapark': 'UNDEFINED',
+                'mangazuki': 'UNDEFINED' // mangazuki.info instead of mangazuki.me
             };
             // A map of converter functions to transform FMD manga IDs to HakuNeko manga IDs
             // The key is based on HakuNeko connector IDs
             this._mangaMap = {
                 'mangadex': id => id.match( /^\/manga\/(\d+)\/.*$/ )[1],
-                'mangarock': id => id, // return Array.FindLast(mangalink.Split('/'), s => !string.IsNullOrEmpty(s));
-                'tumangaonline': id => id // return Array.FindLast(mangalink.Split('/'), s => int.TryParse(s, out int n));
+                'mangarock': id => id.split( '/' ).pop(),
+                'mangatube': id => id.split( '/' ).pop()
             };
         }
 
