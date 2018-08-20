@@ -25,14 +25,18 @@
             if( !bookmarks ) {
                 return;
             }
-            bookmarks.forEach( ( bookmark ) => {
+            bookmarks.forEach( bookmark => {
                 // TODO: check if all properties are defined properly!
+
+                // check if connector / website is supported
+                let supported = Engine.Connectors.findIndex( c => ( c.id === bookmark.key.connector ) ) > -1;
+if( !supported ) { console.error( 'Not Supported:', bookmark.title ) }
                 // check if bookmark does not exist
-                let index = this.bookmarks.findIndex( b => {
-                    return ( bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector );
-                } );
-                if( index < 0 ) {
-                    this.bookmarks.push( bookmark );
+                let exist = this.bookmarks.findIndex( b => ( bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector ) ) > -1;
+if( exist ) { console.warn( 'Already Exist:', bookmark.title ) }
+                if( supported && !exist ) {
+console.log( 'Added:', bookmark.title );
+                    //this.bookmarks.push( bookmark );
                 }
             } );
             this.bookmarks.sort( this.compareBookmarks );
