@@ -1,0 +1,113 @@
+<script>
+
+    /**
+     * 
+     */
+    class BookmarkImporter {
+
+        /**
+         *
+         */
+        constructor() {
+            // A map from FMD connector IDs to HakuNeko connector IDs
+            // The key is based on FMD connector IDs
+            this._connectorMap = {
+                'dynastyscans': 'dynasty-scans',
+                'manganelo': 'manganel',
+                'mangasupa': 'mangabat',
+                'mangapark': 'UNDEFINED',
+                'mangazuki': 'UNDEFINED' // mangazuki.info instead of mangazuki.me
+            };
+            // A map of converter functions to transform FMD manga IDs to HakuNeko manga IDs
+            // The key is based on HakuNeko connector IDs
+            this._mangaMap = {
+                'mangadex': id => id.match( /^\/manga\/(\d+)\/.*$/ )[1],
+                'mangarock': id => id.split( '/' ).pop(),
+                'mangatube': id => id.split( '/' ).pop()
+            };
+        }
+
+        /**
+         *
+         */
+        importBookmarks( files ) {
+            if( !files ) {
+                throw new Error( 'No file(s) provided' );
+            }
+            for( let file of files ) {
+                if( file.size < 2 ) {
+                    throw new Error( `Invalid file size: ${file.size}` );
+                }
+                if( file.type === 'application/json' || file.name.endsWith( '.json' ) ) {
+                    this._importBoommarksJSON( file );
+                }
+                if( file.type === 'application/x-sqlite3' || file.name.endsWith( '.db' ) ) {
+                    this._importBookmarksFMD( file );
+                }
+            }
+        }
+
+        /**
+         *
+         */
+        _importBoommarksJSON( file ) {
+            throw new Error( 'Not implemented!' );
+            /*
+            console.log( '_importBoommarksJSON' );
+            let fileReader = new FileReader();
+            fileReader.onload = event => {
+                console.log( 'File Loaded (JSON)', event.currentTarget.result );
+            };
+            fileReader.readAsText( file );
+            */
+        }
+
+        /**
+         *
+         */
+        _importBookmarksFMD( file ) {
+            let fileReader = new FileReader();
+            fileReader.onload = event => {
+                let db = new window.SQL.Database( new Uint8Array( event.target.result ) );
+                let query = 'SELECT `websitelink` AS `key.combined`, `link` AS `key.manga`, `website` AS `title.connector`, `title` AS `title.manga` FROM `favorites`;';
+                let result = db.exec( query );
+                //let columns = result[0].columns;
+                let rows = result[0].values;
+                let bookmarks = rows.map( row => {
+                    let connectorID = this._mapFMDConnectorID( row[0].split( '/' )[0] );
+                    let mangaID = this._mapFMDMangaID( connectorID, row[1] );
+                    return {
+                        key: {
+                            connector: connectorID,
+                            manga: mangaID
+                        },
+                        title: {
+                            connector: row[2],
+                            manga: row[3]
+                        }
+                    };
+                } );
+                Engine.BookmarkManager.mergeBookmarks( bookmarks );
+            };
+            fileReader.readAsArrayBuffer( file );
+        }
+
+        /**
+         * Find the corresponding HakuNeko connector ID for the given FMD website ID
+         */
+        _mapFMDConnectorID( connectorFMD ) {
+            let connectorID = this._connectorMap[connectorFMD];
+            return ( connectorID ? connectorID : connectorFMD );
+        }
+
+        /**
+         * Find the corresponding HakuNeko manga ID for the given FMD website ID
+         */
+        _mapFMDMangaID( connectorID, mangaFMD ) {
+            let mangaConvert = this._mangaMap[connectorID];
+            return ( mangaConvert ? mangaConvert( mangaFMD ) : mangaFMD );
+        }
+    }
+    BookmarkImporter; // reference the class to prevent removal of the class through js-minify
+
+</script>

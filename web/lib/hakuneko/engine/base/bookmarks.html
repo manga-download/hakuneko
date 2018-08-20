@@ -21,22 +21,97 @@
         /**
          *
          */
-        importBookmarks( bookmarks ) {
+        mergeBookmarks( bookmarks ) {
             if( !bookmarks ) {
                 return;
             }
-            bookmarks.forEach( ( bookmark ) => {
-                // TODO: check if all properties are defined properly!
+            let added = '';
+            let exists = '';
+            let dropped = '';
+            bookmarks.forEach( bookmark => {
+                // check if connector / website is supported
+                let supported = Engine.Connectors.findIndex( c => ( c.id === bookmark.key.connector ) ) > -1;
+                if( !supported ) {
+                    dropped += `<tr><td style="color: #808080; font-weight: bold; padding-right: 1em;">${ bookmark.title.connector }</td><td>${ bookmark.title.manga }</td></tr>`;
+                }
                 // check if bookmark does not exist
-                let index = this.bookmarks.findIndex( ( b ) => {
-                    return ( bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector );
-                });
-                if( index < 0 ) {
+                let exist = this.bookmarks.findIndex( b => ( bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector ) ) > -1;
+                if( exist ) {
+                    exists += `<tr><td style="color: #808080; font-weight: bold; padding-right: 1em;">${ bookmark.title.connector }</td><td>${ bookmark.title.manga }</td></tr>`;
+                }
+                // is supported and can be added
+                if( supported && !exist ) {
+                    added += `<tr><td style="color: #808080; font-weight: bold; padding-right: 1em;">${ bookmark.title.connector }</td><td>${ bookmark.title.manga }</td></tr>`;
                     this.bookmarks.push( bookmark );
                 }
             } );
             this.bookmarks.sort( this.compareBookmarks );
             this.saveProfile( 'default', undefined );
+            this._showMergeResults( dropped, exists, added );
+        }
+
+        /**
+         *
+         */
+        _showMergeResults( droppedHTML, existsHTML, addedHTML ) {
+            let dataURL = `data:text/html;utf8,<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="utf-8">
+            </head>
+            <body>
+                <h1>Bookmark Import Results</h1>
+                <!--
+                <ul>
+                    <li><a target="_self" href="#dropped" title="List of all bookmarks that were not imported, because the website is not yet supported by HakuNeko.">Unsupported Bookmarks</a></li>
+                    <li><a target="_self" href="#exists" title="List of all bookmarks that were not imported, because the bookmarks already exists.">Existing Bookmarks</a></li>
+                    <li><a target="_self" href="#added" title="List of all bookmarks that were imported successfully.">Imported Bookmarks</a></li>
+                </ul>
+                -->
+                <table style="font-family: monospace;">
+                    <tbody style="color: red;">
+                    <tr>
+                        <th colspan="2" style="font-size: 1.5em; font-weight: bold; text-align: left;">
+                            <hr><a name="dropped">UNSUPPORTED BOOKMARKS</a><hr>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th colspan="2" style="font-family: initial; text-align: left; padding-bottom: 1.5em;">
+                            List of all bookmarks that were not imported, because the websites are not yet supported by HakuNeko.
+                        </th>
+                    </tr>
+                    ${ droppedHTML }
+                    </tbody>
+                    <tbody style="color: blue;">
+                    <tr>
+                        <th colspan="2" style="font-size: 1.5em; font-weight: bold; text-align: left;">
+                            <hr><a name="exists">EXISTING BOOKMARKS</a><hr>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th colspan="2" style="font-family: initial; text-align: left; padding-bottom: 1.5em;">
+                            List of all bookmarks that were not imported, because the bookmarks already exists in HakuNeko.
+                        </th>
+                    </tr>
+                    ${ existsHTML }
+                    </tbody>
+                    <tbody style="color: green;">
+                    <tr>
+                        <th colspan="2" style="font-size: 1.5em; font-weight: bold; text-align: left;">
+                            <hr><a name="added">ADDED BOOKMARKS</a><hr>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th colspan="2" style="font-family: initial; text-align: left; padding-bottom: 1.5em;">
+                            List of all bookmarks that were imported successfully.
+                        </th>
+                    </tr>
+                    ${ addedHTML }
+                    </tbody>
+                </table>
+            </body>
+            </html>`;
+            window.open( dataURL, '_blank', 'title=Boommark Import Results,center=true,width=800,height=600' );
         }
 
         /**

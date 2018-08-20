@@ -2,6 +2,7 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="engine/base/bookmarks-importer.html">
 <link rel="import" href="engine/loader.html">
 <link rel="import" href="input.html">
 <link rel="import" href="theme.html">
@@ -328,6 +329,7 @@
              *
              */
             exportSettings( event ) {
+                // TODO: bookmarks and settings are stored as files, export really required anymore?
                 let settings = {
                     bookmarks: Engine.BookmarkManager.exportBookmarks(),
                     chaptermarks: Engine.ChaptermarkManager.exportChaptermarks()
@@ -356,38 +358,13 @@
              */
             onImport( event ) {
                 try {
-                    let file = event.target.files;
-                    if( file.length !== 1 ) {
-                        throw new Error( `Invalid number of files: ${file.length}` );
-                    }
-                    file = file[0];
-                    if( file.size < 2 ) {
-                        throw new Error( `Invalid file size: ${file.size}` );
-                    }
-                    if( file.type !== 'application/json' && !file.name.endsWith( '.json' ) ) {
-                        throw new Error( `Invalid file format: ${file.type}` );
-                    }
-                    let fileReader = new FileReader();
-                    fileReader.onload = this.onImportFileLoad.bind( this );
-                    fileReader.readAsText( file );
+                    let importer = new BookmarkImporter();
+                    importer.importBookmarks( event.target.files );
                 } catch( e ) {
                     alert( e.message );
                 } finally {
                     // reset input file field or it cannot be used again
                     this.$.importFile.value = null;
-                }
-            }
-
-            /**
-             *
-             */
-            onImportFileLoad( event ) {
-                try {
-                    let settings = JSON.parse( event.currentTarget.result );
-                    Engine.BookmarkManager.importBookmarks( settings['bookmarks'] );
-                    Engine.ChaptermarkManager.importChaptermarks( settings['chaptermarks'] );
-                } catch ( e ) {
-                    alert( e.message );
                 }
             }
         }
