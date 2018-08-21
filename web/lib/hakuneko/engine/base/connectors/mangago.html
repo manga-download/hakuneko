@@ -82,9 +82,9 @@
         _initializeConnector() {
             let promises = [
                 this.url,
-                'http://www.mnggo.net/c/1/1/1/',
-                'http://www.fashionlib.net/c/1/1/1/',
-                'http://www.lady-first.me/c/1/1/1/'
+                //'http://www.mnggo.net/c/1/1/1/',
+                //'http://www.fashionlib.net/c/1/1/1/',
+                //'http://www.lady-first.me/c/1/1/1/'
             ].map( domain => Engine.Request.fetchUI( domain, this.requestOptions, '', 25000 ) );
             setTimeout( this._validateOrder.bind( this ), 25000 );
             Promise.all( promises )
@@ -103,6 +103,8 @@
          *
          */
         _validateScript() {
+            return Promise.resolve( undefined );
+            /*
             return fetch( 'http://www.mnggo.net/mobi/js/chapter.js?666', this.requestOptions )
             .then( response => response.text() )
             .then( data => {
@@ -117,6 +119,7 @@
                 }
                 return Promise.resolve( hash );
             } );
+            */
         }
 
         /**
@@ -124,6 +127,7 @@
          */
         _validateOrder() {
             // TODO: provide random testees through a server ...
+            /*
             let testees = [
                 '/read-manga/cosmic_boy/uu/cosmic_boy-chapter-35',
                 '/read-manga/cosmic_boy/uu/cosmic_boy-chapter-36'
@@ -143,6 +147,7 @@
                     } );
                 }, index * 5000 );
             } );
+            */
         }
 
         /**
