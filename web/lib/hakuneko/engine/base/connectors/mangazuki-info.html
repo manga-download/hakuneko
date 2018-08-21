@@ -1,0 +1,25 @@
+<link rel="import" href="wp-madara.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class MangaZukiInfo extends WordPressMadara {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'mangazuki-info';
+            super.label      = 'MangaZukiInfo';
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://mangazuki.info';
+        }
+    }
+
+</script>
