@@ -30,6 +30,7 @@
             this._mangaMap = {
                 'mangadex': id => id.match( /^\/manga\/(\d+)\/.*$/ )[1],
                 'mangarock': id => id.split( '/' ).pop(),
+                //'mangapark': id => ( id.indexOf( '/series' ) > -1 ? id : undefined ),
                 'mangatube': id => id.split( '/' ).pop()
             };
         }
