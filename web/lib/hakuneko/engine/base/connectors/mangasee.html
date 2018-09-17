@@ -22,6 +22,9 @@
             this.url         = 'https://mangaseeonline.us';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'mangasee' protocol) and detect correct MIME type
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -93,12 +96,42 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( 'div.fullchapimage source' )].map( element => element.src );
+                let pageList = [...dom.querySelectorAll( 'div.fullchapimage source' )].map( element => {
+                    let uri = new URL( element.src );
+                    uri.protocol = this.id;
+                    return uri.href;
+                 } );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = 'http'; // ( new URL( this.url ) ).protocol;
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => {
+                this._applyRealMime( data );
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
             } );
         }
     }
