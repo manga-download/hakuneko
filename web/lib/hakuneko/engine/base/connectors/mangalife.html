@@ -19,6 +19,9 @@
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangalife.us';
+
+            // register a protocol handler to intercept requests (with custom 'mangalife' protocol) and detect correct MIME type
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
