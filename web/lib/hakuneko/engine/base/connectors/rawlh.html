@@ -19,9 +19,13 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://rawlh.com';
+            this.url         = 'https://lhscan.net';
+            this.requestOptions.headers.set( 'x-referer', this.url );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'wiemanga' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -93,7 +97,9 @@
             .then( data => {
                 let dom = this.createDOM( data );
                 let pageLinks = [...dom.querySelectorAll( 'source.chapter-img' )].map( element => {
-                    return element.src;
+                    let uri = new URL( element.src );
+                    uri.protocol = this.id;
+                    return uri.href;
                 } )
                 .filter( page => !page.match( /3282f6a4b7_o/ ) );
                 callback( null, pageLinks );
@@ -102,6 +108,31 @@
                 console.error( error, chapter );
                 callback( error, undefined );
             } ); 
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
         }
     }
 
