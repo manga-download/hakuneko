@@ -228,12 +228,13 @@
                     if( manga === this.selectedManga ) {
                         this.set( 'chapterList', chapters );
                         // extract languages from chapters and use a set to remove duplicates
-                        this.languageList = Array.from( new Set( chapters.map( ( chapter ) => {
+                        this.languageList = Array.from( new Set( chapters.map( chapter => {
                             return chapter.language;
-                        }).sort() ));
+                        } ).sort() ) );
+                        this.searchLanguage = undefined;
                     }
                     this.$.status.removeFromQueue( statusID );
-                });
+                } );
             }
 
             /**
