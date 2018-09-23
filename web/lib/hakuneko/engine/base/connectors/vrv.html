@@ -149,7 +149,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             try {
-                callback( null, JSON.parse( chapter.id ) );
+                callback( null, chapter.id );
             } catch( error ) {
                 console.error( error, chapter );
                 callback( error, undefined );
@@ -175,10 +175,11 @@
                     let episodeStreams = localizedStream.resolutions.map( resolution => {
                         let res = ( resolution.height ? ' [' + resolution.height + 'p]' : '' );
                         return {
-                            id: JSON.stringify( {
+                            id: {
+                                hash: [episode.id, localizedStream.locale, resolution.height].join( ',' ),
                                 mirrors: resolution.mirrors,
                                 subtitles: meta.subtitles
-                            } ),
+                            },
                             title: prefix + lng + res,
                             language: localizedStream.locale || '- NO HARDSUB -' 
                         }

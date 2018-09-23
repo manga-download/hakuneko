@@ -53,6 +53,11 @@
              } );
         }
 
+        getChapterIdentifier( chapter ) {
+            // some chapter are using objects as ID, these will provide a hash as identifier
+            return ( chapter.id.hash || chapter.id );
+        }
+
         /**
          *
          */
@@ -104,7 +109,7 @@
             let chaptermark = {
                 connectorID: chapter.manga.connector.id,
                 mangaID: chapter.manga.id,
-                chapterID: chapter.id
+                chapterID: this.getChapterIdentifier( chapter )
             };
             let index = this._findIndex( chaptermark );
             if( this._findIndex( chaptermark ) > -1 ) {
@@ -125,7 +130,7 @@
             let chaptermark = {
                 connectorID: chapter.manga.connector.id,
                 mangaID: chapter.manga.id,
-                chapterID: chapter.id
+                chapterID: this.getChapterIdentifier( chapter )
             };
             let index = this._findIndex( chaptermark );
             if( index > -1 ) {

@@ -313,7 +313,7 @@
                 if( chapter.status === DownloadStatus.offline ) {
                     return '';
                 }
-                return ( markedChapterID === chapter.id ? 'Remove the "recently read" marker from this chapter' : 'Mark this chapter as "recently read"');
+                return ( markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ? 'Remove the "recently read" marker from this chapter' : 'Mark this chapter as "recently read"');
             }
 
             /**
@@ -323,7 +323,7 @@
                 if( chapter.status === DownloadStatus.offline ) {
                     return 'markerDisabled';
                 }
-                return ( markedChapterID === chapter.id ? 'fa-bookmark markerActive' : 'fa-bookmark-o markerInactive');
+                return ( markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ? 'fa-bookmark markerActive' : 'fa-bookmark-o markerInactive');
             }
 
             /**
@@ -430,7 +430,7 @@
                 if( chapter.status === DownloadStatus.offline ) {
                     return;
                 }
-                if( this.markedChapterID === chapter.id ) {
+                if( this.markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ) {
                     Engine.ChaptermarkManager.deleteChaptermark( chapter );
                 } else {
                     Engine.ChaptermarkManager.addChaptermark( chapter );
