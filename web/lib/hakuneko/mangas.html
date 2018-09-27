@@ -180,10 +180,11 @@
                 // currently active manga list
                 this.mangaList = undefined;
                 // load connectors
-                this.set( 'connectorList', Engine.Connectors );
+                this.set( 'connectorList', Engine.Connectors.list );
                 // auto select the bookmarks connector when available
                 this.selectedConnector = this.connectorList.find( ( connector ) => { return connector.id === this.bookmarkConnectorID; });
                 // register callbacks for published events
+                document.addEventListener( EventListener.onConnectorFilterChanged, this.onConnectorFilterChanged.bind( this ) );
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }          
@@ -311,6 +312,14 @@
                     let p = pattern.toLowerCase();
                     return ( manga.title.toLowerCase().indexOf( p ) > -1 || manga.connector.label.toLowerCase().indexOf( p ) > -1 );
                 };
+            }
+
+            /**
+             * 
+             */
+            onConnectorFilterChanged( e ) {
+                //this.set( 'connectorList', Engine.Connectors.list );
+                console.log( 'onConnectorFilterChanged', e.detail );
             }
 
             /**

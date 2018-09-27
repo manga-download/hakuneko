@@ -29,7 +29,7 @@
          *
          */
         _getConnectorByID( id ) {
-            return Engine.Connectors.find( ( connector ) => {
+            return Engine.Connectors.available.find( connector => {
                 return ( connector.id === id );
             } ) || new InvalidConnector( id, `${id} (unavailable)` );
         }
