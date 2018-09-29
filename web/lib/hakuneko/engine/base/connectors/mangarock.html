@@ -60,6 +60,9 @@
                 return this._getJsonResponse( response, 'manga' );
              } )
             .then( data => {
+                if( data.includes( '' ) ) {
+                    throw new Error( 'The manga list provided by the server contains one or more empty entries!' );
+                }
                 // NOTE: mangarock limits the amount of manga requests => split into 5k queries
                 let promises = [];
                 while( data.length > 0 ) {
