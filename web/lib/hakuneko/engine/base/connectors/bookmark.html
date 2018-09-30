@@ -58,13 +58,13 @@
             let mangas = Engine.BookmarkManager.bookmarks.map( ( bookmark ) => {
                 let manga = new Manga( this._getConnectorByID( bookmark.key.connector ), bookmark.key.manga, bookmark.title.manga );
                 // determine if manga directory exist on disk
-                Engine.Storage.mangaDirectoryExist( manga, ( error, exist ) => {
-                    if( !error && exist ) {
-                        // set existing manga list for related connector (used by manga.updateStatus function)
-                        manga.connector.existingMangas[ Engine.Storage.sanatizePath ( manga.title ) ] = true;
-                        manga.updateStatus();
-                    }
-                });
+                Engine.Storage.mangaDirectoryExist( manga )
+                .then( () => {
+                    // set existing manga list for related connector (used by manga.updateStatus function)
+                    manga.connector.existingMangas[ Engine.Storage.sanatizePath ( manga.title ) ] = true;
+                    manga.updateStatus();
+                } )
+                .catch( error => { /* directory for bookmark does not yet exist */ } );
                 return manga;
             });
             mangas.sort( ( a, b ) => {

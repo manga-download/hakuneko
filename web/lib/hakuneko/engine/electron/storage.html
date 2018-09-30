@@ -19,7 +19,7 @@
             this.fs = require( 'fs' );
             this.path = require( 'path' );
             this.config = this.path.join( electron.remote.require( './config.js' ).app.userdata, 'hakuneko.' );
-            this.temp = this.path.join( require('os').tmpdir(), 'hakuneko' );
+            this.temp = this.path.join( require( 'os' ).tmpdir(), 'hakuneko' );
             this._createDirectoryChain( this.temp );
 
             this.pdfTargetHeight = 160; // [mm]
@@ -115,17 +115,32 @@
         }
 
         /**
-         * Check if the corresponding manga directory exist.
+         * Return a promise that will be fulfilled if the corresponding path is an existing directory.
+         */
+        directoryExist( path ) {
+            return new Promise( ( resolve, reject ) => {
+                this.fs.stat( path, ( error, stats ) => {
+                    try {
+                        if( error ) {
+                            throw error;
+                        }
+                        if( !stats.isDirectory() ) {
+                            throw new Error( `The given path "${path}" is not a directory!` );
+                        }
+                        resolve();
+                    } catch( error ) {
+                        reject( error );
+                    }
+                } );
+            } );
+        }
+
+        /**
+         * Return a promise that will be fulfilled if the corresponding manga directory exist.
          * Due to performance this method must not be used for bulk existing checks.
          */
         mangaDirectoryExist( manga, callback ) {
-            this.fs.stat(this._mangaOutputPath( manga ), ( error, stats ) => {
-                if( !error && stats.isDirectory() ) {
-                    callback( null, true );
-                } else {
-                    callback( error, false );
-                }
-            });
+            return this.directoryExist( this._mangaOutputPath( manga ) );
         }
 
         /**
