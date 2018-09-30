@@ -24,11 +24,12 @@
 
             this.pdfTargetHeight = 160; // [mm]
             this.fileURISubstitutions = {
-                rgx: /['#\?]/g,
+                rgx: /['#\?;]/g,
                 map: {
                     '\'': '%27',
                     '#': '%23',
                     '?': '%3F',
+                    ';': '%3B'
                 }
             };
         }

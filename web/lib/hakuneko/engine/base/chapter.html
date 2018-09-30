@@ -41,7 +41,7 @@
                 if( !this.manga || !this.manga.existingChapters ) {
                     return;
                 }
-                let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
+                let sanatizedTitle = Engine.Storage.sanatizePath( this.title );
                 if( this.manga.existingChapters[sanatizedTitle + EpisodeFormat.m3u8] ) {
                     this.setStatus( DownloadStatus.completed );
                     return;
