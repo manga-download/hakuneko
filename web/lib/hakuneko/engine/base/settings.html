@@ -46,6 +46,8 @@
                         this[property].value = this._getDecryptedValue( this[property].input, data[property] );
                     }
                 }
+                // check manga base directory existence
+                Engine.Storage.directoryExist( this.baseDirectory.value ).catch( error => alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message ) );
                 // apply settings to each connector
                 Engine.Connectors.available.forEach( ( connector ) => {
                     for( let property in connector.config ) {
