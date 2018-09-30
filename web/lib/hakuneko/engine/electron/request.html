@@ -196,7 +196,7 @@
                 return undefined;
             }
             let uri = new URL( details.url );
-
+            //console.log( uri );
             // remove accidently added headers from opened developer console
             for( let header in details.requestHeaders ) {
                 if( header.startsWith( 'X-DevTools' )  ) {
