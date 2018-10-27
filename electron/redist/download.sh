@@ -1,6 +1,8 @@
 #!/bin/bash
 
-VER="v2.0.7"
+VER="v2.0.12"
+
+cd $(dirname "$0")
 
 rm -f electron-*.zip
 
