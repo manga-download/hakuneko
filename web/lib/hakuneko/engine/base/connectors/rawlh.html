@@ -20,9 +20,12 @@
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'https://lhscan.net';
+            this.cdn         = [ 'lhscan.net', 'lhscanlation.club' ]; // only use protocol handler for images from this domains
             this.requestOptions.headers.set( 'x-referer', this.url );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            this.queryChapters = 'div#tab-chapper table tr td a.chapter';
 
             // register a protocol handler to intercept requests (with custom 'wiemanga' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
@@ -63,7 +66,7 @@
                 let dom = this.createDOM( data );
                 let language = dom.querySelector( 'ul.manga-info h1 span.flag-icon' );
                 language = ( language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : 'jp' );
-                let chapterList = [...dom.querySelectorAll( 'div.list-chapters span[class^="title"] a.chapter' )].map( element => {
+                let chapterList = [...dom.querySelectorAll( this.queryChapters )].map( element => {
                     let title = element.text.replace( manga.title, '' );
                     title = title.replace( manga.title.replace( /\s*-\s*RAW$/, '' ), '' );
                     title = title.replace( /^\s*-\s*/, '' );
@@ -98,7 +101,9 @@
                 let dom = this.createDOM( data );
                 let pageLinks = [...dom.querySelectorAll( 'source.chapter-img' )].map( element => {
                     let uri = new URL( element.src );
-                    uri.protocol = this.id;
+                    if( this.cdn.find( cdn => uri.hostname.endsWith( cdn ) ) ) {
+                        uri.protocol = this.id;
+                    }
                     return uri.href;
                 } )
                 .filter( page => !page.match( /3282f6a4b7_o/ ) );
