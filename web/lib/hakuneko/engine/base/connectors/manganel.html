@@ -81,7 +81,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, this.queryChapters )
+            // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
+            let uri = ( manga.id.startsWith( 'http' ) ? '' : this.url ) + manga.id;
+            this.fetchDOM( uri, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
                     this.cfMailDecrypt( element );
@@ -103,7 +105,9 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, this.queryPages )
+            // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
+            let uri = ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id;
+            this.fetchDOM( uri, this.queryPages )
             .then( data => {
                 let pageList = data.map( element => element.src );
                 callback( null, pageList );
