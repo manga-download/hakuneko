@@ -56,7 +56,6 @@
             this.fetchDOM( this.url + '/mangas', 'div.paginador div.wp-pagenavi a.last' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)$/ )[1] );
-                console.log( pageCount );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
@@ -126,7 +125,6 @@
                 while( match = regex.exec( data ) ) {
                     pageList.push( match[1] );
                 }
-                console.log( pageList );
                 callback( null, pageList );
             } )
             .catch( error => {
