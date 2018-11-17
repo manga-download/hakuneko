@@ -83,7 +83,6 @@
                 while( match = regex.exec( data ) ) {
                     pageList.push( this.url + match[1] );
                 }
-                console.log( pageList );
                 callback( null, pageList );
             } )
             .catch( error => {
