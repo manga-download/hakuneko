@@ -107,6 +107,7 @@
                         webSecurity: true
                     }
                 } );
+                //win.webContents.openDevTools();
                 win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist }, ( details, callback ) => {
                     callback( { cancel: true } );
                 } );
