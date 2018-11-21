@@ -24,6 +24,27 @@
             this.pageLoadDelay = 50;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            this.script = `
+                let promises = [...( new Array( imagecount ) ).keys()].map( p => {
+                    return $.ajax( {
+                        url: 'chapterfun.ashx',
+                        data: {
+                            cid: chapterid,
+                            page: p+1,
+                            key: guidkey
+                        }
+                    } )
+                    .then( script => {
+                        eval( script );
+                        let anchor = document.createElement( 'a' );
+                        anchor.href = d[0];
+                        return Promise.resolve( anchor.href );
+                    } );
+                    promises.push( promise );
+                } );
+                Promise.all( promises )
+            `;
         }
 
         /**
@@ -99,6 +120,28 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            this._getPageListDesktop( manga, chapter, callback );
+            //this._getPageListMobile( manga, chapter, callback );
+        }
+
+        /**
+         *
+         */
+        _getPageListDesktop( manga, chapter, callback ) {
+            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, this.script )
+            .then( pageList => {
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageListMobile( manga, chapter, callback ) {
             let uri = new URL( this.url + chapter.id );
             uri.hostname = 'm.' + uri.hostname;
             uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
