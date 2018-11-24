@@ -83,11 +83,12 @@
                     <!-- <i class="fa fa-link" title="Select a connector to show its locally stored manga list"></i> -->
                 </td>
                 <td style="width: 100%;">
-                    <select id="connectorSelection" on-change="onSelectedConnectorIDChanged">
-                        <template is="dom-repeat" items="[[ connectorList ]]">
-                            <option value$="[[ item.id ]]">[[ item.label ]]</option>
+                    <input type="text" id="connectorSelection" list="connectors" on-change="onSelectedConnectorLabelChanged"></input>
+                    <datalist id="connectors">
+                        <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern) ]]">
+                            <option value$="[[ item.label ]]" title="TEST">[[ item.id ]]</option>
                         </template>
-                    </select>
+                    </datalist>
                 </td>
                 <td>
                     <i class$="fa fa-fw fa-refresh [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
@@ -98,7 +99,7 @@
                     <i class="fa fa-fw fa-search" title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"></i>
                 </td>
                 <td>
-                    <input type="text" value="{{ searchPattern::input }}"/>
+                    <input type="text" value="{{ mangaPattern::input }}"/>
                 </td>
                 <td>
                     <hakuneko-bookmarks selected-manga="{{ selectedManga }}"></hakuneko-bookmarks>
@@ -109,13 +110,13 @@
             <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
                 <li class="notification">Manga list is loading or empty<br>Click &nbsp;<i class="fa fa-refresh refresh" style="cursor: auto !important;"></i>&nbsp; button to update list</li>
             </template>
-            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(searchPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
+            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
                 <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
         <!-- https://github.com/PolymerElements/iron-list/issues/536 -->
         <!--
-        <iron-list class="list" items="[[ filteredMangas(mangaList,searchPattern) ]]">
+        <iron-list class="list" items="[[ filteredMangas(mangaList,mangaPattern) ]]">
             <template>
                 <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
             </template>
@@ -187,17 +188,17 @@
                 document.addEventListener( EventListener.onConnectorFilterChanged, this.onConnectorFilterChanged.bind( this ) );
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
-            }          
+            }
 
             /**
              * Event listener attached to the corresponding <select> element.
              * When the index of the selected connector is changed, the corresponding connector from 'connectorList' will be assigned to 'selectedConnector'.
              */
-            onSelectedConnectorIDChanged( e ) {
-                let id = e.target.value;
-                let connector = this.connectorList.find( ( item ) => {
-                    return ( item.id === id );
-                });
+            onSelectedConnectorLabelChanged( evt ) {
+                let label = evt.target.value;
+                let connector = this.connectorList.find( c => {
+                    return ( c.label === label );
+                } );
                 this.set( 'selectedConnector', connector );
             }
 
@@ -211,8 +212,8 @@
                     this.set( 'mangaList', undefined );
                     return;
                 }
-                if( connector.id.toString() !== this.$.connectorSelection.value ) {
-                    this.$.connectorSelection.value = connector.id;
+                if( connector.label.toString() !== this.$.connectorSelection.value ) {
+                    this.$.connectorSelection.value = connector.label;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
                 // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage) 
@@ -257,7 +258,7 @@
              *
              */
             existMangasForValidConnector( connector, mangaCount ) {
-                return (connector.id !== this.bookmarkConnectorID && ( !mangaCount || mangaCount < 1 ) );
+                return (connector && connector.id !== this.bookmarkConnectorID && ( !mangaCount || mangaCount < 1 ) );
             }
 
             /**
@@ -287,6 +288,22 @@
              */
             getRefreshClass( isUpdating ) {
                 return ( isUpdating ? 'fa-pulse disabled' : '' );
+            }
+
+            /**
+             *
+             */
+            filterConnectors( pattern ) {
+                if( !pattern /*|| pattern.length < 2*/ ) {
+                    return null;
+                }
+                return ( connector ) => {
+                    let p = pattern.toLowerCase();
+                    // TODO: include tags in search?
+                    let t = connector.tags ? connector.tags.find( t => t.toLowerCase().indexOf( p ) > -1 ) : undefined;
+                    console.log( 'Tag Match: ', connector.label, t );
+                    return ( connector.label.toLowerCase().indexOf( p ) > -1 || t );
+                };
             }
 
             /**
