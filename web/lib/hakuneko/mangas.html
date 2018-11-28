@@ -83,12 +83,11 @@
                     <!-- <i class="fa fa-link" title="Select a connector to show its locally stored manga list"></i> -->
                 </td>
                 <td style="width: 100%;">
-                    <input type="text" id="connectorSelection" list="connectors" on-change="onSelectedConnectorLabelChanged"></input>
-                    <datalist id="connectors">
-                        <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern) ]]">
-                            <option value$="[[ item.label ]]" title="TEST">[[ item.id ]]</option>
+                    <select id="connectorSelection" on-change="onSelectedConnectorIDChanged">
+                        <template is="dom-repeat" items="[[ connectorList ]]">
+                            <option value$="[[ item.id ]]">[[ item.label ]]</option>
                         </template>
-                    </datalist>
+                    </select>
                 </td>
                 <td>
                     <i class$="fa fa-fw fa-refresh [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
@@ -194,11 +193,11 @@
              * Event listener attached to the corresponding <select> element.
              * When the index of the selected connector is changed, the corresponding connector from 'connectorList' will be assigned to 'selectedConnector'.
              */
-            onSelectedConnectorLabelChanged( evt ) {
-                let label = evt.target.value;
-                let connector = this.connectorList.find( c => {
-                    return ( c.label === label );
-                } );
+            onSelectedConnectorIDChanged( evt ) {
+                let id = evt.target.value;
+                let connector = this.connectorList.find( item => {
+                    return ( item.id === id );
+                });
                 this.set( 'selectedConnector', connector );
             }
 
@@ -212,8 +211,8 @@
                     this.set( 'mangaList', undefined );
                     return;
                 }
-                if( connector.label.toString() !== this.$.connectorSelection.value ) {
-                    this.$.connectorSelection.value = connector.label;
+                if( connector.id.toString() !== this.$.connectorSelection.value ) {
+                    this.$.connectorSelection.value = connector.id;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
                 // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage) 
@@ -288,22 +287,6 @@
              */
             getRefreshClass( isUpdating ) {
                 return ( isUpdating ? 'fa-pulse disabled' : '' );
-            }
-
-            /**
-             *
-             */
-            filterConnectors( pattern ) {
-                if( !pattern /*|| pattern.length < 2*/ ) {
-                    return null;
-                }
-                return ( connector ) => {
-                    let p = pattern.toLowerCase();
-                    // TODO: include tags in search?
-                    let t = connector.tags ? connector.tags.find( t => t.toLowerCase().indexOf( p ) > -1 ) : undefined;
-                    console.log( 'Tag Match: ', connector.label, t );
-                    return ( connector.label.toLowerCase().indexOf( p ) > -1 || t );
-                };
             }
 
             /**
