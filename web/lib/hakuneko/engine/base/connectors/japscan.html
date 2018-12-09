@@ -18,8 +18,8 @@
             super.isLocked   = false;
             this.initialized = false;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://www.japscan.cc';
-            this.urlCDN      = 'https://c.japscan.cc/cr_images';
+            this.url         = 'https://www.japscan.to';
+            this.urlCDN      = 'https://c.japscan.to/cr_images';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 format: {
@@ -66,24 +66,44 @@
         /**
          *
          */
-        _getMangaList( callback ) {
-            fetch( this.url + '/mangas/', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+         _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.card div p.p-1 a', 5 ) )
             .then( data => {
-                let dom = this.createDOM( data );
-                let mangaList = [...dom.querySelectorAll( '#liste_mangas div.row div:first-of-type a' )].map( element => {
-                    this.cfMailDecrypt( element );
+                let mangaList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.trim()
                     };
                 } );
-                callback( null, mangaList );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+
+            this.fetchDOM( this.url + '/mangas/1', 'div.card ul.pagination li:last-of-type a' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.trim() );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -95,22 +115,14 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, 'div.card div#chapters_list div.chapters_list a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( '#liste_chapitres ul li a' )].map( element => {
+                let chapterList = data.map( element => {
                     this.cfMailDecrypt( element );
-                    element.text = element.text.replace( 'Scan', '' ).replace( 'VF', '' );
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'fr'
+                        title: element.text.replace( manga.title, '' ).replace( 'Scan', '' ).replace( 'VF', '' ).trim(),
+                        language: 'french'
                     };
                 } );
                 callback( null, chapterList );
@@ -125,29 +137,19 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + chapter.id, 'div.container select#pages option' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageLinks = [...dom.querySelectorAll( '#pages option' )].map( element => {
+                let pageLinks = data.map( element => {
                     let uri = new URL( this.url + element.value );
                     uri.protocol = this.id;
                     return uri.href;
                 } );
-                // remove 2nd and last image
-                //pageLinks.splice( 2, 1 );  
-                //pageLinks.splice( -1, 1 );
                 callback( null, pageLinks );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
-            } ); 
+            } );
         }
 
         /**
@@ -167,12 +169,12 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let img = dom.querySelector( '#image' );
+                let img = dom.querySelector( 'div#image' );
                 if( !img ) {
                     throw new Error( 'No element with id #image found in page!' );
                 }
-                if( img.src ) {
-                    return this._getImageRaw( img.src );
+                if( img.dataset['src'] ) {
+                    return this._getImageRaw( img.dataset['src'] );
                 } else {
                     let manga = dom.querySelector( 'select#mangas' ).dataset;
                     manga = ( manga['nom'] || manga['uri'] ).replace( '/', '_' ).replace( '?', '' );
