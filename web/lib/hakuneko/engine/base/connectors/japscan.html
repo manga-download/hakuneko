@@ -19,7 +19,7 @@
             this.initialized = false;
             // Private members for internal usage only (convenience)
             this.url         = 'https://www.japscan.to';
-            this.urlCDN      = 'https://c.japscan.to/cr_images';
+            this.urlCDN      = 'https://c.japscan.to/';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 format: {
@@ -170,18 +170,14 @@
             .then( data => {
                 let dom = this.createDOM( data );
                 let img = dom.querySelector( 'div#image' );
-                if( !img ) {
-                    throw new Error( 'No element with id #image found in page!' );
+                if( !img || !img.dataset['src'] ) {
+                    throw new Error( 'No element with id #image found in page, or dataset.src is missing!' );
                 }
-                if( img.dataset['src'] ) {
-                    return this._getImageRaw( img.dataset['src'] );
+                // TODO: find better detection to determine which images are scrambeled
+                if( img.dataset['src'].startsWith( this.urlCDN + 'c' ) ) {
+                    return this._getImageDescrambled( img.dataset['src'] );
                 } else {
-                    let manga = dom.querySelector( 'select#mangas' ).dataset;
-                    manga = ( manga['nom'] || manga['uri'] ).replace( '/', '_' ).replace( '?', '' );
-                    let chapter = dom.querySelector( 'select#chapitres' ).dataset;
-                    chapter = chapter['nom'] || chapter['uri'];
-                    let page = img.dataset['img'];
-                    return this._getImageDescrambled( [this.urlCDN, manga, chapter, page].join( '/' ) );
+                    return this._getImageRaw( img.dataset['src'] );
                 }
             } )
             .then( data => {
@@ -223,39 +219,92 @@
             } )
             .then( data => createImageBitmap( data ) )
             .then( bitmap => {
-                return new Promise( ( resolve, reject ) => {
-                    let width = bitmap.width;
-                    let height = bitmap.height;
-
-                    // stuff from japscan script
-                    let w_p = Math.floor( width / 5 );
-                    let h_p = Math.floor( height / 5 );
-                    let r_w = width - ( w_p * 5 );
-                    let r_h = height - ( h_p * 5 );
-                    let offsetsX = [w_p*2, w_p*4, width, (w_p*8 + r_w), (w_p*6 + r_w)];
-                    let offsetsY = [h_p*4, h_p*3, h_p*2, h_p, 0];
-
-                    let partWidth = w_p;
-                    let partHeight = h_p;
-                    // normalize background repeats
-                    offsetsX = offsetsX.map( offset => ( offset % width ) );
-                    offsetsY = offsetsY.map( offset => offset % height );
-
-                    let canvas = document.createElement( 'canvas' );
-                    canvas.width = bitmap.width;
-                    canvas.height = bitmap.height;
-                    var ctx = canvas.getContext( '2d' );
-                    for (let y = 0; y < offsetsY.length; y++) {
-                        for (let x = 0; x < offsetsX.length; x++) {
-                            ctx.drawImage( bitmap, offsetsX[x], offsetsY[y], partWidth, partHeight, x * partWidth, y * partHeight, partWidth, partHeight );
-                        }		
-                    }
-                    canvas.toBlob( data => {
-                        resolve( data );
-                    }, this.config.format.value, parseFloat( this.config.quality.value )/100 );
-                } );
+                // TODO: find better detection to determine which descramble algorithm to use
+                if( url.startsWith( this.urlCDN + 'cr_images' ) ) {
+                    return this._descrambleCR( bitmap );
+                }
+                if( url.startsWith( this.urlCDN + 'clel' ) ) {
+                    return this._descrambleCLEL( bitmap );
+                }
+                throw new Error( `The image descrambling for '${url}' is not yet supported!` );
             } )
             .then( data => this._blobToBuffer( data ) );
+        }
+
+        /**
+         *
+         */
+        _descrambleCR( bitmap ) {
+            return new Promise( ( resolve, reject ) => {
+                let width = bitmap.width;
+                let height = bitmap.height;
+
+                // stuff from japscan script
+                let w_p = Math.floor( width / 5 );
+                let h_p = Math.floor( height / 5 );
+                let r_w = width - ( w_p * 5 );
+                let r_h = height - ( h_p * 5 );
+                let offsetsX = [w_p*2, w_p*4, width, (w_p*8 + r_w), (w_p*6 + r_w)];
+                let offsetsY = [h_p*4, h_p*3, h_p*2, h_p, 0];
+
+                let clipWidth = w_p;
+                let clipHeight = h_p;
+                // normalize background repeats
+                offsetsX = offsetsX.map( offset => ( offset % width ) );
+                offsetsY = offsetsY.map( offset => offset % height );
+
+                let canvas = document.createElement( 'canvas' );
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                var ctx = canvas.getContext( '2d' );
+                for (let y = 0; y < offsetsY.length; y++) {
+                    for (let x = 0; x < offsetsX.length; x++) {
+                        ctx.drawImage( bitmap, offsetsX[x], offsetsY[y], clipWidth, clipHeight, x * clipWidth, y * clipHeight, clipWidth, clipHeight );
+                    }		
+                }
+                canvas.toBlob( data => {
+                    resolve( data );
+                }, this.config.format.value, parseFloat( this.config.quality.value )/100 );
+            } );
+        }
+
+        /**
+         *
+         */
+        _descrambleCLEL( bitmap ) {
+            return new Promise( ( resolve, reject ) => {
+                let tileWidth = 100;
+                let tileHeight = 100;
+                let tileColumnCount = Math.ceil(bitmap.width / tileWidth);
+                let tileRowCount = Math.ceil(bitmap.height / tileHeight);
+                let tileResidualWidth = bitmap.width % tileWidth;
+                let tileResidualHeight = bitmap.height % tileHeight;
+
+                let canvas = document.createElement( 'canvas' );
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                let ctx = canvas.getContext( '2d' );
+
+                for(let row = 0; row < tileRowCount; row++) {
+                    let imageY = this._getTilePosition(row, tileRowCount, tileHeight);
+                    for (let column = 0; column < tileColumnCount; column++) {
+                        let imageX = this._getTilePosition(column, tileColumnCount, tileWidth);
+                        let clipWidth = ( column == tileColumnCount - 1 && tileResidualWidth > 0 ? tileResidualWidth : tileWidth );
+                        let clipHeight = ( row == tileRowCount - 1 && tileResidualHeight > 0 ? tileResidualHeight : tileHeight );
+                        ctx.drawImage( bitmap, imageX, imageY, clipWidth, clipHeight, column * tileWidth/*canvasX*/, row * tileHeight/*canvasY*/, clipWidth, clipHeight );
+                    }
+                }
+                canvas.toBlob( data => {
+                    resolve( data );
+                }, this.config.format.value, parseFloat( this.config.quality.value )/100 );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getTilePosition( tile, tileCount, tileSize ) {
+            return tile % 2 == 0 && tileCount - 2 == tile ? (tile - 1) * tileSize + tileSize : tileCount - 1 == tile ? (tile - 1) * tileSize + tileSize : tile % 2 != 0 ? (tile - 1) * tileSize : (tile + 1) * tileSize;
         }
     }
 
