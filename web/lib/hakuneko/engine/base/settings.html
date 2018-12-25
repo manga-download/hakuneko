@@ -53,6 +53,7 @@
                     for( let property in connector.config ) {
                         if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
                             connector.config[property].value = this._getDecryptedValue( connector.config[property].input, data.connectors[connector.id][property] );
+                            connector.config[property].value = this._getValidValue( connector.config[property] );
                         }
                     }
                 } );
@@ -124,6 +125,26 @@
                 return encryptedValue;
             }
             return CryptoJS.AES.decrypt( encryptedValue, 'HakuNeko!' ).toString( CryptoJS.enc.Utf8 );
+        }
+
+        /**
+         * 
+         */
+        _getValidValue( connectorProperty ) {
+            switch( connectorProperty.input ) {
+                case Input.numeric:
+                    let value = connectorProperty.value;
+                    if( connectorProperty.min !== undefined ) {
+                        value = Math.max( value, connectorProperty.min );
+                    }
+                    if( connectorProperty.max !== undefined ) {
+                        value = Math.min( value, connectorProperty.max );
+                    }
+                    return value;
+                default:
+                    return connectorProperty.value;
+
+            }
         }
     }
     SettingsBase; // reference the class to prevent removal of the class through js-minify
