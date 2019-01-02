@@ -69,17 +69,67 @@
         }
 
         /**
+         * 
+         */
+        _getSeries() {
+            let seriesURI = new URL( this.api.public + '/browse' );
+            seriesURI.searchParams.append( 'channel_id', this.subscriptionID );
+            seriesURI.searchParams.append( 'sort_by', 'alphabetical' );
+            seriesURI.searchParams.append( 'n', 10000 );
+            seriesURI.searchParams.append( 'start', 0 );
+            seriesURI.searchParams.append( 'q', '' );
+
+            return this._mergePolicyParams( seriesURI.href )
+            .then( href => fetch( href, this.requestOptions ) )
+            .then( response => this._getResponseJSON( response ) )
+            .then( data => this._getSeasons( data ) );
+        };
+
+        /**
+         * 
+         */
+        _getSeasons( data ) {
+            let seasonsURI = new URL( this.api.cms + '/seasons' );
+
+            // series with seasons ...
+            let promises = data.items.filter( entry => entry.type === 'series' )/*.slice( 0, 15 )*/.map( serie => {
+                seasonsURI.searchParams.set( 'series_id', serie.id );
+                return this._mergePolicyParams( seasonsURI.href )
+                .then( href => fetch( href, this.requestOptions ) )
+                .then( response => this._getResponseJSON( response ) )
+                .then( data => {
+                    let seasons = data.items.map( s => {
+                        return {
+                            id: s.id,
+                            title: serie.title
+                            + ( typeof( s.season_number ) === 'number' ? ' [S' + ( '0' + s.season_number ).slice( -2 ) + ']' : '' )
+                            + ( s.is_dubbed ? ' (dub)' : s.is_subbed ? ' (sub)' : '' )
+                        };
+                    } );
+                    return Promise.resolve( seasons );
+                } );
+            } );
+
+            // everything that has no seasons (e.g. movies) ...
+            promises.push( Promise.resolve( data.items.filter( entry => entry.type !== 'series' ).map( movie => {
+                return {
+                    id: movie.id,
+                    title: movie.title + ( movie[movie.type + '_metadata'].is_dubbed ? ' (dub)' : movie[movie.type + '_metadata'].is_subbed ? ' (sub)' : '')
+                };
+            } ) ) );
+
+            return Promise.all( promises )
+            .then( data => {
+                let result = data.reduce( ( accumulator, seasons ) => accumulator.concat( seasons ) );
+                return Promise.resolve( result );
+            }, [] );
+        }
+
+        /**
          *
          */
         _getMangaList( callback ) {
-            // TODO: Is it possible to use fetch API to get all episodes instead of getting them from CDN?
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive serie list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.json();
-            } )
+            this._getSeries()
             .then( data => {
                 callback( null, data );
             } )
