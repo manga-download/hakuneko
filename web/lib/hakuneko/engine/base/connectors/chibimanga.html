@@ -1,11 +1,8 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="wp-madara.html">
 
 <script>
 
-    /**
-     * 
-     */
-    class ChibiManga extends Connector {
+    class ChibiManga extends WordPressMadara {
 
         /**
          *
@@ -19,89 +16,6 @@
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'http://www.cmreader.info';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-        }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            fetch( this.url + '/changeMangaList?type=text', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let mangaList = [...dom.querySelectorAll( 'ul.manga-list li a' )].map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( 'ul.chapters li h5' )].map( element => {
-                    let a = element.querySelector( 'a' );
-                    let em = element.querySelector( 'em' );
-                    return {
-                        id: this.getRelativeLink( a ),
-                        title: em.textContent.trim(),
-                        language: 'en'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let pageLinks = [...dom.querySelectorAll( 'source[data-src]' )].map( element => {
-                    return element.dataset.src.trim();
-                } );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } ); 
         }
     }
 
