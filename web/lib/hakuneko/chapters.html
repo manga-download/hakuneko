@@ -75,7 +75,7 @@
                 color: var(--chapter-marker-inactive-color);
             }
             .markerDisabled {
-                display: none;
+                visibility: hidden !important;
             }
             .footer {
                 flex: 0;
@@ -321,7 +321,7 @@
              */
             getChapterMarkClass( markedChapterID, chapter ) {
                 if( chapter.status === DownloadStatus.offline ) {
-                    return 'markerDisabled';
+                    return 'fa-bookmark-o markerDisabled';
                 }
                 return ( markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ? 'fa-bookmark markerActive' : 'fa-bookmark-o markerInactive');
             }
