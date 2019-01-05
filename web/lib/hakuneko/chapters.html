@@ -53,6 +53,9 @@
             .button {
                 cursor: pointer;
             }
+            .buttonOffline {
+                color: var(--chapter-button-offline-color);
+            }
             .buttonAvailable {
                 color: var(--chapter-button-available-color);
             }
@@ -290,7 +293,7 @@
                     case DownloadStatus.unavailable:
                         return 'fa-exclamation-triangle';
                     case DownloadStatus.offline:
-                        return 'fa-folder-open buttonCompleted';
+                        return 'fa-folder buttonOffline';
                     case DownloadStatus.available:
                         return 'fa-cloud buttonAvailable';
                     case DownloadStatus.queued:
