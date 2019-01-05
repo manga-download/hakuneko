@@ -15,6 +15,7 @@
         constructor() {
             this.id = Symbol();
             this.label = '';
+            this.icon = '/img/connector.png';
             this.tags = [];
             // READONLY: lock state may used to prevent to many concurrent requests per second
             // do not set directly, use lock() and unlock()
