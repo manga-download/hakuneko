@@ -46,6 +46,7 @@
                     .then( data => {
                         let dom = this.createDOM( data );
                         let mangaList = [...dom.querySelectorAll( 'div.manga-list-box span.manga-item a' )].map( element => {
+                            this.cfMailDecrypt( element );
                             return {
                                 id: this.getRelativeLink( element ),
                                 title: element.text.trim()
