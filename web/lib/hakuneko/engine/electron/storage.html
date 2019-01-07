@@ -144,6 +144,21 @@
         }
 
         /**
+         * Wrapper for fs.readdir that fill return a promise instead of using a callback
+         */
+        _readDirectoryEntries( directory ) {
+            return new Promise( ( resolve, reject ) => {
+                this.fs.readdir( directory, ( error, entries ) => {
+                    if( error ) {
+                        reject( error );
+                    } else {
+                        resolve( entries );
+                    }
+                } );
+            } );
+        }
+
+        /**
          * Find all directories/files in the base directory.
          * This key-value map can than be used to look up for existing manga titles (where the key represents the title and the value is always true).
          * Keep in mind that the manga titles in this map are sanitized and may not equal the raw (original) manga title.
@@ -167,35 +182,34 @@
          * This list can than be used to look for existing chapter titles.
          * Keep in mind that the chapter titles in this list are sanitized and may not equal the raw (original) chapter title.
          */
-        getExistingChapterTitles( manga, callback ) {
+        getExistingChapterTitles( manga ) {
             let directory = this._mangaOutputPath( manga );
-            this.fs.readdir( directory, ( error, entries ) => {
+            return this._readDirectoryEntries( directory )
+            .then( entries => {
+                // TODO: only add supported files / folders
+                // file that ends with any of the supported extension,
+                // folders that not ends with m3u8
+                // folders that contains m3u8?
+                // folders that contains any image?
+                /*
+                entries = entries.filter( path => {
+                    return (
+                        path.endsWith( EpisodeFormat.m3u8 ) || 
+                        path.endsWith( EpisodeFormat.mkv ) ||
+                        path.endsWith( ChapterFormat.epub ) ||
+                        path.endsWith( ChapterFormat.cbz ) ||
+                        path.endsWith( ChapterFormat.pdf )
+                        // what about directory with images ???
+                    );
+                } );
+                */
                 let titleMap = [];
-                if( !error ) {
-                    // TODO: only add supported files / folders
-                    // file that ends with any of the supported extension,
-                    // folders that not ends with m3u8
-                    // folders that contains m3u8?
-                    // folders that contains any image?
-                    /*
-                    entries = entries.filter( ( path ) => {
-                        return (
-                            path.endsWith( EpisodeFormat.m3u8 ) || 
-                            path.endsWith( EpisodeFormat.mkv ) ||
-                            path.endsWith( ChapterFormat.epub ) ||
-                            path.endsWith( ChapterFormat.cbz ) ||
-                            path.endsWith( ChapterFormat.pdf )
-                            // what about directory with images ???
-                        );
-                    } );
-                    */
-                    // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
-                    entries.forEach( ( title ) => {
-                        titleMap[title] = true;
-                    });
-                }
-                callback( error, titleMap );
-            });
+                // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
+                entries.forEach( entry => {
+                    titleMap[entry] = true;
+                } );
+                return Promise.resolve( titleMap );
+            } );
         }
 
         /**

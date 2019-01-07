@@ -12,6 +12,7 @@
             this.manga = manga;
             this.id = id;
             this.title = title;
+            this.file = this._getSanatizedFileName( title );
             this.language = language;
             this.status = status;
             this.pageProcess = false;
@@ -34,26 +35,26 @@
         /**
          * 
          */
+        _getSanatizedFileName( title ) {
+            let name = Engine.Storage.sanatizePath( title );
+            let extension = Engine.Settings.chapterFormat.value !== ChapterFormat.img ? Engine.Settings.chapterFormat.value : '';
+            return {
+                name: name,
+                extension: extension,
+                full: name + extension
+            };
+        }
+
+        /**
+         * 
+         */
         updateStatus() {
             // do not overwrite download status ...
             if( !this.status || this.status === DownloadStatus.available || this.status === DownloadStatus.completed ) {
-                // look in the manga's list of existing chapters (found in directory), if this chapter already exist
-                if( !this.manga || !this.manga.existingChapters ) {
+                if( !this.manga ) {
                     return;
                 }
-                let sanatizedTitle = Engine.Storage.sanatizePath( this.title );
-                if( this.manga.existingChapters[sanatizedTitle + EpisodeFormat.m3u8] ) {
-                    this.setStatus( DownloadStatus.completed );
-                    return;
-                }
-                if( this.manga.existingChapters[sanatizedTitle + EpisodeFormat.mkv] ) {
-                    this.setStatus( DownloadStatus.completed );
-                    return;
-                }
-                if( Engine.Settings.chapterFormat.value !== ChapterFormat.img ) {
-                    sanatizedTitle += Engine.Settings.chapterFormat.value;
-                }
-                if( this.manga.existingChapters[sanatizedTitle] ) {
+                if( this.manga.isChapterFileExisting( this ) ) {
                     this.setStatus( DownloadStatus.completed );
                 } else {
                     this.setStatus( DownloadStatus.available );
