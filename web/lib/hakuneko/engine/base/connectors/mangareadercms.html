@@ -23,13 +23,19 @@
             this.path        = '/';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
+
+            this.queryMangasPageCount = 'div.prevnext div.next a:first-of-type';
+            this.queryMangas = 'ul.manga-list li a';
+            this.queryChapters = 'ul.chapters li h5.chapter-title-rtl a';
+            this.queryPages = 'div#all source.img-responsive';
+            this.language = '';
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + this.path + 'changeMangaList?type=text', 'ul.manga-list li a' )
+            this.fetchDOM( this.url + this.path + 'changeMangaList?type=text', this.queryMangas )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -49,13 +55,13 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'ul.chapters li h5.chapter-title-rtl a' )
+            this.fetchDOM( this.url + manga.id, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'en'
+                        language: this.language
                     };
                 } );               
                 callback( null, chapterList );
@@ -70,7 +76,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'div#all source.img-responsive' )
+            this.fetchDOM( this.url + chapter.id, this.queryPages )
             .then( data => {
                 let pageList = data.map( element => {
                     let src = ( element.dataset['src'] || element.src ).trim();
