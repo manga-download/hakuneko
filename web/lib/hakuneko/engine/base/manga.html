@@ -60,10 +60,11 @@
         }
 
         isChapterFileCached( fileName ) {
-            return undefined !== this.chapterCache.find( chapter => {
-                return fileName === chapter.file.full
+            // use !! to convert result to bool
+            return !!this.chapterCache.find( chapter => {
+                return ( fileName === chapter.file.full
                     || fileName === chapter.file.name + EpisodeFormat.mkv
-                    || fileName === chapter.file.name + EpisodeFormat.m3u8;
+                    || fileName === chapter.file.name + EpisodeFormat.m3u8 );
             } );
         }
 
@@ -85,7 +86,6 @@
                 return ( this.chapterCache && this.chapterCache.length ? this._getUpdatedChaptersFromCache() : this._getUpdatedChaptersFromWebsite() );
             } )
             .then( chapters => {
-                // TODO: add all existing chapters that are not available on the web
                 for( let existingChapterTitle in this.existingChapters ) {
                     if( !this.isChapterFileCached( existingChapterTitle ) ) {
                         this.chapterCache.push( new Chapter( this, Symbol(), existingChapterTitle, undefined, DownloadStatus.offline ) );
@@ -104,9 +104,11 @@
          *
          */
         _getUpdatedChaptersFromCache() {
-            this.chapterCache.forEach( chapter => {
-                chapter.updateStatus();
-            } );
+            if( this.chapterCache ) {
+                this.chapterCache.forEach( chapter => {
+                    chapter.updateStatus();
+                } );
+            }
             return Promise.resolve( this.chapterCache );
         }
 
@@ -134,7 +136,7 @@
             .catch( error => {
                 // TODO: remove log ... ?
                 console.warn( '_getUpdatedChaptersFromWebsite', error );
-                return Promise.resolve( this.chapterCache );
+                return Promise.resolve( this.chapterCache || [] );
             } );
         }
 
