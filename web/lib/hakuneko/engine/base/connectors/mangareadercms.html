@@ -20,6 +20,7 @@
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = undefined;
+            this.path        = '/';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -28,7 +29,7 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/changeMangaList?type=text', 'ul.manga-list li a.alpha-link' )
+            this.fetchDOM( this.url + this.path + 'changeMangaList?type=text', 'ul.manga-list li a' )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -71,7 +72,13 @@
         _getPageList( manga, chapter, callback ) {
             this.fetchDOM( this.url + chapter.id, 'div#all source.img-responsive' )
             .then( data => {
-                let pageList = data.map( element => element.dataset['src'] || element.src );               
+                let pageList = data.map( element => {
+                    let src = ( element.dataset['src'] || element.src ).trim();
+                    if( src.startsWith( '//' ) ) {
+                        src = ( new URL( this.url ) ).protocol + src;
+                    }
+                    return src;
+                } );
                 callback( null, pageList );
             } )
             .catch( error => {
