@@ -71,4 +71,5 @@ export default class StyleInfo {
   }
 }
 
+/* eslint-disable-next-line no-self-assign */
 StyleInfo.prototype['_getStyleRules'] = StyleInfo.prototype._getStyleRules;

@@ -39,10 +39,10 @@ declare namespace Polymer {
     new(...args: any[]): DisableUpgradeMixin;
   }
 
-  interface DisableUpgradeMixin {
+  interface DisableUpgradeMixin extends Polymer.ElementMixin, Polymer.PropertyEffects, Polymer.TemplateStamp, Polymer.PropertyAccessors, Polymer.PropertiesChanged, Polymer.PropertiesMixin {
     _initializeProperties(): void;
     _enableProperties(): void;
-    attributeChangedCallback(name: any, old: any, value: any): void;
+    attributeChangedCallback(name: any, old: any, value: any, namespace: any): void;
     connectedCallback(): void;
     disconnectedCallback(): void;
   }

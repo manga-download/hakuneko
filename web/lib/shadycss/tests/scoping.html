@@ -385,6 +385,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <unscoped-apply-user></unscoped-apply-user>
 </template>
 
+<template id="any-selector">
+  <style>
+    :-webkit-any(div, span) {
+      color: rgb(123, 123, 123);
+    }
+    :-moz-any(div, span) {
+      color: rgb(123, 123, 123);
+    }
+  </style>
+  <div>a</div>
+  <span>b</span>
+</template>
+
 <template id="scoped-keyframes">
   <style>
     :host {
@@ -461,6 +474,36 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   </style>
   <div></div>
+</template>
+
+<template id="x-parent-skip">
+  <style>
+    :host {
+      --foo: 10px solid black;
+    }
+  </style>
+  <x-skip></x-skip>
+</template>
+
+<template id="x-skip">
+  <x-child-skip></x-child-skip>
+</template>
+
+<template id="x-child-skip">
+  <style>
+    div {
+      border: var(--foo);
+    }
+  </style>
+  <div></div>
+</template>
+
+<template id="x-adopted">
+  <style>
+    div {
+      border: 1px solid orange;
+    }
+  </style>
 </template>
 
 <script>
@@ -604,6 +647,87 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     });
 
   });
+
+  suite('prepareAdoptedCssText', function() {
+    test('Adopted cssText applies', function() {
+      const name = 'adopted-simple';
+      const template = document.createElement('template');
+      template.innerHTML = '<h1></h1><h2></h2><h3></h3>';
+      window.ShadyCSS.ScopingShim.prepareAdoptedCssText([
+        `h1 { border: 1px solid black;}`,
+        `h2 { border: 2px solid black;}`,
+        `h3 { border: 3px solid black;}`
+      ], name);
+      window.ShadyCSS.prepareTemplate(template, name);
+      window.customElements.define(name, class extends window.HTMLElement {
+        connectedCallback() {
+          window.ShadyCSS.styleElement(this);
+          this.attachShadow({mode: 'open'});
+          this.shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      });
+
+      const el = document.createElement(name);
+      document.body.appendChild(el);
+      assertComputed(el.shadowRoot.querySelector('h1'), '1px')
+      assertComputed(el.shadowRoot.querySelector('h2'), '2px')
+      assertComputed(el.shadowRoot.querySelector('h3'), '3px')
+      document.body.removeChild(el);
+    });
+
+    test('Adopted cssText applies after template styles', function() {
+      const name = 'adopted-template';
+      const template = document.createElement('template');
+      template.innerHTML = `<style>
+        h1 { border: 10px solid black; }
+        h4 { border: 4px solid black; }
+        </style><h1></h1><h4></h4>`;
+      window.ShadyCSS.ScopingShim.prepareAdoptedCssText([
+        `h1 { border: 1px solid black;}`
+      ], name);
+      window.ShadyCSS.prepareTemplate(template, name);
+      window.customElements.define(name, class extends window.HTMLElement {
+        connectedCallback() {
+          window.ShadyCSS.styleElement(this);
+          this.attachShadow({mode: 'open'});
+          this.shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      });
+
+      const el = document.createElement(name);
+      document.body.appendChild(el);
+      assertComputed(el.shadowRoot.querySelector('h1'), '1px')
+      assertComputed(el.shadowRoot.querySelector('h4'), '4px')
+      document.body.removeChild(el);
+    });
+
+    test('Calling `prepareAdoptedCssText` after `prepareTemplate` has no effect', function() {
+      const name = 'adopted-after';
+      const template = document.createElement('template');
+      template.innerHTML = `<style>
+        h1 { border: 10px solid black; }
+        h4 { border: 4px solid black; }
+        </style><h1></h1><h4></h4>`;
+      window.ShadyCSS.prepareTemplate(template, name);
+      window.ShadyCSS.ScopingShim.prepareAdoptedCssText([
+        `h1 { border: 1px solid black;}`
+      ], name);
+      window.customElements.define(name, class extends window.HTMLElement {
+        connectedCallback() {
+          window.ShadyCSS.styleElement(this);
+          this.attachShadow({mode: 'open'});
+          this.shadowRoot.appendChild(template.content.cloneNode(true));
+        }
+      });
+
+      const el = document.createElement(name);
+      document.body.appendChild(el);
+      assertComputed(el.shadowRoot.querySelector('h1'), '10px')
+      assertComputed(el.shadowRoot.querySelector('h4'), '4px')
+      document.body.removeChild(el);
+    });
+
+  })
 
   suite('slotted', function() {
 
@@ -928,6 +1052,19 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       document.body.removeChild(e);
     });
 
+    test(':-webkit-any and :-moz-any selectors are supported', function() {
+      if (navigator.userAgent.match(/Trident|Edge/)) {
+        this.skip();
+      }
+      makeElement('any-selector');
+      var e = document.createElement('any-selector');
+      document.body.appendChild(e);
+      flush();
+      assertComputed(e.shadowRoot.querySelector('div'), 'rgb(123, 123, 123)', 'color');
+      assertComputed(e.shadowRoot.querySelector('span'), 'rgb(123, 123, 123)', 'color');
+      document.body.removeChild(e);
+    });
+
     test(':host() sets mixin definitions correctly', function() {
       makeElement('bad-mixin');
       var e = document.createElement('bad-mixin');
@@ -936,6 +1073,32 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       assertComputed(e.shadowRoot.querySelector('div'), '0px');
       document.body.removeChild(e);
     });
+
+    test('trees with elements missing styles render correctly', function() {
+      makeElement('x-parent-skip');
+      makeElement('x-skip');
+      makeElement('x-child-skip');
+      const p = document.createElement('x-parent-skip');
+      document.body.appendChild(p);
+      flush();
+      const inner = p.shadowRoot.querySelector('x-skip').shadowRoot.querySelector('x-child-skip').shadowRoot.querySelector('div');
+      assertComputed(inner, '10px');
+      document.body.removeChild(p);
+    });
+
+    test('trees with elements missing templates render correctly', function() {
+      makeElement('no-shadow');
+      const p = document.createElement('x-parent-skip');
+      const n = document.createElement('no-shadow');
+      const c = document.createElement('x-child-skip');
+      document.body.appendChild(p);
+      p.shadowRoot.appendChild(n);
+      n.shadowRoot.appendChild(c);
+      flush();
+      const inner = c.shadowRoot.querySelector('div');
+      assertComputed(inner, '10px');
+      document.body.removeChild(p);
+    })
 
   });
 

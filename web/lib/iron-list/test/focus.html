@@ -252,6 +252,62 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       });
     });
 
+    test('up arrow when first item has focus, defaultPrevented is false', function(done) {
+      list.items = buildDataSet(2);
+      flush(function() {
+        getNthItemFromList(list, 0).focus();
+        var handler = e => {
+          document.removeEventListener('keydown', handler);
+          assert.isFalse(e.defaultPrevented);
+          done();
+        };
+        document.addEventListener('keydown', handler);
+        MockInteractions.pressAndReleaseKeyOn(list, 38); // up
+      });
+    });
+
+    test('down arrow when last item has focus, defaultPrevented is false', function(done) {
+      list.items = buildDataSet(2);
+      flush(function() {
+        getNthItemFromList(list, 1).focus();
+        var handler = e => {
+          document.removeEventListener('keydown', handler);
+          assert.isFalse(e.defaultPrevented);
+          done();
+        };
+        document.addEventListener('keydown', handler);
+        MockInteractions.pressAndReleaseKeyOn(list, 40); // down
+      });
+    });
+
+    test('up arrow when second item has focus, defaultPrevented is true', function(done) {
+      list.items = buildDataSet(2);
+      flush(function() {
+        getNthItemFromList(list, 1).focus();
+        var handler = e => {
+          document.removeEventListener('keydown', handler);
+          assert.isTrue(e.defaultPrevented);
+          done();
+        };
+        document.addEventListener('keydown', handler);
+        MockInteractions.pressAndReleaseKeyOn(list, 38); // up
+      });
+    });
+
+    test('down arrow when second to last item has focus, defaultPrevented is true', function(done) {
+      list.items = buildDataSet(2);
+      flush(function() {
+        getNthItemFromList(list, 0).focus();
+        var handler = e => {
+          document.removeEventListener('keydown', handler);
+          assert.isTrue(e.defaultPrevented);
+          done();
+        };
+        document.addEventListener('keydown', handler);
+        MockInteractions.pressAndReleaseKeyOn(list, 40); // down
+      });
+    });
+
     test('first click recognized in long lists (#411)', function(done) {
       list.items = buildDataSet(100);
 

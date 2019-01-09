@@ -222,7 +222,7 @@ class ApplyShim {
    * @param {!StyleNode} rule
    */
   transformRule(rule) {
-    rule['cssText'] = this.transformCssText(rule['parsedCssText']);
+    rule['cssText'] = this.transformCssText(rule['parsedCssText'], rule);
     // :root was only used for variable assignment in property shim,
     // but generates invalid selectors with real properties.
     // replace with `:host > *`, which serves the same effect
@@ -232,14 +232,15 @@ class ApplyShim {
   }
   /**
    * @param {string} cssText
+   * @param {!StyleNode} rule
    * @return {string}
    */
-  transformCssText(cssText) {
+  transformCssText(cssText, rule) {
     // produce variables
     cssText = cssText.replace(VAR_ASSIGN, (matchText, propertyName, valueProperty, valueMixin) =>
-      this._produceCssProperties(matchText, propertyName, valueProperty, valueMixin));
+      this._produceCssProperties(matchText, propertyName, valueProperty, valueMixin, rule));
     // consume mixins
-    return this._consumeCssProperties(cssText);
+    return this._consumeCssProperties(cssText, rule);
   }
   /**
    * @param {string} property
@@ -255,11 +256,42 @@ class ApplyShim {
     return window.getComputedStyle(this._measureElement).getPropertyValue(property);
   }
   /**
+   * Walk over all rules before this rule to find fallbacks for mixins
+   *
+   * @param {!StyleNode} startRule
+   * @return {!Object}
+   */
+  _fallbacksFromPreviousRules(startRule) {
+    // find the "top" rule
+    let topRule = startRule;
+    while (topRule['parent']) {
+      topRule = topRule['parent'];
+    }
+    const fallbacks = {};
+    let seenStartRule = false;
+    forEachRule(topRule, (r) => {
+      // stop when we hit the input rule
+      seenStartRule = seenStartRule || r === startRule;
+      if (seenStartRule) {
+        return;
+      }
+      // NOTE: Only matching selectors are "safe" for this fallback processing
+      // It would be prohibitive to run `matchesSelector()` on each selector,
+      // so we cheat and only check if the same selector string is used, which
+      // guarantees things like specificity matching
+      if (r['selector'] === startRule['selector']) {
+        Object.assign(fallbacks, this._cssTextToMap(r['parsedCssText']));
+      }
+    });
+    return fallbacks;
+  }
+  /**
    * replace mixin consumption with variable consumption
    * @param {string} text
+   * @param {!StyleNode=} rule
    * @return {string}
    */
-  _consumeCssProperties(text) {
+  _consumeCssProperties(text, rule) {
     /** @type {Array} */
     let m = null;
     // loop over text until all mixins with defintions have been applied
@@ -274,7 +306,8 @@ class ApplyShim {
       // find props defined before this @apply
       let textBeforeApply = text.slice(0, applyPos);
       let textAfterApply = text.slice(afterApplyPos);
-      let defaults = this._cssTextToMap(textBeforeApply);
+      let defaults = rule ? this._fallbacksFromPreviousRules(rule) : {};
+      Object.assign(defaults, this._cssTextToMap(textBeforeApply));
       let replacement = this._atApplyToCssProperties(mixinName, defaults);
       // use regex match position to replace mixin, keep linear processing time
       text = `${textBeforeApply}${replacement}${textAfterApply}`;
@@ -353,9 +386,10 @@ class ApplyShim {
    * "parse" a mixin definition into a map of properties and values
    * cssTextToMap('border: 2px solid black') -> ('border', '2px solid black')
    * @param {string} text
+   * @param {boolean=} replaceInitialOrInherit
    * @return {!Object<string, string>}
    */
-  _cssTextToMap(text) {
+  _cssTextToMap(text, replaceInitialOrInherit = false) {
     let props = text.split(';');
     let property, value;
     let out = {};
@@ -367,7 +401,10 @@ class ApplyShim {
         if (sp.length > 1) {
           property = sp[0].trim();
           // some properties may have ':' in the value, like data urls
-          value = this._replaceInitialOrInherit(property, sp.slice(1).join(':'));
+          value = sp.slice(1).join(':');
+          if (replaceInitialOrInherit) {
+            value = this._replaceInitialOrInherit(property, value);
+          }
           out[property] = value;
         }
       }
@@ -394,9 +431,10 @@ class ApplyShim {
    * @param {string} propertyName
    * @param {?string} valueProperty
    * @param {?string} valueMixin
+   * @param {!StyleNode} rule
    * @return {string}
    */
-  _produceCssProperties(matchText, propertyName, valueProperty, valueMixin) {
+  _produceCssProperties(matchText, propertyName, valueProperty, valueMixin, rule) {
     // handle case where property value is a mixin
     if (valueProperty) {
       // form: --mixin2: var(--mixin1), where --mixin1 is in the map
@@ -409,9 +447,12 @@ class ApplyShim {
     if (!valueMixin) {
       return matchText;
     }
-    let mixinAsProperties = this._consumeCssProperties('' + valueMixin);
+    let mixinAsProperties = this._consumeCssProperties('' + valueMixin, rule);
     let prefix = matchText.slice(0, matchText.indexOf('--'));
-    let mixinValues = this._cssTextToMap(mixinAsProperties);
+    // `initial` and `inherit` as properties in a map should be replaced because
+    // these keywords are eagerly evaluated when the mixin becomes CSS Custom Properties,
+    // and would set the variable value, rather than carry the keyword to the `var()` usage.
+    let mixinValues = this._cssTextToMap(mixinAsProperties, true);
     let combinedProps = mixinValues;
     let mixinEntry = this._map.get(propertyName);
     let oldProps = mixinEntry && mixinEntry.properties;
@@ -461,6 +502,7 @@ class ApplyShim {
 }
 
 /* exports */
+/* eslint-disable no-self-assign */
 ApplyShim.prototype['detectMixin'] = ApplyShim.prototype.detectMixin;
 ApplyShim.prototype['transformStyle'] = ApplyShim.prototype.transformStyle;
 ApplyShim.prototype['transformCustomStyle'] = ApplyShim.prototype.transformCustomStyle;
@@ -468,6 +510,7 @@ ApplyShim.prototype['transformRules'] = ApplyShim.prototype.transformRules;
 ApplyShim.prototype['transformRule'] = ApplyShim.prototype.transformRule;
 ApplyShim.prototype['transformTemplate'] = ApplyShim.prototype.transformTemplate;
 ApplyShim.prototype['_separator'] = MIXIN_VAR_SEP;
+/* eslint-enable no-self-assign */
 Object.defineProperty(ApplyShim.prototype, 'invalidCallback', {
   /** @return {?function(string)} */
   get() {

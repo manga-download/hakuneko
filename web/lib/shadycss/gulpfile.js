@@ -22,7 +22,6 @@ const buffer = require('vinyl-buffer');
 const source = require('vinyl-source-stream');
 const closure = require('google-closure-compiler').gulp();
 const size = require('gulp-size');
-const runseq = require('run-sequence');
 
 const modules = [
   'css-parse',
@@ -49,9 +48,7 @@ const moduleTasks = modules.map((m) => {
 
 gulp.task('clean-test-modules', () => del(['tests/module/generated']));
 
-gulp.task('test-modules', (cb) => {
-  runseq('clean-test-modules', moduleTasks, cb);
-});
+gulp.task('test-modules', gulp.series(['clean-test-modules', ...moduleTasks]));
 
 function closurify(entry) {
   gulp.task(`closure-${entry}`, () => {
@@ -103,10 +100,8 @@ const entrypoints = [
 let closureTasks = entrypoints.map((e) => closurify(e));
 let debugTasks = entrypoints.map((e) => debugify(e));
 
-gulp.task('default', ['closure', 'test-modules']);
+gulp.task('closure', gulp.series([...closureTasks]));
 
-gulp.task('closure', (cb) => {
-  runseq.apply(null, closureTasks.concat(cb))
-});
+gulp.task('default', gulp.series('closure', 'test-modules'));
 
-gulp.task('debug', debugTasks);
+gulp.task('debug', gulp.series([...debugTasks]));

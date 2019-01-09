@@ -12,35 +12,110 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 import {nativeShadow} from './style-settings.js';
 import StyleTransformer from './style-transformer.js';
-import {getIsExtends} from './style-util.js';
+import {getIsExtends, elementHasBuiltCss, wrap} from './style-util.js';
 
 export let flush = function() {};
 
 /**
- * @param {HTMLElement} element
- * @return {!Array<string>}
+ * @param {!Element} element
+ * @return {string}
  */
 function getClasses(element) {
-  let classes = [];
-  if (element.classList) {
-    classes = Array.from(element.classList);
-  } else if (element instanceof window['SVGElement'] && element.hasAttribute('class')) {
-    classes = element.getAttribute('class').split(/\s+/);
+  if (element.classList && element.classList.value) {
+    return element.classList.value;
+  } else {
+    // NOTE: className is patched to remove scoping classes in ShadyDOM
+    // use getAttribute('class') instead, which is unpatched
+    return element.getAttribute('class') || '';
   }
-  return classes;
+}
+
+const scopeRegExp = new RegExp(`${StyleTransformer.SCOPE_NAME}\\s*([^\\s]*)`);
+
+/**
+ * @param {!Element} element
+ * @return {string}
+ */
+export function getCurrentScope(element) {
+  const match = getClasses(element).match(scopeRegExp);
+  if (match) {
+    return match[1];
+  } else {
+    return '';
+  }
 }
 
 /**
- * @param {HTMLElement} element
- * @return {string}
+ * @param {!Node} node
  */
-function getCurrentScope(element) {
-  let classes = getClasses(element);
-  let idx = classes.indexOf(StyleTransformer.SCOPE_NAME);
-  if (idx > -1) {
-    return classes[idx + 1];
+export function getOwnerScope(node) {
+  const ownerRoot = wrap(node).getRootNode();
+  if (ownerRoot === node || ownerRoot === node.ownerDocument) {
+    return '';
   }
-  return '';
+  const host = /** @type {!ShadowRoot} */(ownerRoot).host;
+  if (!host) {
+    // this may actually be a document fragment
+    return '';
+  }
+  return getIsExtends(host).is;
+}
+
+/**
+ * @param {!Element} element
+ */
+export function ensureCorrectScope(element) {
+  const currentScope = getCurrentScope(element);
+  const ownerRoot = wrap(element).getRootNode();
+  if (ownerRoot === element) {
+    return;
+  }
+  if (currentScope && ownerRoot === element.ownerDocument) {
+    // node was scoped, but now is in document
+    StyleTransformer.domRemoveScope(element, currentScope);
+  } else if (ownerRoot instanceof ShadowRoot) {
+    const ownerScope = getOwnerScope(element);
+    if (ownerScope !== currentScope) {
+      // node was scoped, but not by its current owner
+      StyleTransformer.domReplaceScope(element, currentScope, ownerScope);
+    }
+  }
+}
+
+/**
+ * @param {!HTMLElement|!HTMLDocument} element
+ */
+export function ensureCorrectSubtreeScoping(element) {
+  // find unscoped subtree nodes
+  const unscopedNodes = window['ShadyDOM']['nativeMethods']['querySelectorAll'].call(
+    element, `:not(.${StyleTransformer.SCOPE_NAME})`);
+
+  for (let j = 0; j < unscopedNodes.length; j++) {
+    // it's possible, during large batch inserts, that nodes that aren't
+    // scoped within the current scope were added.
+    // To make sure that any unscoped nodes that were inserted in the current batch are correctly styled,
+    // query all unscoped nodes and force their style-scope to be applied.
+    // This could happen if a sub-element appended an unscoped node in its shadowroot and this function
+    // runs on a parent element of the host of that unscoped node:
+    // parent-element -> element -> unscoped node
+    // Here unscoped node should have the style-scope element, not parent-element.
+    const unscopedNode = unscopedNodes[j];
+    const scopeForPreviouslyUnscopedNode = getOwnerScope(unscopedNode);
+    if (scopeForPreviouslyUnscopedNode) {
+      StyleTransformer.element(unscopedNode, scopeForPreviouslyUnscopedNode);
+    }
+  }
+}
+
+/**
+ * @param {HTMLElement} el
+ * @return {boolean}
+ */
+function isElementWithBuiltCss(el) {
+  if (el.localName === 'style' || el.localName === 'template') {
+    return elementHasBuiltCss(el);
+  }
+  return false;
 }
 
 /**
@@ -62,47 +137,25 @@ function handler(mxns) {
       let root = n.getRootNode();
       let currentScope = getCurrentScope(n);
       // node was scoped, but now is in document
-      if (currentScope && root === n.ownerDocument) {
+      // If this element has built css, we must not remove scoping as this node
+      // will be used as a template or style without re - applying scoping as an optimization
+      if (currentScope && root === n.ownerDocument && !isElementWithBuiltCss(n)) {
         StyleTransformer.domRemoveScope(n, currentScope);
-      } else if (root.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-        let newScope;
-        let host = /** @type {ShadowRoot} */(root).host;
-        // element may no longer be in a shadowroot
-        if (!host) {
-          continue;
-        }
-        newScope = getIsExtends(host).is;
+      } else if (root instanceof ShadowRoot) {
+        const newScope = getOwnerScope(n);
         // rescope current node and subtree if necessary
         if (newScope !== currentScope) {
           StyleTransformer.domReplaceScope(n, currentScope, newScope);
         }
         // make sure all the subtree elements are scoped correctly
-        let unscopedNodes = window['ShadyDOM']['nativeMethods']['querySelectorAll'].call(
-          n, `:not(.${StyleTransformer.SCOPE_NAME})`);
-        for (let j = 0; j < unscopedNodes.length; j++) {
-          // it's possible, during large batch inserts, that nodes that aren't
-          // scoped within the current scope were added.
-          // To make sure that any unscoped nodes that were inserted in the current batch are correctly styled,
-          // query all unscoped nodes and force their style-scope to be applied.
-          // This could happen if a sub-element appended an unscoped node in its shadowroot and this function
-          // runs on a parent element of the host of that unscoped node:
-          // parent-element -> element -> unscoped node
-          // Here unscoped node should have the style-scope element, not parent-element.
-          const unscopedNode = unscopedNodes[j];
-          const rootForUnscopedNode = unscopedNode.getRootNode();
-          const hostForUnscopedNode = rootForUnscopedNode.host;
-          if (!hostForUnscopedNode) {
-            continue;
-          }
-          const scopeForPreviouslyUnscopedNode = getIsExtends(hostForUnscopedNode).is;
-          StyleTransformer.element(unscopedNode, scopeForPreviouslyUnscopedNode);
-        }
+        ensureCorrectSubtreeScoping(n);
       }
     }
   }
 }
 
-if (!nativeShadow) {
+// if native Shadow DOM is being used, or ShadyDOM handles dynamic scoiping, do not activate the MutationObserver
+if (!nativeShadow && !(window['ShadyDOM'] && window['ShadyDOM']['handlesDynamicScoping'])) {
   let observer = new MutationObserver(handler);
   let start = (node) => {
     observer.observe(node, {childList: true, subtree: true});

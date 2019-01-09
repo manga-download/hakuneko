@@ -21,12 +21,12 @@
   "devDependencies": {
     "web-component-tester": "^v6.0.0"
   },
-  "version": "1.2.3",
-  "_release": "1.2.3",
+  "version": "1.3.0",
+  "_release": "1.3.0",
   "_resolution": {
     "type": "version",
-    "tag": "v1.2.3",
-    "commit": "44f3606a704dd121e93735a2a4924b3642488c4d"
+    "tag": "v1.3.0",
+    "commit": "1ca4128b3c4f040a6ad833c783525765fc25ac5f"
   },
   "_source": "https://github.com/webcomponents/webcomponentsjs.git",
   "_target": "^v1.1.0",

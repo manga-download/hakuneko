@@ -31,6 +31,12 @@ function calcCssVariables(settings) {
   }
 }
 
+/** @type {string | undefined} */
+export let cssBuild;
+if (window.ShadyCSS && window.ShadyCSS.cssBuild !== undefined) {
+  cssBuild = window.ShadyCSS.cssBuild;
+}
+
 if (window.ShadyCSS && window.ShadyCSS.nativeCss !== undefined) {
   nativeCssVariables_ = window.ShadyCSS.nativeCss;
 } else if (window.ShadyCSS) {

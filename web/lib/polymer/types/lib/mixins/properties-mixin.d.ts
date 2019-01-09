@@ -9,6 +9,7 @@
  */
 
 /// <reference path="../utils/boot.d.ts" />
+/// <reference path="../utils/telemetry.d.ts" />
 /// <reference path="../utils/mixin.d.ts" />
 /// <reference path="properties-changed.d.ts" />
 
@@ -56,7 +57,7 @@ declare namespace Polymer {
     _finalizeClass(): void;
   }
 
-  interface PropertiesMixin {
+  interface PropertiesMixin extends Polymer.PropertiesChanged {
 
     /**
      * Overrides `PropertiesChanged` method and adds a call to

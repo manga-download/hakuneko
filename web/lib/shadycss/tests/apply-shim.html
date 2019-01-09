@@ -64,6 +64,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       border: 1px dotted orange;
       @apply --mixin;
     }
+    span {
+      border: inherit;
+      @apply --mixin;
+    }
+    span {
+      border: initial;
+      @apply --mixin;
+    }
     </style>
   </template>
 
@@ -203,6 +211,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('properties defined before mixin are used as defaults', function() {
         var application = ast.rules[1];
         assert.match(application.cssText, /border:\s*var\(--mixin_-_border,\s*1px dotted orange\)/);
+      });
+
+      test('inherit and initial default values are preserved', function() {
+        var application = ast.rules[2];
+        assert.match(application.cssText, /border:\s*var\(--mixin_-_border,\s*inherit\)/);
+        application = ast.rules[3];
+        assert.match(application.cssText, /border:\s*var\(--mixin_-_border,\s*initial\)/);
       });
     });
 

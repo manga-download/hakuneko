@@ -24,6 +24,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @implements {Polymer_PropertyEffects}
      * @implements {Polymer_OptionalMutableData}
      * @implements {Polymer_GestureEventListeners}
+     * @private
      */
     const domBindBase =
       Polymer.GestureEventListeners(
@@ -56,6 +57,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
       constructor() {
         super();
+        if (Polymer.strictTemplatePolicy) {
+          throw new Error(`strictTemplatePolicy: dom-bind not allowed`);
+        }
         this.root = null;
         this.$ = null;
         this.__children = null;
@@ -132,6 +136,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
     customElements.define('dom-bind', DomBind);
 
+    /** @const */
     Polymer.DomBind = DomBind;
 
   })();

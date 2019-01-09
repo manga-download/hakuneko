@@ -55,6 +55,14 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       border: 1px dotted orange;
       @apply --mixin;
     }
+    span {
+      border: inherit;
+      @apply --mixin;
+    }
+    span {
+      border: initial;
+      @apply --mixin;
+    }
     </style>
   </template>
 
@@ -129,6 +137,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     </style>
     </custom-style>
   </template>
+
+  <template id="css-build" css-build="shadow">
+    <style>:host{@apply --fake;}</style>
+  </template>
+
+  <template id="css-build-comment"><!--css-build:shadow-->
+    <style>:host{@apply --fake;}</style>
+  </template>
+
   <script>
   suite('Apply Shim', function() {
     function copy(name) {
@@ -174,6 +191,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       test('properties defined before mixin are used as defaults', function() {
         var application = ast.rules[1];
         assert.match(application.cssText, /border:\s*var\(--mixin_-_border,\s*1px dotted orange\)/);
+      });
+
+      test('inherit and initial default values are preserved', function () {
+        var application = ast.rules[2];
+        assert.match(application.cssText, /border:\s*var\(--mixin_-_border,\s*inherit\)/);
+        application = ast.rules[3];
+        assert.match(application.cssText, /border:\s*var\(--mixin_-_border,\s*initial\)/);
       });
     });
 
@@ -259,6 +283,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         var ast = window.StyleUtil.rulesForStyle(style);
         assert.match(ast.rules[0].cssText, /border:\s*var\(--my-mixin_-_border\)/);
       });
+    });
+
+    test('templates with "css-build" will not be processed by ApplyShim', function() {
+      makeElement('css-build');
+      const template = document.querySelector('template#css-build');
+      assert.equal(template._styleAst, undefined);
+      const style = template.content.querySelector('style');
+      assert.match(style.textContent.trim(), /:host\s*{\s*@apply --fake;\s*}/);
+    });
+
+    test('templates with "css-build" comment will not be processed by ApplyShim', function () {
+      const template = document.querySelector('template#css-build-comment');
+      const buildComment = template.content.firstChild;
+      assert.instanceOf(buildComment, Comment, 'first node in template content should be a Comment');
+      makeElement('css-build-comment');
+      assert.equal(template._styleAst, undefined);
+      const style = template.content.querySelector('style');
+      assert.match(style.textContent.trim(), /:host\s*{\s*@apply --fake;\s*}/);
+      assert.equal(buildComment.parentNode, null, 'build comment should be removed');
     });
   });
   </script>

@@ -13,6 +13,7 @@ export default class StyleCache {
   constructor(typeMax = 100) {
     // map element name -> [{properties, styleElement, scopeSelector}]
     this.cache = {};
+    /** @type {number} */
     this.typeMax = typeMax;
   }
 

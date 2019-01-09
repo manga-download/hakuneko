@@ -21,9 +21,11 @@ window.makeElement = (name, connectedCallback) => {
   window.customElements.define(name, class extends window.HTMLElement {
     connectedCallback() {
       window.ShadyCSS && window.ShadyCSS.styleElement(this);
-      if (template && !this.shadowRoot) {
+      if (!this.shadowRoot) {
         this.attachShadow({mode: 'open'});
-        this.shadowRoot.appendChild(template.content.cloneNode(true));
+        if (template) {
+          this.shadowRoot.appendChild(template.content.cloneNode(true));
+        }
       }
       if (connectedCallback) {
         connectedCallback.call(this);

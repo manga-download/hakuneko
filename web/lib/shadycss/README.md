@@ -258,10 +258,12 @@ The following example uses ShadyCSS and ShadyDOM to define a custom element.
   </div>
 </template>
 <script>
-  ShadyCSS.prepareTemplate(myElementTemplate, 'my-element');
+  // Use polyfill only in browsers that lack native Shadow DOM.
+  window.ShadyCSS && ShadyCSS.prepareTemplate(myElementTemplate, 'my-element');
+
   class MyElement extends HTMLElement {
     connectedCallback() {
-      ShadyCSS.styleElement(this);
+      window.ShadyCSS && ShadyCSS.styleElement(this);
       if (!this.shadowRoot) {
         this.attachShadow({mode: 'open'});
         this.shadowRoot.appendChild(
@@ -304,10 +306,11 @@ element name to `prepareTemplate` as a third argument.
   </div>
 </template>
 <script>
-  ShadyCSS.prepareTemplate(myElementTemplate, 'my-element', 'div');
+  window.ShadyCSS && ShadyCSS.prepareTemplate(myElementTemplate, 'my-element', 'div');
+
   class MyElement extends HTMLDivElement {
     connectedCallback() {
-      ShadyCSS.styleElement(this);
+      window.ShadyCSS && ShadyCSS.styleElement(this);
       if (!this.shadowRoot) {
         this.attachShadow({mode: 'open'});
         this.shadowRoot.appendChild(
@@ -346,10 +349,35 @@ ShadyCSS.styleSubtree(el, {'--content-color' : 'red'});
 
 ### Selector scoping
 
-You must have a selector for ascendants of the `<slot>` element when using the `::slotted`
-pseudo-element.
+To use the `::slotted` pseudo-element, you must select it as a descendant of some context element.
+```css
+/* Bad */
+::slotted() {}
 
-You cannot use any selector for the `<slot>` element. Rules like `.foo .bar::slotted(*)` are not supported.
+/* Good */
+.context ::slotted() {}
+```
+
+Since ShadyCSS removes all `<slot>` elements, you cannot select them directly or use any other selectors along with the `::slotted` pseudo-element selector.
+```html
+<!-- Bad -->
+<style>
+  .foo .bar::slotted(*) {}
+</style>
+<span class="foo">
+  <slot class="bar"></slot>
+</span>
+``` 
+
+```html
+<!-- Good -->
+<style>
+  .foo ::slotted(*) {}
+</style>
+<span class="foo">
+  <slot></slot>
+</span>
+``` 
 
 ### Custom properties and `@apply`
 

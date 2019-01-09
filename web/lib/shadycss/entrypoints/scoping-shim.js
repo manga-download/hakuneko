@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 'use strict';
 
 import ScopingShim from '../src/scoping-shim.js';
-import {nativeCssVariables, nativeShadow} from '../src/style-settings.js';
+import {nativeCssVariables, nativeShadow, cssBuild} from '../src/style-settings.js';
 
 /** @const {ScopingShim} */
 const scopingShim = new ScopingShim();
@@ -35,10 +35,19 @@ window.ShadyCSS = {
     scopingShim.prepareTemplate(template, elementName, elementExtends)
   },
 
+  /**
+   * @param {!HTMLTemplateElement} template
+   * @param {string} elementName
+   */
   prepareTemplateDom(template, elementName) {
     scopingShim.prepareTemplateDom(template, elementName);
   },
 
+  /**
+   * @param {!HTMLTemplateElement} template
+   * @param {string} elementName
+   * @param {string=} elementExtends
+   */
   prepareTemplateStyles(template, elementName, elementExtends) {
     scopingShim.flushCustomStyles();
     scopingShim.prepareTemplateStyles(template, elementName, elementExtends)
@@ -83,7 +92,9 @@ window.ShadyCSS = {
 
   nativeCss: nativeCssVariables,
 
-  nativeShadow: nativeShadow
+  nativeShadow: nativeShadow,
+
+  cssBuild: cssBuild
 };
 
 if (ApplyShim) {

@@ -39,6 +39,11 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         test('then', () => {
           return Promise.resolve().then(() => {});
         });
+        test('finally', (done) => {
+          Promise.resolve().finally(() => {
+            done();
+          });
+        });
       })
     </script>
   </body>

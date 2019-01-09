@@ -52,24 +52,25 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <!-- emulate apply-shim imported into a module context -->
   <script id="applyScript" src="../apply-shim.min.js" defer></script>
   <script>
-    document.querySelector('#applyScript').addEventListener('load', () => {
-      // IE 11 timing issue
-      if (window.HTMLTemplateElement.bootstrap) {
-        HTMLTemplateElement.bootstrap(document);
-      }
-      window.makeElement('x-foo');
-    });
     suite('Deferred Apply Shim', function() {
       test('Styling works as expected', function() {
         let resolveFn = null;
         const promise = new Promise((resolve) => {resolveFn = resolve}).then(() => {
+          // IE 11 timing issue
+          if (window.HTMLTemplateElement.bootstrap) {
+            HTMLTemplateElement.bootstrap(document);
+          }
+          window.makeElement('x-foo');
+        }).then(() => {
           const el = document.querySelector('x-foo');
           assert.equal(getComputedStyle(el).getPropertyValue('background-color').trim(), 'rgb(0, 0, 255)');
         });
-        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        if (document.readyState === 'complete') {
           resolveFn();
         } else {
+          window.addEventListener('load', resolveFn);
           window.addEventListener('DOMContentLoaded', () => {
+            window.removeEventListener('load', resolveFn);
             resolveFn();
           });
         }

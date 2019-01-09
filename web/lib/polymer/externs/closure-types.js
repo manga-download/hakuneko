@@ -105,9 +105,10 @@ Polymer_PropertiesChanged.prototype._shouldPropertyChange = function(property, v
 * @param {string} name Name of attribute that changed
 * @param {?string} old Old attribute value
 * @param {?string} value New attribute value
+* @param {?string} namespace Attribute namespace.
 * @return {void}
 */
-Polymer_PropertiesChanged.prototype.attributeChangedCallback = function(name, old, value){};
+Polymer_PropertiesChanged.prototype.attributeChangedCallback = function(name, old, value, namespace){};
 /**
 * @param {string} attribute Name of attribute to deserialize.
 * @param {?string} value of the attribute.
@@ -245,7 +246,7 @@ Polymer_TemplateStamp.prototype._addMethodEventListenerToNode = function(node, e
 */
 Polymer_TemplateStamp.prototype._addEventListenerToNode = function(node, eventName, handler){};
 /**
-* @param {Node} node Node to remove event listener from
+* @param {!Node} node Node to remove event listener from
 * @param {string} eventName Name of event
 * @param {function (!Event): void} handler Listener function to remove
 * @return {void}
@@ -876,6 +877,10 @@ Polymer_ElementMixin.createProperties = function(props){};
 */
 Polymer_ElementMixin._finalizeClass = function(){};
 /**
+* @return {undefined}
+*/
+Polymer_ElementMixin._prepareTemplate = function(){};
+/**
 * @param {Object} observers Array of observer descriptors for
   this class
 * @param {Object} dynamicFns Object containing keys for any properties
@@ -972,9 +977,10 @@ Polymer_LegacyElementMixin.prototype._initializeProperties = function(){};
 * @param {string} name Name of attribute.
 * @param {?string} old Old value of attribute.
 * @param {?string} value Current value of attribute.
+* @param {?string} namespace Attribute namespace.
 * @return {void}
 */
-Polymer_LegacyElementMixin.prototype.attributeChangedCallback = function(name, old, value){};
+Polymer_LegacyElementMixin.prototype.attributeChangedCallback = function(name, old, value, namespace){};
 /**
 * @override
 * @return {void}
@@ -1377,6 +1383,17 @@ Polymer_ArraySelectorMixin.prototype.select = function(item){};
 Polymer_ArraySelectorMixin.prototype.selectIndex = function(idx){};
 /**
 * @interface
+* @extends {Polymer_PropertyEffects}
+*/
+function Polymer_StrictBindingParser(){}
+/**
+* @param {string} text Text to parse from attribute or textContent
+* @param {Object} templateInfo Current template metadata
+* @return {Array.<!BindingPart>}
+*/
+Polymer_StrictBindingParser._parseBindings = function(text, templateInfo){};
+/**
+* @interface
 * @extends {Polymer_ElementMixin}
 */
 function Polymer_DisableUpgradeMixin(){}
@@ -1391,7 +1408,7 @@ Polymer_DisableUpgradeMixin.prototype._enableProperties = function(){};
 /**
 * @override
 */
-Polymer_DisableUpgradeMixin.prototype.attributeChangedCallback = function(name, old, value){};
+Polymer_DisableUpgradeMixin.prototype.attributeChangedCallback = function(name, old, value, namespace){};
 /**
 * @override
 */
@@ -1400,3 +1417,21 @@ Polymer_DisableUpgradeMixin.prototype.connectedCallback = function(){};
 * @override
 */
 Polymer_DisableUpgradeMixin.prototype.disconnectedCallback = function(){};
+/**
+* @interface
+*/
+function Polymer_LegacyDataMixin(){}
+/**
+* @param {string} property Property that should trigger the effect
+* @param {string} type Effect type, from this.PROPERTY_EFFECT_TYPES
+* @param {Object=} effect Effect metadata object
+* @return {void}
+*/
+Polymer_LegacyDataMixin.prototype._addPropertyEffect = function(property, type, effect){};
+/**
+* @param {Object} templateInfo Template metadata to add effect to
+* @param {string} prop Property that should trigger the effect
+* @param {Object=} effect Effect metadata object
+* @return {void}
+*/
+Polymer_LegacyDataMixin._addTemplatePropertyEffect = function(templateInfo, prop, effect){};

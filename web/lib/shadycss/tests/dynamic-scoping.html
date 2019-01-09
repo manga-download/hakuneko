@@ -28,21 +28,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   <script src="../apply-shim.min.js"></script>
   <script src="../custom-style-interface.min.js"></script>
   <script src="module/generated/make-element.js"></script>
+  <script src="module/generated/custom-style-element.js"></script>
 </head>
 <body>
 
-  <style>
-    x-container, x-sample, x-sample-dynamic,  x-container-dynamic {
-      display: block;
-      padding: 10px;
-      margin: 10px;
-      border: 1px solid black;
-    }
+  <custom-style>
+    <style>
+      x-container, x-sample, x-sample-dynamic, x-container-dynamic {
+        display: block;
+        padding: 10px;
+        margin: 10px;
+        border: 1px solid black;
+      }
 
-    .target {
-      background-color: rgb(0, 255, 0);
-    }
-  </style>
+      .target {
+        background-color: rgb(0, 255, 0);
+      }
+    </style>
+  </custom-style>
 
   <template id="x-sample">
     <style>
@@ -150,6 +153,16 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   <x-container-dynamic></x-container-dynamic>
 
+  <template id="css-build" css-build="shady">
+    <style>:host{@apply --fake;}</style>
+    <div class="style-scope css-build"></div>
+  </template>
+
+  <template id="css-build-comment"><!--css-build:shady-->
+    <style>:host{@apply --fake;}</style>
+    <div class="style-scope css-build-comment"></div>
+  </template>
+
   <script>
     suite('Dynamic Scoping', () => {
       function stamp(parent, host) {
@@ -225,7 +238,15 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
           }
         });
       }
-      test('Nested DOM is scoped correctly when created dynamically inside a dynamic container', (done) => {
+      test('Nested DOM is scoped correctly when created dynamically inside a dynamic container', function(done) {
+        if (!window.customElements.polyfillWrapFlushCallback && window.ShadyDOM && window.ShadyDOM.inUse) {
+          /*
+           * This test is flaky if running with native custom elements and polyfill shadowdom,
+           * as the shadowdom polyfill may render inside of the constructor and create children,
+           * which is not allowed in the CE spec.
+           */
+          this.skip();
+        }
         makeDynamicElement('x-container-dynamic');
         makeDynamicElement('x-sample-dynamic');
         const dynamicDiv = document.createElement('div');
@@ -237,10 +258,37 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         dynamicContainer.shadowRoot.appendChild(dynamicSample);
         document.querySelector('x-container-dynamic').shadowRoot.appendChild(dynamicContainer);
         requestAnimationFrame(() => {
-          dynamicSample.shadowRoot.querySelectorAll('div.target').forEach((target) => 
+          dynamicSample.shadowRoot.querySelectorAll('div.target').forEach((target) =>
             assert.equal(getComputedStyle(target).backgroundColor,'rgb(255, 0, 0)'));
           done();
         });
+      });
+
+      test('templates marked with "css-build" will be left alone', function() {
+        makeElement('css-build');
+        const template = document.querySelector('template#css-build');
+        const div = template.content.querySelector('div');
+        const divClasses = Array.from(div.classList);
+        assert.includeMembers(divClasses, ['style-scope', 'css-build']);
+        const style = template.content.querySelector('style');
+        if (style) {
+          assert.match(style.textContent.trim(), /:host\s*{\s*@apply --fake;\s*}/);
+        }
+      });
+
+      test('templates with css-build comments will be left alone', function() {
+        const template = document.querySelector('template#css-build-comment');
+        const buildComment = template.content.firstChild;
+        assert.instanceOf(buildComment, Comment, 'first child of template content should be a Comment');
+        makeElement('css-build-comment');
+        const div = template.content.querySelector('div');
+        const divClasses = Array.from(div.classList);
+        assert.includeMembers(divClasses, ['style-scope', 'css-build-comment']);
+        const style = template.content.querySelector('style');
+        if (style) {
+          assert.match(style.textContent.trim(), /:host\s*{\s*@apply --fake;\s*}/);
+        }
+        assert.equal(buildComment.parentNode, null, 'build commment should have been removed');
       });
     });
   </script>

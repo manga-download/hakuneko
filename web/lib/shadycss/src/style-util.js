@@ -10,7 +10,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 'use strict';
 
-import {nativeShadow, nativeCssVariables} from './style-settings.js';
+import {nativeShadow, nativeCssVariables, cssBuild} from './style-settings.js';
 import {parse, stringify, types, StyleNode} from './css-parse.js'; // eslint-disable-line no-unused-vars
 import {MEDIA_MATCH} from './common-regex.js';
 import {processUnscopedStyle, isUnscopedStyle} from './unscoped-style-handler.js';
@@ -175,21 +175,13 @@ export function isTargetedBuild(buildType) {
 }
 
 /**
- * @param {Element} element
- * @return {?string}
- */
-export function getCssBuildType(element) {
-  return element.getAttribute('css-build');
-}
-
-/**
  * Walk from text[start] matching parens and
  * returns position of the outer end paren
  * @param {string} text
  * @param {number} start
  * @return {number}
  */
-function findMatchingParen(text, start) {
+export function findMatchingParen(text, start) {
   let level = 0;
   for (let i=start, l=text.length; i < l; i++) {
     if (text[i] === '(') {
@@ -246,6 +238,11 @@ export function setElementClassRaw(element, value) {
 }
 
 /**
+ * @type {function(*):*}
+ */
+export const wrap = window['ShadyDOM'] && window['ShadyDOM']['wrap'] || ((node) => node);
+
+/**
  * @param {Element | {is: string, extends: string}} element
  * @return {{is: string, typeExtension: string}}
  */
@@ -291,4 +288,127 @@ export function gatherStyleText(element) {
     }
   }
   return styleTextParts.join('').trim();
+}
+
+/**
+ * Split a selector separated by commas into an array in a smart way
+ * @param {string} selector
+ * @return {!Array<string>}
+ */
+export function splitSelectorList(selector) {
+  const parts = [];
+  let part = '';
+  for (let i = 0; i >= 0 && i < selector.length; i++) {
+    // A selector with parentheses will be one complete part
+    if (selector[i] === '(') {
+      // find the matching paren
+      const end = findMatchingParen(selector, i);
+      // push the paren block into the part
+      part += selector.slice(i, end + 1);
+      // move the index to after the paren block
+      i = end;
+    } else if (selector[i] === ',') {
+      parts.push(part);
+      part = '';
+    } else {
+      part += selector[i];
+    }
+  }
+  // catch any pieces after the last comma
+  if (part) {
+    parts.push(part);
+  }
+  return parts;
+}
+
+const CSS_BUILD_ATTR = 'css-build';
+
+/**
+ * Return the polymer-css-build "build type" applied to this element
+ *
+ * @param {!HTMLElement} element
+ * @return {string} Can be "", "shady", or "shadow"
+ */
+export function getCssBuild(element) {
+  if (cssBuild !== undefined) {
+    return /** @type {string} */(cssBuild);
+  }
+  if (element.__cssBuild === undefined) {
+    // try attribute first, as it is the common case
+    const attrValue = element.getAttribute(CSS_BUILD_ATTR);
+    if (attrValue) {
+      element.__cssBuild = attrValue;
+    } else {
+      const buildComment = getBuildComment(element);
+      if (buildComment !== '') {
+        // remove build comment so it is not needlessly copied into every element instance
+        removeBuildComment(element);
+      }
+      element.__cssBuild = buildComment;
+    }
+  }
+  return element.__cssBuild || '';
+}
+
+/**
+ * Check if the given element, either a <template> or <style>, has been processed
+ * by polymer-css-build.
+ *
+ * If so, then we can make a number of optimizations:
+ * - polymer-css-build will decompose mixins into individual CSS Custom Properties,
+ * so the ApplyShim can be skipped entirely.
+ * - Under native ShadowDOM, the style text can just be copied into each instance
+ * without modification
+ * - If the build is "shady" and ShadyDOM is in use, the styling does not need
+ * scoping beyond the shimming of CSS Custom Properties
+ *
+ * @param {!HTMLElement} element
+ * @return {boolean}
+ */
+export function elementHasBuiltCss(element) {
+  return getCssBuild(element) !== '';
+}
+
+/**
+ * For templates made with tagged template literals, polymer-css-build will
+ * insert a comment of the form `<!--css-build:shadow-->`
+ *
+ * @param {!HTMLElement} element
+ * @return {string}
+ */
+export function getBuildComment(element) {
+  const buildComment = element.localName === 'template' ?
+      /** @type {!HTMLTemplateElement} */ (element).content.firstChild :
+      element.firstChild;
+  if (buildComment instanceof Comment) {
+    const commentParts = buildComment.textContent.trim().split(':');
+    if (commentParts[0] === CSS_BUILD_ATTR) {
+      return commentParts[1];
+    }
+  }
+  return '';
+}
+
+/**
+ * Check if the css build status is optimal, and do no unneeded work.
+ *
+ * @param {string=} cssBuild CSS build status
+ * @return {boolean} css build is optimal or not
+ */
+export function isOptimalCssBuild(cssBuild = '') {
+  // CSS custom property shim always requires work
+  if (cssBuild === '' || !nativeCssVariables) {
+    return false;
+  }
+  return nativeShadow ? cssBuild === 'shadow' : cssBuild === 'shady';
+}
+
+/**
+ * @param {!HTMLElement} element
+ */
+function removeBuildComment(element) {
+  const buildComment = element.localName === 'template' ?
+      /** @type {!HTMLTemplateElement} */ (element).content.firstChild :
+      element.firstChild;
+  buildComment.parentNode.removeChild(buildComment);
 }

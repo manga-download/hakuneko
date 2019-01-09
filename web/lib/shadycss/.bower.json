@@ -1,12 +1,12 @@
 {
   "name": "shadycss",
   "homepage": "https://github.com/webcomponents/shadycss",
-  "version": "1.3.5",
-  "_release": "1.3.5",
+  "version": "1.8.0",
+  "_release": "1.8.0",
   "_resolution": {
     "type": "version",
-    "tag": "v1.3.5",
-    "commit": "454640b4699dab8d88cf686a5dda877f01f9759a"
+    "tag": "v1.8.0",
+    "commit": "e235ac4b3118bd95cf38110ed2d2faa56684139f"
   },
   "_source": "https://github.com/webcomponents/shadycss.git",
   "_target": "^v1.1.0",

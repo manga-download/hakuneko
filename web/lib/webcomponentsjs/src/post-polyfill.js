@@ -8,7 +8,7 @@
  * subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
  */
 
-'use strict';
+export {};
 
 let customElements = window['customElements'];
 let HTMLImports = window['HTMLImports'];

@@ -48,6 +48,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      * @implements {Polymer_ElementMixin}
      * @implements {Polymer_GestureEventListeners}
      * @implements {Polymer_DirMixin}
+     * @private
      */
     const legacyElementBase = Polymer.DirMixin(Polymer.GestureEventListeners(Polymer.ElementMixin(base)));
 
@@ -79,11 +80,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
         this.__boundListeners;
         /** @type {Object<string, Function>} */
         this._debouncers;
-        // Ensure listeners are applied immediately so that they are
-        // added before declarative event listeners. This allows an element to
-        // decorate itself via an event prior to any declarative listeners
-        // seeing the event. Note, this ensures compatibility with 1.x ordering.
-        this._applyListeners();
+      }
+
+      /**
+       * Forwards `importMeta` from the prototype (i.e. from the info object
+       * passed to `Polymer({...})`) to the static API.
+       *
+       * @return {!Object} The `import.meta` object set on the prototype
+       * @suppress {missingProperties} `this` is always in the instance in
+       *  closure for some reason even in a static method, rather than the class
+       */
+      static get importMeta() {
+        return this.prototype.importMeta;
       }
 
       /**
@@ -137,12 +145,13 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        * @param {string} name Name of attribute.
        * @param {?string} old Old value of attribute.
        * @param {?string} value Current value of attribute.
+       * @param {?string} namespace Attribute namespace.
        * @return {void}
        * @override
        */
-      attributeChangedCallback(name, old, value) {
+      attributeChangedCallback(name, old, value, namespace) {
         if (old !== value) {
-          super.attributeChangedCallback(name, old, value);
+          super.attributeChangedCallback(name, old, value, namespace);
           this.attributeChanged(name, old, value);
         }
       }
@@ -169,12 +178,18 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       _initializeProperties() {
         let proto = Object.getPrototypeOf(this);
         if (!proto.hasOwnProperty('__hasRegisterFinished')) {
-          proto.__hasRegisterFinished = true;
           this._registered();
+          // backstop in case the `_registered` implementation does not set this
+          proto.__hasRegisterFinished = true;
         }
         super._initializeProperties();
         this.root = /** @type {HTMLElement} */(this);
         this.created();
+        // Ensure listeners are applied immediately so that they are
+        // added before declarative event listeners. This allows an element to
+        // decorate itself via an event prior to any declarative listeners
+        // seeing the event. Note, this ensures compatibility with 1.x ordering.
+        this._applyListeners();
       }
 
       /**
