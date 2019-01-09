@@ -84,7 +84,7 @@
                 return Promise.resolve( [] );
             } )
             .then( existingMangaTitles => {
-                this.existingMangaTitles = existingMangaTitles;
+                this.existingManga = existingMangaTitles;
                 // check if manga list is cached
                 return ( this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() );
             } )
