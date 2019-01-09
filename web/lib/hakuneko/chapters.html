@@ -233,7 +233,7 @@
                         // extract languages from chapters and use a set to remove duplicates
                         this.languageList = Array.from( new Set( chapters.map( chapter => {
                             return chapter.language;
-                        } ).sort() ) );
+                        } ).filter( lng => !!lng ).sort() ) );
                         this.searchLanguage = undefined;
                     }
                     this.$.status.removeFromQueue( statusID );
@@ -499,7 +499,8 @@
                     } else {
                         matchTitle = !pattern || ( chapter.title.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
                     }
-                    let matchLanguage = !language || ( chapter.language.toLowerCase() === language.toLowerCase() );
+                    let chapterLanguage = chapter.language ? chapter.language.toLowerCase() : chapter.language;
+                    let matchLanguage = !language || ( language.toLowerCase() === chapterLanguage );
                     return ( matchTitle && matchLanguage );
                 };
             }
