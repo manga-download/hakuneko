@@ -70,35 +70,15 @@
         /**
          * Convenience function wrapping key value saving for mangas collection
          */
-        saveMangaList( connectorID, mangas, callback ) {
-            this.saveConfig( 'mangas.' + connectorID, mangas )
-            .then( () => {
-                if( typeof( callback ) === typeof( Function ) ) {
-                    callback( null );
-                }
-            } )
-            .catch( error  => {
-                if( typeof( callback ) === typeof( Function ) ) {
-                    callback( error );
-                }
-            } );
+        saveMangaList( connectorID, mangas ) {
+            return this.saveConfig( 'mangas.' + connectorID, mangas );
         }
 
         /**
          * Convenience function wrapping key value loading for mangas collection
          */
-        loadMangaList( connectorID, callback ) {
-            this.loadConfig( 'mangas.' + connectorID )
-            .then( data => {
-                if( typeof( callback ) === typeof( Function ) ) {
-                    callback( data, null );
-                }
-            } )
-            .catch( error => {
-                if( typeof( callback ) === typeof( Function ) ) {
-                    callback( undefined, error );
-                }
-            } );
+        loadMangaList( connectorID ) {
+            return this.loadConfig( 'mangas.' + connectorID );
         }
 
         /**
@@ -163,18 +143,17 @@
          * This key-value map can than be used to look up for existing manga titles (where the key represents the title and the value is always true).
          * Keep in mind that the manga titles in this map are sanitized and may not equal the raw (original) manga title.
          */
-        getExistingMangaTitles( connector, callback ) {
+        getExistingMangaTitles( connector ) {
             let directory = this._connectorOutputPath( connector );
-            this.fs.readdir( directory, ( error, entries ) => {
+            return this._readDirectoryEntries( directory )
+            .then( entries => {
                 let titleMap = [];
-                if( !error ) {
-                    // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
-                    entries.forEach( ( title ) => {
-                        titleMap[title] = true;
-                    });
-                }
-                callback( error, titleMap );
-            });
+                // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
+                entries.forEach( entry => {
+                    titleMap[entry] = true;
+                } );
+                return Promise.resolve( titleMap );
+            } );
         }
 
         /**

@@ -56,19 +56,17 @@
                 mangas.sort( ( a, b ) => {
                     return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
                 } );
-                // save manga list to local storage
-                Engine.Storage.saveMangaList( this.id, mangas, ( error ) => {
-                    // callback function may access update status, so set it before executing callback
+                
+                this.mangaCache = undefined;
+                Engine.Storage.saveMangaList( this.id, mangas )
+                .then( () => this.getMangas( callback ) )
+                .catch( error => {
+                    console.error( error.message );
+                    callback( error, undefined );
+                } )
+                .then( () => { // TODO: use finally for electron with chromium 63+
+                
                     this.isUpdating = false;
-                    this.mangaCache = undefined;
-                    if( error ) {
-                        // update failed
-                        console.error( error.message );
-                        callback( error, undefined );
-                    } else {
-                        // de-serialize manga list from local storage
-                        this.getMangas( callback );
-                    }
                 } );
             } );
         }
@@ -79,32 +77,57 @@
          */
         getMangas( callback ) {
             // find all manga titles (sanitized) that are found in the base directory for this connector
-            Engine.Storage.getExistingMangaTitles( this, ( error, existingMangaTitles ) => {
-                this.existingMangas = existingMangaTitles;
+            Engine.Storage.getExistingMangaTitles( this )
+            .catch( error => {
+                // Ignore manga file reading errors (e.g. root directory not exist)
+                //console.warn( 'getMangas', error );
+                return Promise.resolve( [] );
+            } )
+            .then( existingMangaTitles => {
+                this.existingMangaTitles = existingMangaTitles;
                 // check if manga list is cached
-                if( this.mangaCache ) {
-                    this.mangaCache.forEach( ( manga ) => {
-                        manga.updateStatus();
-                    });
-                    callback( null, this.mangaCache );
-                    return;
-                }
-                // get manga list from the local storage and cache them
-                Engine.Storage.loadMangaList( this.id, ( mangas, error ) => {
-                    if( !error ) {
-                        if( mangas ) {
-                            // de-serialize mangas into objects
-                            this.mangaCache = mangas.map( ( manga ) => {
-                                return new Manga( this, manga.id, manga.title );
-                            });
-                        }
-                    } else {
-                        console.error( error.message );
-                        this.mangaCache = undefined;
-                    }
-                    callback( null, this.mangaCache );
-                });
-            });
+                return ( this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() );
+            } )
+            .then( mangas => {
+                callback( null, mangas );
+            } )
+            .catch( error => {
+                // TODO: remove log ... ?
+                console.warn( 'getMangas', error );
+                callback( error, this.mangaCache );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getUpdatedMangasFromCache() {
+            if( this.mangaCache ) {
+                this.mangaCache.forEach( manga => {
+                    manga.updateStatus();
+                } );
+            }
+            return Promise.resolve( this.mangaCache );
+        }
+
+        /**
+         *
+         */
+        _getUpdatedMangasFromFile() {
+            // get manga list from the local storage and cache them
+            return Engine.Storage.loadMangaList( this.id )
+            .then( mangas => {
+                // de-serialize mangas into objects
+                this.mangaCache = mangas.map( manga => {
+                    return new Manga( this, manga.id, manga.title );
+                } );
+                return Promise.resolve( this.mangaCache );
+            } )
+            .catch( error => {
+                // TODO: remove log ... ?
+                console.warn( '_getUpdatedMangasFromFile', error );
+                return Promise.resolve( this.mangaCache || [] );
+            } );
         }
 
         /**
