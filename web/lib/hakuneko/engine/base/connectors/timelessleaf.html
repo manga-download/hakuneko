@@ -28,7 +28,7 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/manga/', 'div.entry-content > p > span > a' )
+            this.fetchDOM( this.url + '/manga/', 'nav#site-navigation ul#primary-menu li.current-menu-item li:not(.menu-item-has-children) a' )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
