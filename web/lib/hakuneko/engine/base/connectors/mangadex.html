@@ -88,6 +88,7 @@
         _getChapterList( manga, callback, chapterList ) {
             this._requestAPI( this.url + '/api/manga/' + this._migratedMangaID( manga.id ), this.requestOptions, 'chapter' )
             .then( data => {
+                console.log( data );
                 let chapterList = Object.keys( data.chapter ).map( id => {
                     let chapter = data.chapter[id];
                     let title = '';
@@ -95,7 +96,7 @@
                         title += 'Vol.' + ( '00' + chapter.volume ).slice( -2 );
                     }
                     if( chapter.chapter ) { // => string, not a number
-                        title += ' Ch.' + ( '0000' + chapter.chapter ).slice( -4 );
+                        title += ' Ch.' + '0'.repeat( 4 - chapter.chapter.split( '.' )[0].length ) + chapter.chapter;
                     }
                     if( chapter.title ) {
                         title += ( title ? ' - ' : '' ) + chapter.title;
