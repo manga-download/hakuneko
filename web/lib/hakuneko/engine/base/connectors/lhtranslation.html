@@ -1,0 +1,112 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class LHTranslation extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'lhtranslation';
+            super.label      = 'LHTranslation';
+            super.icon       = 'https://lhtranslation.net/wp-content/uploads/2018/10/cropped-LHLogo-32x32.png';
+            this.tags        = [ 'manga', 'hight-quality', 'english', 'scanlation' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://lhtranslation.net';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/schedule/', 'div#content table tbody tr td:first-of-type a' )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+         _getChapterListFromPages( manga, chapterPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( chapterPageLinks[ index ], 'div#content article header .title a', 5 ) )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ).replace( /^\/?/, 'https://read.lhtranslation.com/read-' ).replace( /\/?$/, '.html' ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: 'en'
+                    };
+                } );
+                if( index < chapterPageLinks.length - 1 ) {
+                    return this._getChapterListFromPages( manga, chapterPageLinks, index + 1 )
+                    .then( chapters => chapterList.concat( chapters ) );
+                } else {
+                    return Promise.resolve( chapterList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'nav.pagination a:nth-last-of-type(2)' )
+            .then( data => {
+                let pageCount = ( data.length === 0 ? 1 : parseInt( data[0].text.trim() ) );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + 'page/' + ( page + 1 ) + '/' );
+                return this._getChapterListFromPages( manga, pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( chapter.id, 'source.chapter-img' )
+            .then( data => {
+                let pageList = data.map( element => ( element.dataset['original'] || element.src ).trim() );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
