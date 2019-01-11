@@ -93,7 +93,7 @@
                     let chapter = data.chapter[id];
                     let title = '';
                     if( chapter.volume ) { // => string, not a number
-                        title += 'Vol.' + ( '00' + chapter.volume ).slice( -2 );
+                        title += 'Vol.' + chapter.volume.padStart( 2, '0' );
                     }
                     if( chapter.chapter ) { // => string, not a number
                         title += ' Ch.' + '0'.repeat( 4 - chapter.chapter.split( '.' )[0].length ) + chapter.chapter;
