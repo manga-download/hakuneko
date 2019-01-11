@@ -123,7 +123,7 @@
                     // chapter.volume_number
                     return {
                         id: chapter.chapter_id,
-                        title: ( '0000' + chapter.number ).slice( -7 ) + ( chapter.locale && chapter.locale.enUS ? ' - ' + chapter.locale.enUS.name : '' ),
+                        title: chapter.number.padStart( 7, '0' ) + ( chapter.locale && chapter.locale.enUS ? ' - ' + chapter.locale.enUS.name : '' ),
                         language: 'en'
                     }
                 } );
