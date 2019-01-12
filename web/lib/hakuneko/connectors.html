@@ -36,7 +36,11 @@
             .hide {
                 display: none;
             }
-            .input {
+            .controls {
+                text-align: right;
+                padding: 0.5em;
+            }
+            .button {
                 cursor: pointer;
             }
             .separator {
@@ -65,13 +69,17 @@
                 float: left;
                 background-color: var(--connector-card-background-color);
                 border: var(--connector-card-border);
-                box-shadow: var(--connector-card-shadow);
+                -webkit-box-shadow: var(--connector-card-shadow);
+                   -moz-box-shadow: var(--connector-card-shadow);
+                        box-shadow: var(--connector-card-shadow);
                 margin: 1em;
                 padding: 0.5em;
-                cursor: pointer;
             }
             .card:hover {
                 background-color: var(--connector-card-highlighted);
+            }
+            .cardSelected {
+                background-color: var(--connector-card-selected) !important;
             }
             .icon {
                 width: 3.25em;
@@ -87,9 +95,6 @@
                 margin-bottom: 0.25em;
                 border-bottom: var(--connector-title-border);
             }
-            .tags {
-                /**/
-            }
             .tag {
                 color: var(--connector-tag-color);
                 background-color: var(--connector-tag-background-color);
@@ -98,28 +103,34 @@
                 padding-left: 0.3em;
                 padding-right: 0.3em;
             }
+            .tagSelected {
+                background-color: var(--connector-tag-selected) !important;
+            }
         </style>
-        <input type="text" class="input" on-click="showPopup" value$="[[ selectedConnector.label ]]" readonly />
+        <input type="text" class="button" on-click="showPopup" value$="[[ selectedConnector.label ]]" readonly />
         <div class$="popup [[ getPopupClass(popupVisibility) ]]">
-            <div>
-                <i class="fa-times fa-2x" on-click="closePopup"></i>
+            <div class="controls" title="Click to cancel the website selection">
+                <i class="fa fa-times-circle fa-2x button" on-click="closePopup"></i>
             </div>
             <div class="separator">
                 <label>Filters</label>
             </div>
             <div class="filters">
                 <input type="text" value="{{ connectorPattern::input }}"/>
+                <template is="dom-repeat" items="[[ tags ]]">
+                    <span class$="tag button [[ getTagClass(selectedTags, item) ]]" on-click="toggleTag">[[ item.tag ]]</span>
+                </template>
             </div>
             <div class="separator">
                 <label>Connectors</label>
             </div>
             <div class="connectors">
-                <template is="dom-repeat" items="[[ connectorList ]]">
-                    <div class="card" on-click="selectConnector">
+                <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern,selectedTags) ]]">
+                    <div class$="card button [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
                         <img class="icon" src$="[[ item.icon ]]" />
                         <div class="description">
                             <div class="title">[[ item.label ]]</div>
-                            <div class="tags">
+                            <div>
                                 <template is="dom-repeat" items="[[ item.tags ]]">
                                     <span class="tag">[[ item ]]</span>
                                 </template>
@@ -166,12 +177,40 @@
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors.list );
                 //this.set( 'selectedConnector', this.connectorList[0] );
-                this.availableTags = this.connectorList.reduce( ( accumulator, connector ) => {
+                this.tags = this.getAvailableTags();
+                this.selectedTags = [];
+            }
+
+            /**
+             * 
+             */
+            getAvailableTags() {
+                let tags = [
+                    'manga',
+                    'anime',
+                    'manga',
+                    'raw',
+                    'scanlation',
+                    'hight-quality',
+                    'english',
+                    'spanish',
+                    'french',
+                    'multi-lingual'
+                ];
+                // TODO: extract tags from connector ...
+                /*this.connectorList.reduce( ( accumulator, connector ) => {
                     let tags = connector.tags || [];
                     let newTags = tags.filter( tag => !tags.find( tag ) );
                     return accumulator.concat( newTags );
-                }, [] );
-                console.log( 'availableTags', this.availableTags );
+                }, [] );*/
+                tags = [...new Set( tags )]; // remove duplicates
+                tags.sort();
+                return tags.map( tag => {
+                    return {
+                        tag: tag,
+                        selected: false
+                    };
+                } );
             }
 
             /**
@@ -202,6 +241,36 @@
                 //console.log( 'selectedConnector', evt.model.item );
                 this.set( 'selectedConnector', evt.model.item );
                 this.closePopup();
+            }
+
+            toggleTag( event ) {
+                event.model.item.selected = !event.model.item.selected;
+                this.set( 'selectedTags', this.tags.filter( tag => tag.selected ) );
+            }
+
+            /**
+             *
+             */
+            filterConnectors( pattern, tags ) {
+                return ( connector ) => {
+                    let patternMatch = ( !pattern || connector.label.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                    let tagsMatch = ( tags.filter( t => !connector.tags.includes( t.tag ) ).length < 1 );
+                    return ( patternMatch && tagsMatch );
+                };
+            }
+
+            /**
+             *
+             */
+            getConnectorClass( selectedConnector, connector ) {
+                return ( selectedConnector === connector ? 'cardSelected' : '' );
+            }
+
+            /**
+             *
+             */
+            getTagClass( selectedTags, tag ) {
+                return ( selectedTags.includes( tag ) ? 'tagSelected' : '' );
             }
         }
         window.customElements.define(HakunekoConnectors.is, HakunekoConnectors);
