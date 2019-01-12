@@ -16,11 +16,13 @@
             // Public members for usage in UI (mandatory)
             this.id       = 'bookmarks';
             this.label    = '< Bookmarks >';
+            this.icon     = '/img/bookmarks.png';
+            this.tags     = [ /* 'bookmarks', 'favorites' */ ];
             this.isLocked = false;
             // Private members for internal usage only (convenience)
-            this.url       = undefined;
-            this.referer   = undefined;
-            this.agent     = undefined;
+            this.url      = undefined;
+            this.referer  = undefined;
+            this.agent    = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
