@@ -1,0 +1,210 @@
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="engine/loader.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-connectors">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                /*background-color: var(--menu-control-background-color);*/
+                flex: 1;
+            }
+            .popup {
+                flex-direction: column;
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 0;
+                bottom: 0;
+                border: var(--connector-dialog-border);
+                background-color: var(--connector-dialog-background-color);
+                padding: 0em;
+                margin: 1em;
+                border-radius: 0em;
+                -webkit-box-shadow: var(--connector-dialog-shadow);
+                   -moz-box-shadow: var(--connector-dialog-shadow);
+                        box-shadow: var(--connector-dialog-shadow);
+                z-index: 1;
+            }
+            .show {
+                display: flex;
+            }
+            .hide {
+                display: none;
+            }
+            .input {
+                cursor: pointer;
+            }
+            .separator {
+                font-weight: bold;
+                color: var(--connector-dialog-category-color);
+                border-bottom: var(--connector-dialog-separator);
+                /*margin-bottom: 0.5em;*/
+                padding-left: 0.5em;
+                padding-top: 0.5em;
+                padding-bottom: 0.25em;
+                text-transform: uppercase;
+            }
+            .filters {
+                flex: 0;
+                padding: 0.5em;
+            }
+            .connectors {
+                flex: 1;
+                overflow-y: scroll;
+                padding: 0.5em;
+            }
+            .card {
+                display: flex;
+                flex-direction: row;
+                width: 30em;
+                float: left;
+                background-color: var(--connector-card-background-color);
+                border: var(--connector-card-border);
+                box-shadow: var(--connector-card-shadow);
+                margin: 1em;
+                padding: 0.5em;
+                cursor: pointer;
+            }
+            .card:hover {
+                background-color: var(--connector-card-highlighted);
+            }
+            .icon {
+                width: 3.25em;
+                height: 3.25em;
+            }
+            .description {
+                flex: 1;
+                margin-left: 0.5em;
+            }
+            .title {
+                font-size: 1.25em;
+                font-weight: bold;
+                margin-bottom: 0.25em;
+                border-bottom: var(--connector-title-border);
+            }
+            .tags {
+                /**/
+            }
+            .tag {
+                color: var(--connector-tag-color);
+                background-color: var(--connector-tag-background-color);
+                /*border: var(--connector-tag-border);*/
+                border-radius: 0.5em;
+                padding-left: 0.3em;
+                padding-right: 0.3em;
+            }
+        </style>
+        <input type="text" class="input" on-click="showPopup" value$="[[ selectedConnector.label ]]" readonly />
+        <div class$="popup [[ getPopupClass(popupVisibility) ]]">
+            <div>
+                <i class="fa-times fa-2x" on-click="closePopup"></i>
+            </div>
+            <div class="separator">
+                <label>Filters</label>
+            </div>
+            <div class="filters">
+                <input type="text" value="{{ connectorPattern::input }}"/>
+            </div>
+            <div class="separator">
+                <label>Connectors</label>
+            </div>
+            <div class="connectors">
+                <template is="dom-repeat" items="[[ connectorList ]]">
+                    <div class="card" on-click="selectConnector">
+                        <img class="icon" src$="[[ item.icon ]]" />
+                        <div class="description">
+                            <div class="title">[[ item.label ]]</div>
+                            <div class="tags">
+                                <template is="dom-repeat" items="[[ item.tags ]]">
+                                    <span class="tag">[[ item ]]</span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoConnectors extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-connectors';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    selectedConnector: {
+                        type: Object,
+                        value: Engine.Connectors.list[0],
+                        notify: true, // enable upward data flow,
+                        //readOnly: true // prevent downward data flow
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.popupVisibility = false;
+                // list of all available connectors
+                this.connectorList = [];
+                // load connectors
+                this.set( 'connectorList', Engine.Connectors.list );
+                //this.set( 'selectedConnector', this.connectorList[0] );
+                this.availableTags = this.connectorList.reduce( ( accumulator, connector ) => {
+                    let tags = connector.tags || [];
+                    let newTags = tags.filter( tag => !tags.find( tag ) );
+                    return accumulator.concat( newTags );
+                }, [] );
+                console.log( 'availableTags', this.availableTags );
+            }
+
+            /**
+             *
+             */
+            getPopupClass( visibility ) {
+                return ( visibility ? 'show' : 'hide' );
+            }
+
+            /**
+             *
+             */
+            showPopup() {
+                this.set( 'popupVisibility', true );
+            }
+
+            /**
+             *
+             */
+            closePopup() {
+                this.set( 'popupVisibility', false );
+            }
+
+            /**
+             *
+             */
+            selectConnector( evt ) {
+                //console.log( 'selectedConnector', evt.model.item );
+                this.set( 'selectedConnector', evt.model.item );
+                this.closePopup();
+            }
+        }
+        window.customElements.define(HakunekoConnectors.is, HakunekoConnectors);
+    </script>
+
+</dom-module>
