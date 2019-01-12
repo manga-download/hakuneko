@@ -15,9 +15,26 @@
             super.id         = 'jokerfansub';
             super.label      = 'JokerFansub';
             this.tags        = [ 'manga', 'high-quality', 'spanish', 'scanlation' ];
-            this.url         = 'http://reader.jokerfansub.com';
+            this.initialized = false;
+            this.url         = 'http://reader.jkrfb.xyz';
             //this.path        = '/directory/';
             this.language    = 'spanish';
+
+            this._initializeConnector();
+        }
+
+        /**
+         *
+         */
+        _initializeConnector() {
+            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
+            .then( result => {
+                this.initialized = true; 
+            } )
+            .catch( error => {
+                console.error( error, this ); 
+                this.initialized = undefined;
+            } );
         }
     }
 
