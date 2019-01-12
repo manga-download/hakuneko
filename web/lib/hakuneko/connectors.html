@@ -36,14 +36,49 @@
             .hide {
                 display: none;
             }
-            .controls {
-                text-align: right;
-                padding: 0.5em;
-            }
             .button {
                 cursor: pointer;
             }
+            .clear {
+                color: var(--connector-button-clear-color);
+            }
+            .controls {
+                flex: 0;
+                text-align: right;
+                padding: 0.5em;
+            }
+            .content {
+                flex: 1;
+                display: flex;
+                flex-direction: row;
+            }
+            .filters {
+                flex: 0;
+                display: flex;
+                flex-direction: column;
+                margin: 0.5em;
+            }
+            .connectors {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                margin: 0.5em;
+            }
+            .pattern {
+                flex: 0;
+                min-width: 16em;
+            }
+            .scroll {
+                flex: 1;
+                overflow-y: scroll;
+            }
+            .tags {
+                background-color: var(--connector-tag-list-background-color);
+                line-height: 1.5em;
+                padding: 0.5em;
+            }
             .separator {
+                flex: 0;
                 font-weight: bold;
                 color: var(--connector-dialog-category-color);
                 border-bottom: var(--connector-dialog-separator);
@@ -52,15 +87,6 @@
                 padding-top: 0.5em;
                 padding-bottom: 0.25em;
                 text-transform: uppercase;
-            }
-            .filters {
-                flex: 0;
-                padding: 0.5em;
-            }
-            .connectors {
-                flex: 1;
-                overflow-y: scroll;
-                padding: 0.5em;
             }
             .card {
                 display: flex;
@@ -112,32 +138,53 @@
             <div class="controls" title="Click to cancel the website selection">
                 <i class="fa fa-times-circle fa-2x button" on-click="closePopup"></i>
             </div>
-            <div class="separator">
-                <label>Filters</label>
-            </div>
-            <div class="filters">
-                <input type="text" value="{{ connectorPattern::input }}"/>
-                <template is="dom-repeat" items="[[ tags ]]">
-                    <span class$="tag button [[ getTagClass(selectedTags, item) ]]" on-click="toggleTag">[[ item.tag ]]</span>
-                </template>
-            </div>
-            <div class="separator">
-                <label>Connectors</label>
-            </div>
-            <div class="connectors">
-                <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern,selectedTags) ]]">
-                    <div class$="card button [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
-                        <img class="icon" src$="[[ item.icon ]]" onerror="this.src='/img/connectors/default';" />
-                        <div class="description">
-                            <div class="title">[[ item.label ]]</div>
-                            <div>
-                                <template is="dom-repeat" items="[[ item.tags ]]">
-                                    <span class="tag">[[ item ]]</span>
-                                </template>
-                            </div>
-                        </div>
+            <div class="content">
+                <div class="filters">
+                    <div class="separator">
+                        <label>Pattern</label>
                     </div>
-                </template>
+                    <table class="pattern">
+                        <tr>
+                            <td>
+                                <i class="fa fa-search" title="Enter a pattern to filter the website list by their labels"></i>
+                            </td>
+                            <td style="width: 100%;">
+                                <input id="input" type="text" value="{{ connectorPattern::input }}"/>
+                            </td>
+                            <td>
+                                <i class="fa fa-times button clear" title="Reset all filters (pattern + tags)" on-click="clearFilters"></i>
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="separator">
+                        <label>Tags</label>
+                    </div>
+                    <div class="scroll tags">
+                        <template is="dom-repeat" items="[[ tags ]]">
+                            <span class$="tag button [[ getTagClass(selectedTags, item) ]]" on-click="toggleTag">[[ item.tag ]]</span>
+                        </template>
+                    </div>
+                </div>
+                <div class="connectors">
+                    <div class="separator">
+                        <label>Connectors</label>
+                    </div>
+                    <div class="scroll">
+                        <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern,selectedTags) ]]">
+                            <div class$="card button [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
+                                <img class="icon" src$="[[ item.icon ]]" onerror="this.src='/img/connectors/default';" />
+                                <div class="description">
+                                    <div class="title">[[ item.label ]]</div>
+                                    <div>
+                                        <template is="dom-repeat" items="[[ item.tags ]]">
+                                            <span class="tag">[[ item ]]</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
         </div>
     </template>
@@ -209,7 +256,10 @@
              *
              */
             showPopup() {
+                //this.clearFilters();
                 this.set( 'popupVisibility', true );
+                this.set( 'connectorPattern', '' );
+                this.$.input.focus();
             }
 
             /**
@@ -241,6 +291,15 @@
                     let tagsMatch = ( tags.filter( t => !connector.tags.includes( t.tag ) ).length < 1 );
                     return ( patternMatch && tagsMatch );
                 };
+            }
+
+            /**
+             * 
+             */
+            clearFilters() {
+                this.tags.forEach( t => t.selected = false);
+                this.set( 'connectorPattern', '' );
+                this.set( 'selectedTags', [] );
             }
 
             /**
