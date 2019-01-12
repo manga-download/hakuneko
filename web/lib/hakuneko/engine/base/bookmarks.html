@@ -30,7 +30,7 @@
             let dropped = '';
             bookmarks.forEach( bookmark => {
                 // check if connector / website is supported
-                let supported = Engine.Connectors.available.findIndex( c => ( c.id === bookmark.key.connector ) ) > -1;
+                let supported = Engine.Connectors.findIndex( c => ( c.id === bookmark.key.connector ) ) > -1;
                 if( !supported ) {
                     dropped += `<tr><td style="color: #808080; font-weight: bold; padding-right: 1em;">${ bookmark.title.connector }</td><td>${ bookmark.title.manga }</td></tr>`;
                 }

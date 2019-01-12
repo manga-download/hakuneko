@@ -129,7 +129,7 @@
 
         function connectorInitialization() {
             // wait until all connectors have been initialized ...
-            for( let connector of Engine.Connectors.available ) {
+            for( let connector of Engine.Connectors ) {
                 if( connector.initialized !== undefined && connector.initialized === false ) {
                     setTimeout( connectorInitialization.bind( this ), 2500 );
                     return;
@@ -137,7 +137,7 @@
             }
 
             let promise = Promise.resolve();
-            for( let connector of Engine.Connectors.available.filter( c => c.id !== 'bookmarks' ) ) {
+            for( let connector of Engine.Connectors.filter( c => c.id !== 'bookmarks' ) ) {
                 promise = promise.then( () => connector_test( connector ) );
             }
         };

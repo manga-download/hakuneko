@@ -17,7 +17,7 @@
          */
         static get Connectors() {
             if( !this._instanceConnectors ) {
-                this._instanceConnectors = new Connectors();
+                this._instanceConnectors = ( new Connectors() ).list;
             }
             return this._instanceConnectors;
         }

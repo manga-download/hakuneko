@@ -169,7 +169,7 @@
 
             _checkConnectorInitialization( log ) {
                 let result = true;
-                for( let connector of Engine.Connectors.available ) {
+                for( let connector of Engine.Connectors ) {
                     if( connector.initialized !== undefined && connector.initialized === false ) {
                         result = false;
                         if( log ) {

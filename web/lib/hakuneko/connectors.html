@@ -206,7 +206,7 @@
                 return {
                     selectedConnector: {
                         type: Object,
-                        value: Engine.Connectors.list[0],
+                        value: Engine.Connectors[0],
                         notify: true, // enable upward data flow,
                         //readOnly: true // prevent downward data flow
                     }
@@ -222,7 +222,7 @@
                 // list of all available connectors
                 this.connectorList = [];
                 // load connectors
-                this.set( 'connectorList', Engine.Connectors.list );
+                this.set( 'connectorList', Engine.Connectors );
                 //this.set( 'selectedConnector', this.connectorList[0] );
                 this.tags = this.getAvailableTags();
                 this.selectedTags = [];

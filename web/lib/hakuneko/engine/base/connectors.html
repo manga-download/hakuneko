@@ -155,11 +155,8 @@
          *
          */
         constructor() {
-            //
-            this.excludes = [];
-            this.loadFilterList();
             // raw list of all available connectors
-            this.available = [];
+            this.list = [];
             this.register( new BookmarkConnector() );
             this.register( new KissMangaCDN() );
             this.register( new KissManga() );
@@ -311,66 +308,13 @@
          */
         register( connector ) {
             // determine if connector is already registered
-            if( this.available.find( c => c.id === connector.id ) ) {
+            if( this.list.find( c => c.id === connector.id ) ) {
                 return;
             }
-            this.available.push( connector );
-            this.available.sort( ( a, b ) => {
+            this.list.push( connector );
+            this.list.sort( ( a, b ) => {
                 return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
             } );
-        }
-
-        /**
-         * List of all connectors shown in the UI selection list
-         */
-        get list() {
-            //return this.available.slice( 10, 20 );
-            return this.available.filter( connector => {
-                return this.excludes.indexOf( connector.id ) < 0;
-            } );
-        }
-
-        /**
-         *
-         */
-        loadFilterList() {
-            Engine.Storage.loadConfig( 'connectors' ).then( data => {
-                this.excludes = data;
-                document.dispatchEvent( new CustomEvent( EventListener.onConnectorFilterChanged, { detail: this.excludes } ) );
-            } );
-        }
-
-        /**
-         *
-         */
-        saveFilterList() {
-            Engine.Storage.saveConfig( 'connectors', this.excludes ).then( () => {
-                document.dispatchEvent( new CustomEvent( EventListener.onConnectorFilterChanged, { detail: this.excludes } ) );
-            } );
-        }
-
-        /**
-         *
-         */
-        addFilter( connector ) {
-            let index = this.excludes.indexOf( connector.id );
-            if( index < 0 ) {
-                this.excludes.push( connector.id );
-                this.excludes.sort();
-                this.saveFilterList();
-            }
-        }
-
-        /**
-         *
-         */
-        deleteFilter( connector ) {
-            let index = this.excludes.indexOf( connector.id );
-            if( index > -1 ) {
-                this.excludes = this.excludes.filter( id => id !== connector.id );
-                this.excludes.sort();
-                this.saveFilterList();
-            }
         }
     }
     Connectors; // reference the class to prevent removal of the class through js-minify
