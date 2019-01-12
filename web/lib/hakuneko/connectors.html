@@ -127,7 +127,7 @@
             <div class="connectors">
                 <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern,selectedTags) ]]">
                     <div class$="card button [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
-                        <img class="icon" src$="[[ item.icon ]]" />
+                        <img class="icon" src$="[[ item.icon ]]" onerror="this.src='/img/connectors/default';" />
                         <div class="description">
                             <div class="title">[[ item.label ]]</div>
                             <div>
@@ -185,29 +185,14 @@
              * 
              */
             getAvailableTags() {
-                let tags = [
-                    'manga',
-                    'anime',
-                    'manga',
-                    'raw',
-                    'scanlation',
-                    'hight-quality',
-                    'english',
-                    'spanish',
-                    'french',
-                    'multi-lingual'
-                ];
-                // TODO: extract tags from connector ...
-                /*this.connectorList.reduce( ( accumulator, connector ) => {
-                    let tags = connector.tags || [];
-                    let newTags = tags.filter( tag => !tags.find( tag ) );
+                let tags = this.connectorList.reduce( ( accumulator, connector ) => {
+                    let newTags = connector.tags.filter( t => !accumulator.includes( t ) );
                     return accumulator.concat( newTags );
-                }, [] );*/
-                tags = [...new Set( tags )]; // remove duplicates
-                tags.sort();
-                return tags.map( tag => {
+                }, [] );
+                // SET removes duplicates
+                return [...new Set( tags )].sort().map( t => {
                     return {
-                        tag: tag,
+                        tag: t,
                         selected: false
                     };
                 } );
@@ -238,7 +223,6 @@
              *
              */
             selectConnector( evt ) {
-                //console.log( 'selectedConnector', evt.model.item );
                 this.set( 'selectedConnector', evt.model.item );
                 this.closePopup();
             }
