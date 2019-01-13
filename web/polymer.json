@@ -3,9 +3,9 @@
   "shell": "lib/hakuneko/app.html",
   "fragments": [],
   "sources": [
-    "js/*",
-    "img/*",
-    "css/*",
+    "js",
+    "img",
+    "css",
     "index.html",
     "lib/hakuneko/app.html"
   ],
