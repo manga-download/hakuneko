@@ -3,7 +3,7 @@
 <link rel="import" href="../polymer/lib/elements/dom-if.html">
 <!-- <link rel="import" href="../iron-list/iron-list.html"> -->
 <link rel="import" href="engine/base/enums.html">
-<link rel="import" href="engine/loader.html">
+<link rel="import" href="connectors.html">
 <link rel="import" href="bookmarks.html">
 <link rel="import" href="status.html">
 <link rel="import" href="theme.html">
@@ -79,15 +79,11 @@
             <tr>
                 <td>
                     <!-- <i class="fa fa-server" title="Select an origin from which mangas/animes should be shown"></i> -->
-                    <i class="fa fa-fw fa-plug fa-flip-horizontal" title="Select an origin from which the manga list should be shown"></i>
+                    <i class="fa fa-fw fa-plug fa-flip-horizontal" title="Select a website from which the manga list should be shown"></i>
                     <!-- <i class="fa fa-link" title="Select a connector to show its locally stored manga list"></i> -->
                 </td>
                 <td style="width: 100%;">
-                    <select id="connectorSelection" on-change="onSelectedConnectorIDChanged">
-                        <template is="dom-repeat" items="[[ connectorList ]]">
-                            <option value$="[[ item.id ]]">[[ item.label ]]</option>
-                        </template>
-                    </select>
+                    <hakuneko-connectors selected-connector="{{ selectedConnector }}"></hakuneko-connectors>
                 </td>
                 <td>
                     <i class$="fa fa-fw fa-refresh [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
@@ -161,44 +157,15 @@
             /**
              *
              */
-            static get observers() {
-                return [
-                    '_selectedConnectorIDChanged(_selectedConnectorID)',
-                    '_selectedMangaIDChanged(_selectedMangID)'
-                ]
-            }
-
-            /**
-             *
-             */
             ready() {
                 super.ready();
                 // the bookmark connector which is required for some exceptional handling
                 this.bookmarkConnectorID = 'bookmarks';
-                // list of all available connectors
-                this.connectorList = [];
                 // currently active manga list
-                this.mangaList = undefined;
-                // load connectors
-                this.set( 'connectorList', Engine.Connectors.list );
-                // auto select the bookmarks connector when available
-                this.selectedConnector = this.connectorList.find( ( connector ) => { return connector.id === this.bookmarkConnectorID; });
+                this.mangaList = this['mangaList'];
                 // register callbacks for published events
-                document.addEventListener( EventListener.onConnectorFilterChanged, this.onConnectorFilterChanged.bind( this ) );
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
-            }
-
-            /**
-             * Event listener attached to the corresponding <select> element.
-             * When the index of the selected connector is changed, the corresponding connector from 'connectorList' will be assigned to 'selectedConnector'.
-             */
-            onSelectedConnectorIDChanged( evt ) {
-                let id = evt.target.value;
-                let connector = this.connectorList.find( item => {
-                    return ( item.id === id );
-                });
-                this.set( 'selectedConnector', connector );
             }
 
             /**
@@ -207,12 +174,8 @@
             onSelectedConnectorChanged( connector ) {
                 this.set( 'selectedManga', undefined );
                 if( !connector ) {
-                    this.$.connectorSelection.value = '';
                     this.set( 'mangaList', undefined );
                     return;
-                }
-                if( connector.id.toString() !== this.$.connectorSelection.value ) {
-                    this.$.connectorSelection.value = connector.id;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
                 // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage) 
@@ -223,7 +186,7 @@
                         this.set( 'mangaList', mangas );
                     }
                     this.$.status.removeFromQueue( statusID );
-                });
+                } );
             }
 
             /**
@@ -278,7 +241,7 @@
             /**
              *
              */
-           getMangaClass( selectedManga, id ) {
+            getMangaClass( selectedManga, id ) {
                 return ( !selectedManga || selectedManga.id !== id ? '' : 'focus' );
             }
 
@@ -292,34 +255,14 @@
             /**
              *
              */
-            /*
-            filteredMangas( mangas, pattern ) {
-                if( !mangas || !pattern || pattern.length < 3 ) {
-                    return mangas;
-                }
-                let p = pattern.toLowerCase();
-                return mangas.filter( manga => {
-                    return ( manga.title.toLowerCase().indexOf( p ) > -1 );
-                });
-            }
-            */
-
             filterMangas( pattern ) {
                 if( !pattern || pattern.length < 3 ) {
                     return null;
                 }
+                let p = pattern.toLowerCase();
                 return ( manga ) => {
-                    let p = pattern.toLowerCase();
                     return ( manga.title.toLowerCase().indexOf( p ) > -1 || manga.connector.label.toLowerCase().indexOf( p ) > -1 );
                 };
-            }
-
-            /**
-             * 
-             */
-            onConnectorFilterChanged( e ) {
-                //this.set( 'connectorList', Engine.Connectors.list );
-                console.log( 'onConnectorFilterChanged', e.detail );
             }
 
             /**
