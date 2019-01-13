@@ -103,7 +103,8 @@
          *
          */
         _validateScript() {
-            // TODO: fetch through proxy ...
+            return Promise.resolve( undefined );
+            /*
             return fetch( 'http://www.mnggo.net/mobi/js/chapter.js?666', this.requestOptions )
             .then( response => response.text() )
             .then( data => {
@@ -114,10 +115,11 @@
                 this.script = data.replace( new RegExp( original, 'g' ), replacement ) + 'imgsrcs';
                 let hash = CryptoJS.MD5( data ).toString( CryptoJS.enc.Hex );
                 if( this.hash !== hash ) {
-                    //throw new Error( this.label + ' has updated the encryption!\nYou will not be able to get valid images.\nHash: ' + hash );
+                    throw new Error( this.label + ' has updated the encryption!\nYou will not be able to get valid images.\nHash: ' + hash );
                 }
                 return Promise.resolve( hash );
             } );
+            */
         }
 
         /**
@@ -208,7 +210,6 @@
         _getPageList( manga, chapter, callback ) {
             Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, this.script )
             .then( result => {
-                console.log( result );
                 if( !( result instanceof Array ) ) {
                     throw new Error( 'Page list is invalid (incompatible variable type)!' );
                 }
@@ -241,22 +242,14 @@
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            let delay = parseInt( uri.searchParams.get( 'delay' ) || 0 );
+            let delay = parseInt( uri.searchParams.get( 'delay' ) );
             uri.searchParams.delete( 'delay' );
-            let referer = uri.searchParams.get( 'referer' );
-            uri.searchParams.delete( 'referer' );
-
             if( uri.hostname.indexOf( 'blogspot' ) > -1 ) {
                 this.requestOptions.headers.delete( 'x-referer' );
             } else {
-                this.requestOptions.headers.set( 'x-referer', referer );
+                this.requestOptions.headers.set( 'x-referer', uri.searchParams.get( 'referer' ) );
             }
-
-            if( uri.hostname.indexOf( 'mangapicgallery' ) > -1 ) {
-                uri.protocol = 'http';
-                uri.hostname = uri.hostname.replace( 'mangapicgallery.com', 'mangago.download' );
-                console.log( 'PROXIFY', uri.href );
-            }
+            uri.searchParams.delete( 'referer' );
 
             this.wait( delay )
             .then( () => fetch( uri.href, this.requestOptions ) )

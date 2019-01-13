@@ -4,7 +4,7 @@
   "fragments": [],
   "sources": [
     "js/*",
-    "img",
+    "img/*",
     "css/*",
     "index.html",
     "lib/hakuneko/app.html"
