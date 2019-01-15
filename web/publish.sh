@@ -18,8 +18,9 @@ echo "};" >> "lib/hakuneko/version.html"
 echo "</script>" >> "lib/hakuneko/version.html"
 
 polymer build
-# overwrite the polymer minified js files with the original minified js files (e.g. prevent breaking hls.light.min.js when minified by polymer)
+# overwrite the polymer minified/obfuscated js files with the original minified/obfuscated js files (e.g. prevent breaking hls.light.min.js when minified by polymer)
 cp -f ./js/*.min.js $DIR/js/
+cp -f ./lib/hakuneko/engine/base/connectors/mangago.html $DIR/lib/hakuneko/engine/base/connectors/mangago.html
 cd $DIR
 zip -r $VER.zip .
 echo -n $VER.zip?signature=$(openssl dgst -sha256 -hex -sign $KEY $VER.zip | cut -d' ' -f2) > latest
