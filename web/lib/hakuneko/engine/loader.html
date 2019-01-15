@@ -57,7 +57,7 @@
          */
         static get Request() {
             if( !this._instanceRequest ) {
-                this._instanceRequest = new RequestElectron();
+                this._instanceRequest = new RequestElectron( Engine.Blacklist );
             }
             return this._instanceRequest;
         }
@@ -80,6 +80,16 @@
                 this._instanceStorage = new StorageElectron();
             }
             return this._instanceStorage;
+        }
+
+        /**
+         *
+         */
+        static get Blacklist() {
+            if( !this._instanceBlacklist ) {
+                this._instanceBlacklist = new Blacklist();
+            }
+            return this._instanceBlacklist;
         }
     }
 

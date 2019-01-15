@@ -1,6 +1,5 @@
 <link rel="import" href="../base/request.html">
 <link rel="import" href="../base/useragent.html">
-<link rel="import" href="blacklist.html">
 
 <script>
 
@@ -12,7 +11,7 @@
         /**
          *
          */
-        constructor() {
+        constructor( blacklist ) {
             super();
             let electron = require( 'electron' );
             this.webframe = electron.webFrame;
@@ -20,7 +19,7 @@
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             this.browser = this.electronRemote.BrowserWindow;
             this.userAgent = UserAgent.random();
-            this.blacklist = Blacklist.patterns;
+            this.blacklist = blacklist;
 
             // register 'cache' as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
             // this cannot be done in main process of electron, so it is done here ...
@@ -108,7 +107,7 @@
                     }
                 } );
                 //win.webContents.openDevTools();
-                win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist }, ( details, callback ) => {
+                win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist.patterns }, ( details, callback ) => {
                     callback( { cancel: true } );
                 } );
 
@@ -221,7 +220,7 @@
             }
             // Overwrite the User-Agent header for certain domains
             if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.indexOf( uri.host ) > -1 ) {
-                details.requestHeaders['User-Agent'] = UserAgent.random();
+                details.requestHeaders['User-Agent'] = this.userAgent; // UserAgent.random();
             }
             delete details.requestHeaders['x-user-agent'];
 
