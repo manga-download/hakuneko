@@ -20,6 +20,7 @@
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangadex.org';
+            this.requestOptions.headers.set( 'x-cookie', 'mangadex_title_mode=2' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 throttle: {
@@ -41,7 +42,7 @@
                 index = 0;
             }
             return this.wait( this.config.throttle.value )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.mb-1 a.ml-1', 5 ) )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.manga-entry div.row div.col a.manga_title', 5 ) )
             .then( data => {
                 let mangaList = data.map( element => {
                     this.cfMailDecrypt( element );
@@ -63,13 +64,13 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/titles', 'nav ul.pagination li.paging:last-of-type a.page-link' )
+            this.fetchDOM( this.url + '/titles/2/250', 'nav ul.pagination li.paging:last-of-type a.page-link' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match(/(\d+)\/$/)[1] );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/titles/0/' + ( page + 1 ) + '/' );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/titles/2/' + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
