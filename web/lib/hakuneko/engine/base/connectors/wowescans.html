@@ -1,0 +1,40 @@
+<link rel="import" href="mangareadercms.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class WoweScans extends MangaReaderCMS {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'wowescans';
+            super.label      = 'Wowe Scans';
+            this.tags        = [ 'manga', 'high-quality', 'english', 'scanlation' ];
+            this.url         = 'https://wowescans.net';
+
+            this.language = 'en';
+
+            this._initializeConnector();
+        }
+
+        /**
+         *
+         */
+         _initializeConnector() {
+            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
+            .then( result => {
+                this.initialized = true; 
+            } )
+            .catch( error => {
+                console.error( error, this ); 
+                this.initialized = undefined;
+            } );
+        }
+    }
+
+</script>
