@@ -20,6 +20,7 @@
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'http://www.mangahere.cc';
+            this.requestOptions.headers.set( 'x-cookie', 'isAdult=1' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -51,6 +52,12 @@
         _getChapterList( manga, callback ) {
             this.fetchDOM( this.url + manga.id, 'div#chapterlist ul.detail-main-list li > a' )
             .then( data => {
+                /*
+                'div.detail-main div.detail-block p.detail-block-content'
+                if( data.indexOf( 'has been licensed' ) > -1 ) {
+                    throw new Error( 'The manga is licensed and not available in your country!' );
+                }
+                */
                 let chapterList = data.map( element => {
                     let title = element.querySelector( 'div p.title3' ).textContent;
                     return {
