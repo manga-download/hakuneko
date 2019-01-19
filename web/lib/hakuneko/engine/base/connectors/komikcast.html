@@ -15,10 +15,13 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'komikcast';
             super.label      = 'KomikCast';
-            super.isLocked   = false;
-            this.initialized = undefined;
+            this.tags        = [ 'manga', 'indonesian' ];
             // Private members for internal usage only (convenience)
             this.url         = 'https://komikcast.com';
+            this.path        = '/list/';
+
+            this.queryMangas = 'div#main div#content div.daftarkartun ul li a.series';
+            this.queryPages = 'div#readerarea source[border], div.separator source[border]';
         }
     }
 
