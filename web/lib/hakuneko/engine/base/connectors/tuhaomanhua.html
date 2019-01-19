@@ -1,0 +1,159 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class TuhaoManhua extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'tuhaomanhua';
+            super.label      = '土豪漫画';
+            this.tags        = [ 'manga', 'chinese' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://www.tohomh123.com';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'tuhaomanhua' protocol) and fetch images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+         _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'ul.mh-list li div.mh-item h2.title a', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/f-1------updatetime--9999.html', 'div.page-pagination ul li:last-of-type a.active' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.trim() );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/f-1------updatetime--' + ( page + 1 ) + '.html' );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'div#chapterlistload ul#detail-list-select-1 li a' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.childNodes[0].nodeValue.trim(),
+                        language: 'zh'
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let uri = new URL( this.url + '/action/play/read' );
+                uri.protocol = this.id;
+                uri.searchParams.set( 'did', data.match( /var\s+did\s*=\s*(\d+)\s*;/ )[1] );
+                uri.searchParams.set( 'sid', data.match( /var\s+sid\s*=\s*(\d+)\s*;/ )[1] );
+                let pageCount = parseInt( data.match( /var\s+pcount\s*=\s*(\d+)\s*;/ )[1] );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => {
+                    uri.searchParams.set( 'iid', page + 1 );
+                    uri.searchParams.set( 'tmp', Math.random() );
+                    return uri.href;
+                } );
+                callback( null, pageLinks );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.json();
+            } )
+            .then( data => fetch( data.Code, this.requestOptions ) )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+    }
+
+</script>
