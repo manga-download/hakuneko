@@ -1,0 +1,28 @@
+<link rel="import" href="wp-emanga.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class Kiryuu extends WordPressEManga {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'kiryuu';
+            super.label      = 'Kiryuu';
+            this.tags        = [ 'manga', 'indonesian' ];
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://kiryuu.co';
+            this.path        = '/manga-lists/?list';
+
+            this.queryMangas = 'div#main div#content div.soralist ul li a.series';
+            this.queryPages = 'div#readerarea source[data-lazy-src]';
+        }
+    }
+
+</script>
