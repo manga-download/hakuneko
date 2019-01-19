@@ -1,0 +1,25 @@
+<link rel="import" href="wp-emanga.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class KomikOtaku extends WordPressEManga {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'komikotaku';
+            super.label      = 'KomikOtaku';
+            this.tags        = [ 'manga', 'indonesian' ];
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://komikotaku.net';
+            this.path        = '/manga-list/';
+        }
+    }
+
+</script>
