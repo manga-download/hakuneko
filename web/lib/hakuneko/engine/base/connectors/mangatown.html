@@ -118,7 +118,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( ( chapter.id.startsWith( 'http' ) ? chapter.id : this.url + chapter.id ), 'div.manga_read_footer div.page_select select option' )
+            this.fetchDOM( ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id, 'div.manga_read_footer div.page_select select option' )
             .then( data => {
                 let pageList = data.map( element => {
                     if( element.value.startsWith( '//' ) ) {
