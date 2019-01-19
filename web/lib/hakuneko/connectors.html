@@ -286,8 +286,9 @@
              *
              */
             filterConnectors( pattern, tags ) {
-                return ( connector ) => {
-                    let patternMatch = ( !pattern || connector.label.toLowerCase().indexOf( pattern.toLowerCase() ) > -1 );
+                let p = ( pattern || '' ).toLowerCase();
+                return connector => {
+                    let patternMatch = ( !pattern || ( connector.id + connector.label ).toLowerCase().includes( p ) );
                     let tagsMatch = ( tags.filter( t => !connector.tags.includes( t.tag ) ).length < 1 );
                     return ( patternMatch && tagsMatch );
                 };
