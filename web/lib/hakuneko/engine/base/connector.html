@@ -65,14 +65,16 @@
                 
                 this.mangaCache = undefined;
                 Engine.Storage.saveMangaList( this.id, mangas )
-                .then( () => this.getMangas( callback ) )
+                .then( () => {
+                    // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                    this.isUpdating = false;
+                    this.getMangas( callback );
+                } )
                 .catch( error => {
+                    // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                    this.isUpdating = false;
                     console.error( error.message );
                     callback( error, undefined );
-                } )
-                .then( () => { // TODO: use finally for electron with chromium 63+
-                
-                    this.isUpdating = false;
                 } );
             } );
         }
@@ -83,7 +85,7 @@
          */
         getMangas( callback ) {
             // find all manga titles (sanitized) that are found in the base directory for this connector
-            Engine.Storage.getExistingMangaTitles( this )
+            return Engine.Storage.getExistingMangaTitles( this )
             .catch( error => {
                 // Ignore manga file reading errors (e.g. root directory not exist)
                 //console.warn( 'getMangas', error );
@@ -96,11 +98,13 @@
             } )
             .then( mangas => {
                 callback( null, mangas );
+                return Promise.resolve( mangas );
             } )
             .catch( error => {
                 // TODO: remove log ... ?
                 console.warn( 'getMangas', error );
                 callback( error, this.mangaCache );
+                return Promise.reject( error );
             } );
         }
 
