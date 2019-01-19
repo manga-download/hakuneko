@@ -78,7 +78,8 @@
                 let pageLinks = data.map( element => {
                     let link = element.dataset['lazySrc'] || element.src;
                     return ( link.startsWith( 'http' ) ? '' : 'http:' ) + link;
-                } );
+                } )
+                .filter( link => !link.includes( 'histats.com' ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {
