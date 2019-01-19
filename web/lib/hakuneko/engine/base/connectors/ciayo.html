@@ -1,0 +1,105 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class Ciayo extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'ciayo';
+            super.label      = 'CIAYO';
+            this.tags        = [ 'webtoon', 'multi-lingual' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://vueserion.ciayo.com/3.1';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            this.language = 'id';
+        }
+
+        /**
+         *
+         */
+        _requestJSON( url ) {
+            return fetch( url, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive JSON (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.json();
+            } )
+            .then( data => {
+                if( data.c.status.error ) {
+                    throw new Error( data.c.status.message );
+                }
+                return Promise.resolve( data.c.data );
+            } )
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this._requestJSON( `${this.url}/comics?app=desktop&language=${this.language}&count=9999` )
+            .then( data => {
+                let mangaList = data.map( item => {
+                    return {
+                        id: item.alias, // item.code, item.share_url
+                        title: item.title
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this._requestJSON( `${this.url}/comics/${manga.id}/chapters?app=desktop&language=${this.language}&count=9999` )
+            .then( data => {
+                let chapterList = data.sort( ( a, b ) => b.order - a.order ).map( item => {
+                    return {
+                        id: item.alias, // item.share_url
+                        title: item.episode,
+                        language: this.language
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this._requestJSON( `${this.url}/comics/${manga.id}/chapters/${chapter.id}?app=desktop&language=${this.language}&with=slices` )
+            .then( data => {
+                let pageList = data.slices.sort( ( a, b ) => a.order - b.order ).map( item => item.image );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
