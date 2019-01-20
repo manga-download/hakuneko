@@ -45,6 +45,18 @@
         }
 
         /**
+         * Find first manga with title that matches the givn pattern (case-insensitive).
+         */
+        findMatchingManga( pattern ) {
+            let needle = pattern.toLowerCase();
+            return Engine.Storage.loadMangaList( this.id )
+            .then( mangas => {
+                return Promise.resolve( mangas.find( manga => manga.title.toLowerCase().includes( needle ) ) );
+            } )
+            .catch( error => Promise.resolve( undefined ) );
+        }
+
+        /**
          * Update the manga list in the local storage.
          * Callback will be executed after completion and provided with a reference to the manga list (undefined on error).
          */
