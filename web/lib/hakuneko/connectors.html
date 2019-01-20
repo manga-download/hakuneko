@@ -66,6 +66,7 @@
             }
             .pattern {
                 flex: 0;
+                width: 100%;
                 min-width: 16em;
             }
             .scroll {
@@ -115,13 +116,23 @@
                 flex: 1;
                 margin-left: 0.5em;
             }
+            .heading {
+                display: flex;
+                flex-direction: row;
+                flex: 0;
+            }
             .title {
+                flex: 1;
                 font-size: 1.25em;
                 font-weight: bold;
                 margin-bottom: 0.25em;
                 border-bottom: var(--connector-title-border);
             }
+            .control {
+                flex: 0;
+            }
             .tag {
+                white-space: nowrap;
                 color: var(--connector-tag-color);
                 background-color: var(--connector-tag-background-color);
                 /*border: var(--connector-tag-border);*/
@@ -141,22 +152,17 @@
             <div class="content">
                 <div class="filters">
                     <div class="separator">
-                        <label>Pattern</label>
+                        <i class="fa fa-plug"></i>
+                        <label>Website</label>
                     </div>
-                    <table class="pattern">
-                        <tr>
-                            <td>
-                                <i class="fa fa-search" title="Enter a pattern to filter the website list by their labels"></i>
-                            </td>
-                            <td style="width: 100%;">
-                                <input id="input" type="text" value="{{ connectorPattern::input }}"/>
-                            </td>
-                            <td>
-                                <i class="fa fa-times button clear" title="Reset all filters (pattern + tags)" on-click="clearFilters"></i>
-                            </td>
-                        </tr>
-                    </table>
+                    <input id="connectorPattern" class="pattern" type="text" value="{{ connectorPattern::input }}"  title="Show only websites with a name that matches the entered pattern (case-insensitive)"/>
                     <div class="separator">
+                        <i class="fa fa-book"></i>
+                        <label>Manga</label>
+                    </div>
+                    <input id="mangaPattern" class="pattern" type="text" value="{{ mangaPattern::input }}" on-keyup="filterConnectorsByManga" title="Show only websites with a manga that matches the entered pattern (case-insensitive)&#10;Searches only in local synchronized manga lists&#10;Press ENTER to perform the search"/>
+                    <div class="separator">
+                        <i class="fa fa-tags" title="Show only websites containing the selected tags"></i>
                         <label>Tags</label>
                     </div>
                     <div class="scroll tags">
@@ -167,14 +173,18 @@
                 </div>
                 <div class="connectors">
                     <div class="separator">
+                        <i class="fa fa-times button clear" title="Reset all filters" on-click="clearFilters"></i>
                         <label>Connectors</label>
                     </div>
                     <div class="scroll">
-                        <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern,selectedTags) ]]">
+                        <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern, selectedTags) ]]">
                             <div class$="card button [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
                                 <img class="icon" src$="[[ item.icon ]]" onerror="this.src='/img/connectors/default';" />
                                 <div class="description">
-                                    <div class="title">[[ item.label ]]</div>
+                                    <div class="heading">
+                                        <div class="title">[[ item.label ]]</div>
+                                        <div class$="control">...</div>
+                                    </div>
                                     <div>
                                         <template is="dom-repeat" items="[[ item.tags ]]">
                                             <span class="tag">[[ item ]]</span>
@@ -223,7 +233,6 @@
                 this.connectorList = [];
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors );
-                //this.set( 'selectedConnector', this.connectorList[0] );
                 this.tags = this.getAvailableTags();
                 this.selectedTags = [];
             }
@@ -258,8 +267,9 @@
             showPopup() {
                 //this.clearFilters();
                 this.set( 'popupVisibility', true );
-                this.set( 'connectorPattern', '' );
-                this.$.input.focus();
+                //this.set( 'connectorPattern', '' );
+                this.$.connectorPattern.select();
+                this.$.connectorPattern.focus();
             }
 
             /**
@@ -277,6 +287,9 @@
                 this.closePopup();
             }
 
+            /**
+             * 
+             */
             toggleTag( event ) {
                 event.model.item.selected = !event.model.item.selected;
                 this.set( 'selectedTags', this.tags.filter( tag => tag.selected ) );
@@ -295,10 +308,46 @@
             }
 
             /**
+             *
+             */
+            filterConnectorsByManga( evt ) {
+                if( evt.keyCode !== 13 || this.$.mangaPattern.disabled /*this.isMangaFilterButtonDisabled*/ ) {
+                    return;
+                }
+                if( !this.mangaPattern ) {
+                    this.set( 'connectorList', Engine.Connectors );
+                    return;
+                }
+
+                this.$.mangaPattern.disabled = true;
+                let promises = this.connectorList.map( connector => {
+                    if( typeof connector.findMatchingManga === 'function' ) {
+                        return connector.findMatchingManga( this.mangaPattern )
+                        .then( result => result ? Promise.resolve( connector ) : Promise.resolve( undefined ) );
+                    } else {
+                        return Promise.resolve( undefined );
+                    }
+                } );
+
+                Promise.all( promises )
+                .then( values => {
+                    this.$.mangaPattern.disabled = false;
+                    this.$.mangaPattern.focus();
+                    this.set( 'connectorList', values.filter( c => !!c ) );
+                } )
+                .catch( error => {
+                    this.$.mangaPattern.disabled = false;
+                    console.error( error );
+                } );
+            }
+
+            /**
              * 
              */
             clearFilters() {
-                this.tags.forEach( t => t.selected = false);
+                this.tags.forEach( tag => tag.selected = false);
+                this.set( 'connectorList', Engine.Connectors );
+                this.set( 'mangaPattern', '' );
                 this.set( 'connectorPattern', '' );
                 this.set( 'selectedTags', [] );
             }
