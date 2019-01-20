@@ -256,7 +256,9 @@
              *
              */
             filterMangas( pattern ) {
-                if( !pattern || pattern.length < 3 ) {
+                let isLatin = /^[a-zA-Z0-9]+$/.test( pattern );
+                let threshold = isLatin ? 3 : 2;
+                if( !pattern || pattern.length < threshold ) {
                     return null;
                 }
                 let p = pattern.toLowerCase();
