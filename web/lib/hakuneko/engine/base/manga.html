@@ -11,14 +11,17 @@
         /**
          *
          */
-        constructor( connector, id, title ) {
+        constructor( connector, id, title, status ) {
             this.connector = connector;
             this.id = id;
             this.title = title;
-            this.status = undefined;
+            this.status = status;
             this.chapterCache = [];
             this.existingChapters = [];
-            this.updateStatus();
+            
+            if( !this.status ) {
+                this.updateStatus();
+            }
         }
 
         /**

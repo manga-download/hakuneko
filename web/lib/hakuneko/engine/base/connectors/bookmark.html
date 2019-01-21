@@ -1,4 +1,3 @@
-<!-- include all connectors that should be added to the list of available connectors -->
 <link rel="import" href="invalid.html">
 
 <script>
@@ -57,7 +56,7 @@
             // get mangas and check status
             // use a different approach to determine existence of manga, since it can be expected that
             // the bookmark list is way shorter than a manga list of a connector => no performance issues expected
-            let mangas = Engine.BookmarkManager.bookmarks.map( ( bookmark ) => {
+            let mangas = Engine.BookmarkManager.bookmarks.map( bookmark => {
                 let manga = new Manga( this._getConnectorByID( bookmark.key.connector ), bookmark.key.manga, bookmark.title.manga );
                 // determine if manga directory exist on disk
                 Engine.Storage.mangaDirectoryExist( manga )
