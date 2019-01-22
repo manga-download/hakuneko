@@ -1,0 +1,128 @@
+<script>
+
+    /**
+     * A special connector to show all mangas from a given local folder.
+     * This connector does not implement the connector base class, because it operates different.
+     */
+    class FolderConnector {
+
+        /**
+         *
+         */
+        constructor() {
+            // Public members for usage in UI (mandatory)
+            this.id       = 'folder';
+            this.label    = ' 【Folder】';
+            this.icon     = '/img/connectors/' + this.id;
+            this.tags     = [ /* 'bookmarks', 'favorites' */ ];
+            // Private members for internal usage only (convenience)
+            this.url      = undefined;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = {
+                path: {
+                    label: 'Manga Folder',
+                    description: 'A local folder from which the mangas will be shown',
+                    input: Input.directory,
+                    value: Engine.Settings.baseDirectory.value
+                }
+            };
+        }
+
+        /**
+         *
+         */
+        updateMangas( callback ) {
+            this._getMangaList( callback );
+        }
+
+        /**
+         *
+         */
+        getMangas( callback ) {
+            this._getMangaList( callback );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let directory = this.config.path.value;
+            Engine.Storage._readDirectoryEntries( directory )
+            .then( entries => {
+                let mangaList = entries.map( entry => {
+                    // TODO: exclude files
+                    let manga = new Manga( this, Engine.Storage.path.join( directory, entry ), entry, DownloadStatus.completed );
+                    manga.getChapters = this.getChapters.bind( manga );
+                    return manga;
+                } );
+                console.log( 'Folder Mangas:', mangaList );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, [] );
+            } );
+        }
+
+        /**
+         * Replacement function for manga objects, since the behavior is quite different
+         * The corresponding manga is bound to 'this'
+         */
+         getChapters( callback ) {
+            let manga = this;
+            if( !( manga instanceof Manga ) ) {
+                return callback( new Error( 'This method must be used from a <Manga> object\'s context!' ), [] );
+            }
+            manga.connector._getChapterList( manga, callback );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Storage._readDirectoryEntries( manga.id )
+            .then( entries => {
+                let chapterList = entries.map( entry => {
+                    let chapter = new Chapter( manga, Engine.Storage.path.join( manga.id, entry ), entry, undefined, DownloadStatus.offline );
+                    chapter.getPages = manga.connector.getPages.bind( chapter );
+                    return chapter;
+                } );
+                console.log( 'Folder Chapters:', chapterList );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, [] );
+            } );
+        }
+
+        /**
+         * Replacement function for chapter objects, since the behavior is quite different
+         * The corresponding chapter is bound to 'this'
+         */
+        getPages( callback ) {
+            let chapter = this;
+            if( !( chapter instanceof Chapter ) ) {
+                return callback( new Error( 'This method must be used from a <Chapter> object\'s context!' ), [] );
+            }
+            chapter.manga.connector._getPageList( chapter.manga, chapter, callback );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Storage.loadChapterPages( chapter.id )
+            .then( pages => {
+                console.log( pages );
+                callback( null, pages );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, [] );
+            } );
+        }
+    }
+    FolderConnector; // reference the class to prevent removal of the class through js-minify
+
+</script>
