@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="engine/base/connector.html">
 <link rel="import" href="theme.html">
 
 <dom-module id="hakuneko-bookmarks">
@@ -17,6 +18,9 @@
             }
             .bookmarkDelete {
                 color: var(--bookmark-button-delete-color) !important;
+            }
+            .bookmarkInvalid {
+                color: var(--bookmark-button-invalid-color) !important;
             }
         </style>
         <div>
@@ -64,13 +68,17 @@
              */
             getBookmarkClass( manga, trigger ) {
                 if( manga ) {
-                    let index = this.bookmarkList.findIndex( ( bookmark ) => {
-                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
-                    });
-                    if( index > -1 ) {
-                        return 'fa-minus-circle bookmarkDelete';
+                    if( manga.connector instanceof Connector ) {
+                        let index = this.bookmarkList.findIndex( bookmark => {
+                            return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+                        } );
+                        if( index > -1 ) {
+                            return 'fa-minus-circle bookmarkDelete';
+                        }
+                        return 'fa-plus-circle bookmarkAdd';
+                    } else {
+                        return 'fa-ban bookmarkInvalid';
                     }
-                    return 'fa-plus-circle bookmarkAdd';
                 }
                 return '';
             }
@@ -80,13 +88,17 @@
              */
             getBookmarkTitle( manga, trigger ) {
                 if( manga ) {
-                    let index = this.bookmarkList.findIndex( ( bookmark ) => {
-                        return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
-                    });
-                    if( index > -1 ) {
-                        return 'Click to remove the selected manga from the bookmark list';
+                    if( manga.connector instanceof Connector ) {
+                        let index = this.bookmarkList.findIndex( bookmark => {
+                            return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+                        } );
+                        if( index > -1 ) {
+                            return 'Click to remove the selected manga from the bookmark list';
+                        }
+                        return 'Click to add the selected manga to the bookmark list';
+                    } else {
+                        return `Cannot bookmark mangas from this ${ manga.connector.label }!`;
                     }
-                    return 'Click to add the selected manga to the bookmark list';
                 }
                 return 'Please select a manga to use the bookmark feature';
             }
@@ -96,10 +108,10 @@
              */
             processBookmark( e ) {
                 let manga = this.selectedManga;
-                if( manga ) {
-                    let bookmark = this.bookmarkList.find( ( b ) => {
+                if( manga && manga.connector instanceof Connector ) {
+                    let bookmark = this.bookmarkList.find( b => {
                         return ( b.key.manga === manga.id && b.key.connector === manga.connector.id );
-                    });
+                    } );
                     if( bookmark ) {
                         Engine.BookmarkManager.deleteBookmark( bookmark );
                     } else {
