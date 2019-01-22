@@ -12,7 +12,7 @@
         constructor() {
             // Public members for usage in UI (mandatory)
             this.id       = 'folder';
-            this.label    = ' 【Folder】';
+            this.label    = ' 【Folder Viewer】';
             this.icon     = '/img/connectors/' + this.id;
             this.tags     = [ /* 'bookmarks', 'favorites' */ ];
             // Private members for internal usage only (convenience)
@@ -72,13 +72,6 @@
             if( !( manga instanceof Manga ) ) {
                 return callback( new Error( 'This method must be used from a <Manga> object\'s context!' ), [] );
             }
-            manga.connector._getChapterList( manga, callback );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
             Engine.Storage._readDirectoryEntries( manga.id )
             .then( entries => {
                 let chapterList = entries.map( entry => {
@@ -95,6 +88,13 @@
         }
 
         /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            return callback ( new Error( 'This method cannot be called from any connector other then <Folder>!' ), [] );
+        }
+
+        /**
          * Replacement function for chapter objects, since the behavior is quite different
          * The corresponding chapter is bound to 'this'
          */
@@ -103,13 +103,6 @@
             if( !( chapter instanceof Chapter ) ) {
                 return callback( new Error( 'This method must be used from a <Chapter> object\'s context!' ), [] );
             }
-            chapter.manga.connector._getPageList( chapter.manga, chapter, callback );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
             Engine.Storage.loadChapterPages( chapter.id )
             .then( pages => {
                 callback( null, pages );
@@ -118,6 +111,13 @@
                 console.error( error, chapter );
                 callback( error, [] );
             } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            return callback ( new Error( 'This method cannot be called from any connector other then <Folder>!' ), [] );
         }
     }
     FolderConnector; // reference the class to prevent removal of the class through js-minify
