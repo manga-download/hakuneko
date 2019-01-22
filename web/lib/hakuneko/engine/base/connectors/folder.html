@@ -55,7 +55,6 @@
                     manga.getChapters = this.getChapters.bind( manga );
                     return manga;
                 } );
-                console.log( 'Folder Mangas:', mangaList );
                 callback( null, mangaList );
             } )
             .catch( error => {
@@ -87,7 +86,6 @@
                     chapter.getPages = manga.connector.getPages.bind( chapter );
                     return chapter;
                 } );
-                console.log( 'Folder Chapters:', chapterList );
                 callback( null, chapterList );
             } )
             .catch( error => {
@@ -114,7 +112,6 @@
         _getPageList( manga, chapter, callback ) {
             Engine.Storage.loadChapterPages( chapter.id )
             .then( pages => {
-                console.log( pages );
                 callback( null, pages );
             } )
             .catch( error => {
