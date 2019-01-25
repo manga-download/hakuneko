@@ -139,6 +139,7 @@
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
+            uri.searchParams.set( 't', Date.now().toString().slice( 0, -3 ) );
             fetch( uri.href, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
