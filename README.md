@@ -7,21 +7,16 @@
 ## Github
 
 [![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_macosx_amd64.dmg.svg?label=MacOSX%2064-Bit%20%28dmg%29&logo=apple&logoColor=%23a2aaad)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_macosx_amd64.dmg)
-<br><br>
-[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_linux_amd64.deb.svg?label=Linux%2064-Bit%20%28deb%29&logo=debian&logoColor=%23ce0056)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_linux_amd64.deb)
 
+[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_linux_amd64.deb.svg?label=Linux%2064-Bit%20%28deb%29&logo=debian&logoColor=%23ce0056)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_linux_amd64.deb)<br>
 [![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_linux_i386.deb.svg?label=Linux%2032-Bit%20%28deb%29&logo=debian&logoColor=%23ce0056)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_linux_i386.deb)
-<br><br>
-[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_linux_amd64.rpm.svg?label=Linux%2064-Bit%20%28rpm%29&logo=linux&logoColor=green)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_linux_amd64.rpm)
 
+[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_linux_amd64.rpm.svg?label=Linux%2064-Bit%20%28rpm%29&logo=linux&logoColor=green)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_linux_amd64.rpm)<br>
 [![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_linux_i386.rpm.svg?label=Linux%2032-Bit%20%28rpm%29&logo=linux&logoColor=green)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_linux_i386.rpm)
-<br><br>
-[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_windows-setup_amd64.exe.svg?label=Windows%2064-Bit%20%28exe%29&logo=windows&logoColor=00a1f1)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_windows-setup_amd64.exe)
 
-[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_windows-setup_i686.exe.svg?label=Windows%2032-Bit%20%28exe%29&logo=windows&logoColor=00a1f1)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_windows-setup_i686.exe)
-<br><br>
-[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_windows-portable_amd64.zip.svg?label=Windows%2064-Bit%20%28zip%29&logo=windows&logoColor=00a1f1)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_windows-portable_amd64.zip)
-
+[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_windows-setup_amd64.exe.svg?label=Windows%2064-Bit%20%28exe%29&logo=windows&logoColor=00a1f1)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_windows-setup_amd64.exe)<br>
+[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_windows-setup_i686.exe.svg?label=Windows%2032-Bit%20%28exe%29&logo=windows&logoColor=00a1f1)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_windows-setup_i686.exe)<br>
+[![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_windows-portable_amd64.zip.svg?label=Windows%2064-Bit%20%28zip%29&logo=windows&logoColor=00a1f1)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_windows-portable_amd64.zip)<br>
 [![](https://img.shields.io/github/downloads/manga-download/hakuneko/latest/hakuneko-desktop_0.4.0_windows-portable_i686.zip.svg?label=Windows%2032-Bit%20%28zip%29&logo=windows&logoColor=00a1f1)](https://github.com/manga-download/hakuneko/releases/download/0.4.0/hakuneko-desktop_0.4.0_windows-portable_i686.zip)
 
 # Developer Quick Start
