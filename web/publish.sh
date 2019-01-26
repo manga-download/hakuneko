@@ -6,7 +6,7 @@ cd "$(dirname $0)"
 
 DIR=./build/htdocs
 KEY=../../hakuneko.key
-DST=../../../../app-releases/0.4.0
+DST=../../../../releases/0.4.0
 REV=$(git log -1 --format="%H")
 VER=$(echo $REV | cut -c 1-6)
 
@@ -31,4 +31,4 @@ cp latest $VER.zip $DST
 cd $DST
 git add .
 git commit -m 'updated releases'
-git push github master
+git push origin master
