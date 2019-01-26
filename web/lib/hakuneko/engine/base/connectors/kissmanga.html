@@ -45,7 +45,7 @@
          * Parameters mangalist and page should never be used by external calls.
          */
         _getMangaList( callback, mangaList, page ) {
-            fetch( 'http://' + this.id + '.hakuneko.download/cdn/mangas.json', this.requestOptions )
+            fetch( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
