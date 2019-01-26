@@ -56,7 +56,7 @@
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ).replace( /^\/?/, 'https://read.lhtranslation.com/read-' ).replace( /\/?$/, '.html' ),
+                        id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: 'en'
                     };
@@ -96,15 +96,74 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( chapter.id, 'source.chapter-img' )
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => response.text() )
             .then( data => {
-                let pageList = data.map( element => ( element.dataset['original'] || element.src ).trim() );               
-                callback( null, pageList );
+                return this._extractReaderFromContent( data )            // PRIO 1: search for link in page
+                .catch( error => this._extractReaderFromDisqus( data ) ) // PRIO 2: search for link in disqus comment
+                .catch( error =>compose( chapter.id ) );                 // PRIO 3: compose link from chapter id
+            } )
+            .then( uri => {
+                return this.fetchDOM( uri, 'source.chapter-img' )
+                .then( data => {
+                    let pageList = data.map( element => ( new URL( ( element.dataset['original'] || element.src ).trim(), 'https://read.lhtranslation.com' ) ).href );               
+                    callback( null, pageList );
+                } );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
             } );
+        }
+
+        /**
+         *
+         */
+        _extractReaderFromContent( content ) {
+            try {
+                return Promise.resolve( content.match( /"(http[s]?:\/\/read\..*?)"/ )[1] );
+            } catch( error ) {
+                return Promise.reject( error );
+            }
+        }
+
+        /**
+         *
+         */
+        _extractReaderFromDisqus( content ) {
+            try {
+                let forum = 'lhtranslation-2';
+                let threadIdent = content.match( /dsqidentifier\s*=\s*"(.*?)"/ )[1];
+
+                let uri = new URL( 'https://disqus.com/api/3.0/threads/listPosts.json' );
+                uri.searchParams.set( 'forum', forum );
+                uri.searchParams.set( 'thread:ident', threadIdent );
+                uri.searchParams.set( 'order', 'asc' );
+                uri.searchParams.set( 'api_key', 'E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F' );
+
+                return fetch( uri.href, this.requestOptions )
+                .then( response => response.json() )
+                .then( data => {
+                    let comment = data.response.shift().raw_message;
+                    return Promise.resolve( comment.match( /"(http[s]?:\/\/read\..*?)"/ )[1] );
+                } );
+            } catch( error ) {
+                return Promise.reject( error );
+            }
+        }
+
+        /**
+         *
+         */
+        _composeReaderFromChapterID( id ) {
+            try {
+                let uri = new URL( this.url + id );
+                uri.hostname = 'read.' + uri.hostname;
+                uri.pathname = uri.pathname.replace( /^\/?/, 'read-' ).replace( /\/?$/, '.html' );
+                return Promise.resolve( uri.href );
+            } catch( error ) {
+                return Promise.reject( error );
+            }
         }
     }
 
