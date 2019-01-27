@@ -498,7 +498,7 @@
             return createImageBitmap( page.data )
             .then( bitmap => {
                 let promise;
-                let pdfImgType = this._pdfImageType( page.type );
+                let pdfImgType = this._pdfImageType( page );
                 if( !pdfImgType ) {
                     pdfImgType = 'JPEG';
                     let canvas = document.createElement( 'canvas' );
@@ -761,11 +761,11 @@
          * Helper function to get the image type for jsPDF of the given mime type.
          * If the mime is not a spported PDF image format undefined will be returned.
          */
-        _pdfImageType( mime ) {
-            if( mime === 'image/jpeg' ) {
+        _pdfImageType( image ) {
+            if( image.type === 'image/jpeg' && ( image.data[3] === 0xE0 || image.data[3] === 0xE1 ) ) {
                 return 'JPEG';
             }
-            if( mime === 'image/png' ) {
+            if( image.type === 'image/png' ) {
                 return 'PNG';
             }
             return undefined;
