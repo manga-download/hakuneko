@@ -15,6 +15,7 @@
             super.id         = undefined;
             super.label      = undefined;
             this.url         = undefined;
+            this.path        = '/directory/';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -48,13 +49,13 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/directory/', 'div.pagination a.fright' )
+            this.fetchDOM( this.url + this.path, 'div.pagination a.fright' )
             .then( data => {
                 let pageCount = ( data.length === 0 ? this.defaultPageCount : parseInt( data[0].href.match(/(\d+)\/$/)[1] ) );
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory/' + ( page + 1 ) + '/' );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -71,7 +72,7 @@
          */
         _getChapterList( manga, callback ) {
             // https://reader.championscans.com/api/chapters.json?comic=12&ordering=volume%2Cchapter%2Csubchapter&n=9999
-            this.fetchDOM( this.url + manga.id, 'ul.mdc-list li span.mdc-list-item__text a' )
+            this.fetchDOM( this.url + manga.id, 'ul.mdc-list li span.mdc-list-item__text > a' )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
