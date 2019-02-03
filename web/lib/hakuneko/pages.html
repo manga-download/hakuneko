@@ -112,7 +112,7 @@
                 </template>
             </template>
             <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
-                <video id="video" controls on-click="onSelectedSubtitleChanged">
+                <video id="video" controls controlsList="nodownload" on-click="onSelectedSubtitleChanged">
                     <!-- dummy tracks to show subtitle menu in video player -->
                     <template is="dom-repeat" items="[[ media.subtitles ]]">
                         <track kind="subtitles" src="data:text/vtt," label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
