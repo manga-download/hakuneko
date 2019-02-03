@@ -292,14 +292,14 @@
              *
              */
             pageViewMode( media, selectedMedia ) {
-                return ( media && media.length && selectedMedia > -1 );
+                return ( media instanceof Array && selectedMedia > -1 );
             }
 
             /**
              *
              */
             videoViewMode( media, selectedMedia ) {
-                return ( media && ( media.mirrors || media.video ) );
+                return ( media && ( media.mirrors instanceof Array || typeof media.video === 'string' ) );
             }
 
             /**
