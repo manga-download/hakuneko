@@ -1,0 +1,221 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class NineAnime extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = '9anime';
+            super.label      = '9ANIME';
+            this.tags        = [ 'anime', 'english' ];
+            super.isLocked   = false;
+            this.initialized = false;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://www2.9anime.to';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            this.requestOptions.headers.set( 'x-referer', this.url );
+        }
+
+        /**
+         *
+         */
+         _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.film-list div.item div.inner a.name', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/filter', 'div.paging-wrapper form span.total' )
+            .then( data => {
+                let pageCount = parseInt( data[0].textContent.trim() );
+                pageCount = 2;
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/filter?page=' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            // https://www2.9anime.to/ajax/film/servers/7vp8?_=632
+            let script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    let servers = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )].map(span => {
+                        let id = span.dataset['name'];
+                        return {
+                            id: id,
+                            label: span.textContent.trim(),
+                            episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + id + '"] ul.episodes li a' )].map(a => {
+                                return {
+                                    url: a.href,
+                                    title: a.text.trim()
+                                };
+                            } )
+                        };
+                    } );
+                    resolve(servers);
+                }, 2500);
+            } )
+            `;
+            Engine.Request.fetchUI( this.url + manga.id, this.requestOptions, script )
+            .then( result => {
+                let chapterList = result.reduce( ( accumulator, server ) => {
+                    let episodes = server.episodes.map(episode => {
+                        return {
+                            id: '/ajax/episode/info?server=' + server.id + '&id=' + episode.url.split( '/' ).pop(),
+                            title: `${episode.title} [${server.label}]`,
+                            language: ''
+                        };
+                    } );
+                    return accumulator.concat( episodes );
+                }, [] );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            return fetch( ( this.url + chapter.id + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive JSON (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.json();
+            } )
+            .then( data => {
+                switch(true) {
+                    case data.target.includes( 'rapidvideo.com' ):
+                        return this._getEpisodeRapidVideo( data.target, 0 );
+                    case data.target.includes( 'openload.co' ):
+                        return this._getEpisodeOpenLoad( data.target, 0 );
+                    case data.target.includes( 'mcloud.to' ):
+                        return this._getEpisodeMyCloud( data.target, 0 );
+                    case data.target.includes( 'mp4upload.com' ):
+                        return this._getEpisodeMp4upload( data.target, 0 );
+                    case data.target.includes( 'streamango.com' ):
+                        return this._getEpisodeStreamango( data.target, 0 );
+                    default:
+                        throw new Error( 'Support for video stream from mirror "' + data.target + '" not implemented!' );
+                }
+            } )
+            .then( media => {
+                callback( null, media );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getEpisodeRapidVideo( link, resolution ) {
+            // TODO: append resolution parameter?
+            // 'https://www.rapidvideo.com/e/FY5AJE7RTE?q=720p'
+            return this.fetchDOM( link, 'video#videojs source' )
+            .then( data => {
+                console.log( data[0].src );
+                //throw new Error( 'Not implemented!' );
+                return Promise.resolve( { video: data[0].src, subtitles: [] } );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getEpisodeOpenLoad( link, resolution ) {
+            // https://openload.co/embed/jljbYKsVPMQ/
+            return this.fetchDOM( link, 'body' )
+            .then( data => {
+                //console.log( data );
+                throw new Error( 'Support for mirror "OpenLoad" not implemented!' );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getEpisodeMyCloud( link, resolution ) {
+            // https://mcloud.to/embed/@7@5M7E40705BPB5?ui=pQx0%406j24vsFgI6YcKEG3eFcqPn%40U5qwwFPfUaPHgss%3D
+            return this.fetchDOM( link, 'body' )
+            .then( data => {
+                //console.log( data );
+                throw new Error( 'Support for mirror "MyCloud" not implemented!' );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getEpisodeMp4upload( link, resolution ) {
+            // https://www.mp4upload.com/embed-d606qxx7nabt.html
+            return this.fetchDOM( link, 'body' )
+            .then( data => {
+                //console.log( data );
+                throw new Error( 'Support for mirror "Mp4upload" not implemented!' );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getEpisodeStreamango( link, resolution ) {
+            // https://streamango.com/embed/snaffekddsrsosrn/
+            return this.fetchDOM( link, 'body' )
+            .then( data => {
+                //console.log( data );
+                throw new Error( 'Support for mirror "Streamango" not implemented!' );
+            } );
+        }
+    }
+
+</script>
