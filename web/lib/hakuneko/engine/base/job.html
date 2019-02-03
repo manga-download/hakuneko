@@ -19,6 +19,7 @@
                 chapter: chapter.title
             };
             this.requestOptions = chapter.manga.connector.requestOptions || {};
+            // TODO: initialize requestOptions.headers = new Headers() if not set
             this.throttle = ( chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50 );
             this.status = undefined;
             this.progress = 0;
@@ -64,13 +65,18 @@
             this.chapter.getPages( ( error, data ) => {
                 if( !error && data ) {
                     // manga pages
-                    if( data.length ) {
+                    if( data instanceof Array ) {
                         this._downloadPages( data, directory, callback );
                         return;
                     }
                     // anime playlist
-                    if( data.mirrors ) {
+                    if( data.mirrors instanceof Array ) {
                         this._downloadPlaylistHLS( data, directory, callback );
+                        return;
+                    }
+                    // anime stream
+                    if( typeof data.video === 'string' ) {
+                        this._downloadVideoStream( data, directory, callback );
                         return;
                     }
                 }
@@ -257,6 +263,66 @@
                 this.setStatus( DownloadStatus.failed );
                 callback();
             } );
+        }
+
+        /**
+         * 
+         */
+         _downloadVideoStream( episode, directory, callback ) {
+            console.log( episode.video );
+            this.requestOptions['method'] = 'HEAD';
+            fetch( episode.video, this.requestOptions )
+            .then( response => {
+                console.log( this.requestOptions.headers.get( 'Range' ), response.headers );
+                if( response.status !== 200 ) {
+                    throw new Error( 'Video "' + episode.video + '" returned status: ' + response.status + ' - ' + response.statusText );
+                }
+                //if( response.headers.get( 'Accept-Ranges' ).toLowerCase() !== 'bytes' ) {
+                //    throw new Error( 'Video "' + episode.video + '" does not accept chunked download!' );
+                //}
+                let size = parseInt( response.headers.get( 'Content-Length' ) );
+                return Promise.resolve( size );
+            } )
+            .then( size => {
+                console.log( 'Content-Length:', size );
+                let chunks = ['0-1048575', '1048576-2097151'];
+                let promises = chunks.map( ( range, index ) => {
+                    let file = ( '00000' + index ).slice( -5 ) + '.part';
+                    return this._wait( index * 2500 )
+                    .then( () => {
+                        this.requestOptions.headers.set( 'Range', 'bytes=' + range );
+                        let promise = fetch( episode.video, this.requestOptions );
+                        this.requestOptions.headers.delete( 'Range' );
+                        return promise;
+                    } )
+                    .then( response => {
+                        if( response.status !== 200 && response.status !== 206 ) {
+                            throw new Error( 'Video stream "' + episode.video + '" returned status: ' + response.status + ' - ' + response.statusText );
+                        }
+                        return response.blob();
+                    } )
+                    .then( data => {
+                        this.setProgress( this.progress + 100/chunks.length );
+                        console.log( 'Saving data to file ... ' + file, data.size );
+                        return Promise.resolve( file );
+                    } );
+                    return promise;
+                } );
+                return Promise.all( promises );
+            } )
+            .then( files => {
+                console.log( 'Files:', files );
+                this.setProgress( 100 );
+                this.setStatus( DownloadStatus.failed );
+                callback();
+            } )
+            .catch( error => {
+                console.error( error, episode );
+                this.setProgress( 100 );
+                this.setStatus( DownloadStatus.failed );
+                callback();
+            } );
+            this.requestOptions['method'] = 'GET';
         }
     }
     DownloadJob; // reference the class to prevent removal of the class through js-minify
