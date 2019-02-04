@@ -1,0 +1,143 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class GManga extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'gmanga';
+            super.label      = 'GManga';
+            this.tags        = [ 'manga', 'arabic' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://gmanga.me';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            this.mangaSearch = {
+                manga_types: {
+                    include: [1, 2, 3, 4, 5, 6, 7],
+                    exclude: []
+                },
+                story_status: { include: [], exclude: [] },
+                translation_status: { include: [], exclude: [3] },
+                categories: { include: [], exclude: [] },
+                chapters: { min: null, max: null },
+                dates: { start: null, end: null },
+                page: 0
+            };
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( page ) {
+            page = page || 1;
+            this._setMangaRequestOptions( page );
+            let promise = fetch( 'https://gmanga.me/api/mangas/search', this.requestOptions )
+            .then( response => response.json() )
+            .then( data => {
+                if( !data.mangas || !data.mangas.length ) {
+                    return Promise.resolve( [] );
+                }
+                let mangaList = data.mangas.map( manga => {
+                    return {
+                        id: manga.id,
+                        title: manga.title
+                    };
+                } );
+                return this._getMangaListFromPages( page + 1 )
+                .then( mangas => mangas.concat( mangaList ) );
+            } )
+            this._clearRequestOptions();
+            return promise;
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this._getMangaListFromPages()
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            fetch( this.url + '/api/mangas/' + manga.id, this.requestOptions )
+            .then( response => response.json() )
+            .then( data => {
+                let chapterList = data.mangaReleases.map( chapter => {
+                    let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
+                    title += ( chapter.title ? ' - ' + chapter.title : '' );
+                    title += ( chapter.team_name ? ' [' + chapter.team_name + ']' : '' );
+                    return {
+                        id: manga.id + '/chapter/' + chapter.chapter + '/' + chapter.team_name,
+                        title: title,
+                        language: 'ae'
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            fetch( this.url + '/mangas/' + chapter.id, this.requestOptions )
+            .then( response => response.text() )
+            .then( data => {
+                let pageList = data.match( /"hq_pages"\s*:\s*"(.*?)"\s*,/ )[1].split( '\\n' ).map( page => {
+                    return 'https://media.gmanga.me/uploads/releases/' + page.replace( '\\r', '' ).trim();
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+         _setMangaRequestOptions( page ) {
+            this.mangaSearch.page = page;
+            this.requestOptions.method = 'POST';
+            this.requestOptions.headers.set( 'content-type', 'application/json' );
+            this.requestOptions.body = JSON.stringify( this.mangaSearch );
+        }
+
+        /**
+         *
+         */
+        _clearRequestOptions() {
+            delete this.requestOptions.body;
+            this.requestOptions.headers.delete( 'content-type' );
+            this.requestOptions.method = 'GET';
+            this.mangaSearch.page = 0;
+        }
+    }
+
+</script>
