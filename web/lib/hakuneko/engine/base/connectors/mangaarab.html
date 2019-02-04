@@ -1,0 +1,153 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaArab extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'mangaarab';
+            super.label      = 'مانجا العرب (Manga Al-arab)';
+            this.tags        = [ 'manga', 'arabic' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://www.manga.ae';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'japscan' protocol) and fetch images with custom headers
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            if( index === undefined ) {
+                index = 0;
+            }
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div#mangadirectory div.mangacontainer a.manga', 5 ) )
+            .then( data => {
+                let mangaList = data.filter( ( element, index ) => {
+                    // even link is manga with english title, odd link is same manga but arabic title
+                    //return index % 2 === 0; // english
+                    return index % 2 === 1; // arabic
+                } ).map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/manga', 'div.pagination a:last-of-type' )
+            .then( data => {
+                let pageCount = ( data.length === 0 ? this.defaultPageCount : parseInt( data[0].text.trim() ) );
+                return Promise.resolve( pageCount );
+            } )
+            .then( pageCount => {
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/manga/page:' + ( page + 1 ) + '|order:english_name' );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'div.indexcontainer ul.new-manga-chapters li a.chapter' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ).replace( /\d+\/?$/, '0/full' ),
+                        title: element.text.trim(),
+                        language: 'ae'
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( this.url + chapter.id, 'div#showchaptercontainer source' )
+            .then( data => {
+                let pageList = data.map( element => {
+                    let uri = new URL( element.src );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );            
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+            this.requestOptions.headers.set( 'x-referer', this.url + chapter.id );
+            this.requestOptions.headers.delete( 'x-referer' );
+        }
+
+        /**
+         * 
+         */
+         _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            this.requestOptions.headers.set( 'x-referer', uri.href );
+
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                return this._blobToBuffer( data );
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+
+            this.requestOptions.headers.delete( 'x-referer' );
+        }
+    }
+
+</script>
