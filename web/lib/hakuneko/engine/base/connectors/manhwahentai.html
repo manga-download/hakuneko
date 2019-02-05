@@ -1,0 +1,26 @@
+<link rel="import" href="wp-madara.html">
+
+<script>
+
+    /**
+     * 
+     */
+    class ManhwaHentai extends WordPressMadara {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'manhwahentai';
+            super.label      = 'ManhwaHentai';
+            this.tags        = [ 'hentai', 'english' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://manhwahentai.com';
+        }
+    }
+
+</script>
