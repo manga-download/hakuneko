@@ -176,6 +176,7 @@
                     return (
                         path.endsWith( EpisodeFormat.m3u8 ) || 
                         path.endsWith( EpisodeFormat.mkv ) ||
+                        path.endsWith( EpisodeFormat.mp4 ) ||
                         path.endsWith( ChapterFormat.epub ) ||
                         path.endsWith( ChapterFormat.cbz ) ||
                         path.endsWith( ChapterFormat.pdf )
@@ -207,6 +208,9 @@
             }
             if( path.endsWith( EpisodeFormat.mkv ) ) {
                 return this._loadEpisodeMKV( path );
+            }
+            if( path.endsWith( EpisodeFormat.mp4 ) ) {
+                return this._loadEpisodeMP4( path );
             }
             if( path.endsWith( ChapterFormat.epub ) ) {
                 return this._loadChapterPagesEPUB( path );
@@ -259,6 +263,18 @@
             // TODO: load subtitles
             let media = {
                 video: this._makeValidFileURL( matroska, '' ),
+                subtitles: []
+            }
+            return Promise.resolve( media );
+        }
+
+        /**
+         * 
+         */
+        _loadEpisodeMP4( mpeg4 ) {
+            // TODO: load subtitles
+            let media = {
+                video: this._makeValidFileURL( mpeg4, '' ),
                 subtitles: []
             }
             return Promise.resolve( media );
@@ -582,9 +598,44 @@
                     if( error ) {
                         reject( error );
                     } else {
-                        resolve();
+                        resolve( path );
                     }
                 } );
+            } );
+        }
+
+        /**
+         *
+         */
+        saveVideoChunkTemp( content ) {
+            try{
+                let file = this.path.join( this.temp, this.sanatizePath( content.name ) );
+                return this._writeFile( file, content.data );
+            } catch( error ) {
+                return Promise.reject( error );
+            }
+        }
+
+        /**
+         *
+         */
+        concatVideoChunks( chapter, files, index, fileOut ) {
+            return new Promise( ( resolve, reject ) => {
+                index = index || 0;
+                if( index >= files.length ) {
+                    return resolve();
+                }
+                if( !fileOut ) {
+                    let directory = this._mangaOutputPath( chapter.manga );
+                    this._createDirectoryChain( directory );
+                    let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mp4 ) );
+                    fileOut = this.fs.openSync( file, 'w' );
+                }
+                let data = this.fs.readFileSync( files[index] );
+                this.fs.appendFileSync( fileOut, data );
+                this.concatVideoChunks( chapter, files, index + 1, fileOut )
+                .then( () => resolve() )
+                .catch( error => reject( error ) );
             } );
         }
 
@@ -661,6 +712,10 @@
             // only valid for loading anime episodes, ignored when save pages
             if( this.fs.existsSync( output + EpisodeFormat.mkv ) ) {
                 return output + EpisodeFormat.mkv;
+            }
+            // only valid for loading anime episodes, ignored when save pages
+            if( this.fs.existsSync( output + EpisodeFormat.mp4 ) ) {
+                return output + EpisodeFormat.mp4;
             }
             // used when loading and saving manga chapters
             if( Engine.Settings.chapterFormat.value !== ChapterFormat.img ) {

@@ -20,6 +20,7 @@
             };
             this.requestOptions = chapter.manga.connector.requestOptions || {};
             // TODO: initialize requestOptions.headers = new Headers() if not set
+            this.chunkSize = 1048576; // 1 MB
             this.throttle = ( chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50 );
             this.status = undefined;
             this.progress = 0;
@@ -269,11 +270,10 @@
          * 
          */
          _downloadVideoStream( episode, directory, callback ) {
-            console.log( episode.video );
+            let basename = episode.video.split( '/' ).pop(); // this.manga.id + this.chapter.id;
             this.requestOptions['method'] = 'HEAD';
             fetch( episode.video, this.requestOptions )
             .then( response => {
-                console.log( this.requestOptions.headers.get( 'Range' ), response.headers );
                 if( response.status !== 200 ) {
                     throw new Error( 'Video "' + episode.video + '" returned status: ' + response.status + ' - ' + response.statusText );
                 }
@@ -284,11 +284,9 @@
                 return Promise.resolve( size );
             } )
             .then( size => {
-                console.log( 'Content-Length:', size );
-                let chunks = ['0-1048575', '1048576-2097151'];
+                let chunks = this._splitRange( size );
                 let promises = chunks.map( ( range, index ) => {
-                    let file = ( '00000' + index ).slice( -5 ) + '.part';
-                    return this._wait( index * 2500 )
+                    return this._wait( index * 500 )
                     .then( () => {
                         this.requestOptions.headers.set( 'Range', 'bytes=' + range );
                         let promise = fetch( episode.video, this.requestOptions );
@@ -299,30 +297,53 @@
                         if( response.status !== 200 && response.status !== 206 ) {
                             throw new Error( 'Video stream "' + episode.video + '" returned status: ' + response.status + ' - ' + response.statusText );
                         }
-                        return response.blob();
+                        return response.arrayBuffer();
                     } )
                     .then( data => {
+                        let file = basename + '.part' + ( '00000' + index ).slice( -5 );
+                        return Engine.Storage.saveVideoChunkTemp( { name: file, data: new Uint8Array( data ) } );
+                    } )
+                    .then( tempFile => {
                         this.setProgress( this.progress + 100/chunks.length );
-                        console.log( 'Saving data to file ... ' + file, data.size );
-                        return Promise.resolve( file );
+                        return Promise.resolve( tempFile );
                     } );
-                    return promise;
                 } );
                 return Promise.all( promises );
             } )
-            .then( files => {
-                console.log( 'Files:', files );
+            // multiplex
+            .then( tempFiles => Engine.Storage.concatVideoChunks( this.chapter, tempFiles ) )
+            // finalize
+            .then( () => {
                 this.setProgress( 100 );
-                this.setStatus( DownloadStatus.failed );
+                this.setStatus( DownloadStatus.completed );
                 callback();
             } )
+            // process error
             .catch( error => {
+                // TODO: abort/block all other packet downloads that are still running for this job ...
+                // https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
+                this.errors.push( error );
                 console.error( error, episode );
                 this.setProgress( 100 );
                 this.setStatus( DownloadStatus.failed );
                 callback();
             } );
             this.requestOptions['method'] = 'GET';
+        }
+
+        /**
+         *
+         */
+        _splitRange( size ) {
+            let part = this.chunkSize;
+            let chunks = Math.ceil( size / part );
+            chunks = [...(new Array( chunks )).keys()];
+            chunks = chunks.map(index => {
+                let start = index * part;
+                let end = start + part - 1;
+                return start + '-' + Math.min( end, size - 1 );
+            } );
+            return chunks;
         }
     }
     DownloadJob; // reference the class to prevent removal of the class through js-minify
