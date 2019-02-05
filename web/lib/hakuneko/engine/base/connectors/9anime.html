@@ -14,14 +14,29 @@
             super();
             // Public members for usage in UI (mandatory)
             super.id         = '9anime';
-            super.label      = '9ANIME';
+            super.label      = '9anime';
             this.tags        = [ 'anime', 'english' ];
             super.isLocked   = false;
-            this.initialized = false;
+            this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'https://www2.9anime.to';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config = {
+                resolution:  {
+                    label: 'Preferred Resolution',
+                    description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, the video will be downloaded in\nthe fallback resolution depending on the mirror site (e.g. 360p for RapidVideo).',
+                    input: Input.select,
+                    options: [
+                        { value: 0, name: 'Mirror\'s Default' },
+                        { value: 240, name: '240p' },
+                        { value: 360, name: '360p' },
+                        { value: 480, name: '480p' },
+                        { value: 720, name: '720p' },
+                        { value: 1080, name: '1080p' }
+                    ],
+                    value: 0
+                }
+            };
 
             this.requestOptions.headers.set( 'x-referer', this.url );
         }
@@ -58,7 +73,6 @@
             this.fetchDOM( this.url + '/filter', 'div.paging-wrapper form span.total' )
             .then( data => {
                 let pageCount = parseInt( data[0].textContent.trim() );
-                pageCount = 2;
                 return Promise.resolve( pageCount );
             } )
             .then( pageCount => {
@@ -133,15 +147,15 @@
             .then( data => {
                 switch(true) {
                     case data.target.includes( 'rapidvideo.com' ):
-                        return this._getEpisodeRapidVideo( data.target, 0 );
+                        return this._getEpisodeRapidVideo( data.target, this.config.resolution.value );
                     case data.target.includes( 'openload.co' ):
-                        return this._getEpisodeOpenLoad( data.target, 0 );
+                        return this._getEpisodeOpenLoad( data.target, this.config.resolution.value );
                     case data.target.includes( 'mcloud.to' ):
-                        return this._getEpisodeMyCloud( data.target, 0 );
+                        return this._getEpisodeMyCloud( data.target, this.config.resolution.value );
                     case data.target.includes( 'mp4upload.com' ):
-                        return this._getEpisodeMp4upload( data.target, 0 );
+                        return this._getEpisodeMp4upload( data.target, this.config.resolution.value );
                     case data.target.includes( 'streamango.com' ):
-                        return this._getEpisodeStreamango( data.target, 0 );
+                        return this._getEpisodeStreamango( data.target, this.config.resolution.value );
                     default:
                         throw new Error( 'Support for video stream from mirror "' + data.target + '" not implemented!' );
                 }
@@ -159,12 +173,9 @@
          *
          */
         _getEpisodeRapidVideo( link, resolution ) {
-            // TODO: append resolution parameter?
-            // 'https://www.rapidvideo.com/e/FY5AJE7RTE?q=720p'
+            link += ( resolution ? `?q=${resolution}p` : '' );
             return this.fetchDOM( link, 'video#videojs source' )
             .then( data => {
-                console.log( data[0].src );
-                //throw new Error( 'Not implemented!' );
                 return Promise.resolve( { video: data[0].src, subtitles: [] } );
             } );
         }
