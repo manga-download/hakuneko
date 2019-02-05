@@ -14,7 +14,7 @@
             super();
             // Public members for usage in UI (mandatory)
             super.id         = '9anime';
-            super.label      = '9anime';
+            super.label      = '9ANIME';
             this.tags        = [ 'anime', 'english' ];
             super.isLocked   = false;
             this.initialized = undefined;
@@ -37,8 +37,6 @@
                     value: 0
                 }
             };
-
-            this.requestOptions.headers.set( 'x-referer', this.url );
         }
 
         /**
@@ -92,7 +90,6 @@
          *
          */
         _getChapterList( manga, callback ) {
-            // https://www2.9anime.to/ajax/film/servers/7vp8?_=632
             let script = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
@@ -137,6 +134,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            this.requestOptions.headers.set( 'x-referer', this.url );
             return fetch( ( this.url + chapter.id + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
@@ -161,9 +159,11 @@
                 }
             } )
             .then( media => {
+                this.requestOptions.headers.delete( 'x-referer' );
                 callback( null, media );
             } )
             .catch( error => {
+                this.requestOptions.headers.delete( 'x-referer' );
                 console.error( error, chapter );
                 callback( error, undefined );
             } );
@@ -184,11 +184,13 @@
          *
          */
         _getEpisodeOpenLoad( link, resolution ) {
-            // https://openload.co/embed/jljbYKsVPMQ/
-            return this.fetchDOM( link, 'body' )
-            .then( data => {
-                //console.log( data );
-                throw new Error( 'Support for mirror "OpenLoad" not implemented!' );
+            let script = `
+                document.querySelector('div#videooverlay').click();
+                document.querySelector('video[id^="olvideo"]').src;
+            `;
+            return Engine.Request.fetchUI( link, this.requestOptions, script )
+            .then( stream => {
+                return Promise.resolve( { video: stream, subtitles: [] } );
             } );
         }
 
@@ -208,11 +210,10 @@
          *
          */
         _getEpisodeMp4upload( link, resolution ) {
-            // https://www.mp4upload.com/embed-d606qxx7nabt.html
-            return this.fetchDOM( link, 'body' )
-            .then( data => {
-                //console.log( data );
-                throw new Error( 'Support for mirror "Mp4upload" not implemented!' );
+            return Engine.Request.fetchUI( link, this.requestOptions, `document.querySelector('div#player div.jw-media video.jw-video').src;` )
+            .then( stream => {
+                console.log( stream );
+                return Promise.resolve( { video: stream, subtitles: [] } );
             } );
         }
 
