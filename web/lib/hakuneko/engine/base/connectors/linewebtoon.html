@@ -1,0 +1,153 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class LineWebtoon extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'linewebtoon';
+            super.label      = 'Line Webtoon';
+            this.tags        = [ 'webtoon', 'english' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://www.webtoons.com';
+            this.requestOptions.headers.set( 'x-referer', this.url );
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( index ) {
+            index = index || 1;
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( this.url + '/en/challenge/list?genreTab=ALL&sortOrder=&page=' + index, 'div.challenge_lst ul li a.challenge_item', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.querySelector( 'p.subj' ).textContent.trim()
+                    };
+                } );
+                // TODO: abort condition => abort when last page has duplicates from previous page ...
+                if( index < 5 ) {
+                    return this._getMangaListFromPages( index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this._getMangaListFromPages()
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+         _getChapterListFromPages( manga, index ) {
+            index = index || 1;
+            return this.wait( 0 )
+            .then ( () => this.fetchDOM( this.url + manga.id + '&page=' + index, 'div.detail_body div.detail_lst ul li > a', 5 ) )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    let title = element.querySelector( 'span.tx' ).textContent.trim();
+                    title += ' - ' + element.querySelector( 'span.subj span' ).textContent.trim();
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: title,
+                        language: 'en'
+                    };
+                } );
+                // TODO: abort condition => abort when last page has duplicates from previous page ...
+                if( index < 1 ) {
+                    return this._getChapterListFromPages( manga, index + 1 )
+                    .then( chapters => chapters.concat( chapterList ) );
+                } else {
+                    return Promise.resolve( chapterList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this._getChapterListFromPages( manga )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( this.url + chapter.id, 'div.viewer div.viewer_lst div.viewer_img source[data-url]' )
+            .then( data => {
+                let pageList = data.map( element => {
+                    let uri = new URL( element.dataset.url );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+         _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+    }
+
+</script>
