@@ -58,6 +58,7 @@
                 return false;
             }
             return this.existingChapters[chapter.file.full]
+                || this.existingChapters[chapter.file.name + EpisodeFormat.mp4]
                 || this.existingChapters[chapter.file.name + EpisodeFormat.mkv]
                 || this.existingChapters[chapter.file.name + EpisodeFormat.m3u8]
         }
@@ -66,6 +67,7 @@
             // use !! to convert result to bool
             return !!this.chapterCache.find( chapter => {
                 return ( fileName === chapter.file.full
+                    || fileName === chapter.file.name + EpisodeFormat.mp4
                     || fileName === chapter.file.name + EpisodeFormat.mkv
                     || fileName === chapter.file.name + EpisodeFormat.m3u8 );
             } );
