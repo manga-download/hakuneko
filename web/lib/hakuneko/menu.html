@@ -175,8 +175,8 @@
             </div>
             <div class="buttons">
                 <div class="buttonsLeft">
-                        <i class="fa fa-arrow-circle-down fa-2x item" title="Export bookmarks" on-click="exportSettings"></i><i class="fa fa-arrow-circle-up fa-2x item" title="Import bookmarks" on-click="importSettings"></i>
-                        <input type="file" id="importFile" accept="application/json,.json" on-change="onImport" />        
+                    <i class="fa fa-arrow-circle-up fa-2x item" title="Import bookmarks" on-click="import"></i>
+                    <input type="file" id="importFile" accept="application/x-sqlite3,.db,.db3" on-change="onImport" />
                 </div>
                 <div class="buttonsRight">
                     <i class="fa fa-check-circle fa-2x item" title="Save settings and close menu" on-click="saveSettings"></i><i class="fa fa-times-circle fa-2x item" title="Close menu without saving settings" on-click="closePopup"></i>
@@ -328,28 +328,7 @@
             /**
              *
              */
-            exportSettings( event ) {
-                // TODO: bookmarks and settings are stored as files, export really required anymore?
-                let settings = {
-                    bookmarks: Engine.BookmarkManager.exportBookmarks(),
-                    chaptermarks: Engine.ChaptermarkManager.exportChaptermarks()
-                };
-                settings = JSON.stringify( settings, null, 2 );
-                let blob = new Blob( [settings], { type : 'application/json' } );
-                var fileReader = new FileReader();
-                fileReader.onload = function( e ) {
-                    let link = document.createElement( 'a' );
-                    link.download = 'hakuneko-export.json';
-                    link.href = e.target.result;
-                    link.click();
-                };
-                fileReader.readAsDataURL(blob);
-            }
-
-            /**
-             *
-             */
-            importSettings( event ) {
+            import( event ) {
                 this.$.importFile.click();
             }
 
