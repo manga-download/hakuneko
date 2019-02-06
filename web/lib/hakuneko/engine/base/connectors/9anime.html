@@ -198,12 +198,33 @@
          *
          */
         _getEpisodeMyCloud( link, resolution ) {
-            // https://mcloud.to/embed/@7@5M7E40705BPB5?ui=pQx0%406j24vsFgI6YcKEG3eFcqPn%40U5qwwFPfUaPHgss%3D
-            return this.fetchDOM( link, 'body' )
-            .then( data => {
-                //console.log( data );
-                throw new Error( 'Support for mirror "MyCloud" not implemented!' );
+            console.log( link );
+            this.requestOptions.headers.set( 'x-referer', this.url );
+            let promise = fetch( link, this.requestOptions )
+            .then( response => response.text() )
+            .then( result => {
+                let playlist = result.match( /sources\s*:\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/ )[1];
+                console.log( playlist ); // https://cdn.mcloud.to/stream/sa:i0:q2:h0:p27:l0/yPRztQKp4bqHIABGvB2ZoQ/1549472400/a/d/0/jj0603/list.m3u8
+                this.requestOptions.headers.set( 'x-referer', link );
+                let promise = fetch( playlist, this.requestOptions )
+                .then( response => response.text() )
+                .then( streamlist => {
+                    /*
+                    #EXTM3U
+
+                    #EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=1200000, RESOLUTION=854x480
+                    hls/480/480.m3u8
+                    */
+                    // => https://cdn.mcloud.to/stream/sa:i0:q2:h0:p27:l0/yPRztQKp4bqHIABGvB2ZoQ/1549472400/a/d/0/jj0603/hls/480/480.m3u8
+                    let playlist = playlist.replace( /[^\/]+$/, 'hls/480/480.m3u8' );
+                    console.log( streamlist, playlist  );
+                    throw new Error( 'Support for mirror "MyCloud" not implemented!' );
+                } );
+                this.requestOptions.headers.delete( 'x-referer' );
+                return promise;
             } );
+            this.requestOptions.headers.delete( 'x-referer' );
+            return promise;
         }
 
         /**
@@ -212,7 +233,6 @@
         _getEpisodeMp4upload( link, resolution ) {
             return Engine.Request.fetchUI( link, this.requestOptions, `document.querySelector('div#player div.jw-media video.jw-video').src;` )
             .then( stream => {
-                console.log( stream );
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );
         }
@@ -221,11 +241,9 @@
          *
          */
         _getEpisodeStreamango( link, resolution ) {
-            // https://streamango.com/embed/snaffekddsrsosrn/
-            return this.fetchDOM( link, 'body' )
-            .then( data => {
-                //console.log( data );
-                throw new Error( 'Support for mirror "Streamango" not implemented!' );
+            return Engine.Request.fetchUI( link, this.requestOptions, `document.querySelector('video[id^="mgvideo"]').src;` )
+            .then( stream => {
+                return Promise.resolve( { video: stream, subtitles: [] } );
             } );
         }
     }
