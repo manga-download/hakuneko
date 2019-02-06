@@ -27,14 +27,14 @@
                     description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, the video will be downloaded in\nthe fallback resolution depending on the mirror site (e.g. 360p for RapidVideo).',
                     input: Input.select,
                     options: [
-                        { value: 0, name: 'Mirror\'s Default' },
-                        { value: 240, name: '240p' },
-                        { value: 360, name: '360p' },
-                        { value: 480, name: '480p' },
-                        { value: 720, name: '720p' },
-                        { value: 1080, name: '1080p' }
+                        { value: '', name: 'Mirror\'s Default' },
+                        { value: '240', name: '240p' },
+                        { value: '360', name: '360p' },
+                        { value: '480', name: '480p' },
+                        { value: '720', name: '720p' },
+                        { value: '1080', name: '1080p' }
                     ],
-                    value: 0
+                    value: ''
                 }
             };
         }
