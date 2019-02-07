@@ -269,8 +269,8 @@
         /**
          * 
          */
-         _downloadVideoStream( episode, directory, callback ) {
-            let basename = episode.video.split( '/' ).pop(); // this.manga.id + this.chapter.id;
+        _downloadVideoStream( episode, directory, callback ) {
+            let basename = Date.now(); // episode.video.split( '/' ).pop();
             this.requestOptions['method'] = 'HEAD';
             fetch( episode.video, this.requestOptions )
             .then( response => {
@@ -280,15 +280,22 @@
                 //if( response.headers.get( 'Accept-Ranges' ).toLowerCase() !== 'bytes' ) {
                 //    throw new Error( 'Video "' + episode.video + '" does not accept chunked download!' );
                 //}
+                // FIXME: some mirrors do not expose content-length header for CORS (e.g. fetch)
+                //console.log( 'Headers:', [...response.headers.entries()] );
                 let size = parseInt( response.headers.get( 'Content-Length' ) );
+                //console.log( 'Content-Length:', size );
                 return Promise.resolve( size );
             } )
             .then( size => {
-                let chunks = this._splitRange( size );
-                let promises = chunks.map( ( range, index ) => {
-                    return this._wait( index * 500 )
+                let fn = ( chunks, index, files ) => {
+                    index = index || 0;
+                    files = files || [];
+                    if( index >= chunks.length ) {
+                        return Promise.resolve( files );
+                    }
+                    return this._wait( 0 )
                     .then( () => {
-                        this.requestOptions.headers.set( 'Range', 'bytes=' + range );
+                        this.requestOptions.headers.set( 'Range', 'bytes=' + chunks[index] );
                         let promise = fetch( episode.video, this.requestOptions );
                         this.requestOptions.headers.delete( 'Range' );
                         return promise;
@@ -305,10 +312,10 @@
                     } )
                     .then( tempFile => {
                         this.setProgress( this.progress + 100/chunks.length );
-                        return Promise.resolve( tempFile );
+                        return fn( chunks, index + 1, files.concat( tempFile ) );
                     } );
-                } );
-                return Promise.all( promises );
+                };
+                return fn( this._splitRange( size ) );
             } )
             // multiplex
             .then( tempFiles => Engine.Storage.concatVideoChunks( this.chapter, tempFiles ) )
@@ -320,8 +327,6 @@
             } )
             // process error
             .catch( error => {
-                // TODO: abort/block all other packet downloads that are still running for this job ...
-                // https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
                 this.errors.push( error );
                 console.error( error, episode );
                 this.setProgress( 100 );
