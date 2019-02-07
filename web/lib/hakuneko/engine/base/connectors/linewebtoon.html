@@ -31,7 +31,8 @@
         /**
          *
          */
-        _getMangaListFromPages( index ) {
+        _getMangaListFromPages( lastAdded, index ) {
+            lastAdded = lastAdded || [];
             index = index || 1;
             return this.wait( 0 )
             .then ( () => this.fetchDOM( this.url + '/en/challenge/list?genreTab=ALL&sortOrder=&page=' + index, 'div.challenge_lst ul li a.challenge_item', 5 ) )
@@ -41,10 +42,9 @@
                         id: this.getRelativeLink( element ),
                         title: element.querySelector( 'p.subj' ).textContent.trim()
                     };
-                } );
-                // TODO: abort condition => abort when last page has duplicates from previous page ...
-                if( index < 5 ) {
-                    return this._getMangaListFromPages( index + 1 )
+                } ).filter( manga => !lastAdded.find( old => old.id === manga.id ) );
+                if( mangaList.length > 0 ) {
+                    return this._getMangaListFromPages( mangaList, index + 1 )
                     .then( mangas => mangas.concat( mangaList ) );
                 } else {
                     return Promise.resolve( mangaList );
@@ -69,7 +69,8 @@
         /**
          *
          */
-         _getChapterListFromPages( manga, index ) {
+         _getChapterListFromPages( manga, lastAdded, index ) {
+            lastAdded = lastAdded || [];
             index = index || 1;
             return this.wait( 0 )
             .then ( () => this.fetchDOM( this.url + manga.id + '&page=' + index, 'div.detail_body div.detail_lst ul li > a', 5 ) )
@@ -82,10 +83,9 @@
                         title: title,
                         language: 'en'
                     };
-                } );
-                // TODO: abort condition => abort when last page has duplicates from previous page ...
-                if( index < 1 ) {
-                    return this._getChapterListFromPages( manga, index + 1 )
+                } ).filter( chapter => !lastAdded.find( old => old.id === chapter.id ) );
+                if( chapterList.length > 0 ) {
+                    return this._getChapterListFromPages( manga, chapterList, index + 1 )
                     .then( chapters => chapters.concat( chapterList ) );
                 } else {
                     return Promise.resolve( chapterList );
