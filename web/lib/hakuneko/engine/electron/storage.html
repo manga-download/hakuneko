@@ -633,6 +633,7 @@
                 }
                 let data = this.fs.readFileSync( files[index] );
                 this.fs.appendFileSync( fileOut, data );
+                this.fs.unlinkSync( files[index] );
                 this.concatVideoChunks( chapter, files, index + 1, fileOut )
                 .then( () => resolve() )
                 .catch( error => reject( error ) );
