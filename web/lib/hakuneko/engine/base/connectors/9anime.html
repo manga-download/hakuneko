@@ -198,6 +198,7 @@
          *
          */
         _getEpisodeMyCloud( link, resolution ) {
+            // NOT WORKING: HLS Playlist with relative links
             console.log( link );
             this.requestOptions.headers.set( 'x-referer', this.url );
             let promise = fetch( link, this.requestOptions )
@@ -231,6 +232,7 @@
          *
          */
         _getEpisodeMp4upload( link, resolution ) {
+            // NOT WORKING: missing content-length header when downloading stream (fetch CORS problem)
             return Engine.Request.fetchUI( link, this.requestOptions, `document.querySelector('div#player div.jw-media video.jw-video').src;` )
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
