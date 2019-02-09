@@ -71,9 +71,6 @@
             this.fetchDOM( this.url + '/filter', 'div.paging-wrapper form span.total' )
             .then( data => {
                 let pageCount = parseInt( data[0].textContent.trim() );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/filter?page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )

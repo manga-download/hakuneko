@@ -19,7 +19,7 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://unionmangas.top';
+            this.url         = 'https://unionmangas.top';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -57,9 +57,6 @@
             this.fetchDOM( this.url + '/mangas/visualizacoes', 'nav ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match(/(\d+)$/)[1] );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/visualizacoes/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )

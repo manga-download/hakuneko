@@ -62,9 +62,6 @@
             this.fetchDOM( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all', this.queryMangasPageCount )
             .then( data => {
                 let pageCount = parseInt( new URL( data[0].href ).searchParams.get( 'page' ) );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )

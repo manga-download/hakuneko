@@ -59,9 +59,6 @@
             this.fetchDOM( this.url + '/f-1------updatetime--9999.html', 'div.page-pagination ul li:last-of-type a.active' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/f-1------updatetime--' + ( page + 1 ) + '.html' );
                 return this._getMangaListFromPages( pageLinks );
             } )

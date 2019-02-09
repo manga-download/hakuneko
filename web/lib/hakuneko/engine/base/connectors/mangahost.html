@@ -19,7 +19,7 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://mangahost1.com';
+            this.url         = 'https://mangahost2.com';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -56,9 +56,6 @@
             this.fetchDOM( this.url + '/mangas', 'div.paginador div.wp-pagenavi a.last' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)$/ )[1] );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/page/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )

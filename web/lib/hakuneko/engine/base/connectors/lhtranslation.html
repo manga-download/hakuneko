@@ -77,9 +77,6 @@
             this.fetchDOM( this.url + manga.id, 'nav.pagination a:nth-last-of-type(2)' )
             .then( data => {
                 let pageCount = ( data.length === 0 ? 1 : parseInt( data[0].text.trim() ) );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + 'page/' + ( page + 1 ) + '/' );
                 return this._getChapterListFromPages( manga, pageLinks );
             } )
@@ -101,7 +98,7 @@
             .then( data => {
                 return this._extractReaderFromContent( data )            // PRIO 1: search for link in page
                 .catch( error => this._extractReaderFromDisqus( data ) ) // PRIO 2: search for link in disqus comment
-                .catch( error =>compose( chapter.id ) );                 // PRIO 3: compose link from chapter id
+                .catch( error => compose( chapter.id ) );                 // PRIO 3: compose link from chapter id
             } )
             .then( uri => {
                 return this.fetchDOM( uri, 'source.chapter-img' )

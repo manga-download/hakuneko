@@ -62,10 +62,7 @@
         _getMangaList( callback ) {
             this.fetchDOM( this.url + '/manga', 'div.pagination a:last-of-type' )
             .then( data => {
-                let pageCount = ( data.length === 0 ? this.defaultPageCount : parseInt( data[0].text.trim() ) );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
+                let pageCount = parseInt( data[0].text.trim() );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/manga/page:' + ( page + 1 ) + '|order:english_name' );
                 return this._getMangaListFromPages( pageLinks );
             } )

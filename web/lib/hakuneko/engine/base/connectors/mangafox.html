@@ -79,9 +79,6 @@
             this.fetchDOM( this.url + '/directory/', 'div.pager-list div.pager-list-left a:nth-last-child(2)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory/' + ( page + 1 ) + '.html' );
                 return this._getMangaListFromPages( pageLinks );
             } )

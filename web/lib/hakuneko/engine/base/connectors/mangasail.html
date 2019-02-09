@@ -71,9 +71,6 @@
             this.fetchDOM( this.url + '/directory?page=9999', 'ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory?page=' + page );
                 return this._getMangaListFromPages( pageLinks );
             } )

@@ -55,9 +55,6 @@
             this.fetchDOM( this.url + this.urlMangas, 'div.pagination a:nth-last-child(2)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.urlMangas + '?page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )

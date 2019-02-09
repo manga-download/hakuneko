@@ -60,9 +60,6 @@
             this.fetchDOM( this.url + '/browse?sort=title', 'nav.pager ul.pagination li.page-item:nth-last-child(2) a.page-link' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                return Promise.resolve( pageCount );
-            } )
-            .then( pageCount => {
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/browse?sort=title&page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
