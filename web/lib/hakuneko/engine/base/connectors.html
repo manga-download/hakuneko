@@ -160,6 +160,7 @@
 <link rel="import" href="connectors/scanfr.html">
 <link rel="import" href="connectors/komikid.html">
 <link rel="import" href="connectors/komikgue.html">
+<link rel="import" href="connectors/mangalel.html">
 <link rel="import" href="connectors/lhtranslation.html">
 <link rel="import" href="connectors/merakiscans.html">
 <link rel="import" href="connectors/tuhaomanhua.html">
@@ -338,6 +339,7 @@
             this.register( new MangaHost() );
             this.register( new YesMangasBR() );
             this.register( new GoldenMangas() );
+            /* BEGIN: MangaReaderCMS */
             this.register( new ReadManhua() );
             this.register( new RenascenceScans() );
             this.register( new FallenAngelsScans() );
@@ -349,6 +351,8 @@
             this.register( new ScanFR() );
             this.register( new Komikid() );
             this.register( new KomikGue() );
+            this.register( new MangaLEL() );
+            /* END: MangaReaderCMS */
             this.register( new LHTranslation() );
             this.register( new MerakiScans() );
             this.register( new TuhaoManhua() );
