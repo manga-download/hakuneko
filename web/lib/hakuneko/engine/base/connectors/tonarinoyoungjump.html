@@ -52,7 +52,6 @@
          */
         _getMangaListFromPages( mangaPageLinks, index ) {
             index = index || 0;
-            console.log( mangaPageLinks[ index ] )
             return this.fetchDOM( mangaPageLinks[ index ], 'div.series-items ul.daily-series > li.daily-series-item > a', 5 )
             .then( data => {
                 let mangaList = data.map( element => {
@@ -61,7 +60,6 @@
                         title: element.querySelector( 'h4.daily-series-title' ).textContent.trim()
                     };
                 } );
-                console.log( mangaList );
                 if( index < mangaPageLinks.length - 1 ) {
                     return this._getMangaListFromPages( mangaPageLinks, index + 1 )
                     .then( mangas => mangas.concat( mangaList ) );
