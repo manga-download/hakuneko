@@ -1,0 +1,214 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class TonariNoYoungJump extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'tonarinoyoungjump';
+            super.label      = 'となりのヤングジャンプ (Tonari no Young Jump)';
+            this.tags        = [ 'manga', 'japanese' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://tonarinoyj.jp';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = {
+                format: {
+                    label: 'De-Scrambling Format',
+                    description: 'Select the re-compression format that shall be used for scrambled images.\nOnly applies to scrambled images!\nUnscrambled images are stored natively (no re-compression will be applied).',
+                    input: Input.select,
+                    options: [
+                        { value: 'image/webp', name: 'WEBP (*.webp)' },
+                        { value: 'image/jpeg', name: 'JPEG (*.jpg)' },
+                        { value: 'image/png', name: 'PNG (*.png)' },
+                    ],
+                    value: 'image/jpeg'
+                },
+                quality: {
+                    label: 'De-Scrambling Quality',
+                    description: 'Select the re-compression quality that shall be used for scrambled images.\nOnly applies to WEBP and JPEG, has no effect on PNG (which is lossless).',
+                    input: Input.numeric,
+                    min: 50,
+                    max: 100,
+                    value: 90
+                }
+            };
+
+            // register a protocol handler to intercept requests (with custom 'tonarinoyoungjump' protocol) and descramble images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            console.log( mangaPageLinks[ index ] )
+            return this.fetchDOM( mangaPageLinks[ index ], 'div.series-items ul.daily-series > li.daily-series-item > a', 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.querySelector( 'h4.daily-series-title' ).textContent.trim()
+                    };
+                } );
+                console.log( mangaList );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Promise.resolve()
+            .then( () => {
+                let pageLinks = [ '/series', '/series/oneshot', '/series/finished' ].map( path => this.url + path );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                // remove duplicates
+                data = data.filter( ( manga, index ) => {
+                    return index === data.findIndex( m => m.id === manga.id );
+                } );
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'ul.series-episode-list > li.episode h4.series-episode-list-title' )
+            .then( data => {
+                // TODO: add missing chapters (read more => ajax)
+                let chapterList = data.map( element => {
+                    let parent = element.closest( 'a.series-episode-list-container' );
+                    return {
+                        id: parent ? this.getRelativeLink( parent ) : manga.id,
+                        title: element.textContent.replace( manga.title, '' ).trim(),
+                        language: 'jp'
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( this.url + chapter.id, 'source.page-image[data-src]' )
+            .then( data => {
+                let pageList = data.map( element => {
+                    let uri = new URL( element.dataset.src );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );             
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         * 
+         */
+         _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                if( true ) {
+                    return this._descrambleImage( data ).then( data => this._blobToBuffer( data ) );
+                } else {
+                    return this._blobToBuffer( data );
+                }
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+
+        /*****************************
+         *** TONARINOYJ CODE BEGIN ***
+         ****************************/
+
+        /**
+         * 
+         */
+        _descrambleImage( blob ) {
+            return createImageBitmap( blob )
+            .then( bitmap => {
+                return new Promise( ( resolve, reject ) => {
+                    let canvas = document.createElement( 'canvas' );
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                    var ctx = canvas.getContext( '2d' );
+
+                    let width = canvas.width;
+                    let height = canvas.height;
+                    let DIVIDE_NUM = 4;
+                    let MULTIPLE = 8;
+                    let cell_width = Math.floor(width / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE;
+                    let cell_height = Math.floor(height / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE;
+                    //view.drawImage(0, 0, width, height, 0, 0);
+                    ctx.drawImage( bitmap, 0, 0, width, height, 0, 0, width, height );
+                    for (let e = 0; e < DIVIDE_NUM * DIVIDE_NUM; e++) {
+                        let t = Math.floor(e / DIVIDE_NUM) * cell_height;
+                        let n = e % DIVIDE_NUM * cell_width;
+                        let r = Math.floor(e / DIVIDE_NUM);
+                        let i = e % DIVIDE_NUM * DIVIDE_NUM + r;
+                        let o = i % DIVIDE_NUM * cell_width;
+                        let s = Math.floor(i / DIVIDE_NUM) * cell_height;
+                        //view.drawImage(n, t, cell_width, cell_height, o, s);
+                        ctx.drawImage( bitmap, n, t, cell_width, cell_height, o, s, cell_width, cell_height );
+                    }
+
+                    canvas.toBlob( data => {
+                        resolve( data );
+                    }, this.config.format.value, parseFloat( this.config.quality.value )/100 );
+                } );
+            } );
+        }
+
+        /***************************
+         *** TONARINOYJ CODE END ***
+         **************************/
+    }
+
+</script>
