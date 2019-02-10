@@ -73,7 +73,7 @@
             .then( response => response.text() )
             .then( data => {
                 let chapterList = JSON.parse( data.match( /episodeList\s*:\s*(\[.*?\])/ )[1] )
-                .filter( chapter => !chapter.locked )
+                //.filter( chapter => !chapter.locked )
                 .map( chapter => {
                     return {
                         id: '/episode/view/' + chapter.id,
