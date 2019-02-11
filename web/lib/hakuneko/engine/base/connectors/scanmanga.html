@@ -1,0 +1,123 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class ScanManga extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'scanmanga';
+            super.label      = 'ScanManga';
+            this.tags        = [ 'manga', 'french' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'http://www.scan-manga.com';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'scanmanga' protocol) and download images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/Teams.html', 'a.hover_text_manga' )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'div.texte_volume_manga ul li.chapitre div.chapitre_nom' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    let anchor = element.querySelector( 'a:first-of-type' );
+                    return {
+                        id: this.getRelativeLink( anchor ),
+                        title: element.textContent.trim(),
+                        language: 'fr'
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            fetch( this.url + chapter.id, this.requestOptions )
+            .then( response => response.text() )
+            .then( data => {
+                let baseURL = data.match( /['"](https?:\/\/lel\.scan-manga\.com:8080\/.*?\/\d+\/\d+\/)['"]/ )[1];
+                let pageList = [];
+                let match = undefined;
+                let regex = new RegExp( /\[\s*\d+\s*\]\s*=\s*['"](.*?zoneID.*?pageID.*?siteID.*?)['"]\s*;/g );
+                while( match = regex.exec( data ) ) {
+                    pageList.push( match[1] );
+                }
+                pageList = pageList.map( link => {
+                    let uri = new URL( baseURL + link );
+                    uri.protocol = this.id;
+                    uri.searchParams.append( 'referer', this.url + chapter.id );
+                    return uri.href;
+                } );        
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            let referer = uri.searchParams.get( 'referer' );
+            uri.searchParams.delete( 'referer' );
+            this.requestOptions.headers.set( 'x-referer', referer );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( uri.href, this.requestOptions )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+            this.requestOptions.headers.delete( 'x-referer' );
+        }
+    }
+
+</script>
