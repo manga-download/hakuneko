@@ -39,9 +39,6 @@
                         title: element.text.trim()
                     };
                 } );
-                mangaList = mangaList.filter( ( manga, index ) => {
-                    return index === mangaList.findIndex( m => m.id === manga.id );
-                } );
                 callback( null, mangaList );
             } )
             .catch( error => {
