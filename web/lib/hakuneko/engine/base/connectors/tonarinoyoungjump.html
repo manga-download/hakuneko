@@ -79,10 +79,6 @@
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
-                // remove duplicates
-                data = data.filter( ( manga, index ) => {
-                    return index === data.findIndex( m => m.id === manga.id );
-                } );
                 callback( null, data );
             } )
             .catch( error => {
