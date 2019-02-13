@@ -56,7 +56,18 @@
          *
          */
         _getMangaList( callback ) {
-            this._getMangaListFromPages()
+            this.fetchDOM( this.url + '/en/dailySchedule', 'div.daily_lst ul.daily_card li a.daily_card_item' )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.querySelector( 'div.info p.subj' ).textContent.trim()
+                    };
+                } );
+                return this._getMangaListFromPages().then( data => {
+                    return Promise.resolve( mangaList.concat( data ) );
+                } );
+            } )
             .then( data => {
                 callback( null, data );
             } )
