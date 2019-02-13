@@ -71,6 +71,11 @@
                     callback( error, undefined );
                     return;
                 }
+                // remove duplicates by checking if manga with given ID is first occurance in list
+                mangas = mangas.filter( ( manga, index ) => {
+                    return index === mangas.findIndex( m => m.id === manga.id );
+                } );
+                // sort by title
                 mangas.sort( ( a, b ) => {
                     return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
                 } );
