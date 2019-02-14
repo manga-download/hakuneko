@@ -91,9 +91,23 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'ul.series-episode-list > li.episode h4.series-episode-list-title' )
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => response.text() )
             .then( data => {
-                // TODO: add missing chapters (read more => ajax)
+                let dom = this.createDOM( data );
+                let readMore = dom.querySelector( 'section.read-more-container button[data-read-more-endpoint]' );
+                if( !readMore ) {
+                    return dom;
+                }
+                return fetch( dom.querySelector( 'button[data-read-more-endpoint]' ).dataset.readMoreEndpoint, this.requestOptions )
+                .then( response => response.json() )
+                .then( data => {
+                    dom.querySelector( 'section.read-more-container' ).innerHTML = data.html;
+                    return Promise.resolve( dom );
+                } );
+            } )
+            .then( dom => [...dom.querySelectorAll( 'ul.series-episode-list > li.episode:not(.private) h4.series-episode-list-title' )] )
+            .then( data => {
                 let chapterList = data.map( element => {
                     let parent = element.closest( 'a.series-episode-list-container' );
                     return {
@@ -101,7 +115,7 @@
                         title: element.textContent.replace( manga.title, '' ).trim(),
                         language: 'jp'
                     };
-                } );               
+                } );
                 callback( null, chapterList );
             } )
             .catch( error => {
