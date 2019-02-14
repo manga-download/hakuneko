@@ -31,20 +31,26 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/Teams.html', 'a.hover_text_manga' )
+            this.requestOptions.headers.set( 'X-Requested-With', 'XMLHttpRequest' );
+            fetch( this.url + '/scanlation/scan.data.json', this.requestOptions )
+            .then( response => response.json() )
             .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
+                let mangaList = [];
+                for(let title in data) {
+                    let id = data[title][0];
+                    let slug = data[title][1] || title;
+                    mangaList.push( {
+                        id: `/${id}/${slug}.html`,
+                        title: title
+                    } );
+                }
                 callback( null, mangaList );
             } )
             .catch( error => {
                 console.error( error, this );
                 callback( error, undefined );
             } );
+            this.requestOptions.headers.delete( 'X-Requested-With' );
         }
 
         /**
