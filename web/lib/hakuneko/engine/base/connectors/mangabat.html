@@ -15,12 +15,10 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'mangabat';
             super.label      = 'MangaBat';
-            super.isLocked   = false;
-            this.initialized = undefined;
+            this.tags        = [ 'manga', 'english' ];
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangabat.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-
+            
             this.queryMangasPageCount = 'div.phan-trang a.page:last-of-type';
             this.queryMangas = 'div.list_category h3 a';
             //this.queryChapters = 'div.chapter-list div.row span a';

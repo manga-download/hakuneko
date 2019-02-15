@@ -15,16 +15,9 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'mangakakalot';
             super.label      = 'MangaKakalot';
-            super.isLocked   = false;
-            this.initialized = undefined;
+            this.tags        = [ 'manga', 'english' ];
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangakakalot.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-
-            //this.queryMangasPageCount = 'div.group-page a.page:last-of-type';
-            //this.queryMangas = 'div.truyen-list h3 a';
-            //this.queryChapters = 'div.chapter-list div.row span a';
-            //this.queryPages = '#vungdoc source';
         }
     }
 
