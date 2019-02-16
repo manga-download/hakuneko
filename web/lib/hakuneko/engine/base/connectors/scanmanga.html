@@ -82,7 +82,7 @@
             fetch( this.url + chapter.id, this.requestOptions )
             .then( response => response.text() )
             .then( data => {
-                let baseURL = data.match( /['"](https?:\/\/lel\.scan-manga\.com:8080\/.*?\/\d+\/\d+\/)['"]/ )[1];
+                let baseURL = data.match( /['"](https?:\/\/lel\.scan-manga\.com:8080\/.*?\/\d+\/\d+\/.*?)['"]/ )[1];
                 let pageList = [];
                 let match = undefined;
                 let regex = new RegExp( /\[\s*\d+\s*\]\s*=\s*['"](.*?zoneID.*?pageID.*?siteID.*?)['"]\s*;/g );
