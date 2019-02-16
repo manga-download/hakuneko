@@ -115,8 +115,9 @@
                 this.unlock( key );
             }, this.pageLoadDelay );
             Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, 'lstImages' )
-            .then( result => {
-                callback( null, result );
+            .then( data => {
+                let pageList = data.map( link => ( new URL( link, this.url ) ).href );
+                callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
