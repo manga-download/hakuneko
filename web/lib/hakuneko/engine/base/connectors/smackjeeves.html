@@ -1,0 +1,157 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class SmackJeeves extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'smackjeeves';
+            super.label      = 'Smack Jeeves';
+            this.tags        = [ 'webtoon', 'english' ];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'http://www.smackjeeves.com';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'smackjeeves' protocol) and download images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            return this.fetchDOM( mangaPageLinks[ index ], 'div.comic-container a.card', 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.querySelector( 'div.title' ).textContent.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let path = '/search.php?last_update=6&sort_by=4';
+            this.fetchDOM( this.url + path, 'div.comic-nav div#browse-page-select select option' )
+            .then( data => {
+                let pageLinks = data.map( option => this.url + path + '&start=' + option.value );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            let comicURL;
+            this.fetchDOM( this.url + manga.id, 'div.middle div.title div.buttons a.button:last-of-type' )
+            .then( data => {
+                comicURL = data[0].href;
+                this.requestOptions.headers.set( 'x-cookie', '_sj_view_m=' + Math.floor( Date.now() / 1000 ) );
+                return this.fetchDOM( comicURL, 'select.jumpbox' );
+            } )
+            .then( data => {
+                if( !data.length ) {
+                    throw new Error( 'Page template not supported, no chapter/page selection box found!' );
+                }
+                let chapterList = [...data[0].querySelectorAll( '.jumpbox_chapter' )];
+                if( !chapterList.length ) {
+                    chapterList = [
+                        {
+                            id: comicURL,
+                            title: manga.title,
+                            language: 'en'
+                        }
+                    ];
+                } else {
+                    chapterList = chapterList.map( element => {
+                        return {
+                            id: ( new URL( element.value || comicURL, comicURL ) ).href,
+                            title: element.label.trim() || element.textContent.trim(),
+                            language: 'en'
+                        };
+                    } );
+                     
+                }
+                callback( null, chapterList ); 
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( chapter.id, 'select.jumpbox option.jumpbox_page' )
+            .then( data => {
+                let pageLinks = data.map( element => {
+                    let uri = new URL( element.value, chapter.id );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageLinks );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            this.fetchDOM( uri.href, 'source#comic_image' )
+            .then( data => fetch( ( new URL( this.getRelativeLink( data[0] ), this.url ) ).href, this.requestOptions ) )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+    }
+
+</script>
