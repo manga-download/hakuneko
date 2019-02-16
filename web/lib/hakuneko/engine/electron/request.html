@@ -226,9 +226,15 @@
 
             // Overwrite the Referer header, but
             // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
-            if( !uri.pathname.endsWith( 'chk_jschl' ) && details.requestHeaders['x-referer'] ) {
+            if( !uri.pathname.endsWith( 'chk_jschl' ) ) {
                 // use referer provided by connector
-                details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
+                if( details.requestHeaders['x-referer'] ) {
+                    details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
+                }
+                // force referer for certain hosts
+                if( uri.hostname.includes( 'cdn.mcloud.to' ) ) {
+                    details.requestHeaders['Referer'] = uri.href;
+                }
             }
             delete details.requestHeaders['x-referer'];
 
