@@ -24,7 +24,7 @@
             this.config = {
                 resolution:  {
                     label: 'Preferred Resolution',
-                    description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, the video will fail!',
+                    description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, the video download will fail!',
                     input: Input.select,
                     options: [
                         { value: '', name: 'Mirror\'s Default' },
@@ -195,34 +195,19 @@
          *
          */
         _getEpisodeMyCloud( link, resolution ) {
-            // NOT WORKING: HLS Playlist with relative links
-            console.log( link );
-            this.requestOptions.headers.set( 'x-referer', this.url );
-            let promise = fetch( link, this.requestOptions )
+            return fetch( link, this.requestOptions )
             .then( response => response.text() )
             .then( result => {
                 let playlist = result.match( /sources\s*:\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/ )[1];
-                console.log( playlist ); // https://cdn.mcloud.to/stream/sa:i0:q2:h0:p27:l0/yPRztQKp4bqHIABGvB2ZoQ/1549472400/a/d/0/jj0603/list.m3u8
-                this.requestOptions.headers.set( 'x-referer', link );
-                let promise = fetch( playlist, this.requestOptions )
+                return fetch( playlist, this.requestOptions )
                 .then( response => response.text() )
                 .then( streamlist => {
-                    /*
-                    #EXTM3U
-
-                    #EXT-X-STREAM-INF:PROGRAM-ID=1, BANDWIDTH=1200000, RESOLUTION=854x480
-                    hls/480/480.m3u8
-                    */
-                    // => https://cdn.mcloud.to/stream/sa:i0:q2:h0:p27:l0/yPRztQKp4bqHIABGvB2ZoQ/1549472400/a/d/0/jj0603/hls/480/480.m3u8
-                    let playlist = playlist.replace( /[^\/]+$/, 'hls/480/480.m3u8' );
-                    console.log( streamlist, playlist  );
-                    throw new Error( 'Support for mirror "MyCloud" not implemented!' );
+                    let stream = streamlist.match( /^.*?\d+\.m3u8$/gm )[0].trim();
+                    // stream => hls/480/480.m3u8 || hls/720/720.m3u8 || ...
+                    stream = playlist.replace( /[^\/]+$/, stream );
+                    return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ stream ], subtitles: [] } );
                 } );
-                this.requestOptions.headers.delete( 'x-referer' );
-                return promise;
             } );
-            this.requestOptions.headers.delete( 'x-referer' );
-            return promise;
         }
 
         /**
