@@ -151,6 +151,7 @@
                 maps: ['-map', '0:v', '-map', '0:a'],
                 metas: []
             };
+            let playlistURL = undefined;
             let promises = episode.mirrors.map( mirror => {
                 return fetch( mirror, this.requestOptions )
                 .then( response => {
@@ -161,10 +162,9 @@
                 } )
                 // swap resolve and reject so we can use Promise.all to get the first "resolved" promise
                 .then( data => {
-                    //console.log( 'Mirror valid:', mirror );
+                    playlistURL = playlistURL || mirror;
                     return Promise.reject( data );
                 }, error => {
-                    //console.log( 'Mirror invalid:', mirror );
                     return Promise.resolve( error );
                 } );
             } );
@@ -172,13 +172,20 @@
             // swap the rejected promise back to its initial resolved state
             .catch( data => Promise.resolve( data ) )
             .then( playlist => {
-                // parse links and adjust playlist
-                let packets = playlist.match( /http[s]?:\/\/[^\s\"]+/g ).map( link => {
-                    let file = 'media.' + ( new URL( link ) ).pathname.split( '/' ).pop();
+                // parse links
+                let packets = playlist.match( /^[^#]{1}.*?\.ts.*?$/gm );
+                let key = playlist.match( /URI\s*=\s*"(.*?)"/ );
+                if( key ) {
+                    packets.push( key[1] );
+                }
+                // modify playlist to use local files
+                packets = packets.map( link => {
+                    let uri = new URL( link, playlistURL );
+                    let file = 'media.' + uri.pathname.split( '/' ).pop();
                     // ffmpeg does not support backslashes => replace with slashes
                     playlist = playlist.replace( link, file.replace( /\\/g, '/' ) );
                     return {
-                        source: link,
+                        source: uri.href,
                         target: file
                     };
                 } );
