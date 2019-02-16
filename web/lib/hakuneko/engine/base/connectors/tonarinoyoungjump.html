@@ -132,7 +132,9 @@
             .then( data => {
                 let pageList = data.map( element => {
                     let uri = new URL( element.dataset.src );
-                    uri.protocol = this.id;
+                    if( element.dataset.choJuGiga !== 'usagi' ) {
+                        uri.protocol = this.id;
+                    }
                     return uri.href;
                 } );             
                 callback( null, pageList );
