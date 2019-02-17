@@ -24,7 +24,7 @@
             this.config = {
                 resolution:  {
                     label: 'Preferred Resolution',
-                    description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, the video download will fail!',
+                    description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!',
                     input: Input.select,
                     options: [
                         { value: '', name: 'Mirror\'s Default' },
@@ -168,14 +168,16 @@
          * Same as in kissanime
          */
         _getEpisodeRapidVideo( link, resolution ) {
-            link += ( resolution ? `?q=${resolution}p` : '' );
-            return this.fetchDOM( link, 'video#videojs source' )
+            this.requestOptions.headers.set( 'x-cookie', 'q=' + resolution );
+            let promise = this.fetchDOM( link, 'video#videojs source' )
             .then( data => {
                 if( !data.length ) {
                     throw new Error( `No matching video stream found for requested resolution "${resolution}"!` );
                 }
                 return Promise.resolve( { video: data[0].src, subtitles: [] } );
             } );
+            this.requestOptions.headers.delete( 'x-cookie' );
+            return promise;
         }
 
         /**
