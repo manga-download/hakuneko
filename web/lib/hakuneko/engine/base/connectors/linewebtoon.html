@@ -31,43 +31,8 @@
         /**
          *
          */
-        _getMangaListFromPages( lastAdded, index ) {
-            lastAdded = lastAdded || [];
-            index = index || 1;
-            return this.wait( 0 )
-            .then ( () => this.fetchDOM( this.url + '/en/challenge/list?genreTab=ALL&sortOrder=&page=' + index, 'div.challenge_lst ul li a.challenge_item', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.querySelector( 'p.subj' ).textContent.trim()
-                    };
-                } ).filter( manga => !lastAdded.find( old => old.id === manga.id ) );
-                if( mangaList.length > 0 ) {
-                    return this._getMangaListFromPages( mangaList, index + 1 )
-                    .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
-        }
-
-        /**
-         *
-         */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/en/dailySchedule', 'div.daily_lst ul.daily_card li a.daily_card_item' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.querySelector( 'div.info p.subj' ).textContent.trim()
-                    };
-                } );
-                return this._getMangaListFromPages().then( data => {
-                    return Promise.resolve( mangaList.concat( data ) );
-                } );
-            } )
+            this.fetchJSON( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', 3 )
             .then( data => {
                 callback( null, data );
             } )
