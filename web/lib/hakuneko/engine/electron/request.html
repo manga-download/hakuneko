@@ -1,5 +1,6 @@
 <link rel="import" href="../base/request.html">
 <link rel="import" href="../base/useragent.html">
+<link rel="import" href="../base/cookie.html">
 
 <script>
 
@@ -246,9 +247,9 @@
 
             // Append Cookie header
             if( details.requestHeaders['x-cookie'] ) {
-                let cookiesORG = ( details.requestHeaders['Cookie'] || '' ).split( ';' ).map( c => c.trim() );
-                let cookiesNEW = details.requestHeaders['x-cookie'].split( ';' ).map( c => c.trim() );
-                details.requestHeaders['Cookie'] = cookiesORG.concat( cookiesNEW ).join( '; ' );
+                let cookiesORG = new Cookie( details.requestHeaders['Cookie'] );
+                let cookiesNEW = new Cookie( details.requestHeaders['x-cookie'] );
+                details.requestHeaders['Cookie'] = cookiesORG.merge( cookiesNEW ).toString();
             }
             delete details.requestHeaders['x-cookie'];
 
