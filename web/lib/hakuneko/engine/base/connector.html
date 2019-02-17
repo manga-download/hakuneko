@@ -289,6 +289,26 @@
         }
 
         /**
+         *
+         */
+        fetchJSON( uri, retries ) {
+            if( retries === undefined ) {
+                retries = 0;
+            }
+            return fetch( uri, this.requestOptions )
+            .then( response => {
+                if( response.status >= 500 && retries > 0 ) {
+                    return this.wait( 5000 )
+                    .then( () => this.fetchJSON( uri, retries - 1 ) );
+                }
+                if( response.status === 200 ) {
+                    return response.json();
+                }
+                throw new Error( `Failed to receive content from "${uri}" (status: ${response.status}) - ${response.statusText}` );
+            } );
+        }
+
+        /**
          * Protected helper function to convert a Blob to a MimeTypedBuffer
          * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
          */
