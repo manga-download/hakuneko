@@ -165,12 +165,15 @@
         }
 
         /**
-         *
+         * Same as in kissanime
          */
         _getEpisodeRapidVideo( link, resolution ) {
             link += ( resolution ? `?q=${resolution}p` : '' );
             return this.fetchDOM( link, 'video#videojs source' )
             .then( data => {
+                if( !data.length ) {
+                    throw new Error( `No matching video stream found for requested resolution "${resolution}"!` );
+                }
                 return Promise.resolve( { video: data[0].src, subtitles: [] } );
             } );
         }
