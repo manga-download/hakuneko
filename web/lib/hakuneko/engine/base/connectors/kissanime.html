@@ -75,8 +75,6 @@
             this.fetchDOM( this.url + manga.id, 'div.episodeList table.listing tr td:first-of-type a' )
             .then( data => {
                 let chapterList = data.map( element => {
-                    let uri = new URL( this.getRelativeLink( element ), this.url );
-                    uri.searchParams.set( 's', 'rapidvideo' );
                     return {
                         id: this.getRelativeLink( element ),
                         title: element.text.replace( manga.title, '' ).trim() + ' [RapidVideo]',
