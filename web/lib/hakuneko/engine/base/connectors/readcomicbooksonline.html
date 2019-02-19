@@ -19,8 +19,7 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://readcomicbooksonline.org';
-            this.urlOld      = 'http://readcomicbooksonline.com';
+            this.url         = 'https://readcomicsonline.me';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
@@ -32,29 +31,15 @@
          *
          */
         _getMangaList( callback ) {
-            let promises = ['/comics-list', '/manga-list'].map( page => {
-                return fetch( this.url + page, this.requestOptions )
-                .then( response => {
-                    if( response.status !== 200 ) {
-                        throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                    }
-                    return response.text();
-                } )
-                .then( data => {
-                    let dom = this.createDOM( data );
-                    let mangaList = [...dom.querySelectorAll( 'div.content table tr td span a' )].map( element => {
-                        return {
-                            id: this.getRelativeLink( element ).replace( this.urlOld, '' ),
-                            title: element.text.trim()
-                        };
-                    } );
-                    return Promise.resolve( mangaList );
+            this.fetchDOM( this.url + '/comics-list', 'div.content table tr td span a' )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
                 } );
-            } );
-
-            Promise.all( promises )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
+                callback( null, mangaList );
             } )
             .catch( error => {
                 console.error( error, this );
@@ -66,23 +51,15 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + manga.id, 'div#chapterlist li.chapter a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let chapterList = [...dom.querySelectorAll( 'div[id$="chapterlist"] li.chapter a' )].map( element => {
-                    let id = this.getRelativeLink( element ).replace( this.urlOld, '' );
+                let chapterList = data.map( element => {
                     return {
-                        id: id + ( id.startsWith( '/readmanga/' ) ? '' : '/?q=fullchapter' ),
+                        id: this.getRelativeLink( element ) + '/?q=fullchapter',
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: 'en'
                     };
-                } ).filter( c => c.title !== '' );
+                } ).filter( chapter => chapter.title !== '' );
                 callback( null, chapterList );
             } )
             .catch( error => {
@@ -95,30 +72,14 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let isManga = chapter.id.startsWith( '/readmanga/' );
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            this.fetchDOM( this.url + chapter.id, 'source.picture' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [];
-                if( isManga ) {
-                    pageList = [...dom.querySelectorAll( 'source.mangapic' )].map( element => {
-                        return ( element.src.replace( this.urlOld, '' ) );
-                    } );
-                } else {
-                    pageList = [...dom.querySelectorAll( 'table tr:nth-of-type(3) td source' )].map( ( element, index ) => {
-                        let uri = new URL( this.url + '/reader' + this.getRelativeLink( element ).replace( this.urlOld, '' ) );
-                        uri.protocol = this.id;
-                        uri.searchParams.append( 'referer', this.url + chapter.id );
-                        uri.searchParams.append( 'delay', index * 100 );
-                        return uri.href;
-                    } );
-                }
+                let pageList = data.map( ( element, index ) => {
+                    let uri = new URL( '/reader' + this.getRelativeLink( element ), this.url );
+                    uri.protocol = this.id;
+                    uri.searchParams.append( 'referer', this.url + chapter.id );
+                    return uri.href;
+                } );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -133,29 +94,19 @@
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
-            let delay = parseInt( uri.searchParams.get( 'delay' ) );
-            uri.searchParams.delete( 'delay' );
             this.requestOptions.headers.set( 'x-referer', uri.searchParams.get( 'referer' ) );
             uri.searchParams.delete( 'referer' );
 
-            this.wait( delay )
-            .then( () => fetch( uri.href, this.requestOptions ) )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => {
-                return this._blobToBuffer( data );
-            } )
-            .then( data => {
-                callback( data );
-            } )
+            fetch( uri.href, this.requestOptions )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
             .catch( error => {
                 console.error( error, uri.href );
                 callback( undefined );
             } );
+
+            this.requestOptions.headers.delete( 'x-referer' );
         }
     }
 
