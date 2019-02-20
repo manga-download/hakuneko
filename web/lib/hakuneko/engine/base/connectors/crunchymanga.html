@@ -16,39 +16,14 @@
             super.id          = 'crunchymanga';
             super.label       = 'CrunchyManga (Premium*)';
             this.tags         = [ 'manga', 'high-quality', 'english' ];
+            this.url          = 'https://www.crunchyroll.com';
             super.isLocked    = false;
             this.initialized  = undefined;
             // Private members for internal usage only (convenience)
-            this.api          = {
-                /*
-                From Crunchyroll Manga - Android APK
-                ------------------------------------
-                this.f1576f = Secure.getString(context.getContentResolver(), "android_id"); // 64 bit hex
-                private static final BasicNameValuePair f1572b = new BasicNameValuePair("api_ver", "1.0");
-                arrayList.add(new BasicNameValuePair("device_type", "com.crunchyroll.manga.android"));
-                arrayList.add(new BasicNameValuePair("device_id", this.f1576f));
-                arrayList.add(new BasicNameValuePair("access_token", "FLpcfZH4CbW4muO"));
-                */
-                createURL : ( path ) => {
-                    let uri = new URL( 'https://api-manga.crunchyroll.com' );
-                    uri.pathname = path;
-                    uri.searchParams.append( 'api_ver', '1.0' );
-                    uri.searchParams.append( 'device_type', 'com.crunchyroll.manga.android' ); // com.crunchyroll.manga.www | com.crunchyroll.manga.flash
-                    uri.searchParams.append( 'device_id', 'a21597e09e6a1f5b' );
-                    uri.searchParams.append( 'access_token', 'FLpcfZH4CbW4muO' );
-                    if( this.session ) {
-                        uri.searchParams.append( 'session_id', this.session );
-                    }
-                    if( this.token ) {
-                        uri.searchParams.append( 'auth', this.token );
-                    }
-                    return uri;
-                }
-            };
             this.subscriptionID = 'manga';
             this.subscription   = false;
-            this.session        = null;
-            this.token          = null;
+            this.session        = undefined;
+            this.token          = undefined;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 username: {
@@ -72,29 +47,64 @@
         }
 
         /**
-         * Implicitly called by login (settings changed event)
+         *
          */
-        _initializeConnector() {
-            if( this.session ) {
-                return Promise.resolve( this.session );
-            }
-            let uri = this.api.createURL( '/cr_start_session' );
-            return fetch( uri.href, this.requestOptions )
-            .then( response => this._getResponseJSON( response ) )
+        _onSettingsChanged( event ) {
+            this._logout().then( () => this._login( this.config.username.value, this.config.password.value ) );
+        }
+
+        /**
+         * Login to crunchyroll website with username and password from settings to
+         * get full access to all chapters.
+         */
+        _login( username, password ) {
+            return this._crStartSession( [0,1].map(i => Math.random().toString(16).slice(-8)).join('') )
+            .then( session => {
+                this.session =  session;
+                if( !username || !password ) {
+                    throw new Error( 'No login credentials provided!' );
+                }
+                return this._crLogin( this.session, username, password );
+            } )
             .then( data => {
-                // prevent session mixing in case of multiple initialization calls (~lock)
-                this.session = this.session || data.data.session_id;
-                return Promise.resolve( this.session );
+                this.token = data.auth;
+                this.subscription = ( data.user.premium.includes( this.subscriptionID ) );
+            } )
+            .catch( error => {
+                console.warn( this.label + ' initialization failed!', error );
             } );
+        }
+
+        /**
+         * 
+         */
+        _logout() {
+            let promise = Promise.resolve();
+            if( this.session ) {
+                promise = this._crLogout( this.session );
+            }
+            this.session = undefined;
+            this.token = undefined;
+            this.subscription = false;
+            return promise.catch( error => console.warn( this.label + ' logout failed!', error ) );
+        }
+
+        /**
+         *
+         */
+        _validateSubscription() {
+            if( !this.subscription ) {
+                return Promise.reject( new Error( 'A paid subscription is required to access premium content.\nMake sure your account is configured in the settings.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.' ) );
+            } else {
+                return Promise.resolve();
+            }
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            let uri = this.api.createURL( '/series' );
-            fetch( uri.href, this.requestOptions )
-            .then( response => this._getResponseJSON( response ) )
+            this._crListSeries( this.session )
             .then( data => {
                 let mangaList = data.map( manga => {
                     return {
@@ -114,12 +124,9 @@
          *
          */
         _getChapterList( manga, callback ) {
-            let uri = this.api.createURL( '/chapters' );
-            uri.searchParams.append( 'series_id', manga.id );
-            fetch( uri.href, this.requestOptions )
-            .then( response => this._getResponseJSON( response ) )
+            this._crListChapters( this.session, manga.id )
             .then( data => {
-                let chapterList = data.chapters.reverse().map( chapter => {
+                let chapterList = data.reverse().map( chapter => {
                     // chapter.volume_number
                     return {
                         id: chapter.chapter_id,
@@ -139,15 +146,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let uri = this.api.createURL( '/list_chapter' );
-            uri.searchParams.append( 'chapter_id', chapter.id );
-            fetch( uri.href, this.requestOptions )
-            .then( response => this._getResponseJSON( response ) )
+            this._validateSubscription()
+            .then( () => this._crListPages(this.session, this.token, chapter.id ) )
             .then( data => {
-                if( !this.subscription ) {
-                    throw new Error( 'A paid subscription is required to access premium content.\nMake sure your account is configured in the settings.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.' );
-                }
-                let pageList = data.pages.map( page => {
+                let pageList = data.map( page => {
                     //let uri = new URL( page['image_url'] ); // sometimes invalid
                     //let uri = new URL( page.locale.enUS['image_url'] ); // this seems to be the raw image (png), but access is forbidden
                     //let uri = new URL( page.locale.enUS['composed_image_url'] ); // access is forbidden
@@ -171,71 +173,11 @@
         }
 
         /**
-         *
-         */
-        _onSettingsChanged( event ) {
-            this._logout();
-            this._login( this.config.username.value, this.config.password.value );
-        }
-
-        /**
-         * 
-         */
-        _getResponseJSON( response ) {
-            /*
-            if( response.status !== 200 ) {
-                throw new Error( `${response.status} - ${response.statusText} => No additional error information available!` );
-            }
-            */
-            return response.json()
-            .then( data => {
-                if( data.error || ( data.code && data.code !== 'ok' ) ) {
-                    throw new Error( data.code + ': ' + data.message );
-                }
-                return Promise.resolve( data );
-            } );
-        }
-
-        /**
-         * Login to crunchyroll website with username and password from settings to
-         * get full access to all chapters.
-         */
-        _login( username, password ) {
-            this._initializeConnector()
-            .then( session => {
-                if( !username || !password ) {
-                    throw new Error( 'No login credentials provided!' );
-                }
-                let uri = this.api.createURL( '/cr_login' );
-                uri.searchParams.append( 'account', username );
-                uri.searchParams.append( 'password', password );
-                //uri.searchParams.append( 'hash_id', null /*'EULt9FJqtcRqmMktcP80goYf7sHxKLeBpg2CGMxA'*/ /* 40 random (0-9a-zA-Z)*/ );
-                return fetch( uri.href, this.requestOptions );
-            } )
-            .then( response => this._getResponseJSON( response ) )
-            .then( data => {
-                this.token = data.data.auth;
-                this.subscription = ( data.data.user.premium.indexOf( this.subscriptionID ) > -1 );
-            } )
-            .catch( error => {
-                console.warn( this.label + ' initialization failed!', error );
-            } );
-        }
-
-        /**
-         * 
-         */
-        _logout() {
-            this.token = undefined;
-            this.subscription = false;
-        }
-
-        /**
          * 
          */
         _pageProtocolHandler( request, callback ) {
             let uri = new URL( request.url );
-            uri.protocol = 'http:'; //( new URL( this.api.base ) ).protocol;
+            uri.protocol = ( new URL( this.url ) ).protocol; // 'http:'
             fetch( uri.href, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
@@ -245,7 +187,7 @@
                 .then( data => {
                     return Promise.resolve( {
                         mimeType: response.headers.get( 'content-type' ),
-                        data: this._decryptImage( data, 0x42 )
+                        data: this._crDecryptImage( data, 0x42 )
                     } );
                 } );
             } )
@@ -258,11 +200,119 @@
             } );
         }
 
+        /******************************
+         *** CRUNCHYROLL CODE BEGIN ***
+         *****************************/
+
+        /**
+         * 
+         */
+        get _crDevices() {
+            return {
+                crunchyroid: { type: 'com.crunchyroll.crunchyroid', token: 'Scwg9PRRZ19iVwD' },
+                android: { type: 'com.crunchyroll.manga.android', token: 'FLpcfZH4CbW4muO' },
+                ios: { type: 'com.crunchyroll.iphone', token: 'QWjz212GspMHH9h' }, // => seems not to work on desktop
+                windows: { type: 'com.crunchyroll.windows.desktop', token: 'LNDJgOit5yaRIWN' }
+            };
+        }
+
+        /**
+         * 
+         */
+        _crFetchJSON( uri, sessionID ) {
+            let device = this._crDevices.windows;
+            uri.searchParams.set( 'api_ver', '1' );                   // mandatory
+            uri.searchParams.set( 'device_type', device.type );       // mandatory
+            if( sessionID ) {
+                uri.searchParams.delete( 'access_token' );            // mandatory for start-session
+                uri.searchParams.set( 'session_id', sessionID );      // optional for start-session
+            } else {
+                uri.searchParams.set( 'access_token', device.token ); // optional for non start-session
+                uri.searchParams.delete( 'session_id' )               // mandatory for non start-session
+            }
+            uri.searchParams.set( 'locale', 'enUS' );                 // optional
+            return fetch( uri.href, this.requestOptions )
+            .then( response => response.json() )
+            .then( data => {
+                if( data.error || ( data.code && data.code !== 'ok' ) ) {
+                    throw new Error( data.code + ': ' + data.message );
+                }
+                return Promise.resolve( data.data || data );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _crStartSession( deviceID ) {
+            //let uri = new URL( '/cr_start_session', 'https://api-manga.crunchyroll.com' );
+            let uri = new URL( '/start_session.0.json', 'https://api.crunchyroll.com' );
+            uri.searchParams.set( 'device_id', deviceID );
+            return this._crFetchJSON( uri ).then( data => Promise.resolve( data.session_id ) );
+        }
+
+        /**
+         * 
+         */
+        _crLogin( sessionID, username, password ) {
+            let uri = new URL( '/cr_login', 'https://api-manga.crunchyroll.com' );
+            uri.searchParams.set( 'account', username );
+            uri.searchParams.set( 'password', password );
+            return this._crFetchJSON( uri, sessionID ).then( data => Promise.resolve( data ) );
+        }
+
+        /**
+         * 
+         */
+        _crLogout( sessionID ) {
+            let uri = new URL( '/cr_logout', 'https://api-manga.crunchyroll.com' );
+            return this._crFetchJSON( uri, sessionID ).then( data => Promise.resolve( data ) );
+        }
+
+        /**
+         * 
+         */
+        _crAuth( sessionID ) {
+            let uri = new URL( '/cr_authenticate', 'https://api-manga.crunchyroll.com' );
+            return this._crFetchJSON( uri, sessionID ).then( data => Promise.resolve( data ) );
+        }
+
+        /**
+         * 
+         */
+        _crListSeries( sessionID ) {
+            let uri = new URL( '/series', 'https://api-manga.crunchyroll.com' );
+            //let uri = new URL( '/list_series', 'https://api-manga.crunchyroll.com' );
+            //uri.searchParams.set( 'series_id', '526' );
+            return this._crFetchJSON( uri, sessionID ).then( data => Promise.resolve( data ) );
+        }
+
+        /**
+         * 
+         */
+        _crListChapters( sessionID, seriesID ) {
+            let uri = new URL( '/chapters', 'https://api-manga.crunchyroll.com' );
+            //let uri = new URL( '/list_chapters', 'https://api-manga.crunchyroll.com' );
+            uri.searchParams.set( 'series_id', seriesID );
+            return this._crFetchJSON( uri, sessionID ).then( data => Promise.resolve( data.chapters ) );
+        }
+
+        /**
+         * 
+         */
+        _crListPages( sessionID, authToken, chapterID ) {
+            //let uri = new URL( '/chapter', 'https://api-manga.crunchyroll.com' );
+            let uri = new URL( '/list_chapter', 'https://api-manga.crunchyroll.com' );
+            uri.searchParams.set( 'auth', authToken );
+            uri.searchParams.set( 'chapter_id', chapterID );
+            return this._crFetchJSON( uri, sessionID ).then( data => Promise.resolve( data.pages ) );
+        }
+
         /**
          * encrypted must be ArrayBuffer
          * NOTE: the buffer data will be modified
          */
-        _decryptImage( encrypted, key ) {
+        _crDecryptImage( encrypted, key ) {
             // create a view for the buffer
             let decrypted = new Uint8Array( encrypted );
             for( let index in decrypted ) {
@@ -270,6 +320,10 @@
             }
             return decrypted;
         }
+
+        /****************************
+         *** CRUNCHYROLL CODE END ***
+         ***************************/
     }
 
 </script>
