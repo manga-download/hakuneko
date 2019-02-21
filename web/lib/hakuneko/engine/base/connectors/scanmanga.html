@@ -59,14 +59,16 @@
         _getChapterList( manga, callback ) {
             this.fetchDOM( this.url + manga.id, 'div.texte_volume_manga ul li.chapitre div.chapitre_nom' )
             .then( data => {
-                let chapterList = data.map( element => {
+                let chapterList = data
+                .filter( element => element.querySelector( 'a:first-of-type[href]' ) )
+                .map( element => {
                     let anchor = element.querySelector( 'a:first-of-type' );
                     return {
                         id: this.getRelativeLink( anchor ),
                         title: element.textContent.trim(),
                         language: 'fr'
                     };
-                } );               
+                } );
                 callback( null, chapterList );
             } )
             .catch( error => {
