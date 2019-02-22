@@ -51,6 +51,7 @@
             this.queryChaptersMoreButton = 'button[data-read-more-endpoint]';
             
             this.queryChapters = 'ul.series-episode-list > li.episode:not(.private) h4.series-episode-list-title';
+            this.queryChaptersSkip = '_';
             this.queryChapterTitle = 'a.series-episode-list-container';
 
             this.queryPages = 'source.page-image[data-src]';
@@ -118,7 +119,8 @@
             } )
             .then( dom => [...dom.querySelectorAll( this.queryChapters )] )
             .then( data => {
-                let chapterList = data.map( element => {
+                let chapterList = data.filter( element => !element.parentElement.querySelector( this.queryChaptersSkip ) )
+                .map( element => {
                     let parent = element.closest( this.queryChapterTitle );
                     return {
                         id: parent ? this.getRelativeLink( parent ) : manga.id,
