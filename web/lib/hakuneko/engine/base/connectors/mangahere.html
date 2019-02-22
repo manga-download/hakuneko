@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="mangafox.html">
 
 <script>
 
     /**
-     * @author Neogeek
+     *
      */
-    class MangaHere extends Connector {
+    class MangaHere extends MangaFox {
 
         /**
          *
@@ -15,103 +15,8 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'mangahere';
             super.label      = 'MangaHere';
-            this.tags        = [ 'manga', 'english' ];
-            super.isLocked   = false;
-            this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'http://www.mangahere.cc';
-            this.requestOptions.headers.set( 'x-cookie', 'isAdult=1' );
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-        }
-
-        /**
-         *
-         */
-         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/mangalist/', 'div.browse-new-block-list div.browse-new-block p.browse-new-block-content > a' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    element.href = element.href.replace( 'mangahere.co', 'mangahere.cc' );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'div#chapterlist ul.detail-main-list li > a' )
-            .then( data => {
-                /*
-                'div.detail-main div.detail-block p.detail-block-content'
-                if( data.indexOf( 'has been licensed' ) > -1 ) {
-                    throw new Error( 'The manga is licensed and not available in your country!' );
-                }
-                */
-                let chapterList = data.map( element => {
-                    let title = element.querySelector( 'div p.title3' ).textContent;
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: title.replace( manga.title, '' ).trim(),
-                        language: 'en'
-                    };
-                } );               
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            let uri = new URL( this.url + chapter.id );
-            uri.hostname = uri.hostname.replace( 'www', 'm' );;
-            uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                // FIXME: very dangerous, might end up in endless recursion !!!
-                /*
-                if( response.status === 503 || response.status === 504 ) {
-                    setTimeout( () => {
-                        this._getPageList( manga, chapter, callback );
-                    }, this.pageLoadDelay );
-                } else {
-                    return response.text();
-                }
-                */
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                if( data.indexOf( 'has been licensed' ) > -1 ) {
-                    throw new Error( 'The manga is licensed and not available in your country!' );
-                }
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( 'div#viewer source' )].map( element => {
-                    return element.dataset.original;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
         }
     }
 
