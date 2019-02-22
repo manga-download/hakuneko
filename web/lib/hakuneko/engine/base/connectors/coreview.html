@@ -44,8 +44,8 @@
             };
 
             this.path = [ '/series', '/series/oneshot', '/series/finished' ];
-            this.queryManga = 'div.series-items ul.daily-series > li.daily-series-item > a';
-            this.queryMangaTitle = 'h4.daily-series-title';
+            this.queryManga = 'article.series-list-wrapper ul.series-list > li.series-list-item > a';
+            this.queryMangaTitle = 'h2.series-list-title';
 
             this.queryChaptersMoreContainer = 'section.read-more-container';
             this.queryChaptersMoreButton = 'button[data-read-more-endpoint]';
@@ -106,14 +106,15 @@
                 let dom = this.createDOM( data );
                 let readMore = dom.querySelector( this.queryChaptersMoreContainer + ' ' + this.queryChaptersMoreButton );
                 if( !readMore ) {
-                    return dom;
-                }
-                return fetch( dom.querySelector( this.queryChaptersMoreButton ).dataset.readMoreEndpoint, this.requestOptions )
-                .then( response => response.json() )
-                .then( data => {
-                    dom.querySelector( this.queryChaptersMoreContainer ).innerHTML = data.html;
                     return Promise.resolve( dom );
-                } );
+                } else {
+                    return fetch( dom.querySelector( this.queryChaptersMoreButton ).dataset.readMoreEndpoint, this.requestOptions )
+                    .then( response => response.json() )
+                    .then( data => {
+                        dom.querySelector( this.queryChaptersMoreContainer ).innerHTML = data.html;
+                        return Promise.resolve( dom );
+                    } );
+                }
             } )
             .then( dom => [...dom.querySelectorAll( this.queryChapters )] )
             .then( data => {
@@ -121,7 +122,7 @@
                     let parent = element.closest( this.queryChapterTitle );
                     return {
                         id: parent ? this.getRelativeLink( parent ) : manga.id,
-                        title: element.textContent.replace( manga.title, '' ).trim(),
+                        title: element.textContent.replace( manga.title, '' ).trim() || manga.title,
                         language: 'jp'
                     };
                 } );

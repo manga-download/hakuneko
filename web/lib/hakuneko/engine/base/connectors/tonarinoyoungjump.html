@@ -19,6 +19,9 @@
             // Private members for internal usage only (convenience)
             this.url         = 'https://tonarinoyj.jp';
 
+            this.queryManga = 'div.series-items ul.daily-series > li.daily-series-item > a';
+            this.queryMangaTitle = 'h4.daily-series-title';
+
             // register a protocol handler to intercept requests (with custom 'tonarinoyoungjump' protocol) and descramble images
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
