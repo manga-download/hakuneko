@@ -1,0 +1,56 @@
+<link rel="import" href="coreview.html">
+
+<script>
+
+    /**
+     *
+     */
+    class ComicDays extends CoreView {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'comicdays';
+            super.label      = 'コミックDAYS (Comic Days)';
+            this.tags        = [ 'manga', 'japanese' ];
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://comic-days.com';
+
+            this.path = [ /*'/series',*/ '/oneshot', '/newcomer' ];
+            this.queryManga = 'div.yomikiri-container ul.yomikiri-items > li.yomikiri-item-box > a.yomikiri-link';
+            this.queryMangaTitle = 'div.yomikiri-link-title h4';
+
+            this.queryChaptersSkip = 'div.series-episode-list-price';
+
+            // register a protocol handler to intercept requests (with custom 'comicdays' protocol) and descramble images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+         _getMangaList( callback ) {
+            this.fetchDOM( this.url + '/series', 'section.daily ul.daily-series > li.daily-series-item a.daily-series-thumb-img-container' )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.querySelector( 'source.js-lazy-thumb' ).getAttribute( 'alt' ).trim()
+                    };
+                } );
+                return this._getMangaListFromPages( this.path.map( path => this.url + path ) )
+                .then( data => {
+                    callback( null, mangaList.concat( data ) );
+                } );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
