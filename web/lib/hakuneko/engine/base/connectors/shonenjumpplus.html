@@ -1,0 +1,39 @@
+<link rel="import" href="coreview.html">
+
+<script>
+
+    /**
+     *
+     */
+    class ShonenJumpPlus extends CoreView {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'shonenjumpplus';
+            super.label      = '少年ジャンプ＋ (Shonen Jump +)';
+            this.tags        = [ 'manga', 'japanese' ];
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://shonenjumpplus.com';
+
+            //this.path = [ '/series', '/series/oneshot', '/series/finished' ];
+            //this.queryManga = 'article.series-list-wrapper ul.series-list > li.series-list-item > a';
+            //this.queryMangaTitle = 'h2.series-list-title';
+
+            //this.queryChaptersMoreContainer = 'section.read-more-container';
+            //this.queryChaptersMoreButton = 'button[data-read-more-endpoint]';
+            
+            //this.queryChapters = 'ul.series-episode-list > li.episode:not(.private) h4.series-episode-list-title';
+            //this.queryChapterTitle = 'a.series-episode-list-container';
+
+            //this.queryPages = 'source.page-image[data-src]';
+
+            // register a protocol handler to intercept requests (with custom 'shonenjumpplus' protocol) and descramble images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+    }
+
+</script>
