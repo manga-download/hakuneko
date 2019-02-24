@@ -134,7 +134,7 @@
                         try {
                             resolve( Object.keys( NFBR.a6G.a6L.cache.data_ ).map( key => NFBR.a6G.a6L.cache.get( key ).getUrl() ) );
                         } catch ( error ) {
-                            rejec( error );
+                            reject( error );
                         }
                         resolve();
                     }, ${this.config.scrapeDelay.value} );
