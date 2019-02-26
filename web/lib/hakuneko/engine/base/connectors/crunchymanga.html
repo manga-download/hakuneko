@@ -60,7 +60,7 @@
         _login( username, password ) {
             return this._crStartSession( [0,1].map(i => Math.random().toString(16).slice(-8)).join('') )
             .then( session => {
-                this.session =  session;
+                this.session = session;
                 if( !username || !password ) {
                     throw new Error( 'No login credentials provided!' );
                 }
