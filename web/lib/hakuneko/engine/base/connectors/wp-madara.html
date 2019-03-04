@@ -86,7 +86,7 @@
             uri.searchParams.set( 'style', 'list' );
             this.fetchDOM( uri.href, 'div.page-break source' )
             .then( data => {
-                let pageLinks = data.map( element => element.src );
+                let pageLinks = data.map( element => ( element.dataset['src'] || element.src ).trim() );
                 callback( null, pageLinks );
             } )
             .catch( error => {
