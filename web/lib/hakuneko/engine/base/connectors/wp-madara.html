@@ -61,7 +61,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'ul.main li.wp-manga-chapter > a' )
+            this.fetchDOM( this.url + manga.id, 'li.wp-manga-chapter > a' )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
