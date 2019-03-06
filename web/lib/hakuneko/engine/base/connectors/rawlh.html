@@ -3,12 +3,12 @@
 <script>
 
     /**
-     * Very similar to MangaTR
+     * Very similar to MangaReaderCMS and MangaTR
      */
     class RawLH extends Connector {
 
         /**
-         *
+         * 
          */
         constructor() {
             super();
@@ -25,10 +25,10 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
-            this.language = 'jp';
             this.queryChapters = 'div#tab-chapper table tr td a.chapter';
+            this.language = 'jp';
 
-            // register a protocol handler to intercept requests (with custom 'wiemanga' protocol) and extract images
+            // register a protocol handler to intercept requests (with custom 'rawlh' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
@@ -69,7 +69,9 @@
                 language = ( language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : this.language );
                 let chapterList = [...dom.querySelectorAll( this.queryChapters )].map( element => {
                     let title = element.text.replace( manga.title, '' );
-                    title = title.replace( manga.title.replace( /\s*-\s*RAW$/, '' ), '' );
+                    let mangaTitle = manga.title.replace( /\s*-\s*RAW$/, '' );
+                    title = title.replace( mangaTitle.toUpperCase(), '' );
+                    title = title.replace( mangaTitle, '' );
                     title = title.replace( /^\s*-\s*/, '' );
                     title = title.replace( /-\s*-\s*Read\s*Online\s*$/, '' );
                     title = title.trim();
