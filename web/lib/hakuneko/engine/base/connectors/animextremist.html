@@ -80,7 +80,7 @@
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ).replace( '.html', '-1.html' ),
+                        id: this.getRelativeLink( element ).replace( this.url.replace( 'www.', '' ), '' ).replace( '.html', '-1.html' ),
                         title: element.text.trim(),
                         language: 'spanish'
                     };
@@ -121,7 +121,11 @@
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             this.fetchDOM( uri.href, 'source#photo' )
-            .then( data => fetch( data[0].src, this.requestOptions ) )
+            .then( data => {
+                let link = this.getRelativeLink( data[0] ).replace( /^\//, '' );
+                link = ( new URL( link, uri.href ) ).href;
+                return fetch( link, this.requestOptions );
+            } )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
