@@ -1,166 +1,28 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="rawlh.html">
 
 <script>
 
     /**
      *
      */
-    class LHTranslation extends Connector {
+    class LHTranslation extends RawLH {
 
         /**
          *
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'lhtranslation';
             super.label      = 'LHTranslation';
             this.tags        = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-            super.isLocked   = false;
-            this.initialized = undefined;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://lhtranslation.net';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-        }
+            this.requestOptions.headers.set( 'x-referer', this.url );
 
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/schedule/', 'div#content table tbody tr td:first-of-type a' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-         _getChapterListFromPages( manga, chapterPageLinks, index ) {
-            if( index === undefined ) {
-                index = 0;
-            }
-            return this.wait( 0 )
-            .then ( () => this.fetchDOM( chapterPageLinks[ index ], 'div#content article header .title a', 5 ) )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'en'
-                    };
-                } );
-                if( index < chapterPageLinks.length - 1 ) {
-                    return this._getChapterListFromPages( manga, chapterPageLinks, index + 1 )
-                    .then( chapters => chapterList.concat( chapters ) );
-                } else {
-                    return Promise.resolve( chapterList );
-                }
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'nav.pagination a:nth-last-of-type(2)' )
-            .then( data => {
-                let pageCount = ( data.length === 0 ? 1 : parseInt( data[0].text.trim() ) );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + 'page/' + ( page + 1 ) + '/' );
-                return this._getChapterListFromPages( manga, pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => response.text() )
-            .then( data => {
-                return this._extractReaderFromContent( data )            // PRIO 1: search for link in page
-                .catch( error => this._extractReaderFromDisqus( data ) ) // PRIO 2: search for link in disqus comment
-                .catch( error => compose( chapter.id ) );                 // PRIO 3: compose link from chapter id
-            } )
-            .then( uri => {
-                return this.fetchDOM( uri, 'source.chapter-img' )
-                .then( data => {
-                    let pageList = data.map( element => ( new URL( ( element.dataset['original'] || element.src ).trim(), 'https://read.lhtranslation.com' ) ).href );               
-                    callback( null, pageList );
-                } );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _extractReaderFromContent( content ) {
-            try {
-                return Promise.resolve( content.match( /"(http[s]?:\/\/read\..*?)"/ )[1] );
-            } catch( error ) {
-                return Promise.reject( error );
-            }
-        }
-
-        /**
-         *
-         */
-        _extractReaderFromDisqus( content ) {
-            try {
-                let forum = 'lhtranslation-2';
-                let threadIdent = content.match( /dsqidentifier\s*=\s*"(.*?)"/ )[1];
-
-                let uri = new URL( 'https://disqus.com/api/3.0/threads/listPosts.json' );
-                uri.searchParams.set( 'forum', forum );
-                uri.searchParams.set( 'thread:ident', threadIdent );
-                uri.searchParams.set( 'order', 'asc' );
-                uri.searchParams.set( 'api_key', 'E8Uh5l5fHZ6gD8U3KycjAIAk46f68Zw7C6eW8WSjZvCLXebZ7p0r1yrYDrLilk2F' );
-
-                return fetch( uri.href, this.requestOptions )
-                .then( response => response.json() )
-                .then( data => {
-                    let comment = data.response.shift().raw_message;
-                    return Promise.resolve( comment.match( /"(http[s]?:\/\/read\..*?)"/ )[1] );
-                } );
-            } catch( error ) {
-                return Promise.reject( error );
-            }
-        }
-
-        /**
-         *
-         */
-        _composeReaderFromChapterID( id ) {
-            try {
-                let uri = new URL( this.url + id );
-                uri.hostname = 'read.' + uri.hostname;
-                uri.pathname = uri.pathname.replace( /^\/?/, 'read-' ).replace( /\/?$/, '.html' );
-                return Promise.resolve( uri.href );
-            } catch( error ) {
-                return Promise.reject( error );
-            }
+            this.queryChapters = 'div#tab-chapper div#list-chapters span.titleLink a.chapter';
+            this.language = 'en';
+            
+            // register a protocol handler to intercept requests (with custom 'lhtranslation' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
