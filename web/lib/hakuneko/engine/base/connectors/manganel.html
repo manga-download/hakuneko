@@ -4,7 +4,7 @@
 
     /**
      * @author Neogeek
-     * Aliases: MangaKakalot, MangaBat (prev. MangaSupa), MangaHereIO, MangaFoxCom
+     * Aliases: MangaKakalot, MangaBat (prev. MangaSupa)
      */
     class MangaNel extends Connector {
 
@@ -24,7 +24,7 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
-            this.queryMangasPageCount = 'div.group-page a.page:last-of-type';
+            this.queryMangasPageCount = 'div.group_page a.page_last:last-of-type';
             this.queryMangas = 'div.truyen-list h3 a';
             this.queryChapters = 'div.chapter-list div.row span a';
             this.queryPages = '#vungdoc source';
