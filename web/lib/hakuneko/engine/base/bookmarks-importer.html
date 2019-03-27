@@ -23,12 +23,13 @@
                 'ninemangait': 'ninemanga-it',
                 'ninemangaru': 'ninemanga-ru',
                 'mangapark': 'UNDEFINED',
-                'mangazuki': 'mangazuki-info'
+                'mangazuki': 'mangazuki-info',
+                'readmangatoday': 'readmng'
             };
             // A map of converter functions to transform FMD manga IDs to HakuNeko manga IDs
             // The key is based on HakuNeko connector IDs
             this._mangaMap = {
-                'mangadex': id => id.match( /^\/[a-z]+\/(\d+)\/.*$/ )[1],
+                'mangadex': id => id.match( /^\/[a-z]+\/(\d+)($|\/.*$)/ )[1],
                 'mangarock': id => id.split( '/' ).pop(),
                 //'mangapark': id => ( id.indexOf( '/series' ) > -1 ? id : undefined ),
                 'mangatube': id => id.split( '/' ).pop()
@@ -82,8 +83,9 @@
                 //let columns = result[0].columns;
                 let rows = result[0].values;
                 let bookmarks = rows.map( row => {
-                    let connectorID = this._mapFMDConnectorID( row[0].split( '/' )[0] );
-                    let mangaID = this._mapFMDMangaID( connectorID, row[1] );
+                    // NOTE: due to a bug in FMD sometimes the connector has 'http' postfix which needs to be removed
+                    let connectorID = this._mapFMDConnectorID( row[0].replace( /http[s]?\:/, '' ).split( '/' )[0] );
+                    let mangaID = this._mapFMDMangaID( connectorID, ( new URL( row[1], 'http://hostname.dummy' ) ).pathname );
                     return {
                         key: {
                             connector: connectorID,
