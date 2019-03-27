@@ -80,8 +80,18 @@
          */
         _getChapterList( manga, callback ) {
             // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
-            let uri = ( manga.id.startsWith( 'http' ) ? '' : this.url ) + manga.id;
-            this.fetchDOM( uri, this.queryChapters )
+            let uri = ( new URL( manga.id, this.url ) ).href; // ( manga.id.startsWith( 'http' ) ? '' : this.url ) + manga.id;
+            fetch( uri, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.text();
+            } )
+            .then( data => {
+                let redirect = data.match( /window\.location.*?(http.*?)[;'"]/ );
+                return this.fetchDOM( redirect ? redirect[1] : uri, this.queryChapters );
+            } )
             .then( data => {
                 let chapterList = data.map( element => {
                     this.cfMailDecrypt( element );
