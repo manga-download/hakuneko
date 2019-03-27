@@ -171,8 +171,7 @@
                 if( !img || !img.dataset['src'] ) {
                     throw new Error( 'No element with id #image found in page, or dataset.src is missing!' );
                 }
-                // TODO: find better detection to determine which images are scrambeled
-                if( img.dataset['src'].startsWith( this.urlCDN + 'c' ) ) {
+                if( data.indexOf( '/js/iYFbYi_' ) > -1 ) {
                     return this._getImageDescrambled( img.dataset['src'] );
                 } else {
                     return this._getImageRaw( img.dataset['src'] );
@@ -222,6 +221,9 @@
                     return this._descrambleCR( bitmap );
                 }
                 if( url.startsWith( this.urlCDN + 'clel' ) ) {
+                    return this._descrambleCLEL( bitmap );
+                }
+                if( url.startsWith( this.urlCDN + 'lel' ) ) {
                     return this._descrambleCLEL( bitmap );
                 }
                 throw new Error( `The image descrambling for '${url}' is not yet supported!` );
