@@ -118,8 +118,8 @@
                 return response.text();
             } )
             .then( data => {
-                let pages = data.match( /_load_pages\s*=\s*(\[.*?\])\s*;/ )[1];
-                let pageList = JSON.parse( pages ).map( page => page.u );
+                let pages = data.match( /_load_pages\s*=\s*(\[.*?\])\s*;/ ) || data.match( /images\s*=\s*(\[.*?\])\s*;/ );
+                let pageList = JSON.parse( pages[1] ).map( page => page['u'] ? page.u : page );
                 callback( null, pageList );
             } )
             .catch( error => {
