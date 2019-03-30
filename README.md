@@ -6,7 +6,7 @@
 
 ## SourceForge
 
-[![](https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge)](https://sourceforge.net/projects/hakuneko/files/0.4.0/) (Mirror)
+[![](https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge)](https://sourceforge.net/projects/hakuneko/files/0.4.0/)
 
 # Developer Quick Start
 
