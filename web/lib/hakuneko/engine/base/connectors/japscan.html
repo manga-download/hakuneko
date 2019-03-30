@@ -139,6 +139,7 @@
             .then( data => {
                 let pageLinks = data.map( element => {
                     let uri = new URL( this.url + element.value );
+                    uri.hash = element.dataset['img'] ? element.dataset.img : '';
                     uri.protocol = this.id;
                     return uri.href;
                 } );
@@ -156,6 +157,8 @@
         _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
+            let hash = uri.hash.replace( '#', '' );
+            uri.hash = '';
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             fetch( uri.href, this.requestOptions )
@@ -171,10 +174,20 @@
                 if( !img || !img.dataset['src'] ) {
                     throw new Error( 'No element with id #image found in page, or dataset.src is missing!' );
                 }
-                if( data.indexOf( '/js/iYFbYi_' ) > -1 ) {
-                    return this._getImageDescrambled( img.dataset['src'] );
+                let link = new URL( img.dataset.src, uri.origin );
+                if( hash ) {
+                    link.pathname = link.pathname.split( '/' ).slice( 0, -1 ).join( '/' ) + '/' + hash;
+                }
+                // +++ NOT SCRAMBLED +++
+                //   <script src="/js/iYFbYi.js">
+                //   <script src="/js/iYFbYi_Fee_gb_NbY.js">
+                // +++ SCRAMBLED +++
+                //   <script src="/js/iYFbYi_UibMqYb.js">
+                //   <script src="/js/iYFbYi_Fee_gb_NbY_UibMqYb.js">
+                if( data.indexOf( '_UibMqYb.js' ) > -1 ) {
+                    return this._getImageDescrambled( link.href );
                 } else {
-                    return this._getImageRaw( img.dataset['src'] );
+                    return this._getImageRaw( link.href );
                 }
             } )
             .then( data => {
