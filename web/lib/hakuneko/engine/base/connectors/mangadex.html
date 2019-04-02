@@ -51,7 +51,7 @@
                         title: element.text.trim()
                     };
                 } );
-                if( index < mangaPageLinks.length - 1 ) {
+                if( mangaList.length && index < mangaPageLinks.length - 1 ) {
                     return this._getMangaListFromPages( mangaPageLinks, index + 1 )
                     .then( mangas => mangas.concat( mangaList ) );
                 } else {
