@@ -42,7 +42,7 @@
                 index = 0;
             }
             return this.wait( this.config.throttle.value )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.manga-entry div.row div.col a.manga_title', 5 ) )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.row div.manga-entry div.text-truncate a.manga_title', 5 ) )
             .then( data => {
                 let mangaList = data.map( element => {
                     this.cfMailDecrypt( element );
@@ -64,9 +64,16 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/titles/2/250', 'nav ul.pagination li.paging:last-of-type a.page-link' )
+            // NOTES:
+            // The first title page(s) do not contain a link to the last page, just to page 28
+            // Sometimes the pagination bar is completely missing e.g. when directly accessing page 250 or 500
+            // => scrape pages until mangas are no more found
+
+            // https://mangadex.org/api/v1/mangas/all
+            // https://github.com/xicelord/mangadex-api/blob/master/handlers/mangas_handler.js
+            this.fetchDOM( this.url + '/titles/2/250', 'nav ul.pagination li.page-link:last-of-type a.page-link' )
             .then( data => {
-                let pageCount = parseInt( data[0].href.match(/(\d+)\/$/)[1] );
+                let pageCount = !data.length ? 999 : parseInt( data[0].href.match( /(\d+)\/$/)[1] );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/titles/2/' + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
