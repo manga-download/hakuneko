@@ -89,10 +89,10 @@
                     let chapter = data.chapter[id];
                     let title = '';
                     if( chapter.volume ) { // => string, not a number
-                        title += 'Vol.' + chapter.volume.padStart( 2, '0' );
+                        title += 'Vol.' + this._padNum( chapter.volume, 2 );
                     }
                     if( chapter.chapter ) { // => string, not a number
-                        title += ' Ch.' + '0'.repeat( 4 - chapter.chapter.split( '.' )[0].length ) + chapter.chapter;
+                        title += ' Ch.' + this._padNum( chapter.chapter, 4 );
                     }
                     if( chapter.title ) {
                         title += ( title ? ' - ' : '' ) + chapter.title;
@@ -150,6 +150,24 @@
                 }
                 return Promise.resolve( data );
             } );
+        }
+
+        /**
+         *
+         */
+        _padNum( number, places ) {
+            // '17'
+            // '17.5'
+            // '17-17.5'
+            // '17 - 17.5'
+            // '17-123456789'
+            let range = number.split( '-' );
+            range = range.map( chapter => {
+                chapter = chapter.trim();
+                let digits = chapter.split( '.' )[0].length;
+                return '0'.repeat( Math.max( 0, places - digits ) ) + chapter;
+            } );
+            return range.join( '-' );
         }
 
         /**
