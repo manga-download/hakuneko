@@ -64,7 +64,7 @@
                         connector: connector
                     };
                 } catch( error ) {
-                    console.warn( 'CLIPBOARD:', error.message );
+                    console.warn( 'CLIPBOARD:', error.message, link );
                     return null;
                 }
             } );
@@ -92,7 +92,10 @@
          *
          */
         _getMangaList( callback ) {
-            let promises = this.linkMap.map( entry => entry.connector.getMangaFromURI( entry.uri ).catch( error => Promise.resolve( error ) ) );
+            let promises = this.linkMap.map( entry => entry.connector.getMangaFromURI( entry.uri ).catch( error => {
+                console.warn( 'CLIPBOARD:', error.message, entry.uri.href );
+                return Promise.resolve( error );
+            } ) );
             Promise.all( promises )
             .then( mangas => {
                 mangas = mangas.filter( manga => !(manga instanceof Error) );
