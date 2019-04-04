@@ -164,6 +164,7 @@
                 // currently active manga list
                 this.mangaList = this['mangaList'];
                 // register callbacks for published events
+                document.addEventListener( 'paste', this.onPaste.bind( this ) );
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }
@@ -294,6 +295,22 @@
             onBookmarksChanged( e ) {
                 if( this.selectedConnector.id === this.bookmarkConnectorID ) {
                     this.onSelectedConnectorChanged( this.selectedConnector )
+                }
+            }
+
+            /**
+             *
+             */
+            onPaste( e ) {
+                try {
+                    let mangaLinks = e.clipboardData.getData( 'text' ).split( '\n' );
+                    let clipboardConnector = new ClipboardConnector();
+                    if( clipboardConnector.initialize( mangaLinks ) ) {
+                        this.set( 'selectedConnector', clipboardConnector );
+                        e.preventDefault();
+                    };
+                } catch( error ) {
+                    // invalid clipboard data
                 }
             }
         }

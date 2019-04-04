@@ -126,6 +126,28 @@
         }
 
         /**
+         * See: this.getMangaFromURI( uri )
+         * This method can be overwritten by connector implementations.
+         */
+        _getMangaFromURI( uri ) {
+            return new Promise( ( resolve, reject ) => {
+                let id = uri.pathname + uri.search;
+                let title = 'Untitled #' + Date.now().toString( 16 ).slice( -6 ).toUpperCase();
+                resolve( new Manga( this, id, title ) );
+            } );
+        }
+
+        /**
+         * Returns a promise that resolves with a manga on success or resolves with an error on failure.
+         * The promise will NOT reject!
+         */
+        getMangaFromURI( uri ) {
+            // TODO: try to find title in cached manga list first
+            //       => this.getMangas().then( ... )
+            return this._getMangaFromURI( uri );
+        }
+
+        /**
          *
          */
         _getUpdatedMangasFromCache() {
