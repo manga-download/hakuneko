@@ -18,10 +18,10 @@
             this.tags        = [ 'manga', 'indonesian' ];
             // Private members for internal usage only (convenience)
             this.url         = 'https://komikcast.com';
-            this.path        = '/list/';
+            this.path        = '/daftar-komik/?list';
 
-            this.queryMangas = 'div#main div#content div.daftarkartun ul li a.series';
-            this.queryPages = 'div#readerarea source[border], div.separator source[border]';
+            this.queryMangas = 'div#content div.soralist ul li a.series';
+            this.queryPages = 'div#readerarea source.alignnone, div.separator source.alignnone';
         }
     }
 
