@@ -78,6 +78,8 @@
         updateMangas( callback ) {
             if( this.initialize() ) {
                 this._getMangaList( callback );
+            } else {
+                callback( new Error( 'Updating clipboard not yet supported!\nUse "CTRL+V" or the "Paste from Clipboard" button.' ), undefined );
             }
         }
 
