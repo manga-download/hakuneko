@@ -35,6 +35,18 @@
         }
 
         /**
+         * Overwrite base function to get manga from clipboard link.
+         */
+        _getMangaFromURI( uri ) {
+            return this.fetchDOM( uri.href, 'div.card h6.card-header span.mx-1', 3 )
+            .then( data => {
+                let id = uri.pathname.match( /\/(\d+)\// )[1];
+                let title = data[0].innerText.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
+        }
+
+        /**
          *
          */
         _getMangaListFromPages( mangaPageLinks, index ) {
@@ -42,7 +54,7 @@
                 index = 0;
             }
             return this.wait( this.config.throttle.value )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.manga-entry div.row div.col a.manga_title', 5 ) )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.row div.manga-entry div.text-truncate a.manga_title', 5 ) )
             .then( data => {
                 let mangaList = data.map( element => {
                     this.cfMailDecrypt( element );
@@ -51,7 +63,7 @@
                         title: element.text.trim()
                     };
                 } );
-                if( index < mangaPageLinks.length - 1 ) {
+                if( mangaList.length && index < mangaPageLinks.length - 1 ) {
                     return this._getMangaListFromPages( mangaPageLinks, index + 1 )
                     .then( mangas => mangas.concat( mangaList ) );
                 } else {
@@ -64,9 +76,16 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/titles/2/250', 'nav ul.pagination li.paging:last-of-type a.page-link' )
+            // NOTES:
+            // The first title page(s) do not contain a link to the last page, just to page 28
+            // Sometimes the pagination bar is completely missing e.g. when directly accessing page 250 or 500
+            // => scrape pages until mangas are no more found
+
+            // https://mangadex.org/api/v1/mangas/all
+            // https://github.com/xicelord/mangadex-api/blob/master/handlers/mangas_handler.js
+            this.fetchDOM( this.url + '/titles/2/250', 'nav ul.pagination li.page-link:last-of-type a.page-link' )
             .then( data => {
-                let pageCount = parseInt( data[0].href.match(/(\d+)\/$/)[1] );
+                let pageCount = !data.length ? 999 : parseInt( data[0].href.match( /(\d+)\/$/)[1] );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/titles/2/' + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
@@ -89,10 +108,10 @@
                     let chapter = data.chapter[id];
                     let title = '';
                     if( chapter.volume ) { // => string, not a number
-                        title += 'Vol.' + chapter.volume.padStart( 2, '0' );
+                        title += 'Vol.' + this._padNum( chapter.volume, 2 );
                     }
                     if( chapter.chapter ) { // => string, not a number
-                        title += ' Ch.' + '0'.repeat( 4 - chapter.chapter.split( '.' )[0].length ) + chapter.chapter;
+                        title += ' Ch.' + this._padNum( chapter.chapter, 4 );
                     }
                     if( chapter.title ) {
                         title += ( title ? ' - ' : '' ) + chapter.title;
@@ -150,6 +169,24 @@
                 }
                 return Promise.resolve( data );
             } );
+        }
+
+        /**
+         *
+         */
+        _padNum( number, places ) {
+            // '17'
+            // '17.5'
+            // '17-17.5'
+            // '17 - 17.5'
+            // '17-123456789'
+            let range = number.split( '-' );
+            range = range.map( chapter => {
+                chapter = chapter.trim();
+                let digits = chapter.split( '.' )[0].length;
+                return '0'.repeat( Math.max( 0, places - digits ) ) + chapter;
+            } );
+            return range.join( '-' );
         }
 
         /**

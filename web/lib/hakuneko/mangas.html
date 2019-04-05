@@ -28,6 +28,13 @@
                 font-size: 1.25em;
                 padding: 0.25em;
             }
+            #paste {
+                position: absolute;
+                z-index: -9999;
+                height: 0em;
+                width: 0em;
+                opacity: 0;
+            }
             .filter {
                 flex: 0;
                 width: 100%;
@@ -61,6 +68,9 @@
             .focus {
                 background-color: var(--manga-list-selected) !important;
             }
+            .button {
+                cursor: pointer;
+            }
             .refresh {
                 cursor: pointer;
                 color: var(--manga-refresh-button-color);
@@ -74,7 +84,19 @@
                 flex: 0;
             }
         </style>
-        <div class="header separator">Manga List</div>
+        <div class="header separator">
+            <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <tr>
+                    <td>
+                        Manga List
+                    </td>
+                    <td width="1">
+                        <input id="paste" />
+                        <i class="fa fa-fw fa-clipboard button" on-click="onPasteClick" title="Click to paste manga links from the clipboard (CTRL + V)"></i>
+                    </td>
+                </tr>
+            </table>
+        </div>
         <table class="filter separator">
             <tr>
                 <td>
@@ -164,6 +186,7 @@
                 // currently active manga list
                 this.mangaList = this['mangaList'];
                 // register callbacks for published events
+                document.addEventListener( 'paste', this.onPaste.bind( this ) );
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }
@@ -295,6 +318,32 @@
                 if( this.selectedConnector.id === this.bookmarkConnectorID ) {
                     this.onSelectedConnectorChanged( this.selectedConnector )
                 }
+            }
+
+            /**
+             *
+             */
+            onPaste( e ) {
+                try {
+                    let mangaLinks = e.clipboardData.getData( 'text' ).split( '\n' );
+                    let clipboardConnector = new ClipboardConnector();
+                    if( clipboardConnector.initialize( mangaLinks ) ) {
+                        this.set( 'selectedConnector', clipboardConnector );
+                        e.preventDefault();
+                    };
+                } catch( error ) {
+                    // invalid clipboard data
+                }
+            }
+
+            /**
+             *
+             */
+            onPasteClick( e ) {
+                // paste event seems only to work properly on input element ...
+                this.$.paste.focus();
+                document.execCommand( 'paste' );
+                this.$.paste.value = '';
             }
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );

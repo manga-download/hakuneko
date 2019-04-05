@@ -19,7 +19,7 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'http://fanfox.net';
+            this.url         = 'https://fanfox.net';
             this.requestOptions.headers.set( 'x-cookie', 'isAdult=1' );
             this.pageLoadDelay = 50;
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
@@ -45,6 +45,18 @@
                 } );
                 Promise.all( promises )
             `;
+        }
+
+        /**
+         * Overwrite base function to get manga from clipboard link.
+         */
+        _getMangaFromURI( uri ) {
+            return this.fetchDOM( uri.href, 'div.detail-info div.detail-info-right p.detail-info-right-title span.detail-info-right-title-font', 3 )
+            .then( data => {
+                let id = uri.pathname + uri.search;
+                let title = data[0].innerText.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
         }
 
         /**
