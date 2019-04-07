@@ -1,23 +1,24 @@
-<link rel="import" href="wp-madara.html">
+<link rel="import" href="wp-emanga.html">
 
 <script>
 
     /**
      * 
      */
-    class Ngomik extends WordPressMadara {
+    class Ngomik extends WordPressEManga {
 
         /**
          *
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'ngomik';
             super.label      = 'Ngomik';
             this.tags        = [ 'manga', 'indonesian' ];
-            // Private members for internal usage only (convenience)
-            this.url         = 'http://ngomik.in';
+            this.url         = 'https://www.ngomik.in';
+            this.path        = '/daftar-manga/?list';
+
+            this.queryChapters = 'div.bxcl ul li div.lch a';
         }
     }
 
