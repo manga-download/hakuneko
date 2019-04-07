@@ -19,7 +19,7 @@
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://www2.9anime.to';
+            this.url         = 'https://www3.9anime.to';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 resolution:  {
@@ -95,6 +95,7 @@
                             label: span.textContent.trim(),
                             episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + id + '"] ul.episodes li a' )].map(a => {
                                 return {
+                                    id: a['dataset']['id'] || a.href.split( '/' ).pop(),
                                     url: a.href,
                                     title: a.text.trim()
                                 };
@@ -110,7 +111,7 @@
                 let chapterList = result.reduce( ( accumulator, server ) => {
                     let episodes = server.episodes.map(episode => {
                         return {
-                            id: '/ajax/episode/info?server=' + server.id + '&id=' + episode.url.split( '/' ).pop(),
+                            id: '/ajax/episode/info?server=' + server.id + '&id=' + episode.id,
                             title: `${episode.title} [${server.label}]`,
                             language: ''
                         };
@@ -130,6 +131,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             this.requestOptions.headers.set( 'x-referer', this.url );
+            this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
             return fetch( ( this.url + chapter.id + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
@@ -154,10 +156,12 @@
                 }
             } )
             .then( media => {
+                this.requestOptions.headers.delete( 'x-requested-with' );
                 this.requestOptions.headers.delete( 'x-referer' );
                 callback( null, media );
             } )
             .catch( error => {
+                this.requestOptions.headers.delete( 'x-requested-with' );
                 this.requestOptions.headers.delete( 'x-referer' );
                 console.error( error, chapter );
                 callback( error, undefined );
