@@ -11,7 +11,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 'use strict';
 
 import ScopingShim from '../src/scoping-shim.js';
-import {nativeCssVariables, nativeShadow, cssBuild} from '../src/style-settings.js';
+import {nativeCssVariables, nativeShadow, cssBuild, disableRuntime} from '../src/style-settings.js';
 
 /** @const {ScopingShim} */
 const scopingShim = new ScopingShim();
@@ -94,7 +94,9 @@ window.ShadyCSS = {
 
   nativeShadow: nativeShadow,
 
-  cssBuild: cssBuild
+  cssBuild: cssBuild,
+
+  disableRuntime: disableRuntime,
 };
 
 if (ApplyShim) {

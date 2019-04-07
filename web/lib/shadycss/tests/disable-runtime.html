@@ -1,0 +1,98 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <script>
+    WCT = { waitFor: function (cb) { HTMLImports.whenReady(cb) } };
+  </script>
+  <script src="./test-flags.js"></script>
+  <script>
+    window.ShadyCSS = { disableRuntime: true };
+    window.ShadyDOM = { force: true };
+  </script>
+  <script src="../node_modules/wct-browser-legacy/browser.js"></script>
+  <script src="../node_modules/@webcomponents/webcomponents-platform/webcomponents-platform.js"></script>
+  <script src="../node_modules/es6-promise/dist/es6-promise.auto.min.js"></script>
+  <script src="../node_modules/@webcomponents/template/template.js"></script>
+  <script src="../node_modules/@webcomponents/html-imports/html-imports.min.js"></script>
+  <script src="../node_modules/@webcomponents/shadydom/shadydom.min.js"></script>
+  <script src="../node_modules/@webcomponents/custom-elements/custom-elements.min.js"></script>
+  <script src="../scoping-shim.min.js"></script>
+  <script src="../apply-shim.min.js"></script>
+  <script src="../custom-style-interface.min.js"></script>
+  <script src="module/generated/make-element.js"></script>
+  <script src="module/generated/custom-style-element.js"></script>
+</head>
+
+<body>
+  <custom-style>
+    <style>
+      html {
+        --foo: {
+          border: 2px solid black;
+        }
+      }
+    </style>
+  </custom-style>
+  <template id="x-foo">
+    <div></div>
+  </template>
+
+  <template id="no-scope">
+    <style>
+      :host {
+        display: block;
+      }
+      div {
+        border: 2px solid black;
+      }
+    </style>
+    <div></div>
+  </template>
+
+  <script>
+    suite('disable runtime', function() {
+      test('disableRuntime setting is visible', function() {
+        assert(window.ShadyCSS.disableRuntime, 'disableRuntime setting should be true');
+      })
+      test('no placeholders', function() {
+        const spy = sinon.spy(document, 'createComment');
+        makeElement('x-foo');
+        spy.restore();
+        assert(spy.notCalled, 'placeholder was created but should not have been');
+      });
+      test('no scoping occurs', function() {
+        makeElement('no-scope');
+        const template = document.querySelector('template#no-scope');
+        assert.deepEqual(template.content.querySelectorAll('.style-scope'), [], 'no DOM should be scoped');
+        const style = template.content.querySelector('style');
+        assert(style, 'style should still be in template');
+        assert.include(style.textContent, ':host', 'style should not been transformed');
+      });
+      test('custom styles are not processed', function() {
+        const style = document.querySelector('custom-style > style');
+        assert.notInclude(style.textContent, '--foo_-_border', 'custom style should not have ApplyShim applied');
+      });
+      test('styleElement with props still works', function() {
+        makeElement('update-props');
+        const el = document.createElement('update-props');
+        document.body.appendChild(el);
+        assert.equal(window.ShadyCSS.getComputedStyleValue(el, '--bar'), '');
+        window.ShadyCSS.styleSubtree(el, {'--bar': '20px'});
+        assert.equal(window.ShadyCSS.getComputedStyleValue(el, '--bar'), '20px');
+      });
+    });
+  </script>
+</body>
+
+</html>

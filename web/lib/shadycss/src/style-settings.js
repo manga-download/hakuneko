@@ -37,6 +37,9 @@ if (window.ShadyCSS && window.ShadyCSS.cssBuild !== undefined) {
   cssBuild = window.ShadyCSS.cssBuild;
 }
 
+/** @type {boolean} */
+export const disableRuntime = Boolean(window.ShadyCSS && window.ShadyCSS.disableRuntime);
+
 if (window.ShadyCSS && window.ShadyCSS.nativeCss !== undefined) {
   nativeCssVariables_ = window.ShadyCSS.nativeCss;
 } else if (window.ShadyCSS) {

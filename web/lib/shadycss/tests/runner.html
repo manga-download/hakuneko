@@ -96,6 +96,7 @@
 
   if (matrix.length > 2) {
     suites = suites.concat([
+      'disable-runtime.html',
       'no-scopingshim/apply-shim.html',
       'no-scopingshim/mixin-ordering.html',
       'no-scopingshim/custom-style.html',
@@ -107,7 +108,6 @@
     ]);
   }
 
-  console.log(suites);
   WCT.loadSuites(suites);
 })();
 </script>

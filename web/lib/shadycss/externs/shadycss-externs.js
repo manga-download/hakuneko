@@ -15,6 +15,7 @@
  * nativeCss: boolean,
  * nativeShadow: boolean,
  * cssBuild: (string | undefined),
+ * disableRuntime: boolean,
  * }}
  */
 let ShadyCSSInterface; //eslint-disable-line no-unused-vars
@@ -24,6 +25,7 @@ let ShadyCSSInterface; //eslint-disable-line no-unused-vars
  * shimcssproperties: (boolean | undefined),
  * shimshadow: (boolean | undefined),
  * cssBuild: (string | undefined),
+ * disableRuntime: (boolean | undefined),
  * }}
  */
 let ShadyCSSOptions; //eslint-disable-line no-unused-vars

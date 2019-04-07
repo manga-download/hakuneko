@@ -51,7 +51,7 @@ export default class StyleInfo {
     this.placeholder = placeholder || null;
     /** @type {!Array<string>} */
     this.ownStylePropertyNames = ownStylePropertyNames || [];
-    /** @type {Array<Object>} */
+    /** @type {Object} */
     this.overrideStyleProperties = null;
     /** @type {string} */
     this.elementName = elementName || '';
