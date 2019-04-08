@@ -1,149 +1,23 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="mangareadercms.html">
 
 <script>
 
     /**
-     *
+     * 
      */
-    class LeoManga extends Connector {
+    class LeoManga extends MangaReaderCMS {
 
         /**
          *
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'leomanga';
             super.label      = 'LeoManga';
             this.tags        = [ 'manga', 'spanish' ];
-            super.isLocked   = false;
-            this.initialized = undefined;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://leomanga.xyz';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
-            // register a protocol handler to intercept requests (with custom 'leomanga' protocol) and download images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
-        }
-
-        /**
-         *
-         */
-        _getMangaListFromPages( mangaPageLinks, index ) {
-            if( index === undefined ) {
-                index = 0;
-            }
-            return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.panel-body div.thumbnail div.caption h3 a', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                    .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
-        }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/listadomangas/orden/a-z/', 'div.panel-footer ul.pager li a' )
-            .then( data => {
-                let pageCount = parseInt( data.pop().href.match(/(\d+)\/$/)[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/listadomangas/orden/a-z/' + ( page + 1 ) + '/' );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         * Same as in <SubManga>
-         */
-        _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'div.capitulos-list table.table tbody tr td:first-of-type a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'spanish'
-                    };
-                } );             
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            let baseURL = this.url;
-            this.fetchDOM( baseURL + chapter.id, 'a[href^="/mangas/leermanga/"]' )
-            .then( data => {
-                if( data && data.length > 0 ) {
-                    baseURL += this.getRelativeLink( data[0] );
-                } else {
-                    baseURL += chapter.id;
-                }
-                return this.fetchDOM( baseURL, 'nav#capitulo-nav select#select_paginas option' );
-            } )
-            .then( data => {
-                let pageLinks = data.map( element => {
-                    let uri = new URL( baseURL + '/' + element.value );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            this.fetchDOM( uri.href, 'source#page_img' )
-            .then( data => fetch( this.url + this.getRelativeLink( data[0] ), this.requestOptions ) )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            this.queryChapters = 'div.capitulos-list table tr td:first-of-type a';
         }
     }
 
