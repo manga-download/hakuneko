@@ -33,6 +33,20 @@
         /**
          *
          */
+        _initializeConnector() {
+            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
+            .then( result => {
+                this.initialized = true; 
+            } )
+            .catch( error => {
+                console.error( error, this ); 
+                this.initialized = undefined;
+            } );
+        }
+
+        /**
+         *
+         */
         _getMangaList( callback ) {
             this.fetchDOM( this.url + this.path + 'changeMangaList?type=text', this.queryMangas )
             .then( data => {
