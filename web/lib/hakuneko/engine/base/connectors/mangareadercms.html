@@ -25,7 +25,7 @@
             this.config = undefined;
 
             this.queryMangas = 'ul.manga-list li a';
-            this.queryChapters = 'ul.chapters li h5.chapter-title-rtl a';
+            this.queryChapters = 'ul.chapters li h5.chapter-title-rtl';
             this.queryPages = 'div#all source.img-responsive';
             this.language = '';
         }
@@ -71,9 +71,10 @@
             this.fetchDOM( this.url + manga.id, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
+                    let anchor = element.nodeName.toLowerCase() === 'a' ? element : element.querySelector( 'a' );
                     return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
+                        id: this.getRelativeLink( anchor ),
+                        title: element.innerText.replace( /\s*:\s*$/, '' ).replace( manga.title, '' ).trim(),
                         language: this.language
                     };
                 } );               
