@@ -11,7 +11,7 @@
             .filter( cookie => cookie.trim() )
             .forEach( cookie => {
                 let pair = cookie.split( '=' );
-                this.set( pair[0], pair[1] );
+                this.set( pair.shift(), pair.join( '=' ) );
             } );
         }
 
@@ -33,7 +33,7 @@
          *
          */
         set( key, value ) {
-            this.list[key.toString().trim()] = encodeURIComponent( value.toString().trim() );
+            this.list[key.toString().trim()] = value.toString().trim();
         }
 
         /**
