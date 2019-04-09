@@ -20,7 +20,7 @@
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangapark.net';
-            this.requestOptions.headers.set( 'x-cookie', 'h=1' );
+            this.requestOptions.headers.set( 'x-cookie', 'set=h=1;' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -103,7 +103,7 @@
                         number = number ? number.innerText.trim() : '';
                         let title = element.querySelector( 'div.txt' );
                         title = title ? title.innerText.trim() : '';
-                        let seperator = number && title ? ': ' : '';
+                        let seperator = number && title ? ' ' : '';
                         element = element.querySelector( 'div.tit a.ch' );
                         // remove last path element => show all images on single page
                         element.href = element.href.replace( /\/[^/]*$/, '' );
