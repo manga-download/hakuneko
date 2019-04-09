@@ -14,12 +14,13 @@
             super();
             // Public members for usage in UI (mandatory)
             super.id         = 'mangapark';
-            super.label      = 'MangaPark';
-            this.tags        = [ 'manga', 'english' ];
+            super.label      = 'MangaPark (Alpha)';
+            this.tags        = [ 'manga', 'multi-lingual' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangapark.org'; // 'https://mangapark.com'; 'https://mangapark.net'; 'https://mangapark.me';
+            this.requestOptions.headers.set( 'x-cookie', 'h=1' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
