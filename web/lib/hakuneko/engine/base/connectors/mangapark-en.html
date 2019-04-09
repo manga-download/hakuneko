@@ -3,9 +3,9 @@
 <script>
 
     /**
-     * @author Neogeek
+     *
      */
-    class MangaPark extends Connector {
+    class MangaParkEN extends Connector {
 
         /**
          *
@@ -13,13 +13,13 @@
         constructor() {
             super();
             // Public members for usage in UI (mandatory)
-            super.id         = 'mangapark';
-            super.label      = 'MangaPark (2018)';
-            this.tags        = [ 'manga', 'multi-lingual' ];
+            super.id         = 'mangapark-en';
+            super.label      = 'MangaPark';
+            this.tags        = [ 'manga', 'english' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://mangapark.org';
+            this.url         = 'https://mangapark.net';
             this.requestOptions.headers.set( 'x-cookie', 'h=1' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
@@ -29,10 +29,10 @@
          * Overwrite base function to get manga from clipboard link.
          */
         _getMangaFromURI( uri ) {
-            return this.fetchDOM( uri.href, 'div.container div.mt-4 h3 a', 3 )
+            return this.fetchDOM( uri.href, 'section.manga div.container div.mb-2 h2 a', 3 )
             .then( data => {
                 let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
+                let title = data[0].innerText.replace( /manga/i, '' ).trim();
                 return Promise.resolve( new Manga( this, id, title ) );
             } );
         }
@@ -45,7 +45,7 @@
                 index = 0;
             }
             return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div#browse h6 a', 5 ) )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.manga-list div.item table tr td h2 a', 5 ) )
             .then( data => {
                 let mangaList = data.map( element => {
                     this.cfMailDecrypt( element );
@@ -67,10 +67,10 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/browse', 'nav.d-md-block ul.pagination li:nth-last-child(2) a' )
+            this.fetchDOM( this.url + '/search?orderby=a-z', 'div.manga-list ul.paging li:nth-last-child(3) a' )
             .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/browse?page=' + ( page + 1 ) );
+                let pageCount = parseInt( data[0].href.match( /page=(\d+)/ )[1] );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/search?orderby=a-z&page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -96,18 +96,21 @@
             .then( data => {
                 let chapterList = [];
                 let dom = this.createDOM( data );
-                dom.querySelectorAll( 'div.card' ).forEach ( card => {
-                    let info = card.querySelector( 'div.card-header a.ml-1' ).text;
-                    let locale = info.match( /\[(.*?)\]/ )[1];
-                    let source = info.match( /\[.*?\]\s*(.*)$/ )[1];
-                    let chapters = [...card.querySelectorAll( 'div.card-body ul li div:first-of-type a.ml-2' )].map( element => {
-                        let title = element.text.replace( manga.title, '' ).trim() + ` (${locale}) [${source}]`;
+                dom.querySelectorAll( 'div#list div.stream' ).forEach ( card => {
+                    let info = card.querySelector( 'div.cate a span' ).innerText.trim();
+                    let chapters = [...card.querySelectorAll( 'div.volume ul.chapter li' )].map( element => {
+                        let number = element.querySelector( 'div.tit' );
+                        number = number ? number.innerText.trim() : '';
+                        let title = element.querySelector( 'div.txt' );
+                        title = title ? title.innerText.trim() : '';
+                        let seperator = number && title ? ': ' : '';
+                        element = element.querySelector( 'div.tit a.ch' );
                         // remove last path element => show all images on single page
                         element.href = element.href.replace( /\/[^/]*$/, '' );
 	                    return {
 	                        id: this.getRelativeLink( element ),
-	                        title: title,
-	                        language: locale
+	                        title: number + seperator + title + ` [${info}]`,
+	                        language: 'en'
 	                    };
 	                } );
                     chapterList = chapterList.concat( chapters );
