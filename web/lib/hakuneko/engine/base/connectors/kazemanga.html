@@ -1,0 +1,26 @@
+<link rel="import" href="wp-emanga.html">
+
+<script>
+
+    /**
+     * Is this really a WordPressEManga theme?
+     * Same as OtakuIndo / Komiku
+     */
+    class KazeManga extends WordPressEManga {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'kazemanga';
+            super.label      = 'KazeManga';
+            this.tags        = [ 'manga', 'indonesian' ];
+            this.url         = 'https://kazemanga.xyz';
+            this.path        = '/komik-list/?list';
+
+            this.queryMangas = 'div.cpp div.daftarkartun div.jdlbar ul li a.series';
+        }
+    }
+
+</script>
