@@ -33,6 +33,7 @@
          *
          */
         set( key, value ) {
+            // NOTE: decodeURIcomponent( value... ) has been removed, the reason for its introduction is unknown
             this.list[key.toString().trim()] = value.toString().trim();
         }
 
