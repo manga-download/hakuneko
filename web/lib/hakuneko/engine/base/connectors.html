@@ -10,6 +10,7 @@
 <link rel="import" href="connectors/atelierdunoir.html">
 <link rel="import" href="connectors/bacamanga.html">
 <link rel="import" href="connectors/batoto.html">
+<link rel="import" href="connectors/biamam.html">
 <link rel="import" href="connectors/bunnysscans.html">
 <link rel="import" href="connectors/canismajorscans.html">
 <link rel="import" href="connectors/championscans.html">
@@ -387,6 +388,7 @@
 
             // #region Template: MangaReaderCMS
             //         Sample:   https://manga.fascans.com/manga-list
+            this.register( new Biamam() );
             this.register( new FallenAngelsScans() );
             this.register( new HatigarmScans() );
             this.register( new KomikGue() );
