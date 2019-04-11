@@ -56,8 +56,12 @@
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: 'en'
                     };
-                } );               
-                callback( null, chapterList );
+                } );   
+                // Some chapters may be links to an external chapter list
+                // e.g. https://timelessleaf.com/lan-chi-2/
+                // has an entry 'Chapter 1-62', which redirects to
+                // https://mangasoul.com/manga/24
+                callback( null, chapterList.filter( chapter => chapter.id.startsWith( '/' ) ) );
             } )
             .catch( error => {
                 console.error( error, manga );
