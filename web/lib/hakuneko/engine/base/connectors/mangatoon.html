@@ -1,0 +1,119 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * Template
+     */
+    class MangaToon extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'mangatoon';
+            super.label      = 'MangaToon';
+            this.tags        = [];
+            super.isLocked   = false;
+            this.initialized = undefined;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://mangatoon.mobi';
+            this.path        = '/en/genre?page=';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'connector' protocol) and extract images
+            //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        get icon() {
+            return '/img/connectors/mangatoon';
+        }
+
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            return this.fetchDOM( mangaPageLinks[ index ], 'div.items div.item div.content-title', 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element.closest( 'a' ) ),
+                        title: element.innerText.trim()
+                    };
+                } );
+                if( mangaList.length > 0 && index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this.fetchDOM( this.url + this.path, 'div.page div.next' )
+            .then( data => {
+                let pageCount = 999;
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + page );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id + '/episodes', 'div.episodes-wrap a.episode-item' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    let number = element.querySelector( 'div.item-left' ).innerText.trim();
+                    let title = element.querySelector( 'div.item-right div.episode-title' ).innerText.trim();
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: title.replace( manga.title, '' ).trim(),
+                        language: ''
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( this.url + chapter.id, 'div.pictures source' )
+            .then( data => {
+                let pageList = data.map( element => element.src );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
