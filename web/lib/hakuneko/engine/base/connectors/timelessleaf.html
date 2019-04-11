@@ -73,9 +73,25 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            // view-source:https://timelessleaf.com/index.php/2018/02/07/lan-chi-chapter-63-1/ srcset, only https://timelessleaf.com seems working
             this.fetchDOM( this.url + chapter.id, 'div.entry-content source' )
             .then( data => {
-                let pageList = data.map( element => element.src );               
+                let pageList = data.map( element => {
+                    if( element['srcset'] ) {
+                        let host = ( new URL( this.url ) ).hostname;
+                        let source = element.srcset.split( ',' )
+                            // split into links and resolution
+                            .map( src => src.trim().split( ' ' ) )
+                            // sort descending (higher resolution first)
+                            .sort( ( a, b ) => parseInt( a[1] ) < parseInt( b[1] ) )
+                            // find the first image that is hosted on this domain
+                            .find( src => src[0].includes( host ) || src[0].startsWith( '/' ) );
+                        if( source ) {
+                            return source[0];
+                        }
+                    }
+                    return element.src;
+                } );
                 callback( null, pageList );
             } )
             .catch( error => {
