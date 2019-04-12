@@ -1,0 +1,24 @@
+<link rel="import" href="linewebtoon.html">
+
+<script>
+
+    /**
+     *
+     */
+    class LineWebtoonID extends LineWebtoon {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'linewebtoon-id';
+            super.label      = 'Line Webtoon (Indonesian)';
+            this.tags        = [ 'webtoon', 'indonesian' ];
+
+            // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+    }
+
+</script>

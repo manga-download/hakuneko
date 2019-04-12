@@ -3,7 +3,7 @@
 <script>
 
     /**
-     *
+     * Template
      */
     class LineWebtoon extends Connector {
 
@@ -15,7 +15,7 @@
             // Public members for usage in UI (mandatory)
             super.id         = 'linewebtoon';
             super.label      = 'Line Webtoon';
-            this.tags        = [ 'webtoon', 'english' ];
+            this.tags        = [ 'webtoon' ];
             super.isLocked   = false;
             this.initialized = undefined;
             // Private members for internal usage only (convenience)
@@ -26,6 +26,13 @@
 
             // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         *
+         */
+        get icon() {
+            return '/img/connectors/linewebtoon';
         }
 
         /**

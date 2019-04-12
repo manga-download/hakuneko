@@ -1,0 +1,24 @@
+<link rel="import" href="linewebtoon.html">
+
+<script>
+
+    /**
+     *
+     */
+    class LineWebtoonZH extends LineWebtoon {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'linewebtoon-zh'; // zh-hant
+            super.label      = 'Line Webtoon (Chinese)'; // Chinese Traditional
+            this.tags        = [ 'webtoon', 'chinese' ];
+
+            // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+    }
+
+</script>
