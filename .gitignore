@@ -1,10 +1,10 @@
 CNAME
 package-lock.json
 node_modules
+*.tar.bz2
 /.vscode
 /.helper
 /cloud
-/daemon
 /electron/build
 /electron/redist/*.zip
 /fmd/.vs
