@@ -5,13 +5,8 @@ node_modules
 /.vscode
 /.helper
 /cloud
-/electron/build
-/electron/redist/*.zip
-/fmd/.vs
-/fmd/packages
-/fmd/*/bin
-/fmd/*/obj
-/fmd/*.user
+/client/build
+/client/redist/*.zip
 /web/*.pem
 /web/*.key
 /web/build
