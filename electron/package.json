@@ -1,0 +1,10 @@
+{
+    "name": "hakuneko-desktop",
+    "version": "0.4.0",
+    "description": "Desktop client for HakuNeko S web-application",
+    "author": "Ronny Wegener <wegener.ronny@gmail.com>",
+    "main": "src/main.js",
+    "dependencies": {
+        "jszip": ""
+    }
+}

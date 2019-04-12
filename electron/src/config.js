@@ -14,7 +14,7 @@ var appURL = args.getArg( '-u', '--url' ) || 'http://static.hakuneko.download/0.
 // app url that will be opened in electron on startup
 var cacheURL = 'cache://hakuneko/index.html';
 // relative path to the web app directory in the development directory
-var devDirectory = '../../web';
+var devDirectory = '../web';
 // public key to verify signature of web-app
 var pubkey =
 `-----BEGIN PUBLIC KEY-----

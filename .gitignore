@@ -1,5 +1,6 @@
 CNAME
 package-lock.json
+node_modules
 /.vscode
 /.helper
 /cloud
