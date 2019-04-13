@@ -8,15 +8,8 @@
     "type": "git",
     "url": "https://github.com/manga-download/hakuneko"
   },
-  "main": "src/main.js",
-  "devDependencies": {
-    "electron": "latest",
-    "asar": "latest"
-  },
-  "scripts": {
-    "postinstall": "cd src && npm install",
-    "start": "electron .",
-    "clean": "rm -r -f build dist",
-    "build": "node build.js"
+  "main": "main.js",
+  "dependencies": {
+    "jszip": "latest"
   }
 }
