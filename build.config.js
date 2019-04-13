@@ -9,6 +9,7 @@ module.exports = {
         short: 'Manga Downloader',
         long: 'Desktop Client for HakuNeko Web-Application'
     },
+    license: 'Unlicense',
     year: (new Date()).getFullYear(),
     url: 'https://github.com/manga-download/hakuneko',
     binary: {
@@ -20,6 +21,7 @@ module.exports = {
         section: 'net',
         type: 'Application',
         categories: 'Network;FileTransfer;',
-        dependencies: ''
+        menu: 'Applications/Network/File Transfer',
+        dependencies: 'libc6'
     }
 }

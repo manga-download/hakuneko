@@ -180,32 +180,23 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 */
     async buildDEB(architecture) {
 		this._architecture = this.architectures[architecture];
-        let folder = this._dirBuildRoot;
-        console.log('Cleanup Build Root:', folder);
-        await this._executeCommand(`rm -r -f "${folder}"`); // await this._deleteDirectoryRecursive(folder);
-        console.log('Copy DEB Skeleton ...');
-        await this._executeCommand(`cp -r "redist/deb/" "${folder}"`);
-        folder = path.join(this._dirBuildRoot, 'usr/lib', this._configuration.name.package);
-        await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
 
-        await this._executeCommand(`rm -r -f "${folder}/resources/default_app.asar"`);
-        await this._executeCommand(`asar pack "src" "${folder}/resources/app.asar"`);
-        await this._executeCommand(`mv "${folder}/electron" "${folder}/${this._configuration.binary.linux}"`);
-    
+        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await this._copySkeletonDEB();
+        await this._bundleElectron();
         this._createManpage();
         this._createChangelog();
+        //this._createMenuEntry(); // => only menu or desktop is recommend
         this._createDesktopShortcut();
-        //this._createMenuEntry();
         this._createControlDEB();
+        this._createPostScript('postrm');
+        this._createPostScript('postinst');
         await this._createChecksumsDEB();
 
         let deb = this._dirBuildRoot + '.deb';
-
         await this._executeCommand(`rm -f "${deb}"`);
         await this._executeCommand(`fakeroot dpkg-deb -v -b "${this._dirBuildRoot}" "${deb}"`);
         await this._executeCommand(`lintian --profile debian "${deb}"`);
-        
-        console.log('Package Creation Complete:', deb);
     }
 
 	/**
@@ -220,6 +211,28 @@ class ElectronPackagerLinux extends ElectronPackager {
         // ...
 
         console.log('Package Creation Complete:', 'xxx.rpm');
+    }
+
+    /**
+     * 
+     */
+    async _bundleElectron() {
+        console.log('Bundle electron ...');
+        let folder = path.join(this._dirBuildRoot, 'usr/lib', this._configuration.name.package);
+        await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
+        await this._executeCommand(`rm -f "${folder}/resources/default_app.asar"`);
+        await this._executeCommand(`asar pack "src" "${folder}/resources/app.asar"`);
+        await this._executeCommand(`mv "${folder}/electron" "${folder}/${this._configuration.binary.linux}"`);
+        // remove executable lag from libraries => avoid lintian errors
+        await this._executeCommand(`find "${folder}" -type f -iname "*.so" -exec chmod -x {} \\;`);
+    }
+
+    /**
+     * 
+     */
+    async _copySkeletonDEB() {
+        console.log('Copy DEB Skeleton ...');
+        await this._executeCommand(`cp -r "redist/deb/" "${this._dirBuildRoot}"`);
     }
 
 	/**
@@ -239,8 +252,8 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'',
 			'.SH DESCRIPTION',
 			this._configuration.description.long
-		].join('\n');
-		this._saveFile(file, content, true);
+		];
+		this._saveFile(file, content.join('\n'), true);
 	}
 
 	/**
@@ -264,11 +277,11 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'Type=' + this._configuration.meta.type,
 			'Name=' + this._configuration.name.product,
 			'GenericName=' + this._configuration.description.short,
-			'Exec=' + this._configuration.name.package,
+			'Exec=' + path.join('/usr/lib', this._configuration.name.package, this._configuration.binary.linux),
 			'Icon=' + this._configuration.name.package,
 			'Categories=' + this._configuration.meta.categories
-		].join('\n');
-		this._saveFile(file, content, false);
+		];
+		this._saveFile(file, content.join('\n'), false);
 	}
 
 	/**
@@ -277,16 +290,14 @@ class ElectronPackagerLinux extends ElectronPackager {
 	_createMenuEntry() {
         console.log('Creatng Menu Entry');
         let file = path.join(this._dirBuildRoot, 'usr/share/menu', this._configuration.name.package);
-		this._saveFile(file, '', false);
-		/*
-		echo "?package(${PACKAGE}): \\" > "build/$1/usr/share/menu/${PACKAGE}"
-		echo "needs=\"X11\" \\" >> "build/$1/usr/share/menu/${PACKAGE}"
-		echo "section=\"Applications/Network/File Transfer\" \\" >> "build/$1/usr/share/menu/${PACKAGE}"
-		echo "title=\"${PRODUCT}\" \\" >> "build/$1/usr/share/menu/${PACKAGE}"
-		echo "longtitle=\"${DESCRIPTION_SHORT}\" \\" >> "build/$1/usr/share/menu/${PACKAGE}"
-		echo "icon=\"/usr/share/pixmaps/${PACKAGE}.xpm\" \\" >> "build/$1/usr/share/menu/${PACKAGE}"
-		echo "command=\"/usr/bin/${PACKAGE}\"" >> "build/$1/usr/share/menu/${PACKAGE}"
-		*/
+		let content = [
+            `?package(${this._configuration.name.package}):needs="X11" \\`,
+            ` section="${this._configuration.meta.menu}" \\`,
+            ` title="${this._configuration.name.product}" \\`,
+            ` icon=\"/usr/share/pixmaps/${this._configuration.name.package}.xpm\" \\`,
+            ` command="${path.join('/usr/lib', this._configuration.name.package, this._configuration.binary.linux)}"`
+		];
+		this._saveFile(file, content.join('\n'), false);
 	}
 
 	/**
@@ -308,9 +319,32 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'Description: ' + this._configuration.description.short,
             ' ' + this._configuration.description.long,
             ''
-		].join('\n');
-		this._saveFile(file, content, false);
-	}
+		];
+		this._saveFile(file, content.join('\n'), false);
+    }
+    
+    /**
+     * 
+     */
+    _createPostScript(name) {
+        console.log(`Creating PostScript '${name}' ...`);
+        let file = path.join(this._dirBuildRoot, 'DEBIAN', name);
+        let symbolic = path.join('/usr/bin', this._configuration.name.package);
+        let binary = path.join('usr/lib', this._configuration.name.package, this._configuration.binary.linux);
+		let content = [
+            '#!/bin/sh',
+            'set -e',
+            '#if [ -x /usr/bin/update-mime ] ; then update-mime ; fi',
+            '#if [ -x /usr/bin/update-menus ] ; then update-menus ; fi'
+        ];
+        if(name === 'postinst') {
+            content.push(`if [ ! -f ${symbolic} ] ; then ln -s ${binary} ${symbolic} ; fi`);
+        }
+        if(name === 'postrm') {
+            content.push(`if [ -f ${symbolic} ] ; then rm -f ${symbolic} ; fi`);
+        }
+		this._saveFile(file, content.join('\n'), false);
+    }
 
 	/**
 	 * 
@@ -324,10 +358,40 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 * 
 	 */
 	_createSpecsRPM() {
-        console.log('Creating RPM Specification File ...')
+        console.log('Creating RPM Specification File ...');
+        let file = 'build/specfile.spec';
+        let symbolic = path.join('/usr/bin', this._configuration.name.package);
+        let binary = path.join('usr/lib', this._configuration.name.package, this._configuration.binary.linux);
+		let content = [
+            'Name: ' + this._configuration.name.package,
+			'Version: ' + this._configuration.version,
+			'Release: 0',
+			'License: ' + this._configuration.license,
+			'URL: ' + this._configuration.url,
+			'Requires: ' + this._configuration.meta.dependencies,
+            'Summary: ' + this._configuration.description.short,
+            '',
+            'Autoreq: no',
+            'AutoReqProv: no',
+            '',
+            '%description',
+            this._configuration.description.long,
+            '',
+            '%files',
+            '...', // find "build/$1" -type f | sed "s/build\/$1//g" >> build/specfile.spec
+            '',
+            '%post',
+            `if [ ! -f ${symbolic} ] ; then ln -s ${binary} ${symbolic} ; fi`,
+            '',
+            '%postun',
+            `if [ -f ${symbolic} ] ; then rm -f ${symbolic} ; fi`
+		].join('\n');
+        this._saveFile(file, content, false);
+        
 		/*
 		#RPMPKG=$CWD/$PKGNAME\_$PKGVERSION\_$(get_lsb_release).rpm
-		#cp -r $DIST_DIR/* build/$2
+        #cp -r $DIST_DIR/* build/$2
+        
 		echo "Name: ${PACKAGE}" > build/specfile.spec
 		echo "Version: ${VERSION}" >> build/specfile.spec
 		echo "Release: 0" >> build/specfile.spec
