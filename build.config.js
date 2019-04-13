@@ -1,5 +1,5 @@
 module.exports = {
-    version: '2.0.18', // => This must match the electron client version!
+    version: require('./client/package.json').devDependencies.electron, // '2.0.18'
     author: 'Ronny Wegener <wegener.ronny@gmail.com>',
     name: {
         package: 'hakuneko-desktop',

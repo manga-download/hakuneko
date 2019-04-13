@@ -10,7 +10,7 @@
   },
   "main": "src/main.js",
   "devDependencies": {
-    "electron": "latest",
+    "electron": "2.0.18",
     "asar": "latest"
   },
   "scripts": {
