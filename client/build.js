@@ -4,6 +4,7 @@ const zlib = require('zlib');
 const https = require('https');
 const exec = require('child_process').exec;
 const config = require('../build.config');
+const eol = require('os').EOL;
 
 /**
  * Base class for platform dependent electron packagers
@@ -20,7 +21,7 @@ class ElectronPackager {
     /**
      * 
      */
-    build(architecture, portable) {
+    build(architecture) {
         throw new Error('Not implemented!');
     }
 
@@ -35,12 +36,30 @@ class ElectronPackager {
 
     /**
      * 
+     * @param {string} file 
+     */
+    async _deleteFile(file) {
+        // TODO: Make this platform independent!
+        if(process.platform === 'win32') {
+            await this._executeCommand(`if exist "${file}" del /f /q "${file}"`);
+        } else {
+            await this._executeCommand(`rm -f "${file}"`);
+        }
+    }
+
+    /**
+     * 
      * @param {*} directory 
      */
-    _deleteDirectoryRecursive(directory) {
+    async _deleteDirectoryRecursive(directory) {
         // TODO: Make this platform independent!
-        return this._executeCommand(`rm -r -f "${directory}"`)
-        .then(() => console.log('Directory Deleted:', directory));
+        if(process.platform === 'win32') {
+            await this._executeCommand(`if exist "${directory}" rd /s /q "${directory}"`);
+            console.log('Directory Deleted:', directory);
+        } else {
+            await this._executeCommand(`rm -r -f "${directory}"`);
+            console.log('Directory Deleted:', directory);
+        }
     }
 
     /**
@@ -52,6 +71,34 @@ class ElectronPackager {
             this._createDirectoryChain(path.dirname(directory));
             fs.mkdirSync(directory, '0755', true);
             console.log('Directory Created:', directory);
+        }
+    }
+
+    /**
+     * 
+     * @param {string} archive 
+     * @param {string} target 
+     */
+    async _extractArchive(archive, target) {
+        // TODO: Make this platform independent!
+        if(process.platform === 'win32') {
+            await this._executeCommand(`7z x "${archive}" -o"${target}"`);
+        } else {
+            await this._executeCommand(`unzip "${archive}" -d "${target}"`);
+        }
+    }
+
+    /**
+     * 
+     * @param {string} source 
+     * @param {string} archive 
+     */
+    async _compressArchive(source, archive) {
+        // TODO: Make this platform independent!
+        if(process.platform === 'win32') {
+            await this._executeCommand(`7z a "${archive}" "${source}"`);
+        } else {
+            //await this._executeCommand(`zip "${source}" -d "${archive}"`);
         }
     }
 
@@ -108,11 +155,10 @@ class ElectronPackager {
         if(!fs.existsSync(file)) {
             await this._download(uri, file);
         }
-        // TODO: Make this platform independent!
-        await this._executeCommand(`mkdir -p "${directory}"`); // await this._createDirectoryChain(directory);
-        await this._executeCommand(`unzip "${file}" -d "${directory}"`);
-        await this._executeCommand(`rm -f "${directory}/version"`);
-        await this._executeCommand(`rm -f "${directory}/LICENSE"*`);
+        await this._createDirectoryChain(directory); // await this._executeCommand(`mkdir -p "${directory}"`);
+        await this._extractArchive(file, directory);
+        await this._deleteFile(path.join(directory, 'version'));
+        await this._deleteFile(path.join(directory, 'LICENSE'));
     }
 
     /**
@@ -190,7 +236,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 * 
 	 * @param {string} architecture '32' or '64'
 	 */
-	async build(architecture, portable) {
+	async build(architecture) {
 		await this.buildDEB(architecture);
 		await this.buildRPM(architecture);
 	}
@@ -216,7 +262,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         await this._createChecksumsDEB();
 
         let deb = this._dirBuildRoot + '.deb';
-        await this._executeCommand(`rm -f "${deb}"`);
+        await this._deleteFile(deb);
         await this._executeCommand(`fakeroot dpkg-deb -v -b "${this._dirBuildRoot}" "${deb}"`);
         await this._executeCommand(`lintian --profile debian "${deb}" || true`);
     }
@@ -239,10 +285,10 @@ class ElectronPackagerLinux extends ElectronPackager {
         let specs = this._createSpecsRPM();
 
         let rpm = this._dirBuildRoot + '.rpm';
-        await this._executeCommand(`rm -f "${rpm}"`);
+        await this._deleteFile(rpm);
         await this._executeCommand(`rpmbuild -bb --noclean --define "_topdir $(pwd)/${this._dirBuildRoot}" --define "buildroot %{_topdir}" "${specs}"`);
         await this._executeCommand(`mv -f ${this._dirBuildRoot}/RPMS/*/*.rpm ${rpm}`);
-        await this._executeCommand(`rm -f "${specs}"`);
+        await this._deleteFile(specs);
     }
 
     /**
@@ -252,7 +298,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         console.log('Bundle electron ...');
         let folder = path.join(this._dirBuildRoot, 'usr/lib', this._configuration.name.package);
         await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
-        await this._executeCommand(`rm -f "${folder}/resources/default_app.asar"`);
+        await this._deleteFile(path.join(folder, 'resources', 'default_app.asar'));
         await this._executeCommand(`asar pack "src" "${folder}/resources/app.asar"`);
         await this._executeCommand(`mv "${folder}/electron" "${folder}/${this._configuration.binary.linux}"`);
         // remove executable flag from libraries => avoid lintian errors
@@ -293,7 +339,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'.SH DESCRIPTION',
 			this._configuration.description.long
 		];
-		this._saveFile(file, content.join('\n'), true);
+		this._saveFile(file, content.join(eol), true);
 	}
 
 	/**
@@ -321,7 +367,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'Icon=' + this._configuration.name.package,
 			'Categories=' + this._configuration.meta.categories
 		];
-		this._saveFile(file, content.join('\n'), false);
+		this._saveFile(file, content.join(eol), false);
 	}
 
 	/**
@@ -337,7 +383,7 @@ class ElectronPackagerLinux extends ElectronPackager {
             ` icon=\"/usr/share/pixmaps/${this._configuration.name.package}.xpm\" \\`,
             ` command="${path.join('/usr/lib', this._configuration.name.package, this._configuration.binary.linux)}"`
 		];
-		this._saveFile(file, content.join('\n'), false);
+		this._saveFile(file, content.join(eol), false);
 	}
 
 	/**
@@ -360,7 +406,7 @@ class ElectronPackagerLinux extends ElectronPackager {
             ' ' + this._configuration.description.long,
             ''
 		];
-		this._saveFile(file, content.join('\n'), false);
+		this._saveFile(file, content.join(eol), false);
     }
     
     /**
@@ -383,7 +429,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         if(name === 'postrm') {
             content.push(`if [ -f ${symbolic} ] ; then rm -f ${symbolic} ; fi`);
         }
-		this._saveFile(file, content.join('\n'), false);
+		this._saveFile(file, content.join(eol), false);
     }
 
 	/**
@@ -425,10 +471,206 @@ class ElectronPackagerLinux extends ElectronPackager {
             '',
             '%postun',
             `if [ -f ${symbolic} ] ; then rm -f ${symbolic} ; fi`
-		].join('\n');
-        this._saveFile(file, content, false);
+		];
+        this._saveFile(file, content.join(eol), false);
         return file;
 	}
+}
+
+/**
+ * Packager for windows platform
+ */
+class ElectronPackagerWindows extends ElectronPackager {
+
+    /**
+     * 
+     */
+    constructor(configuration) {
+		super(configuration);
+        this.architectures = {
+            '32': {
+                is: {
+                    name: 'i686',
+                    suffix: 'windows-setup_i686',
+                    platform: 'win32-ia32'
+                },
+                zip: {
+                    name: 'i686',
+                    suffix: 'windows-portable_i686',
+                    platform: 'win32-ia32'
+                }
+            },
+            '64': {
+                is: {
+                    name: 'amd64',
+                    suffix: 'windows-setup_amd64',
+                    platform: 'win32-x64'
+                },
+                zip: {
+                    name: 'amd64',
+                    suffix: 'windows-portable_amd64',
+                    platform: 'win32-x64'
+                }
+            }
+        };
+		this._architecture = this.architectures[0];
+	}
+
+    /**
+     * 
+     */
+    get _dirBuildRoot() {
+        return path.join('build', `${this._configuration.name.package}_${this._configuration.version}_${this._architecture.suffix}`);
+    }
+
+	/**
+	 * 
+	 * @param {string} architecture '32' or '64'
+	 */
+	async build(architecture) {
+		await this.buildIS(architecture);
+		await this.buildZIP(architecture);
+    }
+    
+	/**
+     * Create InnoSetup installer
+     * @param {string} architecture 
+     */
+    async buildIS(architecture) {
+        this._architecture = this.architectures[architecture].is;
+
+        await this._validateCommands('7z --help', 'asar --version', 'innosetup-compiler /?');
+
+        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await this._bundleElectron(false);
+        await this._bundleFFMPEG(architecture === '64');
+        await this._editResource();
+        let setup = this._createScriptIS(architecture === '64');
+
+        await this._executeCommand(`innosetup-compiler "${setup}"`);
+        await this._deleteFile(setup);
+    }
+
+	/**
+     * Create portable archive
+     * @param {string} architecture 
+     */
+    async buildZIP(architecture) {
+        this._architecture = this.architectures[architecture].zip;
+
+        await this._validateCommands('7z --help', 'asar --version');
+
+        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await this._bundleElectron(true);
+        await this._bundleFFMPEG(architecture === '64');
+        await this._editResource();
+        // TODO: portable => upx compression ...
+
+        let zip = this._dirBuildRoot + '.zip';
+        await this._deleteFile(zip);
+        await this._compressArchive('.\\' + this._dirBuildRoot, zip);
+    }
+
+    /**
+     * 
+     * @param {bool} portable 
+     */
+    async _bundleElectron(portable) {
+        console.log('Bundle electron ...');
+        let folder = this._dirBuildRoot;
+        await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
+        await this._deleteFile(path.join(folder, 'resources', 'default_app.asar'));
+        if(portable) {
+            this._saveFile(path.join(folder, this._configuration.binary.windows + '.portable'), 'Delete this File to disable Portable Mode');
+        }
+        await this._executeCommand(`asar pack "src" "${folder}\\resources\\app.asar"`);
+        await this._executeCommand(`move /y "${folder}\\electron.exe" "${folder}\\${this._configuration.binary.windows}"`);
+    }
+
+    /**
+     * 
+     * @param {bool} is64 
+     */
+    async _bundleFFMPEG(is64) {
+        console.log('Bundle FFmpeg ...');
+        let ffmpeg = path.join('node_modules', 'ffmpeg-static', 'bin', 'win32');
+        if(is64) {
+            ffmpeg = path.join(ffmpeg, 'x64', 'ffmpeg.exe');
+        } else {
+            ffmpeg = path.join(ffmpeg, 'ia32', 'ffmpeg.exe');
+        }
+        // TODO: make platform independent ...
+        await this._executeCommand(`copy /y "${ffmpeg}" "${this._dirBuildRoot}"`);
+    }
+
+    /**
+     * 
+     */
+    async _editResource() {
+        let command = [
+            path.join('node_modules', 'rcedit', 'bin', 'rcedit.exe'),
+            `"${path.join(this._dirBuildRoot, this._configuration.binary.windows)}"`,
+            `--set-version-string "ProductName" "${this._configuration.name.product}"`,
+            `--set-version-string "CompanyName" ""`,
+            `--set-version-string "LegalCopyright" "${(new Date()).getFullYear()}"`,
+            `--set-version-string "FileDescription" "${this._configuration.description.short}"`,
+            `--set-version-string "InternalName" ""`,
+            `--set-version-string "OriginalFilename" "${this._configuration.binary.windows}"`,
+            `--set-file-version "${this._configuration.version}"`,
+            `--set-product-version "${this._configuration.version}"`,
+            `--set-icon "redist\\iss\\app.ico"`
+        ].join(' ');
+        await this._executeCommand(command);
+    }
+
+    /**
+     * 
+     * @param {bool} is64 
+     */
+    _createScriptIS(is64) {
+        console.log('Creating InnoSetup Script ...');
+        let file = 'build\\setup.iss';
+		let content = [
+            '[Setup]',
+            'AppName=' + this._configuration.name.product,
+            'AppVerName=' + this._configuration.name.product,
+			'AppVersion=' + this._configuration.version,
+			'VersionInfoVersion=' + this._configuration.version,
+			'AppPublisher=' + this._configuration.author,
+            'AppPublisherURL=' + this._configuration.url,
+            (is64 ? '' : ';') + 'ArchitecturesInstallIn64BitMode=x64',
+            'DisableWelcomePage=yes',
+            'DefaultDirName=' + path.join('{pf}', this._configuration.name.product),
+            'DisableProgramGroupPage=yes',
+            //'DefaultGroupName=' + this._configuration.name.product,
+            'DisableReadyPage=yes',
+            'UninstallDisplayIcon=' + path.join('{app}', this._configuration.binary.windows),
+            //'WizardImageFile=compiler:wizmodernimage.bmp',
+            //'WizardSmallImageFile=compiler:wizmodernsmallimage.bmp',
+            'WizardImageFile=' + path.join('..', 'redist', 'iss', 'wizard.bmp'),
+            'WizardSmallImageFile=' + path.join('..', 'redist', 'iss', 'wizard-small.bmp'),
+            'OutputDir=.',
+            'OutputBaseFilename=' + path.basename(this._dirBuildRoot),
+            'ChangesEnvironment=yes',
+            '',
+            '[Tasks]',
+            'Name: shortcuts; Description: "All"; GroupDescription: "Create Shortcuts:";',
+            'Name: shortcuts\\desktop; Description: "Desktop"; GroupDescription: "Create Shortcuts:";',
+            'Name: shortcuts\\startmenu; Description: "Startmenu Programs"; GroupDescription: "Create Shortcuts:"; Flags: unchecked',
+            '',
+            '[Files]',
+            `Source: ${path.basename(this._dirBuildRoot)}\\*; DestDir: {app}; Flags: recursesubdirs`,
+            '',
+            '[UninstallDelete]',
+            'Name: {app}; Type: filesandordirs',
+            '',
+            '[Icons]',
+            `Name: "{commondesktop}\\${this._configuration.name.product}"; Tasks: shortcuts\\desktop; Filename: "{app}\\${this._configuration.binary.windows}";`,
+            `Name: "{commonstartmenu}\\${this._configuration.name.product}"; Tasks: shortcuts\\startmenu; Filename: "{app}\\${this._configuration.binary.windows}";`
+		];
+        this._saveFile(file, content.join(eol), false);
+        return file;
+    }
 }
 
 /**
@@ -437,8 +679,8 @@ class ElectronPackagerLinux extends ElectronPackager {
 async function main() {
     if(process.platform === 'win32') {
         let packager = new ElectronPackagerWindows(config);
-        await packager.buildISS('64');
-        await packager.buildISS('32');
+        await packager.buildIS('64');
+        await packager.buildIS('32');
         await packager.buildZIP('64');
         await packager.buildZIP('32');
     }
