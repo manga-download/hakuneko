@@ -20,6 +20,6 @@ module.exports = {
         section: 'net',
         type: 'Application',
         categories: 'Network;FileTransfer;',
-        dependencies: undefined
+        dependencies: ''
     }
 }

@@ -77,14 +77,14 @@ class ElectronPackager {
             https.get(uri, response => {
                 if(response.headers['location']) {
                     this._download(response.headers['location'], file)
-                    .then(file => resolve(file))
+                    .then(() => resolve())
                     .catch(error => reject(error))
                 } else {
                     if(response.statusCode === 200) {
                         console.log('Downloading:', file);
                         let stream = fs.createWriteStream(file);
                         response.pipe(stream);
-                        stream.on('finish', () => resolve(file));
+                        stream.on('finish', () => resolve());
                         stream.on('error', error => reject(error));
                     } else {
                         console.error('Download Failed!');
@@ -100,16 +100,19 @@ class ElectronPackager {
      * @param {*} version 
      * @param {*} platform 
      */
-    async _downloadElectron(version, platform) {
+    async _downloadElectron(version, platform, directory) {
         let file = `electron-v${version}-${platform}.zip`;
         let uri = `https://github.com/electron/electron/releases/download/v${version}/${file}`;
         file = path.join('redist', file);
 
         if(!fs.existsSync(file)) {
-            return await this._download(uri, file)
-        } else {
-            return file;
+            await this._download(uri, file);
         }
+        // TODO: Make this platform independent!
+        await this._executeCommand(`mkdir -p "${directory}"`); // await this._createDirectoryChain(directory);
+        await this._executeCommand(`unzip "${file}" -d "${directory}"`);
+        await this._executeCommand(`rm -f "${directory}/version"`);
+        await this._executeCommand(`rm -f "${directory}/LICENSE"*`);
     }
 
     /**
@@ -183,12 +186,8 @@ class ElectronPackagerLinux extends ElectronPackager {
         console.log('Copy DEB Skeleton ...');
         await this._executeCommand(`cp -r "redist/deb/" "${folder}"`);
         folder = path.join(this._dirBuildRoot, 'usr/lib', this._configuration.name.package);
-        let electron = await this._downloadElectron(this._configuration.version, this._architecture.platform);
-        await this._executeCommand(`mkdir -p "${folder}"`); // await this._createDirectoryChain(folder);
-        await this._executeCommand(`unzip "${electron}" -d "${folder}"`);
+        await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
 
-        await this._executeCommand(`rm -f "${folder}/version"`);
-        await this._executeCommand(`rm -f "${folder}/LICENSE"*`);
         await this._executeCommand(`rm -r -f "${folder}/resources/default_app.asar"`);
         await this._executeCommand(`asar pack "src" "${folder}/resources/app.asar"`);
         await this._executeCommand(`mv "${folder}/electron" "${folder}/${this._configuration.binary.linux}"`);
@@ -203,13 +202,10 @@ class ElectronPackagerLinux extends ElectronPackager {
         let deb = this._dirBuildRoot + '.deb';
 
         await this._executeCommand(`rm -f "${deb}"`);
-        await this._executeCommand(`dpkg-deb -v -b "${this._dirBuildRoot}" "${deb}"`);
+        await this._executeCommand(`fakeroot dpkg-deb -v -b "${this._dirBuildRoot}" "${deb}"`);
         await this._executeCommand(`lintian --profile debian "${deb}"`);
-        // rm -f "build/$2.deb"
-        // dpkg-deb -v -b "build/$2" "build/$2.deb"
-        // lintian --profile debian "build/$2.deb" || true
         
-        console.log('Package Creation Complete:', 'xxx.deb');
+        console.log('Package Creation Complete:', deb);
     }
 
 	/**
@@ -253,7 +249,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	_createChangelog() {
         console.log('Creating Changelog ...');
         let file = path.join(this._dirBuildRoot, 'usr/share/doc', this._configuration.name.package, 'changelog.gz');
-		this._saveFile(file, '', true);
+		this._saveFile(file, '-', true);
 	}
 
 	/**
@@ -281,10 +277,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	_createMenuEntry() {
         console.log('Creatng Menu Entry');
         let file = path.join(this._dirBuildRoot, 'usr/share/menu', this._configuration.name.package);
-		let content = [
-			''
-		].join('\n');
-		this._saveFile(file, content, false);
+		this._saveFile(file, '', false);
 		/*
 		echo "?package(${PACKAGE}): \\" > "build/$1/usr/share/menu/${PACKAGE}"
 		echo "needs=\"X11\" \\" >> "build/$1/usr/share/menu/${PACKAGE}"
@@ -308,7 +301,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'Section: ' + this._configuration.meta.section,
 			'Architecture: ' + this._architecture.name,
 			'Installed-Size: ' + this._getSize(path.join(this._dirBuildRoot, 'usr')),
-			//'Depends: ' + this._configuration.meta.dependencies,
+			'Depends: ' + this._configuration.meta.dependencies,
 			'Maintainer: ' + this._configuration.author,
 			'Priority: optional',
 			'Homepage: ' + this._configuration.url,
