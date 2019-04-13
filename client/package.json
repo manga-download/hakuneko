@@ -10,8 +10,12 @@
   },
   "main": "src/main.js",
   "devDependencies": {
+    "asar": "latest",
     "electron": "2.0.18",
-    "asar": "latest"
+    "ffmpeg-static": "latest",
+    "innosetup-compiler": "latest",
+    "rcedit": "latest",
+    "upx": "latest"
   },
   "scripts": {
     "postinstall": "cd src && npm install",
