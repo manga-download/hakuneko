@@ -29,9 +29,14 @@ class ElectronPackager {
      * 
      * @param {*} folder 
      */
-    _getSize(folder) {
-        // du -k -c build/$1/usr | grep total | cut -f1
-        return 123456789;
+    async _getSize(folder) {
+        // TODO: Make this platform independent!
+        if(process.platform === 'win32') {
+            //
+        } else {
+            let size = await this._executeCommand(`du -k -c "${folder}" | grep total | cut -f1`);
+            return size.trim();
+        }
     }
 
     /**
@@ -179,7 +184,7 @@ class ElectronPackager {
                 if(error) {
                     reject(error);
                 } else {
-                    resolve();
+                    resolve(stdout);
                 }
             });
         });
@@ -256,7 +261,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         this._createChangelog();
         //this._createMenuEntry(); // => only menu or desktop is recommend
         this._createDesktopShortcut();
-        this._createControlDEB();
+        await this._createControlDEB();
         this._createPostScript('postrm');
         this._createPostScript('postinst');
         await this._createChecksumsDEB();
@@ -389,7 +394,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	/**
 	 * 
 	 */
-	_createControlDEB() {
+	async _createControlDEB() {
         console.log('Creating DEB Control File ...');
         let file = path.join(this._dirBuildRoot, 'DEBIAN/control');
 		let content = [
@@ -397,7 +402,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'Version: ' + this._configuration.version,
 			'Section: ' + this._configuration.meta.section,
 			'Architecture: ' + this._architecture.name,
-			'Installed-Size: ' + this._getSize(path.join(this._dirBuildRoot, 'usr')),
+			'Installed-Size: ' + await this._getSize(path.join(this._dirBuildRoot, 'usr')),
 			'Depends: ' + this._configuration.meta.dependencies,
 			'Maintainer: ' + this._configuration.author,
 			'Priority: optional',
