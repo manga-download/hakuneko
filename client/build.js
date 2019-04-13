@@ -218,7 +218,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         let deb = this._dirBuildRoot + '.deb';
         await this._executeCommand(`rm -f "${deb}"`);
         await this._executeCommand(`fakeroot dpkg-deb -v -b "${this._dirBuildRoot}" "${deb}"`);
-        await this._executeCommand(`lintian --profile debian "${deb}"`);
+        await this._executeCommand(`lintian --profile debian "${deb}" || true`);
     }
 
 	/**
@@ -434,24 +434,24 @@ class ElectronPackagerLinux extends ElectronPackager {
 /**
  * 
  */
-function main() {
+async function main() {
     if(process.platform === 'win32') {
         let packager = new ElectronPackagerWindows(config);
-        packager.buildISS('64');
-        packager.buildISS('32');
-        packager.buildZIP('64');
-        packager.buildZIP('32');
+        await packager.buildISS('64');
+        await packager.buildISS('32');
+        await packager.buildZIP('64');
+        await packager.buildZIP('32');
     }
     if(process.platform === 'linux') {
         let packager = new ElectronPackagerLinux(config);
-        //packager.buildDEB('64');
-        //packager.buildDEB('32');
-        packager.buildRPM('64');
-        //packager.buildRPM('32');
+        await packager.buildDEB('64');
+        await packager.buildDEB('32');
+        await packager.buildRPM('64');
+        await packager.buildRPM('32');
     }
     if(process.platform === 'darwin') {
         let packager = new ElectronPackagerDarwin(config);
-        packager.build('64');
+        await packager.build('64');
     }
 }
 
