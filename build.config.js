@@ -10,7 +10,6 @@ module.exports = {
         long: 'Desktop Client for HakuNeko Web-Application'
     },
     license: 'Unlicense',
-    year: (new Date()).getFullYear(),
     url: 'https://github.com/manga-download/hakuneko',
     binary: {
         windows: 'hakuneko.exe',
