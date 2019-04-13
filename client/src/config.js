@@ -1,10 +1,11 @@
 const electron = require( 'electron' );
 const path = require( 'path' );
 const url = require( 'url' );
+const fs = require( 'fs' );
 const args = require( './args.js' );
 
 // indicate whether the settings should be saved in the application directory or in the user directory
-var portable = false;
+var portable = fs.existsSync( electron.app.getPath( 'exe' ) + '.portable' );
 // indicate whether the application was started in development environment or production mode (detected by name of the executable)
 var developer = ( process.argv && process.argv.length > 0 && process.argv[0].match( /electron(?:\.exe)?$/i ) !== null );
 // url with tests that should be run (hakuneko will ne started in test mode when test !== undefined)
@@ -60,8 +61,9 @@ function getCacheDirectory() {
         return path.normalize( path.join( electron.app.getAppPath(), devDirectory ) );
     }
     if( portable ) {
-        return path.join( path.dirname( electron.app.getPath( 'exe' ) ), 'cache' );
+        // getAppPath() => path to the ASAR package, not to the hakuneko binary image!
         //return path.normalize( path.join( electron.app.getAppPath(), '../../cache' ) );
+        return path.join( path.dirname( electron.app.getPath( 'exe' ) ), 'cache' );
     }
 
     if( process.platform == 'win32' ) {
