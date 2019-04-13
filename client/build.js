@@ -117,13 +117,19 @@ class ElectronPackager {
 
     /**
      * 
+     * @param {string} command 
+     * @param {bool} silent 
      */
-    _executeCommand(command) {
-        console.log('>', command);
+    _executeCommand(command, silent) {
+        if(!silent) {
+            console.log('>', command);
+        }
         return new Promise((resolve, reject) => {
             exec(command, (error, stdout, stderr) => {
-                console.log(stdout);
-                console.log(stderr);
+                if(!silent) {
+                    console.log(stdout);
+                    console.log(stderr);
+                }
                 if(error) {
                     reject(error);
                 } else {
@@ -131,6 +137,20 @@ class ElectronPackager {
                 }
             });
         });
+    }
+
+    /**
+     * 
+     * @param  {...string} commands 
+     */
+    async _validateCommands(...commands) {
+        for(let command of commands) {
+            try {
+                await this._executeCommand(command, true);
+            } catch(error) {
+                throw new Error(`Failed to run command '${command}', make sure it is correctly installed!`);
+            }
+        }
     }
 }
 
@@ -179,7 +199,9 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 * 
 	 */
     async buildDEB(architecture) {
-		this._architecture = this.architectures[architecture];
+        this._architecture = this.architectures[architecture];
+        
+        await this._validateCommands('unzip --help', 'asar --version', 'fakeroot --version', 'dpkg --version', 'lintian --version');
 
         await this._deleteDirectoryRecursive(this._dirBuildRoot);
         await this._copySkeletonDEB();
@@ -203,14 +225,24 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 * 
 	 */
     async buildRPM(architecture) {
-		this._architecture = this.architectures[architecture];
-        let electron = await this._downloadElectron(this._configuration.version, this._architecture.platform);
+        this._architecture = this.architectures[architecture];
 
-        console.log('Preparing RPM Package ...');
+        await this._validateCommands('unzip --help', 'asar --version', 'fakeroot --version', 'rpm --version');
 
-        // ...
+        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await this._copySkeletonRPM();
+        await this._bundleElectron();
+        this._createManpage();
+        this._createChangelog();
+        //this._createMenuEntry(); // => only menu or desktop is recommend
+        this._createDesktopShortcut();
+        let specs = this._createSpecsRPM();
 
-        console.log('Package Creation Complete:', 'xxx.rpm');
+        let rpm = this._dirBuildRoot + '.rpm';
+        await this._executeCommand(`rm -f "${rpm}"`);
+        await this._executeCommand(`rpmbuild -bb --noclean --define "_topdir $(pwd)/${this._dirBuildRoot}" --define "buildroot %{_topdir}" "${specs}"`);
+        await this._executeCommand(`mv -f ${this._dirBuildRoot}/RPMS/*/*.rpm ${rpm}`);
+        await this._executeCommand(`rm -f "${specs}"`);
     }
 
     /**
@@ -223,7 +255,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         await this._executeCommand(`rm -f "${folder}/resources/default_app.asar"`);
         await this._executeCommand(`asar pack "src" "${folder}/resources/app.asar"`);
         await this._executeCommand(`mv "${folder}/electron" "${folder}/${this._configuration.binary.linux}"`);
-        // remove executable lag from libraries => avoid lintian errors
+        // remove executable flag from libraries => avoid lintian errors
         await this._executeCommand(`find "${folder}" -type f -iname "*.so" -exec chmod -x {} \\;`);
     }
 
@@ -232,7 +264,15 @@ class ElectronPackagerLinux extends ElectronPackager {
      */
     async _copySkeletonDEB() {
         console.log('Copy DEB Skeleton ...');
-        await this._executeCommand(`cp -r "redist/deb/" "${this._dirBuildRoot}"`);
+        await this._executeCommand(`cp -r "redist/deb" "${this._dirBuildRoot}"`);
+    }
+
+    /**
+     * 
+     */
+    async _copySkeletonRPM() {
+        console.log('Copy RPM Skeleton ...');
+        await this._executeCommand(`cp -r "redist/rpm" "${this._dirBuildRoot}"`);
     }
 
 	/**
@@ -378,7 +418,7 @@ class ElectronPackagerLinux extends ElectronPackager {
             this._configuration.description.long,
             '',
             '%files',
-            '...', // find "build/$1" -type f | sed "s/build\/$1//g" >> build/specfile.spec
+            '/usr',
             '',
             '%post',
             `if [ ! -f ${symbolic} ] ; then ln -s ${binary} ${symbolic} ; fi`,
@@ -387,34 +427,7 @@ class ElectronPackagerLinux extends ElectronPackager {
             `if [ -f ${symbolic} ] ; then rm -f ${symbolic} ; fi`
 		].join('\n');
         this._saveFile(file, content, false);
-        
-		/*
-		#RPMPKG=$CWD/$PKGNAME\_$PKGVERSION\_$(get_lsb_release).rpm
-        #cp -r $DIST_DIR/* build/$2
-        
-		echo "Name: ${PACKAGE}" > build/specfile.spec
-		echo "Version: ${VERSION}" >> build/specfile.spec
-		echo "Release: 0" >> build/specfile.spec
-		echo "License: public domain" >> build/specfile.spec
-		echo "URL: ${URL}" >> build/specfile.spec
-		#echo "Requires: libc" >> build/specfile.spec
-		echo "Summary: ${DESCRIPTION_SHORT}" >> build/specfile.spec
-		echo "" >> build/specfile.spec
-		echo "Autoreq: no" >> build/specfile.spec
-		#echo "AutoReqProv: no" >> build/specfile.spec
-		echo "" >> build/specfile.spec
-		echo "%description" >> build/specfile.spec
-		echo "${DESCRIPTION_LONG}" >> build/specfile.spec
-		echo "" >> build/specfile.spec
-		echo "%files" >> build/specfile.spec
-		find "build/$1" -type f | sed "s/build\/$1//g" >> build/specfile.spec
-		echo "" >> build/specfile.spec
-		echo "%post" >> build/specfile.spec
-		echo "if [ ! -f /usr/bin/hakuneko-desktop ] ; then ln -s /usr/lib/hakuneko-desktop/hakuneko /usr/bin/hakuneko-desktop ; fi" >> build/specfile.spec
-		echo "" >> build/specfile.spec
-		echo "%postun" >> build/specfile.spec
-		echo "if [ -f /usr/bin/hakuneko-desktop ] ; then rm -f /usr/bin/hakuneko-desktop ; fi" >> build/specfile.spec
-		*/
+        return file;
 	}
 }
 
@@ -431,9 +444,9 @@ function main() {
     }
     if(process.platform === 'linux') {
         let packager = new ElectronPackagerLinux(config);
-        packager.buildDEB('64');
+        //packager.buildDEB('64');
         //packager.buildDEB('32');
-        //packager.buildRPM('64');
+        packager.buildRPM('64');
         //packager.buildRPM('32');
     }
     if(process.platform === 'darwin') {
