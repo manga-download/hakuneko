@@ -2,9 +2,9 @@ const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
 const https = require('https');
+const eol = require('os').EOL;
 const exec = require('child_process').exec;
 const config = require('../build.config');
-const eol = require('os').EOL;
 
 /**
  * Base class for platform dependent electron packagers
