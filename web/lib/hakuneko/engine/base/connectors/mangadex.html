@@ -70,7 +70,7 @@
                 index = 0;
             }
             return this.wait( this.config.throttle.value )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.row div.manga-entry div.text-truncate a.manga_title', 5 ) )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.manga-entry div.row div.text-truncate a.manga_title', 5 ) )
             .then( data => {
                 let mangaList = data.map( element => {
                     this.cfMailDecrypt( element );
