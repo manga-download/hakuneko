@@ -1,0 +1,17 @@
+{
+  "name": "hakuneko",
+  "version": "1.0.0",
+  "description": "HakuNeko",
+  "author": "Ronny Wegener <wegener.ronny@gmail.com>",
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/manga-download/hakuneko"
+  },
+  "scripts": {
+    "start": "cd client && npm start",
+    "postinstall": "cd client && npm install && cd ../web && npm install",
+    "client-build": "cd client && npm run build",
+    "web-deploy": "cd web && npm run deploy"
+  }
+}

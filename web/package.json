@@ -1,0 +1,17 @@
+{
+  "name": "hakuneko-web",
+  "version": "1.0.0",
+  "description": "HakuNeko Web-Application",
+  "author": "Ronny Wegener <wegener.ronny@gmail.com>",
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/manga-download/hakuneko"
+  },
+  "devDependencies": {
+    "polymer-cli": "latest"
+  },
+  "scripts": {
+    "deploy": "node deploy.js"
+  }
+}
