@@ -293,7 +293,9 @@
              *
              */
             openWebsite( evt ) {
-                window.open( evt.model.item.url, evt.model.label, 'nodeIntegration=no' );
+                if( evt.model.item.url ) {
+                    window.open( evt.model.item.url, evt.model.label, 'nodeIntegration=no' );
+                }
                 evt.cancelBubble = true;
                 evt.stopPropagation();
             }
