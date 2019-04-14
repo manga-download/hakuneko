@@ -183,7 +183,9 @@
                                 <div class="description">
                                     <div class="heading">
                                         <div class="title">[[ item.label ]]</div>
-                                        <div class$="control">...</div>
+                                        <div class$="control">
+                                            <i class="fa fa-external-link-square button" title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha" on-click="openWebsite"></i>
+                                        </div>
                                     </div>
                                     <div>
                                         <template is="dom-repeat" items="[[ item.tags ]]">
@@ -285,6 +287,15 @@
             selectConnector( evt ) {
                 this.set( 'selectedConnector', evt.model.item );
                 this.closePopup();
+            }
+            
+            /**
+             *
+             */
+            openWebsite( evt ) {
+                window.open( evt.model.item.url, evt.model.label, 'nodeIntegration=no' );
+                evt.cancelBubble = true;
+                evt.stopPropagation();
             }
 
             /**
