@@ -68,10 +68,10 @@ Editor or IDE (optional)::
 
 It is possible to only use a simple text editor, but it is more easier with a powerful source code editor or even an IDE.
 Use what you like, here are some examples:
-* https://code.visualstudio.com/download[Visual Studio Code]
-* https://flight-manual.atom.io/getting-started/sections/installing-atom[Atom]
-* http://brackets.io[Brackets]
-* https://www.jetbrains.com/webstorm[WebStorm]
+https://code.visualstudio.com/download[Visual Studio Code] (my personal favorite),
+https://flight-manual.atom.io/getting-started/sections/installing-atom[Atom],
+http://brackets.io[Brackets],
+https://www.jetbrains.com/webstorm[WebStorm]
 
 === Getting the Source Code
 
