@@ -87,6 +87,7 @@ function activateWindow() {
         } );
     } );
     
+    win.setTitle( 'HakuNeko' );
     win.setMenu( null );
 
     let load = () => {
