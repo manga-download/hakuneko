@@ -1,0 +1,21 @@
+= HakuNeko Web-Application
+
+== Introduction
+
+The HakuNeko web-application is mostly written using https://www.polymer-project.org[Polymer].
+
+== Deployment
+
+Currently this can be only done by running the following command on linux platform:
+
+[source,bash]
+----
+cd ~/Projects/web
+./publish.sh
+----
+
+This will process the following steps:
+
+. Create a zip archive of the web-application
+. Create a signature of the archive with the private key of the corresponding public key that is embedded in the desktop client (otherwise the desktop client will reject this archive)
+. Place the artifacts in HakuNeko's _Release_ git repository and push the changes (content will be published to the host through a hook)
