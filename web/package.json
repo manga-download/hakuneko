@@ -12,6 +12,6 @@
     "polymer-cli": "latest"
   },
   "scripts": {
-    "deploy": "node deploy.js"
+    "deploy": "./publish.sh"
   }
 }
