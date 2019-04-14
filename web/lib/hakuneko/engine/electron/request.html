@@ -96,7 +96,7 @@
 
         /**
          * If timeout [ms] is given, the window will be kept open until timout, otherwise
-         * it will be closed after injecting the script (or after 25 seconds in case an error occured)
+         * it will be closed after injecting the script (or after 30 seconds in case an error occured)
          */
         fetchUI( url, requestOptions, injectionScript, timeout ) {
             return new Promise( ( resolve, reject ) => {
@@ -119,7 +119,7 @@
                     if( !preventCallback ) {
                         reject( new Error( 'Failed to load ' + url ) );
                     }
-                }, ( timeout ? timeout : 25000 ) );
+                }, ( timeout ? timeout : 30000 ) );
 
                 win.webContents.on( 'did-finish-load', event => {
                     win.webContents.executeJavaScript( this._cfCheckScript() )
@@ -197,8 +197,8 @@
                 return undefined;
             }
             let uri = new URL( details.url );
-            //console.log( uri );
-            // remove accidently added headers from opened developer console
+
+            // Remove accidently added headers from opened developer console
             for( let header in details.requestHeaders ) {
                 if( header.startsWith( 'X-DevTools' )  ) {
                     delete details.requestHeaders[header];
@@ -211,30 +211,35 @@
             }
             delete details.requestHeaders['x-host'];
 
-            // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ..." )
-            if( details.requestHeaders['User-Agent'].toLowerCase().indexOf( 'electron' ) > -1 ) {
-                details.requestHeaders['User-Agent'] = this.userAgent;
+            // Priority 1
+            // Overwrite the User-Agent header for certain domains
+            if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.includes( uri.host ) ) {
+                details.requestHeaders['User-Agent'] = this.userAgent; // UserAgent.random();
             }
+            // Priority 2
             // Overwrite the User-Agent header with the one provided by the connector
-            if( details.requestHeaders['x-user-agent'] ) {
+            else if( details.requestHeaders['x-user-agent'] ) {
                 details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
             }
-            // Overwrite the User-Agent header for certain domains
-            if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.indexOf( uri.host ) > -1 ) {
-                details.requestHeaders['User-Agent'] = this.userAgent; // UserAgent.random();
+            // Priority 3
+            // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ..." )
+            else if( details.requestHeaders['User-Agent'].toLowerCase().includes( 'electron' ) ) {
+                details.requestHeaders['User-Agent'] = this.userAgent;
             }
             delete details.requestHeaders['x-user-agent'];
 
             // Overwrite the Referer header, but
             // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
-            if( !uri.pathname.endsWith( 'chk_jschl' ) ) {
-                // use referer provided by connector
-                if( details.requestHeaders['x-referer'] ) {
-                    details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
-                }
-                // force referer for certain hosts
+            if( !uri.pathname.includes( 'chk_jschl' ) ) {
+                // Priority 1
+                // Force referer for certain hosts
                 if( uri.hostname.includes( 'cdn.mcloud.to' ) ) {
                     details.requestHeaders['Referer'] = uri.href;
+                }
+                // Priority 2
+                // Use referer provided by connector
+                else if( details.requestHeaders['x-referer'] ) {
+                    details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
                 }
             }
             delete details.requestHeaders['x-referer'];
@@ -256,10 +261,7 @@
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
-/*
-if( 'mangapicgallery'.indexOf( uri.host ) > -1 && uri.pathname.endsWith( '/1/' ) ) {
-// console.log( uri, details );
-*/
+
             return details;
         }
     }
