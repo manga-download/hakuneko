@@ -112,7 +112,10 @@
                     return fetch( dom.querySelector( this.queryChaptersMoreButton ).dataset.readMoreEndpoint, this.requestOptions )
                     .then( response => response.json() )
                     .then( data => {
-                        dom.querySelector( this.queryChaptersMoreContainer ).innerHTML = data.html;
+                        let content = data.html;
+                        content = content.replace( /<img/g, '<source');
+                        content = content.replace( /<\/img/g, '</source');
+                        dom.querySelector( this.queryChaptersMoreContainer ).innerHTML = content;
                         return Promise.resolve( dom );
                     } );
                 }
