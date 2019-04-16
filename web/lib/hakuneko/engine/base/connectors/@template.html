@@ -129,10 +129,10 @@
         }
 
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'ul.pagination li:last-of-type a' )
+            this.fetchDOM( this.url + manga.id, 'ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + chapter.id + '/' + ( page + 1 ) );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + '/' + ( page + 1 ) );
                 return this._getChapterListFromPages( manga, pageLinks );
             } )
             .then( data => {
