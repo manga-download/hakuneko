@@ -100,6 +100,8 @@
 <link rel="import" href="connectors/mangalel.html">
 <link rel="import" href="connectors/mangalife.html">
 <link rel="import" href="connectors/mangalike.html">
+<link rel="import" href="connectors/mangalover.html">
+<link rel="import" href="connectors/mangalover-archive.html">
 <link rel="import" href="connectors/manganel.html">
 <link rel="import" href="connectors/mangapanda.html">
 <link rel="import" href="connectors/mangapark.html">
@@ -456,12 +458,21 @@
             // #endregion
 
             // #region Template: WordPressMadara
+            //         Sample:   http://www.3asq.info/manga-list/all/any/name-az/1/
+            this.register( new MangaLoverArchive() );
+            //http://www.authrone.com
+            //http://www.mangadeep.com
+            //http://www.manga99.com
+            // #endregion
+
+            // #region Template: WordPressMadara
             //         Sample:   https://mangazuki.me/manga/?m_orderby=alphabet
             this.register( new AllManga() );
             this.register( new ChibiManga() );
             this.register( new HappyTeaScans() );
             this.register( new IsekaiRaw() );
             this.register( new MangaLike() );
+            this.register( new MangaLover() );
             this.register( new MangaZuki() );
             this.register( new MangaZukiInfo() );
             this.register( new ManhwaHand() );

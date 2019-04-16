@@ -1,0 +1,27 @@
+<link rel="import" href="wp-lightpro.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaLoverArchive extends WordPressLightPro {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'mangalover-archive';
+            super.label      = '3asq (مانجا العاشق) - Archive';
+            this.tags        = [ 'manga', 'arabic' ];
+            this.url         = 'http://www.3asq.info';
+            this.path        = '/manga-list/all/any/name-az/';
+
+            this.protocol = '';
+            // register a protocol handler to intercept requests (with custom '3asq' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+    }
+
+</script>
