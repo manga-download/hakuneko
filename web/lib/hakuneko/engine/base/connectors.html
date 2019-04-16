@@ -183,6 +183,7 @@
 <link rel="import" href="connectors/selfmanga.html">
 <link rel="import" href="connectors/sensescans.html">
 <link rel="import" href="connectors/shonenjumpplus.html">
+<link rel="import" href="connectors/shonenmagazine.html">
 <link rel="import" href="connectors/shonenmagazine-pocket.html">
 <link rel="import" href="connectors/shoujosense.html">
 <link rel="import" href="connectors/silentskyscans.html">
@@ -353,6 +354,8 @@
             this.register( new ComicDays() );
             this.register( new KurageBunch() );
             this.register( new ShonenJumpPlus() );
+            // NOTE: ShonenMagazine currently only provides cross-domain links to ShonenMagazinePocket
+            //this.register( new ShonenMagazine() );
             this.register( new ShonenMagazinePocket() );
             this.register( new TonariNoYoungJump() );
             // #endregion
