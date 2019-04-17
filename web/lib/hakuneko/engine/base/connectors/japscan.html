@@ -17,7 +17,6 @@
             super.label      = 'JapScan';
             this.tags        = [ 'manga', 'french' ];
             super.isLocked   = false;
-            this.initialized = false;
             // Private members for internal usage only (convenience)
             this.url         = 'https://www.japscan.to';
             this.urlCDN      = 'https://c.japscan.to/';
@@ -46,22 +45,13 @@
 
             // register a protocol handler to intercept requests (with custom 'japscan' protocol) and decrypt images
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
-
-            this._initializeConnector();
         }
 
         /**
          *
          */
          _initializeConnector() {
-            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
-            .then( result => {
-                this.initialized = true; 
-            } )
-            .catch( error => {
-                console.error( error, this ); 
-                this.initialized = undefined;
-            } );
+            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
         }
 
         /**

@@ -17,7 +17,6 @@
             super.label      = 'MangaDex';
             this.tags        = [ 'manga', 'high-quality', 'multi-lingual' ];
             super.isLocked   = false;
-            this.initialized = false;
             // Private members for internal usage only (convenience)
             this.url         = 'https://mangadex.org';
             this.requestOptions.headers.set( 'x-cookie', 'mangadex_title_mode=2' );
@@ -32,22 +31,13 @@
                     value: 2500
                 }
             };
-
-            this._initializeConnector();
         }
 
         /**
          *
          */
         _initializeConnector() {
-            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
-            .then( result => {
-                this.initialized = true; 
-            } )
-            .catch( error => {
-                console.error( error, this ); 
-                this.initialized = undefined;
-            } );
+            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
         }
 
         /**

@@ -15,12 +15,16 @@
             super.id         = 'fallenangelsscans';
             super.label      = 'FallenAngelsScans';
             this.tags        = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-            this.initialized = false;
             this.url         = 'https://manga.fascans.com';
 
             this.language = 'en';
+        }
 
-            super._initializeConnector();
+        /**
+         * Bypass CloudFlare
+         */
+        _initializeConnector() {
+            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
         }
     }
 

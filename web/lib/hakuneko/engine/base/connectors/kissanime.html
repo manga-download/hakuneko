@@ -17,7 +17,6 @@
             super.label      = 'KissAnime';
             this.tags        = [ 'anime', 'english' ];
             super.isLocked   = false;
-            this.initialized = false;
             // Private members for internal usage only (convenience)
             this.url         = 'https://kissanime.ru';
             this.pageLoadDelay  = 5000;
@@ -36,22 +35,13 @@
                     value: ''
                 }
             };
-
-            this._initializeConnector();
         }
 
         /**
          *
          */
         _initializeConnector() {
-            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
-            .then( result => {
-                this.initialized = true; 
-            } )
-            .catch( error => {
-                console.error( error, this ); 
-                this.initialized = undefined;
-            } );
+            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
         }
 
         /**

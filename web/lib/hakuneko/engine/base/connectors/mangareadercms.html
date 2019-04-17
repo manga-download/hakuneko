@@ -17,7 +17,6 @@
             super.label      = undefined;
             this.tags        = [ 'manga' ];
             super.isLocked   = false;
-            this.initialized = undefined;
             // Private members for internal usage only (convenience)
             this.url         = undefined;
             this.path        = '/';
@@ -28,20 +27,6 @@
             this.queryChapters = 'ul.chapters li h5.chapter-title-rtl';
             this.queryPages = 'div#all source.img-responsive';
             this.language = '';
-        }
-
-        /**
-         *
-         */
-        _initializeConnector() {
-            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
-            .then( result => {
-                this.initialized = true; 
-            } )
-            .catch( error => {
-                console.error( error, this ); 
-                this.initialized = undefined;
-            } );
         }
 
         /**

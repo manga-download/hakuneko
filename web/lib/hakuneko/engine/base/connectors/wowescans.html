@@ -18,22 +18,13 @@
             this.url         = 'https://wowescans.net';
 
             this.language = 'en';
-
-            this._initializeConnector();
         }
 
         /**
          *
          */
          _initializeConnector() {
-            Engine.Request.fetchUI( this.url, this.requestOptions, '' )
-            .then( result => {
-                this.initialized = true; 
-            } )
-            .catch( error => {
-                console.error( error, this ); 
-                this.initialized = undefined;
-            } );
+            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
         }
     }
 
