@@ -102,24 +102,6 @@
                 text-decoration: none;
             }
         </style>
-        <div id="loader">
-            <p style="font-size: 2em;">
-                Initializing <i class="fa fa-cog fa-spin"></i> Connectors
-            </p>
-            <hr width="75%">
-            <div class="quote">
-                <p>Today's quote:</p>
-                <div class="quoteText">
-                    <template is="dom-repeat" items="[[ loadingMessage.lines ]]">
-                        <span>[[ item ]]</span><br>
-                    </template>
-                </div>
-                <div class="quoteAuthor">&mdash; [[ loadingMessage.author ]]</div>
-            </div>
-            <a class="suggestion" href="https://sourceforge.net/p/hakuneko/discussion/development/thread/6af6b66c/" target="_blank" title="HakuNeko Discussion: Loading Screen Quotes - User Suggestions">
-                » Your quote on the loading screen…
-            </a>
-        </div>
         <div class$="control [[ getControlClass(selectedMediaIndex) ]]">
             <hakuneko-menu></hakuneko-menu>
             <div class="mangas">
@@ -151,33 +133,6 @@
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
-                // disable loading screen when all connectors with initialization state are initialized or the timeout is reached
-                let loadingInterval = setInterval( () => {
-                    if( this._checkConnectorInitialization() ) {
-                        clearTimeout( loadingTimeout);
-                        clearInterval( loadingInterval );
-                        this.$.loader.parentNode.removeChild( this.$.loader );
-                    }
-                }, 750 );
-                let loadingTimeout = setTimeout( () => {
-                    this._checkConnectorInitialization( true );
-                    clearTimeout( loadingTimeout);
-                    clearInterval( loadingInterval );
-                    this.$.loader.parentNode.removeChild( this.$.loader );
-                }, 15000 );
-            }
-
-            _checkConnectorInitialization( log ) {
-                let result = true;
-                for( let connector of Engine.Connectors ) {
-                    if( connector.initialized !== undefined && connector.initialized === false ) {
-                        result = false;
-                        if( log ) {
-                            console.warn( 'Initialization:', connector.label, '=>', connector.initialized );
-                        }
-                    }
-                }
-                return result;
             }
 
             /**
