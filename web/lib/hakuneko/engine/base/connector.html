@@ -19,7 +19,7 @@
             // READONLY: lock state may used to prevent to many concurrent requests per second
             // do not set directly, use lock() and unlock()
             this.isLocked = false;
-            this.initialized = undefined;
+            this.initialized = false;
             //
             this.isUpdating = false;
             //
@@ -45,7 +45,33 @@
         }
 
         /**
-         * Find first manga with title that matches the givn pattern (case-insensitive).
+         * See: this._initialize()
+         * This method can be overwritten by the connector for a specific implementation of the initialization process
+         */
+        _initializeConnector() {
+            return Promise.resolve();
+        }
+
+        /**
+         *
+         */
+        initialize() {
+            if( this.initialized ) {
+                return Promise.resolve();
+            } else {
+                return this._initializeConnector()
+                .then( () => {
+                    this.initialized = true;
+                } )
+                .catch( error => {
+                    console.error( 'Initialization Failed', this );
+                    throw error;
+                } );
+            }
+        }
+
+        /**
+         * Find first manga with title that matches the given pattern (case-insensitive).
          */
         findMatchingManga( pattern ) {
             let needle = pattern.toLowerCase();
@@ -65,34 +91,40 @@
                 return;
             }
             this.isUpdating = true;
-            this._getMangaList( ( error, mangas ) => {
-                if( error || !mangas ) {
-                    this.isUpdating = false;
-                    callback( error, undefined );
-                    return;
-                }
-                // remove duplicates by checking if manga with given ID is first occurance in list
-                mangas = mangas.filter( ( manga, index ) => {
-                    return index === mangas.findIndex( m => m.id === manga.id );
+            this.initialize()
+            .then( () => {
+                this._getMangaList( ( error, mangas ) => {
+                    if( error || !mangas ) {
+                        this.isUpdating = false;
+                        callback( error, undefined );
+                        return;
+                    }
+                    // remove duplicates by checking if manga with given ID is first occurance in list
+                    mangas = mangas.filter( ( manga, index ) => {
+                        return index === mangas.findIndex( m => m.id === manga.id );
+                    } );
+                    // sort by title
+                    mangas.sort( ( a, b ) => {
+                        return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
+                    } );
+                    
+                    this.mangaCache = undefined;
+                    Engine.Storage.saveMangaList( this.id, mangas )
+                    .then( () => {
+                        // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                        this.isUpdating = false;
+                        this.getMangas( callback );
+                    } )
+                    .catch( error => {
+                        // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                        this.isUpdating = false;
+                        console.error( error.message );
+                        callback( error, undefined );
+                    } );
                 } );
-                // sort by title
-                mangas.sort( ( a, b ) => {
-                    return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
-                } );
-                
-                this.mangaCache = undefined;
-                Engine.Storage.saveMangaList( this.id, mangas )
-                .then( () => {
-                    // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
-                    this.isUpdating = false;
-                    this.getMangas( callback );
-                } )
-                .catch( error => {
-                    // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
-                    this.isUpdating = false;
-                    console.error( error.message );
-                    callback( error, undefined );
-                } );
+            } )
+            .catch( error => {
+                callback( error, undefined );
             } );
         }
 
@@ -144,7 +176,11 @@
         getMangaFromURI( uri ) {
             // TODO: try to find title in cached manga list first
             //       => this.getMangas().then( ... )
-            return this._getMangaFromURI( uri );
+            return this.initialize()
+            .then( () => this._getMangaFromURI( uri ) )
+            .catch( error => {
+                callback( error, undefined );
+            } );
         }
 
         /**
