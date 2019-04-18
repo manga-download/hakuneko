@@ -1,0 +1,102 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class MangaInn extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'mangainn';
+            super.label      = 'MangaInn';
+            this.tags        = [ 'manga', 'english' ];
+            super.isLocked   = false;
+            // Private members for internal usage only (convenience)
+            this.url         = 'http://www.mangainn.net';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            return this.fetchDOM( mangaPageLinks[ index ], 'div.content ul.manga-list li a.manga-info-qtip', 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let pageLinks = 'abcdefghijklmnopqrstuvwxyz'.split( '' ).map( page => this.url + '/manga-list/' + page );
+            pageLinks.push( this.url + '/manga-list' );
+            this._getMangaListFromPages( pageLinks )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'div#chapter_list ul.chapter-list li a' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    let title = element.querySelector( 'span.val' ).innerText;
+                    return {
+                        id: this.getRelativeLink( element ) + '/all-pages',
+                        title: title.replace( manga.title, '' ).replace( /^\s*-/, '' ).trim(),
+                        language: 'en'
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            this.fetchDOM( this.url + chapter.id, 'div.chapter-read source.img-responsive' )
+            .then( data => {
+                let pageList = data.map( element => element.src );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
