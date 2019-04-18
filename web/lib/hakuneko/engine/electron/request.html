@@ -66,7 +66,7 @@
         /**
          *
          */
-        _cfCheckScript() {
+        get _cfCheckScript() {
             // ensure variables in this script does not appear in the page or other injected script
             let uVar = [
                 '_c13367', // 'code',
@@ -99,6 +99,7 @@
          * it will be closed after injecting the script (or after 30 seconds in case an error occured)
          */
         fetchUI( url, requestOptions, injectionScript, timeout ) {
+            timeout = timeout || 25000;
             return new Promise( ( resolve, reject ) => {
                 let win = new this.browser( {
                     show: false,
@@ -117,12 +118,12 @@
                 let abortAction = setTimeout( () => {
                     this._fetchUICleanup( win, abortAction );
                     if( !preventCallback ) {
-                        reject( new Error( 'Failed to load ' + url ) );
+                        reject( new Error( `Failed to load "${url}" within the given timeout of ${timeout}ms!` ) );
                     }
-                }, ( timeout ? timeout : 30000 ) );
+                }, timeout );
 
                 win.webContents.on( 'did-finish-load', event => {
-                    win.webContents.executeJavaScript( this._cfCheckScript() )
+                    win.webContents.executeJavaScript( this._cfCheckScript )
                     .then( result => {
                         if( !result.redirect ) {
                             preventCallback = true; // no other event shall resolve/reject this promise anymore
@@ -139,6 +140,7 @@
                             }
                         } else {
                             // neither reject nor resolve the promise (wait for next callback after getting redirected)
+                            console.warn( `Solving CloudFlare challenge for "${url}" ...`, result );
                         }
                     } )
                     .catch( error => {
