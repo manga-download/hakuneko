@@ -15,6 +15,7 @@
             let electron = require( 'electron' );
             this.dialog = electron.remote.dialog;
             this.platform = electron.remote.process.platform;
+            this.shell = electron.remote.shell;
             this.exec = electron.remote.require( 'child_process' ).exec;
             this.fs = require( 'fs' );
             this.path = require( 'path' );
@@ -32,6 +33,13 @@
                     ';': '%3B'
                 }
             };
+        }
+
+        /**
+         * Open the system's file browser and navigate to the given chapter item
+         */
+        showFolderContent( chapter ) {
+            this.shell.showItemInFolder( this._chapterOutputPath( chapter ) );
         }
 
         /**

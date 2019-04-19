@@ -47,6 +47,10 @@
             .list li:hover {
                 background-color: var(--chapter-list-highlighted);
             }
+            .title {
+                user-select: none;
+                cursor: default;
+            }
             .focus {
                 background-color: var(--chapter-list-selected) !important;
             }
@@ -131,7 +135,7 @@
                     <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
                     <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
                     <i class$="fa fa-fw button [[ getChapterMarkClass(markedChapterID, item) ]]" on-click="onMarkChapterClick" title$="[[ getChapterMarkTooltip(markedChapterID, item) ]]"></i>
-                    <span class$="[[ item.status ]]" title$="[[ item.title ]]">[[ item.title ]]</span>
+                    <span class$="title [[ item.status ]]" title$="[[ item.title ]]&#10;Doubleclick to open the folder with your file manager" on-dblclick="onShowFileManagerClick">[[ item.title ]]</span>
                 </li>
             </template>
         </ul>
@@ -453,6 +457,14 @@
              */
             onSelectedChapterChanged( chapter ) {
                 //
+            }
+
+            /**
+             *
+             */
+            onShowFileManagerClick( e ) {
+                //e.model.item.openInFileBrowser();
+                Engine.Storage.showFolderContent( e.model.item );
             }
             
             /**
