@@ -21,6 +21,10 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
+            this.queryMangas = 'div.post-title h5 a';
+            this.queryChapters = 'li.wp-manga-chapter > a';
+            this.queryPages = 'div.page-break source';
+
             this.formManga = new URLSearchParams();
             this.formManga.append( 'action', 'madara_load_more' );
             this.formManga.append( 'template', 'madara-core/content/content-archive' );
@@ -38,7 +42,7 @@
             this.requestOptions.method = 'POST';
             this.requestOptions.body = this.formManga;
             this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
-            this.fetchDOM( this.url + '/wp-admin/admin-ajax.php', 'div.post-title h5 a' )
+            this.fetchDOM( this.url + '/wp-admin/admin-ajax.php', this.queryMangas )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -61,7 +65,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'li.wp-manga-chapter > a' )
+            this.fetchDOM( this.url + manga.id, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
@@ -84,7 +88,7 @@
         _getPageList( manga, chapter, callback ) {
             let uri = new URL( this.url + chapter.id );
             uri.searchParams.set( 'style', 'list' );
-            this.fetchDOM( uri.href, 'div.page-break source' )
+            this.fetchDOM( uri.href, this.queryPages )
             .then( data => {
                 let pageLinks = data.map( element => ( element.dataset['src'] || element.src ).trim() );
                 callback( null, pageLinks );
