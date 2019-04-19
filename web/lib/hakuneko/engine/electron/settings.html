@@ -1,4 +1,5 @@
 <link rel="import" href="../base/settings.html">
+<link rel="import" href="../base/enums.html">
 
 <script>
 
@@ -58,6 +59,17 @@
                     { value: ChapterFormat.epub, name: 'Ebook Reader (*.epub)' },
                 ],
                 value: ChapterFormat.img
+            };
+            this.downloadHistoryLogFormat = {
+                label: 'Download History Format',
+                description: 'Log the history of completed chapter downloads\nThe log file(s) can be found in HakuNeko\'s user data directory',
+                input: Input.select,
+                options: [
+                    { value: HistoryFormat.none, name: 'Disabled' },
+                    //{ value: HistoryFormat.json, name: 'JSON (*.json)' },
+                    //{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
+                ],
+                value: HistoryFormat.none
             };
         }
     }

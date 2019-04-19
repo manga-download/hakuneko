@@ -1,4 +1,5 @@
 <link rel="import" href="electron.html">
+<link rel="import" href="base/history.html">
 <link rel="import" href="base/downloader.html">
 <link rel="import" href="base/connectors.html">
 <link rel="import" href="base/bookmarks.html">
@@ -93,6 +94,7 @@
         }
     }
 
+    new HistoryWorker();
     Engine.Settings.loadProfile( 'default', undefined );
     Engine.BookmarkManager.loadProfile( 'default', undefined );
     Engine.ChaptermarkManager.loadChaptermarks( undefined );
