@@ -2,42 +2,48 @@
 // https://asciidoctor.org/docs/asciidoc-syntax-quick-reference/
 // https://mister-gold.pro/posts/en/asciidoc-vs-markdown/
 
-= HakuNeko - Manga & Anime Downloader
+= HakuNeko
 
-:toc: macro
+:toc:
 :numbered:
 :icons: font
 :linkattrs:
 
-HakuNeko is a cross-platform downloader for manga and anime from various websites.
-
-toc::[]
-
 == Download
 
+[.clearfix]
+--
+[.left]
+image::doc/logo_64.png[]
+Yes, the download section comes first (even before the introduction), because this is what most users are looking for anyway.
 HakuNeko provides different installation files for various operating systems.
-There is also a portable version available which stores all its application data in its application folder.
-Download and run the installer/archive for your operating system from one of the mirror sites below.
+There is also a portable version available which stores all its application data inside the application folder.
+You can download and run the installer/archive for your operating system from one of the mirror sites below.
+--
 
-===== Mirrors
+Mirrors::
 
-image::https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/0.4.0, window=_blank]
+image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/0.4.0, window=_blank]
+image:https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/, window=_blank]
 
-image::https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/, window=_blank]
+== Introduction
 
-== Screenshots
+HakuNeko is a cross-platform downloader for manga and anime from various websites.
+HakuNeko was made to help users downloading media for circumstances that require offline usage.
+The philosophy is ad-hoc consumption, get it when you going to read/watch it.
+It is not meant to be a mass downloader to stock up thousands of chapters that are just collected and will probably never be read.
+//The development of HakuNeko is based on this philosophy and sometimes the reason why certain features get rejected.
 
+[.clearfix]
+--
+[.center]
 //image::doc/screenshot-loading.png[link=doc/screenshot-websites.png, title="Loading Screen"]
-
 //image::doc/screenshot-websites.png[link=doc/screenshot-websites.png, title="Website Selection"]
-
 //image::doc/screenshot-settings.png[link=doc/screenshot-settings.png, title="Application Settings"]
-
-image::doc/screenshot-video.png[link=doc/screenshot-video.png, title="Anime Playback", window=_blank]
-
-image::doc/screenshot-pages.png[link=doc/screenshot-pages.png, title="Chapter Pages", window=_blank]
-
+image::doc/screenshot-pages.png[link=doc/screenshot-pages.png, width=720, title="HakuNeko - Chapter Page Preview", window=_blank]
 //image::doc/screenshot-reader.png[link=doc/screenshot-reader.png, title="Manga Reader"]
+image::doc/screenshot-video.png[link=doc/screenshot-video.png, width=720, title="HakuNeko - Anime Playback", window=_blank]
+--
 
 == Development
 
@@ -137,3 +143,79 @@ Start a local development version of HakuNeko that will use the current source c
 cd ~/Projects/hakuneko
 npm start
 ----
+
+== History
+
+This section describes the curriculum vitae of HakuNeko.
+Feel free to skip this boring stuff, this is something to read if you have to kill time ;)
+
+=== Necessity begets Ingenuity
+
+The development of HakuNeko started around 2006/2007.
+During this time i traveled alot between my home, family, friends, workplace and university.
+Spending many hours in the train can become quite boring, so i thought about reading my favorite mangas on my notebook.
+Reading online was almost impossible due to the lack of of mobile internet availability at that time.
+So as a linux user i was looking for a convenient way to download some chapters from online reading websites to my notebook, but unfortunately there was no easy solution (although DomDomSoft was very popular for windows).
+As a software developer the answer to my problem was quite simple:
+
+> Don’t beg for things, do it yourself. Or you won’t get anything.
+> -- Axel Thurston, Eureka Seven
+
+=== When Naruto meets Nyan Cat
+
+As a result the first version was of my very own manga downloader tool was born and needed a cool name.
+Anything including the terms _Manga_ and _Downloader_ seems way to boring, lets see... cats are always cool right (especially Nyan Cat)?
+The japanese word for cat is _Neko_, so far so good, but not good enough as a distinguishing name for my tool.
+How about combining it with another word like... _Black_ or _White_, which would lead to _KuroNeko_ or _ShiroNeko_?
+Very nice, but somehow this sounds to mainstream.
+Luckily one of the early Naruto epsiodes was running in the background and i recognized a character named Haku.
+Purely on a whim i mixed both words together and from this very moment _HakuNeko_ was assigned as name for my tool.
+I still don't know the meaning of the combination of these japanese words in english, but it sounds good and is unique.
+
+=== With Popularity comes Responsibility
+
+Despite the fact that it was very basic and only had support for a few websites, it does exactly what i wanted:
+Downloading mangas for offline reading on my next journey.
+The application was written in C++ using the wxWidgets framework and therefore was available for Linux and Windows.
+
+[.clearfix]
+--
+[.left]
+image::doc/legacy-linux.jpg[link=doc/legacy-linux.jpg, width=400, title="HakuNeko for Linux (Legacy)", window=_blank]
+[.right]
+image::doc/legacy-windows.jpg[link=doc/legacy-windows.jpg, width=400, title="HakuNeko for Windows (Legacy)", window=_blank]
+--
+
+Over the time HakuNeko improved, matured and i thought this piece of software might be useful for other users as well.
+Eventually HakuNeko was published on some freeware downloading websites such as Softpedia and later an open source project was created on SourceForge.
+In the first year it was not very popular (maybe choosing a name indicating that this tool is a manga downloader would have been smarter), but then slowly got momentum.
+HakuNeko became more and more popular and it was no longer "My little Tool" to download mangas for reading in the train, it was now part of many other people's day to day life.
+With the feedback from users who started to make suggestions, requested features and reported bugs HakuNeko evolved even more to meet all those expectations.
+
+=== Live Happily Ever After, or maybe not?
+
+As time flew by, the development become stagnant.
+The following list reflects the most significant problems:
+
+- The old wxWidgets framework used in HakuNeko got removed from various linux distribution repositories and the migration caused much trouble and problems that could not be solved
+- Users got downloading errors which could not be reproduced and getting fixed caused by the very bare-metal implementation around the CURL library
+- Many websites started to improve their bot protections using sophisticated browser depending mechanics and the effort to bypass them was way to high
+
+=== The Next Generation
+
+The end draws near.
+HakuNeko was no longer able to cope with the upcoming challenges.
+At the beginning of the year 2017 it was time for a rebirth.
+The deciding requirements for the new underlying engine/framework were clear:
+
+- Easy cross-platform development
+- Incorporating a popular programming language and development tools (to attract potential contributers)
+- Sophisticated integration of web-technologies (HTTP requests, DOM parsing, ...) and JavaScript engines (solving browser challenges)
+
+It seemed to be impossible to fulfill all these requirements, but fortunately electron came to the rescue.
+Being a "Customized Chrome Browser" it was perfectly suited for the revival of HakuNeko.
+It didn't take long until the first prototype was finished with promising results.
+The name _HakuNeko S_ was given to the prototype, but i can't remember what exactly the S meant that i simply appended to the name to distinguish it from the legacy version (maybe **S**uccessor or something?).
+Based on the popularity of the legacy version it didn't take long until the users switchd over to the descendant.
+As of today HakuNeko helps users from all over the world to achieve their goal: Downloading mangas for offline reading.
+To me HakuNeko is more than a reliable manga downloader tool, it is software made from the heart.
