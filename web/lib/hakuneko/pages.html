@@ -380,7 +380,17 @@
              *
              */
             setImagePadding( padding ) {
+                let offset = this.$.container.scrollTop / this.$.container.scrollHeight;
                 this.set( 'imagePadding', Math.max( 0, padding ) );
+                /*
+                // embed in timeout function to ensure image layout is updated before adjusting scroll offsetTop
+                setTimeout( () => {
+                    this.$.container.scrollTop = offset * this.$.container.scrollHeight;
+                }, 0 );
+                */
+                this.$.container.scrollTop = offset * this.$.container.scrollHeight;
+
+
             }
 
             /**
