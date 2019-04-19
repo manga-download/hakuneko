@@ -12,13 +12,12 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'manhwahentai';
             super.label      = 'ManhwaHentai';
             this.tags        = [ 'hentai', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://manhwahentai.com';
+
+            this.queryPages = 'div.page2-break source';
         }
     }
 
