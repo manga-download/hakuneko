@@ -4,11 +4,14 @@
 
 = HakuNeko - Manga & Anime Downloader
 
-//:toc:
+:toc: macro
 :numbered:
 :icons: font
+:linkattrs:
 
 HakuNeko is a cross-platform downloader for manga and anime from various websites.
+
+toc::[]
 
 == Download
 
@@ -18,9 +21,9 @@ Download and run the installer/archive for your operating system from one of the
 
 ===== Mirrors
 
-image::https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/0.4.0]
+image::https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/0.4.0, window=_blank]
 
-image::https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/]
+image::https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/, window=_blank]
 
 == Screenshots
 
@@ -30,9 +33,9 @@ image::https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%2
 
 //image::doc/screenshot-settings.png[link=doc/screenshot-settings.png, title="Application Settings"]
 
-image::doc/screenshot-video.png[link=doc/screenshot-video.png, title="Anime Playback"]
+image::doc/screenshot-video.png[link=doc/screenshot-video.png, title="Anime Playback", window=_blank]
 
-image::doc/screenshot-pages.png[link=doc/screenshot-pages.png, title="Chapter Pages"]
+image::doc/screenshot-pages.png[link=doc/screenshot-pages.png, title="Chapter Pages", window=_blank]
 
 //image::doc/screenshot-reader.png[link=doc/screenshot-reader.png, title="Manga Reader"]
 
