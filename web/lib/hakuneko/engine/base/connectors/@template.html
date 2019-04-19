@@ -38,11 +38,12 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/mangas', 'ul.mangas li a' )
+            let uri = this.url + '/mangas';
+            this.fetchDOM( uri, 'ul.mangas li a' )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
                         title: element.text.trim()
                     };
                 } );
@@ -62,7 +63,7 @@
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, mangaPageLinks[ index ] ),
                         title: element.text.trim()
                     };
                 } );
@@ -100,7 +101,7 @@
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url + manga.id ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: ''
                     };
@@ -121,7 +122,7 @@
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, chapterPageLinks[ index ] ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: ''
                     };
@@ -158,7 +159,7 @@
         _getPageList( manga, chapter, callback ) {
             this.fetchDOM( this.url + chapter.id, 'div#viewer source' )
             .then( data => {
-                let pageList = data.map( element => element.src );               
+                let pageList = data.map( element => this.getAbsolutePath( element, this.url + chapter.id ) );               
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -173,7 +174,7 @@
             this.fetchDOM( this.url + chapter.id, 'div#viewer source' )
             .then( data => {
                 let pageList = data.map( element => {
-                    let uri = new URL( element.dataset.url );
+                    let uri = new URL( this.getAbsolutePath( element.dataset.url, this.url + chapter.id ) );
                     uri.protocol = this.id;
                     return uri.href;
                 } );
