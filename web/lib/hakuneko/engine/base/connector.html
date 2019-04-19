@@ -267,7 +267,8 @@
         }
 
         /**
-         * Revert the expansion of relative links regardng the base url,
+         * [OBSOLETE => use getRootRelativeLink( element, base )]
+         * Revert the expansion of relative links regarding the base url,
          * or leave the absolute url if the link seems not to been expanded.
          */
          getRelativeLink( element ) {
@@ -288,12 +289,63 @@
                     refURI.protocol = baseURI.protocol;
                 }
 
-                // case: element.href => absolute link that contains base url of connector (e.g. http://onnector.net/sub/page.html)
+                // case: element.href => absolute link that contains base url of connector (e.g. http://connector.net/sub/page.html)
                 if( refURI.hostname === baseURI.hostname ) {
                     return (refURI.pathname + refURI.search + refURI.hash);
                 } else {
                     return refURI.href;
                 }
+            }
+        }
+
+        /**
+         * 
+         */
+        getAbsolutePath( reference, base ) {
+            let baseURI;
+            switch( true ) {
+                case base instanceof URL:
+                    baseURI = base;
+                    break;
+                case typeof base === 'string':
+                    baseURI = new URL( base );
+                    break;
+                default:
+                    throw new Error( 'Failed to extract relative link (parameter "base" is invalid)!' );
+            }
+
+            let refURI;
+            switch( true ) {
+                case reference instanceof URL:
+                    refURI = reference;
+                    break;
+                case typeof reference === 'string':
+                    refURI = new URL( reference, baseURI.href );
+                    break;
+                case reference['src'] !== undefined:
+                    refURI = new URL( reference.getAttribute( 'src' ), baseURI.href );
+                    break;
+                case reference['href'] !== undefined:
+                    refURI = new URL( reference.getAttribute( 'href' ), baseURI.href );
+                    break;
+                default:
+                    throw new Error( 'Failed to extract relative link (parameter "reference" is invalid)!' );
+            }
+
+            return refURI.href;
+        }
+
+        /**
+         * 
+         */
+        getRootRelativeOrAbsoluteLink( reference, base ) {
+            let uri = new URL( this.getAbsolutePath( reference, base ) );
+            if( uri.hostname === uri.hostname ) {
+                // same doamin => return only path
+                return uri.pathname + uri.search + uri.hash;
+            } else {
+                // cross domain => return absolute link
+                return uri.href;
             }
         }
 
