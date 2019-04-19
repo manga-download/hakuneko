@@ -39,7 +39,7 @@
         /**
          *
          */
-         _getMangaListFromPages( mangaPageLinks, index ) {
+        _getMangaListFromPages( mangaPageLinks, index ) {
             if( index === undefined ) {
                 index = 0;
             }
@@ -79,20 +79,22 @@
                 callback( error, undefined );
             } );
         }
-
+        
         /**
          *
          */
-        _getChapterList( manga, callback ) {
-            let script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    let servers = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )].map(span => {
+        _getScript( active ) {
+            return `
+            new Promise( ( resolve, reject ) => {
+                setTimeout( () => {
+                    let servers = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
+                    .map( span => {
                         let id = span.dataset['name'];
                         return {
                             id: id,
                             label: span.textContent.trim(),
-                            episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + id + '"] ul.episodes li a' )].map(a => {
+                            episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + id + '"] ul.episodes li a${ active ? '.active' : '' }' )]
+                            .map( a => {
                                 return {
                                     id: a['dataset']['id'] || a.href.split( '/' ).pop(),
                                     url: a.href,
@@ -101,16 +103,22 @@
                             } )
                         };
                     } );
-                    resolve(servers);
-                }, 2500);
+                    resolve( servers );
+                }, 2500 );
             } )
             `;
-            Engine.Request.fetchUI( this.url + manga.id, this.requestOptions, script )
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            Engine.Request.fetchUI( this.url + manga.id, this.requestOptions, this._getScript( false ) )
             .then( result => {
                 let chapterList = result.reduce( ( accumulator, server ) => {
-                    let episodes = server.episodes.map(episode => {
+                    let episodes = server.episodes.map( episode => {
                         return {
-                            id: '/ajax/episode/info?server=' + server.id + '&id=' + episode.id,
+                            id: this.getRootRelativeOrAbsoluteLink( episode.url, this.url ),
                             title: `${episode.title} [${server.label}]`,
                             language: ''
                         };
@@ -129,9 +137,17 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.requestOptions.headers.set( 'x-referer', this.url );
-            this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
-            return fetch( ( this.url + chapter.id + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions )
+            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, this._getScript( true ) )
+            .then( result => {
+                for( let server of result ) {
+                    for( let episode of server.episodes ) {
+                        let uri = this.url + '/ajax/episode/info?server=' + server.id + '&id=' + episode.id;
+                        return Promise.resolve( uri );
+                    }
+                }
+                throw new Error( 'Episode not found!' );
+            } )
+            .then( uri => fetch( ( uri + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions ) )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive JSON (status: ${response.status}) - ${response.statusText}` );
@@ -140,6 +156,8 @@
             } )
             .then( data => {
                 switch(true) {
+                    case data.target.includes( 'prettyfast.to' ):
+                        return this._getEpisodePrettyFast( data.target, this.config.resolution.value );
                     case data.target.includes( 'rapidvideo.com' ):
                         return this._getEpisodeRapidVideo( data.target, this.config.resolution.value );
                     case data.target.includes( 'openload.co' ):
@@ -155,16 +173,27 @@
                 }
             } )
             .then( media => {
-                this.requestOptions.headers.delete( 'x-requested-with' );
-                this.requestOptions.headers.delete( 'x-referer' );
                 callback( null, media );
             } )
             .catch( error => {
-                this.requestOptions.headers.delete( 'x-requested-with' );
-                this.requestOptions.headers.delete( 'x-referer' );
                 console.error( error, chapter );
                 callback( error, undefined );
             } );
+        }
+
+        /**
+         *
+         */
+        _getEpisodePrettyFast( link, resolution ) {
+            this.requestOptions.headers.set( 'x-referer', this.url );
+            let promise = fetch( link, this.requestOptions )
+            .then( response => response.text() )
+            .then( result => {
+                let playlist = result.match( /playlist\s*:\s*\[\s*\{\s*file:\s*['"]([^'"]+)['"]/ )[1];
+                return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ playlist ], subtitles: [] } );
+            } );
+            this.requestOptions.headers.delete( 'x-referer' );
+            return promise;
         }
 
         /**
