@@ -11,15 +11,11 @@
 
 == Download
 
-[.clearfix]
---
-[.left]
-image::doc/logo_64.png[]
+image::doc/logo_64.png[float="left"]
 Yes, the download section comes first (even before the introduction), because this is what most users are looking for anyway.
 HakuNeko provides different installation files for various operating systems.
 There is also a portable version available which stores all its application data inside the application folder.
 You can download and run the installer/archive for your operating system from one of the mirror sites below.
---
 
 Mirrors::
 
@@ -63,14 +59,14 @@ For further information please visit the corresponding website.
 
 git::
 
-The version control system required for HakuNeko is https://git-scm.com[_git_].
-It is used to checkout the latest sourcecode of HakuNeko from https://github.com/manga-download/hakuneko[_GitHub_], or commit changes to the repository.
+The version control system required for HakuNeko is https://git-scm.com[git].
+It is used to checkout the latest sourcecode of HakuNeko from https://github.com/manga-download/hakuneko[GitHub], or commit changes to the repository.
 https://git-scm.com/downloads[Download] and install _git_ for your operating system.
 
 NodeJS & NPM::
 
-https://nodejs.org[_NodeJS_] is a _JavaScript_ runtime that allows to execute applications written in _JavaScript_.
-https://www.npmjs.com/get-npm[_NPM_] is a package manager for _NodeJS_ that simplifies the process of downloading and installing _JavaScript_ applications and libraries, which are published in a central repository.
+https://nodejs.org[NodeJS] is a _JavaScript_ runtime that allows to execute applications written in _JavaScript_.
+https://www.npmjs.com/get-npm[NPM] is a package manager for _NodeJS_ that simplifies the process of downloading and installing _JavaScript_ applications and libraries, which are published in a central repository.
 https://nodejs.org/en/download/[Download] and install _NodeJS_ and _NPM_ for your operating system.
 
 Editor or IDE (optional)::
@@ -178,12 +174,10 @@ Despite the fact that it was very basic and only had support for a few websites,
 Downloading mangas for offline reading on my next journey.
 The application was written in C++ using the wxWidgets framework and therefore was available for Linux and Windows.
 
-[.clearfix]
+[.float-group]
 --
-[.left]
-image::doc/legacy-linux.jpg[link=doc/legacy-linux.jpg, width=400, title="HakuNeko for Linux (Legacy)", window=_blank]
-[.right]
-image::doc/legacy-windows.jpg[link=doc/legacy-windows.jpg, width=400, title="HakuNeko for Windows (Legacy)", window=_blank]
+image::doc/legacy-linux.jpg[link=doc/legacy-linux.jpg, width=400, float="left", title="HakuNeko for Linux (Legacy)", window="_blank"]
+image::doc/legacy-windows.jpg[link=doc/legacy-windows.jpg, width=400, float="right", title="HakuNeko for Windows (Legacy)", window="_blank"]
 --
 
 Over the time HakuNeko improved, matured and i thought this piece of software might be useful for other users as well.
