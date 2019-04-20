@@ -19,6 +19,7 @@
             super.isLocked   = false;
             // Private members for internal usage only (convenience)
             this.url         = 'https://www3.9anime.to';
+            this.requestOptions.headers.set( 'x-referer', this.url );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 resolution:  {
@@ -147,7 +148,12 @@
                 }
                 throw new Error( 'Episode not found!' );
             } )
-            .then( uri => fetch( ( uri + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions ) )
+            .then( uri => {
+                this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
+                let promise = fetch( ( uri + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions );
+                this.requestOptions.headers.delete( 'x-requested-with' );
+                return promise;
+            } )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive JSON (status: ${response.status}) - ${response.statusText}` );
@@ -185,14 +191,12 @@
          *
          */
         _getEpisodePrettyFast( link, resolution ) {
-            this.requestOptions.headers.set( 'x-referer', this.url );
             let promise = fetch( link, this.requestOptions )
             .then( response => response.text() )
             .then( result => {
                 let playlist = result.match( /playlist\s*:\s*\[\s*\{\s*file:\s*['"]([^'"]+)['"]/ )[1];
                 return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ playlist ], subtitles: [] } );
             } );
-            this.requestOptions.headers.delete( 'x-referer' );
             return promise;
         }
 
@@ -234,7 +238,8 @@
             .then( response => response.text() )
             .then( result => {
                 let playlist = result.match( /sources\s*:\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/ )[1];
-                return fetch( playlist, this.requestOptions )
+                this.requestOptions.headers.set( 'x-referer', link );
+                let promise = fetch( playlist, this.requestOptions )
                 .then( response => response.text() )
                 .then( streamlist => {
                     let stream = streamlist.match( /^.*?\d+\.m3u8$/gm )[0].trim();
@@ -242,6 +247,8 @@
                     stream = playlist.replace( /[^\/]+$/, stream );
                     return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ stream ], subtitles: [] } );
                 } );
+                this.requestOptions.headers.set( 'x-referer', this.url );
+                return promise;
             } );
         }
 
