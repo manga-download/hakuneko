@@ -171,7 +171,7 @@ I still don't know the meaning of the combination of these japanese words in eng
 === With Popularity comes Responsibility
 
 Despite the fact that it was very basic and only had support for a few websites, it does exactly what i wanted:
-Downloading mangas for offline reading on my next journey.
+Downloading mangas for offline reading on my next trip.
 The application was written in C++ using the wxWidgets framework and therefore was available for Linux and Windows.
 
 [.float-group]
@@ -180,7 +180,7 @@ image::doc/legacy-linux.jpg[link=doc/legacy-linux.jpg, width=400, float="left", 
 //image::doc/legacy-windows.jpg[link=doc/legacy-windows.jpg, width=400, float="right", title="HakuNeko for Windows (Legacy)", window="_blank"]
 --
 
-Over the time HakuNeko improved, matured and i thought this piece of software might be useful for other users as well.
+Over the time HakuNeko improved and matured based on my personal needs, so i thought this piece of software might be useful for other users as well.
 Eventually HakuNeko was published on some freeware downloading websites such as Softpedia and later an open source project was created on SourceForge.
 In the first year it was not very popular (maybe choosing a name indicating that this tool is a manga downloader would have been smarter), but then slowly got momentum.
 HakuNeko became more and more popular and it was no longer "My little Tool" to download mangas for reading in the train, it was now part of many other people's day to day life.
@@ -191,7 +191,7 @@ With the feedback from users who started to make suggestions, requested features
 As time flew by, the development become stagnant.
 The following list reflects the most significant problems:
 
-- The old wxWidgets framework used in HakuNeko got removed from various linux distribution repositories and the migration caused much trouble and problems that could not be solved
+- The old wxWidgets framework used in HakuNeko got removed from various linux distribution repositories and the migration to the new wxWidgets version caused much trouble and problems that could not be solved
 - Users got downloading errors which could not be reproduced and getting fixed caused by the very bare-metal implementation around the CURL library
 - Many websites started to improve their bot protections using sophisticated browser depending mechanics and the effort to bypass them was way to high
 
