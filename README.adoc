@@ -11,7 +11,7 @@
 
 == Download
 
-image::doc/logo_64.png[float="left"]
+image:doc/logo_64.png[float="left"]
 Yes, the download section comes first (even before the introduction), because this is what most users are looking for anyway.
 HakuNeko provides different installation files for various operating systems.
 There is also a portable version available which stores all its application data inside the application folder.
@@ -19,8 +19,8 @@ You can download and run the installer/archive for your operating system from on
 
 Mirrors::
 
-image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/0.4.0, window=_blank]
-image:https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/, window=_blank]
+image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/0.4.0, title="GitHub", window="_blank"]
+image:https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/, title="SourceForge", window="_blank"]
 
 == Introduction
 
@@ -177,7 +177,7 @@ The application was written in C++ using the wxWidgets framework and therefore w
 [.float-group]
 --
 image::doc/legacy-linux.jpg[link=doc/legacy-linux.jpg, width=400, float="left", title="HakuNeko for Linux (Legacy)", window="_blank"]
-image::doc/legacy-windows.jpg[link=doc/legacy-windows.jpg, width=400, float="right", title="HakuNeko for Windows (Legacy)", window="_blank"]
+//image::doc/legacy-windows.jpg[link=doc/legacy-windows.jpg, width=400, float="right", title="HakuNeko for Windows (Legacy)", window="_blank"]
 --
 
 Over the time HakuNeko improved, matured and i thought this piece of software might be useful for other users as well.
@@ -213,3 +213,8 @@ The name _HakuNeko S_ was given to the prototype, but i can't remember what exac
 Based on the popularity of the legacy version it didn't take long until the users switchd over to the descendant.
 As of today HakuNeko helps users from all over the world to achieve their goal: Downloading mangas for offline reading.
 To me HakuNeko is more than a reliable manga downloader tool, it is software made from the heart.
+
+[.float-group]
+--
+image::doc/screenshot-pages.png[link=doc/screenshot-pages.png, width=400, float="left", title="HakuNeko S for Linux (electron)", window="_blank"]
+--
