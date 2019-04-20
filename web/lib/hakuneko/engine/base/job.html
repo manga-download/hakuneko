@@ -173,7 +173,7 @@
             .catch( data => Promise.resolve( data ) )
             .then( playlist => {
                 // parse links
-                let packets = playlist.match( /^[^#]{1}.*?\.ts.*?$/gm );
+                let packets = playlist.match( /^[^#].*$/gm );
                 let key = playlist.match( /URI\s*=\s*"(.*?)"/ );
                 if( key ) {
                     packets.push( key[1] );
