@@ -28,25 +28,6 @@
                     min: 2500,
                     max: 10000,
                     value: 5000
-                },
-                format: {
-                    label: 'De-Scrambling Format',
-                    description: 'Select the re-compression format that shall be used for scrambled images.\nOnly applies to scrambled images!\nUnscrambled images are stored natively (no re-compression will be applied).',
-                    input: Input.select,
-                    options: [
-                        { value: 'image/webp', name: 'WEBP (*.webp)' },
-                        { value: 'image/jpeg', name: 'JPEG (*.jpg)' },
-                        { value: 'image/png', name: 'PNG (*.png)' },
-                    ],
-                    value: 'image/jpeg'
-                },
-                quality: {
-                    label: 'De-Scrambling Quality',
-                    description: 'Select the re-compression quality that shall be used for scrambled images.\nOnly applies to WEBP and JPEG, has no effect on PNG (which is lossless).',
-                    input: Input.numeric,
-                    min: 50,
-                    max: 100,
-                    value: 90
                 }
             };
 
@@ -208,7 +189,7 @@
 
                     canvas.toBlob( data => {
                         resolve( data );
-                    }, this.config.format.value, parseFloat( this.config.quality.value )/100 );
+                    }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
                 } );
             } );
         }
