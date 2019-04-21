@@ -36,6 +36,33 @@
                 }
             };
         }
+        
+        /**
+         *
+         */
+        get timestamp() {
+            return Date.now().toString().slice( 0, -3 ).padEnd( 10, '0' );
+        }
+
+        /**
+         * Overwrite base function to get manga from clipboard link.
+         */
+        _getMangaFromURI( uri ) {
+            return fetch( uri.href, this.requestOptions )
+            .then( response => response.text() )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let metaURL = dom.querySelector( 'meta[property="og:url"]' ).content.trim();
+                let metaTitle = dom.querySelector( 'div.head h2[data-jtitle].title' ); // 'meta[property="og:title"]'
+                let id = this.getRootRelativeOrAbsoluteLink( metaURL, uri.href );
+                let title = metaTitle.dataset.jtitle.trim();
+                console.log( 'Manga:', id, title );
+                return Promise.resolve( new Manga( this, id, title ) );
+            } )
+            .catch( error => {
+                console.error( error );
+            } )
+        }
 
         /**
          *
@@ -80,47 +107,29 @@
                 callback( error, undefined );
             } );
         }
-        
-        /**
-         *
-         */
-        _getScript( active ) {
-            return `
-            new Promise( ( resolve, reject ) => {
-                setTimeout( () => {
-                    let servers = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
-                    .map( span => {
-                        let id = span.dataset['name'];
-                        return {
-                            id: id,
-                            label: span.textContent.trim(),
-                            episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + id + '"] ul.episodes li a${ active ? '.active' : '' }' )]
-                            .map( a => {
-                                return {
-                                    id: a['dataset']['id'] || a.href.split( '/' ).pop(),
-                                    url: a.href,
-                                    title: a.text.trim()
-                                };
-                            } )
-                        };
-                    } );
-                    resolve( servers );
-                }, 2500 );
-            } )
-            `;
-        }
 
         /**
          *
          */
         _getChapterList( manga, callback ) {
-            Engine.Request.fetchUI( this.url + manga.id, this.requestOptions, this._getScript( false ) )
-            .then( result => {
-                let chapterList = result.reduce( ( accumulator, server ) => {
-                    let episodes = server.episodes.map( episode => {
+            let animeID = manga.id.split( '.' ).pop();
+            this.fetchJSON( `${ this.url }/ajax/film/servers/${ animeID }?ts=${ this.timestamp }` )
+            .then( data => {
+                let dom = this.createDOM( data.html );
+                let servers = [...dom.querySelectorAll( 'div.servers span.tab' )]
+                .map( element => {
+                    return {
+                        name: element.dataset.name,
+                        label: element.innerText.trim()
+                    };
+                } );
+                let chapterList = [...dom.querySelectorAll( 'div.servers div.server' )]
+                .reduce( ( accumulator, server ) => {
+                    let episodes = [...server.querySelectorAll( 'ul.episodes li a' )]
+                    .map( episode => {
                         return {
-                            id: this.getRootRelativeOrAbsoluteLink( episode.url, this.url ),
-                            title: `${episode.title} [${server.label}]`,
+                            id: this.getRootRelativeOrAbsoluteLink( episode, this.url ),
+                            title: `${ episode.text.trim() } [${ servers.find( s => s.name === server.dataset.name ).label }]`,
                             language: ''
                         };
                     } );
@@ -138,27 +147,21 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, this._getScript( true ) )
-            .then( result => {
-                for( let server of result ) {
-                    for( let episode of server.episodes ) {
-                        let uri = this.url + '/ajax/episode/info?server=' + server.id + '&id=' + episode.id;
-                        return Promise.resolve( uri );
-                    }
-                }
-                throw new Error( 'Episode not found!' );
+            let animeID = manga.id.split( '.' ).pop();
+            let episodeID = chapter.id.split( '/' ).pop();
+            this.fetchJSON( `${ this.url }/ajax/film/servers/${ animeID }?episode=${ episodeID }&ts=${ this.timestamp }` )
+            .then( data => {
+                let dom = this.createDOM( data.html );
+                let server = dom.querySelector( 'div.servers div.server.active' ).dataset;
+                let episode = dom.querySelector( 'div.servers div.server.active ul.episodes li a.active' ).dataset;
+                let uri = `${ this.url }/ajax/episode/info?server=${ server.id }&id=${ episode.id }&ts=${ this.timestamp }`;
+                return Promise.resolve( uri );
             } )
             .then( uri => {
                 this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
-                let promise = fetch( ( uri + '&ts=' + Date.now() ).slice( 0, -3 ), this.requestOptions );
+                let promise = this.fetchJSON( uri );
                 this.requestOptions.headers.delete( 'x-requested-with' );
                 return promise;
-            } )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive JSON (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.json();
             } )
             .then( data => {
                 switch(true) {
