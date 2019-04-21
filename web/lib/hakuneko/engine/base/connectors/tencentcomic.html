@@ -1,0 +1,173 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class TencentComic extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            // Public members for usage in UI (mandatory)
+            super.id         = 'tencentcomic';
+            super.label      = 'Tencent (Comic)';
+            this.tags        = [ 'manga', 'webtoon', 'chinese' ];
+            super.isLocked   = false;
+            // Private members for internal usage only (convenience)
+            this.url         = 'https://ac.qq.com';
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = undefined;
+
+            Engine.Blacklist.addPattern( '*://ac.gtimg.com/media/js/ac.page.chapter.view*' );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( page ) {
+            page = page || 1;
+            let uri = this.url + '/Comic/all/search/time/vip/1/page/' + page;
+            return this.fetchDOM( uri, 'div.ret-main ul.ret-search-list li.ret-search-item div.ret-works-info h3.ret-works-title a', 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( mangaList.length > 0 ) {
+                    return this._getMangaListFromPages( page + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this._getMangaListFromPages()
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            this.fetchDOM( this.url + manga.id, 'ol.works-chapter-list.chapter-page-all li span.works-chapter-item a' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url + manga.id ),
+                        // NOTE: do not remove manga name, or chapter title may become empty
+                        title: element.text.trim(),
+                        language: ''
+                    };
+                } );               
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, this.script )
+            .then( data => {
+                let pageList = data.picture.map( picture => picture.url );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**************************
+         *** TENCENT CODE BEGIN ***
+         *************************/
+
+        /**
+         * 
+         */
+        get script() {
+            // packed script that shall be evaluated ...
+            // Version: 2.4.0 (2019-03-07)
+            // Source: https://ac.gtimg.com/media/js/ac.page.chapter.view_v2.4.0.js?v=20190307
+            /*
+            function(p, a, c, k, e, r) {
+                e = function(c) {
+                    return (c < a ? "" : e(parseInt(c / a))) + ((c = c % a) > 35 ? String.fromCharCode(c + 29) : c.toString(36))
+                };
+                if (!"".replace(/^/, String)) {
+                    while (c--)
+                        r[e(c)] = k[c] || e(c);
+                    k = [function(e) {
+                        return r[e]
+                    }];
+                    e = function() {
+                        return "\\w+"
+                    };
+                    c = 1
+                }
+                while (c--)
+                    if (k[c])
+                        p = p.replace(new RegExp("\\b" + e(c) + "\\b", "g"), k[c]);
+                return p
+            }("p y(){i=\"J+/=\";O.D=p(c){s a=\"\",b,d,h,f,g,e=0;C(c=c.z(/[^A-G-H-9\\+\\/\\=]/g,\"\");e<c.k;)b=i.l(c.m(e++)),d=i.l(c.m(e++)),f=i.l(c.m(e++)),g=i.l(c.m(e++)),b=b<<2|d>>4,d=(d&15)<<4|f>>2,h=(f&3)<<6|g,a+=7.5(b),w!=f&&(a+=7.5(d)),w!=g&&(a+=7.5(h));v a=u(a)};u=p(c){C(s a=\"\",b=0,d=17=8=0;b<c.k;)d=c.o(b),Q>d?(a+=7.5(d),b++):R<d&&S>d?(8=c.o(b+1),a+=7.5((d&F)<<6|8&r),b+=2):(8=c.o(b+1),x=c.o(b+2),a+=7.5((d&15)<<12|(8&r)<<6|x&r),b+=3);v a}}s B=I y(),T=W['K'+'L'].M(''),N=W['n'+'P'+'e'],j,t,q;N=N.U(/\\d+[a-V-Z]+/g);j=N.k;X(j--){t=Y(N[j])&10;q=N[j].z(/\\d+/g,'');T.11(t,q.k)}T=T.13('');14=16.E(B.D(T));", 62, 70, "|||||fromCharCode||String|c2||||||||||_keyStr|len|length|indexOf|charAt||charCodeAt|function|str|63|var|locate|_utf8_decode|return|64|c3|Base|replace|||for|decode|parse|31|Za|z0|new|ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789|DA|TA|split||this|onc|128|191|224||match|zA||while|parseInt||255|splice||join|_v||JSON|c1".split("|"), 0, {});
+            */
+
+            // evaluated version of the packed script
+            let script = 'var W = window, _v = {}; ' + `
+                function Base() {
+                    _keyStr = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+                    this.decode = function(c) {
+                        var a = "",
+                            b, d, h, f, g, e = 0;
+                        for (c = c.replace(/[^A-Za-z0-9\\+\\/\\=]/g, ""); e < c.length;) b = _keyStr.indexOf(c.charAt(e++)), d = _keyStr.indexOf(c.charAt(e++)), f = _keyStr.indexOf(c.charAt(e++)), g = _keyStr.indexOf(c.charAt(e++)), b = b << 2 | d >> 4, d = (d & 15) << 4 | f >> 2, h = (f & 3) << 6 | g, a += String.fromCharCode(b), 64 != f && (a += String.fromCharCode(d)), 64 != g && (a += String.fromCharCode(h));
+                        return a = _utf8_decode(a)
+                    };
+                    _utf8_decode = function(c) {
+                        for (var a = "", b = 0, d = c1 = c2 = 0; b < c.length;) d = c.charCodeAt(b), 128 > d ? (a += String.fromCharCode(d), b++) : 191 < d && 224 > d ? (c2 = c.charCodeAt(b + 1), a += String.fromCharCode((d & 31) << 6 | c2 & 63), b += 2) : (c2 = c.charCodeAt(b + 1), c3 = c.charCodeAt(b + 2), a += String.fromCharCode((d & 15) << 12 | (c2 & 63) << 6 | c3 & 63), b += 3);
+                        return a
+                    }
+                }
+                var B = new Base(),
+                    T = W['DA' + 'TA'].split(''),
+                    N = W['n' + 'onc' + 'e'],
+                    len, locate, str;
+                N = N.match(/\\d+[a-zA-Z]+/g);
+                len = N.length;
+                while (len--) {
+                    locate = parseInt(N[len]) & 255;
+                    str = N[len].replace(/\\d+/g, '');
+                    T.splice(locate, str.length)
+                }
+                T = T.join('');
+                _v = JSON.parse(B.decode(T));
+            ` + '; _v';
+            return script;
+        }
+
+        /************************
+         *** TENCENT CODE END ***
+         ***********************/
+    }
+
+</script>

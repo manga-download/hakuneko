@@ -36,6 +36,17 @@
                 max: 32,
                 value: 4
             };
+            this.downloadHistoryLogFormat = {
+                label: 'Download History Format',
+                description: 'Log the history of completed chapter downloads\nThe log file(s) can be found in HakuNeko\'s user data directory',
+                input: Input.select,
+                options: [
+                    { value: HistoryFormat.none, name: 'Disabled' },
+                    //{ value: HistoryFormat.json, name: 'JSON (*.json)' },
+                    //{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
+                ],
+                value: HistoryFormat.none
+            };
             this.baseDirectory = {
                 label: 'Manga Directory',
                 description: 'The base directory where all downloaded mangas will be stored',
@@ -60,16 +71,24 @@
                 ],
                 value: ChapterFormat.img
             };
-            this.downloadHistoryLogFormat = {
-                label: 'Download History Format',
-                description: 'Log the history of completed chapter downloads\nThe log file(s) can be found in HakuNeko\'s user data directory',
+            this.recompressionFormat = {
+                label: 'De-Scrambling Format',
+                description: 'Select the re-compression format that shall be used for scrambled images.\nOnly applies to scrambled images!\nUnscrambled images are stored natively (no re-compression will be applied).',
                 input: Input.select,
                 options: [
-                    { value: HistoryFormat.none, name: 'Disabled' },
-                    //{ value: HistoryFormat.json, name: 'JSON (*.json)' },
-                    //{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
+                    { value: 'image/webp', name: 'WEBP (*.webp)' },
+                    { value: 'image/jpeg', name: 'JPEG (*.jpg)' },
+                    { value: 'image/png', name: 'PNG (*.png)' },
                 ],
-                value: HistoryFormat.none
+                value: 'image/jpeg'
+            };
+            this.recompressionQuality = {
+                label: 'De-Scrambling Quality',
+                description: 'Select the re-compression quality that shall be used for scrambled images.\nOnly applies to WEBP and JPEG, has no effect on PNG (which is lossless).',
+                input: Input.numeric,
+                min: 50,
+                max: 100,
+                value: 90
             };
         }
     }
