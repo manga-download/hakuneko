@@ -288,10 +288,11 @@
                 //    throw new Error( 'Video "' + episode.video + '" does not accept chunked download!' );
                 //}
                 // FIXME: some mirrors do not expose content-length header for CORS (e.g. fetch)
-                //console.log( 'Headers:', [...response.headers.entries()] );
-                let size = parseInt( response.headers.get( 'Content-Length' ) );
-                //console.log( 'Content-Length:', size );
-                return Promise.resolve( size );
+                let size = response.headers.get( 'Content-Length' );
+                if( !size ) {
+                    throw new Error( 'Failed to determine the size of the video packet!\nThe server may not use "Access-Control-Expose-Headers: Content-Length" for CORS requests.' );
+                }
+                return Promise.resolve( parseInt( size ) );
             } )
             .then( size => {
                 let fn = ( chunks, index, files ) => {
