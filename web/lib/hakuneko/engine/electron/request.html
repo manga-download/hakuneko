@@ -242,7 +242,7 @@
             if( !uri.pathname.includes( 'chk_jschl' ) ) {
                 // Priority 1
                 // Force referer for certain hosts
-                if( uri.hostname.includes( 'cdn.mcloud.to' ) ) {
+                if( uri.hostname.includes( '.mcloud.to' ) ) {
                     details.requestHeaders['Referer'] = uri.href;
                 }
                 // Priority 2

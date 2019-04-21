@@ -56,7 +56,6 @@
                 let metaTitle = dom.querySelector( 'div.head h2[data-jtitle].title' ); // 'meta[property="og:title"]'
                 let id = this.getRootRelativeOrAbsoluteLink( metaURL, uri.href );
                 let title = metaTitle.dataset.jtitle.trim();
-                console.log( 'Manga:', id, title );
                 return Promise.resolve( new Manga( this, id, title ) );
             } )
             .catch( error => {
