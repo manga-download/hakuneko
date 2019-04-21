@@ -67,6 +67,13 @@
                         this.userID = user ? user[1] : undefined;
                         this.accessToken = token ? token[1] : this.accessToken;
                         return Promise.resolve();
+                    } )
+                    .then( () => {
+                        if( this.userID ) {
+                            return fetch( this.url + '/adultkind?path=&sw=all', this.requestOptions );
+                        } else {
+                            return Promise.resolve();
+                        }
                     } );
                     this.requestOptions.headers.delete( 'content-type' );
                     delete this.requestOptions.body;
