@@ -213,6 +213,7 @@
             }
             delete details.requestHeaders['x-host'];
 
+            /*
             // Priority 1
             // Overwrite the User-Agent header for certain domains
             if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.includes( uri.host ) ) {
@@ -229,6 +230,12 @@
                 details.requestHeaders['User-Agent'] = this.userAgent;
             }
             delete details.requestHeaders['x-user-agent'];
+            */
+
+            // Always overwrite the electron user agent
+            if( details.requestHeaders['User-Agent'].toLowerCase().includes( 'electron' ) ) {
+                details.requestHeaders['User-Agent'] = this.userAgent;
+            }
 
             // Overwrite the Referer header, but
             // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
