@@ -31,7 +31,12 @@
          *
          */
         _initializeConnector() {
-            return Engine.Request.fetchUI( this.url + '/0/0.html', this.requestOptions, '' );
+            // sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+            // => append random search parameter to avoid caching
+            let uri = new URL( this.url + '/0/0.html' );
+            uri.searchParams.set( 'ts', Date.now() );
+            uri.searchParams.set( 'rd', Math.random() );
+            return Engine.Request.fetchUI( uri.href, this.requestOptions, '' );
         }
 
         /**
