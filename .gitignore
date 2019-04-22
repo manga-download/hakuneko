@@ -11,5 +11,4 @@ node_modules
 /web/*.key
 /web/build
 /web/hakuneko.key
-/web/lib/hakuneko/version.html
 /web/lib/hakuneko/engine/base/connectors/mangago.js
