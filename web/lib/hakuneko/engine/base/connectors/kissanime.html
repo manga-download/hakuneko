@@ -40,13 +40,6 @@
         /**
          *
          */
-        _initializeConnector() {
-            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
-        }
-
-        /**
-         *
-         */
         _getMangaList( callback ) {
             this.fetchJSON( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', 3 )
             .then( data => {

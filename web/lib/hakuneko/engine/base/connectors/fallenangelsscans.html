@@ -19,13 +19,6 @@
 
             this.language = 'en';
         }
-
-        /**
-         * Bypass CloudFlare
-         */
-        _initializeConnector() {
-            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
-        }
     }
 
 </script>

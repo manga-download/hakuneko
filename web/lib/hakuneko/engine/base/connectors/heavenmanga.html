@@ -26,14 +26,7 @@
         /**
          *
          */
-        _initializeConnector() {
-            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
-        }
-
-        /**
-         *
-         */
-         _getMangaListFromPages( mangaPageLinks, index ) {
+        _getMangaListFromPages( mangaPageLinks, index ) {
             if( index === undefined ) {
                 index = 0;
             }
