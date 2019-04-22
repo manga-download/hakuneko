@@ -21,7 +21,9 @@ git stash push -u -m 'Cleanup before Deploy'
 polymer build
 # overwrite the polymer minified/obfuscated js files with the original minified/obfuscated js files (e.g. prevent breaking hls.light.min.js when minified by polymer)
 cp -f ./js/*.min.js $DIR/js/
+# polymer will break files that are already obfuscated, so use the original obfuscated files => otherwise leads to blank/white screen + out-of-memory error in electron
 cp -f ./lib/hakuneko/engine/base/connectors/mangago.html $DIR/lib/hakuneko/engine/base/connectors/mangago.html
+cp -f ./lib/hakuneko/engine/base/connectors/tencentcomic.html $DIR/lib/hakuneko/engine/base/connectors/tencentcomic.html
 git stash pop
 cd $DIR
 zip -r $VER.zip .
