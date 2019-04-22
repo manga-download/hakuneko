@@ -81,7 +81,7 @@ https://www.jetbrains.com/webstorm[WebStorm]
 === Getting the Source Code
 
 The source code for HakuNeko can be found in a https://github.com/manga-download/hakuneko[public repository] on _GitHub_.
-There is also a https://sourceforge.net/p/hakuneko/code/[mirror] on _SourceForge_, but developers are encouraged to use the one from _GitHub_ as the upstream repository.
+There is also a https://dev.azure.com/hakuneko/app/_git/app[mirror] on _Azure DevOps_, but developers are encouraged to use the one from _GitHub_ as the upstream repository.
 
 ==== Fork
 
