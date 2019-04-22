@@ -56,6 +56,8 @@ function activateWindow() {
         }
     } );
 
+    electron.globalShortcut.register('F11', () => win.setFullScreen(win.isFullScreen() ? false : true));
+
     // inject headers before a request is made (call the handler in the webapp to do the dirty work)
     electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
         ( new Promise( (resolve, reject ) => {
