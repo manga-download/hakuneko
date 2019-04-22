@@ -49,7 +49,7 @@
          * This method can be overwritten by the connector for a specific implementation of the initialization process
          */
         _initializeConnector() {
-            return Promise.resolve();
+            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
         }
 
         /**
