@@ -26,21 +26,24 @@
         /**
          * 
          */
-         _initializeConnector() {
-            //let form = new URLSearchParams();
-            //form.append( 'readingtype', 'all' );
-            //form = form.toString();
-            this.requestOptions.method = 'POST';
-            this.requestOptions.body = 'readingtype=all'; //form;
-            this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
+        _initializeConnector() {
+            return super._initializeConnector()
+            .then( () => {
+                //let form = new URLSearchParams();
+                //form.append( 'readingtype', 'all' );
+                //form = form.toString();
+                this.requestOptions.method = 'POST';
+                this.requestOptions.body = 'readingtype=all'; //form;
+                this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
 
-            let promise = fetch( this.url + '/module/reader/ajax.php', this.requestOptions );
+                let promise = fetch( this.url + '/module/reader/ajax.php', this.requestOptions );
 
-            this.requestOptions.headers.delete( 'content-type' );
-            delete this.requestOptions.body;
-            this.requestOptions.method = 'GET';
+                this.requestOptions.headers.delete( 'content-type' );
+                delete this.requestOptions.body;
+                this.requestOptions.method = 'GET';
 
-            return promise;
+                return promise;
+            } );
         }
 
         /**
