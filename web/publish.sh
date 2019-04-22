@@ -13,7 +13,7 @@ VER=$(echo $REV | cut -c 1-6)
 echo "<script>" > "lib/hakuneko/version.html"
 echo "var revision = {" >> "lib/hakuneko/version.html"
 echo "    id: '${VER}'," >> "lib/hakuneko/version.html"
-echo "    url: 'https://github.com/manga-download/hakuneko/commits/${REV}/'" >> "lib/hakuneko/version.html"
+echo "    url: 'https://github.com/manga-download/hakuneko/commits/${REV}'" >> "lib/hakuneko/version.html"
 echo "};" >> "lib/hakuneko/version.html"
 echo "</script>" >> "lib/hakuneko/version.html"
 
