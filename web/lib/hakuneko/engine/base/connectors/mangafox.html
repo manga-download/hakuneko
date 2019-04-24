@@ -112,7 +112,7 @@
                 let chapterList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.title.replace( manga.title, '' ).trim(),
+                        title: element.querySelector( 'p.title3' ).innerText.replace( manga.title, '' ).trim(),
                         language: 'english'
                     };
                 } );
