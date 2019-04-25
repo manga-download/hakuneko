@@ -97,6 +97,9 @@
                 text-align: center;
                 text-transform: uppercase;
             }
+            .button {
+                cursor: pointer;
+            }
             .buttons {
                 display: flex;
             }
@@ -131,15 +134,10 @@
                         <div><a href="http://hakuneko3kune.deviantart.com/" target="_blank">HakuNeko3Kune</a> (Artwork)</div>
                     </div>
                     <div>
-                        <a href="https://github.com/manga-download/hakuneko/wiki" target="_blank" title="Read User Documentation">
-                            <i class="fa fa-fw fa-book"></i>
-                        </a>
-                        <a href="https://github.com/manga-download/hakuneko/wiki/Troubleshooting" target="_blank" title="Show Troubleshooting">
-                            <i class="fa fa-fw fa-exclamation-circle"></i>
-                        </a>
-                        <a href="https://docs.google.com/forms/d/e/1FAIpQLSfHUn92wqncQUKbJAqY-NUYdshOoyyRYGcxHjGGUaqYuyBqCw/viewform?hl=en&usp=pp_url&entry.535298315=HakuNeko+User" target="_blank" title="Report Problem">
-                            <i class="fa fa-fw fa-bug"></i>
-                        </a>
+                        <i class="fa fa-fw fa-book button" on-click="openWindow" title="Read User Documentation" data-href="https://github.com/manga-download/hakuneko/wiki"></i>
+                        <i class="fa fa-fw fa-exclamation-circle button" on-click="openWindow" title="Show Troubleshooting" data-href="https://github.com/manga-download/hakuneko/wiki/Troubleshooting"></i>
+                        <i class="fa fa-fw fa-comment button" on-click="openWindow" title="Discussion Forum" data-href="https://sourceforge.net/p/hakuneko/discussion/"></i>
+                        <i class="fa fa-fw fa-bug button" on-click="openWindow" title="Report Problem" data-href="https://docs.google.com/forms/d/e/1FAIpQLSfHUn92wqncQUKbJAqY-NUYdshOoyyRYGcxHjGGUaqYuyBqCw/viewform?hl=en&usp=pp_url&entry.535298315=HakuNeko+User"></i>
                     </div>
                 </div>
             </div>
@@ -328,6 +326,14 @@
                 Engine.Settings.saveProfile( 'default', ( error ) => {
                     this.popupVisibility = false;
                 });
+            }
+
+            /**
+             * Open a new window and always disable the "Stay or Leave" confirmation,
+             * otherwise the window cannot be closed anymore (electron does not show the confirmation).
+             */
+            openWindow( event ) {
+                window.open( event.target.dataset.href ).eval( `setTimeout( () => { window.onbeforeunload = evt => undefined; }, 1000 )` );
             }
 
             /**
