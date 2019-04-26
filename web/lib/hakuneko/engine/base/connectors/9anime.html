@@ -18,10 +18,22 @@
             this.tags        = [ 'anime', 'english' ];
             super.isLocked   = false;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://www3.9anime.to';
-            this.requestOptions.headers.set( 'x-referer', this.url );
+            //this.url         = 'https://9anime.live';
+            //this.requestOptions.headers.set( 'x-referer', this.url );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
+                domain:  {
+                    label: 'Mirror URL',
+                    description: '',
+                    input: Input.select,
+                    options: [
+                        { value: 'https://www4.9anime.to', name: '9anime.to' },
+                        { value: 'https://9anime.live', name: '9anime.live' },
+                        { value: 'https://9anime.ru', name: '9anime.ru' },
+                        { value: 'https://9anime.nl', name: '9anime.nl' }
+                    ],
+                    value: 'https://9anime.live'
+                },
                 resolution:  {
                     label: 'Preferred Resolution',
                     description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!',
@@ -35,6 +47,8 @@
                     value: ''
                 }
             };
+
+            document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
         }
         
         /**
@@ -42,6 +56,14 @@
          */
         get timestamp() {
             return Date.now().toString().slice( 0, -3 ).padEnd( 10, '0' );
+        }
+
+        /**
+         *
+         */
+        _onSettingsChanged( event ) {
+            this.url = this.config.domain.value;
+            this.requestOptions.headers.set( 'x-referer', this.url );
         }
 
         /**
