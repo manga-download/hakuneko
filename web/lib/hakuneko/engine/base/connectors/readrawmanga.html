@@ -27,11 +27,11 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/', 'div#sidebar div#Label1 div.list-label-widget-content ul li a' )
+            this.fetchDOM( this.url + '/', 'div.sidebar div#Label1 div.list-label-widget-content ul li a' )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
                         title: element.text.trim()
                     };
                 } );
@@ -46,12 +46,14 @@
         /**
          *
          */
-        _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'div#main div#Blog1 article div.manga_post span.mg_title h2.entry-title a' )
+         _getChapterList( manga, callback ) {
+            let uri = new URL( manga.id, this.url );
+            uri.searchParams.set( 'max-results', 999 );
+            this.fetchDOM( uri.href, 'div#main div#Blog1 div.post article h2.post-title a' )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri.href ),
                         title: element.text.replace( manga.title, '' ).replace( /\(\s*read raw manhua\s*\)/i, '' ).trim(),
                         language: ''
                     };
