@@ -21,6 +21,7 @@
             this.url         = 'https://manga-tr.com';
             this.requestOptions.headers.set( 'x-referer', this.url );
             this.requestOptions.headers.set( 'x-cookie', 'read_type=1' );
+            this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
         }
@@ -33,7 +34,7 @@
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
                         title: element.text.trim()
                     };
                 } );
@@ -48,31 +49,52 @@
         /**
          *
          */
-        _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let link = data.match( /"([^"]*cek\/fetch_pages_manga.php\?manga_cek=[^"]*)"/ )[1];
-                let uri = new URL( link, this.url );
-                this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
-                let promise = this.fetchDOM( uri.href, 'table.table tr td:first-of-type a' );
-                this.requestOptions.headers.delete( 'x-requested-with' );
-                return promise;
-            } )
+        _getChapterListFromPages( manga, link, pages, page ) {
+            page = page || 1;
+            this.requestOptions.method = 'POST';
+            this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
+            this.requestOptions.body = 'page=' + page;
+            let promise = this.fetchDOM( link, 'table.table tr td.table-bordered:first-of-type a', 5 )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
                         title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'tr'
+                        language: ''
                     };
                 } );
-                callback( null, chapterList );
+                if( page < pages ) {
+                    return this._getChapterListFromPages( manga, link, pages, page + 1 )
+                    .then( chapters => chapterList.concat( chapters ) );
+                } else {
+                    return Promise.resolve( chapterList );
+                }
+            } );
+            this.requestOptions.method = 'GET';
+            this.requestOptions.headers.delete( 'content-type' );
+            this.requestOptions.body = undefined;
+            return promise;
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            let uri;
+            fetch( this.url + manga.id, this.requestOptions )
+            .then( response => response.text() )
+            .then( data => {
+                let link = data.match( /"([^"]*cek\/fetch_pages_manga.php\?manga_cek=[^"]*)"/ )[1];
+                uri = new URL( link, this.url );
+                let promise = this.fetchDOM( uri.href, 'ul.pagination1 li:last-of-type a' );
+                return promise;
+            } )
+            .then( data => {
+                let pageCount = parseInt( data[0].dataset.page );
+                return this._getChapterListFromPages( manga, uri.href, pageCount );
+            } )
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, manga );
