@@ -90,7 +90,7 @@
                 return promise;
             } )
             .then( data => {
-                let pageCount = parseInt( data[0].dataset.page );
+                let pageCount = parseInt( data.length ? data[0].dataset.page : 1 );
                 return this._getChapterListFromPages( manga, uri.href, pageCount );
             } )
             .then( data => {
