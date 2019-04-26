@@ -56,8 +56,6 @@ function activateWindow() {
         }
     } );
 
-    electron.globalShortcut.register('F11', () => win.setFullScreen(win.isFullScreen() ? false : true));
-
     // inject headers before a request is made (call the handler in the webapp to do the dirty work)
     electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
         ( new Promise( (resolve, reject ) => {
@@ -155,3 +153,6 @@ electron.app.setPath( 'userData', config.app.userdata );
 electron.app.on( 'ready', activateWindow );
 electron.app.on( 'activate', activateWindow );
 electron.app.on( 'window-all-closed', closeWindow );
+
+electron.app.on( 'browser-window-focus', () => electron.globalShortcut.register('F11', () => win.setFullScreen(win.isFullScreen() ? false : true)) );
+electron.app.on( 'browser-window-blur', () => electron.globalShortcut.unregister('F11') );
