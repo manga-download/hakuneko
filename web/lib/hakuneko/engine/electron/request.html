@@ -287,7 +287,12 @@
             }
             let uri = new URL( details.url );
 
-            // process headers here ...
+            if( uri.hostname.includes( 'mp4upload' ) ) {
+                //details.responseHeaders['Access-Control-Allow-Origin'] = '*';
+                //details.responseHeaders['Access-Control-Allow-Methods'] = 'HEAD, GET';
+                details.responseHeaders['Access-Control-Expose-Headers'] = 'Content-Length';
+                //console.log( 'onHeadersReceivedHandler', uri.href, details.responseHeaders );
+            }
 
             return details;
         }
