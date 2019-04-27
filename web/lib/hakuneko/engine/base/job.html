@@ -279,8 +279,31 @@
         _downloadVideoStream( episode, directory, callback ) {
             let basename = Date.now(); // episode.video.split( '/' ).pop();
             this.requestOptions['method'] = 'HEAD';
+            let referer = this.requestOptions.headers.get( 'x-referer' );
+            this.requestOptions.headers.set( 'x-referer', episode.video );
             fetch( episode.video, this.requestOptions )
             .then( response => {
+                /*
+                // read video stream directly into chunks
+                // => problem: numer of chunks is unknown to calculate progress bar
+                let reader = response.body.getReader();
+                reader.read()
+                .then( function rd( chunk ) {
+                    if( chunk.done ) {
+                        return Promise.resolve();
+                    } else {
+                        console.log( 'CHUNK:', chunk.done, chunk.value['length'] );
+                        return reader.read().then( rd );
+                    }
+                } )
+                .then( () => {
+                    console.log( 'DONE' );
+                } )
+                .catch( error => {
+                    throw error;
+                } );
+                */
+
                 if( response.status !== 200 ) {
                     throw new Error( 'Video "' + episode.video + '" returned status: ' + response.status + ' - ' + response.statusText );
                 }
@@ -342,6 +365,9 @@
                 callback();
             } );
             this.requestOptions['method'] = 'GET';
+            if( referer ) {
+                this.requestOptions.headers.set( 'x-referer', referer );
+            }
         }
 
         /**
