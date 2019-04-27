@@ -34,6 +34,78 @@ function registerCacheProtocol( protocol, directory ) {
         callback( { path: path.normalize( path.join( directory, url.parse( request.url ).pathname ) ) } );
     } );
 }
+/**
+ * 
+ * @param {*} win 
+ */
+function setupBeforeSendHeaders( win ) {
+    // inject headers before a request is made (call the handler in the webapp to do the dirty work)
+    electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
+        Promise.resolve()
+        .then( () => {
+            // prevent from injecting javascript into the webpage while the webcontent is not yet ready
+            // => required for loading initial page over http protocol (e.g. local hosted test page)
+            if( win && win.webContents && !win.webContents.isLoading() ) {
+                // inject javascript: looks stupid, but is a working solution to call a function
+                // directly within the render process (without dealing with ipcRenderer)
+                let payload = Buffer.from( JSON.stringify( details ) ).toString( 'base64' );
+                return win.webContents.executeJavaScript( `Engine.Request.onBeforeSendHeadersHandler('${payload}');` );
+            } else {
+                throw new Error( 'Cannot inject javascript while web-application is not yet ready!' );
+            }
+        } )
+        .then( result => {
+            callback( {
+                cancel: false,
+                requestHeaders: result.requestHeaders
+            } );
+        } )
+        .catch( error => {
+            //console.warn( error );
+            callback( {
+                cancel: false,
+                requestHeaders: details.requestHeaders
+            } );
+        } );
+    } );
+}
+
+/**
+ * 
+ * @param {*} win 
+ */
+function setupHeadersReceived( win ) {
+    electron.session.defaultSession.webRequest.onHeadersReceived( ['http*://*'], ( details, callback ) => {
+        Promise.resolve()
+        .then( () => {
+            // prevent from injecting javascript into the webpage while the webcontent is not yet ready
+            // => required for loading initial page over http protocol (e.g. local hosted test page)
+            if( win && win.webContents && !win.webContents.isLoading() ) {
+                // inject javascript: looks stupid, but is a working solution to call a function
+                // directly within the render process (without dealing with ipcRenderer)
+                let payload = Buffer.from( JSON.stringify( details ) ).toString( 'base64' );
+                return win.webContents.executeJavaScript( `Engine.Request.onHeadersReceivedHandler('${payload}');` );
+            } else {
+                throw new Error( 'Cannot inject javascript while web-application is not yet ready!' );
+            }
+        } )
+        .then( result => {
+            callback( {
+                cancel: false,
+                responseHeaders: result.responseHeaders
+                // statusLine
+            } );
+        } )
+        .catch( error => {
+            //console.error( error );
+            callback( {
+                cancel: false,
+                responseHeaders: details.responseHeaders
+                // statusLine
+            } );
+        } );
+    } );
+}
 
 /**
  * Open and configure the main window of the application
@@ -56,37 +128,8 @@ function activateWindow() {
         }
     } );
 
-    // inject headers before a request is made (call the handler in the webapp to do the dirty work)
-    electron.session.defaultSession.webRequest.onBeforeSendHeaders( ['http*://*'], ( details, callback ) => {
-        ( new Promise( (resolve, reject ) => {
-            // prevent from injecting javascript into the webpage while the webcontent is not yet ready
-            // => required for loading initial page over http protocol (e.g. local hosted test page)
-            if( win && win.webContents && !win.webContents.isLoading() ) {
-                resolve();
-            } else {
-                throw new Error( 'Cannot inject javascript while web-app is not yet ready!' );
-            }
-        } ) )
-        .then( () => {
-            // inject javascript: looks stupid, but is a working solution to call a function
-            // directly within the render process (without dealing with ipcRenderer)
-            let payload = Buffer.from( JSON.stringify( details ) ).toString( 'base64' );
-            return win.webContents.executeJavaScript( `Engine.Request.onBeforeSendHeadersHandler('${payload}');` );
-        } )
-        .then( result => {
-            callback( {
-                cancel: false,
-                requestHeaders: result.requestHeaders
-            } );
-        } )
-        .catch( error => {
-            callback( {
-                cancel: false,
-                requestHeaders: details.requestHeaders
-            } );
-        } );
-    } );
-    
+    setupBeforeSendHeaders( win );
+    setupHeadersReceived( win );
     win.setTitle( 'HakuNeko' );
     win.setMenu( null );
 
