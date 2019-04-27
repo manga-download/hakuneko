@@ -287,6 +287,13 @@
             }
             let uri = new URL( details.url );
 
+            // Some video sreaming sites (Sreamango, OpenVideo) using 'X-Redirect' header instead of 'Location' header,
+            // but fetch API only follows 'Location' header redirects => assign redirect to location
+            let redirect = details.responseHeaders['X-Redirect'] || details.responseHeaders['x-redirect'];
+            if( redirect ) {
+                details.responseHeaders['Location'] = redirect;
+            }
+            // FIXME: expose 'Content-Length' header to fetch API for CORS requests
             if( uri.hostname.includes( 'mp4upload' ) ) {
                 //details.responseHeaders['Access-Control-Allow-Origin'] = '*';
                 //details.responseHeaders['Access-Control-Allow-Methods'] = 'HEAD, GET';
