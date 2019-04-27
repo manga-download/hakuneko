@@ -20,6 +20,7 @@
             // Private members for internal usage only (convenience)
             //this.url         = 'https://9anime.live';
             //this.requestOptions.headers.set( 'x-referer', this.url );
+            this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
                 domain:  {
@@ -179,9 +180,7 @@
                 return Promise.resolve( uri );
             } )
             .then( uri => {
-                this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
                 let promise = this.fetchJSON( uri );
-                this.requestOptions.headers.delete( 'x-requested-with' );
                 return promise;
             } )
             .then( data => {
