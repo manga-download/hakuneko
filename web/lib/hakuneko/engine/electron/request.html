@@ -188,7 +188,7 @@
         }
 
         /**
-         * Provide headers for the electron main process that shall be modified before every BrowserWindow request is made.
+         * Provide headers for the electron main process that shall be modified before every BrowserWindow request is send.
          * DO NOT RENAME THIS METHOD!
          */
          onBeforeSendHeadersHandler( details ) {
@@ -270,6 +270,24 @@
             if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
+
+            return details;
+        }
+
+        /**
+         * Provide headers for the electron main process that shall be modified before every BrowserWindow response is received.
+         * DO NOT RENAME THIS METHOD!
+         */
+         onHeadersReceivedHandler( details ) {
+            try {
+                details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
+            } catch( error ) {
+                console.error( error, details );
+                return undefined;
+            }
+            let uri = new URL( details.url );
+
+            // process headers here ...
 
             return details;
         }
