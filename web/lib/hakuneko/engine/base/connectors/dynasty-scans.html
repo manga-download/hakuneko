@@ -27,7 +27,7 @@
          *
          */
         _getMangaList( callback ) {
-            let promises = ['/series', '/anthologies', '/issues'].map( page => {
+            let promises = ['/series', '/anthologies', '/issues', '/doujins'].map( page => {
                 return this.fetchDOM( this.url + page, '.tag-list dd a' )
                 .then( data => {
                     let mangaList = data.map( element => {
@@ -39,7 +39,7 @@
                     return Promise.resolve( mangaList );
                 } );
             } );
-
+            
             Promise.all( promises )
             .then( mangas => {
                 callback( null, [].concat( ... mangas ) );
