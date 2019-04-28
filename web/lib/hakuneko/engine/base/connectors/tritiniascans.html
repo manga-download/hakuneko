@@ -1,0 +1,103 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class TritiniaScans extends Connector {
+
+        /**
+         * Based on WordPress Tusi theme
+         */
+        constructor() {
+            super();
+            super.id         = 'tritiniascans';
+            super.label      = 'Tritinia Scans';
+            this.tags        = [ 'webtoon', 'high-quality', 'english', 'scanlation' ];
+            this.url         = 'http://tritiniascans.ml';
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let uri = this.url;
+            this.fetchDOM( uri, 'ul#menu-comics li#menu-item-183 ul.sub-menu li.menu-item a' )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
+                        title: element.text.trim()
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterListFromPages( manga, chapterPageLinks, index ) {
+            index = index || 0;
+            return this.fetchDOM( chapterPageLinks[ index ], 'div.blog-posts div.post.hentry h3 a[rel="bookmark"]', 5 )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, chapterPageLinks[ index ] ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: ''
+                    };
+                } );
+                if( index < chapterPageLinks.length - 1 ) {
+                    return this._getChapterListFromPages( manga, chapterPageLinks, index + 1 )
+                    .then( chapters => chapterList.concat( chapters ) );
+                } else {
+                    return Promise.resolve( chapterList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            let uri = this.url + manga.id;
+            this.fetchDOM( uri, 'nav.pagination div.nav-links a.page-numbers:not(.next)' )
+            .then( data => {
+                let pageCount = data.length > 0 ? parseInt( data.pop().text.trim() ) : 1;
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => ( new URL( `page/${ page + 1 }/index.html`, uri ) ).href );
+                pageLinks[0] = uri;
+                return this._getChapterListFromPages( manga, pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            let uri = this.url + chapter.id;
+            this.fetchDOM( uri, 'div.entry-content source.noselect.nodrag, div.entry-content figure.wp-block-image source' )
+            .then( data => {
+                let pageList = data.map( element => this.getAbsolutePath( element, uri ) );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+    }
+
+</script>
