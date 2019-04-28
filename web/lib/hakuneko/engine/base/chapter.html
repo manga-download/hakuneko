@@ -80,23 +80,23 @@
          * and a reference to the page list (undefined on error).
          */
         getPages( callback ) {
-            this.manga.connector.initialize()
-            .then( () => {
-                if( this.status === DownloadStatus.offline || this.status === DownloadStatus.completed ) {
-                    Engine.Storage.loadChapterPages( this )
-                    .then( pages => {
-                        callback( null, pages );
-                    } )
-                    .catch( error => {
-                        console.error( error, this );
-                        callback( error, undefined );
-                    } );
-                } else {
-                    // check if page list is cached
-                    if( this.pageCache && this.pageCache.length ) {
-                        callback( null, this.pageCache );
-                        return;
-                    }
+            if( this.status === DownloadStatus.offline || this.status === DownloadStatus.completed ) {
+                Engine.Storage.loadChapterPages( this )
+                .then( pages => {
+                    callback( null, pages );
+                } )
+                .catch( error => {
+                    console.error( error, this );
+                    callback( error, undefined );
+                } );
+            } else {
+                // check if page list is cached
+                if( this.pageCache && this.pageCache.length ) {
+                    callback( null, this.pageCache );
+                    return;
+                }
+                this.manga.connector.initialize()
+                .then( () => {
                     // get page list directly from the connector interface and cache them
                     this.manga.connector._getPageList( this.manga, this, ( error, pages ) => {
                         this.pageCache = [];
@@ -104,12 +104,12 @@
                             this.pageCache = pages;
                         }
                         callback( error, this.pageCache );
-                    });
-                }
-            } )
-            .catch( error => {
-                callback( error, undefined );
-            } );
+                    } );
+                } )
+                .catch( error => {
+                    callback( error, undefined );
+                } );
+            }
         }
 
     }

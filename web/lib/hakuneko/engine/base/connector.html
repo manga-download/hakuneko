@@ -61,18 +61,26 @@
          *
          */
         initialize() {
-            if( this.initialized ) {
-                return Promise.resolve();
-            } else {
-                return this._initializeConnector()
-                .then( () => {
-                    this.initialized = true;
-                } )
-                .catch( error => {
-                    console.error( 'Initialization Failed', this );
-                    throw error;
-                } );
-            }
+            return Promise.resolve()
+            .then( () => {
+                if( this.initialized ) {
+                    return Promise.resolve();
+                } else {
+                    return this._initializeConnector();
+                }
+            } )
+            .then( () => {
+                this.initialized = true;
+            } )
+            .catch( error => {
+                this.initialized = false;
+                // in offline mode set initialization to false, but do not throw
+                if( error.stack.startsWith( 'ERR_INTERNET_DISCONNECTED' ) ) {
+                    //console.warn( 'Initialization Failed', this, JSON.stringify(error) );
+                    return Promise.resolve();
+                }
+                throw error;
+            } );
         }
 
         /**
@@ -129,6 +137,8 @@
                 } );
             } )
             .catch( error => {
+                // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                this.isUpdating = false;
                 callback( error, undefined );
             } );
         }
