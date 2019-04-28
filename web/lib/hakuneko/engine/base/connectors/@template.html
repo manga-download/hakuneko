@@ -12,15 +12,11 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'template';
             super.label      = 'Template';
             this.tags        = [ 'manga', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'http://template.net';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.config      = undefined;
 
             // register a protocol handler to intercept requests (with custom 'connector' protocol) and extract images
             //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
