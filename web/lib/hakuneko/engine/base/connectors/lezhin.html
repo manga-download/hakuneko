@@ -141,12 +141,38 @@
          *
          */
         _getChapterList( manga, callback ) {
+            let purchased = [];
+            let subscription = false;
             this._initializeAccount()
+            .then( () => {
+                if( this.accessToken ) {
+                    let uri = new URL( [this.cdnURL, 'v2/contents', manga.id, 'users'].join( '/' ) );
+                    uri.searchParams.set( 'type', 'comic' );
+                    //uri.searchParams.set( 'country_code', 'us' );
+                    //uri.searchParams.set( '_', Date.now() );
+                    this.requestOptions.headers.set( 'authorization', 'Bearer ' + this.accessToken );
+                    let promise = fetch( uri.href, this.requestOptions )
+                    .then( response => response.json() )
+                    .then( data => {
+                        purchased = data.data.purchased;
+                        subscription = data.data.subscribed;
+                        return Promise.resolve();
+                    } )
+                    .catch( error => {
+                        //console.warn( error );
+                        return Promise.resolve();
+                    } )
+                    this.requestOptions.headers.delete( 'authorization' );
+                    return promise;
+                } else {
+                    return Promise.resolve();
+                }
+            } )
             .then( () => fetch( this.url + '/comic/' + manga.id, this.requestOptions ) )
             .then( response => response.text() )
             .then( data => {
                 let chapterList = JSON.parse( data.match( /"episodes"\s*:\s*(\[.*?\}\s*\])/ )[1] )
-                .filter( chapter => !chapter.coin || ( chapter.freedAt && chapter.freedAt < Date.now() ) )
+                .filter( chapter => !chapter.coin || ( chapter.freedAt && chapter.freedAt < Date.now() ) || subscription || purchased.includes( chapter.id ) )
                 .map( chapter => {
                     return {
                         id: chapter.name, // chapter.id,
