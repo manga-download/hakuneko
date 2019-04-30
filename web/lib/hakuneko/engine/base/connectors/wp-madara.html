@@ -31,34 +31,51 @@
             this.formManga.append( 'page', '0' );
             this.formManga.append( 'vars[paged]', '0' );
             this.formManga.append( 'vars[post_type]', 'wp-manga' );
-            this.formManga.append( 'vars[posts_per_page]', '2500' );
-            this.formManga = this.formManga.toString();
+            this.formManga.append( 'vars[posts_per_page]', '250' );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( page ) {
+            page = page || 0;
+            this.formManga.set( 'page', page );
+            this.requestOptions.method = 'POST';
+            this.requestOptions.body = this.formManga.toString();
+            this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
+            let uri = this.url + '/wp-admin/admin-ajax.php';
+            return this.fetchDOM( uri, this.queryMangas, 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( mangaList.length > 0 ) {
+                    return this._getMangaListFromPages( page + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+            this.requestOptions.headers.delete( 'content-type' );
+            delete this.requestOptions.body;
+            this.requestOptions.method = 'GET';
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            this.requestOptions.method = 'POST';
-            this.requestOptions.body = this.formManga;
-            this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
-            this.fetchDOM( this.url + '/wp-admin/admin-ajax.php', this.queryMangas )
+            this._getMangaListFromPages()
             .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
                 callback( error, undefined );
             } );
-            this.requestOptions.headers.delete( 'content-type' );
-            delete this.requestOptions.body;
-            this.requestOptions.method = 'GET';
         }
 
         /**
