@@ -17,6 +17,18 @@
             this.tags        = [ 'manga', 'indonesian' ];
             this.url         = 'https://mangayosh.com';
         }
+
+        /**
+         *
+         */
+         _getChapterList( manga, callback ) {
+            super._getChapterList( manga, ( error, chapterList ) => {
+                if( !error && chapterList ) {
+                    chapterList.forEach( chapter => chapter.id = chapter.id.replace( /.*subetenews\.com/, '' ) );
+                }
+                callback( null, chapterList );
+            } );
+        }
     }
 
 </script>
