@@ -12,16 +12,14 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'komikcast';
             super.label      = 'KomikCast';
             this.tags        = [ 'manga', 'indonesian' ];
-            // Private members for internal usage only (convenience)
             this.url         = 'https://komikcast.com';
             this.path        = '/daftar-komik/?list';
 
             this.queryMangas = 'div#content div.soralist ul li a.series';
-            this.queryPages = 'div#readerarea source.alignnone, div.separator source.alignnone';
+            this.queryPages = 'div#readerarea source[src^="http"], div.separator source[src^="http"]';
         }
     }
 
