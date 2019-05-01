@@ -27,6 +27,7 @@
             //
             this.existingMangas = [];
             // initialize the default request options
+            // https://developer.mozilla.org/en-US/docs/Web/API/Request/Request 'init' parameter
             this.requestOptions = {
                 method: 'GET',
                 mode: 'cors',
@@ -34,6 +35,10 @@
                 // include credentials to apply cookies from browser window
                 credentials: 'same-origin', // 'include',
                 headers: new Headers()
+                // body
+                // cache
+                // referrer
+                // integrity
             };
         }
 
@@ -355,6 +360,7 @@
          */
         getRootRelativeOrAbsoluteLink( reference, base ) {
             let uri = new URL( this.getAbsolutePath( reference, base ) );
+            // FIXME: this is always true ...
             if( uri.hostname === uri.hostname ) {
                 // same doamin => return only path
                 return uri.pathname + uri.search + uri.hash;
@@ -389,18 +395,23 @@
         }
 
         /**
-         * Get the content based on the configured requestOptions and the given URI
-         * and search for all elements matching the given CSS selector.
+         * Get the content for the given Request
+         * and get all elements matching the given CSS selector.
          */
-        fetchDOM( uri, selector, retries ) {
-            if( retries === undefined ) {
-                retries = 0;
+        fetchDOM( request, selector, retries ) {
+            retries = retries || 0;
+            if( typeof request === 'string' ) {
+                request = new Request( request, this.requestOptions );
             }
-            return fetch( uri, this.requestOptions )
+            // TODO: check if this will affect (replace) the input parameter?
+            if( request instanceof URL ) {
+                request = new Request( request.href, this.requestOptions );
+            }
+            return fetch( request )
             .then( response => {
                 if( response.status >= 500 && retries > 0 ) {
                     return this.wait( 5000 )
-                    .then( () => this.fetchDOM( uri, selector, retries - 1 ) );
+                    .then( () => this.fetchDOM( request, selector, retries - 1 ) );
                 }
                 if( response.status === 200 ) {
                     return response.text()
@@ -409,27 +420,32 @@
                         return Promise.resolve( [...dom.querySelectorAll( selector )] );
                     } );
                 }
-                throw new Error( `Failed to receive content from "${uri}" (status: ${response.status}) - ${response.statusText}` );
+                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
             } );
         }
 
         /**
          *
          */
-        fetchJSON( uri, retries ) {
-            if( retries === undefined ) {
-                retries = 0;
+        fetchJSON( request, retries ) {
+            retries = retries || 0;
+            if( typeof request === 'string' ) {
+                request = new Request( request, this.requestOptions );
             }
-            return fetch( uri, this.requestOptions )
+            // TODO: check if this will affect (replace) the input parameter?
+            if( request instanceof URL ) {
+                request = new Request( request.href, this.requestOptions );
+            }
+            return fetch( request )
             .then( response => {
                 if( response.status >= 500 && retries > 0 ) {
                     return this.wait( 5000 )
-                    .then( () => this.fetchJSON( uri, retries - 1 ) );
+                    .then( () => this.fetchJSON( request, retries - 1 ) );
                 }
                 if( response.status === 200 ) {
                     return response.json();
                 }
-                throw new Error( `Failed to receive content from "${uri}" (status: ${response.status}) - ${response.statusText}` );
+                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
             } );
         }
 
