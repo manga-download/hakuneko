@@ -121,7 +121,7 @@
                     }, ${this.config.scrapeDelay.value} );
                 } );
             `;
-            Engine.Request.fetchUI( request, this.requestOptions, script )
+            Engine.Request.fetchUI( request, script )
             .then( data => {
                 let pageList = data.map( link => {
                     let uri = new URL( link );
