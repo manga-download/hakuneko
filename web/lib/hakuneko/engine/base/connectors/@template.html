@@ -34,12 +34,12 @@
          *
          */
         _getMangaList( callback ) {
-            let uri = this.url + '/mangas';
-            this.fetchDOM( uri, 'ul.mangas li a' )
+            let request = new Request( this.url + '/mangas', this.requestOptions );
+            this.fetchDOM( request, 'ul.mangas li a' )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                         title: element.text.trim()
                     };
                 } );
@@ -55,11 +55,12 @@
         
         _getMangaListFromPages( mangaPageLinks, index ) {
             index = index || 0;
-            return this.fetchDOM( mangaPageLinks[ index ], 'ul.mangas li a', 5 )
+            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
+            return this.fetchDOM( request, 'ul.mangas li a', 5 )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, mangaPageLinks[ index ] ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                         title: element.text.trim()
                     };
                 } );
@@ -73,7 +74,8 @@
         }
 
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/mangas/1', 'ul.pagination li:last-of-type a' )
+            let request = new Request( this.url + '/mangas/1', this.requestOptions );
+            this.fetchDOM( request, 'ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/' + ( page + 1 ) );
@@ -93,11 +95,12 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'ul.chapters li a' )
+            let request = new Request( this.url + manga.id, this.requestOptions );
+            this.fetchDOM( request, 'ul.chapters li a' )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, this.url + manga.id ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: ''
                     };
@@ -114,11 +117,12 @@
         
         _getChapterListFromPages( manga, chapterPageLinks, index ) {
             index = index || 0;
-            return this.fetchDOM( chapterPageLinks[ index ], 'ul.chapters li a', 5 )
+            let request = new Request( chapterPageLinks[ index ], this.requestOptions );
+            return this.fetchDOM( request, 'ul.chapters li a', 5 )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, chapterPageLinks[ index ] ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: ''
                     };
@@ -133,7 +137,8 @@
         }
 
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'ul.pagination li:last-of-type a' )
+            let request = new Request( this.url + manga.id, this.requestOptions );
+            this.fetchDOM( request, 'ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + '/' + ( page + 1 ) );
@@ -153,9 +158,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'div#viewer source' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div#viewer source' )
             .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element, this.url + chapter.id ) );               
+                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );               
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -167,10 +173,11 @@
         /*** VARIANT WITH PROTOCOL HANDLER ***
 
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'div#viewer source' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div#viewer source' )
             .then( data => {
                 let pageList = data.map( element => {
-                    let uri = new URL( this.getAbsolutePath( element.dataset.url, this.url + chapter.id ) );
+                    let uri = new URL( this.getAbsolutePath( element.dataset.url, request.url ) );
                     uri.protocol = this.id;
                     return uri.href;
                 } );
@@ -185,14 +192,15 @@
         _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
+            let request = new Request( uri.href, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
+            fetch( request )
             .then( response => response.blob() )
             .then( data => this._blobToBuffer( data ) )
             .then( data => callback( data ) )
             .catch( error => {
-                console.error( error, uri.href );
+                console.error( error, request.url );
                 callback( undefined );
             } );
         }
