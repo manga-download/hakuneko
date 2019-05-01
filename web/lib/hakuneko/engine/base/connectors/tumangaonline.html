@@ -41,7 +41,8 @@
                 let uri = new URL( domain );
                 uri.searchParams.set( 'ts', Date.now() );
                 uri.searchParams.set( 'rd', Math.random() );
-                return Engine.Request.fetchUI( domain, this.requestOptions, '', 25000 );
+                let request = new Request( uri.href, this.requestOptions );
+                return Engine.Request.fetchUI( request, '', 25000 );
             } );
             return Promise.all( promises );
         }

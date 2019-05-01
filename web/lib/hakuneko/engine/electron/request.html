@@ -98,7 +98,7 @@
          * If timeout [ms] is given, the window will be kept open until timout, otherwise
          * it will be closed after injecting the script (or after 30 seconds in case an error occured)
          */
-        fetchUI( url, requestOptions, injectionScript, timeout ) {
+        fetchUI( request, injectionScript, timeout ) {
             timeout = timeout || 25000;
             return new Promise( ( resolve, reject ) => {
                 let win = new this.browser( {
@@ -118,7 +118,7 @@
                 let abortAction = setTimeout( () => {
                     this._fetchUICleanup( win, abortAction );
                     if( !preventCallback ) {
-                        reject( new Error( `Failed to load "${url}" within the given timeout of ${timeout}ms!` ) );
+                        reject( new Error( `Failed to load "${request.url}" within the given timeout of ${timeout}ms!` ) );
                     }
                 }, timeout );
 
@@ -140,7 +140,7 @@
                             }
                         } else {
                             // neither reject nor resolve the promise (wait for next callback after getting redirected)
-                            console.warn( `Solving CloudFlare challenge for "${url}" ...`, result );
+                            console.warn( `Solving CloudFlare challenge for "${request.url}" ...`, result );
                         }
                     } )
                     .catch( error => {
@@ -151,13 +151,13 @@
 
                 win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
                     // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
-                    if( !preventCallback && errCode && errCode !== -3 && ( isMain || uri === url ) ) {
+                    if( !preventCallback && errCode && errCode !== -3 && ( isMain || uri === request.url ) ) {
                         this._fetchUICleanup( win, abortAction );
                         reject( new Error( errMessage + ' ' + uri ) );
                     }
                 } );
 
-                win.loadURL( url/*, options*/ );
+                win.loadURL( request.url/*, options*/ );
             } );
         }
 

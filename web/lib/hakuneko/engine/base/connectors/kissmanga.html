@@ -109,7 +109,8 @@
             setTimeout( () => {
                 this.unlock( key );
             }, this.pageLoadDelay );
-            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, 'lstImages' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            Engine.Request.fetchUI( request, 'lstImages' )
             .then( data => {
                 let pageList = data.map( link => ( new URL( link, this.url ) ).href );
                 callback( null, pageList );

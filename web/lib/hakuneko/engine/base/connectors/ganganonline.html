@@ -108,6 +108,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            let request = new Request( this.url + chapter.id, this.requestOptions );
             let script = `
                 new Promise( ( resolve, reject ) => {
                     setTimeout( () => {
@@ -120,7 +121,7 @@
                     }, ${this.config.scrapeDelay.value} );
                 } );
             `;
-            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, script )
+            Engine.Request.fetchUI( request, this.requestOptions, script )
             .then( data => {
                 let pageList = data.map( link => {
                     let uri = new URL( link );

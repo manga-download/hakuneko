@@ -26,7 +26,8 @@
         /*
         // e.g. Bypass CloudFlare protection
         _initializeConnector() {
-            return Engine.Request.fetchUI( this.url, this.requestOptions, '' );
+            let request = new Request( this.url, this.requestOptions );
+            return Engine.Request.fetchUI( request, '' );
         }
         */
 

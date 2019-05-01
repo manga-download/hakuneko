@@ -109,7 +109,8 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            Engine.Request.fetchUI( [ this.url, 'reader', manga.id, chapter.id ].join( '/' ), this.requestOptions, `window.PG_CONFIG.images` )
+            let request = new Request( [ this.url, 'reader', manga.id, chapter.id ].join( '/' ), this.requestOptions );
+            Engine.Request.fetchUI( request, `window.PG_CONFIG.images` )
             .then( data => {
                 let pageList = data.map( page => page.url );
                 callback( null, pageList );

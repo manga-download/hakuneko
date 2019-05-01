@@ -68,11 +68,11 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let href = `${ this.url }/reader/${ chapter.id }.html`;
-            Engine.Request.fetchUI( href, this.requestOptions, 'images' )
+            let request = new Request( `${ this.url }/reader/${ chapter.id }.html`, this.requestOptions );
+            Engine.Request.fetchUI( request, 'images' )
             .then( data => {
                 let pageList = data.map( image => {
-                    let uri = new URL( image.path, href );
+                    let uri = new URL( image.path, request.url );
                     uri.protocol = this.id;
                     return uri.href;
                 } );

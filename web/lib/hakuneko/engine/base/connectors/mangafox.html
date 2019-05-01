@@ -136,7 +136,8 @@
          *
          */
         _getPageListDesktop( manga, chapter, callback ) {
-            Engine.Request.fetchUI( this.url + chapter.id, this.requestOptions, this.script )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            Engine.Request.fetchUI( request, this.script )
             .then( pageList => {
                 callback( null, pageList );
             } )

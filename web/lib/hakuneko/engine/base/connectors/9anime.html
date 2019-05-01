@@ -19,7 +19,6 @@
             super.isLocked   = false;
             // Private members for internal usage only (convenience)
             //this.url         = 'https://9anime.live';
-            //this.requestOptions.headers.set( 'x-referer', this.url );
             this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
@@ -71,13 +70,14 @@
          * Overwrite base function to get manga from clipboard link.
          */
         _getMangaFromURI( uri ) {
-            return fetch( uri.href, this.requestOptions )
+            let request = new Request( uri.href, this.requestOptions );
+            return fetch( request )
             .then( response => response.text() )
             .then( data => {
                 let dom = this.createDOM( data );
                 let metaURL = dom.querySelector( 'meta[property="og:url"]' ).content.trim();
                 let metaTitle = dom.querySelector( 'div.head h2[data-jtitle].title' ); // 'meta[property="og:title"]'
-                let id = this.getRootRelativeOrAbsoluteLink( metaURL, uri.href );
+                let id = this.getRootRelativeOrAbsoluteLink( metaURL, request.url );
                 let title = metaTitle.dataset.jtitle.trim();
                 return Promise.resolve( new Manga( this, id, title ) );
             } )
@@ -90,15 +90,13 @@
          *
          */
         _getMangaListFromPages( mangaPageLinks, index ) {
-            if( index === undefined ) {
-                index = 0;
-            }
-            return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.film-list div.item div.inner a.name', 5 ) )
+            index = index || 0;
+            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
+            return this.fetchDOM( request, 'div.film-list div.item div.inner a.name', 5 )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                         title: element.text.trim()
                     };
                 } );
@@ -115,10 +113,11 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/filter', 'div.paging-wrapper form span.total' )
+            let request = new Request( this.url + '/filter?page=', this.requestOptions );
+            this.fetchDOM( request, 'div.paging-wrapper form span.total' )
             .then( data => {
                 let pageCount = parseInt( data[0].textContent.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/filter?page=' + ( page + 1 ) );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -135,7 +134,8 @@
          */
         _getChapterList( manga, callback ) {
             let animeID = manga.id.split( '.' ).pop();
-            this.fetchJSON( `${ this.url }/ajax/film/servers/${ animeID }?ts=${ this.timestamp }` )
+            let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?ts=${ this.timestamp }`, this.requestOptions );
+            this.fetchJSON( request )
             .then( data => {
                 let dom = this.createDOM( data.html );
                 let servers = [...dom.querySelectorAll( 'div.servers span.tab' )]
@@ -171,18 +171,16 @@
         _getPageList( manga, chapter, callback ) {
             let animeID = manga.id.split( '.' ).pop();
             let episodeID = chapter.id.split( '/' ).pop();
-            this.fetchJSON( `${ this.url }/ajax/film/servers/${ animeID }?episode=${ episodeID }&ts=${ this.timestamp }` )
+            let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?episode=${ episodeID }&ts=${ this.timestamp }`, this.requestOptions );
+            this.fetchJSON( request )
             .then( data => {
                 let dom = this.createDOM( data.html );
                 let server = dom.querySelector( 'div.servers div.server.active' ).dataset;
                 let episode = dom.querySelector( 'div.servers div.server.active ul.episodes li a.active' ).dataset;
                 let uri = `${ this.url }/ajax/episode/info?server=${ server.id }&id=${ episode.id }&ts=${ this.timestamp }`;
-                return Promise.resolve( uri );
+                return Promise.resolve( new Request( uri, this.requestOptions ) );
             } )
-            .then( uri => {
-                let promise = this.fetchJSON( uri );
-                return promise;
-            } )
+            .then( request => this.fetchJSON( request ) )
             .then( data => {
                 switch(true) {
                     case data.target.includes( 'prettyfast.to' ):
@@ -214,40 +212,40 @@
          *
          */
         _getEpisodePrettyFast( link, resolution ) {
-            let promise = fetch( link, this.requestOptions )
+            let request = new Request( link, this.requestOptions );
+            return fetch( request )
             .then( response => response.text() )
             .then( result => {
                 let playlist = result.match( /playlist\s*:\s*\[\s*\{\s*file:\s*['"]([^'"]+)['"]/ )[1];
                 return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ playlist ], subtitles: [] } );
             } );
-            return promise;
         }
 
         /**
          * Same as in kissanime
          */
         _getEpisodeRapidVideo( link, resolution ) {
-            this.requestOptions.headers.set( 'x-cookie', 'q=' + resolution );
-            let promise = this.fetchDOM( link, 'video#videojs source' )
+            let request = new Request( link, this.requestOptions );
+            request.headers.set( 'x-cookie', 'q=' + resolution );
+            return this.fetchDOM( request, 'video#videojs source' )
             .then( data => {
                 if( !data.length ) {
                     throw new Error( `No matching video stream found for requested resolution "${resolution}"!` );
                 }
                 return Promise.resolve( { video: data[0].src, subtitles: [] } );
             } );
-            this.requestOptions.headers.delete( 'x-cookie' );
-            return promise;
         }
 
         /**
          *
          */
         _getEpisodeOpenLoad( link, resolution ) {
+            let request = new Request( link, this.requestOptions );
             let script = `
                 document.querySelector('div#videooverlay').click();
                 document.querySelector('video[id^="olvideo"]').src;
             `;
-            return Engine.Request.fetchUI( link, this.requestOptions, script )
+            return Engine.Request.fetchUI( request, script )
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );
@@ -257,12 +255,14 @@
          *
          */
         _getEpisodeMyCloud( link, resolution ) {
-            return fetch( link, this.requestOptions )
+            let request = new Request( link, this.requestOptions );
+            return fetch( request )
             .then( response => response.text() )
-            .then( result => {
-                let playlist = result.match( /sources\s*:\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/ )[1];
-                this.requestOptions.headers.set( 'x-referer', link );
-                let promise = fetch( playlist, this.requestOptions )
+            .then( data => {
+                let playlist = data.match( /sources\s*:\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/ )[1];
+                let request = new Request( playlist, this.requestOptions );
+                request.headers.set( 'x-referer', link );
+                return fetch( request )
                 .then( response => response.text() )
                 .then( streamlist => {
                     let stream = streamlist.match( /^.*?\d+\.m3u8$/gm )[0].trim();
@@ -270,8 +270,6 @@
                     stream = playlist.replace( /[^\/]+$/, stream );
                     return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ stream ], subtitles: [] } );
                 } );
-                this.requestOptions.headers.set( 'x-referer', this.url );
-                return promise;
             } );
         }
 
@@ -280,7 +278,8 @@
          */
         _getEpisodeMp4upload( link, resolution ) {
             // NOT WORKING: missing content-length header when downloading stream (fetch CORS problem)
-            return Engine.Request.fetchUI( link, this.requestOptions, `document.querySelector('div#player div.jw-media video.jw-video').src;` )
+            let request = new Request( link, this.requestOptions );
+            return Engine.Request.fetchUI( request, `document.querySelector('div#player div.jw-media video.jw-video').src;` )
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );
@@ -290,7 +289,8 @@
          *
          */
         _getEpisodeStreamango( link, resolution ) {
-            return Engine.Request.fetchUI( link, this.requestOptions, `document.querySelector('video[id^="mgvideo"]').src;` )
+            let request = new Request( link, this.requestOptions );
+            return Engine.Request.fetchUI( request, `document.querySelector('video[id^="mgvideo"]').src;` )
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );

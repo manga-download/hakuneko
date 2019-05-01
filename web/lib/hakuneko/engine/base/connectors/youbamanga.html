@@ -73,11 +73,12 @@
          *
          */
         _getChapterList( manga, callback ) {
+            let request = new Request( this.url + manga.id, this.requestOption );
             let script = `
                 [...document.querySelectorAll( 'div#Blog div#blog-pager a:not([rel="next"])' )]
                 .map( element => element.href )
             `;
-            Engine.Request.fetchUI( this.url + manga.id, this.requestOption, script )
+            Engine.Request.fetchUI( request, script )
             .then( pageLinks => {
                 return this._getChapterListFromPages( manga, pageLinks );
             } )
