@@ -16,7 +16,6 @@
             super.label      = 'Template';
             this.tags        = [ 'manga', 'english' ];
             this.url         = 'http://template.net';
-            this.config      = undefined;
 
             // register a protocol handler to intercept requests (with custom 'connector' protocol) and extract images
             //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
@@ -28,6 +27,19 @@
         _initializeConnector() {
             let request = new Request( this.url, this.requestOptions );
             return Engine.Request.fetchUI( request, '' );
+        }
+        */
+
+        /**
+         * 
+         */
+        /* Overwrite default from connector
+        _getMangaFromURI( uri ) {
+            return new Promise( ( resolve, reject ) => {
+                let id = uri.pathname + uri.search;
+                let title = 'Untitled #' + Date.now().toString( 16 ).slice( -6 ).toUpperCase();
+                resolve( new Manga( this, id, title ) );
+            } );
         }
         */
 
