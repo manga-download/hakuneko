@@ -1,0 +1,25 @@
+<link rel="import" href="takeshobo.html">
+
+<script>
+
+    /**
+     *
+     */
+    class GammaPlus extends TakeShobo {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'gammaplus';
+            super.label      = 'GammaPlus';
+            this.tags        = [ 'manga', 'japanese' ];
+            this.url         = 'http://gammaplus.takeshobo.co.jp';
+
+            // register a protocol handler to intercept requests (with custom 'gammaplus' protocol) and descramble images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+    }
+
+</script>

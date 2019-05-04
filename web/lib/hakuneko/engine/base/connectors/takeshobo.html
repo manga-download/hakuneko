@@ -26,9 +26,11 @@
             this.fetchDOM( uri, 'section.lineup ul li a' )
             .then( data => {
                 let mangaList = data.map( element => {
+                    let title = element.querySelector( 'source' ).getAttribute( 'alt' );
+                    let match = title.match( /『(.*)』/ );
                     return {
                         id: this.getRootRelativeOrAbsoluteLink( element, uri ),
-                        title: element.querySelector( 'source' ).getAttribute( 'alt' ).match( /『(.*)』/ )[1].trim()
+                        title: ( match ? match[1] : title ).trim()
                     };
                 } );
                 callback( null, mangaList );
@@ -44,7 +46,7 @@
          */
         _getChapterList( manga, callback ) {
             let uri = this.url + manga.id;
-            this.fetchDOM( uri, 'section#episodeLink div.box_episode div.box_episode_text' )
+            this.fetchDOM( uri, 'section.episode div.box_episode div.box_episode_text' )
             .then( data => {
                 let chapterList = data.map( element => {
                     let anchor = element.querySelector( 'a' );
