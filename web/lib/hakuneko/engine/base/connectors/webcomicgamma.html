@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="takeshobo.html">
 
 <script>
 
     /**
      *
      */
-    class WebComicGamma extends Connector {
+    class WebComicGamma extends TakeShobo {
 
         /**
          *
@@ -16,133 +16,9 @@
             super.label      = 'WebComicGamma';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'http://webcomicgamma.takeshobo.co.jp';
-            this.config      = undefined;
 
-            // register a protocol handler to intercept requests (with custom 'webcomicgamma' protocol) and desramble images
+            // register a protocol handler to intercept requests (with custom 'webcomicgamma' protocol) and descramble images
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
-        }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            let uri = this.url + '/';
-            this.fetchDOM( uri, 'section.lineup ul li a' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
-                        title: element.querySelector( 'source' ).getAttribute( 'alt' ).match( /『(.*)』/ )[1].trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
-            let uri = this.url + manga.id;
-            this.fetchDOM( uri, 'section#episodeLink div.box_episode div.box_episode_text' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    let anchor = element.querySelector( 'a' );
-                    let title = element.querySelector( 'div.episode_title' );
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( anchor, uri ),
-                        title: title.innerText.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            let href = this.url + chapter.id;
-            this.fetchDOM( href, 'div.pages div[data-ptimg]' )
-            .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( this.getAbsolutePath( element.dataset.ptimg, href ) );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _protocolHandlerCallback( request, callback ) {
-            let views;
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
-            .then( response => response.json() )
-            .then( data => {
-                let href = ( new URL( data.resources.i.src, uri.href ) ).href;
-                views = data.views;
-                return fetch( href, this.requestOptions );
-            } )
-            .then( response => response.blob() )
-            .then( data => createImageBitmap( data ) )
-            .then( bitmap => this._descramble( bitmap, views ) )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => {
-                this._applyRealMime( data );
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
-        }
-        
-        /**
-         *
-         */
-        _descramble( bitmap, views ) {
-            return new Promise( ( resolve, reject ) => {
-                let view = views[0];
-                let canvas = document.createElement( 'canvas' );
-                canvas.width = view.width;
-                canvas.height = view.height;
-                let ctx = canvas.getContext( '2d' );
-
-                for( let part of view.coords ) {
-                    // sample => 'i:119,4+107,150>428,900'
-                    let num = part.split( /[:,+>]/ );
-                    let sourceX = parseInt( num[1] );
-                    let sourceY = parseInt( num[2] );
-                    let targetX = parseInt( num[5] );
-                    let targetY = parseInt( num[6] );
-                    let partWidth = parseInt( num[3] );
-                    let partHeight = parseInt( num[4] );
-                    ctx.drawImage( bitmap, sourceX, sourceY, partWidth, partHeight, targetX, targetY, partWidth, partHeight );
-                }
-                canvas.toBlob( data => {
-                    resolve( data );
-                }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
-            } );
         }
     }
 
