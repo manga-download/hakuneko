@@ -55,7 +55,7 @@
          *
          */
         get timestamp() {
-            return Date.now().toString().slice( 0, -3 ).padEnd( 10, '0' );
+            return ( Date.now() / (3600 * 1000) ).toFixed( 0 ) * 3600;
         }
 
         /**
@@ -134,7 +134,8 @@
          */
         _getChapterList( manga, callback ) {
             let animeID = manga.id.split( '.' ).pop();
-            let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?ts=${ this.timestamp }`, this.requestOptions );
+            let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?ts=${ this.timestamp }&_=680`, this.requestOptions );
+            request.headers.set( 'x-referer', this.url + manga.id );
             this.fetchJSON( request )
             .then( data => {
                 let dom = this.createDOM( data.html );
@@ -171,14 +172,15 @@
         _getPageList( manga, chapter, callback ) {
             let animeID = manga.id.split( '.' ).pop();
             let episodeID = chapter.id.split( '/' ).pop();
-            let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?episode=${ episodeID }&ts=${ this.timestamp }`, this.requestOptions );
+            let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?episode=${ episodeID }&ts=${ this.timestamp }&_=732`, this.requestOptions );
+            request.headers.set( 'x-referer', this.url + chapter.id );
             this.fetchJSON( request )
             .then( data => {
                 let dom = this.createDOM( data.html );
                 let server = dom.querySelector( 'div.servers div.server.active' ).dataset;
                 let episode = dom.querySelector( 'div.servers div.server.active ul.episodes li a.active' ).dataset;
-                let uri = `${ this.url }/ajax/episode/info?server=${ server.id }&id=${ episode.id }&ts=${ this.timestamp }`;
-                return Promise.resolve( new Request( uri, this.requestOptions ) );
+                let uri = `${ this.url }/ajax/episode/info?server=${ server.id }&id=${ episode.id }&ts=${ this.timestamp }&_=780`;
+                return Promise.resolve( new Request( uri, request ) );
             } )
             .then( request => this.fetchJSON( request ) )
             .then( data => {
