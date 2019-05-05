@@ -133,6 +133,7 @@
          *
          */
         _getChapterList( manga, callback ) {
+            /*
             let animeID = manga.id.split( '.' ).pop();
             let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?ts=${ this.timestamp }&_=680`, this.requestOptions );
             request.headers.set( 'x-referer', this.url + manga.id );
@@ -159,6 +160,35 @@
                     return accumulator.concat( episodes );
                 }, [] );
                 callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+            */
+            let script = `
+            [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
+            .map( server => {
+                return {
+                    name: server.dataset.name,
+                    label: server.innerText.trim(),
+                    episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + server.dataset.name + '"] ul.episodes li a' )]
+                    .map( episode => {
+                        let uri = new URL( episode.href );
+                        return {
+                            id: uri.pathname + uri.search, // episode.dataset.id,
+                            title: episode.innerText.trim() + ' [' + server.innerText.trim() + ']',
+                            language: ''
+                        }
+                    } )
+                }
+            } );
+            `;
+            let request = new Request( this.url + manga.id, this.requestOptions );
+            Engine.Request.fetchUI( request, script )
+            .then( data => {
+                let episodeList = data.reduce( ( accumulator, server ) => accumulator.concat( server.episodes ), [] );
+                callback( null, episodeList );
             } )
             .catch( error => {
                 console.error( error, manga );
