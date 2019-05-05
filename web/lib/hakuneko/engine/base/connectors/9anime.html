@@ -55,19 +55,8 @@
          *
          */
         get timestamp() {
-            // floor to full hour
-            //return ( Date.now() / (3600 * 1000) ).toFixed( 0 ) * 3600;
-
-            // today 08:00 AM
-            // TODO: what happens before today 08:00 AM ???
-            // => st to 08:00 PM previous day?
-            let today = new Date();
-            today.setHours(8);
-            today.setMinutes(0);
-            today.setSeconds(0);
-            let ts = today.getTime();
-            ts = ts < Date.now() ? ts : ts - 43200; // 12 hours back
-            return Math.floor( ts / 1000 );
+            // set timestamp 12 hours to the past
+            return Math.floor(Date.now() / 3600000) * 3600 - (12 * 3600);
         }
 
         /**
