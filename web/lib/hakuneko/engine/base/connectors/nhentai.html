@@ -1,0 +1,32 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class NHentai extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'nhentai';
+            super.label      = 'NHentai';
+            this.tags        = [];
+            this.url         = 'https://nhentai.net';
+        }
+
+        _getMangaList( callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getChapterList( manga, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getPageList( manga, chapter, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+    }
+
+</script>

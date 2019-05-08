@@ -1,0 +1,32 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * Template: MangaChan
+     */
+    class HenChan extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'henchan';
+            super.label      = 'HenChan';
+            this.tags        = [];
+            this.url         = 'http://henchan.me';
+        }
+
+        _getMangaList( callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getChapterList( manga, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getPageList( manga, chapter, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+    }
+
+</script>

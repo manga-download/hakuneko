@@ -1,0 +1,32 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class PsychoPlay extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'psychoplay';
+            super.label      = 'PsychoPlay';
+            this.tags        = [];
+            this.url         = 'https://psychoplay.co';
+        }
+
+        _getMangaList( callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getChapterList( manga, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getPageList( manga, chapter, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+    }
+
+</script>

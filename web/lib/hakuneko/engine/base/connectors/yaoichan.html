@@ -1,0 +1,32 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     * Template: MangaChan
+     */
+    class YaoiChan extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'yaoichan';
+            super.label      = 'YaoiChan';
+            this.tags        = [];
+            this.url         = 'http://yaoichan.me';
+        }
+
+        _getMangaList( callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getChapterList( manga, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+        _getPageList( manga, chapter, callback ) {
+            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        }
+    }
+
+</script>
