@@ -179,9 +179,10 @@
                     packets.push( key[1] );
                 }
                 // modify playlist to use local files
-                packets = packets.map( link => {
+                packets = packets.map( ( link, index ) => {
                     let uri = new URL( link, playlistURL );
-                    let file = 'media.' + uri.pathname.split( '/' ).pop();
+                    // fixme: sometimes all parts have the same last path, but differes somewhere else => use hash of uri?
+                    let file = ( '00000' + index ).slice( -5 );
                     // ffmpeg does not support backslashes => replace with slashes
                     playlist = playlist.replace( link, file.replace( /\\/g, '/' ) );
                     return {
