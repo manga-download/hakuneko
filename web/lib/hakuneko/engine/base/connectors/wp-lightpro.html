@@ -41,7 +41,7 @@
                 let mangaList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.title.trim()
+                        title: element.title.trim() || element.text.trim()
                     };
                 } );
                 if( index < mangaPageLinks.length - 1 ) {
