@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="wp-lightpro.html">
 
 <script>
 
     /**
      *
      */
-    class ReadHentaiManga extends Connector {
+    class ReadHentaiManga extends WordPressLightPro {
 
         /**
          *
@@ -14,18 +14,14 @@
             super();
             super.id         = 'readhentaimanga';
             super.label      = 'ReadHentaiManga';
-            this.tags        = [];
+            this.tags        = [ 'hentai', 'english' ];
             this.url         = 'http://readhentaimanga.com';
-        }
+            this.path        = '/hentai-manga-list/all/any/name-az/';
 
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            this.queryMangas = 'div.mng_lst ul.lst div ul li div#center > a';
+
+            // register a protocol handler to intercept requests (with custom 'readhentaimanga' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
