@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="wp-lightpro.html">
 
 <script>
 
     /**
      *
      */
-    class MangaDeep extends Connector {
+    class MangaDeep extends WordPressLightPro {
 
         /**
          *
@@ -14,18 +14,14 @@
             super();
             super.id         = 'mangadeep';
             super.label      = 'MangaDeep';
-            this.tags        = [];
+            this.tags        = [ 'manga', 'english' ];
             this.url         = 'http://www.mangadeep.com';
-        }
 
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            this.queryMangas = 'div.mng_lst div.nde div.det a';
+            this.queryPages = 'div.wpm_pag div a source.manga-page';
+
+            // register a protocol handler to intercept requests (with custom 'mangadeep' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
