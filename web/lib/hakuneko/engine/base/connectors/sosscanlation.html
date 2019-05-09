@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="mangareadercms.html">
 
 <script>
 
     /**
      *
      */
-    class SOSScanlation extends Connector {
+    class SOSScanlation extends MangaReaderCMS {
 
         /**
          *
@@ -14,18 +14,8 @@
             super();
             super.id         = 'sosscanlation';
             super.label      = 'SOSScanlation';
-            this.tags        = [];
+            this.tags        = [ 'manga', 'high-quality', 'spanish', 'scanlation' ];
             this.url         = 'https://sosscanlation.com';
-        }
-
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
         }
     }
 
