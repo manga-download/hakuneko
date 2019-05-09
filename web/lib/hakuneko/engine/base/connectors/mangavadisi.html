@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="mangareadercms.html">
 
 <script>
 
     /**
      *
      */
-    class MangaVadisi extends Connector {
+    class MangaVadisi extends MangaReaderCMS {
 
         /**
          *
@@ -14,18 +14,8 @@
             super();
             super.id         = 'mangavadisi';
             super.label      = 'MangaVadisi';
-            this.tags        = [];
+            this.tags        = [ 'manga', 'high-quality', 'turkish', 'scanlation' ];
             this.url         = 'http://manga-v2.mangavadisi.org';
-        }
-
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
         }
     }
 
