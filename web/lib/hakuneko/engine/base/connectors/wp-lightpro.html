@@ -41,7 +41,7 @@
                 let mangaList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text.trim()
+                        title: element.title.trim()
                     };
                 } );
                 if( index < mangaPageLinks.length - 1 ) {
@@ -60,7 +60,7 @@
             this.fetchDOM( this.url + this.path, this.queryMangasPageCount )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)\/$/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/manga-list/all/any/name-az/' + ( page + 1 ) + '/' );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -144,7 +144,11 @@
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             this.fetchDOM( uri.href, this.queryPages )
-            .then( data => fetch( data[0].src, this.requestOptions ) )
+            .then( data => {
+                let span = document.createElement('span');
+                span.innerHTML = data[0].getAttribute( 'src' );
+                return fetch( new URL( span.textContent.trim(), uri.href ).href, this.requestOptions );
+            } )
             .then( response => response.blob() )
             .then( data => this._blobToBuffer( data ) )
             .then( data => callback( data ) )
