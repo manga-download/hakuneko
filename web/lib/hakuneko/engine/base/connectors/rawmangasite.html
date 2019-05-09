@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="mangareadercms.html">
 
 <script>
 
     /**
      *
      */
-    class RawMangaSite extends Connector {
+    class RawMangaSite extends MangaReaderCMS {
 
         /**
          *
@@ -14,18 +14,8 @@
             super();
             super.id         = 'rawmangasite';
             super.label      = 'RawMangaSite';
-            this.tags        = [];
+            this.tags        = [ 'manga', 'high-quality', 'raw' ];
             this.url         = 'https://rawmanga.site';
-        }
-
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
         }
     }
 
