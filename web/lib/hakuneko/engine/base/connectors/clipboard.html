@@ -53,7 +53,8 @@
             links = links.map( link => {
                 try {
                     let uri = new URL( link );
-                    let connector = Engine.Connectors.find( connector => connector.url === uri.origin );
+                    let connector = Engine.Connectors.find( c => c.url === uri.origin );
+                    connector = connector || Engine.Connectors.find( c => c.url && c.url.includes( uri.hostname ) );
                     if( !connector ) {
                         throw new Error( 'No suitable connector found for URL ' + link );
                     }
