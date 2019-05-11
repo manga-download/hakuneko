@@ -479,26 +479,31 @@
             if( data.mimeType !== 'image/webp' && data.data[8] === 0x57 && data.data[9] === 0x45 && data.data[10] === 0x42 && data.data[11] === 0x50 ) {
                 console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/webp"!' );
                 data.mimeType = 'image/webp';
+                return;
             }
             // JPEG [FF D8 FF]
             if( data.mimeType !== 'image/jpeg' && data.data[0] === 0xFF && data.data[1] === 0xD8 && data.data[2] === 0xFF ) {
                 console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/jpeg"!' );
                 data.mimeType = 'image/jpeg';
+                return;
             }
             // PNG [. 50 4E 47]
             if( data.mimeType !== 'image/png' && data.data[1] === 0x50 && data.data[2] === 0x4E && data.data[3] === 0x47 ) {
                 console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/png"!' );
                 data.mimeType = 'image/png';
+                return;
             }
             // GIF [47 49 46]
             if( data.mimeType !== 'image/gif' && data.data[0] === 0x47 && data.data[1] === 0x49 && data.data[2] === 0x46 ) {
                 console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/gif"!' );
                 data.mimeType = 'image/gif';
+                return;
             }
             // BMP [42 4D]
             if( data.mimeType !== 'image/bmp' && data.data[0] === 0x42 && data.data[1] === 0x4D ) {
                 console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/bmp"!' );
                 data.mimeType = 'image/bmp';
+                return;
             }
         }
 
