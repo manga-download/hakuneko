@@ -35,10 +35,12 @@
          */
         /* Overwrite default from connector
         _getMangaFromURI( uri ) {
-            return new Promise( ( resolve, reject ) => {
+            let request = new Request( uri.href, this.requestOptions );
+            return this.fetchDOM( request, 'h1' )
+            .then( data => {
                 let id = uri.pathname + uri.search;
-                let title = 'Untitled #' + Date.now().toString( 16 ).slice( -6 ).toUpperCase();
-                resolve( new Manga( this, id, title ) );
+                let title = data[0].innerText.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
             } );
         }
         */
