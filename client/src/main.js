@@ -186,7 +186,7 @@ process.env.PATH += ( process.platform === 'win32' ? ';' : ':' ) + path.dirname(
 
 // register new protocol handler as standard handler to host files locally without web server
 // => required to enable access to chromium specific features such as local store, indexedDB, ...
-electron.protocol.registerSchemesAsPrivileged( [ { scheme: config.cache.url.protocol/*, privileges: { standard: true }*/ } ] );
+electron.protocol.registerSchemesAsPrivileged( [ { scheme: config.cache.url.protocol, privileges: { standard: true } } ] );
 
 // update userdata path (e.g. for portable version)
 electron.app.setPath( 'userData', config.app.userdata );
