@@ -24,6 +24,7 @@
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
+            // this script uses chapterfun.ashx instead of chapter_bar.js as in MangaHere
             this.script = `
                 let promises = [...( new Array( imagecount ) ).keys()].map( p => {
                     return Promise.resolve()
