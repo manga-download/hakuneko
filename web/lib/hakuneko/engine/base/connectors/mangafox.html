@@ -26,21 +26,24 @@
 
             this.script = `
                 let promises = [...( new Array( imagecount ) ).keys()].map( p => {
-                    return $.ajax( {
-                        url: 'chapterfun.ashx',
-                        data: {
-                            cid: chapterid,
-                            page: p+1,
-                            key: guidkey
-                        }
+                    return Promise.resolve()
+                    .then( () => {
+                        return {
+                            url: 'chapterfun.ashx',
+                            data: {
+                                cid: chapterid,
+                                page: p+1,
+                                key: guidkey
+                            }
+                        };
                     } )
+                    .then( request => $.ajax( request ) )
                     .then( script => {
                         eval( script );
                         let anchor = document.createElement( 'a' );
                         anchor.href = d[0];
                         return Promise.resolve( anchor.href );
                     } );
-                    promises.push( promise );
                 } );
                 Promise.all( promises )
             `;
