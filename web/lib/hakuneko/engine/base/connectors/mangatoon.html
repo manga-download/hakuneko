@@ -18,13 +18,15 @@
             this.tags        = [];
             super.isLocked   = false;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://mangatoon.mobi';
+            this.url         = 'https://mangatoon.mobi'; // WEEX + VUE mobile app => https://h5.mangatoon.mobi
             this.path        = '/en/genre?page=';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
             // register a protocol handler to intercept requests (with custom 'connector' protocol) and extract images
             //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+
+            this.lockImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTAwIiB3aWR0aD0iMjAwIj48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZHk9IjAuMjVlbSIgZmlsbD0icmVkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DaGFwdGVyIGlzIExvY2tlZCE8L3RleHQ+PC9zdmc+';
         }
 
         /**
@@ -79,6 +81,8 @@
          *
          */
         _getChapterList( manga, callback ) {
+            // Alternative mobile request (id, token and signature calculations are all handled within the WEEX + VUE application => to much effort to break in):
+            // https://sg.mangatoon.mobi/api/content/episodes?sign=e9da6de28b76408e77040935fd221cd3&id=5&_=1557650222&_v=1.3.6&_language=en&_token=4f9b604ed0055dd569105a7b32b6489c10&_udid=1246361632e50c7a9daef1e187471778
             this.fetchDOM( this.url + manga.id + '/episodes', 'div.episodes-wrap a.episode-item' )
             .then( data => {
                 let chapterList = data.map( element => {
@@ -102,9 +106,20 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'div.pictures source' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            fetch( request )
+            .then( response => response.text() )
             .then( data => {
-                let pageList = data.map( element => element.src );               
+                let pageList = [ this.lockImage ];
+                let pictures = data.match( /pictures\s*=\s*(\[.+?\])\s*;/ );
+                if( pictures ) {
+                    pictures = JSON.parse( pictures[1] );
+                    pageList = pictures.map( picture => {
+                        let parts = picture.url.replace( '/encrypted/', '/watermark/' ).split( '.' );
+                        parts[parts.length-1] = 'jpg';
+                        return this.getAbsolutePath( parts.join( '.' ), request.url );
+                    } );
+                }
                 callback( null, pageList );
             } )
             .catch( error => {
