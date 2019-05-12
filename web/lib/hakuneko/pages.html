@@ -117,7 +117,7 @@
                 <video id="video" controls controlsList="nodownload" on-click="onSelectedSubtitleChanged">
                     <!-- dummy tracks to show subtitle menu in video player -->
                     <template is="dom-repeat" items="[[ media.subtitles ]]">
-                        <track kind="subtitles" src="data:text/vtt," label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
+                        <track kind="subtitles" src="data:text/vtt,WEBVTT" label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
                     </template>
                 </video>
             </template>
