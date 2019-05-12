@@ -6,7 +6,7 @@ cd "$(dirname $0)"
 
 DIR=./build/htdocs
 KEY=../../hakuneko.key
-DST=../../../../releases/0.4.0
+DST=../../../../releases/5.0.1
 REV=$(git log -1 --format="%H")
 VER=$(echo $REV | cut -c 1-6)
 
