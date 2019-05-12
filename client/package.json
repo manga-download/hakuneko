@@ -11,7 +11,7 @@
   "main": "src/main.js",
   "devDependencies": {
     "asar": "latest",
-    "electron": "2.0.18",
+    "electron": "5.0.1",
     "ffmpeg-static": "latest",
     "innosetup-compiler": "latest",
     "rcedit": "latest",
