@@ -130,16 +130,16 @@
                                 throw new Error( cfResult.error );
                             } else {
                                 return win.webContents.executeJavaScript( injectionScript )
+                                .then( jsResult => {
+                                    preventCallback = true; // no other event shall resolve/reject this promise anymore
+                                    this._fetchUICleanup( win, abortAction );
+                                    resolve( jsResult );
+                                } );
                             }
                         } else {
                             // neither reject nor resolve the promise (wait for next callback after getting redirected)
                             console.warn( `Solving CloudFlare challenge for "${request.url}" ...`, cfResult );
                         }
-                    } )
-                    .then( jsResult => {
-                        preventCallback = true; // no other event shall resolve/reject this promise anymore
-                        this._fetchUICleanup( win, abortAction );
-                        resolve( jsResult );
                     } )
                     .catch( error => {
                         preventCallback = true; // no other event shall resolve/reject this promise anymore
