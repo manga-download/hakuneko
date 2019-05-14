@@ -19,7 +19,7 @@
         }
 
         /**
-         *
+         * 
          */
         _getPageList( manga, chapter, callback ) {
             let href = this.url + chapter.id;
@@ -42,22 +42,19 @@
          *
          */
         _protocolHandlerCallback( request, callback ) {
-            let views;
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
-            .then( response => response.json() )
-            .then( data => {
-                let href = ( new URL( data.resources.i.src, uri.href ) ).href;
-                views = data.views;
-                return fetch( href, this.requestOptions );
-            } )
-            .then( response => response.blob() )
-            .then( data => createImageBitmap( data ) )
-            .then( bitmap => this._descramble( bitmap, views ) )
-            .then( data => this._blobToBuffer( data ) )
+            let promise;
+            switch( true ) {
+                case uri.pathname.endsWith( 'ptimg.json' ):
+                    promise = this._processV016061( uri.href );
+                    break;
+                default:
+                    promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
+            }
+            promise.then( data => this._blobToBuffer( data ) )
             .then( data => {
                 this._applyRealMime( data );
                 callback( data );
@@ -67,11 +64,33 @@
                 callback( undefined );
             } );
         }
-        
+
+        /**************************
+         *** SpeedBinb v01.6061 ***
+         *** Comic Meteor       ***
+         **************************/
+
         /**
          *
          */
-        _descramble( bitmap, views ) {
+        _processV016061( ptimgConfigURL ) {
+            let views;
+            return fetch( ptimgConfigURL, this.requestOptions )
+            .then( response => response.json() )
+            .then( data => {
+                let href = ( new URL( data.resources.i.src, ptimgConfigURL ) ).href;
+                views = data.views;
+                return fetch( href, this.requestOptions );
+            } )
+            .then( response => response.blob() )
+            .then( data => createImageBitmap( data ) )
+            .then( bitmap => this._descrambleV016061( bitmap, views ) )
+        }
+   
+        /**
+         *
+         */
+        _descrambleV016061( bitmap, views ) {
             return new Promise( ( resolve, reject ) => {
                 let view = views[0];
                 let canvas = document.createElement( 'canvas' );
@@ -95,6 +114,108 @@
                 }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
             } );
         }
+
+        /**************************
+         *** SpeedBinb v01.6130 ***
+         *** BookLive           ***
+         **************************/
+     
+
+        /*
+
+        id="content-p3" data-ptimg="binb://dU3hxphMg6_4p8Hm"
+
+        https://booklive.jp/bib-api/bibGetCntntInfo?cid=20017621_001&dmytime=1557863504915&k=bz9Ms5gAf5ZhZ12J8bMILe0wAgB-nMBq
+        => ContentID: "20017621_001"
+        => ViewMode: 1
+        => p: '2bLPTWHIpSJ0g-EhHtFio-OJajQ'
+        => ContentDate: "20180531093230"
+        => ContentsServer: "https://binb.booklive.jp/bib-deliv"
+        => stbl int[64] // scramble table
+        => ttbl int[64]
+        => ctbl string[8]
+            0: "=8-8+4-HEDBABCFDDDDEDEDoCAzIB-Dy23pn5809tUPdVHrYQwXJM1bji6ufKS7eFg_RGxkOslcZmqT4EWhavNL"
+            1: "=8-8+4-GGHGGFFHCDDAGEBAA5Wq2bXTFkOGlpNsU9oh3SaYBKMyQZr47jHnIJRmfDgc8d1CVEi-vePLzt0w6_ux"
+            2: "=8-8+4-BBCCBAABCEECCEBCk1RmwjOa7qWX-N0xV49yrZ26fvechloitYgHu3AspB_L5bDUEzQ8dnKCJFTPSIGM"
+            3: "=8-8+4-CCACCCEDDGFAEFGDcpjMP542G1yISnr7NvA86hHkE3xWwLZtFo-9easOdubgiX_DzlJq0KBYQRUTCmfV"
+            4: "=8-8+4-FDAAAAAADHDCGBAB17y_6KvPQdzgneUmIqSsfrcTBLXWkiN5h4t39bJaRM2AlOjwxY0uV-8pZCFEoHGD"
+            5: "=8-8+4-FEEEEECFGCDAFBADEQ6PrSgGN0AJH54YfRDa8sBp9OCdIq-71eumL_twbUxVnMXKyz32cFZTvkWhjiol"
+            6: "=8-8+4-HHGGFHGGGBHCBFHGnmv0eTgJpPcFlO8-ZxkoqrCtWUBQA1MaHREfidKhjwuLDI6G_7SbVNYX4y2z59s3"
+            7: "=8-8+4-FFFDGEEDFBHACADGg42A58NY7jcCKkZJvs1xnu_XwhyEQtezdVBSMLUiIOWRH93-G6raDTPF0pqflmbo"
+        => ptbl string[8]
+            0: "=8-8-4-HFFGGGEHDBCAFFEGbicHgKUdxPloGqwDah3kN0ryv1SmsA2EJTjQtX4pB67YOnIWCFZ5_8Vz9MeRuLf-"
+            1: "=8-8-4-HHHHHHHGCCFGCDAGUYnima0rIGXAMuzSshRjZflLkeNVtgvJwxPypEo2K1F3DQCbHTBdcOW754869-_q"
+            2: "=8-8-4-HHGFEFGHFEHHCAAAFRCmcnDauQ12vGKxBsIToNrXZiWAjzb3SEPL9kgtHUJ4V-wqfY5e0O6h_7lydpM8"
+            3: "=8-8-4-EBACCCCEHDFBCEBDA09SlmpHD4rPUbkLOqC78_-wMfxNWtVs6YvBadJ5Qe2T3EcKuX1zgoZFhIjniGyR"
+            4: "=8-8-4-BFDEEHGHCEHFECDDRbnhaYys-KkpPxdMJETcVt2HUu5mB30LDjz7_A1Fr8vWewNSqgZXiQ4oICOfl9G6"
+            5: "=8-8-4-BBBBAAABEEBAECGDQ0EL_65289-7viZ4bnosUlgmHGtrMDxVdhecXTkBjRf1FqWIuKJNSO3zypwPAYaC"
+            6: "=8-8-4-HHHHHHHHEBBHDAAHwkFlPBIgK3izLerajfD2N1MRqQEtUJAHuOVXhyCxvSTdYmsbnGpZc0oW85746-9_"
+            7: "=8-8-4-FFEFEFEGEGBEBAGDBVELHFWTxCbpKAXUhfg0OyzYkGus3Itr1n5c-j6m_9M7e4qNlJQZaSP82DdvoRwi"
+
+        v = w.toNumberArray(p.pt(ContentID, p.tt(ContentID), e.ttbl))
+        d = w.toStringArray(p.pt(ContentID, p.tt(ContentID), e.ctbl))
+
+        p.pt = function(t, i, n) {
+            // NOTE: i = p.tt(t)
+            for (var r = t + ":" + i, e = 0, s = 0; s < r.length; s++)
+                e += r.charCodeAt(s) << s % 16;
+            0 == (e &= 2147483647) && (e = 305419896);
+            var u = ""
+                , h = e;
+            for (s = 0; s < n.length; s++) {
+                h = h >>> 1 ^ 1210056708 & -(1 & h);
+                var o = (n.charCodeAt(s) - 32 + h) % 94 + 32;
+                u += String.fromCharCode(o)
+            }
+            try {
+                return JSON.parse(u)
+            } catch (t) {}
+            return null
+        }
+
+        p.tt = function(t) {
+            var n = w.getRandomString(16)
+                , i = Array(Math.ceil(16 / t.length) + 1).join(t)
+                , r = i.substr(0, 16)
+                , e = i.substr(-16, 16)
+                , s = 0
+                , u = 0
+                , h = 0;
+            return n.split("").map(function(t, i) {
+                return s ^= n.charCodeAt(i),
+                u ^= r.charCodeAt(i),
+                h ^= e.charCodeAt(i),
+                t + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"[s + u + h & 63]
+            }).join("")
+        }
+
+        p.prototype.getImageUrl = function(t, i) 
+        n.query.set("src", encodeURIComponent(t))
+        n.query.set("vm", this.st.viewmode.toString()))
+
+        https://binb.booklive.jp/bib-deliv/sbcGetImg.php?cid=20017621_001&dmytime=20180531093230&p=cY9ql_wjVREy1EJ-O9V-tl89N-0&src=pages%2Fcu77gvXE.jpg&vm=1
+
+        p.prototype.getImageDescrambleCoords = function(t, i, n) {
+            var r = this.lt(t.src);
+            if (!r || !r.vt())
+                return null;
+            var e = r.dt({
+                width: i,
+                height: n
+            });
+            return {
+                width: e.width,
+                height: e.height,
+                transfers: [{
+                    index: 0,
+                    coords: r.gt({
+                        width: i,
+                        height: n
+                    })
+                }]
+            }
+        }
+        */
     }
 
 </script>
