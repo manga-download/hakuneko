@@ -22,16 +22,21 @@
          * 
          */
         _getPageList( manga, chapter, callback ) {
-            let href = this.url + chapter.id;
-            this.fetchDOM( href, 'div.pages div[data-ptimg]' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div#content.pages' )
             .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( this.getAbsolutePath( element.dataset.ptimg, href ) );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
-                callback( null, pageList );
+                data = data[0];
+                if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
+                    return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
+                }
+                let imageConfigurtions = data.querySelectorAll( 'div[data-ptimg$="ptimg.json"]' );
+                if( imageConfigurtions.length > 0 ) {
+                    return this._getPageList_v016061( [...imageConfigurtions], request.url );
+                }
+                // 
+                throw new Error( 'Unsupported version of SpeedBinb reader!' )
             } )
+            .then( pageList => callback( null, pageList ) )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
@@ -49,10 +54,14 @@
             let promise;
             switch( true ) {
                 case uri.pathname.endsWith( 'ptimg.json' ):
-                    promise = this._processV016061( uri.href );
+                    promise = this._process_v016061( uri.href );
+                    break;
+                case uri.pathname.includes( 'sbcGetImg' ):
+                    promise = this._process_v016130( uri.href );
                     break;
                 default:
                     promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
+                    break;
             }
             promise.then( data => this._blobToBuffer( data ) )
             .then( data => {
@@ -73,7 +82,19 @@
         /**
          *
          */
-        _processV016061( ptimgConfigURL ) {
+        _getPageList_v016061( imageConfigurtions, baseURL ) {
+            let pageLinks = imageConfigurtions.map( element => {
+                let uri = new URL( this.getAbsolutePath( element.dataset.ptimg, baseURL ) );
+                uri.protocol = this.id;
+                return uri.href;
+            } );
+            return Promise.resolve( pageLinks );
+        }
+
+        /**
+         *
+         */
+        _process_v016061( ptimgConfigURL ) {
             let views;
             return fetch( ptimgConfigURL, this.requestOptions )
             .then( response => response.json() )
@@ -84,13 +105,13 @@
             } )
             .then( response => response.blob() )
             .then( data => createImageBitmap( data ) )
-            .then( bitmap => this._descrambleV016061( bitmap, views ) )
+            .then( bitmap => this._descramble_v016061( bitmap, views ) );
         }
    
         /**
          *
          */
-        _descrambleV016061( bitmap, views ) {
+        _descramble_v016061( bitmap, views ) {
             return new Promise( ( resolve, reject ) => {
                 let view = views[0];
                 let canvas = document.createElement( 'canvas' );
@@ -120,10 +141,93 @@
          *** BookLive           ***
          **************************/
      
+         /**
+          * 
+          */
+        _getPageList_v016130( chapterID, apiURL ) {
+            let config;
+            let cid = new URL( chapterID, this.url ).searchParams.get( 'cid' );
+            let sharingKey = this._speedbinb_tt( cid );
+            let uri = new URL( apiURL, this.url );
+            uri.searchParams.set( 'cid', cid );
+            uri.searchParams.set( 'dmytime', Date.now() );
+            uri.searchParams.set( 'k', sharingKey );
+            let request = new Request( uri.href, this.requestOptions );
+            return fetch( request )
+            .then( response => response.json() )
+            .then( data => {
+                return this._getPageLinks_v016130( data.items[0] );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _getPageLinks_v016130( configuration ) {
+            let uri = new URL( configuration['ContentsServer'] + '/sbcGetCntnt.php' );
+            uri.searchParams.set( 'cid', configuration['ContentID'] );
+            uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
+            uri.searchParams.set( 'p', configuration['p'] );
+            uri.searchParams.set( 'vm', configuration['ViewMode'] );
+            return fetch( new Request( uri.href, this.requestOptions ) )
+            .then( response => response.json() )
+            .then( data => {
+                uri.pathname = uri.pathname.replace( 'sbcGetCntnt', 'sbcGetImg' );
+                uri.protocol = this.id;
+                let dom = this.createDOM( data.ttx );
+                let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
+                    uri.searchParams.set( 'src', img.getAttribute( 'src' ) );
+                    return uri.href;
+                } );
+                return Promise.resolve( pageLinks );
+            } );
+        }
+
+        /**
+         * 
+         */
+        _process_v016130( scrambledImageURL ) {
+            return fetch( scrambledImageURL, this.requestOptions )
+            /*
+            .then( response => response.json() )
+            .then( data => {
+                let href = ( new URL( data.resources.i.src, ptimgConfigURL ) ).href;
+                views = data.views;
+                return fetch( href, this.requestOptions );
+            } )
+            */
+            .then( response => response.blob() );
+            //.then( data => createImageBitmap( data ) )
+            //.then( bitmap => this._descramble_v016130( bitmap ) );
+        }
+
+        /**
+         * 
+         */
+        _descramble_v016130( bitmap ) {
+            //
+        }
+
+        /**
+         * Copied from official SpeedBinb library
+         */
+        _speedbinb_tt(t) {
+            var n = Date.now().toString(16).padStart(16,'x') // w.getRandomString(16)
+                , i = Array(Math.ceil(16 / t.length) + 1).join(t)
+                , r = i.substr(0, 16)
+                , e = i.substr(-16, 16)
+                , s = 0
+                , u = 0
+                , h = 0;
+            return n.split("").map(function(t, i) {
+                return s ^= n.charCodeAt(i),
+                u ^= r.charCodeAt(i),
+                h ^= e.charCodeAt(i),
+                t + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"[s + u + h & 63]
+            }).join("")
+        }
 
         /*
-
-        id="content-p3" data-ptimg="binb://dU3hxphMg6_4p8Hm"
 
         https://booklive.jp/bib-api/bibGetCntntInfo?cid=20017621_001&dmytime=1557863504915&k=bz9Ms5gAf5ZhZ12J8bMILe0wAgB-nMBq
         => ContentID: "20017621_001"
@@ -131,7 +235,7 @@
         => p: '2bLPTWHIpSJ0g-EhHtFio-OJajQ'
         => ContentDate: "20180531093230"
         => ContentsServer: "https://binb.booklive.jp/bib-deliv"
-        => stbl int[64] // scramble table
+        => stbl int[64] // descramble tables ...
         => ttbl int[64]
         => ctbl string[8]
             0: "=8-8+4-HEDBABCFDDDDEDEDoCAzIB-Dy23pn5809tUPdVHrYQwXJM1bji6ufKS7eFg_RGxkOslcZmqT4EWhavNL"
@@ -189,12 +293,6 @@
             }).join("")
         }
 
-        p.prototype.getImageUrl = function(t, i) 
-        n.query.set("src", encodeURIComponent(t))
-        n.query.set("vm", this.st.viewmode.toString()))
-
-        https://binb.booklive.jp/bib-deliv/sbcGetImg.php?cid=20017621_001&dmytime=20180531093230&p=cY9ql_wjVREy1EJ-O9V-tl89N-0&src=pages%2Fcu77gvXE.jpg&vm=1
-
         p.prototype.getImageDescrambleCoords = function(t, i, n) {
             var r = this.lt(t.src);
             if (!r || !r.vt())
@@ -215,6 +313,7 @@
                 }]
             }
         }
+
         */
     }
 
