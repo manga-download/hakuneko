@@ -59,6 +59,15 @@
                 case uri.pathname.includes( 'sbcGetImg' ):
                     promise = this._process_v016130( uri.href );
                     break;
+                case uri.pathname.includes( 'M_L.jpg' ):
+                    promise = this._process_v016130( uri.href );
+                    break;
+                case uri.pathname.includes( 'M_H.jpg' ):
+                    promise = this._process_v016130( uri.href );
+                    break;
+                case uri.pathname.includes( '/img/' ):
+                    promise = this._process_v016130( uri.href );
+                    break;
                 default:
                     promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
                     break;
@@ -167,25 +176,74 @@
             let cid = configuration['ContentID'];
             //let stbl = this._pt( cid, sharingKey, configuration.stbl );
             //let ttbl = this._pt( cid, sharingKey, configuration.ttbl );
-            let ctbl = this._pt( cid, sharingKey, configuration.ctbl );
-            let ptbl = this._pt( cid, sharingKey, configuration.ptbl );
+            configuration.ctbl = this._pt( cid, sharingKey, configuration.ctbl );
+            configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
 
+            if( configuration['ServerType'] === 0 ) {
+                return this._getPageLinksSBC_v016130( configuration );
+            }
+            if( configuration['ServerType'] === 1 ) {
+                return this._getPageLinksContentJS_v016130( configuration );
+            }
+            if( configuration['ServerType'] === 2 ) {
+                return this._getPageLinksContent_v016130( configuration );
+            }
+            return Promise.reject( new Error( 'Content server type not supported!' ) );
+        }
+
+        _getPageLinksSBC_v016130( configuration ) {
             let uri = new URL( configuration['ContentsServer'] + '/sbcGetCntnt.php' );
-            uri.searchParams.set( 'cid', cid );
+            uri.searchParams.set( 'cid', configuration['ContentID'] );
             uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
             uri.searchParams.set( 'p', configuration['p'] );
             uri.searchParams.set( 'vm', configuration['ViewMode'] );
             return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.json() )
             .then( data => {
-                uri.pathname = uri.pathname.replace( 'sbcGetCntnt', 'sbcGetImg' );
                 uri.protocol = this.id;
                 let dom = this.createDOM( data.ttx );
                 let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
                     let src = img.getAttribute( 'src' );
                     uri.searchParams.set( 'src', src );
-                    uri.hash = btoa( JSON.stringify( this._lt_001(src, ctbl, ptbl) ) );
-                    return uri.href;
+                    uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
+                    return uri.href.replace( 'sbcGetCntnt.php', 'sbcGetImg.php' );
+                } );
+                return Promise.resolve( pageLinks );
+            } );
+        }
+
+        _getPageLinksContent_v016130( configuration ) {
+            let uri = new URL( configuration['ContentsServer'] );
+            uri.pathname += '/content';
+            uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
+            return fetch( new Request( uri.href, this.requestOptions ) )
+            .then( response => response.json() )
+            .then( data => {
+                uri.protocol = this.id;
+                let dom = this.createDOM( data.ttx );
+                let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
+                    let src = img.getAttribute( 'src' );
+                    uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
+                    return uri.href.replace( '/content', '/img/' + src );
+                } );
+                return Promise.resolve( pageLinks );
+            } );
+        }
+
+        _getPageLinksContentJS_v016130( configuration ) {
+            let uri = new URL( configuration['ContentsServer'] );
+            uri.pathname += '/content.js';
+            uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
+            return fetch( new Request( uri.href, this.requestOptions ) )
+            .then( response => response.text() )
+            .then( data => JSON.parse( data.slice( 16, -1 ) ) )
+            .then( data => {
+                uri.protocol = this.id;
+                let dom = this.createDOM( data.ttx );
+                let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
+                    let src = img.getAttribute( 'src' );
+                    uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
+                    return uri.href.replace( 'content.js', src + '/M_H.jpg' ); // '/M_L.jpg'
                 } );
                 return Promise.resolve( pageLinks );
             } );
@@ -197,7 +255,7 @@
         _process_v016130( scrambledImageURL ) {
             let uri = new URL( scrambledImageURL );
             let request = new Request( uri.href, this.requestOptions );
-            let descrambleKeyPair = JSON.parse( atob( uri.hash.slice(1) ) );
+            let descrambleKeyPair = JSON.parse( atob( uri.hash.slice( 1 ) ) );
             return fetch( scrambledImageURL, this.requestOptions )
             .then( response => response.blob() )
             .then( data => createImageBitmap( data ) )
