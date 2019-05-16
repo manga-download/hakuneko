@@ -184,8 +184,7 @@
                 let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
                     let src = img.getAttribute( 'src' );
                     uri.searchParams.set( 'src', src );
-                    let dbg = this._lt_001(src, ctbl, ptbl);
-                    console.log( dbg, this._lt_002( dbg.s, dbg.u ) );
+                    uri.hash = btoa( JSON.stringify( this._lt_001(src, ctbl, ptbl) ) );
                     return uri.href;
                 } );
                 return Promise.resolve( pageLinks );
@@ -196,25 +195,41 @@
          * 
          */
         _process_v016130( scrambledImageURL ) {
+            let uri = new URL( scrambledImageURL );
+            let request = new Request( uri.href, this.requestOptions );
+            let descrambleKeyPair = JSON.parse( atob( uri.hash.slice(1) ) );
             return fetch( scrambledImageURL, this.requestOptions )
-            /*
-            .then( response => response.json() )
-            .then( data => {
-                let href = ( new URL( data.resources.i.src, ptimgConfigURL ) ).href;
-                views = data.views;
-                return fetch( href, this.requestOptions );
-            } )
-            */
-            .then( response => response.blob() );
-            //.then( data => createImageBitmap( data ) )
-            //.then( bitmap => this._descramble_v016130( bitmap ) );
+            .then( response => response.blob() )
+            .then( data => createImageBitmap( data ) )
+            .then( bitmap => this._descramble_v016130( bitmap, descrambleKeyPair ) );
         }
 
         /**
          * 
          */
-        _descramble_v016130( bitmap ) {
-            //
+        _descramble_v016130( bitmap, keys ) {
+            return new Promise( ( resolve, reject ) => {
+                let view = this._getImageDescrambleCoords(keys.s, keys.u, bitmap.width, bitmap.height );
+
+                let canvas = document.createElement( 'canvas' );
+                canvas.width = view.width;
+                canvas.height = view.height;
+                let ctx = canvas.getContext( '2d' );
+
+                for( let part of view.transfers[0].coords ) {
+                    let sourceX = parseInt( part.xsrc );
+                    let sourceY = parseInt( part.ysrc );
+                    let targetX = parseInt( part.xdest );
+                    let targetY = parseInt( part.ydest );
+                    let partWidth = parseInt( part.width );
+                    let partHeight = parseInt( part.height );
+                    ctx.drawImage( bitmap, sourceX, sourceY, partWidth, partHeight, targetX, targetY, partWidth, partHeight );
+                }
+
+                canvas.toBlob( data => {
+                    resolve( data );
+                }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
+            } );
         }
 
         /**
@@ -278,7 +293,7 @@
 
         /**
          * Determine which descramble key pair from ctbl / ptbl shall be used
-         * t => 'pages/cu77gvXE.jpg'
+         * depending on the given image name => 'pages/cu77gvXE.jpg'
          */
         _lt_001(t, ctbl, ptbl) {
             var i = [0, 0];
@@ -306,8 +321,7 @@
          * n => height of descrambled image
          */
         _getImageDescrambleCoords(/*t*/s, u, i, n) {
-            //var r = this.lt(t.src);
-            var r = this._lt_002(s, u);
+            var r = this._lt_002(s, u); // var r = this.lt(t.src);
             if (!r || !r.vt())
                 return null;
             var e = r.dt({
