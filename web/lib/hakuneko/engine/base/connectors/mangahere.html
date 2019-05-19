@@ -12,20 +12,12 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangahere';
             super.label      = 'MangaHere';
-            // Private members for internal usage only (convenience)
             this.url         = 'https://www.mangahere.cc';
 
             // this script uses chapter_bar.js instead of chapterfun.ashx as in MangaFox
-            this.script = `
-                new Promise( ( resolve, reject ) => {
-                    let images = document.querySelectorAll( 'div.reader-main img.reader-main-img' );
-                    images = [...images].map( image => new URL( image.dataset['src'], window.location.href ).href );
-                    resolve( images );
-                } );
-            `;
+            //this.scriptSource = 'chapter_bar.js';
         }
     }
 

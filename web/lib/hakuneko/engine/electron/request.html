@@ -88,6 +88,22 @@
         }
 
         /**
+         * The browser window of electron does not support request objects,
+         * so it is required to convert the request to supported options.
+         */
+        _extractRequestOptions( request ) {
+            let referer = request.headers.get( 'x-referer' );
+            let headers = [];
+            headers = headers.join( '\n' );
+            return {
+                //httpReferrer: referer ? referer : undefined,
+                //userAgent: undefined,
+                //extraHeaders: headers ? headers : undefined,
+                //postData: undefined,
+            };
+        }
+
+        /**
          * If timeout [ms] is given, the window will be kept open until timout, otherwise
          * it will be closed after injecting the script (or after 30 seconds in case an error occured)
          */
@@ -123,16 +139,16 @@
                                 throw new Error( cfResult.error );
                             } else {
                                 return win.webContents.executeJavaScript( injectionScript )
+                                .then( jsResult => {
+                                    preventCallback = true; // no other event shall resolve/reject this promise anymore
+                                    this._fetchUICleanup( win, abortAction );
+                                    resolve( jsResult );
+                                } );
                             }
                         } else {
                             // neither reject nor resolve the promise (wait for next callback after getting redirected)
                             console.warn( `Solving CloudFlare challenge for "${request.url}" ...`, cfResult );
                         }
-                    } )
-                    .then( jsResult => {
-                        preventCallback = true; // no other event shall resolve/reject this promise anymore
-                        this._fetchUICleanup( win, abortAction );
-                        resolve( jsResult );
                     } )
                     .catch( error => {
                         preventCallback = true; // no other event shall resolve/reject this promise anymore
@@ -149,7 +165,7 @@
                     }
                 } );
 
-                win.loadURL( request.url/*, options*/ );
+                win.loadURL( request.url, this._extractRequestOptions( request ) );
             } );
         }
 
