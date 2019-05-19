@@ -57,7 +57,7 @@
             this.fetchDOM( this.url + manga.id, this.queryChapters )
             .then( data => {
                 let chapterList = data
-                .filter( element => element.querySelector( ' div.cell-coin span.coin-type1' ) )
+                .filter( element => element.querySelector( 'div.cell-title' ) && !element.querySelector( 'div.thumb span.lock' ) )
                 .map( element => {
                     element.href = element.getAttribute( 'onclick' ).split( '\'' )[1].trim();
                     let chapter =  element.querySelector( 'div.cell-num' ).innerText.trim();
