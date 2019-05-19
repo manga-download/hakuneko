@@ -95,6 +95,22 @@
         }
 
         /**
+         * The browser window of electron does not support request objects,
+         * so it is required to convert the request to supported options.
+         */
+        _extractRequestOptions( request ) {
+            let referer = request.headers.get( 'x-referer' );
+            let headers = [];
+            headers = headers.join( '\n' );
+            return {
+                //httpReferrer: referer ? referer : undefined,
+                //userAgent: undefined,
+                //extraHeaders: headers ? headers : undefined,
+                //postData: undefined,
+            };
+        }
+
+        /**
          * If timeout [ms] is given, the window will be kept open until timout, otherwise
          * it will be closed after injecting the script (or after 30 seconds in case an error occured)
          */
@@ -156,7 +172,7 @@
                     }
                 } );
 
-                win.loadURL( request.url/*, options*/ );
+                win.loadURL( request.url, this._extractRequestOptions( request ) );
             } );
         }
 
