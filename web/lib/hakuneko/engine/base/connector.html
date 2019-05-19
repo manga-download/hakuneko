@@ -198,10 +198,7 @@
             // TODO: try to find title in cached manga list first
             //       => this.getMangas().then( ... )
             return this.initialize()
-            .then( () => this._getMangaFromURI( uri ) )
-            .catch( error => {
-                callback( error, undefined );
-            } );
+            .then( () => this._getMangaFromURI( uri ) );
         }
 
         /**
