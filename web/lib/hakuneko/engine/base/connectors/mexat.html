@@ -73,8 +73,11 @@
             let request = new Request( this.url + manga.id, this.requestOptions );
             this.fetchDOM( request, 'div#main-content div.content div.pagination a.last' )
             .then( data => {
-                let pageCount = parseInt( data[0].href.match( /\/(\d+)\/?$/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + 'page/' + ( page + 1 ) + '/' );
+                let pageLinks = [ request.url ];
+                if( data.length > 0 ) {
+                    let pageCount = parseInt( data[0].href.match( /\/(\d+)\/?$/ )[1] );
+                    pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
+                }
                 return this._getChapterListFromPages( manga, pageLinks );
             } )
             .then( data => {
