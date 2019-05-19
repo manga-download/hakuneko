@@ -114,7 +114,7 @@
                 </template>
             </template>
             <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
-                <video id="video" controls controlsList="nodownload" on-click="onSelectedSubtitleChanged">
+                <video id="video" controls disablePictureInPicture controlsList="nodownload">
                     <!-- dummy tracks to show subtitle menu in video player -->
                     <template is="dom-repeat" items="[[ media.subtitles ]]">
                         <track kind="subtitles" src="data:text/vtt,WEBVTT" label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
@@ -206,6 +206,7 @@
                             tracks[i].mode = 'disabled';
                             i++;
                         }
+                        tracks.onchange = this.onSelectedSubtitleChanged.bind( this );
                     }
                 }
             }
@@ -214,27 +215,18 @@
              *
              */
             onSelectedSubtitleChanged( event ) {
-//console.log( 'onSelectedSubtitleChanged:', event );
-                let element = event.path[0];
-                let tracks = element.textTracks;
-                // Yield with timeout, so UI can update its element before we access it ...
+                // Yield with timeout, so UI element can be attached to DOM and update its properties before we access it ...
                 setTimeout( () => {
+                    let video = this.shadowRoot.querySelector( '#video' );
                     // assumption: tracks are in same order as subtitles ...
-                    let subtitle = -1;
-                    for( let index = 0; index < this.media.subtitles.length; index++ ) {
-                        if( tracks[index].mode === 'showing' ) {
-                            subtitle = index;
-                            break;
-                        }
-                    }
+                    let subtitle = [...event.target].findIndex( track => track.mode === 'showing' );
                     if( this.selectedSubtitle !== subtitle ) {
                         this.resetSubtitles( false ); // NOTE: this will also set this.selectedSubtitle to -1
                         this.selectedSubtitle = subtitle;
                         if( subtitle > -1 ) {
                             let sub = this.media.subtitles[this.selectedSubtitle];
-//console.log( 'SUBTITLE:', sub );
                             if( sub.content ) {
-                                this.ass = new ASS( sub.content, element );
+                                this.ass = new ASS( sub.content, video );
                             } else {
                                 fetch( sub.url )
                                 .then( response => {
@@ -245,7 +237,7 @@
                                 } )
                                 .then( data => {
                                     sub.content = data;
-                                    this.ass = new ASS( sub.content, element );
+                                    this.ass = new ASS( sub.content, video );
                                 } )
                                 .catch( error => {
                                     console.warn( error, sub.url );
