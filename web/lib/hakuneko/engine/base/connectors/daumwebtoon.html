@@ -1,0 +1,159 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class DaumWebtoon extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'daumwebtoon';
+            super.label      = 'Daum 웹툰';
+            this.tags        = [ 'webtoon', 'korean' ];
+            this.url         = 'http://webtoon.daum.net';
+            this.apiURL      = 'http://webtoon.daum.net/data/pc/webtoon';
+
+            // register a protocol handler to intercept requests (with custom 'daumwebtoon' protocol) and decrypt images
+            //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+
+        /**
+         * 
+         */
+        _getMangaFromURI( uri ) {
+            let request = new Request( this.apiURL + uri.pathname + uri.search, this.requestOptions );
+            return this.fetchJSON( request )
+            .then( data => {
+                let id = data.data.webtoon.nickname;
+                let title = data.data.webtoon.title;
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
+            return this.fetchJSON( request )
+            .then( data => {
+                let mangaList = data.data.map( manga => {
+                    return {
+                        id: manga.nickname,
+                        title: manga.title
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            Promise.resolve( [
+                '/list_serialized/mon',
+                '/list_serialized/tue',
+                '/list_serialized/wed',
+                '/list_serialized/thu',
+                '/list_serialized/fri',
+                '/list_serialized/sat',
+                '/list_serialized/sun',
+                '/list_finished',
+                '/list_gidamoo'
+            ] )
+            .then( data => {
+                let pageLinks = data.map( path => this.apiURL + path );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            let request = new Request( this.apiURL + '/view/' + manga.id, this.requestOptions );
+            this.fetchJSON( request )
+            .then( data => {
+                let chapterList = data.data.webtoon.webtoonEpisodes
+                .filter( episode => episode.isPaid || episode.serviceType === 'free' )
+                .map( episode => {
+                    return {
+                        id: episode.id,
+                        title: episode.title.trim(),
+                        language: ''
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            let request = new Request( this.apiURL + '/viewer_images/' + chapter.id, this.requestOptions );
+            this.fetchJSON( request )
+            .then( data => {
+                let pageList = data.data.map( image => {
+                    /*
+                    // image.encryptKey, image.keyEncryptKey
+                    let uri = new URL( image.url );
+                    uri.protocol = this.id;
+                    return uri.href;
+                    */
+                    return image.url;
+                } );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        /*
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            request = new Request( uri.href, this.requestOptions );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( request )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, request.url );
+                callback( undefined );
+            } );
+        }
+        */
+    }
+
+</script>
