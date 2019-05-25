@@ -92,7 +92,8 @@
                 content = content.replace( /<\/img/g, '</source');
                 domElement.innerHTML = content;
                 return Promise.resolve();
-            } );
+            } )
+            .catch( error => Promise.resolve() );
         }
 
         /**
