@@ -115,7 +115,7 @@
          * it will be closed after injecting the script (or after 30 seconds in case an error occured)
          */
         fetchUI( request, injectionScript, timeout ) {
-            timeout = timeout || 30000;
+            timeout = timeout || 60000;
             return new Promise( ( resolve, reject ) => {
                 let win = new this.browser( {
                     show: false,
