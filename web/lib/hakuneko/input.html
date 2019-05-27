@@ -64,7 +64,7 @@
                 <input type="text" value="{{ item.value }}" disabled title$="[[ item.value ]]"/>
             </div>
             <div class="shrink">
-                <i class="fa fa-fw fa-file item" on-click="clickChooseFile"></i>
+                <i class="fas fa-fw fa-file item" on-click="clickChooseFile"></i>
             </div>
         </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.directory) ]]" restamp="false">
@@ -72,7 +72,7 @@
                 <input type="text" value="{{ item.value }}" disabled title$="[[ item.value ]]"/>
             </div>
             <div class="shrink">
-                <i class="fa fa-fw fa-folder-open item" title="Browse &hellip;" on-click="clickChooseDirectory"></i>
+                <i class="fas fa-fw fa-folder-open item" title="Browse &hellip;" on-click="clickChooseDirectory"></i>
             </div>
         </template>
     </template>

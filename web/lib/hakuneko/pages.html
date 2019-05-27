@@ -98,16 +98,16 @@
             <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
                 <div class="buttons">
                     <span class="title">[[ selectedChapter.title ]]</span>
-                    <i class="fa fa-chevron-down fa-2x button" title="Chapter Down" on-click="requestChapterDown"></i>
-                    <i class="fa fa-chevron-up fa-2x button" title="Chapter Up" on-click="requestChapterUp"></i>
+                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down" on-click="requestChapterDown"></i>
+                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up" on-click="requestChapterUp"></i>
                     &nbsp;
-                    <i class="fa fa-compress fa-2x button" title="Decrease spacing between images" on-click="decreaseImagePadding"></i>
-                    <i class="fa fa-expand fa-2x button" title="Increase spacing between images" on-click="increaseImagePadding"></i>
+                    <i class="fas fa-compress fa-2x button" title="Decrease spacing between images" on-click="decreaseImagePadding"></i>
+                    <i class="fas fa-expand fa-2x button" title="Increase spacing between images" on-click="increaseImagePadding"></i>
                     &nbsp;
-                    <i class="fa fa-search-plus fa-2x button" title="Zoom In" on-click="zoomIn"></i>
-                    <i class="fa fa-search-minus fa-2x button" title="Zoom Out" on-click="zoomOut"></i>
+                    <i class="fas fa-search-plus fa-2x button" title="Zoom In" on-click="zoomIn"></i>
+                    <i class="fas fa-search-minus fa-2x button" title="Zoom Out" on-click="zoomOut"></i>
                     &nbsp;
-                    <i class="fa fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
+                    <i class="fas fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
                 </div>
                 <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
                     <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%; margin: [[ imagePadding ]]em;"></div>

@@ -92,7 +92,7 @@
                     </td>
                     <td width="1">
                         <input id="paste" />
-                        <i class="fa fa-fw fa-clipboard button" on-click="onPasteClick" title="Click to paste manga links from the clipboard (CTRL + V)"></i>
+                        <i class="fas fa-fw fa-paste button" on-click="onPasteClick" title="Click to paste manga links from the clipboard (CTRL + V)"></i>
                     </td>
                 </tr>
             </table>
@@ -100,20 +100,18 @@
         <table class="filter separator">
             <tr>
                 <td>
-                    <!-- <i class="fa fa-server" title="Select an origin from which mangas/animes should be shown"></i> -->
-                    <i class="fa fa-fw fa-plug fa-flip-horizontal" title="Select a website from which the manga list should be shown"></i>
-                    <!-- <i class="fa fa-link" title="Select a connector to show its locally stored manga list"></i> -->
+                    <i class="fas fa-fw fa-plug fa-flip-horizontal" title="Select a website from which the manga list should be shown"></i>
                 </td>
                 <td style="width: 100%;">
                     <hakuneko-connectors selected-connector="{{ selectedConnector }}"></hakuneko-connectors>
                 </td>
                 <td>
-                    <i class$="fa fa-fw fa-refresh [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
+                    <i class$="fas fa-fw fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <i class="fa fa-fw fa-search" title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"></i>
+                    <i class="fas fa-fw fa-search" title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"></i>
                 </td>
                 <td>
                     <input type="text" value="{{ mangaPattern::input }}"/>
