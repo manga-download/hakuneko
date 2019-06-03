@@ -16,19 +16,7 @@
             super.label      = '漫画看 (MHKAN)';
             this.tags        = [ 'webtoon', 'chinese' ];
             this.url         = 'https://www.mhkan.com';
-
-            // register a protocol handler to intercept requests (with custom 'connector' protocol) and extract images
-            //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
-
-        /*** OVERWRITE WHEN INITIALIZATION SHALL BE PERFORMED BEFORE ACCESSING WEBSITE ***/
-        /*
-        // e.g. Bypass CloudFlare protection
-        _initializeConnector() {
-            let request = new Request( this.url, this.requestOptions );
-            return Engine.Request.fetchUI( request, '' );
-        }
-        */
 
         /**
          * 
@@ -108,53 +96,11 @@
             } );
         }
 
-        /*** VARIANT WITH PAGINATION ***
-        
-        _getChapterListFromPages( manga, chapterPageLinks, index ) {
-            index = index || 0;
-            let request = new Request( chapterPageLinks[ index ], this.requestOptions );
-            return this.fetchDOM( request, 'ul.chapters li a', 5 )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                if( index < chapterPageLinks.length - 1 ) {
-                    return this._getChapterListFromPages( manga, chapterPageLinks, index + 1 )
-                    .then( chapters => chapterList.concat( chapters ) );
-                } else {
-                    return Promise.resolve( chapterList );
-                }
-            } );
-        }
-
-        _getChapterList( manga, callback ) {
-            let request = new Request( this.url + manga.id, this.requestOptions );
-            this.fetchDOM( request, 'ul.pagination li:last-of-type a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + '/' + ( page + 1 ) );
-                return this._getChapterListFromPages( manga, pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-        */
-
         /**
          *
          */
         _getPageList( manga, chapter, callback ) {
             let request = new Request( this.url + chapter.id, this.requestOptions );
-            // http://api.mhkan.com
             let script = `Promise.resolve( chapterImages.map( image => image.includes(':') ? image : SinConf.resHost[0].domain[0] + '/' + chapterPath + image ) );`;
             Engine.Request.fetchUI( request, script )
             .then( data => {
@@ -166,42 +112,6 @@
                 callback( error, undefined );
             } );
         }
-
-        /*** VARIANT WITH PROTOCOL HANDLER ***
-
-        _getPageList( manga, chapter, callback ) {
-            let request = new Request( this.url + chapter.id, this.requestOptions );
-            this.fetchDOM( request, 'div#viewer source' )
-            .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( this.getAbsolutePath( element.dataset.url, request.url ) );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-        }
-
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            let request = new Request( uri.href, this.requestOptions );
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
-            } );
-        }
-        */
     }
 
 </script>
