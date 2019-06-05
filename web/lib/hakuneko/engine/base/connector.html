@@ -359,8 +359,8 @@
         getRootRelativeOrAbsoluteLink( reference, base ) {
             let uri = new URL( this.getAbsolutePath( reference, base ) );
             // FIXME: this is always true ...
-            if( uri.hostname === uri.hostname ) {
-                // same doamin => return only path
+            if( uri.hostname === new URL( base ).hostname ) {
+                // same domain => return only path
                 return uri.pathname + uri.search + uri.hash;
             } else {
                 // cross domain => return absolute link
