@@ -82,11 +82,12 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, this.queryChapters )
+            let uri = new URL( manga.id, this.url );
+            this.fetchDOM( uri.href, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: ''
                     };
@@ -103,7 +104,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let uri = new URL( this.url + chapter.id );
+            let uri = new URL( chapter.id, this.url );
             uri.searchParams.set( 'style', 'list' );
             this.fetchDOM( uri.href, this.queryPages )
             .then( data => {
