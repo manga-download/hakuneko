@@ -54,7 +54,7 @@
                 rank: 'all',
                 status: 'all'
             } );
-            fetch( this.url + '/query/web401/mrs_filter', this.requestOptions )
+            fetch( this.url + '/query/web401/mrs_filter?country=United%20States', this.requestOptions )
             .then( response => {
                 return this._getJsonResponse( response, 'manga' );
              } )
@@ -97,7 +97,7 @@
         _getChapterList( manga, callback ) {
             this.requestOptions.method = 'GET';
             this.requestOptions.body = undefined;
-            fetch( this.url + '/query/web401/info?oid=' + manga.id, this.requestOptions )
+            fetch( this.url + '/query/web401/info?country=United%20States&oid=' + manga.id, this.requestOptions )
             .then( response => this._getJsonResponse( response, 'chapter' ) )
             .then( data => {
                 let chapterList = data.chapters.reverse().map( chapter => {
@@ -121,7 +121,7 @@
         _getPageList( manga, chapter, callback ) {
             this.requestOptions.method = 'GET';
             this.requestOptions.body = undefined;
-            fetch( this.url + '/query/web401/pages?oid=' + chapter.id, this.requestOptions )
+            fetch( this.url + '/query/web401/pages?country=United%20States&oid=' + chapter.id, this.requestOptions )
             .then( response => this._getJsonResponse( response, 'page' ) )
             .then( data => {
                 let pageList = data.map( link => {
