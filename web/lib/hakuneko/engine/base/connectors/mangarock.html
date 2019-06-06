@@ -114,14 +114,14 @@
         _getChapterList( manga, callback ) {
             this.requestOptions.method = 'GET';
             this.requestOptions.body = undefined;
-            fetch( this.apiURL + '/query/web401/info?country=United%20States&oid=' + manga.id, this.requestOptions )
-            .then( response => this._getJsonResponse( response, 'chapter' ) )
+            let request = new Request( this.url + '/manga/' + manga.id, this.requestOptions );
+            this.fetchDOM( request, 'tbody[data-test="chapter-table"] tr td:first-of-type a' )
             .then( data => {
-                let chapterList = data.chapters.reverse().map( chapter => {
+                let chapterList = data.map( element => {
                     return {
-                        id: chapter.oid,
-                        title: chapter.name,
-                        language: 'en'
+                        id: element.href.split( '/' ).pop(),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: ''
                     };
                 } );
                 callback( null, chapterList );
@@ -138,7 +138,7 @@
         _getPageList( manga, chapter, callback ) {
             this.requestOptions.method = 'GET';
             this.requestOptions.body = undefined;
-            fetch( this.apiURL + '/query/web401/pages?country=United%20States&oid=' + chapter.id, this.requestOptions )
+            fetch( this.apiURL + '/query/web401/pages?country=&oid=' + chapter.id, this.requestOptions )
             .then( response => this._getJsonResponse( response, 'page' ) )
             .then( data => {
                 let pageList = data.map( link => {
