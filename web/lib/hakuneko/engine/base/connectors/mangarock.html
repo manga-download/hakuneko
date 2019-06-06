@@ -71,7 +71,7 @@
                 rank: 'all',
                 status: 'all'
             } );
-            fetch( this.apiURL + '/query/web401/mrs_filter?country=United%20States', this.requestOptions )
+            fetch( this.apiURL + '/query/web401/mrs_filter?country=', this.requestOptions )
             .then( response => {
                 return this._getJsonResponse( response, 'manga' );
              } )
