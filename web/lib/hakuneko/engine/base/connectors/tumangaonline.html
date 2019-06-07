@@ -124,18 +124,27 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            fetch( request )
             .then( response => {
                 if( !response.redirected ) {
                     throw new Error( 'No redirect detected ...' + response.url );
                 }
-                return this.fetchDOM( response.url.replace( /paginated[\/]?\d*$/, 'cascade' ), 'div.viewer-container source.viewer-image' )
+                request = new Request( response.url.replace( /paginated[\/]?\d*$/, 'cascade' ), this.requestOptions );
+                return fetch( request )
             } )
+            .then( response => response.text() )
             .then( data => {
-                let pageList = data.map( element => {
+                let pageList = [];
+                let match = undefined;
+                let regex = new RegExp( /img_\w+\.src\s*=\s*['"]([^'"]+)['"]/g );
+                while( match = regex.exec( data ) ) {
+                    pageList.push( this.getAbsolutePath( match[1], request.url ) );
+                }
+                pageList = pageList.map( link => {
                     // NOTE: Use custom protocol and protocol handler to assign the X-User-Agent
                     //       header from this connector (cloudflare challenge consistency)
-                    let uri = new URL( element.src );
+                    let uri = new URL( link );
                     uri.protocol = this.id;
                     return uri.href;
                 } );
