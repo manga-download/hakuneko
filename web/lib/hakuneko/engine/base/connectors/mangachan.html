@@ -15,7 +15,7 @@
             super.id         = 'mangachan';
             super.label      = 'Манга-тян (Manga-chan)';
             this.tags        = [ 'manga', 'russian' ];
-            this.url         = 'https://mangachan.me';
+            this.url         = 'https://manga-chan.me';
         }
 
         /**
@@ -91,7 +91,9 @@
             fetch( request )
             .then( response => response.text() )
             .then( data => {
-                let pageList = JSON.parse( '[' + data.match( /['"]fullimg['"]\s*:\s*\[\s*(".*?")\s*,?\s*\]/ )[1] + ']' );            
+                let pageList = JSON.parse( '[' + data.match( /['"]fullimg['"]\s*:\s*\[\s*(".*?")\s*,?\s*\]/ )[1] + ']' )
+                // temporary fix image CDN for old domain which are no longer available
+                .map( link => link.replace( /img\d+\.manga-chan\.me/, 'manga-chan.me' ) );          
                 callback( null, pageList );
             } )
             .catch( error => {
