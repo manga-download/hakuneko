@@ -16,6 +16,9 @@
             super.label      = '漫画看 (MHKAN)';
             this.tags        = [ 'webtoon', 'chinese' ];
             this.url         = 'https://www.mhkan.com';
+
+            // prevent cover images from loading to speed up fetchUI
+            Engine.Blacklist.addPattern( '*://res.mhkan.com/images/cover*' );
         }
 
         /**
