@@ -12,7 +12,7 @@
         /**
          *
          */
-        constructor( blacklist ) {
+        constructor() {
             super();
             let electron = require( 'electron' );
             this.webframe = electron.webFrame;
@@ -20,7 +20,6 @@
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             this.browser = this.electronRemote.BrowserWindow;
             this.userAgent = UserAgent.random();
-            this.blacklist = blacklist;
 
             // register 'cache' as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
             // this cannot be done in main process of electron, so it is done here ...
@@ -125,7 +124,7 @@
                     }
                 } );
                 //win.webContents.openDevTools();
-                win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist.patterns }, ( details, callback ) => {
+                win.webContents.session.webRequest.onBeforeRequest( { urls: Engine.Blacklist.patterns }, ( details, callback ) => {
                     callback( { cancel: true } );
                 } );
 

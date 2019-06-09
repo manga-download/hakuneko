@@ -58,7 +58,7 @@
          */
         static get Request() {
             if( !this._instanceRequest ) {
-                this._instanceRequest = new RequestElectron( Engine.Blacklist );
+                this._instanceRequest = new RequestElectron();
             }
             return this._instanceRequest;
         }
