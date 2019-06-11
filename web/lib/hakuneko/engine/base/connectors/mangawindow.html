@@ -1,118 +1,21 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="anyacg.html">
 
 <script>
 
     /**
      *
      */
-    class MangaWindow extends Connector {
+    class MangaWindow extends AnyACG {
 
         /**
          *
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangawindow';
             super.label      = 'MangaWindow';
             this.tags        = [ 'manga', 'multi-lingual' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://mangawindow.net';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-        }
-
-        /**
-         *
-         */
-        _getMangaListFromPages( mangaPageLinks, index ) {
-            if( index === undefined ) {
-                index = 0;
-            }
-            return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div#series-list div.item-text', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    let a = element.querySelector( 'a.item-title' );
-                    let language = element.querySelector( 'span.item-flag' );
-                    language = language ? ' (' + language.className.match( /flag_([_a-z]*)/ )[1].replace( /_/g, '-' ) + ')' : '';
-                    this.cfMailDecrypt( a );
-                    return {
-                        id: this.getRelativeLink( a ),
-                        title: a.text.trim() + language
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                    .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
-        }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/browse?sort=title', 'nav.pager ul.pagination li.page-item:nth-last-child(2) a.page-link' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/browse?sort=title&page=' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'div.chapter-list div.main a.chapt' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( /-?\s+Read\s+Online/i, '' ).trim(),
-                        language: ''
-                    };
-                } );             
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let pages = data.match( /var\s+images\s*=\s*(\{.*\})\s*;/ )[1];
-                let pageList = Object.values( JSON.parse( pages ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
         }
     }
 
