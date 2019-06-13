@@ -22,9 +22,6 @@
             this.requestOptions.headers.set( 'x-referer', this.url );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'tumangaonline' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -131,54 +128,15 @@
                     throw new Error( 'No redirect detected ...' + response.url );
                 }
                 request = new Request( response.url.replace( /paginated[\/]?\d*$/, 'cascade' ), this.requestOptions );
-                return fetch( request )
+                return this.fetchDOM( request, 'div.viewer-image-container source' );
             } )
-            .then( response => response.text() )
             .then( data => {
-                let pageList = [];
-                let match = undefined;
-                let regex = new RegExp( /img_\w+\.src\s*=\s*['"]([^'"]+)['"]/g );
-                while( match = regex.exec( data ) ) {
-                    pageList.push( this.getAbsolutePath( match[1], request.url ) );
-                }
-                pageList = pageList.map( link => {
-                    // NOTE: Use custom protocol and protocol handler to assign the X-User-Agent
-                    //       header from this connector (cloudflare challenge consistency)
-                    let uri = new URL( link );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
-            } );
-        }
-
-        /**
-         * This protocol handler is just a workaround, because requests made by the BrowserWindow
-         * may not use the same User-Agent which was used to solve cloudflare ...
-         */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => {
-                return this._blobToBuffer( data );
-            } )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
             } );
         }
     }
