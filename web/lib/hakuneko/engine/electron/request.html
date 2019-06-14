@@ -65,6 +65,21 @@
         /**
          *
          */
+        get _domPreparationScript() {
+            return `
+                {
+                    let images = [...document.querySelectorAll( 'img[onerror]' )];
+                    for( let image of images ) {
+                        image.removeAttribute( 'onerror' );
+                        image.onerror = undefined;
+                    }
+                }
+            `;
+        }
+
+        /**
+         *
+         */
         get _cfCheckScript() {
             // ensure variables in this script does not appear in the page or other injected script
             let uVar = [
@@ -120,10 +135,12 @@
                     show: false,
                     webPreferences: {
                         nodeIntegration: false,
-                        webSecurity: true
+                        webSecurity: true,
+                        images: false
                     }
                 } );
                 //win.webContents.openDevTools();
+                // TODO: blacklist seems to be applied to all web requests, not just to the one in this browser window
                 win.webContents.session.webRequest.onBeforeRequest( { urls: Engine.Blacklist.patterns }, ( details, callback ) => {
                     callback( { cancel: true } );
                 } );
@@ -136,6 +153,10 @@
                         reject( new Error( `Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout/1000)} seconds!` ) );
                     }
                 }, timeout );
+
+                win.webContents.on( 'dom-ready', event => {
+                    win.webContents.executeJavaScript( this._domPreparationScript );
+                } );
 
                 win.webContents.on( 'did-finish-load', event => {
                     win.webContents.executeJavaScript( this._cfCheckScript )
