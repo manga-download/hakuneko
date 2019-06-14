@@ -12,15 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'readcomicbooksonline';
             super.label      = 'ComicPunch';
             this.tags        = [ 'comic', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://comicpunch.net';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
             // register a protocol handler to intercept requests (with custom 'readcomicbooksonline' protocol) and extract images
             Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
@@ -30,7 +25,8 @@
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + '/comics-list', 'div.content table tr td span a' )
+            let request = new Request( this.url + '/comics-list', this.requestOptions );
+            this.fetchDOM( request, 'div#block-system-main div.view-content table tbody tr td a' )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
