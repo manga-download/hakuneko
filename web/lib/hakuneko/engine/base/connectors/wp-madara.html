@@ -87,7 +87,7 @@
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri.href ),
                         title: element.text.replace( manga.title, '' ).trim(),
                         language: ''
                     };
