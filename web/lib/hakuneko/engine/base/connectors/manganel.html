@@ -26,7 +26,7 @@
             this.queryMangasPageCount = 'div.group_page a.page_last:last-of-type';
             this.queryMangas = 'div.truyen-list h3 a';
             this.queryChapters = 'div.chapter-list div.row span a';
-            this.queryPages = '#vungdoc source';
+            this.queryPages = 'div#vungdoc source, div.vung-doc source, div.vung_doc source';
         }
 
         /**
@@ -88,7 +88,7 @@
                 return response.text();
             } )
             .then( data => {
-                let redirect = data.match( /window\.location.*?(http.*?)[;'"]/ );
+                let redirect = data.match( /window\.location\s*=\s*['"](http[s]:\/\/[^'"]+)['"]\s*[;\r\n]/ );
                 return this.fetchDOM( redirect ? redirect[1] : uri, this.queryChapters );
             } )
             .then( data => {
@@ -113,7 +113,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
-            let uri = ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id;
+            let uri = ( new URL( chapter.id, this.url ) ).href; // ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id;
             this.fetchDOM( uri, this.queryPages )
             .then( data => {
                 let pageList = data.map( element => element.src );
