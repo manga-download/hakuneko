@@ -76,13 +76,24 @@
                 cursor: pointer;
                 margin: 0.25em;
             }
+            #fullscreen {
+                width: 100%;
+                height: 100%;
+                background-color: var(--page-video-background-color);
+            }
             #video {
                 width: 100%;
-                background-color: rgba(0, 0, 0, 0.25);
+                height: 100%;
+                object-fit: contain;
+                outline: none !important;
+            }
+            video::-webkit-media-controls-fullscreen-button {
+                display: none;
             }
             /* hack to allow video to expand size when wrapped in subtitle container */
             .ASS-container, .ASS-container svg {
                 width: 100% !important;
+                height: 100% !important;
             }
             /* hack to show subtitles when video is in fullscreen mode */
             .ASS-stage {
@@ -114,12 +125,14 @@
                 </template>
             </template>
             <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
-                <video id="video" controls disablePictureInPicture controlsList="nodownload">
-                    <!-- dummy tracks to show subtitle menu in video player -->
-                    <template is="dom-repeat" items="[[ media.subtitles ]]">
-                        <track kind="subtitles" src="data:text/vtt,WEBVTT" label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
-                    </template>
-                </video>
+                <div id="fullscreen" on-dblclick="toggleFullscreen">
+                    <video id="video" controls disablePictureInPicture controlsList="nodownload nofullscreen">
+                        <!-- dummy tracks to show subtitle menu in video player -->
+                        <template is="dom-repeat" items="[[ media.subtitles ]]">
+                            <track kind="subtitles" src="data:text/vtt,WEBVTT" label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
+                        </template>
+                    </video>
+                </div>
             </template>
         </div>
     </template>
@@ -209,6 +222,19 @@
                         tracks.onchange = this.onSelectedSubtitleChanged.bind( this );
                     }
                 }
+            }
+
+            /**
+             * 
+             */
+             toggleFullscreen( event ) {
+                if( document.fullscreenElement ) {
+                    document.exitFullscreen();
+                } else {
+                    this.shadowRoot.querySelector( '#fullscreen' ).requestFullscreen();
+                }
+                event.preventDefault();
+                return false;
             }
 
             /**
