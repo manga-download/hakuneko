@@ -14,18 +14,128 @@
             super();
             super.id         = 'porncomix';
             super.label      = 'PornComix';
-            this.tags        = [];
+            this.tags        = [ 'hentai', 'english' ];
             this.url         = 'http://www.porncomix.info';
+
+            // register a protocol handler to intercept requests (with custom 'porncomix' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
+        /**
+         * Overwrite base function to get manga from clipboard link.
+         */
+        _getMangaFromURI( uri ) {
+            return this.fetchDOM( uri.href, 'div.main div.content div.posts h2.post-title', 3 )
+            .then( data => {
+                let id = uri.pathname;
+                let title = data[0].textContent.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
+            return this.fetchDOM( request, 'div.main div.content div.posts div.post > a', 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
+                        title: element.title.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
         _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            let request = new Request( this.url, this.requestOptions );
+            this.fetchDOM( request, 'div.main div.content div.posts div.paginator a:last-of-type' )
+            .then( data => {
+                let pageCount = parseInt( data[0].href.match( /(\d+)\/?$/ )[1].trim() );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + '/page/' + ( page + 1 ) + '/' );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
         }
+
+        /**
+         *
+         */
         _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            Promise.resolve()
+            .then( () => {
+                let chapterList = [ {
+                    id: manga.id,
+                    title: manga.title,
+                    language: ''
+                } ];
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
         }
+
+        /**
+         *
+         */
         _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div.posts div.single-post dl.gallery-item dt a' )
+            .then( data => {
+                let pageList = data.map( element => {
+                    let uri = new URL( this.getAbsolutePath( element, request.url ) );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            request = new Request( uri.href, this.requestOptions );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            this.fetchDOM( request, 'div.posts div.single-post div.attachment-image source' )
+            .then( data => {
+                request = new Request( this.getAbsolutePath( data[0], request.url ), this.requestOptions );
+                return fetch( request );
+            } )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, request.url );
+                callback( undefined );
+            } );
         }
     }
 
