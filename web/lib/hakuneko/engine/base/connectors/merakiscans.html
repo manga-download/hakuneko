@@ -77,7 +77,7 @@
             } )
             .then( data => {
                 let pages = data.match( /var\s+images\s*=\s*(\[.*?\])\s*;/ )[1];
-                let pageList = JSON.parse( pages ).map( p => this.url + '/manga' +chapter.id + p );
+                let pageList = JSON.parse( pages ).map( p => this.url + chapter.id + p );
                 callback( null, pageList );
             } )
             .catch( error => {
