@@ -105,6 +105,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             let uri = new URL( chapter.id, this.url );
+            // TODO: setting this parameter seems to be problematic for various website (e.g. ChibiManga server will crash)
             uri.searchParams.set( 'style', 'list' );
             this.fetchDOM( uri.href, this.queryPages )
             .then( data => {
