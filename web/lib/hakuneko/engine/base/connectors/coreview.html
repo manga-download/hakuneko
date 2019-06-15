@@ -26,6 +26,9 @@
             this.queryManga = 'article.series-list-wrapper ul.series-list > li.series-list-item > a';
             this.queryMangaTitle = 'h2.series-list-title';
 
+            this.queryChaptersReadableList = 'div.js-readable-product-list';
+            this.queryChaptersLatestContainer = 'div.js-latest-readable-product-list';
+            this.queryChaptersFirstContainer = 'div.js-first-readable-product-list';
             this.queryChaptersMoreContainer = 'section.read-more-container';
             this.queryChaptersMoreButton = 'button[data-read-more-endpoint]';
             
@@ -79,25 +82,48 @@
         /**
          *
          */
+        _insertEndpoint( uri, domElement ) {
+            let request = new Request( uri, this.requestOptions );
+            return fetch( request )
+            .then( response => response.json() )
+            .then( data => {
+                let content = data.html;
+                content = content.replace( /<img/g, '<source');
+                content = content.replace( /<\/img/g, '</source');
+                domElement.innerHTML = content;
+                return Promise.resolve();
+            } )
+            .catch( error => Promise.resolve() );
+        }
+
+        /**
+         *
+         */
         _getChapterList( manga, callback ) {
             fetch( this.url + manga.id, this.requestOptions )
             .then( response => response.text() )
             .then( data => {
                 let dom = this.createDOM( data );
-                let readMore = dom.querySelector( this.queryChaptersMoreContainer + ' ' + this.queryChaptersMoreButton );
-                if( !readMore ) {
-                    return Promise.resolve( dom );
-                } else {
-                    return fetch( dom.querySelector( this.queryChaptersMoreButton ).dataset.readMoreEndpoint, this.requestOptions )
-                    .then( response => response.json() )
-                    .then( data => {
-                        let content = data.html;
-                        content = content.replace( /<img/g, '<source');
-                        content = content.replace( /<\/img/g, '</source');
-                        dom.querySelector( this.queryChaptersMoreContainer ).innerHTML = content;
-                        return Promise.resolve( dom );
-                    } );
+                let promises = [];
+
+                let readList = dom.querySelector( this.queryChaptersReadableList );
+                if( readList && readList.dataset['latestListEndpoint'] ) {
+                    let promise = this._insertEndpoint( readList.dataset.latestListEndpoint, dom.querySelector( this.queryChaptersLatestContainer ) );
+                    promises.push( promise );
                 }
+                if( readList && readList.dataset['firstListEndpoint'] ) {
+                    let promise = this._insertEndpoint( readList.dataset.firstListEndpoint, dom.querySelector( this.queryChaptersFirstContainer ) );
+                    promises.push( promise );
+                }
+
+                let readMore = dom.querySelector( this.queryChaptersMoreContainer + ' ' + this.queryChaptersMoreButton );
+                if( readMore && readMore.dataset['readMoreEndpoint'] ) {
+                    let promise = this._insertEndpoint( readMore.dataset.readMoreEndpoint, dom.querySelector( this.queryChaptersMoreContainer ) );
+                    promises.push( promise );
+                }
+
+                return Promise.all( promises )
+                .then( () => Promise.resolve( dom ) );
             } )
             .then( dom => [...dom.querySelectorAll( this.queryChapters )] )
             .then( data => {

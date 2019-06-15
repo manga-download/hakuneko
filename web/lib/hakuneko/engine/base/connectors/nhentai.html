@@ -14,18 +14,59 @@
             super();
             super.id         = 'nhentai';
             super.label      = 'NHentai';
-            this.tags        = [];
+            this.tags        = [ 'hentai' ];
             this.url         = 'https://nhentai.net';
         }
 
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        /**
+         * 
+         */
+        _getMangaFromURI( uri ) {
+            let request = new Request( uri.href, this.requestOptions );
+            return this.fetchDOM( request, 'div#info-block div#info h1' )
+            .then( data => {
+                let id = uri.pathname + uri.search;
+                let title = data[0].innerText.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
         }
+
+        /**
+         *
+         */
+         _getMangaList( callback ) {
+            let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
+            callback( new Error( msg ), undefined );
+        }
+
+        /**
+         *
+         */
         _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            Promise.resolve()
+            .then( () => {
+                callback( null, [ Object.assign( { language: '' }, manga ) ] );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
         }
+
+        /**
+         *
+         */
         _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div#thumbnail-container a.gallerythumb source' )
+            .then( data => {
+                let pageList = data.map( element => element.dataset['src'].replace( 't.', 'i.' ).replace( 't.', '.' ) );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
         }
     }
 

@@ -147,22 +147,22 @@
         <input type="text" class="button" on-click="showPopup" value$="[[ selectedConnector.label ]]" readonly />
         <div class$="popup [[ getPopupClass(popupVisibility) ]]">
             <div class="controls" title="Click to cancel the website selection">
-                <i class="fa fa-times-circle fa-2x button" on-click="closePopup"></i>
+                <i class="fas fa-times-circle fa-2x button" on-click="closePopup"></i>
             </div>
             <div class="content">
                 <div class="filters">
                     <div class="separator">
-                        <i class="fa fa-plug"></i>
+                        <i class="fas fa-plug"></i>
                         <label>Website</label>
                     </div>
                     <input id="connectorPattern" class="pattern" type="text" value="{{ connectorPattern::input }}"  title="Show only websites with a name that matches the entered pattern (case-insensitive)"/>
                     <div class="separator">
-                        <i class="fa fa-book"></i>
+                        <i class="fas fa-book"></i>
                         <label>Manga</label>
                     </div>
                     <input id="mangaPattern" class="pattern" type="text" value="{{ mangaPattern::input }}" on-keyup="filterConnectorsByManga" title="Show only websites with a manga that matches the entered pattern (case-insensitive)&#10;Searches only in local synchronized manga lists&#10;Press ENTER to perform the search"/>
                     <div class="separator">
-                        <i class="fa fa-tags" title="Show only websites containing the selected tags"></i>
+                        <i class="fas fa-tags" title="Show only websites containing the selected tags"></i>
                         <label>Tags</label>
                     </div>
                     <div class="scroll tags">
@@ -173,7 +173,7 @@
                 </div>
                 <div class="connectors">
                     <div class="separator">
-                        <i class="fa fa-times button clear" title="Reset all filters" on-click="clearFilters"></i>
+                        <i class="fas fa-times button clear" title="Reset all filters" on-click="clearFilters"></i>
                         <label>Connectors</label>
                     </div>
                     <div class="scroll">
@@ -184,7 +184,7 @@
                                     <div class="heading">
                                         <div class="title">[[ item.label ]]</div>
                                         <div class$="control">
-                                            <i class="fa fa-external-link-square button" title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha" on-click="openWebsite"></i>
+                                            <i class="fas fa-external-link-square-alt button" title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha" on-click="openWebsite"></i>
                                         </div>
                                     </div>
                                     <div>

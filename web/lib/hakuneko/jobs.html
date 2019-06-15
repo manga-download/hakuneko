@@ -77,7 +77,7 @@
             <table cellpadding="0">
                 <template is="dom-repeat" items="[[ jobList ]]" initial-count="500" target-framerate="5">
                     <tr title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]">
-                        <td class="fa-fw"><i class$="fa [[ getStatusClass(item.status) ]] fa-fw" title$="[[ getErrorTitle(item.errors) ]]" on-click="restartDownload"></i></td>
+                        <td class="fa-fw"><i class$="fas [[ getStatusClass(item.status) ]] fa-fw" title$="[[ getErrorTitle(item.errors) ]]" on-click="restartDownload"></i></td>
                         <td class="cell">[[ item.labels.connector ]]</td>
                         <td class="cell">[[ item.labels.manga ]]</td>
                         <td class="cell">[[ item.labels.chapter ]]</td>
@@ -88,7 +88,7 @@
         </div>
         <div class="bar">
             <div class="expander">
-                <i class$="fa [[ getButtonClass(popupVisibility) ]] button" title="Toggle download list" on-click="toggleJobList"></i>
+                <i class$="fas [[ getButtonClass(popupVisibility) ]] button" title="Toggle download list" on-click="toggleJobList"></i>
             </div>
             <div class="status">[[ jobList.length ]] Download(s)</div>
         </div>
@@ -151,7 +151,7 @@
              * The CSS class depends on the current visibility state.
              */
             getButtonClass( visibility ) {
-                return (visibility ? 'fa-window-close-o' : 'fa-bar-chart');
+                return (visibility ? 'fa-window-close' : 'fa-chart-bar'); // fa-tasks
             }
 
             /**
@@ -165,9 +165,9 @@
                     //case DownloadStatus.available:
                     //    return 'fa-cloud';
                     case DownloadStatus.queued:
-                        return 'fa-clock-o buttonQueued';
+                        return 'fa-clock buttonQueued';
                     case DownloadStatus.downloading:
-                        return 'fa-exchange buttonDownloading';
+                        return 'fa-exchange-alt buttonDownloading';
                     case DownloadStatus.completed:
                         return 'fa-check button buttonCompleted';
                     case DownloadStatus.failed:

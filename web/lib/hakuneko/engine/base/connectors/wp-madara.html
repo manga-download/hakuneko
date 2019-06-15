@@ -82,12 +82,13 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, this.queryChapters )
+            let uri = new URL( manga.id, this.url );
+            this.fetchDOM( uri.href, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim(),
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri.href ),
+                        title: element.text.replace( manga.title, '' ).trim(),
                         language: ''
                     };
                 } );
@@ -103,11 +104,12 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let uri = new URL( this.url + chapter.id );
+            let uri = new URL( chapter.id, this.url );
+            // TODO: setting this parameter seems to be problematic for various website (e.g. ChibiManga server will crash)
             uri.searchParams.set( 'style', 'list' );
             this.fetchDOM( uri.href, this.queryPages )
             .then( data => {
-                let pageLinks = data.map( element => ( element.dataset['src'] || element.src ).trim() );
+                let pageLinks = data.map( element => this.getAbsolutePath( element.dataset['src'] || element, uri.href ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {

@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="mangachan.html">
 
 <script>
 
     /**
      * Template: MangaChan
      */
-    class HenChan extends Connector {
+    class HenChan extends MangaChan {
 
         /**
          *
@@ -13,19 +13,12 @@
         constructor() {
             super();
             super.id         = 'henchan';
-            super.label      = 'HenChan';
-            this.tags        = [];
-            this.url         = 'http://henchan.me';
-        }
+            super.label      = 'Хентай-тян! (Hentai-chan)';
+            this.tags        = [ 'hentai', 'russian' ];
+            this.url         = 'http://h-chan.me';
 
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            this.path = '/manga/new';
+            this.queryChapters = 'div.extaraNavi p.extra_off:last-of-type a';
         }
     }
 

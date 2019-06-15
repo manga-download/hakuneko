@@ -12,15 +12,14 @@
         /**
          *
          */
-        constructor( blacklist ) {
+        constructor() {
             super();
             let electron = require( 'electron' );
             this.electronRemote = electron.remote;
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             this.browser = this.electronRemote.BrowserWindow;
             this.userAgent = UserAgent.random();
-            this.blacklist = blacklist;
-            
+
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
@@ -54,6 +53,21 @@
                     this.protocol.registerBufferProtocol( scheme, callback );
                 }
             } );
+        }
+
+        /**
+         *
+         */
+        get _domPreparationScript() {
+            return `
+                {
+                    let images = [...document.querySelectorAll( 'img[onerror]' )];
+                    for( let image of images ) {
+                        image.removeAttribute( 'onerror' );
+                        image.onerror = undefined;
+                    }
+                }
+            `;
         }
 
         /**
@@ -108,17 +122,19 @@
          * it will be closed after injecting the script (or after 30 seconds in case an error occured)
          */
         fetchUI( request, injectionScript, timeout ) {
-            timeout = timeout || 30000;
+            timeout = timeout || 60000;
             return new Promise( ( resolve, reject ) => {
                 let win = new this.browser( {
                     show: false,
                     webPreferences: {
                         nodeIntegration: false,
-                        webSecurity: true
+                        webSecurity: true,
+                        images: false
                     }
                 } );
                 //win.webContents.openDevTools();
-                win.webContents.session.webRequest.onBeforeRequest( { urls: this.blacklist.patterns }, ( details, callback ) => {
+                // TODO: blacklist seems to be applied to all web requests, not just to the one in this browser window
+                win.webContents.session.webRequest.onBeforeRequest( { urls: Engine.Blacklist.patterns }, ( details, callback ) => {
                     callback( { cancel: true } );
                 } );
 
@@ -130,6 +146,10 @@
                         reject( new Error( `Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout/1000)} seconds!` ) );
                     }
                 }, timeout );
+
+                win.webContents.on( 'dom-ready', event => {
+                    win.webContents.executeJavaScript( this._domPreparationScript );
+                } );
 
                 win.webContents.on( 'did-finish-load', event => {
                     win.webContents.executeJavaScript( this._cfCheckScript )

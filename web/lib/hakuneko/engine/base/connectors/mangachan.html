@@ -15,7 +15,12 @@
             super.id         = 'mangachan';
             super.label      = 'Манга-тян (Manga-chan)';
             this.tags        = [ 'manga', 'russian' ];
-            this.url         = 'https://mangachan.me';
+            this.url         = 'https://manga-chan.me';
+
+            this.path = '/catalog';
+            this.queryMangas = 'div#content div.content_row div.manga_row1 h2 a.title_link';
+            this.queryChapters = 'table.table_cha tr td div.manga2 a';
+            this.queryPages = /['"]fullimg['"]\s*:\s*\[\s*(".*?")\s*,?\s*\]/;
         }
 
         /**
@@ -24,7 +29,7 @@
         _getMangaListFromPages( mangaPageLinks, index ) {
             index = index || 0;
             let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-            return this.fetchDOM( request, 'div#content div.content_row div.manga_row1 h2 a.title_link', 5 )
+            return this.fetchDOM( request, this.queryMangas, 5 )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -45,7 +50,7 @@
          *
          */
         _getMangaList( callback ) {
-            let request = new Request( this.url + '/catalog', this.requestOptions );
+            let request = new Request( this.url + this.path, this.requestOptions );
             this.fetchDOM( request, 'div#pagination span a:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
@@ -66,12 +71,12 @@
          */
         _getChapterList( manga, callback ) {
             let request = new Request( this.url + manga.id, this.requestOptions );
-            this.fetchDOM( request, 'table.table_cha tr td div.manga2 a' )
+            this.fetchDOM( request, this.queryChapters )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
                         id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.replace( manga.title, '' ).trim(),
+                        title: element.text.replace( manga.title, '' ).trim().replace( 'Читать онлайн', manga.title ),
                         language: 'ru'
                     };
                 } );               
@@ -91,7 +96,9 @@
             fetch( request )
             .then( response => response.text() )
             .then( data => {
-                let pageList = JSON.parse( '[' + data.match( /['"]fullimg['"]\s*:\s*\[\s*(".*?")\s*,?\s*\]/ )[1] + ']' );            
+                let pageList = JSON.parse( '[' + data.match( this.queryPages )[1] + ']' )
+                // temporary fix image CDN for old domain which are no longer available
+                .map( link => link.replace( /img\d+\.manga-chan\.me/, 'manga-chan.me' ) );          
                 callback( null, pageList );
             } )
             .catch( error => {

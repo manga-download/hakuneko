@@ -95,10 +95,10 @@
                         Chapter List 
                     </td>
                     <td width="1"> 
-                        <i class$="fa fa-fw button [[ getSortClass(chapterSort) ]]" on-click="onToggleSortClick" title="Click to toggle chapter sorting"></i>
+                        <i class$="fas fa-fw button [[ getSortClass(chapterSort) ]]" on-click="onToggleSortClick" title="Click to toggle chapter sorting"></i>
                     </td>
                     <td width="1"> 
-                        <i class="fa fa-fw fa-download button" on-click="onDownloadChaptersClick" title="Click to download all chapters currently shown in the filtered and sorted list"></i>
+                        <i class="fas fa-fw fa-download button" on-click="onDownloadChaptersClick" title="Click to download all chapters currently shown in the filtered and sorted list"></i>
                     </td>
                 </tr>
             </table>
@@ -106,7 +106,7 @@
         <table class="filter separator">
             <tr>
                 <td>
-                    <i class="fa fa-fw fa-language" title="Select a language to filter the chapter list"></i>
+                    <i class="fas fa-fw fa-language" title="Select a language to filter the chapter list"></i>
                 </td>
                 <td>
                     <select id="languageSelection" value="{{ searchLanguage::change }}">
@@ -120,7 +120,7 @@
             </tr>
             <tr>
                 <td>
-                    <i class="fa fa-fw fa-search" title="Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles"></i>
+                    <i class="fas fa-fw fa-search" title="Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles"></i>
                 </td>
                 <td style="width: 100%;">
                     <input type="text" value="{{ searchPattern::input }}"/>
@@ -132,9 +132,9 @@
         <ul class="list" >
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" sort="[[ sortChapters(chapterSort) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
-                    <i class$="fa fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
-                    <i class="fa fa-fw fa-picture-o button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
-                    <i class$="fa fa-fw button [[ getChapterMarkClass(markedChapterID, item) ]]" on-click="onMarkChapterClick" title$="[[ getChapterMarkTooltip(markedChapterID, item) ]]"></i>
+                    <i class$="fas fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
+                    <i class="far fa-fw fa-image button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
+                    <i class$="fa-fw fa-bookmark button [[ getChapterMarkClass(markedChapterID, item) ]]" on-click="onMarkChapterClick" title$="[[ getChapterMarkTooltip(markedChapterID, item) ]]"></i>
                     <span class$="title [[ item.status ]]" title$="[[ item.title ]]&#10;Doubleclick to open the folder with your file manager" on-dblclick="onShowFileManagerClick">[[ item.title ]]</span>
                 </li>
             </template>
@@ -251,9 +251,9 @@
             getSortClass( chapterSort ) {
                 switch ( chapterSort ) {
                     case this.sort.asc:
-                        return 'fa-sort-asc';
+                        return 'fa-sort-alpha-down';
                     case this.sort.desc:
-                        return 'fa-sort-desc';
+                        return 'fa-sort-alpha-up';
                     default:
                         return 'fa-sort';
                 }
@@ -302,9 +302,9 @@
                     case DownloadStatus.available:
                         return 'fa-cloud buttonAvailable';
                     case DownloadStatus.queued:
-                        return 'fa-cloud-download buttonQueued';
+                        return 'fa-cloud-download-alt buttonQueued';
                     case DownloadStatus.downloading:
-                        return 'fa-cloud-download buttonDownloading';
+                        return 'fa-cloud-download-alt buttonDownloading';
                     case DownloadStatus.completed:
                         return 'fa-folder-open buttonCompleted';
                     case DownloadStatus.failed:
@@ -329,9 +329,9 @@
              */
             getChapterMarkClass( markedChapterID, chapter ) {
                 if( chapter.status === DownloadStatus.offline ) {
-                    return 'fa-bookmark-o markerDisabled';
+                    return 'markerDisabled';
                 }
-                return ( markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ? 'fa-bookmark markerActive' : 'fa-bookmark-o markerInactive');
+                return ( markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ? 'fas markerActive' : 'far markerInactive');
             }
 
             /**

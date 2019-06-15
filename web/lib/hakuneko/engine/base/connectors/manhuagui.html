@@ -34,39 +34,11 @@
         }
 
         /**
-         *
+         * Parameters mangalist and page should never be used by external calls.
          */
-        _getMangaListFromPages( mangaPageLinks, index ) {
-            index = index || 0;
-            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-            return this.fetchDOM( request, 'div.book-list ul#contList li p.ell a', 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                    .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
-        }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            let request = new Request( this.url + '/list/', this.requestOptions );
-            this.fetchDOM( request, 'div.book-list div.pager-cont div.pager a:last-of-type' )
-            .then( data => {
-                let pageCount = parseInt( data[0].href.match( /_p(\d+)\.html$/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + `index_p${ page + 1 }.html` );
-                return this._getMangaListFromPages( pageLinks );
-            } )
+        _getMangaList( callback, mangaList, page ) {
+            let request = new Request( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions );
+            this.fetchJSON( request )
             .then( data => {
                 callback( null, data );
             } )
@@ -125,6 +97,9 @@
             } );
         }
 
+        /**
+         *
+         */
         _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.url ) ).protocol;
