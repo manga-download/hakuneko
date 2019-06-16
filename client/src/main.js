@@ -199,3 +199,9 @@ electron.app.on( 'window-all-closed', closeWindow );
 
 electron.app.on( 'browser-window-focus', () => electron.globalShortcut.register('F11', () => win.setFullScreen(win.isFullScreen() ? false : true)) );
 electron.app.on( 'browser-window-blur', () => electron.globalShortcut.unregister('F11') );
+
+// ignore certificate error (e.g. invalid date)
+electron.app.on( 'certificate-error', ( event, webContents, url, error, certificate, callback ) => {
+    event.preventDefault();
+    callback( true );
+} );
