@@ -90,6 +90,12 @@
                 max: 100,
                 value: 90
             };
+            this.postChapterDownloadCommand = {
+                label: 'Post Command',
+                description: 'This command will be executed after a chapter download is complete.\nThe working directory is the folder containing the downloaded chapter.\nLeave blank to ignore.\n\nSupported placeholders:\n\n%PATH% - Path to downloaded chapter folder/file\n%C% - Connector title\n%M% - Manga title\n%O% - Chapter title',
+                input: Input.text,
+                value: ''
+            };
         }
     }
 

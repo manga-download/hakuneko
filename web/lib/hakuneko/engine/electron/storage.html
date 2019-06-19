@@ -429,19 +429,23 @@
 
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
                     this._createDirectoryChain( output );
-                    return this._saveChapterPagesFolder( output, pageData );
+                    return this._saveChapterPagesFolder( output, pageData )
+                    .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
                     this._createDirectoryChain( this.path.dirname( output ) );
-                    return this._saveChapterPagesCBZ( output, pageData );
+                    return this._saveChapterPagesCBZ( output, pageData )
+                    .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
                     this._createDirectoryChain( this.path.dirname( output ) );
-                    return this._saveChapterPagesPDF( output, pageData );
+                    return this._saveChapterPagesPDF( output, pageData )
+                    .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
                     this._createDirectoryChain( this.path.dirname( output ) );
-                    return this._saveChapterPagesEPUB( output, pageData );
+                    return this._saveChapterPagesEPUB( output, pageData )
+                    .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
 
                 throw new Error( 'Unsupported output format: ' + Engine.Settings.chapterFormat.value );
@@ -576,6 +580,25 @@
                 } )
             } );
             return Promise.all( promises );
+        }
+
+        /**
+         *
+         */
+        _runPostChapterDownloadCommand( chapter, path ) {
+            let command = Engine.Settings.postChapterDownloadCommand.value; // `echo '%C% | %M% | %O%' > "%PATH%.txt"`;
+            if( command ) {
+                command = command.replace( '%PATH%', path );
+                command = command.replace( '%C%', chapter.manga.connector.label );
+                command = command.replace( '%M%', chapter.manga.title );
+                command = command.replace( '%O%', chapter.title );
+                this.exec( command, { cwd: this.path.dirname( path ), windowsHide: true }, error => {
+                    if( error ) {
+                        console.error( error );
+                    }
+                } );
+            }
+            return Promise.resolve();
         }
 
         /**
