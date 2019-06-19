@@ -21,11 +21,16 @@
             //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
-        /*** OVERWRITE WHEN INITIALIZATION SHALL BE PERFORMED BEFORE ACCESSING WEBSITE ***/
-        /*
-        // e.g. Bypass CloudFlare protection
+        /**
+         *
+         */
+        /* OVERWRITE WHEN INITIALIZATION SHALL BE PERFORMED BEFORE ACCESSING WEBSITE
+           e.g. Bypass CloudFlare protection
         _initializeConnector() {
-            let request = new Request( this.url, this.requestOptions );
+            let uri = new URL( this.url );
+            uri.searchParams.set( 'ts', Date.now() );
+            uri.searchParams.set( 'rd', Math.random() );
+            let request = new Request( uri.href, this.requestOptions );
             return Engine.Request.fetchUI( request, '' );
         }
         */
