@@ -28,14 +28,6 @@
                 input: Input.checkbox,
                 value: false
             };
-            this.socketConnections = {
-                label: 'Host Connections',
-                description: 'The maximum number of concurrent connections to a host (use lesser connections for slow internet/servers)',
-                input: Input.numeric,
-                min: 1,
-                max: 32,
-                value: 4
-            };
             this.downloadHistoryLogFormat = {
                 label: 'Download History Format',
                 description: 'Log the history of completed chapter downloads\nThe log file(s) can be found in HakuNeko\'s user data directory',
@@ -89,6 +81,12 @@
                 min: 50,
                 max: 100,
                 value: 90
+            };
+            this.postChapterDownloadCommand = {
+                label: 'Post Command',
+                description: 'This command will be executed after a chapter download is complete.\nThe working directory is the folder containing the downloaded chapter.\nLeave blank to ignore.\n\nSupported placeholders:\n\n%PATH% - Path to downloaded chapter folder/file\n%C% - Connector title\n%M% - Manga title\n%O% - Chapter title',
+                input: Input.text,
+                value: ''
             };
         }
     }

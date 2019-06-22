@@ -8,19 +8,17 @@
     class ReadMNG extends Connector {
 
         /**
-         *
+         * Very similar to mangadoom
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'readmng';
             super.label      = 'ReadMangaToday';
             this.tags        = [ 'manga', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://www.readmng.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'readmng' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -36,7 +34,8 @@
                         return fetch( this.url + '/directory?page=' + page, this.requestOptions );
                     } )
                     */
-                    return fetch( this.url + '/manga-list/' + page, this.requestOptions )
+                    let request = new Request( this.url + '/manga-list/' + page, this.requestOptions );
+                    return fetch( request )
                     .then( response => {
                         if( response.status !== 200 ) {
                             throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
@@ -48,7 +47,7 @@
                         let mangaList = [...dom.querySelectorAll( 'div.manga-list-box span.manga-item a' )].map( element => {
                             this.cfMailDecrypt( element );
                             return {
-                                id: this.getRelativeLink( element ),
+                                id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                                 title: element.text.trim()
                             };
                         } );
@@ -70,7 +69,8 @@
          *
          */
         _getChapterList( manga, callback ) {
-            fetch( this.url + manga.id, this.requestOptions )
+            let request = new Request( this.url + manga.id, this.requestOptions );
+            fetch( request )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
@@ -82,7 +82,7 @@
                 let chapterList = [...dom.querySelectorAll( 'ul.chp_lst li a' )].map( element => {
                     let title = element.querySelector( 'span.val' ).textContent;
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                         title: title.replace( manga.title, '' ).replace( /^\s*-\s*/, '' ).trim(),
                         language: 'en'
                     };
@@ -99,7 +99,8 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id + '/all-pages', this.requestOptions )
+            let request = new Request( this.url + chapter.id + '/all-pages', this.requestOptions );
+            fetch( request )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
@@ -108,13 +109,37 @@
             } )
             .then( data => {
                 let dom = this.createDOM( data );
-                let pageLinks = [...dom.querySelectorAll( 'div.page_chapter source' )].map( element => element.src );
+                let pageLinks = [...dom.querySelectorAll( 'div.page_chapter source' )].map( element => {
+                    let uri = new URL( this.getAbsolutePath( element, request.url ) );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
                 callback( null, pageLinks );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
             } ); 
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            request = new Request( uri.href, this.requestOptions );
+            request.headers.set( 'x-referer', this.url );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( request )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, request.url );
+                callback( undefined );
+            } );
         }
     }
 

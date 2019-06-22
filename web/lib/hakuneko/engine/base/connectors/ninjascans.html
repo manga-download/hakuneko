@@ -12,15 +12,12 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'ninjascans';
             super.label      = 'NinjaScans';
             this.tags        = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://ninjascans.com';
 
-            this.queryPages = 'div.page-break source.wp-manga-chapter-img';
+            this.queryPages = 'div.entry-content picture > source:last-of-type';
         }
     }
 

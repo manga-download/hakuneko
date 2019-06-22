@@ -15,6 +15,7 @@
             super.id         = 'linewebtoon-th';
             super.label      = 'Line Webtoon (Thai)';
             this.tags        = [ 'webtoon', 'thai' ];
+            this.url         = 'https://www.webtoons.com/th';
 
             // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );

@@ -16,25 +16,42 @@
             super.label      = 'MangaLib';
             this.tags        = [ 'manga', 'webtoon', 'russian' ];
             this.url         = 'https://mangalib.me';
-            this.imgCDN      = 'https://img1.mangalib.me'; // img1, img2, img3
+            this.imgCDN      = 'https://img2.mangalib.me'; // img1 (main), img2 (secondary/CDN)
+        }
+
+        /**
+         * 
+         */
+        _getMangaFromURI( uri ) {
+            let request = new Request( uri.href, this.requestOptions );
+            return this.fetchDOM( request, 'meta[itemprop="alternativeHeadline"]' )
+            .then( data => {
+                let id = uri.pathname + uri.search;
+                let title = data[0].content.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
         }
 
         /**
          *
          */
-        _getMangaListFromPages( mangaPageLinks, index ) {
-            index = index || 0;
-            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-            return this.fetchDOM( request, 'div.manga-list-items div.manga-list-item a.manga-list-item__content', 5 )
+        _getMangaListFromPages( token, page ) {
+            page = page || 1;
+            this.requestOptions.method = 'POST';
+            let request = new Request( this.url + '/filterlist?dir=desc&page=' + page, this.requestOptions );
+            request.headers.set( 'x-csrf-token', token );
+            this.requestOptions.method = 'GET';
+            return this.fetchJSON( request )
             .then( data => {
-                let mangaList = data.map( element => {
+                let mangaList = data.items.data.map( item => {
                     return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.title.trim()
+                        id: '/' + item.slug,
+                        title: item.name // name, rus_name
                     };
                 } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                // currently MangaLib seems to be capped at page 20 (1200 mangas)
+                if( data.items.current_page === page ) {
+                    return this._getMangaListFromPages( token, page + 1 )
                     .then( mangas => mangaList.concat( mangas ) );
                 } else {
                     return Promise.resolve( mangaList );
@@ -46,13 +63,9 @@
          *
          */
         _getMangaList( callback ) {
-            let request = new Request( this.url + '/manga-list?dir=desc&sort=name&page=', this.requestOptions );
-            this.fetchDOM( request, 'div.paginator ul.pagination li:nth-last-of-type(2) a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
+            let request = new Request( this.url + '/manga-list', this.requestOptions );
+            this.fetchDOM( request, 'meta[name="_token"]' )
+            .then( data => this._getMangaListFromPages( data[0].content ) )
             .then( data => {
                 callback( null, data );
             } )
@@ -88,13 +101,17 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            let pageList = [];
             let request = new Request( this.url + chapter.id, this.requestOptions );
-            fetch( request )
-            .then( response => response.text() )
+            this.fetchDOM( request, 'span.pp' )
             .then( data => {
-                let path = data.match( /imgUrl\s*:\s*['"](.*?)['"]/ )[1];
-                let pageList = JSON.parse( data.match( /pages\s*:\s*(\[\s*\{.*?\}\s*\])/ )[1] );
-                pageList = pageList.map( page => this.getAbsolutePath( path + page.page_image, this.imgCDN ) );               
+                data = [...data[0].childNodes].find( node => node.nodeType === Node.COMMENT_NODE );
+                data = JSON.parse( decodeURIComponent( escape( atob( data.textContent ) ) ) );
+                pageList = data.map( page => page.u );
+                return Engine.Request.fetchUI( request, `window.__info.imgUrl` );
+            } )
+            .then( data => {
+                pageList = pageList.map( page => this.getAbsolutePath( data + page, this.imgCDN ) );
                 callback( null, pageList );
             } )
             .catch( error => {

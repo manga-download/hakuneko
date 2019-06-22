@@ -48,22 +48,23 @@
                 margin-left: auto !important;
                 margin-right: auto !important;
             }
-            .buttons {
+            #buttons {
                 position: fixed;
                 top: 0;
                 right: 0;
                 padding-left: 1em;  
                 padding-right: 2.0em;
-                opacity: 0.1;
+                opacity: 0.05;
                 transition: opacity 0.25s;
                 background-color: var(--page-viewer-title-background-color);
                 border-bottom-left-radius: 1em;
                 box-shadow: var(--page-viewer-title-shadow);
+                outline: none; /* disable focus border */
             }
-            .buttons:hover {
+            #buttons:hover {
                 opacity: 1.0;
             }
-            .buttons:hover > .title {
+            #buttons:hover > .title {
                 display: inline;
             }
             .title {
@@ -107,18 +108,18 @@
                 </template>
             </template>
             <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
-                <div class="buttons">
+                <div id="buttons" tabindex="0" onblur="this.focus()" on-keydown="onKeyDown">
                     <span class="title">[[ selectedChapter.title ]]</span>
-                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down" on-click="requestChapterDown"></i>
-                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up" on-click="requestChapterUp"></i>
+                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down (PageDown)" on-click="requestChapterDown"></i>
+                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up (PageUp)" on-click="requestChapterUp"></i>
                     &nbsp;
-                    <i class="fas fa-compress fa-2x button" title="Decrease spacing between images" on-click="decreaseImagePadding"></i>
-                    <i class="fas fa-expand fa-2x button" title="Increase spacing between images" on-click="increaseImagePadding"></i>
+                    <i class="fas fa-compress fa-2x button" title="Decrease spacing between images (CTRL ➕)" on-click="decreaseImagePadding"></i>
+                    <i class="fas fa-expand fa-2x button" title="Increase spacing between images (CTRL ➖)" on-click="increaseImagePadding"></i>
                     &nbsp;
-                    <i class="fas fa-search-plus fa-2x button" title="Zoom In" on-click="zoomIn"></i>
-                    <i class="fas fa-search-minus fa-2x button" title="Zoom Out" on-click="zoomOut"></i>
-                    &nbsp;
-                    <i class="fas fa-times-circle fa-2x button" title="Close" on-click="hideViewer"></i>
+                    <i class="fas fa-search-plus fa-2x button" title="Zoom In (➕)" on-click="zoomIn"></i>
+                    <i class="fas fa-search-minus fa-2x button" title="Zoom Out (➖)" on-click="zoomOut"></i>
+                    &nbsp
+                    <i class="fas fa-times-circle fa-2x button" title="Close (ESC)" on-click="hideViewer"></i>
                 </div>
                 <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
                     <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%; margin: [[ imagePadding ]]em;"></div>
@@ -182,6 +183,43 @@
             }
 
             /**
+             *
+             */
+            onKeyDown( event ) {
+                switch( true ) {
+                    case event.key === 'ArrowUp' && !event.ctrlKey:
+                        this.$.container.scrollTop -= 64;
+                        break;
+                    case event.key === 'ArrowDown' && !event.ctrlKey:
+                        this.$.container.scrollTop += 64;
+                        break;
+                    case event.key === 'PageUp' && !event.ctrlKey:
+                        this.requestChapterUp( event );
+                        break;
+                    case event.key === 'PageDown' && !event.ctrlKey:
+                        this.requestChapterDown( event );
+                        break;
+                    case event.key === '+' && !event.ctrlKey:
+                        this.zoomIn( event );
+                        break;
+                    case event.key === '-' && !event.ctrlKey:
+                        this.zoomOut( event );
+                        break;
+                    case event.key === '+' && event.ctrlKey:
+                        this.increaseImagePadding( event );
+                        break;
+                    case event.key === '-' && event.ctrlKey:
+                        this.decreaseImagePadding( event );
+                        break;
+                    case event.key === 'Escape' && !event.ctrlKey:
+                        this.hideViewer( event );
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            /**
              * Observer will be executed, whenever the 'selectedChapter' is changed.
              */
             onSelectedChapterChanged( chapter ) {
@@ -195,6 +233,10 @@
                         this.set( 'media', media );
                         if( error ) {
                             alert( error.message );
+                        }
+                        // scroll to first page when chapter was changed
+                        if( this.selectedMedia > -1 ) {
+                            this.set( 'selectedMedia', 0 );
                         }
                     }
                 } );
@@ -278,13 +320,8 @@
              *
              */
             showViewer( event ) {
-                this.set( 'selectedMedia', event.model.index);
+                this.set( 'selectedMedia', event.model.index );
                 this.set( 'viewerStyle.bgImage', this.media[this.selectedMedia] );
-                // embed in timeout function to ensure image layout is updated before adjusting scroll offsetTop
-                setTimeout( () => {
-                    // find offset for image with id=selectedMedia and scroll to page
-                    this.$.container.scrollTop = this.$.container.querySelector('#page_' + this.selectedMedia).offsetTop;
-                }, 0 );
             }
 
             /**
@@ -292,7 +329,6 @@
              */
             hideViewer( event ) {
                 this.set( 'selectedMedia', -1 );
-                this.$.container.scrollTop = 0;
             }
 
             /**
@@ -313,6 +349,17 @@
              *
              */
             pageViewMode( media, selectedMedia ) {
+                if( media instanceof Array ) {
+                    // embed in timeout function to ensure image layout is updated before adjusting scroll offsetTop
+                    setTimeout( () => {
+                        if( this.selectedMedia > -1 ) {
+                            this.$.container.scrollTop = this.$.container.querySelector( '#page_' + this.selectedMedia ).offsetTop;
+                            this.$.container.querySelector( '#buttons' ).focus();
+                        } else {
+                            this.$.container.scrollTop = 0;
+                        }
+                    }, 0 );
+                }
                 return ( media instanceof Array && selectedMedia > -1 );
             }
 

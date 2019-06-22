@@ -15,6 +15,7 @@
             super.id         = 'linewebtoon-zh'; // zh-hant
             super.label      = 'Line Webtoon (Chinese)'; // Chinese Traditional
             this.tags        = [ 'webtoon', 'chinese' ];
+            this.url         = 'https://www.webtoons.com/zh';
 
             // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );

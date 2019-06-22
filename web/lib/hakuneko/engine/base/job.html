@@ -173,7 +173,9 @@
             .catch( data => Promise.resolve( data ) )
             .then( playlist => {
                 // parse links
-                let packets = playlist.match( /^[^#].*$/gm );
+                // JavaScript matches anchors (^$) in the middle of CRLF/LFLF => exclude whitespace (\s) from beginning of line
+                // See also: https://www.regular-expressions.info/anchors.html
+                let packets = playlist.match( /^[^\s#].+$/gm );
                 let key = playlist.match( /URI\s*=\s*"(.*?)"/ );
                 if( key ) {
                     packets.push( key[1] );

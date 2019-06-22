@@ -18,8 +18,9 @@
             this.tags        = [ 'webtoon' ];
             super.isLocked   = false;
             // Private members for internal usage only (convenience)
-            this.url         = 'https://www.webtoons.com';
-            this.requestOptions.headers.set( 'x-referer', this.url );
+            this.url         = undefined;
+            this.baseURL     = 'https://www.webtoons.com';
+            this.requestOptions.headers.set( 'x-referer', this.baseURL );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = undefined;
 
@@ -38,10 +39,11 @@
          * Overwrite base function to get manga from clipboard link.
          */
         _getMangaFromURI( uri ) {
-            return this.fetchDOM( uri.href, 'div.cont_box div.detail_header div.info h1.subj', 3 )
+            //return this.fetchDOM( uri.href, 'div.cont_box div.detail_header div.info .subj', 3 )
+            return this.fetchDOM( uri.href, 'head meta[property="og:title"]', 3 )
             .then( data => {
                 let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
+                let title = data[0].content.trim();
                 return Promise.resolve( new Manga( this, id, title ) );
             } );
         }
@@ -67,13 +69,13 @@
             lastAdded = lastAdded || [];
             index = index || 1;
             return this.wait( 0 )
-            .then ( () => this.fetchDOM( this.url + manga.id + '&page=' + index, 'div.detail_body div.detail_lst ul li > a', 5 ) )
+            .then ( () => this.fetchDOM( this.baseURL + manga.id + '&page=' + index, 'div.detail_body div.detail_lst ul li > a', 5 ) )
             .then( data => {
                 let chapterList = data.map( element => {
                     let title = element.querySelector( 'span.tx' ).textContent.trim();
                     title += ' - ' + element.querySelector( 'span.subj span' ).textContent.trim();
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.baseURL ),
                         title: title,
                         language: 'en'
                     };
@@ -105,7 +107,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'div.viewer div.viewer_lst div.viewer_img source[data-url]' )
+            this.fetchDOM( this.baseURL + chapter.id, 'div.viewer div.viewer_lst div.viewer_img source[data-url]' )
             .then( data => {
                 let pageList = data.map( element => {
                     let uri = new URL( element.dataset.url );
@@ -125,7 +127,7 @@
          */
          _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+            uri.protocol = ( new URL( this.baseURL ) ).protocol;
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             fetch( uri.href, this.requestOptions )
