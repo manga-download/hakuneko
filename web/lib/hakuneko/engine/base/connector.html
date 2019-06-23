@@ -289,7 +289,7 @@
          * Revert the expansion of relative links regarding the base url,
          * or leave the absolute url if the link seems not to been expanded.
          */
-         getRelativeLink( element ) {
+        getRelativeLink( element ) {
             if( element.href || element.src ) {
                 let baseURI = new URL( this.url );
                 let refURI = new URL( element.href || element.src );
@@ -447,6 +447,34 @@
         }
 
         /**
+         * 
+         */
+        createConnectorURI( payload ) {
+            let data = btoa( JSON.stringify( payload ) );
+            let uri = new URL( 'connector://' + this.id );
+            uri.searchParams.set( 'payload', data );
+            return uri.href;
+        }
+
+        /**
+         * 
+         */
+        handleConnectorURI( uri ) {
+            let data = uri.searchParams.get( 'payload' );
+            let payload = JSON.parse( atob( data ) );
+            return this._handleConnectorURI( payload );
+        }
+
+        /**
+         * Return a promise that resolves with a mime typed buffer on succes,
+         * or a promise that rejects with an error.
+         */
+        _handleConnectorURI( payload ) {
+            let error = new Error( `Connector '${this.id}' has not implemented protocol handling!` );
+            return Promise.reject( error );
+        }
+
+        /**
          * Protected helper function to convert a Blob to a MimeTypedBuffer
          * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
          */
@@ -500,28 +528,6 @@
                 console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/bmp"!' );
                 data.mimeType = 'image/bmp';
                 return;
-            }
-        }
-
-        /**
-         * [OBSOLETE] with usage of fetch API and modified User-Agent, this check is no longer reliable
-         * 
-         * Determine if the request for the page is valid.
-         * A request is invalid when it is made by the electron browser and
-         * when the page for which this request is made is not part of the selected chapter
-         * (in fact: the user changed the chapter while the browser still requests pages from the previous selected chapter).
-         */
-        isPageRequestNotFromElectronOrSelectedChapter( request ) {
-            try {
-                // is the request not from electron browser?
-                if( !request.headers || !request.headers['User-Agent'] || request.headers['User-Agent'].indexOf( /*'hakuneko-desktop'*/ 'Electron' ) < 0 ) {
-                    return true;
-                }
-                // is the currently selected chapter the one for which the page is requested?
-                let selectedChapterPages = document.querySelector( HakunekoApp.is ).shadowRoot.querySelector( HakunekoPages.is ).selectedChapter.pageCache;
-                return ( selectedChapterPages.indexOf( request.url ) > -1 );
-            } catch( e ) {
-                return false;
             }
         }
     }

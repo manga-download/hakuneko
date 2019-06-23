@@ -399,6 +399,9 @@
          *
          */
         constructor() {
+            //
+            Engine.Request.registerProtocol( 'connector', this._protocolHandler.bind( this ) );
+
             // raw list of all available connectors
             this.list = [];
 
@@ -836,6 +839,19 @@
             this.list.push( connector );
             this.list.sort( ( a, b ) => {
                 return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            this.list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
+            .then( buffer => callback( buffer ) )
+            .catch( error => {
+                //console.error( error, payload );
+                callback( undefined );
             } );
         }
     }
