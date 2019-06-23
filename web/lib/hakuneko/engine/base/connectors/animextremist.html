@@ -12,18 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'animextremist';
             super.label      = 'AnimeXtremist';
             this.tags        = [ 'manga', 'spanish' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'http://www.animextremist.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'animextremist' protocol) and download images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -98,11 +90,7 @@
         _getPageList( manga, chapter, callback ) {
             this.fetchDOM( this.url + chapter.id, 'div#nav select#nav-jump option' )
             .then( data => {
-                let pageLinks = data.map( element => {
-                    let uri = new URL( this.url + '/' + element.value );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageLinks = data.map( element => this.createConnectorURI( this.url + '/' + element.value ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {
@@ -114,29 +102,18 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            this.fetchDOM( uri.href, 'source#photo' )
+            return this.fetchDOM( request, 'source#photo' )
             .then( data => {
-                let link = this.getRelativeLink( data[0] ).replace( /^\//, '' );
-                link = ( new URL( link, uri.href ) ).href;
+                let link = this.getRootRelativeOrAbsoluteLink( data[0], request.url ).replace( /^\//, '' );
+                link = ( new URL( link, request.url ) ).href;
                 return fetch( link, this.requestOptions );
             } )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) );
         }
     }
 
