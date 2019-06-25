@@ -38,7 +38,7 @@
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
                         title: element.querySelector( this.queryMangaTitle ).innerText.trim()
                     };
                 } );
@@ -59,11 +59,16 @@
                 let chapterList = data
                 .filter( element => element.querySelector( 'div.cell-title' ) && !element.querySelector( 'div.thumb span.lock' ) )
                 .map( element => {
-                    element.href = element.getAttribute( 'onclick' ).split( '\'' )[1].trim();
-                    let chapter =  element.querySelector( 'div.cell-num' ).innerText.trim();
-                    //let title =  element.querySelector( 'div.cell-title' ).innerText.replace( manga.title, '' ).trim();
+                    let action = element.getAttribute( 'onclick' )
+                    if( action.includes( 'location.href=' ) ) {
+                        element.href = action.match( /href='([^']+)'/ )[1];
+                    } else {
+                        element.href = action.match( /popup\s*\(\s*'[^']+'\s*,\s*'[^']*'\s*,\s*'([^']+)'/ )[1];
+                    }
+                    let chapter = element.querySelector( 'div.cell-num' ).innerText.trim();
+                    //let title = element.querySelector( 'div.cell-title' ).innerText.replace( manga.title, '' ).trim();
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
                         title: 'Chapter: ' + chapter,
                         language: 'en'
                     };
