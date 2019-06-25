@@ -168,21 +168,26 @@
             } );
             */
             let script = `
-            [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
-            .map( server => {
-                return {
-                    name: server.dataset.name,
-                    label: server.innerText.trim(),
-                    episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + server.dataset.name + '"] ul.episodes li a' )]
-                    .map( episode => {
-                        let uri = new URL( episode.href );
+            new Promise( resolve => {
+                setTimeout( () => {
+                    let result = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
+                    .map( server => {
                         return {
-                            id: uri.pathname + uri.search, // episode.dataset.id,
-                            title: episode.innerText.trim() + ' [' + server.innerText.trim() + ']',
-                            language: ''
+                            name: server.dataset.name,
+                            label: server.innerText.trim(),
+                            episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + server.dataset.name + '"] ul.episodes li a' )]
+                            .map( episode => {
+                                let uri = new URL( episode.href );
+                                return {
+                                    id: uri.pathname + uri.search, // episode.dataset.id,
+                                    title: episode.innerText.trim() + ' [' + server.innerText.trim() + ']',
+                                    language: ''
+                                }
+                            } )
                         }
-                    } )
-                }
+                    } );
+                    resolve( result );
+                }, 1000 );
             } );
             `;
             let request = new Request( this.url + manga.id, this.requestOptions );
