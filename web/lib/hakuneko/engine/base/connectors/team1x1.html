@@ -24,7 +24,7 @@
         _getMangaListFromPages( mangaPageLinks, index ) {
             index = index || 0;
             let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-            return this.fetchDOM( request, 'div.container div.last-post-manga div.thumb div.info h3 a', 5 )
+            return this.fetchDOM( request, 'div#page-manga div.container div.last-post-manga div.thumb div.info h3 a', 5 )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -66,9 +66,11 @@
          */
         _getChapterList( manga, callback ) {
             let request = new Request( this.url + manga.id, this.requestOptions );
-            this.fetchDOM( request, 'div.container div.row div.col-md-12 a' )
+            this.fetchDOM( request, 'div.single-manga-chapter div.container div.row div.col-md-12 a' )
             .then( data => {
-                let chapterList = data.map( element => {
+                let chapterList = data
+                .filter( element => element.href.startsWith( this.url ) )
+                .map( element => {
                     return {
                         id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
                         title: element.text.replace( manga.title, '' ).trim(),
