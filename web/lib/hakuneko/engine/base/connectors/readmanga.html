@@ -89,7 +89,6 @@
                 let chapterList = [...content.querySelectorAll( 'div.chapters-link table tr td a' ) ];
                 chapterList = chapterList.map( element => {
                     return {
-                        // TODO: fix chapter title (e.g. battle through heaven)
                         id: this.getRelativeLink( element ),
                         title: element.text.replace( /\s{1,}/g, ' ' ).replace( mangaTitle, '' ).trim(),
                         language: 'ru'
