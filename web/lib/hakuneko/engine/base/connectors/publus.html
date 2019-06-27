@@ -1,0 +1,285 @@
+<link rel="import" href="../connector.html">
+
+<script>
+
+    /**
+     *
+     */
+    class PUBLUS extends Connector {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = undefined;
+            super.label      = undefined;
+            this.tags        = [];
+            this.url         = undefined;
+            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+            this.config = {
+                scrapeDelay: {
+                    label: 'Page Scrape Delay',
+                    description: 'Time to wait until the page initialization process is complete.\nIncrease the value if no pages are found for the chapter.',
+                    input: Input.numeric,
+                    min: 2500,
+                    max: 10000,
+                    value: 5000
+                }
+            };
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            let script = `
+                new Promise( ( resolve, reject ) => {
+                    setTimeout( () => {
+                        try {
+                            resolve( Object.keys( NFBR.a6G.a6L.cache.data_ ).map( key => NFBR.a6G.a6L.cache.get( key ).getUrl() ) );
+                        } catch ( error ) {
+                            reject( error );
+                        }
+                        resolve();
+                    }, ${this.config.scrapeDelay.value} );
+                } );
+            `;
+            Engine.Request.fetchUI( request, script )
+            .then( data => {
+                let pageList = data.map( link => {
+                    let uri = new URL( link );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         * 
+         */
+         _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            fetch( uri.href, this.requestOptions )
+            .then( response => {
+                if( response.status !== 200 ) {
+                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
+                }
+                return response.blob();
+            } )
+            .then( data => {
+                if( true ) {
+                    return this._descrambleImage( data, uri.href ).then( data => this._blobToBuffer( data ) );
+                } else {
+                    return this._blobToBuffer( data );
+                }
+            } )
+            .then( data => {
+                callback( data );
+            } )
+            .catch( error => {
+                console.error( error, uri.href );
+                callback( undefined );
+            } );
+        }
+
+        /*******************************
+         *** GANGANONLINE CODE BEGIN ***
+         ******************************/
+
+        /**
+         * 
+         */
+        _descrambleImage( blob, path ) {
+            return createImageBitmap( blob )
+            .then( bitmap => {
+                return new Promise( ( resolve, reject ) => {
+                    let canvas = document.createElement( 'canvas' );
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                    var ctx = canvas.getContext( '2d' );
+
+                    let blocks = this.NFBR_a3E_a3f(bitmap.width, bitmap.height, this.NFBR_a0X_a3g, this.NFBR_a0X_a3G, this.descramblePattern( path ));
+                    for (let q of blocks)
+                    {
+                        /*if(q.srcX < l.x + l.width && q.srcX + q.width >= l.x && q.srcY < l.y + l.height && q.srcY + q.height >= l.y)*/
+                        ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
+                    }
+
+                    canvas.toBlob( data => {
+                        resolve( data );
+                    }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
+                } );
+            } );
+        }
+
+        /**
+         * 
+         */
+        descramblePattern( path ) {
+            let F = path.match( /item.*\d+/ )[0];
+            let v = 0;
+            for (let d = 0; d < F.length; d++)
+                v += F.charCodeAt(d);
+            return v % this.NFBR_a0X_a3h + 1;
+        }
+
+        /**
+         * 
+         */
+        get NFBR_a0X_a3g() {
+            return 64;
+        }
+        
+        /**
+         * 
+         */
+        get NFBR_a0X_a3G() {
+            return 64;
+        }
+
+        /**
+         * 
+         */
+        get NFBR_a0X_a3h() {
+            return 4;
+        }
+        
+        /**
+         * a => image width
+         * f => image height
+         * b => scramble block width
+         * e => scramble block height
+         * d => pattern
+         */
+        NFBR_a3E_a3f(a, f, b, e, d) {
+            var c = Math.floor(a / b)
+            , h = Math.floor(f / e);
+            a %= b;
+            f %= e;
+            var g, l, k, m, p, r, t, q, u = [];
+            g = c - 43 * d % c;
+            g = 0 == g % c ? (c - 4) % c : g;
+            g = 0 == g ? c - 1 : g;
+            l = h - 47 * d % h;
+            l = 0 == l % h ? (h - 4) % h : l;
+            l = 0 == l ? h - 1 : l;
+            0 < a && 0 < f && (k = g * b,
+            m = l * e,
+            u.push({
+                srcX: k,
+                srcY: m,
+                destX: k,
+                destY: m,
+                width: a,
+                height: f
+            }));
+            if (0 < f)
+                for (t = 0; t < c; t++)
+                    p = this.calcXCoordinateXRest_(t, c, d),
+                    k = this.calcYCoordinateXRest_(p, g, l, h, d),
+                    p = this.calcPositionWithRest_(p, g, a, b),
+                    r = k * e,
+                    k = this.calcPositionWithRest_(t, g, a, b),
+                    m = l * e,
+                    u.push({
+                        srcX: k,
+                        srcY: m,
+                        destX: p,
+                        destY: r,
+                        width: b,
+                        height: f
+                    });
+            if (0 < a)
+                for (q = 0; q < h; q++)
+                    k = this.calcYCoordinateYRest_(q, h, d),
+                    p = this.calcXCoordinateYRest_(k, g, l, c, d),
+                    p *= b,
+                    r = this.calcPositionWithRest_(k, l, f, e),
+                    k = g * b,
+                    m = this.calcPositionWithRest_(q, l, f, e),
+                    u.push({
+                        srcX: k,
+                        srcY: m,
+                        destX: p,
+                        destY: r,
+                        width: a,
+                        height: e
+                    });
+            for (t = 0; t < c; t++)
+                for (q = 0; q < h; q++)
+                    p = (t + 29 * d + 31 * q) % c,
+                    k = (q + 37 * d + 41 * p) % h,
+                    r = p >= this.calcXCoordinateYRest_(k, g, l, c, d) ? a : 0,
+                    m = k >= this.calcYCoordinateXRest_(p, g, l, h, d) ? f : 0,
+                    p = p * b + r,
+                    r = k * e + m,
+                    k = t * b + (t >= g ? a : 0),
+                    m = q * e + (q >= l ? f : 0),
+                    u.push({
+                        srcX: k,
+                        srcY: m,
+                        destX: p,
+                        destY: r,
+                        width: b,
+                        height: e
+                    });
+            return u
+        }
+
+        /**
+         * 
+         */
+        calcPositionWithRest_(a, f, b, e) {
+            return a * e + (a >= f ? b : 0)
+        }
+
+        /**
+         * 
+         */
+        calcXCoordinateXRest_(a, f, b) {
+            return (a + 61 * b) % f
+        }
+
+        /**
+         * 
+         */
+        calcYCoordinateXRest_(a, f, b, e, d) {
+            var c = 1 === d % 2;
+            (a < f ? c : !c) ? (e = b,
+            f = 0) : (e -= b,
+            f = b);
+            return (a + 53 * d + 59 * b) % e + f
+        }
+
+        /**
+         * 
+         */
+        calcXCoordinateYRest_(a, f, b, e, d) {
+            var c = 1 == d % 2;
+            (a < b ? c : !c) ? (e -= f,
+            b = f) : (e = f,
+            b = 0);
+            return (a + 67 * d + f + 71) % e + b
+        }
+
+        /**
+         * 
+         */
+        calcYCoordinateYRest_(a, f, b) {
+            return (a + 73 * b) % f
+        }
+
+        /*****************************
+         *** GANGANONLINE CODE END ***
+         ****************************/
+    }
+
+</script>
