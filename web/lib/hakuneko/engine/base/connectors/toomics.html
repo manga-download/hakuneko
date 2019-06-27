@@ -17,7 +17,6 @@
             this.tags        = [];
             this.url         = '';
             this.baseURL     = 'https://global.toomics.com';
-            this.requestOptions.headers.set( 'x-referer', this.baseURL );
 
             this.path = '/';
             this.queryMangaHeading = 'section.ep-header_ch div.title_content h1';
@@ -105,7 +104,7 @@
             this.fetchDOM( this.baseURL + chapter.id, this.queryPages )
             .then( data => { 
                 let pageList = data.map( element => {
-                    let uri = new URL( element.dataset[ 'src' ] || element.dataset[ 'original' ] );
+                    let uri = new URL( element.dataset[ 'src' ] || element.dataset[ 'original' ], this.baseURL );
                     uri.protocol = this.id;
                     return uri.href;
                 } );             
@@ -123,6 +122,7 @@
         _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
             uri.protocol = ( new URL( this.baseURL ) ).protocol;
+            this.requestOptions.headers.set( 'x-referer', uri.origin );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             fetch( uri.href, this.requestOptions )
@@ -133,6 +133,7 @@
                 console.error( error, uri.href );
                 callback( undefined );
             } );
+            this.requestOptions.headers.delete( 'x-referer' );
         }
     }
 
