@@ -20,6 +20,7 @@
             this.requestOptions.headers.set( 'x-referer', this.baseURL );
 
             this.path = '/';
+            this.queryMangaHeading = 'section.ep-header_ch div.title_content h1';
             this.queryMangas = 'div.section_ongoing div.list_wrap ul li > div.visual > a';
             this.queryMangaTitle = 'div.main_text h4.title';
             this.queryChapters = 'div.episode-contents section.ep-body ol.list-ep li a';
@@ -29,8 +30,21 @@
         /**
          *
          */
-         get icon() {
+        get icon() {
             return '/img/connectors/toomics';
+        }
+
+        /**
+         * 
+         */
+        _getMangaFromURI( uri ) {
+            let request = new Request( uri.href, this.requestOptions );
+            return this.fetchDOM( request, this.queryMangaHeading )
+            .then( data => {
+                let id = uri.pathname + uri.search;
+                let title = data[0].textContent.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
         }
 
         /**
