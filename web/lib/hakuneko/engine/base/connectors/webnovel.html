@@ -48,11 +48,11 @@
         /**
          *
          */
-        _getMangaListFromPages( token, page ) {
+        _getMangaListFromPages( page ) {
             page = page || 1;
             let uri = new URL( '/apiajax/comic/listAjax', this.url );
             uri.searchParams.set( 'pageIndex', page );
-            uri.searchParams.set( '_csrfToken', token );
+            uri.searchParams.set( '_csrfToken', this.token );
             let request = new Request( uri.href, this.requestOptions );
             return this.fetchJSON( request )
             .then( data => {
@@ -63,7 +63,7 @@
                     };
                 } );
                 if( mangaList.length > 0 ) {
-                    return this._getMangaListFromPages( token, page + 1 )
+                    return this._getMangaListFromPages( page + 1 )
                     .then( mangas => mangaList.concat( mangas ) );
                 } else {
                     return Promise.resolve( mangaList );
@@ -75,9 +75,7 @@
          *
          */
         _getMangaList( callback ) {
-            let request = new Request( this.url, this.requestOptions );
-            Engine.Request.fetchUI( request,  )
-            .then( data => this._getMangaListFromPages( data ) )
+            this._getMangaListFromPages()
             .then( data => callback( null, data ) )
             .catch( error => {
                 console.error( error, this );
