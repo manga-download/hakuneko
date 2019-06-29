@@ -12,15 +12,13 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangainn';
             super.label      = 'MangaInn';
             this.tags        = [ 'manga', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'http://www.mangainn.net';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+
+            // register a protocol handler to intercept requests (with custom 'readmng' protocol) and extract images
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -87,14 +85,39 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'div.chapter-read source.img-responsive' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div.chapter-read source.img-responsive' )
             .then( data => {
-                let pageList = data.map( element => element.src );               
-                callback( null, pageList );
+                let pageLinks = data.map( element => {
+                    let uri = new URL( this.getAbsolutePath( element, request.url ) );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );              
+                callback( null, pageLinks );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            request = new Request( uri.href, this.requestOptions );
+            request.headers.set( 'x-referer', this.url );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( request )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, request.url );
+                callback( undefined );
             } );
         }
     }

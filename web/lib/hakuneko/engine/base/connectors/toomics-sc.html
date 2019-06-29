@@ -1,0 +1,28 @@
+<link rel="import" href="toomics.html">
+
+<script>
+
+    /**
+     *
+     */
+    class ToomicsSC extends Toomics {
+
+        /**
+         *
+         */
+        constructor() {
+            super();
+            super.id         = 'toomics-sc';
+            super.label      = 'Toomics (Simplified Chinese)';
+            this.tags        = [ 'webtoon', 'chinese' ];
+            this.url         = 'https://global.toomics.com/sc'; // URL for copy/paste detection
+            this.requestOptions.headers.set( 'x-cookie', 'content_lang=zh_cn' );
+
+            this.path = '/sc/webtoon/ranking';
+
+            // register a protocol handler to intercept requests (with custom 'toomics-sc' protocol) and inject referer
+            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+        }
+    }
+
+</script>

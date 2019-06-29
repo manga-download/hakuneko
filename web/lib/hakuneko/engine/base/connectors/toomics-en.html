@@ -15,11 +15,10 @@
             super.id         = 'toomics-en';
             super.label      = 'Toomics (English)';
             this.tags        = [ 'webtoon', 'english' ];
-            this.url         = 'https://global.toomics.com';
+            this.url         = 'https://global.toomics.com/en'; // URL for copy/paste detection
+            this.requestOptions.headers.set( 'x-cookie', 'content_lang=en' );
 
             this.path = '/en/webtoon/ranking';
-            this.queryMangas = 'div.section_ongoing div.list_wrap ul li > div.visual > a';
-            this.queryMangaTitle = 'div.main_text h4.title';
 
             // register a protocol handler to intercept requests (with custom 'toomics-en' protocol) and inject referer
             Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );

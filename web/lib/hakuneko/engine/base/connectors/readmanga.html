@@ -12,12 +12,9 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'readmanga';
             super.label      = 'ReadManga';
             this.tags        = [ 'manga', 'russian' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'http://readmanga.me';
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
             this.config = {
@@ -85,12 +82,15 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'div.chapters-link table tr td a' )
+            this.fetchDOM( this.url + manga.id, 'div#mangaBox' )
             .then( data => {
-                let chapterList = data.map( element => {
+                let content = data[0];
+                let mangaTitle = content.querySelector( 'h1.names span.name' ).innerText.trim();
+                let chapterList = [...content.querySelectorAll( 'div.chapters-link table tr td a' ) ];
+                chapterList = chapterList.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
+                        title: element.text.replace( /\s{1,}/g, ' ' ).replace( mangaTitle, '' ).trim(),
                         language: 'ru'
                     };
                 } );

@@ -16,6 +16,7 @@
             super.label      = '咚漫 (DongMan Manhua)'; // Chinese Simplified
             this.tags        = [ 'webtoon', 'chinese' ];
             this.url         = 'https://www.dongmanmanhua.cn';
+            this.baseURL     = this.url;
             this.requestOptions.headers.set( 'x-referer', this.url );
 
             // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer

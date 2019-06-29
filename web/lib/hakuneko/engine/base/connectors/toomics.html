@@ -12,33 +12,49 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'toomics';
             super.label      = 'Toomics';
-            this.tags        = [ 'webtoon', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
-            this.url         = 'https://toomics.com';
-            this.requestOptions.headers.set( 'x-referer', this.url );
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.tags        = [];
+            this.url         = '';
+            this.baseURL     = 'https://global.toomics.com';
 
             this.path = '/';
+            this.queryMangaHeading = 'section.ep-header_ch div.title_content h1';
             this.queryMangas = 'div.section_ongoing div.list_wrap ul li > div.visual > a';
             this.queryMangaTitle = 'div.main_text h4.title';
-            this.queryChapters = 'div.episode-contents section.ep-body ol.list-ep li a';
-            this.queryPages = 'div#viewer-img source';
+            this.queryChapters = '.ep-body .list-ep li:not(.chk_ep) a';
+            this.queryPages = '#viewer-img source';
+        }
+
+        /**
+         *
+         */
+        get icon() {
+            return '/img/connectors/toomics';
+        }
+
+        /**
+         * 
+         */
+        _getMangaFromURI( uri ) {
+            let request = new Request( uri.href, this.requestOptions );
+            return this.fetchDOM( request, this.queryMangaHeading )
+            .then( data => {
+                let id = uri.pathname + uri.search;
+                let title = data[0].textContent.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
         }
 
         /**
          *
          */
         _getMangaList( callback ) {
-            this.fetchDOM( this.url + this.path, this.queryMangas )
+            this.fetchDOM( this.baseURL + this.path, this.queryMangas )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.baseURL ),
                         title: element.querySelector( this.queryMangaTitle ).innerText.trim()
                     };
                 } );
@@ -54,16 +70,21 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, this.queryChapters )
+            this.fetchDOM( this.baseURL + manga.id, this.queryChapters )
             .then( data => {
                 let chapterList = data
                 .filter( element => element.querySelector( 'div.cell-title' ) && !element.querySelector( 'div.thumb span.lock' ) )
                 .map( element => {
-                    element.href = element.getAttribute( 'onclick' ).split( '\'' )[1].trim();
-                    let chapter =  element.querySelector( 'div.cell-num' ).innerText.trim();
-                    //let title =  element.querySelector( 'div.cell-title' ).innerText.replace( manga.title, '' ).trim();
+                    let action = element.getAttribute( 'onclick' )
+                    if( action.includes( 'location.href=' ) ) {
+                        element.href = action.match( /href='([^']+)'/ )[1];
+                    } else {
+                        element.href = action.match( /popup\s*\(\s*'[^']+'\s*,\s*'[^']*'\s*,\s*'([^']+)'/ )[1];
+                    }
+                    let chapter = element.querySelector( 'div.cell-id, div.cell-num' ).innerText.trim();
+                    //let title = element.querySelector( 'div.cell-title' ).innerText.replace( manga.title, '' ).trim();
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.baseURL ),
                         title: 'Chapter: ' + chapter,
                         language: 'en'
                     };
@@ -80,10 +101,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, this.queryPages )
+            this.fetchDOM( this.baseURL + chapter.id, this.queryPages )
             .then( data => { 
                 let pageList = data.map( element => {
-                    let uri = new URL( element.dataset[ 'original' ] );
+                    let uri = new URL( element.dataset[ 'src' ] || element.dataset[ 'original' ], this.baseURL );
                     uri.protocol = this.id;
                     return uri.href;
                 } );             
@@ -100,7 +121,8 @@
          */
         _protocolHandlerCallback( request, callback ) {
             let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+            uri.protocol = ( new URL( this.baseURL ) ).protocol;
+            this.requestOptions.headers.set( 'x-referer', uri.origin );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             fetch( uri.href, this.requestOptions )
@@ -111,6 +133,7 @@
                 console.error( error, uri.href );
                 callback( undefined );
             } );
+            this.requestOptions.headers.delete( 'x-referer' );
         }
     }
 

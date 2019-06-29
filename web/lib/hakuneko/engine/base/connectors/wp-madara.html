@@ -12,14 +12,9 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = undefined;
             super.label      = undefined;
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = undefined;
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
             this.queryMangas = 'div.post-title h5 a';
             this.queryChapters = 'li.wp-manga-chapter > a';
@@ -32,6 +27,9 @@
             this.formManga.append( 'vars[paged]', '0' );
             this.formManga.append( 'vars[post_type]', 'wp-manga' );
             this.formManga.append( 'vars[posts_per_page]', '250' );
+
+            // register a protocol handler to intercept requests (with custom 'wp-madara' protocol) and extract images
+            Engine.Request.registerProtocol( 'wp-madara', this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -109,13 +107,37 @@
             uri.searchParams.set( 'style', 'list' );
             this.fetchDOM( uri.href, this.queryPages )
             .then( data => {
-                let pageLinks = data.map( element => this.getAbsolutePath( element.dataset['src'] || element, uri.href ) );
+                let pageLinks = data.map( element => {
+                    let link = new URL( this.getAbsolutePath( element.dataset['src'] || element, uri.href ) );
+                    link.protocol = 'wp-madara';
+                    return link.href;
+                } );
                 callback( null, pageLinks );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
             } ); 
+        }
+
+        /**
+         *
+         */
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            this.requestOptions.headers.set( 'x-referer', uri.origin );
+            request = new Request( uri.href, this.requestOptions );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            fetch( request )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, request.url );
+                callback( undefined );
+            } );
         }
     }
 
