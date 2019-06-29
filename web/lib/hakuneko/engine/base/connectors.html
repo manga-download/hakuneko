@@ -226,6 +226,7 @@
 <link rel="import" href="connectors/mangaweek.html">
 <link rel="import" href="connectors/mangawindow.html">
 <link rel="import" href="connectors/mangayosh.html">
+<link rel="import" href="connectors/mangazuki-archive.html">
 <link rel="import" href="connectors/mangazuki-info.html">
 <link rel="import" href="connectors/mangazuki-online.html">
 <link rel="import" href="connectors/mangazuki-raws.html">
@@ -500,6 +501,7 @@
             this.register( new MangaTube() );
             this.register( new MangaWeek() );
             this.register( new MangaWindow() );
+            this.register( new MangaZukiArchive() );
             this.register( new ManhuaBox() );
             this.register( new ManHuaGui() );
             this.register( new ManHuaKan() );
@@ -846,6 +848,19 @@
             this.list.push( connector );
             this.list.sort( ( a, b ) => {
                 return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
+            } );
+        }
+
+        /**
+         *
+         */
+        _protocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            this.list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
+            .then( buffer => callback( buffer ) )
+            .catch( error => {
+                //console.error( error, payload );
+                callback( undefined );
             } );
         }
     }
