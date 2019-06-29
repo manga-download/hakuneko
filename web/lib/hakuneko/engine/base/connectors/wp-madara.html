@@ -27,6 +27,7 @@
             this.formManga.append( 'vars[paged]', '0' );
             this.formManga.append( 'vars[post_type]', 'wp-manga' );
             this.formManga.append( 'vars[posts_per_page]', '250' );
+            // inject `madara.query_vars` into any website using wp-madara to see full list of supported vars
 
             // register a protocol handler to intercept requests (with custom 'wp-madara' protocol) and extract images
             Engine.Request.registerProtocol( 'wp-madara', this._protocolHandlerCallback.bind( this ) );
