@@ -50,7 +50,7 @@
             Engine.Request.fetchUI( request, script )
             .then( data => {
                 let pageList = data.map( link => {
-                    let uri = new URL( link );
+                    let uri = new URL( link, request.url );
                     uri.protocol = this.id;
                     return uri.href;
                 } );
