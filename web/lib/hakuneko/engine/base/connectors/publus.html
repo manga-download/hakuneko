@@ -33,7 +33,8 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            let request = new Request( this.url + chapter.id, this.requestOptions );
+            let uri = new URL( chapter.id, this.url );
+            let request = new Request( uri.href, this.requestOptions );
             let script = `
                 new Promise( ( resolve, reject ) => {
                     setTimeout( () => {
