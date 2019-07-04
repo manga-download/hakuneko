@@ -1,11 +1,11 @@
-<link rel="import" href="wp-madara.html">
+<link rel="import" href="../connector.html">
 
 <script>
 
     /**
      * 
      */
-    class LeviatanScans extends WordPressMadara {
+    class LeviatanScans extends Connector {
 
         /**
          *
@@ -14,8 +14,67 @@
             super();
             super.id         = 'leviatanscans';
             super.label      = 'LeviatanScans';
-            this.tags        = [ 'webtoon', 'high-quality', 'spanish', 'scanlation' ];
+            this.tags        = [ 'webtoon', 'high-quality', 'english', 'scanlation' ];
             this.url         = 'https://leviatanscans.com';
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            let request = new Request( this.url + '/comics', this.requestOptions );
+            this.fetchDOM( request, 'div.list-item div.list-content div.list-body a.list-title' )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
+                        title: element.text.trim()
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getChapterList( manga, callback ) {
+            let request = new Request( this.url + manga.id, this.requestOptions );
+            this.fetchDOM( request, 'div.card div.list div.list-item a.item-author' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: ''
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        }
+
+        /**
+         *
+         */
+        _getPageList( manga, chapter, callback ) {
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            Engine.Request.fetchUI( request, `chapterPages` )
+            .then( data => {
+                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
         }
     }
 
