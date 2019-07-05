@@ -242,6 +242,7 @@
 <link rel="import" href="connectors/manhuagui.html">
 <link rel="import" href="connectors/manhuakan.html">
 <link rel="import" href="connectors/manhuatai.html">
+<link rel="import" href="connectors/manhwaclub.html">
 <link rel="import" href="connectors/manhwahand.html">
 <link rel="import" href="connectors/manhwahentai.html">
 <link rel="import" href="connectors/manytoon.html">
@@ -755,6 +756,7 @@
             this.register( new MangaZuki() );
             this.register( new MangaZukiInfo() );
             this.register( new MangaZukiOnline() );
+            this.register( new ManhwaClub() );
             this.register( new ManhwaHand() );
             this.register( new ManhwaHentai() );
             this.register( new MangaYosh() );
@@ -862,19 +864,6 @@
             this.list.push( connector );
             this.list.sort( ( a, b ) => {
                 return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
-            } );
-        }
-
-        /**
-         *
-         */
-        _protocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            this.list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
-            .then( buffer => callback( buffer ) )
-            .catch( error => {
-                //console.error( error, payload );
-                callback( undefined );
             } );
         }
     }
