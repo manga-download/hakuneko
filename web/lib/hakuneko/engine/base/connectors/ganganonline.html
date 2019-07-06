@@ -16,9 +16,6 @@
             super.label      = 'ガンガンONLINE (Gangan Online)';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://www.ganganonline.com';
-
-            // register a protocol handler to intercept requests (with custom 'ganganonline' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**

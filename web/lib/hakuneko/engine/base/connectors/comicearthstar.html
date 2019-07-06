@@ -16,9 +16,6 @@
             super.label      = 'コミック　アース・スター (Comic Earth Star)';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://www.comic-earthstar.jp';
-
-            // register a protocol handler to intercept requests (with custom 'comicearthstar' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
