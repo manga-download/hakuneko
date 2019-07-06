@@ -17,10 +17,6 @@
             this.tags        = [ 'hentai', 'english' ];
             this.url         = 'https://hitomi.la';
             this.requestOptions.headers.set( 'x-referer', this.url );
-            this.config      = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'hitomi' protocol) and get images with referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -71,40 +67,13 @@
             let request = new Request( `${ this.url }/reader/${ chapter.id }.html`, this.requestOptions );
             Engine.Request.fetchUI( request, 'images' )
             .then( data => {
-                let pageList = data.map( image => {
-                    let uri = new URL( image.path, request.url );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( image => this.createConnectorURI( this.getAbsolutePath( image.path, request.url ) ) );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
              } );
-        }
-
-        /**
-         *
-         */
-         _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
         }
     }
 
