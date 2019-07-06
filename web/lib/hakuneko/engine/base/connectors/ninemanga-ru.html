@@ -11,19 +11,13 @@
          *
          */
         constructor() {
-            // NOTE: calling super() will trigger the protocol registration of the base class again
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'ninemanga-ru';
             super.label      = 'NineMangaRU';
             this.tags        = [ 'manga', 'russian' ];
-            // Private members for internal usage only (convenience)
             this.url         = 'http://ru.ninemanga.com';
 
             this.pageCount = 550;
-
-            // register a protocol handler to intercept requests (with custom 'ninemanga-ru' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
     }
 

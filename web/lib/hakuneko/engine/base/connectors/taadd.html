@@ -12,25 +12,17 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'taadd';
             super.label      = 'TAADD';
             this.tags        = [ 'manga', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://www.taadd.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
             //this.queryMangasPageCount = '';
             this.pageCount = 950;
             this.queryMangas = 'div.clistChr ul li div.intro h2 a';
             this.queryChapters = 'div.chapter_list table tr td:first-of-type a';
-            this.queryPages = 'select#page';
+            this.queryPages = 'select#page option';
             this.queryImages = 'source#comicpic';
-
-            // register a protocol handler to intercept requests (with custom 'taadd' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -109,14 +101,11 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, this.queryPages )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, this.queryPages )
             .then( data => {
-                let pageList = [...data[0].querySelectorAll( 'option' )].map( element => {
-                    let uri = new URL( ( element.value.startsWith( '/' ) ? this.url : '' ) + element.value );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
-                callback( null, pageList );
+                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.value, request.url ) ) );
+                callback( null, [...new Set( pageList )] );
             } )
             .catch( error => {
                 console.error( error, chapter );
@@ -127,26 +116,10 @@
         /**
          * 
          */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-
-            this.fetchDOM( uri.href, this.queryImages )
-            .then( data => fetch( data[0].src, this.requestOptions ) )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
+            return this.fetchDOM( request, this.queryImages )
+            .then( data => super._handleConnectorURI( data[0].src ) );
         }
     }
 

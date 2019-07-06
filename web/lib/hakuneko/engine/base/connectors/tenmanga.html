@@ -11,24 +11,18 @@
          *
          */
         constructor() {
-            // NOTE: calling super() will trigger the protocol registration of the base class again
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'tenmanga';
             super.label      = 'TenManga';
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
+            this.tags        = [ 'manga', 'english' ];
             this.url         = 'http://www.tenmanga.com';
 
             //this.queryMangasPageCount = '';
             this.pageCount = 750;
             this.queryMangas = 'ul#list_container li dd.book-list a:first-of-type';
             this.queryChapters = 'ul.chapter-box li div.chapter-name.short a';
-            this.queryPages = 'select.sl-page';
+            this.queryPages = 'select.sl-page option';
             this.queryImages = 'div.pic_box source.manga_pic';
-
-            // register a protocol handler to intercept requests (with custom 'tenmanga' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
     }
 
