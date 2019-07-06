@@ -16,9 +16,6 @@
             super.label      = '3asq (مانجا العاشق) - Archive';
             this.tags        = [ 'manga', 'arabic' ];
             this.url         = 'http://www.3asq.info';
-
-            // register a protocol handler to intercept requests (with custom '3asq' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

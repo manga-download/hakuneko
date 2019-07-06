@@ -19,9 +19,6 @@
             this.path        = '/hentai-manga-list/all/any/name-az/';
 
             this.queryMangas = 'div.mng_lst ul.lst div ul li div#center > a';
-
-            // register a protocol handler to intercept requests (with custom 'readhentaimanga' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

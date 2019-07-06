@@ -16,9 +16,6 @@
             super.label      = 'Authrone';
             this.tags        = [ 'manga', 'english' ];
             this.url         = 'http://www.authrone.com';
-
-            // register a protocol handler to intercept requests (with custom '3asq' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

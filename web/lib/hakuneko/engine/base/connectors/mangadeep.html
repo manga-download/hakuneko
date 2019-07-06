@@ -19,9 +19,6 @@
 
             this.queryMangas = 'div.mng_lst div.nde div.det a';
             this.queryPages = 'div.wpm_pag div a source.manga-page';
-
-            // register a protocol handler to intercept requests (with custom 'mangadeep' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

@@ -12,15 +12,11 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = undefined;
             super.label      = undefined;
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
+            this.tags        = [];
             this.url         = undefined;
             this.path        = '/manga-list/all/any/name-az/';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
             this.queryMangasPageCount = 'div.wpm_nav ul.pgg li:last-of-type a';
             this.queryMangas = 'div.mng_lst div.nde div.det a.mng_det_pop';
@@ -122,11 +118,7 @@
         _getPageList( manga, chapter, callback ) {
             this.fetchDOM( this.url + chapter.id, this.queryPageLinks )
             .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( this.url + chapter.id + element.value + '/' );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( element => this.createConnectorURI( this.url + chapter.id + element.value + '/' ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -138,24 +130,18 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+         _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            this.fetchDOM( uri.href, this.queryPages )
+            return this.fetchDOM( request, this.queryPages )
             .then( data => {
-                let span = document.createElement('span');
+                let span = document.createElement( 'span' );
                 span.innerHTML = data[0].getAttribute( 'src' );
-                return fetch( new URL( span.textContent.trim(), uri.href ).href, this.requestOptions );
+                return fetch( new URL( span.textContent.trim(), request.url ).href, this.requestOptions );
             } )
             .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            .then( data => this._blobToBuffer( data ) );
         }
     }
 
