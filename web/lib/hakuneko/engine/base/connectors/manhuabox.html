@@ -12,18 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'manhuabox';
             super.label      = 'ManhuaBox';
             this.tags        = [ 'webtoon', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
-            this.url         = 'https://manhuabox.net';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'manhuabox' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+            this.url         = 'https://rogame.site';
         }
 
         /**
@@ -88,13 +80,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'div#all-pages div.modal-dialog div.modal-content div.modal-body ul li a' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div#all-pages div.modal-dialog div.modal-content div.modal-body ul li a' )
             .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( this.getAbsolutePath( element, this.url + chapter.id ) );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -106,20 +95,12 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            this.fetchDOM( uri.href, 'div.container div.reader a source' )
-            .then( data => fetch( this.getAbsolutePath( data[0], uri.href ), this.requestOptions ) )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            return this.fetchDOM( request, 'div.container div.reader a source' )
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
         }
     }
 
