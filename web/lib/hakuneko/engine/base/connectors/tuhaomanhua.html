@@ -12,18 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'tuhaomanhua';
             super.label      = '土豪漫画 (Tuhao Manhua)';
             this.tags        = [ 'manga', 'chinese' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://www.tohomh123.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'tuhaomanhua' protocol) and fetch images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -95,23 +87,18 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            fetch( request )
+            .then( response => response.text() )
             .then( data => {
                 let uri = new URL( this.url + '/action/play/read' );
-                uri.protocol = this.id;
                 uri.searchParams.set( 'did', data.match( /var\s+did\s*=\s*(\d+)\s*;/ )[1] );
                 uri.searchParams.set( 'sid', data.match( /var\s+sid\s*=\s*(\d+)\s*;/ )[1] );
                 let pageCount = parseInt( data.match( /var\s+pcount\s*=\s*(\d+)\s*;/ )[1] );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => {
                     uri.searchParams.set( 'iid', page + 1 );
                     uri.searchParams.set( 'tmp', Math.random() );
-                    return uri.href;
+                    return this.createConnectorURI( uri.href );
                 } );
                 callback( null, pageLinks );
             } )
@@ -124,31 +111,12 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.json();
-            } )
-            .then( data => fetch( data.Code, this.requestOptions ) )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            return this.fetchJSON( request )
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data.Code, request.url ) ) );
         }
     }
 
