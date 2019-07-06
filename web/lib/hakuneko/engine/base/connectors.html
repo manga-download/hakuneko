@@ -869,6 +869,19 @@
                 return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
             } );
         }
+        
+        /**
+         *
+         */
+        _protocolHandler( request, callback ) {
+            let uri = new URL( request.url );
+            this.list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
+            .then( buffer => callback( buffer ) )
+            .catch( error => {
+                //console.error( error, payload );
+                callback( undefined );
+            } );
+        }
     }
     Connectors; // reference the class to prevent removal of the class through js-minify
 
