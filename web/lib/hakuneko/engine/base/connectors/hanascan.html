@@ -19,9 +19,6 @@
             this.requestOptions.headers.set( 'x-referer', this.url );
 
             this.queryChapters = 'div#tab-chapper div#list-chapters span.title a.chapter';
-
-            // register a protocol handler to intercept requests (with custom 'hanascan' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

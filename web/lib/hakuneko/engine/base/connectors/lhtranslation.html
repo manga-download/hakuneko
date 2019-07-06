@@ -20,9 +20,6 @@
 
             this.queryChapters = 'div#tab-chapper div#list-chapters span.titleLink a.chapter';
             this.language = 'en';
-            
-            // register a protocol handler to intercept requests (with custom 'lhtranslation' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

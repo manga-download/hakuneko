@@ -12,16 +12,11 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'lhscan';
             super.label      = 'LHScan';
             this.tags        = [ 'manga', 'raw', 'japanese' ];
-            // Private members for internal usage only (convenience)
             this.url         = 'http://lhscan.net';
             this.requestOptions.headers.set( 'x-referer', this.url );
-
-            // register a protocol handler to intercept requests (with custom 'lhscan' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
