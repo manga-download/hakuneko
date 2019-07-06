@@ -23,9 +23,6 @@
             this.queryMangaHeading = 'div.ep-caption div.caption-header h2.title';
             this.queryMangas = 'div.weekly-all ul.body li a';
             this.queryMangaTitle = 'div.caption div.titles strong.title';
-
-            // register a protocol handler to intercept requests (with custom 'toomics-ko' protocol) and inject referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

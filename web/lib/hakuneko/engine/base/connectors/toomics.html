@@ -103,11 +103,7 @@
         _getPageList( manga, chapter, callback ) {
             this.fetchDOM( this.baseURL + chapter.id, this.queryPages )
             .then( data => { 
-                let pageList = data.map( element => {
-                    let uri = new URL( element.dataset[ 'src' ] || element.dataset[ 'original' ], this.baseURL );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );             
+                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset[ 'src' ] || element.dataset[ 'original' ], this.baseURL ) ) );             
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -119,21 +115,13 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.baseURL ) ).protocol;
-            this.requestOptions.headers.set( 'x-referer', uri.origin );
+        _handleConnectorURI( payload ) {
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            this.requestOptions.headers.set( 'x-referer', new URL( payload ).origin );
+            let promise = super._handleConnectorURI( payload );
             this.requestOptions.headers.delete( 'x-referer' );
+            return promise;
         }
     }
 

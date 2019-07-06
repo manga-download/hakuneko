@@ -19,9 +19,6 @@
             this.requestOptions.headers.set( 'x-cookie', 'content_lang=en' );
 
             this.path = '/en/webtoon/ranking';
-
-            // register a protocol handler to intercept requests (with custom 'toomics-en' protocol) and inject referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
