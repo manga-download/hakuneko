@@ -16,9 +16,7 @@
             super.label      = 'KuManga';
             this.tags        = [ 'manga', 'spanish' ];
             this.url         = 'http://www.kumanga.com';
-
-            // register a protocol handler to intercept requests (with custom 'kumanga' protocol) and get images with referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+            this.requestOptions.headers.set( 'x-referer', this.url );
         }
 
         /**
@@ -131,36 +129,12 @@
             .then( response => response.text() )
             .then( data => {
                 let pageList = JSON.parse( data.match( /pUrl\s*=\s*(\[.*\])\s*;/ )[1] )
-                .map( page => {
-                    let uri = new URL( page.imgURL, request.url );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                .map( page => this.createConnectorURI( this.getAbsolutePath( page.imgURL, request.url ) ) );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
-            } );
-        }
-        
-        /**
-         *
-         */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            request = new Request( uri.href, this.requestOptions );
-            request.headers.set( 'x-referer', this.url );
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
             } );
         }
     }
