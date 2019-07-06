@@ -470,8 +470,17 @@
          * or a promise that rejects with an error.
          */
         _handleConnectorURI( payload ) {
-            let error = new Error( `Connector '${this.id}' has not implemented protocol handling!` );
-            return Promise.reject( error );
+            try {
+                console.log( `Connector '${this.id}' has not implemented protocol handling. Using fallback implementation (fetch blob with default request options)!` );
+                let request = new Request( payload, this.requestOptions );
+                // TODO: only perform requests when from download manager
+                // or when from browser for preview and selected chapter matches
+                return fetch( request )
+                .then( response => response.blob() )
+                .then( data => this._blobToBuffer( data ) );
+            } catch( error ) {
+                return Promise.rejec( error );
+            }
         }
 
         /**
