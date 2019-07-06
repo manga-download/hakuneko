@@ -16,9 +16,6 @@
             super.label      = 'ComicPunch';
             this.tags        = [ 'comic', 'english' ];
             this.url         = 'https://comicpunch.net';
-
-            // register a protocol handler to intercept requests (with custom 'readcomicbooksonline' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -67,14 +64,13 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, 'source.picture' )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'source.picture' )
             .then( data => {
-                let pageList = data.map( ( element, index ) => {
-                    let uri = new URL( '/reader' + this.getRelativeLink( element ), this.url );
-                    uri.protocol = this.id;
-                    uri.searchParams.append( 'referer', this.url + chapter.id );
-                    return uri.href;
-                } );
+                let pageList = data.map( element => this.createConnectorURI( {
+                    url: this.getAbsolutePath( '/reader/' + element.getAttribute( 'src' ), request.url ),
+                    referer: request.url
+                } ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -86,22 +82,13 @@
         /**
          * 
          */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            this.requestOptions.headers.set( 'x-referer', uri.searchParams.get( 'referer' ) );
-            uri.searchParams.delete( 'referer' );
-
-            fetch( uri.href, this.requestOptions )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
-
+        _handleConnectorURI( payload ) {
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            this.requestOptions.headers.set( 'x-referer', payload.referer );
+            let promise = super._handleConnectorURI( payload.url );
             this.requestOptions.headers.delete( 'x-referer' );
+            return promise;
         }
     }
 
