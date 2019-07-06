@@ -12,23 +12,15 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangarock';
             super.label      = 'MangaRock';
             this.tags        = [ 'manga', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://mangarock.com';
             this.apiURL      = 'https://api.mangarockhd.com';
             this.requestOptions.headers.set( 'content-type', 'application/json' );
             this.requestOptions.headers.set( 'x-origin', 'https://mangarock.com' );
             this.pageLock      = 0;
             this.pageLockDelay = 500;
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'mangafox' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -141,11 +133,7 @@
             fetch( this.apiURL + '/query/web401/pages?country=&oid=' + chapter.id, this.requestOptions )
             .then( response => this._getJsonResponse( response, 'page' ) )
             .then( data => {
-                let pageList = data.map( link => {
-                    let uri = new URL( link );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( link => this.createConnectorURI( link ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -157,17 +145,11 @@
         /**
          *
          */
-        _pageProtocolHandler( request, callback ) {
+        _handleConnectorURI( payload ) {
             this.requestOptions.method = 'GET';
             this.requestOptions.body = undefined;
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.apiURL ) ).protocol;
-            fetch( uri.href, this.requestOptions )
+            return fetch( payload, this.requestOptions )
             .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                // promises nested intentionally to give innerpromise access to scoped response.headers
                 return response.arrayBuffer()
                 .then( data => {
                     data = new Uint8Array( data );
@@ -180,13 +162,6 @@
                         } );
                     }
                 } );
-            } )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( error, undefined );
             } );
         }
 
