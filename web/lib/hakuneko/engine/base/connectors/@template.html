@@ -203,12 +203,11 @@
         }
 
         _handleConnectorURI( payload ) {
-            request = new Request( payload, this.requestOptions );
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            return fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) );
+            return this.fetchDOM( request, 'div#image source' )
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
         }
         */
     }
