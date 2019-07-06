@@ -16,9 +16,7 @@
             super.label      = 'ManHuaGui';
             this.tags        = [ 'manga', 'chinese' ];
             this.url         = 'https://www.manhuagui.com';
-
-            // register a protocol handler to intercept requests (with custom 'manhuagui' protocol) and get images with referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+            this.requestOptions.headers.set( 'x-referer', this.url );
         }
 
         /**
@@ -78,7 +76,7 @@
                 new Promise( ( resolve, reject ) => {
                     setTimeout( () => { reject( new Error( 'Failed to get page links!' ) ) }, 5000 );
                     SMH.imgData = function(data) {
-                        let origin = '${ this.id }://' + servs[pVars.curServ].hosts[pVars.curHost].h + '.hamreus.com';
+                        let origin = 'https://' + servs[pVars.curServ].hosts[pVars.curHost].h + '.hamreus.com';
                         let pageLinks = data.files.map( file => origin + data.path + file + '?cid=' + data.cid + '&md5=' + data.sl.md5 );
                         return { preInit: () => resolve( pageLinks ) };
                     };
@@ -88,32 +86,13 @@
             `;
             let request = new Request( this.url + chapter.id, this.requestOptions );
             Engine.Request.fetchUI( request, script )
-            .then( data => {             
-                callback( null, data );
+            .then( data => {
+                let pageList = data.map( page => this.createConnectorURI( page ) );
+                callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            request = new Request( uri.href, this.requestOptions );
-            request.headers.set( 'x-referer', this.url );
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
             } );
         }
     }
