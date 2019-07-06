@@ -16,9 +16,6 @@
             super.label      = 'コミックウォーカー (ComicWalker)';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://comic-walker.com';
-
-            // register a protocol handler to intercept requests (with custom 'comicwalker' protocol) and decrypt images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -111,11 +108,7 @@
                 return this.fetchJSON( request );
             } )
             .then( data => {
-                let pageList = data.data.result.map( page => {
-                    let uri = new URL( page.meta.source_url, this.url );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );               
+                let pageList = data.data.result.map( page => this.createConnectorURI( this.getAbsolutePath( page.meta.source_url, this.url ) ) );               
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -127,20 +120,13 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            request = new Request( uri.href, this.requestOptions );
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( request )
+            return fetch( request )
             .then( response => response.arrayBuffer() )
-            .then( data => this._decrypt( data, uri.pathname.split( '/' )[4] ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
-            } );
+            .then( data => this._decrypt( data, request.url.split( '/' )[6] ) );
         }
         
         /**
