@@ -193,7 +193,7 @@
             let request = new Request( this.url + chapter.id, this.requestOptions );
             this.fetchDOM( request, 'div#viewer source' )
             .then( data => {
-                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset.url, request.url ) ) );
+                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
                 callback( null, pageList );
             } )
             .catch( error => {
