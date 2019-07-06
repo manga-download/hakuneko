@@ -16,9 +16,6 @@
             super.label      = 'BookLive';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://booklive.jp';
-
-            // register a protocol handler to intercept requests (with custom 'comicmeteor' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**

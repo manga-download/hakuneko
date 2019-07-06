@@ -46,40 +46,34 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+         _handleConnectorURI( payload ) {
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             let promise;
             switch( true ) {
-                case uri.pathname.endsWith( 'ptimg.json' ):
-                    promise = this._process_v016061( uri.href );
+                case payload.endsWith( 'ptimg.json' ):
+                    promise = this._process_v016061( payload );
                     break;
-                case uri.pathname.includes( 'sbcGetImg' ):
-                    promise = this._process_v016130( uri.href );
+                case payload.includes( 'sbcGetImg' ):
+                    promise = this._process_v016130( payload );
                     break;
-                case uri.pathname.includes( 'M_L.jpg' ):
-                    promise = this._process_v016130( uri.href );
+                case payload.includes( 'M_L.jpg' ):
+                    promise = this._process_v016130( payload );
                     break;
-                case uri.pathname.includes( 'M_H.jpg' ):
-                    promise = this._process_v016130( uri.href );
+                case payload.includes( 'M_H.jpg' ):
+                    promise = this._process_v016130( payload );
                     break;
-                case uri.pathname.includes( '/img/' ):
-                    promise = this._process_v016130( uri.href );
+                case payload.includes( '/img/' ):
+                    promise = this._process_v016130( payload );
                     break;
                 default:
                     promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
                     break;
             }
-            promise.then( data => this._blobToBuffer( data ) )
+            return promise.then( data => this._blobToBuffer( data ) )
             .then( data => {
                 this._applyRealMime( data );
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
+                return Promise.resolve( data );
             } );
         }
 
@@ -92,11 +86,7 @@
          *
          */
         _getPageList_v016061( imageConfigurtions, baseURL ) {
-            let pageLinks = imageConfigurtions.map( element => {
-                let uri = new URL( this.getAbsolutePath( element.dataset.ptimg, baseURL ) );
-                uri.protocol = this.id;
-                return uri.href;
-            } );
+            let pageLinks = imageConfigurtions.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset.ptimg, baseURL ) ) );
             return Promise.resolve( pageLinks );
         }
 
@@ -200,13 +190,12 @@
             return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.json() )
             .then( data => {
-                uri.protocol = this.id;
                 let dom = this.createDOM( data.ttx );
                 let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
                     let src = img.getAttribute( 'src' );
                     uri.searchParams.set( 'src', src );
                     uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
-                    return uri.href.replace( 'sbcGetCntnt.php', 'sbcGetImg.php' );
+                    return this.createConnectorURI( uri.href.replace( 'sbcGetCntnt.php', 'sbcGetImg.php' ) );
                 } );
                 return Promise.resolve( pageLinks );
             } );
@@ -219,12 +208,11 @@
             return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.json() )
             .then( data => {
-                uri.protocol = this.id;
                 let dom = this.createDOM( data.ttx );
                 let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
                     let src = img.getAttribute( 'src' );
                     uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
-                    return uri.href.replace( '/content', '/img/' + src );
+                    return this.createConnectorURI( uri.href.replace( '/content', '/img/' + src ) );
                 } );
                 return Promise.resolve( pageLinks );
             } );
@@ -238,12 +226,11 @@
             .then( response => response.text() )
             .then( data => JSON.parse( data.slice( 16, -1 ) ) )
             .then( data => {
-                uri.protocol = this.id;
                 let dom = this.createDOM( data.ttx );
                 let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
                     let src = img.getAttribute( 'src' );
                     uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
-                    return uri.href.replace( 'content.js', src + '/M_H.jpg' ); // '/M_L.jpg'
+                    return this.createConnectorURI( uri.href.replace( 'content.js', src + '/M_H.jpg' ) ); // '/M_L.jpg'
                 } );
                 return Promise.resolve( pageLinks );
             } );

@@ -16,9 +16,6 @@
             super.label      = 'GammaPlus';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://gammaplus.takeshobo.co.jp';
-
-            // register a protocol handler to intercept requests (with custom 'gammaplus' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

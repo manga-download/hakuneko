@@ -16,9 +16,6 @@
             super.label      = 'COMICメテオ (COMIC Meteor)';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://comic-meteor.jp';
-
-            // register a protocol handler to intercept requests (with custom 'comicmeteor' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**

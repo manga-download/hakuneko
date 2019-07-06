@@ -16,9 +16,6 @@
             super.label      = 'WebComicGamma';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://webcomicgamma.takeshobo.co.jp';
-
-            // register a protocol handler to intercept requests (with custom 'webcomicgamma' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
