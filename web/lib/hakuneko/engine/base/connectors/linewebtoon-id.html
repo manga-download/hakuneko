@@ -16,9 +16,6 @@
             super.label      = 'Line Webtoon (Indonesian)';
             this.tags        = [ 'webtoon', 'indonesian' ];
             this.url         = 'https://www.webtoons.com/id';
-
-            // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

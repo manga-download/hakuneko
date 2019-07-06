@@ -12,20 +12,12 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'linewebtoon';
             super.label      = 'Line Webtoon';
             this.tags        = [ 'webtoon' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = undefined;
             this.baseURL     = 'https://www.webtoons.com';
             this.requestOptions.headers.set( 'x-referer', this.baseURL );
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -107,13 +99,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.baseURL + chapter.id, 'div.viewer div.viewer_lst div.viewer_img source[data-url]' )
+            let request = new Request( this.baseURL + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div.viewer div.viewer_lst div.viewer_img source[data-url]' )
             .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( element.dataset.url );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset.url, request.url ) ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -125,24 +114,13 @@
         /**
          *
          */
-         _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.baseURL ) ).protocol;
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            return fetch( request )
+            .then( response => response.blob() )
+            .then( data => this._blobToBuffer( data ) );
         }
     }
 

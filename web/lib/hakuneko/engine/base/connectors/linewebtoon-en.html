@@ -16,9 +16,6 @@
             super.label      = 'Line Webtoon (English)';
             this.tags        = [ 'webtoon', 'english' ];
             this.url         = 'https://www.webtoons.com/en';
-
-            // register a protocol handler to intercept requests (with custom 'linewebton' protocol) and get images with referer
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
