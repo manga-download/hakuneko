@@ -17,9 +17,6 @@
             this.tags        = [ 'webtoon', 'korean' ];
             this.url         = 'http://webtoon.daum.net';
             this.apiURL      = 'http://webtoon.daum.net/data/pc/webtoon';
-
-            // register a protocol handler to intercept requests (with custom 'daumwebtoon' protocol) and decrypt images
-            //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -117,15 +114,7 @@
             let request = new Request( this.apiURL + '/viewer_images/' + chapter.id, this.requestOptions );
             this.fetchJSON( request )
             .then( data => {
-                let pageList = data.data.map( image => {
-                    /*
-                    // image.encryptKey, image.keyEncryptKey
-                    let uri = new URL( image.url );
-                    uri.protocol = this.id;
-                    return uri.href;
-                    */
-                    return image.url;
-                } );               
+                let pageList = data.data.map( image => this.getAbsolutePath( image.url, request.url ) );               
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -133,27 +122,6 @@
                 callback( error, undefined );
             } );
         }
-
-        /**
-         *
-         */
-        /*
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            request = new Request( uri.href, this.requestOptions );
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
-            } );
-        }
-        */
     }
 
 </script>
