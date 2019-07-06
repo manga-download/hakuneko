@@ -15,11 +15,16 @@
         constructor() {
             super();
             let electron = require( 'electron' );
+            this.webframe = electron.webFrame;
             this.electronRemote = electron.remote;
             this.protocol = this.electronRemote.require( 'electron' ).protocol;
             this.browser = this.electronRemote.BrowserWindow;
             this.userAgent = UserAgent.random();
 
+            // register 'cache' as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
+            // this cannot be done in main process of electron, so it is done here ...
+            this.webframe.registerURLSchemeAsPrivileged( 'cache' );
+            
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
@@ -42,6 +47,8 @@
          *
          */
         registerProtocol( scheme, callback ) {
+            // register scheme as privileged to allow this protocol be used with fetch API (otherwise only http[s] is allowed)
+            this.webframe.registerURLSchemeAsPrivileged( scheme );
             // register callback for electron process (when callback becomes unavailable by e.g. reloading page,
             // the previous registered handler must be removed)
             this.protocol.isProtocolHandled( scheme, error => {

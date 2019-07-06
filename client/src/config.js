@@ -11,7 +11,7 @@ var developer = ( process.argv && process.argv.length > 0 && process.argv[0].mat
 // url with tests that should be run (hakuneko will ne started in test mode when test !== undefined)
 var testURL = args.getArg( '-t', '--test' );
 // online repository where the latest version of the app is stored
-var appURL = args.getArg( '-u', '--url' ) || 'http://static.hakuneko.download/5.0.1/latest';
+var appURL = args.getArg( '-u', '--url' ) || 'http://static.hakuneko.download/0.4.0/latest';
 // app url that will be opened in electron on startup
 var cacheURL = 'cache://hakuneko/index.html';
 // relative path to the web app directory in the development directory

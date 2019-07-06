@@ -33,11 +33,13 @@
 <link rel="import" href="connectors/ciayoid.html">
 <link rel="import" href="connectors/comicborder.html">
 <link rel="import" href="connectors/comicdays.html">
+<link rel="import" href="connectors/comicearthstar.html">
 <link rel="import" href="connectors/comicextra.html">
 <link rel="import" href="connectors/comicmeteor.html">
 <link rel="import" href="connectors/comico.html">
 <link rel="import" href="connectors/comicoid.html">
 <link rel="import" href="connectors/comicvn.html">
+<link rel="import" href="connectors/comicwalker.html">
 <link rel="import" href="connectors/crunchymanga.html">
 <link rel="import" href="connectors/dangolinenofansub.html">
 <link rel="import" href="connectors/darkskyprojects.html">
@@ -47,6 +49,7 @@
 <link rel="import" href="connectors/digitalteam.html">
 <link rel="import" href="connectors/dokifansubs.html">
 <link rel="import" href="connectors/dongmanmanhua.html">
+<link rel="import" href="connectors/doujindesu.html">
 <link rel="import" href="connectors/doujins.html">
 <link rel="import" href="connectors/doujinyosh.html">
 <link rel="import" href="connectors/dynasty-scans.html">
@@ -156,6 +159,8 @@
 <link rel="import" href="connectors/mangadex.html">
 <link rel="import" href="connectors/mangadoom.html">
 <link rel="import" href="connectors/mangadoor.html">
+<link rel="import" href="connectors/mangadropout-archive.html">
+<link rel="import" href="connectors/mangadropout.html">
 <link rel="import" href="connectors/mangaeden-en.html">
 <link rel="import" href="connectors/mangaeden-it.html">
 <link rel="import" href="connectors/mangaforall.html">
@@ -406,9 +411,6 @@
          *
          */
         constructor() {
-            //
-            Engine.Request.registerProtocol( 'connector', this._protocolHandler.bind( this ) );
-
             // raw list of all available connectors
             this.list = [];
 
@@ -423,13 +425,16 @@
             this.register( new BookLive() );
             this.register( new BoredomSociety() );
             this.register( new Buka() );
+            this.register( new ComicEarthStar() );
             this.register( new CiayoEN() );
             this.register( new CiayoID() );
             this.register( new ComicMeteor() );
+            this.register( new ComicWalker() );
             this.register( new CrunchyManga() );
             this.register( new DaumWebtoon() );
             this.register( new DigitalTeam() );
             this.register( new DongManManhua() );
+            this.register( new DoujinDesu() );
             this.register( new DynastyScans() );
             this.register( new EightMuses() );
             this.register( new GammaPlus() );
@@ -468,6 +473,7 @@
             this.register( new MangaCanBlog() );
             this.register( new MangaChan() );
             this.register( new MangaDex() );
+            this.register( new MangaDropOutArchive() );
             this.register( new MangaEdenEN() );
             this.register( new MangaEdenIT() );
             this.register( new MangaFox() );
@@ -741,6 +747,7 @@
             this.register( new KnightNoFansub() );
             this.register( new KomikGo() );
             this.register( new LeviatanScans() );
+            this.register( new MangaDropOut() );
             this.register( new MangaLike() );
             this.register( new MangaLover() );
             this.register( new MangaZuki() );

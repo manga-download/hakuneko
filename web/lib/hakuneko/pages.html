@@ -77,24 +77,13 @@
                 cursor: pointer;
                 margin: 0.25em;
             }
-            #fullscreen {
-                width: 100%;
-                height: 100%;
-                background-color: var(--page-video-background-color);
-            }
             #video {
                 width: 100%;
-                height: 100%;
-                object-fit: contain;
-                outline: none !important;
-            }
-            video::-webkit-media-controls-fullscreen-button {
-                display: none;
+                background-color: rgba(0, 0, 0, 0.25);
             }
             /* hack to allow video to expand size when wrapped in subtitle container */
             .ASS-container, .ASS-container svg {
                 width: 100% !important;
-                height: 100% !important;
             }
             /* hack to show subtitles when video is in fullscreen mode */
             .ASS-stage {
@@ -126,14 +115,12 @@
                 </template>
             </template>
             <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
-                <div id="fullscreen" on-dblclick="toggleFullscreen">
-                    <video id="video" controls disablePictureInPicture controlsList="nodownload nofullscreen">
-                        <!-- dummy tracks to show subtitle menu in video player -->
-                        <template is="dom-repeat" items="[[ media.subtitles ]]">
-                            <track kind="subtitles" src="data:text/vtt,WEBVTT" label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
-                        </template>
-                    </video>
-                </div>
+                <video id="video" controls controlsList="nodownload" on-click="onSelectedSubtitleChanged">
+                    <!-- dummy tracks to show subtitle menu in video player -->
+                    <template is="dom-repeat" items="[[ media.subtitles ]]">
+                        <track kind="subtitles" src="data:text/vtt," label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
+                    </template>
+                </video>
             </template>
         </div>
     </template>
@@ -261,40 +248,35 @@
                             tracks[i].mode = 'disabled';
                             i++;
                         }
-                        tracks.onchange = this.onSelectedSubtitleChanged.bind( this );
                     }
                 }
-            }
-
-            /**
-             * 
-             */
-             toggleFullscreen( event ) {
-                if( document.fullscreenElement ) {
-                    document.exitFullscreen();
-                } else {
-                    this.shadowRoot.querySelector( '#fullscreen' ).requestFullscreen();
-                }
-                event.preventDefault();
-                return false;
             }
 
             /**
              *
              */
             onSelectedSubtitleChanged( event ) {
-                // Yield with timeout, so UI element can be attached to DOM and update its properties before we access it ...
+//console.log( 'onSelectedSubtitleChanged:', event );
+                let element = event.path[0];
+                let tracks = element.textTracks;
+                // Yield with timeout, so UI can update its element before we access it ...
                 setTimeout( () => {
-                    let video = this.shadowRoot.querySelector( '#video' );
                     // assumption: tracks are in same order as subtitles ...
-                    let subtitle = [...event.target].findIndex( track => track.mode === 'showing' );
+                    let subtitle = -1;
+                    for( let index = 0; index < this.media.subtitles.length; index++ ) {
+                        if( tracks[index].mode === 'showing' ) {
+                            subtitle = index;
+                            break;
+                        }
+                    }
                     if( this.selectedSubtitle !== subtitle ) {
                         this.resetSubtitles( false ); // NOTE: this will also set this.selectedSubtitle to -1
                         this.selectedSubtitle = subtitle;
                         if( subtitle > -1 ) {
                             let sub = this.media.subtitles[this.selectedSubtitle];
+//console.log( 'SUBTITLE:', sub );
                             if( sub.content ) {
-                                this.ass = new ASS( sub.content, video );
+                                this.ass = new ASS( sub.content, element );
                             } else {
                                 fetch( sub.url )
                                 .then( response => {
@@ -305,7 +287,7 @@
                                 } )
                                 .then( data => {
                                     sub.content = data;
-                                    this.ass = new ASS( sub.content, video );
+                                    this.ass = new ASS( sub.content, element );
                                 } )
                                 .catch( error => {
                                     console.warn( error, sub.url );

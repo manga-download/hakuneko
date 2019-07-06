@@ -16,6 +16,9 @@
             super.label      = 'Template';
             this.tags        = [ 'manga', 'english' ];
             this.url         = 'http://template.net';
+
+            // register a protocol handler to intercept requests (with custom 'connector' protocol) and extract images
+            //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -193,7 +196,11 @@
             let request = new Request( this.url + chapter.id, this.requestOptions );
             this.fetchDOM( request, 'div#viewer source' )
             .then( data => {
-                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset.url, request.url ) ) );
+                let pageList = data.map( element => {
+                    let uri = new URL( this.getAbsolutePath( element.dataset.url, request.url ) );
+                    uri.protocol = this.id;
+                    return uri.href;
+                } );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -202,13 +209,20 @@
             } );
         }
 
-        _handleConnectorURI( payload ) {
-            request = new Request( payload, this.requestOptions );
+        _protocolHandlerCallback( request, callback ) {
+            let uri = new URL( request.url );
+            uri.protocol = ( new URL( this.url ) ).protocol;
+            request = new Request( uri.href, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            return fetch( request )
+            fetch( request )
             .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) );
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => callback( data ) )
+            .catch( error => {
+                console.error( error, request.url );
+                callback( undefined );
+            } );
         }
         */
     }
