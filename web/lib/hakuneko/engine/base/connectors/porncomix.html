@@ -16,9 +16,6 @@
             super.label      = 'PornComix';
             this.tags        = [ 'hentai', 'english' ];
             this.url         = 'http://www.porncomix.info';
-
-            // register a protocol handler to intercept requests (with custom 'porncomix' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -102,11 +99,7 @@
             let request = new Request( this.url + chapter.id, this.requestOptions );
             this.fetchDOM( request, 'div.posts div.single-post dl.gallery-item dt a' )
             .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( this.getAbsolutePath( element, request.url ) );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -118,24 +111,12 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            request = new Request( uri.href, this.requestOptions );
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            this.fetchDOM( request, 'div.posts div.single-post div.attachment-image source' )
-            .then( data => {
-                request = new Request( this.getAbsolutePath( data[0], request.url ), this.requestOptions );
-                return fetch( request );
-            } )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
-            } );
+            return this.fetchDOM( request, 'div.posts div.single-post div.attachment-image source' )
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
         }
     }
 
