@@ -16,9 +16,7 @@
             super.label      = 'MangaDoom';
             this.tags        = [ 'manga', 'english' ];
             this.url         = 'http://www.mngdoom.com';
-
-            // register a protocol handler to intercept requests (with custom 'readmng' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
+            this.requestOptions.headers.set( 'x-referer', this.url );
         }
 
         /**
@@ -91,37 +89,13 @@
             let request = new Request( this.url + chapter.id + '/all-pages', this.requestOptions );
             this.fetchDOM( request, 'div.inner-page source.img-responsive' )
             .then( data => {
-                let pageLinks = data.map( element => {
-                    let uri = new URL( this.getAbsolutePath( element, request.url ) );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
             } ); 
-        }
-
-        /**
-         *
-         */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            request = new Request( uri.href, this.requestOptions );
-            request.headers.set( 'x-referer', this.url );
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
-            fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
-            } );
         }
     }
 
