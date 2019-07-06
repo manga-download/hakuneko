@@ -12,18 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'scanmanga';
             super.label      = 'ScanManga';
             this.tags        = [ 'manga', 'french' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'http://www.scan-manga.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'scanmanga' protocol) and download images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -80,6 +72,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            let request = new Request( this.url + chapter.id, this.requestOptions );
             fetch( this.url + chapter.id, this.requestOptions )
             .then( response => response.text() )
             .then( data => {
@@ -90,12 +83,10 @@
                 while( match = regex.exec( data ) ) {
                     pageList.push( match[1] );
                 }
-                pageList = pageList.map( link => {
-                    let uri = new URL( baseURL + link );
-                    uri.protocol = this.id;
-                    uri.searchParams.append( 'referer', this.url + chapter.id );
-                    return uri.href;
-                } );        
+                pageList = pageList.map( link => this.createConnectorURI( {
+                    url: baseURL + link,
+                    referer: request.url
+                } ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -105,25 +96,15 @@
         }
 
         /**
-         *
+         * 
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            let referer = uri.searchParams.get( 'referer' );
-            uri.searchParams.delete( 'referer' );
-            this.requestOptions.headers.set( 'x-referer', referer );
+        _handleConnectorURI( payload ) {
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( uri.href, this.requestOptions )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            this.requestOptions.headers.set( 'x-referer', payload.referer );
+            let promise = super._handleConnectorURI( payload.url );
             this.requestOptions.headers.delete( 'x-referer' );
+            return promise;
         }
     }
 
