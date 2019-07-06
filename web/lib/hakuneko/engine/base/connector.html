@@ -471,7 +471,7 @@
          */
         _handleConnectorURI( payload ) {
             try {
-                console.log( `Connector '${this.id}' has not implemented protocol handling. Using fallback implementation (fetch blob with default request options)!` );
+                //console.log( `Connector '${this.id}' has not implemented protocol handling. Using fallback implementation (fetch blob with default request options)!` );
                 let request = new Request( payload, this.requestOptions );
                 // TODO: only perform requests when from download manager
                 // or when from browser for preview and selected chapter matches
