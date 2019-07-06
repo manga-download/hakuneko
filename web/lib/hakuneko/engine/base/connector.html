@@ -447,6 +447,36 @@
         }
 
         /**
+         *
+         */
+        /*
+        // https://developer.mozilla.org/en-US/docs/Web/API/XPathResult#Constants
+        fetchXPATH( request, xpath, resultType, retries ) {
+            return fetch( request )
+            .then( response => response.text() )
+            .then( data => {
+                let dom = this.createDOM( data );
+                let result = document.evaluate( xpath, dom, null, resultType, null);
+                if( result.resultType > 3 ) {
+                    // transform iterator into array
+                }
+                return Promise.resolve( result );
+            } )
+        }
+
+            let request = new Request( this.url + manga.id, this.requestOptions );
+            this.fetchXPATH( request, '//div[@id="tomos"]/div[@id="tomo"]/a', XPathResult.ORDERED_NODE_ITERATOR_TYPE )
+            .then( data => {
+                console.log( data.iterateNext(); );
+                callback( null, [] );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
+        */
+
+        /**
          * 
          */
         createConnectorURI( payload ) {
