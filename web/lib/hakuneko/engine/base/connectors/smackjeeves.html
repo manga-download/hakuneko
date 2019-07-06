@@ -12,18 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'smackjeeves';
             super.label      = 'Smack Jeeves';
             this.tags        = [ 'webtoon', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'http://www.smackjeeves.com';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'smackjeeves' protocol) and download images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -113,13 +105,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( chapter.id, 'select.jumpbox option.jumpbox_page' )
+            let request = new Request( chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'select.jumpbox option.jumpbox_page' )
             .then( data => {
-                let pageLinks = data.map( element => {
-                    let uri = new URL( element.value, chapter.id );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.value, request.url ) ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {
@@ -131,25 +120,12 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            this.fetchDOM( uri.href, 'source#comic_image' )
-            .then( data => fetch( ( new URL( this.getRelativeLink( data[0] ), this.url ) ).href, this.requestOptions ) )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            return this.fetchDOM( request, 'source#comic_image' )
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
         }
     }
 
