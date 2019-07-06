@@ -16,9 +16,6 @@
             super.label      = 'マンガPark (Manga-Park)';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'https://manga-park.com';
-
-            // register a protocol handler to intercept requests (with custom 'manga-park' protocol) and decrypt images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -109,12 +106,10 @@
             this.fetchJSON( request )
             .then( data => {
                 let pageList = data.data.chapter.reduce( ( accumulator, element ) => {
-                    let images = element.images.map( image => {
-                        let uri = new URL( this.getAbsolutePath( image.path, request.url ) );
-                        uri.protocol = this.id;
-                        uri.hash = image.key;
-                        return uri.href;
-                    } );
+                    let images = element.images.map( image => this.createConnectorURI( { 
+                        url: this.getAbsolutePath( image.path, request.url ),
+                        key: image.key
+                    } ) );
                     return accumulator.concat( images );
                 }, [] );
                 callback( null, pageList );
@@ -128,33 +123,23 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            let hash = uri.hash.slice( 1 );
-            uri.hash = undefined;
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload.url, this.requestOptions );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( new Request( uri.href, this.requestOptions ) )
+            return fetch( request )
             .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
                 return response.arrayBuffer()
                 .then( data => {
                     return Promise.resolve( {
                         mimeType: response.headers.get( 'content-type' ),
-                        data: this._decryptImage( data, this._decodeKey( hash ) )
+                        data: this._decryptImage( data, this._decodeKey( payload.key ) )
                     } );
                 } );
             } )
             .then( data => {
                 this._applyRealMime( data );
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
+                return Promise.resolve( data );
             } );
         }
 
