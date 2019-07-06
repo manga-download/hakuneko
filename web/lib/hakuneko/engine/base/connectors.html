@@ -411,6 +411,9 @@
          *
          */
         constructor() {
+            //
+            Engine.Request.registerProtocol( 'connector', this._protocolHandler.bind( this ) );
+            
             // raw list of all available connectors
             this.list = [];
 

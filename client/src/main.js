@@ -185,8 +185,13 @@ info();
 process.env.PATH += ( process.platform === 'win32' ? ';' : ':' ) + path.dirname( process.execPath );
 
 // register new protocol handler as standard handler to host files locally without web server
+// see: https://fossies.org/linux/electron/atom/browser/api/atom_api_protocol.cc
 // => required to enable access to chromium specific features such as local store, indexedDB, ...
-electron.protocol.registerStandardSchemes( [config.cache.url.protocol] );
+// { standard, secure, bypassCSP, corsEnabled, supportFetchAPI, allowServiceWorkers }
+electron.protocol.registerSchemesAsPrivileged( [
+    { scheme: config.cache.url.protocol, privileges: { standard: true } },
+    { scheme: 'connector', privileges: { standard: true, supportFetchAPI: true } }
+] );
 
 // update userdata path (e.g. for portable version)
 electron.app.setPath( 'userData', config.app.userdata );
@@ -197,5 +202,11 @@ electron.app.on( 'ready', activateWindow );
 electron.app.on( 'activate', activateWindow );
 electron.app.on( 'window-all-closed', closeWindow );
 
-electron.app.on( 'browser-window-focus', () => electron.globalShortcut.register('F11', () => win.setFullScreen(win.isFullScreen() ? false : true)) );
-electron.app.on( 'browser-window-blur', () => electron.globalShortcut.unregister('F11') );
+// ignore certificate error (e.g. invalid date)
+electron.app.on( 'certificate-error', ( event, webContents, url, error, certificate, callback ) => {
+    event.preventDefault();
+    callback( true );
+} );
+
+electron.app.on( 'browser-window-blur', () => electron.globalShortcut.unregister( 'F11' ) );
+electron.app.on( 'browser-window-focus', () => electron.globalShortcut.register( 'F11', () => win.setFullScreen( !win.isFullScreen() ) ) );
