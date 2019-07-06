@@ -40,9 +40,6 @@
             };
 
             document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
-
-            // register a protocol handler to intercept requests (with custom 'crunchymanga' protocol) and decrypt images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -155,13 +152,11 @@
                     //let uri = new URL( page.locale.enUS['encrypted_mobile_image_url'] ); // smaller size
                     let uri;
                     try {
-                        uri = new URL( page.locale['enUS']['encrypted_composed_image_url'] || page.locale['enUS']['encrypted_mobile_image_url'] );
+                        uri = page.locale['enUS']['encrypted_composed_image_url'] || page.locale['enUS']['encrypted_mobile_image_url'];
                     } catch( error ) {
-                        uri = new URL( page['image_url'] );
+                        uri = page['image_url'];
                     }
-                    // use dedicated protocol handler for image decryption from crunchyroll
-                    uri.protocol = this.id;
-                    return uri.href;
+                    return this.createConnectorURI( uri );
                 } );
                 callback( null, pageList );
             } )
@@ -174,10 +169,9 @@
         /**
          * 
          */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol; // 'http:'
-            fetch( uri.href, this.requestOptions )
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
+            return fetch( request )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
@@ -189,13 +183,6 @@
                         data: this._crDecryptImage( data, 0x42 )
                     } );
                 } );
-            } )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
             } );
         }
 
