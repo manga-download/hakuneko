@@ -12,25 +12,15 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangatown';
             super.label      = 'MangaTown';
             this.tags        = [ 'manga', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://www.mangatown.com';
             this.reqOptionsJSON = JSON.stringify( {
                 url: this.url,
                 gzip: true,
                 rejectUnauthorized: false // ignore broken https certificate chain from mangatown
             } );
-            this.pageLock  = false;
-            this.pageLockDelay  = 250;
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'mangatown' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
         }
 
         /**
@@ -114,16 +104,12 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id, 'div.manga_read_footer div.page_select select option' )
+            let request = new Request( this.getAbsolutePath( chapter.id, this.url ), this.requestOptions );
+            this.fetchDOM( request, 'div.manga_read_footer div.page_select select option' )
             .then( data => {
-                let pageList = data.map( element => {
-                    if( element.value.startsWith( '//' ) ) {
-                        return ( this.id + ':' + element.value );
-                    }
-                    let uri = new URL( element.value );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } ).filter( page => !page.endsWith( 'featured.html' ) );
+                let pageList = data
+                .map( element => this.createConnectorURI( this.getAbsolutePath( element.value, request.url ) ) )
+                .filter( page => !page.endsWith( 'featured.html' ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -135,37 +121,12 @@
         /**
          * 
          */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let image = dom.querySelector( 'source#image' );
-                return fetch( image.src, this.requestOptions );
-            } )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => {
-                return this._blobToBuffer( data );
-            } )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            return this.fetchDOM( request, 'source#image' )
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
         }
     }
 
