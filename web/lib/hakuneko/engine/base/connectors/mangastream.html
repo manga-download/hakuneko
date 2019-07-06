@@ -12,18 +12,11 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangastream';
             super.label      = 'MangaStream';
             this.tags        = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://readms.net';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'mangastream' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, this._pageProtocolHandler.bind( this ) );
+            this.requestOptions.headers.set( 'x-referer', this.url );
         }
 
         /**
@@ -85,20 +78,10 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div.btn-reader-page ul.dropdown-menu li a' )
             .then( data => {
-                let dom = this.createDOM( data );
-                let pageList = [...dom.querySelectorAll( 'div.btn-reader-page ul.dropdown-menu li a' )].map( element => {
-                    let uri = new URL( this.url + this.getRelativeLink( element ) );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
                 pageList = this._interpolatePages( pageList );
                 callback( null, pageList );
             } )
@@ -153,38 +136,12 @@
         /**
          * 
          */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            this.requestOptions.headers.set( 'x-referer', this.url );
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let source = this.getRelativeLink( dom.querySelector( '#manga-page' ) );
-                return fetch( source, this.requestOptions );
-            } )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => {
-                return this._blobToBuffer( data );
-            } )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            return this.fetchDOM( request, 'source#manga-page' )
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
         }
     }
 
