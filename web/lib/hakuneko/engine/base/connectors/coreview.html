@@ -12,15 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = undefined;
             super.label      = undefined;
             this.tags        = [];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = undefined;
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
             this.path = [ '/series', '/series/oneshot', '/series/finished' ];
             this.queryManga = 'article.series-list-wrapper ul.series-list > li.series-list-item > a';
@@ -148,14 +143,12 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this.fetchDOM( this.url + chapter.id, this.queryPages )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, this.queryPages )
             .then( data => {
                 let pageList = data.map( element => {
-                    let uri = new URL( element.dataset.src );
-                    if( element.dataset.choJuGiga !== 'usagi' ) {
-                        uri.protocol = this.id;
-                    }
-                    return uri.href;
+                    let uri = this.getAbsolutePath( element.dataset.src, request.url );
+                    return element.dataset.choJuGiga !== 'usagi' ? this.createConnectorURI( uri ) : uri;
                 } );             
                 callback( null, pageList );
             } )
@@ -168,30 +161,18 @@
         /**
          * 
          */
-         _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
+        _handleConnectorURI( payload ) {
+            let request = new Request( payload, this.requestOptions );
+            return fetch( request )
+            .then( response => response.blob() )
             .then( data => {
-                if( true ) {
-                    return this._descrambleImage( data ).then( data => this._blobToBuffer( data ) );
-                } else {
-                    return this._blobToBuffer( data );
-                }
+                //if( true ) {
+                    return this._descrambleImage( data );
+                //} else {
+                //    return Promise.resolve( data );
+                //}
             } )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            .then( data => this._blobToBuffer( data ) );
         }
 
         /***************************

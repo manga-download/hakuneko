@@ -12,15 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'shonenjumpplus';
             super.label      = '少年ジャンプ＋ (Shonen Jump +)';
             this.tags        = [ 'manga', 'japanese' ];
-            // Private members for internal usage only (convenience)
             this.url         = 'https://shonenjumpplus.com';
-
-            // register a protocol handler to intercept requests (with custom 'shonenjumpplus' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 

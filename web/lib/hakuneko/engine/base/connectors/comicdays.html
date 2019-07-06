@@ -12,11 +12,9 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'comicdays';
             super.label      = 'コミックDAYS (Comic Days)';
             this.tags        = [ 'manga', 'japanese' ];
-            // Private members for internal usage only (convenience)
             this.url         = 'https://comic-days.com';
 
             this.path = [ /*'/series',*/ '/oneshot', '/newcomer' ];
@@ -24,9 +22,6 @@
             this.queryMangaTitle = 'div.yomikiri-link-title h4';
 
             this.queryChaptersSkip = 'div.series-episode-list-price';
-
-            // register a protocol handler to intercept requests (with custom 'comicdays' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**

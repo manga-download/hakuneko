@@ -22,9 +22,6 @@
             this.queryMangaTitle = 'h4.series-title';
 
             this.queryChaptersSkip = 'div.series-episode-list-price';
-
-            // register a protocol handler to intercept requests (with custom 'shonenmagazine-pocket' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
     }
 
