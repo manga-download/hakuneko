@@ -12,19 +12,11 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangatoon';
             super.label      = 'MangaToon';
             this.tags        = [];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://mangatoon.mobi'; // WEEX + VUE mobile app => https://h5.mangatoon.mobi
             this.path        = '/en/genre?page=';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
-
-            // register a protocol handler to intercept requests (with custom 'connector' protocol) and extract images
-            //Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
 
             this.lockImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTAwIiB3aWR0aD0iMjAwIj48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZHk9IjAuMjVlbSIgZmlsbD0icmVkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DaGFwdGVyIGlzIExvY2tlZCE8L3RleHQ+PC9zdmc+';
         }
