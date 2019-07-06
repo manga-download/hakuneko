@@ -28,9 +28,6 @@
             this.formManga.append( 'vars[post_type]', 'wp-manga' );
             this.formManga.append( 'vars[posts_per_page]', '250' );
             // inject `madara.query_vars` into any website using wp-madara to see full list of supported vars
-
-            // register a protocol handler to intercept requests (with custom 'wp-madara' protocol) and extract images
-            Engine.Request.registerProtocol( 'wp-madara', this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
@@ -43,7 +40,7 @@
             this.requestOptions.body = this.formManga.toString();
             this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
             let uri = this.url + '/wp-admin/admin-ajax.php';
-            return this.fetchDOM( uri, this.queryMangas, 5 )
+            let promise = this.fetchDOM( uri, this.queryMangas, 5 )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -61,6 +58,7 @@
             this.requestOptions.headers.delete( 'content-type' );
             delete this.requestOptions.body;
             this.requestOptions.method = 'GET';
+            return promise;
         }
 
         /**
@@ -106,13 +104,10 @@
             let uri = new URL( chapter.id, this.url );
             // TODO: setting this parameter seems to be problematic for various website (e.g. ChibiManga server will crash)
             uri.searchParams.set( 'style', 'list' );
-            this.fetchDOM( uri.href, this.queryPages )
+            let request = new Request( uri.href, this.requestOptions );
+            this.fetchDOM( request, this.queryPages )
             .then( data => {
-                let pageLinks = data.map( element => {
-                    let link = new URL( this.getAbsolutePath( element.dataset['src'] || element, uri.href ) );
-                    link.protocol = 'wp-madara';
-                    return link.href;
-                } );
+                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset['src'] || element, request.url ) ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {
@@ -124,21 +119,14 @@
         /**
          *
          */
-        _protocolHandlerCallback( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            this.requestOptions.headers.set( 'x-referer', uri.origin );
-            request = new Request( uri.href, this.requestOptions );
+        _handleConnectorURI( payload ) {
+            let uri = new URL( payload );
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
-            fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => callback( data ) )
-            .catch( error => {
-                console.error( error, request.url );
-                callback( undefined );
-            } );
+            this.requestOptions.headers.set( 'x-referer', uri.origin );
+            let promise = super._handleConnectorURI( payload );
+            this.requestOptions.headers.delete( 'x-referer' );
+            return promise;
         }
     }
 
