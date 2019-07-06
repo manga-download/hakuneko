@@ -12,17 +12,11 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangaeden-it';
             super.label      = 'MangaEdenIT';
             this.tags        = [ 'manga', 'italian' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://www.mangaeden.com';
             this.urlMangas   = '/it/it-directory/';
-
-            // register a protocol handler to intercept requests (with custom 'mangaeden' protocol) and extract images
-            Engine.Request.registerProtocol( this.id, super._pageProtocolHandler.bind( this ) );
         }
     }
 

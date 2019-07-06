@@ -12,14 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = undefined;
             super.label      = undefined;
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
+            this.tags        = [];
             this.url         = undefined;
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
         }
 
         /**
@@ -91,23 +87,15 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            fetch( request )
+            .then( response => response.text() )
             .then( data => {
                 if( data.indexOf( 'licensed in your country' ) > -1 ) {
                     throw new Error( 'The manga is licensed and not available in your country!' );
                 }
-                let pages = data.match( /pages\s*=\s*(\[.*?\])\s*;/ )[1];
-                let pageList = JSON.parse( pages ).map( p => {
-                    let uri = new URL( ( new URL( this.url ) ).protocol + p.fs );
-                    uri.protocol = this.id;
-                    return uri.href;
-                } );
+                let pages = JSON.parse( data.match( /pages\s*=\s*(\[.*?\])\s*;/ )[1] );
+                let pageList =  pages.map( page => this.createConnectorURI( this.getAbsolutePath( page.fs, request.url ) ) );
                 callback( null, pageList );
             } )
             .catch( error => {
@@ -119,33 +107,16 @@
         /**
          * 
          */
-        _pageProtocolHandler( request, callback ) {
-            let uri = new URL( request.url );
-            uri.protocol = ( new URL( this.url ) ).protocol;
-            // NOTE: hostname did not work with URL parsed from custom protocol
-            // => parse again with supported protocol
-            uri = new URL( uri.href );
+        _handleConnectorURI( payload ) {
+            let uri = new URL( payload );
             if( uri.hostname === 'cdn.mangaeden.com' ) {
                 this.requestOptions.headers.set( 'x-host', uri.hostname );
                 uri.hostname = '188.165.13.96';
                 uri.protocol = 'http';
             }
-            fetch( uri.href, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.blob();
-            } )
-            .then( data => this._blobToBuffer( data ) )
-            .then( data => {
-                callback( data );
-            } )
-            .catch( error => {
-                console.error( error, uri.href );
-                callback( undefined );
-            } );
+            let promise = super._handleConnectorURI( uri.href );
             this.requestOptions.headers.delete( 'x-host' );
+            return promise;
         }
     }
 
