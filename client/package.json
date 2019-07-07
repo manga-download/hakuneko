@@ -13,12 +13,13 @@
     "logtrine": "latest"
   },
   "devDependencies": {
-    "mocha": "latest",
     "asar": "latest",
     "electron": "5.0.6",
     "ffmpeg-static": "latest",
     "innosetup-compiler": "latest",
+    "mocha": "latest",
     "rcedit": "latest",
+    "sinon": "latest",
     "upx": "latest",
     "win-7zip": "latest"
   },
