@@ -9,7 +9,11 @@
     "url": "https://github.com/manga-download/hakuneko"
   },
   "main": "src/main.js",
+  "dependencies": {
+    "logtrine": "latest"
+  },
   "devDependencies": {
+    "mocha": "latest",
     "asar": "latest",
     "electron": "5.0.6",
     "ffmpeg-static": "latest",
@@ -22,6 +26,7 @@
     "postinstall": "cd src && npm install",
     "start": "electron .",
     "clean": "rm -r -f build dist",
-    "build": "node build.js"
+    "build": "node build.js",
+    "test": "mocha"
   }
 }
