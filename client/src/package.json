@@ -10,6 +10,7 @@
   },
   "main": "main.js",
   "dependencies": {
-    "jszip": "latest"
+    "jszip": "latest",
+    "logtrine": "latest"
   }
 }
