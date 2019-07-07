@@ -8,6 +8,7 @@ node_modules
 /client/build
 /client/redist/*.zip
 /client/test/*.log
+/client/test/cache
 /web/*.pem
 /web/*.key
 /web/build
