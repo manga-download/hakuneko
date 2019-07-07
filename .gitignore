@@ -7,6 +7,7 @@ node_modules
 /cloud
 /client/build
 /client/redist/*.zip
+/client/test/*.log
 /web/*.pem
 /web/*.key
 /web/build
