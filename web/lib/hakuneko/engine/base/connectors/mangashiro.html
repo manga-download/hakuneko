@@ -12,15 +12,13 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'mangashiro';
             super.label      = 'MangaShiro';
             this.tags        = [ 'manga', 'indonesian' ];
-            // Private members for internal usage only (convenience)
             this.url         = 'https://mangashiro.net';
-            this.path        = '/daftar-manga/?list';
+            this.path        = '/manga/?list';
 
-            this.queryChapters = 'div.bxcl ul li div.lch a';
+            this.queryChapters = 'div.bxcl ul li span.lchx a';
             this.queryPages = 'div#readerarea > :not(.kln) source[src]:not([src=""])';
         }
     }
