@@ -12,16 +12,14 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'kiryuu';
             super.label      = 'Kiryuu';
             this.tags        = [ 'manga', 'indonesian' ];
-            // Private members for internal usage only (convenience)
             this.url         = 'https://kiryuu.co';
-            this.path        = '/manga-lists/?list';
+            this.path        = '/manga/?list';
 
-            this.queryMangas = 'div#main div#content div.soralist ul li a.series';
-            this.queryPages = 'div#readerarea source[data-lazy-src]';
+            this.queryChapters = 'div.bxcl ul li span.lchx a';
+            this.queryPages = 'div#readerarea > :not(.kln) source[src]:not([src=""])';
         }
     }
 

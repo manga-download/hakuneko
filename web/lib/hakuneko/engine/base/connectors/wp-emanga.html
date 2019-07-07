@@ -12,17 +12,13 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = undefined;
             super.label      = undefined;
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
+            this.tags        = [];
             this.url         = undefined;
             this.path        = '/list/';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
-            this.queryMangas = 'div#main div#content div.soralist ul li a.series';
+            this.queryMangas = 'div#content div.soralist ul li a.series';
             this.queryChapters = 'div.cl ul li span.leftoff a';
             this.queryPages = 'div#readerarea source[src]:not([src=""])';
         }
