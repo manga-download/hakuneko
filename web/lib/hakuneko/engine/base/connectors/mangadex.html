@@ -39,7 +39,7 @@
         _getMangaFromURI( uri ) {
             return this.fetchDOM( uri.href, 'div.card h6.card-header span.mx-1', 3 )
             .then( data => {
-                let id = uri.pathname.match( /\/(\d+)\// )[1];
+                let id = uri.pathname.match( /\/(\d+)\/?/ )[1];
                 let title = data[0].innerText.trim();
                 return Promise.resolve( new Manga( this, id, title ) );
             } );
