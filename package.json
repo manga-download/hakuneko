@@ -9,6 +9,7 @@
     "url": "https://github.com/manga-download/hakuneko"
   },
   "scripts": {
+    "test": "cd client && npm test",
     "start": "cd client && npm start",
     "postinstall": "cd client && npm install && cd ../web && npm install",
     "client-build": "cd client && npm run build",
