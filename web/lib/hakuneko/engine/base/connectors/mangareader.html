@@ -123,7 +123,8 @@
             .then( data => {
                 let dom = this.createDOM( data );
                 let image = dom.querySelector( '#imgholder #img' );
-                return fetch( image.src, this.requestOptions );
+                // quick & dirty fix for offline image CDN from MangaPanda
+                return fetch( image.src.replace( '//i1.', '//i2.' ), this.requestOptions );
             } )
             .then( response => {
                 if( response.status !== 200 ) {
