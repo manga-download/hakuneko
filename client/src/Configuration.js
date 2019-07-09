@@ -1,6 +1,5 @@
 const path = require('path');
 const electron = require('electron');
-const { ConsoleLogger } = require('logtrine');
 
 const publicKey =
 `-----BEGIN PUBLIC KEY-----
@@ -19,10 +18,8 @@ module.exports = class Configuration {
      * Configuration for portable usage of the application
      * See also: https://github.com/electron/electron/blob/master/docs/api/app.md#appgetpathname
      * @param {Configuration} configuration Another configuration (object/structure) from which the properties shall be applied
-     * @param {Logger} logger 
      */
-    constructor(configuration, logger) {
-        this._logger = logger || new ConsoleLogger(ConsoleLogger.LEVEL.Warn);
+    constructor(configuration) {
         let options = configuration || {};
         let applicationExecutableDirectory = path.dirname(electron.app.getPath('exe'));
         this._applicationUpdateURL = options['applicationUpdateURL'] || 'http://static.hakuneko.download/5.0/latest';
@@ -32,7 +29,7 @@ module.exports = class Configuration {
     }
 
     printInfo() {
-        let separator = '---------------';
+        let separator = '-------------';
         console.log();
         console.log(separator);
         console.log('Configuration');
