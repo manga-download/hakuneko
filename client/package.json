@@ -17,9 +17,9 @@
   "devDependencies": {
     "asar": "latest",
     "electron": "5.0.6",
+    "electron-mocha": "latest",
     "ffmpeg-static": "latest",
     "innosetup-compiler": "latest",
-    "mocha": "latest",
     "rcedit": "latest",
     "sinon": "latest",
     "upx": "latest",
@@ -30,6 +30,6 @@
     "start": "electron .",
     "clean": "rm -r -f build dist",
     "build": "node build.js",
-    "test": "mocha"
+    "test": "electron-mocha --colors"
   }
 }
