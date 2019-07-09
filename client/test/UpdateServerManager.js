@@ -213,7 +213,7 @@ describe('UpdateServerManager', function () {
                 await testee.getUpdateArchive({link: 'null'});
                 assert.fail('Expected error not thrown!');
             } catch(error) {
-                assert.equal(error.message, 'Unable to determine the domain name');
+                assert.equal(error.message, 'Invalid URL: null');
             }
         });
         
