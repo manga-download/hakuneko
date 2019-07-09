@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs-extra');
 const electron = require('electron');
 
 const publicKey =
@@ -40,6 +41,13 @@ module.exports = class Configuration {
         console.log('AppCache Directory   :', this.applicationCacheDirectory);
         console.log('UserData Directory   :', this.applicationUserDataDirectory);
         console.log();
+    }
+    
+    /**
+     * @returns {boolean}
+     */
+    static get isPortableMode() {
+        fs.existsSync(electron.app.getPath('exe') + '.portable');
     }
 
     get publicKey() {
