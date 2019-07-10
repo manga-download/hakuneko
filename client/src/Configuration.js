@@ -36,6 +36,7 @@ module.exports = class Configuration {
         console.log('Configuration');
         console.log(separator);
         console.log('Update URL           :', this.applicationUpdateURL);
+        console.log('Connector Protocol   :', this.connectorProtocol);
         console.log('Application Protocol :', this.applicationProtocol);
         console.log('Startup URL          :', this.applicationStartupURL);
         console.log('AppCache Directory   :', this.applicationCacheDirectory);
@@ -71,10 +72,14 @@ module.exports = class Configuration {
     }
 
     get applicationCacheDirectory() {
-        return this._applicationCacheDirectory;
+        return this._absolute(this._applicationCacheDirectory);
     }
 
     get applicationUserDataDirectory() {
-        return this._applicationUserDataDirectory;
+        return this._absolute(this._applicationUserDataDirectory);
+    }
+
+    _absolute(endpoint) {
+        return path.resolve(electron.app.getAppPath(), path.normalize(endpoint));
     }
 }
