@@ -97,7 +97,7 @@
             // TODO: only perform requests when from download manager
             // or when from browser for preview and selected chapter matches
             return this.fetchDOM( request, '#imgholder #img' )
-            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
+            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ).replace( '//i1.', '//i2.' ) ) );
         }
     }
 
