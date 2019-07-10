@@ -18,11 +18,11 @@ module.exports = class App {
         let serverManager = new UpdateServerManager(this._configuration.applicationUpdateURL, this._logger);
         let cacheManager = new CacheDirectoryManager(this._configuration.applicationCacheDirectory, this._logger);
         this._updater = new Updater(serverManager, cacheManager, this._logger);
-        this._electron = new ElectronBootstrap(this._logger);
+        this._electron = new ElectronBootstrap(this._configuration, this._logger);
     }
 
     _loadOptions() {
-        // TODO: get from commandline?
+        // TODO: get from commandline or from file?
         if(path.basename(process.execPath).startsWith('electron')) {
             return {
                 applicationUpdateURL: 'DISABLED',
@@ -62,10 +62,16 @@ module.exports = class App {
         console.log();
     }
 
-    run() {
-        this.printInfo();
-        this._configuration.printInfo();
-        // add HakuNeko's application directory to the environment variable path (make ffmpeg available on windows)
-        process.env.PATH += (process.platform === 'win32' ? ';' : ':') + path.dirname(process.execPath);
+    async run() {
+        try {
+            this.printInfo();
+            this._configuration.printInfo();
+            // add HakuNeko's application directory to the environment variable path (make ffmpeg available on windows)
+            process.env.PATH += (process.platform === 'win32' ? ';' : ':') + path.dirname(process.execPath);
+            await this._updater.updateCache(this._configuration.publicKey);
+            this._electron.prepare();
+        } catch(error) {
+            this._logger.error('Failed to start application!', error);
+        }
     }
 }
