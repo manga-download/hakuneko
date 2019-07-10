@@ -43,10 +43,7 @@ module.exports = class Configuration {
         console.log('UserData Directory   :', this.applicationUserDataDirectory);
         console.log();
     }
-    
-    /**
-     * @returns {boolean}
-     */
+
     static get isPortableMode() {
         fs.existsSync(electron.app.getPath('exe') + '.portable');
     }

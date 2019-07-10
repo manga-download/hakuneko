@@ -31,8 +31,10 @@ module.exports = class Updater {
                 let archive = await this._serverManager.getUpdateArchive(updateInfo);
                 await updateInfo.validate(archive, pubkey);
                 await this._cacheManager.applyUpdateArchive(updateInfo.version, archive);
+                this._logger.info('Update Complete');
+            } else {
+                this._logger.info('Update Check Complete');
             }
-            this._logger.info('Update Complete');
         } catch(error) {
             this._logger.error('Update Failed!', error);
         }
