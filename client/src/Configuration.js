@@ -62,6 +62,10 @@ module.exports = class Configuration {
         return new URL(this._applicationStartupURL).protocol.slice( 0, -1 );
     }
 
+    get connectorProtocol() {
+        return 'connector';
+    }
+
     get applicationStartupURL() {
         return this._applicationStartupURL;
     }
