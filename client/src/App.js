@@ -7,6 +7,7 @@ const ConfigurationWindows = require('./ConfigurationWindows');
 const UpdateServerManager = require('./UpdateServerManager');
 const CacheDirectoryManager = require('./CacheDirectoryManager');
 const Updater = require('./Updater');
+const ElectronBootstrap = require('./ElectronBootstrap');
 
 module.exports = class App {
 
@@ -17,7 +18,7 @@ module.exports = class App {
         let serverManager = new UpdateServerManager(this._configuration.applicationUpdateURL, this._logger);
         let cacheManager = new CacheDirectoryManager(this._configuration.applicationCacheDirectory, this._logger);
         this._updater = new Updater(serverManager, cacheManager, this._logger);
-        this._win = null;
+        this._electron = new ElectronBootstrap(this._logger);
     }
 
     _loadOptions() {
