@@ -103,6 +103,7 @@
 <link rel="import" href="connectors/japanread.html">
 <link rel="import" href="connectors/japscan.html">
 <link rel="import" href="connectors/jokerfansub.html">
+<link rel="import" href="connectors/kaguyadex.html">
 <link rel="import" href="connectors/kazemanga.html">
 <link rel="import" href="connectors/kireicake.html">
 <link rel="import" href="connectors/kirishimafansub.html">
@@ -594,6 +595,7 @@
             
             // #region Template: Genkan
             //         Sample:   https://psychoplay.co/comics
+            this.register( new Kaguyadex() );
             this.register( new LeviatanScans() );
             this.register( new OneShotScans() );
             this.register( new PsychoPlay() );
