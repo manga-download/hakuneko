@@ -2,6 +2,7 @@ CNAME
 package-lock.json
 node_modules
 *.tar.bz2
+*.log
 /.vscode
 /.helper
 /cloud
