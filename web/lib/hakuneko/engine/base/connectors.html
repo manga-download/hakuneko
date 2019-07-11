@@ -103,6 +103,7 @@
 <link rel="import" href="connectors/japanread.html">
 <link rel="import" href="connectors/japscan.html">
 <link rel="import" href="connectors/jokerfansub.html">
+<link rel="import" href="connectors/kaguyadex.html">
 <link rel="import" href="connectors/kazemanga.html">
 <link rel="import" href="connectors/kireicake.html">
 <link rel="import" href="connectors/kirishimafansub.html">
@@ -273,6 +274,7 @@
 <link rel="import" href="connectors/ninjascans.html">
 <link rel="import" href="connectors/noranofansub.html">
 <link rel="import" href="connectors/onmanga.html">
+<link rel="import" href="connectors/oneshotscans.html">
 <link rel="import" href="connectors/onetimescans.html">
 <link rel="import" href="connectors/otakufile.html">
 <link rel="import" href="connectors/otakuindo.html">
@@ -594,6 +596,14 @@
             this.register( new WhimSubs() );
             // #endregion
             
+            // #region Template: Genkan
+            //         Sample:   https://psychoplay.co/comics
+            this.register( new Kaguyadex() );
+            this.register( new LeviatanScans() );
+            this.register( new OneShotScans() );
+            this.register( new PsychoPlay() );
+            // #endregion
+
             // #region Template: CoreView
             //         Sample:   https://tonarinoyj.jp/episode/10834108156650141204
             this.register( new ComicBorder() );
@@ -754,7 +764,6 @@
             this.register( new KlikManga() );
             this.register( new KnightNoFansub() );
             this.register( new KomikGo() );
-            this.register( new LeviatanScans() );
             this.register( new MangaDropOut() );
             this.register( new MangaLike() );
             this.register( new MangaLover() );
@@ -835,7 +844,6 @@
             this.register( new PervEden() );
             this.register( new PervEdenIT() );
             this.register( new PornComix() );
-            this.register( new PsychoPlay() );
             this.register( new Pururin() );
             this.register( new Puzzmos() );
             this.register( new ReadMangaEU() );

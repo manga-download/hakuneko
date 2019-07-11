@@ -1,11 +1,11 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="./genkan.html">
 
 <script>
 
     /**
      *
      */
-    class PsychoPlay extends Connector {
+    class PsychoPlay extends Genkan {
 
         /**
          *
@@ -16,122 +16,6 @@
             super.label      = 'PsychoPlay';
             this.tags        = [ 'manga', 'english', 'high-quality', 'scanlation' ];
             this.url         = 'https://psychoplay.co';
-        }
-
-        /**
-         *
-         */
-        _initializeConnector() {
-            // sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
-            // => append random search parameter to avoid caching
-            let uri = new URL( this.url + '/read/-/0' );
-            uri.searchParams.set( 'ts', Date.now() );
-            uri.searchParams.set( 'rd', Math.random() );
-            let request = new Request( uri.href, this.requestOptions );
-            return Engine.Request.fetchUI( request, '' );
-        }
-
-        /**
-         *
-         */
-        _getMangaListFromPages( mangaPageLinks, index ) {
-            index = index || 0;
-            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-            return this.fetchDOM( request, 'div.page-content div.thumbnail div.caption h6 a', 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                    .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
-        }
-
-        /**
-         *
-         */
-        _getMangaList( callback ) {
-            let request = new Request( this.url + '/series?page=', this.requestOptions );
-            this.fetchDOM( request, 'div.page-content ul.pagination li a' )
-            .then( data => {
-                let pageCount = parseInt( data[data.length-2].href.match( /page=(\d+)/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterListFromPages( manga, chapterPageLinks, index ) {
-            index = index || 0;
-            let request = new Request( chapterPageLinks[ index ], this.requestOptions );
-            return this.fetchDOM( request, 'div.panel ul.media-list li.media a.media-link', 5 )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.querySelector( 'h6.media-heading' ).innerText.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                if( index < chapterPageLinks.length - 1 ) {
-                    return this._getChapterListFromPages( manga, chapterPageLinks, index + 1 )
-                    .then( chapters => chapterList.concat( chapters ) );
-                } else {
-                    return Promise.resolve( chapterList );
-                }
-            } );
-        }
-
-        /**
-         *
-         */
-        _getChapterList( manga, callback ) {
-            let request = new Request( this.url + manga.id + '?page=', this.requestOptions );
-            this.fetchDOM( request, 'div.page-content ul.pagination li a' )
-            .then( data => {
-                let pageCount = data.length > 2 ? parseInt( data[data.length-2].href.match( /page=(\d+)/ )[1] ) : 1;
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
-                return this._getChapterListFromPages( manga, pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
-        _getPageList( manga, chapter, callback ) {
-            let request = new Request( this.url + chapter.id, this.requestOptions );
-            this.fetchDOM( request, 'div.page-content source.img-responsive' )
-            .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element.dataset['src'] || element, request.url ) );               
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
         }
     }
 
