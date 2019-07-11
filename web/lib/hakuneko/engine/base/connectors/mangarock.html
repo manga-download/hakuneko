@@ -130,7 +130,7 @@
         _getPageList( manga, chapter, callback ) {
             this.requestOptions.method = 'GET';
             this.requestOptions.body = undefined;
-            fetch( this.apiURL + '/query/web401/pages?country=&oid=' + chapter.id, this.requestOptions )
+            fetch( this.apiURL + '/query/web401/pagesv2?country=&oid=' + chapter.id, this.requestOptions )
             .then( response => this._getJsonResponse( response, 'page' ) )
             .then( data => {
                 let pageList = data.map( link => this.createConnectorURI( link ) );
