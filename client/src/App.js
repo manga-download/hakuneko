@@ -4,6 +4,7 @@ const Configuration = require('./Configuration');
 const ConfigurationLinux = require('./ConfigurationLinux');
 const ConfigurationDarwin = require('./ConfigurationDarwin');
 const ConfigurationWindows = require('./ConfigurationWindows');
+const CommandlineArgumentExtractor = require('./CommandlineArgumentExtractor');
 const UpdateServerManager = require('./UpdateServerManager');
 const CacheDirectoryManager = require('./CacheDirectoryManager');
 const Updater = require('./Updater');
@@ -13,26 +14,12 @@ module.exports = class App {
 
     constructor(logger) {
         this._logger = logger || new ConsoleLogger(ConsoleLogger.LEVEL.Warn);
-        let options = this._loadOptions();
-        this._configuration = this._getConfiguration(options);
+        let extractor = new CommandlineArgumentExtractor(process.argv);
+        this._configuration = this._getConfiguration(extractor.options);
         let serverManager = new UpdateServerManager(this._configuration.applicationUpdateURL, this._logger);
         let cacheManager = new CacheDirectoryManager(this._configuration.applicationCacheDirectory, this._logger);
         this._updater = new Updater(serverManager, cacheManager, this._logger);
         this._electron = new ElectronBootstrap(this._configuration, this._logger);
-    }
-
-    _loadOptions() {
-        // TODO: get from commandline or from file?
-        if(path.basename(process.execPath).startsWith('electron')) {
-            return {
-                applicationUpdateURL: 'DISABLED',
-                applicationStartupURL: undefined,
-                applicationCacheDirectory: '../web',
-                applicationUserDataDirectory: undefined
-            };
-        } else {
-            return {};
-        }
     }
 
     _getConfiguration(options) {
