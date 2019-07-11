@@ -133,7 +133,7 @@
             fetch( this.apiURL + '/query/web401/pagesv2?country=&oid=' + chapter.id, this.requestOptions )
             .then( response => this._getJsonResponse( response, 'page' ) )
             .then( data => {
-                let pageList = data.map( link => this.createConnectorURI( link ) );
+                let pageList = data.map( page => this.createConnectorURI( page.url ) );
                 callback( null, pageList );
             } )
             .catch( error => {
