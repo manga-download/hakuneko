@@ -13,12 +13,11 @@ module.exports = class CacheDirectoryManager {
     constructor(applicationCacheDirectory, logger) {
         try {
             this._logger = logger || new ConsoleLogger(ConsoleLogger.LEVEL.Warn);
-            // TODO: validate path is valid ...
             this._applicationCacheDirectory = path.normalize(applicationCacheDirectory);
             this._versionFile = path.join(this._applicationCacheDirectory, 'version');
         } catch(error) {
-            this._applicationCacheDirectory = '';
-            this._versionFile = '';
+            this._applicationCacheDirectory = undefined;
+            this._versionFile = undefined;
         }
     }
 
