@@ -6,7 +6,7 @@ cd "$(dirname $0)"
 
 DIR=./build/htdocs
 KEY=../../hakuneko.key
-DST=../../../../releases/5.0.6
+DST=../../../../releases/5.0
 REV=$(git log -1 --format="%H")
 VER=$(echo $REV | cut -c 1-6)
 
@@ -17,7 +17,7 @@ cp -f ./js/*.min.js $DIR/js/
 # polymer will break files that are already obfuscated, so use the original obfuscated files => otherwise leads to blank/white screen + out-of-memory error in electron
 cp -f ./lib/hakuneko/engine/base/connectors/mangago.html $DIR/lib/hakuneko/engine/base/connectors/mangago.html
 cp -f ./lib/hakuneko/engine/base/connectors/tencentcomic.html $DIR/lib/hakuneko/engine/base/connectors/tencentcomic.html
-git stash pop || true # do not fail if stash is empty
+git stash list | grep -q 'Cleanup before Deploy' && git stash pop
 
 cd $DIR
 # update version file before deployment
