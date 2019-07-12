@@ -48,10 +48,10 @@ describe('CommandlineArgumentExtractor', function() {
 
     describe('options', function() {
 
-        it('--proxy-server', () => {
+        it('--proxy-rules', () => {
             let expected = 'socks5://localhost:8080';
-            let testee = new CommandlineArgumentExtractor([`--proxy-server=${expected}`]);
-            assert.equal(testee.options.proxyRules, expected);
+            let testee = new CommandlineArgumentExtractor([`--proxy-rules=${expected}`]);
+            assert.equal(testee.options.applicationProxyRules, expected);
         });
 
         it('--update-url', () => {

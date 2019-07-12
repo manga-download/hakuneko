@@ -134,9 +134,13 @@ module.exports = class ElectronBootstrap {
      */
     _setupProxyServer() {
         return new Promise(resolve => {
-            this._window.webContents.session.setProxy({
-                proxyRules: 'socks5://bar.com' // this._configuration.proxyRules
-            }, () => resolve());
+            if(!this._configuration.applicationProxyRules) {
+                return resolve();
+            } else {
+                this._window.webContents.session.setProxy({
+                    proxyRules: this._configuration.applicationProxyRules
+                }, () => resolve());
+            }
         });
     }
 
