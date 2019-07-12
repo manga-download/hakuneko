@@ -29,20 +29,12 @@ module.exports = class CommandlineArgumentExtractor {
      * Extract <Configuration> compatible options from the arguments provided through the commandline
      */
     get options() {
-        // TODO: remove this developer check and add command line args to npm script when starting in developer mode ...
-        if(require('path').basename(process.execPath).startsWith('electron')) {
-            return {
-                applicationUpdateURL: 'DISABLED',
-                applicationCacheDirectory: '../web'
-            };
-        } else {
-            return {
-                proxyRules:                   this._get('--proxy-server'),
-                applicationUpdateURL:         this._get('--update-url') || this._get('-u'),
-                applicationStartupURL:        this._get('--startup-url'),
-                applicationCacheDirectory:    this._get('--cache-directory') || this._get('-c'),
-                applicationUserDataDirectory: this._get('--user-directory')
-            };
-        }
+        return {
+            applicationProxyRules:        this._get('--proxy-rules'),
+            applicationUpdateURL:         this._get('--update-url') || this._get('-u'),
+            applicationStartupURL:        this._get('--startup-url'),
+            applicationCacheDirectory:    this._get('--cache-directory') || this._get('-c'),
+            applicationUserDataDirectory: this._get('--user-directory')
+        };
     }
 }

@@ -10,7 +10,7 @@
   },
   "scripts": {
     "test": "cd client && npm test",
-    "start": "cd client && npm start",
+    "start": "cd client && npm start -- --update-url=DISABLED --cache-directory=../web",
     "postinstall": "cd client && npm install && cd ../web && npm install",
     "client-build": "cd client && npm run build",
     "web-deploy": "cd web && npm run deploy"
