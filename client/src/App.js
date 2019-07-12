@@ -55,13 +55,9 @@ module.exports = class App {
             this._configuration.printInfo();
             // add HakuNeko's application directory to the environment variable path (make ffmpeg available on windows)
             process.env.PATH += (process.platform === 'win32' ? ';' : ':') + path.dirname(process.execPath);
-            // TODO: when updating it seems electron bootstrap will fail,because 
-            // electron.protocol.registerSchemesAsPrivileged
-            // must be the very first thing ...
-            // maybe prepare shall return a promise before loading URL in window,
-            // then the update can be performed and after that we can load the URL in window
+            await this._electron.launch();
             await this._updater.updateCache(this._configuration.publicKey);
-            this._electron.prepare();
+            this._electron.loadURL(this._configuration.applicationStartupURL);
         } catch(error) {
             this._logger.error('Failed to start application!', error);
         }

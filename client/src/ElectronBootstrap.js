@@ -2,6 +2,14 @@ const path = require('path');
 const electron = require('electron');
 const { ConsoleLogger } = require('logtrine');
 
+const loadingPage = `
+<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-family: monospace; font-size: 1.25em; font-weight: bold; text-align: center; opacity: 0.33;">
+    Checking for Update
+    <br><br>
+    <progress></progress>
+</div>
+`;
+
 module.exports = class ElectronBootstrap {
 
     constructor(configuration, logger) {
@@ -28,7 +36,7 @@ module.exports = class ElectronBootstrap {
     /**
      * 
      */
-    prepare() {
+    launch() {
         // See: https://fossies.org/linux/electron/atom/browser/api/atom_api_protocol.cc
         // { standard, secure, bypassCSP, corsEnabled, supportFetchAPI, allowServiceWorkers }
         electron.protocol.registerSchemesAsPrivileged(this._schemes);
@@ -36,15 +44,18 @@ module.exports = class ElectronBootstrap {
         // update userdata path (e.g. for portable version)
         electron.app.setPath('userData', this._configuration.applicationUserDataDirectory);
 
-        electron.app.on('ready', this._registerCacheProtocol.bind(this));
-        electron.app.on('ready', this._showWindow.bind(this));
-        electron.app.on('activate',  this._showWindow.bind(this));
-        electron.app.on('window-all-closed',  this._allWindowsClosedHandler.bind(this));
-        // ignore certificate errors (e.g. invalid date)
-        electron.app.on('certificate-error', this._certificateErrorHandler.bind(this));
-        // use certain hotkeys
-        electron.app.on('browser-window-focus', this._registerHotkeys.bind(this));
-        electron.app.on('browser-window-blur', this._unregisterHotkeys.bind(this));
+        return new Promise(resolve => {
+            electron.app.on('ready', async () => {
+                this._registerCacheProtocol();
+                await this._createWindow();
+                resolve();
+            });
+            electron.app.on('activate',  this._createWindow.bind(this));
+            electron.app.on('window-all-closed',  this._allWindowsClosedHandler.bind(this));
+            electron.app.on('certificate-error', this._certificateErrorHandler.bind(this));
+            electron.app.on('browser-window-focus', this._registerHotkeys.bind(this));
+            electron.app.on('browser-window-blur', this._unregisterHotkeys.bind(this));
+        });
     }
 
     /**
@@ -59,7 +70,7 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
+     * Ignore any certificate errors, such as self-signed, expiration, ...
      */
     _certificateErrorHandler(event, webContents, url, error, certificate, callback) {
         event.preventDefault();
@@ -97,7 +108,7 @@ module.exports = class ElectronBootstrap {
     /**
      * 
      */
-    _showWindow() {
+    async _createWindow() {
         if(this._window) {
             return;
         }
@@ -116,8 +127,27 @@ module.exports = class ElectronBootstrap {
         this._setupHeadersReceived();
         this._window.setTitle('HakuNeko');
         this._window.setMenu(null);
-        this._window.loadURL(this._configuration.applicationStartupURL);
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
+        await this.loadHTML(loadingPage);
+    }
+
+    /**
+     * 
+     * @param {string} uri 
+     * @returns {Promise}
+     */
+    loadURL(uri) {
+        return this._window.loadURL(uri);
+    }
+
+    /**
+     * 
+     * @param {string} html 
+     * @returns {Promise}
+     */
+    loadHTML(html) {
+        let dataURL = 'data:text/html;charset=utf-8;base64,' + Buffer.from(html).toString('base64');
+        return this._window.loadURL(dataURL);
     }
 
     /**
