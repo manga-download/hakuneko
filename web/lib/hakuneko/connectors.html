@@ -57,12 +57,14 @@
                 display: flex;
                 flex-direction: column;
                 margin: 0.5em;
+                max-height: 100%; /* Fixes overflow scrolling issue in flexbox with Chromium 73+ => https://support.google.com/chrome/thread/3101009?msgid=4942418 */
             }
             .connectors {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
                 margin: 0.5em;
+                max-height: 100%; /* Fixes overflow scrolling issue in flexbox with Chromium 73+ => https://support.google.com/chrome/thread/3101009?msgid=4942418 */
             }
             .pattern {
                 flex: 0;
