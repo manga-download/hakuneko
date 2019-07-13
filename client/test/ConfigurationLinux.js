@@ -47,8 +47,9 @@ describe('ConfigurationLinux', function() {
         });
 
         (process.platform === 'linux' ? it : it.skip)('applicationUserDataDirectory', () => {
-            // NOTE: This fails, because the temporary mocha path is detected
-            assert.equal(testee.applicationUserDataDirectory, path.join(process.env.HOME, '.config', 'Electron'));
+            // NOTE: Mocha changes the user data directory, so we check against this instead against the real one
+            assert.equal(testee.applicationUserDataDirectory, require('electron').app.getPath('userData'));
+            //assert.equal(testee.applicationUserDataDirectory, path.join(process.env.HOME, '.config', 'Electron'));
         });
     });
 
