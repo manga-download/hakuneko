@@ -265,6 +265,8 @@ class ElectronPackagerLinux extends ElectronPackager {
         await fs.remove(path.join(folder, 'resources', 'default_app.asar'));
         await asar.createPackage('src', path.join(folder, 'resources', 'app.asar'));
         await fs.move(path.join(folder, 'electron'), path.join(folder, this._configuration.binary.linux));
+        // chmod 4755 fixes https://github.com/electron/electron/issues/17972
+        await fs.chmod(path.join(folder, 'chrome-sandbox'), '4755');
         // remove executable flag from libraries => avoid lintian errors
         await this._executeCommand(`find "${folder}" -type f -iname "*.so" -exec chmod -x {} \\;`);
     }
