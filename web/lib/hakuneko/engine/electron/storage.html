@@ -19,7 +19,7 @@
             this.exec = electron.remote.require( 'child_process' ).exec;
             this.fs = require( 'fs' );
             this.path = require( 'path' );
-            this.config = this.path.join( electron.remote.require( './config.js' ).app.userdata, 'hakuneko.' );
+            this.config = this.path.join( electron.remote.app.getPath( 'userData' ), 'hakuneko.' );
             this.temp = this.path.join( require( 'os' ).tmpdir(), 'hakuneko' );
             this._createDirectoryChain( this.temp );
 
