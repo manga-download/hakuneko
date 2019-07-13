@@ -1,7 +1,7 @@
 {
-  "name": "hakuneko-desktop",
+  "name": "hakuneko-desktop-build",
   "version": "1.0.0",
-  "description": "Desktop Client for HakuNeko Web-Application",
+  "description": "Development, Build & Test Utility for HakuNeko Desktop Client",
   "author": "Ronny Wegener <wegener.ronny@gmail.com>",
   "license": "Unlicense",
   "repository": {
@@ -22,7 +22,6 @@
     "innosetup-compiler": "latest",
     "rcedit": "latest",
     "sinon": "latest",
-    "upx": "latest",
     "win-7zip": "latest"
   },
   "scripts": {
