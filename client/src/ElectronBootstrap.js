@@ -112,7 +112,9 @@ module.exports = class ElectronBootstrap {
         if(this._window) {
             return;
         }
-    
+
+        electron.Menu.setApplicationMenu(null);
+
         this._window = new electron.BrowserWindow({
             width: 1120,
             height: 680,
@@ -125,7 +127,6 @@ module.exports = class ElectronBootstrap {
 
         this._setupBeforeSendHeaders();
         this._setupHeadersReceived();
-        this._window.removeMenu();
         this._window.setTitle('HakuNeko');
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
         await this.loadHTML(loadingPage);
