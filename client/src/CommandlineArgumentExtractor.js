@@ -29,6 +29,7 @@ module.exports = class CommandlineArgumentExtractor {
      * See: http://docopt.org
      */
     printInfo() {
+        console.log();
         console.log('Usage:');
         console.log(' ', process.execPath, '[OPTIONS]');
         console.log();
