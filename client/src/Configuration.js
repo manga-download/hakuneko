@@ -45,7 +45,7 @@ module.exports = class Configuration {
     }
 
     static get isPortableMode() {
-        fs.existsSync(electron.app.getPath('exe') + '.portable');
+        return fs.existsSync(electron.app.getPath('exe') + '.portable');
     }
 
     get publicKey() {
