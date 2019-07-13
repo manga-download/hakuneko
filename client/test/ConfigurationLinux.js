@@ -43,12 +43,12 @@ describe('ConfigurationLinux', function() {
         });
 
         (process.platform === 'linux' ? it : it.skip)('applicationCacheDirectory', () => {
-            assert.equal(testee.applicationCacheDirectory.includes(path.join('~', '.cache', 'electron')), true);
+            assert.equal(testee.applicationCacheDirectory, path.join(process.env.HOME, '.cache', 'Electron'));
         });
 
         (process.platform === 'linux' ? it : it.skip)('applicationUserDataDirectory', () => {
             // NOTE: This fails, because the temporary mocha path is detected
-            assert.equal(testee.applicationUserDataDirectory.includes(path.join('~', '.config', 'Electron')), true);
+            assert.equal(testee.applicationUserDataDirectory, path.join(process.env.HOME, '.config', 'Electron'));
         });
     });
 
