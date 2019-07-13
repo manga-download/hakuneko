@@ -17,6 +17,7 @@
             this.platform = electron.remote.process.platform;
             this.shell = electron.remote.shell;
             this.exec = electron.remote.require( 'child_process' ).exec;
+            // TODO: Use fs-extra which provides more convenience functions (e.g. delete recursive)
             this.fs = require( 'fs' );
             this.path = require( 'path' );
             this.config = this.path.join( electron.remote.app.getPath( 'userData' ), 'hakuneko.' );
