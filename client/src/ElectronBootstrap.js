@@ -162,21 +162,6 @@ module.exports = class ElectronBootstrap {
     /**
      * 
      */
-    _setupProxyServer() {
-        return new Promise(resolve => {
-            if(!this._configuration.applicationProxyRules) {
-                return resolve();
-            } else {
-                this._window.webContents.session.setProxy({
-                    proxyRules: this._configuration.applicationProxyRules
-                }, () => resolve());
-            }
-        });
-    }
-
-    /**
-     * 
-     */
     _setupBeforeSendHeaders() {
         // inject headers before a request is made (call the handler in the webapp to do the dirty work)
         electron.session.defaultSession.webRequest.onBeforeSendHeaders(['http*://*'], async (details, callback) => {

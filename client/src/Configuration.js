@@ -23,7 +23,6 @@ module.exports = class Configuration {
     constructor(configuration) {
         let options = configuration || {};
         let applicationExecutableDirectory = path.dirname(electron.app.getPath('exe'));
-        this._applicationProxyRules = options['applicationProxyRules'] || 'direct';
         this._applicationUpdateURL = options['applicationUpdateURL'] || 'http://static.hakuneko.download/5.0/latest';
         this._applicationStartupURL = options['applicationStartupURL'] || 'cache://hakuneko/index.html';
         this._applicationCacheDirectory = options['applicationCacheDirectory'] || path.join(applicationExecutableDirectory, 'cache');
@@ -36,7 +35,6 @@ module.exports = class Configuration {
         console.log(separator);
         console.log('Configuration');
         console.log(separator);
-        console.log('Proxy Rules          :', this.applicationProxyRules);
         console.log('Update URL           :', this.applicationUpdateURL);
         console.log('Connector Protocol   :', this.connectorProtocol);
         console.log('Application Protocol :', this.applicationProtocol);
@@ -52,10 +50,6 @@ module.exports = class Configuration {
 
     get publicKey() {
         return publicKey;
-    }
-
-    get applicationProxyRules() {
-        return this._applicationProxyRules;
     }
 
     get applicationUpdateURL() {
