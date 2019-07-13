@@ -14,8 +14,8 @@ module.exports = class App {
 
     constructor(logger) {
         this._logger = logger || new ConsoleLogger(ConsoleLogger.LEVEL.Warn);
-        let extractor = new CommandlineArgumentExtractor(process.argv);
-        this._configuration = this._getConfiguration(extractor.options);
+        this._extractor = new CommandlineArgumentExtractor(process.argv);
+        this._configuration = this._getConfiguration(this._extractor.options);
         let serverManager = new UpdateServerManager(this._configuration.applicationUpdateURL, this._logger);
         let cacheManager = new CacheDirectoryManager(this._configuration.applicationCacheDirectory, this._logger);
         this._updater = new Updater(serverManager, cacheManager, this._logger);
@@ -51,6 +51,7 @@ module.exports = class App {
 
     async run() {
         try {
+            this._extractor.printInfo();
             this.printInfo();
             this._configuration.printInfo();
             // add HakuNeko's application directory to the environment variable path (make ffmpeg available on windows)

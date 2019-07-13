@@ -26,11 +26,29 @@ module.exports = class CommandlineArgumentExtractor {
     }
 
     /**
+     * See: http://docopt.org
+     */
+    printInfo() {
+        console.log('Usage:');
+        console.log(' ', process.execPath, '[OPTIONS]');
+        console.log();
+        console.log('Options:');
+        console.log(' ', '-u, --update-url=<URL>     ', 'URL to be checked for web-application updates');
+        console.log(' ', '                           ', 'Default: "http://static.hakuneko.download/5.0/latest"');
+        console.log(' ', '--startup-url=<URL>        ', 'URL to the entrypoint of the web-application');
+        console.log(' ', '                           ', 'Default: "cache://hakuneko/index.html"');
+        console.log(' ', '-c, --cache-directory=<DIR>', 'Directory where the web-application is stored');
+        console.log(' ', '                           ', 'Default: system\'s default');
+        console.log(' ', '--user-directory=<DIR>     ', 'Directory where user settings are stored');
+        console.log(' ', '                           ', 'Default: system\'s default');
+        console.log();
+    }
+
+    /**
      * Extract <Configuration> compatible options from the arguments provided through the commandline
      */
     get options() {
         return {
-            applicationProxyRules:        this._get('--proxy-rules'),
             applicationUpdateURL:         this._get('--update-url') || this._get('-u'),
             applicationStartupURL:        this._get('--startup-url'),
             applicationCacheDirectory:    this._get('--cache-directory') || this._get('-c'),

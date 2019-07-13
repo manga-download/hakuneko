@@ -46,13 +46,7 @@ describe('CommandlineArgumentExtractor', function() {
         });
     });
 
-    describe('options', function() {
-
-        it('--proxy-rules', () => {
-            let expected = 'socks5://localhost:8080';
-            let testee = new CommandlineArgumentExtractor([`--proxy-rules=${expected}`]);
-            assert.equal(testee.options.applicationProxyRules, expected);
-        });
+    describe('options when containing argument', function() {
 
         it('--update-url', () => {
             let expected = 'https://raw.gihub.com/manga-downloader/releases/0.4.0/latest';
@@ -88,6 +82,39 @@ describe('CommandlineArgumentExtractor', function() {
             let expected = './user';
             let testee = new CommandlineArgumentExtractor([`--user-directory=${expected}`]);
             assert.equal(testee.options.applicationUserDataDirectory, expected);
+        });
+    });
+
+    describe('options when missing argument', function() {
+
+        it('--update-url', () => {
+            let testee = new CommandlineArgumentExtractor([]);
+            assert.equal(testee.options.applicationUpdateURL, undefined);
+        });
+
+        it('-u', () => {
+            let testee = new CommandlineArgumentExtractor([]);
+            assert.equal(testee.options.applicationUpdateURL, undefined);
+        });
+
+        it('--startup-url', () => {
+            let testee = new CommandlineArgumentExtractor([]);
+            assert.equal(testee.options.applicationStartupURL, undefined);
+        });
+
+        it('--cache-directory', () => {
+            let testee = new CommandlineArgumentExtractor([]);
+            assert.equal(testee.options.applicationCacheDirectory, undefined);
+        });
+
+        it('-c', () => {
+            let testee = new CommandlineArgumentExtractor([]);
+            assert.equal(testee.options.applicationCacheDirectory, undefined);
+        });
+
+        it('--user-directory', () => {
+            let testee = new CommandlineArgumentExtractor([]);
+            assert.equal(testee.options.applicationUserDataDirectory, undefined);
         });
     });
 
