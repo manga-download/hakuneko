@@ -43,12 +43,13 @@ describe('ConfigurationDarwin', function() {
         });
 
         (process.platform === 'darwin' ? it : it.skip)('applicationCacheDirectory', () => {
-            assert.equal(testee.applicationCacheDirectory.includes(path.join('~', 'Library', 'Caches', 'electron')), true);
+            assert.equal(testee.applicationCacheDirectory, path.join(process.env.HOME, 'Library', 'Caches', 'Electron'));
         });
 
         (process.platform === 'darwin' ? it : it.skip)('applicationUserDataDirectory', () => {
-            // NOTE: This fails, because the temporary mocha path is detected
-            assert.equal(testee.applicationUserDataDirectory.includes(path.join('~', 'Library', 'Application Support', 'Electron')), true);
+            // NOTE: Mocha changes the user data directory, so we check against this instead against the real one
+            assert.equal(testee.applicationUserDataDirectory, require('electron').app.getPath('userData'));
+            //assert.equal(testee.applicationUserDataDirectory, path.join(process.env.HOME, 'Library', 'Application Support', 'Electron'));
         });
     });
 
