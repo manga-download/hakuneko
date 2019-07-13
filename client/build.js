@@ -1,6 +1,7 @@
-const fs = require('fs');
 const path = require('path');
+const fs = require('fs-extra');
 const zlib = require('zlib');
+const asar = require('asar');
 const https = require('https');
 const eol = require('os').EOL;
 const exec = require('child_process').exec;
@@ -30,52 +31,11 @@ class ElectronPackager {
      * @param {*} folder 
      */
     async _getSize(folder) {
-        // TODO: Make this platform independent!
-        if(process.platform === 'win32') {
-            //
-        } else {
+        if(process.platform !== 'win32') {
             let size = await this._executeCommand(`du -k -c "${folder}" | grep total | cut -f1`);
             return size.trim();
-        }
-    }
-
-    /**
-     * 
-     * @param {string} file 
-     */
-    async _deleteFile(file) {
-        // TODO: Make this platform independent!
-        if(process.platform === 'win32') {
-            await this._executeCommand(`if exist "${file}" del /f /q "${file}"`);
         } else {
-            await this._executeCommand(`rm -f "${file}"`);
-        }
-    }
-
-    /**
-     * 
-     * @param {*} directory 
-     */
-    async _deleteDirectoryRecursive(directory) {
-        // TODO: Make this platform independent!
-        if(process.platform === 'win32') {
-            await this._executeCommand(`if exist "${directory}" rd /s /q "${directory}"`);
-            console.log('Directory Deleted:', directory);
-        } else {
-            await this._executeCommand(`rm -r -f "${directory}"`);
-            console.log('Directory Deleted:', directory);
-        }
-    }
-
-    /**
-     * Helper function to recursively create all non-existing folders of the given path.
-     * @param {*} directory 
-     */
-    _createDirectoryChain(directory) {
-        if(!fs.existsSync(directory) && directory !== path.parse(directory).root) {
-            this._createDirectoryChain(path.dirname(directory));
-            fs.mkdirSync(directory, '0755', true);
-            console.log('Directory Created:', directory);
+            throw new Error('Not implemented!');
         }
     }
 
@@ -85,7 +45,6 @@ class ElectronPackager {
      * @param {string} target 
      */
     async _extractArchive(archive, target) {
-        // TODO: Make this platform independent!
         if(process.platform === 'win32') {
             await this._executeCommand(`7z x "${archive}" -o"${target}"`);
         } else {
@@ -99,11 +58,10 @@ class ElectronPackager {
      * @param {string} archive 
      */
     async _compressArchive(source, archive) {
-        // TODO: Make this platform independent!
         if(process.platform === 'win32') {
             await this._executeCommand(`7z a "${archive}" "${source}"`);
         } else {
-            //await this._executeCommand(`zip "${source}" -d "${archive}"`);
+            throw new Error('Not implemented!');
         }
     }
 
@@ -114,7 +72,7 @@ class ElectronPackager {
      * @param {*} gzip 
      */
     _saveFile(file, data, gzip) {
-        this._createDirectoryChain(path.dirname(file));
+        fs.ensureDirSync(path.dirname(file));
         let content = gzip ? zlib.gzipSync(data, { level: 9 }) : data;
         fs.writeFileSync(file, content, typeof(content) === 'string' ? { encoding: 'utf8' } : undefined);
     }
@@ -160,10 +118,11 @@ class ElectronPackager {
         if(!fs.existsSync(file)) {
             await this._download(uri, file);
         }
-        await this._createDirectoryChain(directory); // await this._executeCommand(`mkdir -p "${directory}"`);
+        await fs.ensureDir(directory);
         await this._extractArchive(file, directory);
-        await this._deleteFile(path.join(directory, 'version'));
-        await this._deleteFile(path.join(directory, 'LICENSE'));
+        await fs.remove(path.join(directory, 'version'));
+        await fs.remove(path.join(directory, 'LICENSE'));
+        await fs.remove(path.join(directory, 'LICENSES.chromium.html'));
     }
 
     /**
@@ -254,7 +213,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         
         await this._validateCommands('unzip --help', 'asar --version', 'fakeroot --version', 'dpkg --version', 'lintian --version');
 
-        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await fs.remove(this._dirBuildRoot);
         await this._copySkeletonDEB();
         await this._bundleElectron();
         this._createManpage();
@@ -267,7 +226,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         await this._createChecksumsDEB();
 
         let deb = this._dirBuildRoot + '.deb';
-        await this._deleteFile(deb);
+        await fs.remove(deb);
         await this._executeCommand(`fakeroot dpkg-deb -v -b "${this._dirBuildRoot}" "${deb}"`);
         await this._executeCommand(`lintian --profile debian "${deb}" || true`);
     }
@@ -280,7 +239,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 
         await this._validateCommands('unzip --help', 'asar --version', 'fakeroot --version', 'rpm --version');
 
-        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await fs.remove(this._dirBuildRoot);
         await this._copySkeletonRPM();
         await this._bundleElectron();
         this._createManpage();
@@ -290,10 +249,10 @@ class ElectronPackagerLinux extends ElectronPackager {
         let specs = this._createSpecsRPM();
 
         let rpm = this._dirBuildRoot + '.rpm';
-        await this._deleteFile(rpm);
+        await fs.remove(rpm);
         await this._executeCommand(`rpmbuild -bb --noclean --define "_topdir $(pwd)/${this._dirBuildRoot}" --define "buildroot %{_topdir}" "${specs}"`);
         await this._executeCommand(`mv -f ${this._dirBuildRoot}/RPMS/*/*.rpm ${rpm}`);
-        await this._deleteFile(specs);
+        await fs.remove(specs);
     }
 
     /**
@@ -301,11 +260,11 @@ class ElectronPackagerLinux extends ElectronPackager {
      */
     async _bundleElectron() {
         console.log('Bundle electron ...');
-        let folder = path.join(this._dirBuildRoot, 'usr/lib', this._configuration.name.package);
+        let folder = path.join(this._dirBuildRoot, 'usr', 'lib', this._configuration.name.package);
         await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
-        await this._deleteFile(path.join(folder, 'resources', 'default_app.asar'));
-        await this._executeCommand(`asar pack "src" "${folder}/resources/app.asar"`);
-        await this._executeCommand(`mv "${folder}/electron" "${folder}/${this._configuration.binary.linux}"`);
+        await fs.remove(path.join(folder, 'resources', 'default_app.asar'));
+        await asar.createPackage('src', path.join(folder, 'resources', 'app.asar'));
+        await fs.move(path.join(folder, 'electron'), path.join(folder, this._configuration.binary.linux));
         // remove executable flag from libraries => avoid lintian errors
         await this._executeCommand(`find "${folder}" -type f -iname "*.so" -exec chmod -x {} \\;`);
     }
@@ -315,7 +274,8 @@ class ElectronPackagerLinux extends ElectronPackager {
      */
     async _copySkeletonDEB() {
         console.log('Copy DEB Skeleton ...');
-        await this._executeCommand(`cp -r "redist/deb" "${this._dirBuildRoot}"`);
+        //await this._executeCommand(`cp -r "redist/deb" "${this._dirBuildRoot}"`);
+        await fs.copy(path.join('redist', 'deb'), this._dirBuildRoot);
     }
 
     /**
@@ -323,7 +283,8 @@ class ElectronPackagerLinux extends ElectronPackager {
      */
     async _copySkeletonRPM() {
         console.log('Copy RPM Skeleton ...');
-        await this._executeCommand(`cp -r "redist/rpm" "${this._dirBuildRoot}"`);
+        //await this._executeCommand(`cp -r "redist/rpm" "${this._dirBuildRoot}"`);
+        await fs.copy(path.join('redist', 'rpm'), this._dirBuildRoot);
     }
 
 	/**
@@ -331,7 +292,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 */
 	_createManpage() {
         console.log('Creating Manpage ...');
-        let file = path.join(this._dirBuildRoot, 'usr/share/man/man1', this._configuration.name.package + '.1.gz');
+        let file = path.join(this._dirBuildRoot, 'usr', 'share', 'man', 'man1', this._configuration.name.package + '.1.gz');
 		let content = [
 			`.TH ${this._configuration.name.package} 1 "" ""`,
 			'',
@@ -352,7 +313,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 */
 	_createChangelog() {
         console.log('Creating Changelog ...');
-        let file = path.join(this._dirBuildRoot, 'usr/share/doc', this._configuration.name.package, 'changelog.gz');
+        let file = path.join(this._dirBuildRoot, 'usr', 'share', 'doc', this._configuration.name.package, 'changelog.gz');
 		this._saveFile(file, '-', true);
 	}
 
@@ -361,14 +322,14 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 */
 	_createDesktopShortcut() {
         console.log('Creating Desktop Shortcut ...');
-        let file = path.join(this._dirBuildRoot, 'usr/share/applications', this._configuration.name.package + '.desktop');
+        let file = path.join(this._dirBuildRoot, 'usr', 'share', 'applications', this._configuration.name.package + '.desktop');
 		let content = [
 			'[Desktop Entry]',
 			'Version=1.0',
 			'Type=' + this._configuration.meta.type,
 			'Name=' + this._configuration.name.product,
 			'GenericName=' + this._configuration.description.short,
-			'Exec=' + path.join('/usr/lib', this._configuration.name.package, this._configuration.binary.linux),
+			'Exec=' + path.join('/usr', 'lib', this._configuration.name.package, this._configuration.binary.linux),
 			'Icon=' + this._configuration.name.package,
 			'Categories=' + this._configuration.meta.categories
 		];
@@ -380,7 +341,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 */
 	_createMenuEntry() {
         console.log('Creatng Menu Entry');
-        let file = path.join(this._dirBuildRoot, 'usr/share/menu', this._configuration.name.package);
+        let file = path.join(this._dirBuildRoot, 'usr', 'share', 'menu', this._configuration.name.package);
 		let content = [
             `?package(${this._configuration.name.package}):needs="X11" \\`,
             ` section="${this._configuration.meta.menu}" \\`,
@@ -396,7 +357,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 */
 	async _createControlDEB() {
         console.log('Creating DEB Control File ...');
-        let file = path.join(this._dirBuildRoot, 'DEBIAN/control');
+        let file = path.join(this._dirBuildRoot, 'DEBIAN', 'control');
 		let content = [
 			'Package: ' + this._configuration.name.package,
 			'Version: ' + this._configuration.version,
@@ -420,8 +381,8 @@ class ElectronPackagerLinux extends ElectronPackager {
     _createPostScript(name) {
         console.log(`Creating PostScript '${name}' ...`);
         let file = path.join(this._dirBuildRoot, 'DEBIAN', name);
-        let symbolic = path.join('/usr/bin', this._configuration.name.package);
-        let binary = path.join('usr/lib', this._configuration.name.package, this._configuration.binary.linux);
+        let symbolic = path.join('/usr', 'bin', this._configuration.name.package);
+        let binary = path.join('/usr', 'lib', this._configuration.name.package, this._configuration.binary.linux);
 		let content = [
             '#!/bin/sh',
             'set -e',
@@ -450,9 +411,9 @@ class ElectronPackagerLinux extends ElectronPackager {
 	 */
 	_createSpecsRPM() {
         console.log('Creating RPM Specification File ...');
-        let file = 'build/specfile.spec';
-        let symbolic = path.join('/usr/bin', this._configuration.name.package);
-        let binary = path.join('usr/lib', this._configuration.name.package, this._configuration.binary.linux);
+        let file = path.join('build', 'specfile.spec');
+        let symbolic = path.join('/usr', 'bin', this._configuration.name.package);
+        let binary = path.join('/usr', 'lib', this._configuration.name.package, this._configuration.binary.linux);
 		let content = [
             'Name: ' + this._configuration.name.package,
 			'Version: ' + this._configuration.version,
@@ -495,13 +456,13 @@ class ElectronPackagerWindows extends ElectronPackager {
         this.architectures = {
             '32': {
                 is: {
-                    name: 'i686',
-                    suffix: 'windows-setup_i686',
+                    name: 'i386',
+                    suffix: 'windows-setup_i386',
                     platform: 'win32-ia32'
                 },
                 zip: {
-                    name: 'i686',
-                    suffix: 'windows-portable_i686',
+                    name: 'i386',
+                    suffix: 'windows-portable_i386',
                     platform: 'win32-ia32'
                 }
             },
@@ -546,14 +507,14 @@ class ElectronPackagerWindows extends ElectronPackager {
 
         await this._validateCommands('7z --help', 'asar --version', 'innosetup-compiler /?');
 
-        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await fs.remove(this._dirBuildRoot);
         await this._bundleElectron(false);
         await this._bundleFFMPEG(architecture === '64');
         await this._editResource();
         let setup = this._createScriptIS(architecture === '64');
 
         await this._executeCommand(`innosetup-compiler "${setup}"`);
-        await this._deleteFile(setup);
+        await fs.remove(setup);
     }
 
 	/**
@@ -565,14 +526,13 @@ class ElectronPackagerWindows extends ElectronPackager {
 
         await this._validateCommands('7z --help', 'asar --version');
 
-        await this._deleteDirectoryRecursive(this._dirBuildRoot);
+        await fs.remove(this._dirBuildRoot);
         await this._bundleElectron(true);
         await this._bundleFFMPEG(architecture === '64');
         await this._editResource();
-        // TODO: portable => upx compression ...
 
         let zip = this._dirBuildRoot + '.zip';
-        await this._deleteFile(zip);
+        await fs.remove(zip);
         await this._compressArchive('.\\' + this._dirBuildRoot, zip);
     }
 
@@ -584,12 +544,12 @@ class ElectronPackagerWindows extends ElectronPackager {
         console.log('Bundle electron ...');
         let folder = this._dirBuildRoot;
         await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
-        await this._deleteFile(path.join(folder, 'resources', 'default_app.asar'));
+        await fs.remove(path.join(folder, 'resources', 'default_app.asar'));
         if(portable) {
             this._saveFile(path.join(folder, this._configuration.binary.windows + '.portable'), 'Delete this File to disable Portable Mode');
         }
-        await this._executeCommand(`asar pack "src" "${folder}\\resources\\app.asar"`);
-        await this._executeCommand(`move /y "${folder}\\electron.exe" "${folder}\\${this._configuration.binary.windows}"`);
+        await asar.createPackage('src', path.join(folder, 'resources', 'app.asar'));
+        await fs.move(path.join(folder, 'electron.exe'), path.join(folder, this._configuration.binary.windows));
     }
 
     /**
@@ -598,14 +558,14 @@ class ElectronPackagerWindows extends ElectronPackager {
      */
     async _bundleFFMPEG(is64) {
         console.log('Bundle FFmpeg ...');
+        let basename = 'ffmpeg.exe';
         let ffmpeg = path.join('node_modules', 'ffmpeg-static', 'bin', 'win32');
         if(is64) {
-            ffmpeg = path.join(ffmpeg, 'x64', 'ffmpeg.exe');
+            ffmpeg = path.join(ffmpeg, 'x64', basename);
         } else {
-            ffmpeg = path.join(ffmpeg, 'ia32', 'ffmpeg.exe');
+            ffmpeg = path.join(ffmpeg, 'ia32', basename);
         }
-        // TODO: make platform independent ...
-        await this._executeCommand(`copy /y "${ffmpeg}" "${this._dirBuildRoot}"`);
+        await fs.copy(ffmpeg, path.join(this._dirBuildRoot, basename));
     }
 
     /**
@@ -634,7 +594,7 @@ class ElectronPackagerWindows extends ElectronPackager {
      */
     _createScriptIS(is64) {
         console.log('Creating InnoSetup Script ...');
-        let file = 'build\\setup.iss';
+        let file = path.join('build', 'setup.iss');
 		let content = [
             '[Setup]',
             'AppName=' + this._configuration.name.product,
@@ -679,6 +639,153 @@ class ElectronPackagerWindows extends ElectronPackager {
 }
 
 /**
+ * Packager for windows platform
+ */
+class ElectronPackagerDarwin extends ElectronPackager {
+
+    /**
+     * 
+     */
+    constructor(configuration) {
+		super(configuration);
+        this.architectures = {
+            '64': {
+                dmg: {
+                    name: 'amd64',
+                    suffix: 'macos_amd64',
+                    platform: 'win32-x64'
+                }
+            }
+        };
+		this._architecture = this.architectures[0];
+	}
+
+    /**
+     * 
+     */
+    get _dirBuildRoot() {
+        return path.join('build', `${this._configuration.name.package}_${this._configuration.version}_${this._architecture.suffix}`);
+    }
+
+	/**
+	 * 
+	 * @param {string} architecture '64'
+	 */
+	async build(architecture) {
+		await this.buildDMG(architecture);
+    }
+    
+	/**
+     * Create InnoSetup installer
+     * @param {string} architecture 
+     */
+    async buildDMG(architecture) {
+        this._architecture = this.architectures[architecture].dmg;
+
+        await this._validateCommands('7z --help', 'asar --version', 'innosetup-compiler /?');
+
+        await fs.remove(this._dirBuildRoot);
+        await this._bundleElectron(false);
+        await this._createPList();
+
+        /*
+        mkdir -p "build/$1/.images"
+        cp "res/OSXSetup.png" "build/$1/.images/OSXSetup.png"
+        rm -f "build/$1.dmg"
+        hdiutil create -volname "${PRODUCT}" -srcfolder "build/$1" -fs "HFS+" -fsargs "-c c=64,a=16,e=16" -format "UDRW" "build/$1.tmp.dmg"
+        device=$(hdiutil attach -readwrite -noverify -noautoopen "build/$1.tmp.dmg" | egrep '^/dev/' | sed 1q | awk '{print $1}')
+        sleep 5
+        echo '
+        tell application "Finder"
+            tell disk "'${PRODUCT}'"
+                open
+                set current view of container window to icon view
+                set toolbar visible of container window to false
+                set statusbar visible of container window to false
+                set the bounds of container window to {100, 100, 560, 620}
+                set theViewOptions to the icon view options of container window
+                set arrangement of theViewOptions to not arranged
+                set icon size of theViewOptions to 64
+                set background picture of theViewOptions to file ".images:OSXSetup.png"
+                make new alias file at container window to POSIX file "/Applications" with properties {name:"Applications"}
+                set position of item "'${PRODUCT}'" of container window to {360, 180}
+                set position of item "Applications" of container window to {360, 390}
+                update without registering applications
+                delay 5
+                close
+            end tell
+        end tell
+        ' | osascript
+
+        chmod -Rf go-w "/Volumes/${PRODUCT}"
+        sync
+        sleep 5
+        hdiutil detach "${device}"
+        sleep 5
+        hdiutil convert "build/$1.tmp.dmg" -format "UDZO" -imagekey zlib-level=9 -o "build/$1.dmg"
+        rm -f "build/$1.tmp.dmg"
+        */
+    }
+
+    /**
+     * 
+     * @param {bool} portable 
+     */
+    async _bundleElectron(portable) {
+        console.log('Bundle electron ...');
+        let folder = path.join(this._dirBuildRoot, 'usr', 'lib', this._configuration.name.package);
+        await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
+        await fs.remove(path.join(folder, 'resources', 'default_app.asar'));
+        await asar.createPackage('src', path.join(folder, 'resources', 'app.asar'));
+        await fs.move(path.join(folder, 'electron'), path.join(folder, this._configuration.binary.linux));
+        /*
+        rm -f "build/$1/Electron.app/Contents/Resources/electron.icns"
+        cp "res/icon.icns" "build/$1/Electron.app/Contents/Resources/${BIN_DARWIN}.icns"
+        mv "build/$1/Electron.app" "build/$1/${PRODUCT}.app"
+        */
+    }
+
+    /**
+     * 
+     */
+    _createPList() {
+        console.log('Creating P-List Info ...');
+        let plist = path.join('build/$1/Electron.app/Contents/Info.plist');
+        /*
+        echo '<?xml version="1.0" encoding="UTF-8"?>' > "build/$1/Electron.app/Contents/Info.plist"
+        echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '<plist version="1.0">' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '<dict>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>CFBundleDisplayName</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>${PRODUCT}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        # executable is required!
+        echo '	<key>CFBundleExecutable</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>${BIN_DARWIN}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        # icon file is required!
+        echo '	<key>CFBundleIconFile</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>${BIN_DARWIN}.icns</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>CFBundleIdentifier</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>${URL}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>CFBundleName</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>${PRODUCT}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>CFBundlePackageType</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>APPL</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>CFBundleShortVersionString</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>${VERSION}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>CFBundleVersion</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>${VERSION}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>LSMinimumSystemVersion</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<string>10.9.0</string>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '	<key>NSHighResolutionCapable</key>' >> "build/$1/Electron.app/Contents/Info.plist"
+        echo "	<true/>" >> "build/$1/Electron.app/Contents/Info.plist"
+        echo '</dict>'>> "build/$1/Electron.app/Contents/Info.plist"
+        echo '</plist>'>> "build/$1/Electron.app/Contents/Info.plist"
+        */
+        return file;
+    }
+}
+
+/**
  * 
  */
 async function main() {
@@ -698,7 +805,7 @@ async function main() {
     }
     if(process.platform === 'darwin') {
         let packager = new ElectronPackagerDarwin(config);
-        await packager.build('64');
+        await packager.buildDMG('64');
     }
 }
 
