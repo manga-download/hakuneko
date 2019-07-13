@@ -334,7 +334,7 @@
              * otherwise the window cannot be closed anymore (electron does not show the confirmation).
              */
             openWindow( event ) {
-                window.open( event.target.dataset.href, '_blank', 'nodeIntegration=no' ).eval( `setTimeout( () => { window.onbeforeunload = evt => undefined; }, 1000 )` );
+                window.open( event.target.dataset.href, '', 'nodeIntegration=no' ).eval( `setTimeout( () => { window.onbeforeunload = evt => undefined; }, 1000 )` );
             }
 
             /**
