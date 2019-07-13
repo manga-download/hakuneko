@@ -26,13 +26,13 @@ module.exports = class App {
         if(Configuration.isPortableMode) {
             return new Configuration(options);
         }
-        if(process.platform == 'linux') {
+        if(process.platform === 'linux') {
             return new ConfigurationLinux(options);
         }
-        if(process.platform == 'darwin') {
+        if(process.platform === 'darwin') {
             return new ConfigurationDarwin(options);
         }
-        if(process.platform == 'win32') {
+        if(process.platform === 'win32') {
             return new ConfigurationWindows(options);
         }
     }
