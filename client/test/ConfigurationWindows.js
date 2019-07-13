@@ -43,12 +43,12 @@ describe('ConfigurationWindows', function() {
         });
 
         (process.platform === 'win32' ? it : it.skip)('applicationCacheDirectory', () => {
-            assert.equal(testee.applicationCacheDirectory.includes(path.join('AppData', 'Local', 'Electron', 'cache')), true);
+            assert.equal(testee.applicationCacheDirectory, path.join(process.env.HOME, 'AppData', 'Local', 'Electron', 'cache'));
         });
 
         (process.platform === 'win32' ? it : it.skip)('applicationUserDataDirectory', () => {
             // NOTE: This fails, because the temporary mocha path is detected
-            assert.equal(testee.applicationUserDataDirectory.includes(path.join('AppData', 'Roaming', 'Electron')), true);
+            assert.equal(testee.applicationUserDataDirectory, path.join(process.env.HOME, 'AppData', 'Roaming', 'Electron'));
         });
     });
 
