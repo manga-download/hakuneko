@@ -113,7 +113,11 @@
                 return fetch( link, this.requestOptions );
             } )
             .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) );
+            .then( data => this._blobToBuffer( data ) )
+            .then( data => {
+                this._applyRealMime( data );
+                return Promise.resolve( data );
+            } );
         }
     }
 
