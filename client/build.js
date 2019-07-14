@@ -655,7 +655,7 @@ class ElectronPackagerDarwin extends ElectronPackager {
                 dmg: {
                     name: 'amd64',
                     suffix: 'macos_amd64',
-                    platform: 'win32-x64'
+                    platform: 'darwin-x64'
                 }
             }
         };
@@ -667,6 +667,12 @@ class ElectronPackagerDarwin extends ElectronPackager {
      */
     get _dirBuildRoot() {
         return path.join('build', `${this._configuration.name.package}_${this._configuration.version}_${this._architecture.suffix}`);
+    }
+
+    _wait(milliseconds) {
+        return new Promise(resolve => {
+            setTimeout(() => resolve(), milliseconds);
+        });
     }
 
 	/**
@@ -684,22 +690,91 @@ class ElectronPackagerDarwin extends ElectronPackager {
     async buildDMG(architecture) {
         this._architecture = this.architectures[architecture].dmg;
 
-        await this._validateCommands('7z --help', 'asar --version', 'innosetup-compiler /?');
+        await this._validateCommands('hdiutil info');
 
         await fs.remove(this._dirBuildRoot);
         await this._bundleElectron(false);
         await this._createPList();
 
-        /*
-        mkdir -p "build/$1/.images"
-        cp "res/OSXSetup.png" "build/$1/.images/OSXSetup.png"
-        rm -f "build/$1.dmg"
-        hdiutil create -volname "${PRODUCT}" -srcfolder "build/$1" -fs "HFS+" -fsargs "-c c=64,a=16,e=16" -format "UDRW" "build/$1.tmp.dmg"
-        device=$(hdiutil attach -readwrite -noverify -noautoopen "build/$1.tmp.dmg" | egrep '^/dev/' | sed 1q | awk '{print $1}')
-        sleep 5
-        echo '
+        let dmg = this._dirBuildRoot + '.dmg';
+        await fs.remove(dmg);
+        let tmp = this._dirBuildRoot + '.tmp';
+        await fs.remove(tmp + '.dmg');
+        await this._executeCommand(`hdiutil create -volname "${this._configuration.name.product}" -srcfolder "${this._dirBuildRoot}" -fs "HFS+" -fsargs "-c c=64,a=16,e=16" -format "UDRW" "${tmp}"`);
+        let device = (await this._executeCommand(`hdiutil attach -readwrite -noverify -noautoopen "${tmp}.dmg" | egrep '^/dev/' | sed 1q | awk '{print $1}'`)).trim();
+        await this._wait(5000);
+        await this._executeCommand(`echo '${this._appleScript}' | osascript`);
+        // TODO: is this equivalent to fs.chmod('/Volumes/...', 'go-w')
+        await this._executeCommand(`chmod -Rf go-w "/Volumes/${this._configuration.name.product}"`);
+        await this._executeCommand(`sync`);
+        await this._wait(5000);
+        await this._executeCommand(`hdiutil detach "${device}"`);
+        await this._wait(5000);
+        await this._executeCommand(`hdiutil convert "${tmp}.dmg" -format "UDZO" -imagekey zlib-level=9 -o "${dmg}"`);
+        await fs.remove(tmp + '.dmg');
+    }
+
+    /**
+     * 
+     */
+    async _bundleElectron() {
+        console.log('Bundle electron ...');
+        let folder = path.join(this._dirBuildRoot, 'Electron.app', 'Contents');
+        await this._downloadElectron(this._configuration.version, this._architecture.platform, this._dirBuildRoot);
+        await fs.remove(path.join(folder, 'Resources', 'default_app.asar'));
+        await asar.createPackage('src', path.join(folder, 'Resources', 'app.asar'));
+        await fs.move(path.join(folder, 'MacOS', 'Electron'), path.join(folder, 'MacOS', this._configuration.binary.darwin));
+        await fs.remove(path.join(folder, 'Resources', 'electron.icns'));
+        await fs.copy('res/icon.icns', path.join(folder, 'Resources', this._configuration.binary.darwin + '.icns'));
+        await fs.ensureDir(path.join(this._dirBuildRoot, '.images'));
+        await fs.copy('res/OSXSetup.png', path.join(this._dirBuildRoot, '.images', 'OSXSetup.png'));
+        await fs.move(path.join(this._dirBuildRoot, 'Electron.app'), path.join(this._dirBuildRoot, this._configuration.name.product + '.app'));
+    }
+
+    /**
+     * 
+     */
+    _createPList() {
+        console.log('Creating P-List Info ...');
+        let file = path.join(this._dirBuildRoot, this._configuration.name.product + '.app', 'Contents', 'Info.plist');
+        let content = [
+            '<?xml version="1.0" encoding="UTF-8"?>',
+            '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">',
+            '<plist version="1.0">',
+            '<dict>',
+            '	<key>CFBundleDisplayName</key>',
+            `	<string>${this._configuration.name.product}</string>`,
+            // execytable is required
+            '	<key>CFBundleExecutable</key>',
+            `	<string>${this._configuration.binary.darwin}</string>`,
+            // icon file is required
+            '	<key>CFBundleIconFile</key>',
+            `	<string>${this._configuration.binary.darwin}.icns</string>`,
+            '	<key>CFBundleIdentifier</key>',
+            `	<string>${this._configuration.url}</string>`,
+            '	<key>CFBundleName</key>',
+            `	<string>${this._configuration.name.product}</string>`,
+            '	<key>CFBundlePackageType</key>',
+            '	<string>APPL</string>',
+            '	<key>CFBundleShortVersionString</key>',
+            `	<string>${this._configuration.version}</string>`,
+            '	<key>CFBundleVersion</key>',
+            `	<string>${this._configuration.version}</string>`,
+            '	<key>LSMinimumSystemVersion</key>',
+            '	<string>10.10.0</string>',
+            '	<key>NSHighResolutionCapable</key>',
+            '	<true/>',
+            '</dict>',
+            '</plist>'
+        ];
+        this._saveFile(file, content.join(eol), false);
+        return file;
+    }
+
+    get _appleScript() {
+        return `
         tell application "Finder"
-            tell disk "'${PRODUCT}'"
+            tell disk "${this._configuration.name.product}"
                 open
                 set current view of container window to icon view
                 set toolbar visible of container window to false
@@ -710,80 +785,16 @@ class ElectronPackagerDarwin extends ElectronPackager {
                 set icon size of theViewOptions to 64
                 set background picture of theViewOptions to file ".images:OSXSetup.png"
                 make new alias file at container window to POSIX file "/Applications" with properties {name:"Applications"}
-                set position of item "'${PRODUCT}'" of container window to {360, 180}
+                set position of item "'${this._configuration.name.product}'" of container window to {360, 180}
                 set position of item "Applications" of container window to {360, 390}
+                set position of item ".fseventsd" of container window to {180, 620}
+                set position of item ".images" of container window to {280, 620}
                 update without registering applications
                 delay 5
                 close
             end tell
         end tell
-        ' | osascript
-
-        chmod -Rf go-w "/Volumes/${PRODUCT}"
-        sync
-        sleep 5
-        hdiutil detach "${device}"
-        sleep 5
-        hdiutil convert "build/$1.tmp.dmg" -format "UDZO" -imagekey zlib-level=9 -o "build/$1.dmg"
-        rm -f "build/$1.tmp.dmg"
-        */
-    }
-
-    /**
-     * 
-     * @param {bool} portable 
-     */
-    async _bundleElectron(portable) {
-        console.log('Bundle electron ...');
-        let folder = path.join(this._dirBuildRoot, 'usr', 'lib', this._configuration.name.package);
-        await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
-        await fs.remove(path.join(folder, 'resources', 'default_app.asar'));
-        await asar.createPackage('src', path.join(folder, 'resources', 'app.asar'));
-        await fs.move(path.join(folder, 'electron'), path.join(folder, this._configuration.binary.linux));
-        /*
-        rm -f "build/$1/Electron.app/Contents/Resources/electron.icns"
-        cp "res/icon.icns" "build/$1/Electron.app/Contents/Resources/${BIN_DARWIN}.icns"
-        mv "build/$1/Electron.app" "build/$1/${PRODUCT}.app"
-        */
-    }
-
-    /**
-     * 
-     */
-    _createPList() {
-        console.log('Creating P-List Info ...');
-        let plist = path.join('build/$1/Electron.app/Contents/Info.plist');
-        /*
-        echo '<?xml version="1.0" encoding="UTF-8"?>' > "build/$1/Electron.app/Contents/Info.plist"
-        echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '<plist version="1.0">' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '<dict>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>CFBundleDisplayName</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>${PRODUCT}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        # executable is required!
-        echo '	<key>CFBundleExecutable</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>${BIN_DARWIN}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        # icon file is required!
-        echo '	<key>CFBundleIconFile</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>${BIN_DARWIN}.icns</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>CFBundleIdentifier</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>${URL}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>CFBundleName</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>${PRODUCT}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>CFBundlePackageType</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>APPL</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>CFBundleShortVersionString</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>${VERSION}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>CFBundleVersion</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>${VERSION}</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>LSMinimumSystemVersion</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<string>10.9.0</string>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '	<key>NSHighResolutionCapable</key>' >> "build/$1/Electron.app/Contents/Info.plist"
-        echo "	<true/>" >> "build/$1/Electron.app/Contents/Info.plist"
-        echo '</dict>'>> "build/$1/Electron.app/Contents/Info.plist"
-        echo '</plist>'>> "build/$1/Electron.app/Contents/Info.plist"
-        */
-        return file;
+        `;
     }
 }
 
