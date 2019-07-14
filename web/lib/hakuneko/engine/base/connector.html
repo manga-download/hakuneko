@@ -509,7 +509,7 @@
                 .then( response => response.blob() )
                 .then( data => this._blobToBuffer( data ) );
             } catch( error ) {
-                return Promise.rejec( error );
+                return Promise.reject( error );
             }
         }
 
