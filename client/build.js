@@ -704,7 +704,6 @@ class ElectronPackagerDarwin extends ElectronPackager {
         let device = (await this._executeCommand(`hdiutil attach -readwrite -noverify -noautoopen "${tmp}.dmg" | egrep '^/dev/' | sed 1q | awk '{print $1}'`)).trim();
         await this._wait(5000);
         await this._executeCommand(`echo '${this._appleScript}' | osascript`);
-        // TODO: is this equivalent to fs.chmod('/Volumes/...', 'go-w')
         await this._executeCommand(`chmod -Rf go-w "/Volumes/${this._configuration.name.product}"`);
         await this._executeCommand(`sync`);
         await this._wait(5000);

@@ -64,7 +64,6 @@ module.exports = class UpdateServerManager {
      * @returns {Promise<UpdatePackageInfo>} 
      */
     getUpdateInfo() {
-        // TODO: handle this._applicationUpdateURL === undefined (initialization in ctor failed)
         return this._request(this._applicationUpdateURL)
         .then(data => {
             let link = data.toString('utf8');
