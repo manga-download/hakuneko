@@ -21,6 +21,9 @@ module.exports = {
         type: 'Application',
         categories: 'Network;FileTransfer;',
         menu: 'Applications/Network/File Transfer',
-        dependencies: 'libc6'
+        dependencies: {
+            deb: 'libc6',
+            rpm: 'libXScrnSaver'
+        }
     }
 }
