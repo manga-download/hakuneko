@@ -246,7 +246,7 @@ class ElectronPackagerLinux extends ElectronPackager {
         this._createChangelog();
         //this._createMenuEntry(); // => only menu or desktop is recommend
         this._createDesktopShortcut();
-        let specs = this._createSpecsRPM();
+        let specs = await this._createSpecsRPM();
 
         let rpm = this._dirBuildRoot + '.rpm';
         await fs.remove(rpm);
@@ -366,7 +366,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'Section: ' + this._configuration.meta.section,
 			'Architecture: ' + this._architecture.name,
 			'Installed-Size: ' + await this._getSize(path.join(this._dirBuildRoot, 'usr')),
-			'Depends: ' + this._configuration.meta.dependencies,
+			'Depends: ' + this._configuration.meta.dependencies.deb,
 			'Maintainer: ' + this._configuration.author,
 			'Priority: optional',
 			'Homepage: ' + this._configuration.url,
@@ -411,7 +411,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 	/**
 	 * 
 	 */
-	_createSpecsRPM() {
+	async _createSpecsRPM() {
         console.log('Creating RPM Specification File ...');
         let file = path.join('build', 'specfile.spec');
         let symbolic = path.join('/usr', 'bin', this._configuration.name.package);
@@ -422,7 +422,7 @@ class ElectronPackagerLinux extends ElectronPackager {
 			'Release: 0',
 			'License: ' + this._configuration.license,
 			'URL: ' + this._configuration.url,
-			'Requires: ' + this._configuration.meta.dependencies,
+			'Requires: ' + this._configuration.meta.dependencies.rpm,
             'Summary: ' + this._configuration.description.short,
             '',
             'Autoreq: no',
@@ -432,8 +432,8 @@ class ElectronPackagerLinux extends ElectronPackager {
             this._configuration.description.long,
             '',
             '%files',
-            '/usr',
-            '',
+            `%dir /usr/lib/${this._configuration.name.package}/`,
+            await this._executeCommand(`cd "${this._dirBuildRoot}" && find usr -type f -exec echo /{} \\;`),
             '%post',
             `if [ ! -f ${symbolic} ] ; then ln -s ${binary} ${symbolic} ; fi`,
             '',
