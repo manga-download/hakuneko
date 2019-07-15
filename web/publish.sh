@@ -17,7 +17,7 @@ cp -f ./js/*.min.js $DIR/js/
 # polymer will break files that are already obfuscated, so use the original obfuscated files => otherwise leads to blank/white screen + out-of-memory error in electron
 cp -f ./lib/hakuneko/engine/base/connectors/mangago.html $DIR/lib/hakuneko/engine/base/connectors/mangago.html
 cp -f ./lib/hakuneko/engine/base/connectors/tencentcomic.html $DIR/lib/hakuneko/engine/base/connectors/tencentcomic.html
-git stash pop || true # do not fail if stash is empty
+git stash pop $(git stash list | grep 'Cleanup before Deploy' | cut -d':' -f1) || true # do not fail if stash is empty
 
 cd $DIR
 # update version file before deployment
