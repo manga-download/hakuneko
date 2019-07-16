@@ -26,9 +26,9 @@
             this.fetchDOM( request, 'div#content.pages' )
             .then( data => {
                 data = data[0];
-                if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )   // For v016113 (Ohtabooks)
+                if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )
                 {
-                    return this._getPageList_v016130( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
+                    return this._getPageList_v016113( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
                 }
                 if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
                     return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
@@ -140,6 +140,16 @@
         }
 
         /**************************
+         *** SpeedBinb v01.6113 ***
+         *** Ohtabooks          *** 
+         **************************/
+
+        // Fully compatible to v01.6130
+        _getPageList_v016113( chapterID, apiURL ) {
+            return _getPageList_v016130( chapterID, apiURL );
+        }
+
+        /**************************
          *** SpeedBinb v01.6130 ***
          *** BookLive           ***
          **************************/
@@ -224,10 +234,7 @@
 
         _getPageLinksContentJS_v016130( configuration ) {
             let uri = new URL( configuration['ContentsServer'] );
-            if( !uri.pathname.endsWith('/') )   // Tweak for v016113 (Ohtabooks)
-            {
-                uri.pathname += '/';
-            }
+            uri.pathname += uri.pathname.endsWith('/') ? '' : '/';
             uri.pathname += 'content.js';
             uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
             return fetch( new Request( uri.href, this.requestOptions ) )
@@ -283,8 +290,12 @@
                     resolve( data );
                 }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
             } );
-        }
+        }     
 
+        /**********************
+         *** SpeedBinb Base ***
+         *********************/
+     
         /**
          * Copied from official SpeedBinb library
          */
