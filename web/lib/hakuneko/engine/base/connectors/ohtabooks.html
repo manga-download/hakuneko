@@ -16,9 +16,6 @@
             super.label      = 'Ohtabooks';
             this.tags        = [ 'manga', 'japanese' ];
             this.url         = 'http://webcomic.ohtabooks.com';
-
-            // register a protocol handler to intercept requests (with custom 'ohtabooks' protocol) and descramble images
-            Engine.Request.registerProtocol( this.id, this._protocolHandlerCallback.bind( this ) );
         }
 
         /**
