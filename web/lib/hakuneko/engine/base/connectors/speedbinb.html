@@ -22,10 +22,14 @@
          * 
          */
         _getPageList( manga, chapter, callback ) {
-            let request = new Request( this.url + chapter.id, this.requestOptions );
+            let request = new Request( this.getAbsolutePath( chapter.id, this.url ), this.requestOptions );
             this.fetchDOM( request, 'div#content.pages' )
             .then( data => {
                 data = data[0];
+                if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )   // For v016113 (Ohtabooks)
+                {
+                    return this._getPageList_v016130( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
+                }
                 if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
                     return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
                 }
@@ -220,7 +224,11 @@
 
         _getPageLinksContentJS_v016130( configuration ) {
             let uri = new URL( configuration['ContentsServer'] );
-            uri.pathname += '/content.js';
+            if( !uri.pathname.endsWith('/') )   // Tweak for v016113 (Ohtabooks)
+            {
+                uri.pathname += '/';
+            }
+            uri.pathname += 'content.js';
             uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
             return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.text() )

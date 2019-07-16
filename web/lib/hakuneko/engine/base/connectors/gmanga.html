@@ -108,7 +108,10 @@
             .then( response => response.text() )
             .then( data => {
                 let pageList = data.match( /"hq_pages"\s*:\s*"(.*?)"\s*,/ )[1].split( '\\n' ).map( page => {
-                    return 'https://media.gmanga.me/uploads/releases/' + page.replace( '\\r', '' ).trim();
+                    // TODO: Create protocol link and get keys ad-hoc per request, because of limited validity (lease time)
+                    let uri = new URL( page.replace( '\\r', '' ).trim(), 'https://media.gmanga.me/uploads/releases/' );
+                    uri.searchParams.set( 'ak', parseInt( ( Date.now() ) / 1000 + 120 ).toString( '36' ) );
+                    return uri.href;
                 } );
                 callback( null, pageList );
             } )
