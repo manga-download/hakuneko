@@ -84,19 +84,12 @@
             this.fetchDOM( chapter.id, 'script[type="text/javascript"]' )
             .then( data => {
                 data = data[0].innerHTML;
-                let imgUrl = data.substring( data.indexOf('\'') + 1, data.lastIndexOf('\'') );
-                return {
-                    id: imgUrl,
+                let ch = {
+                    id: data.substring( data.indexOf('\'') + 1, data.lastIndexOf('\'') ),
                     title: chapter.title,
                     language: chapter.language
                 };
-            } )
-            .then( data => {
-                super._getPageList( manga, data, callback );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
+                super._getPageList( manga, ch, callback );
             } );
         }
     }
