@@ -264,6 +264,11 @@
             if( details.requestHeaders['User-Agent'].toLowerCase().includes( 'electron' ) ) {
                 details.requestHeaders['User-Agent'] = this.userAgent;
             }
+            // If a custom user agent is set use this instead
+            if( details.requestHeaders['x-user-agent'] ) {
+                details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
+                delete details.requestHeaders['x-user-agent'];
+            }
 
             // Overwrite the Referer header, but
             // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
@@ -315,18 +320,16 @@
             }
             let uri = new URL( details.url );
 
-            // Some video sreaming sites (Sreamango, OpenVideo) using 'X-Redirect' header instead of 'Location' header,
+            // Some video sreaming sites (Streamango, OpenVideo) using 'X-Redirect' header instead of 'Location' header,
             // but fetch API only follows 'Location' header redirects => assign redirect to location
             let redirect = details.responseHeaders['X-Redirect'] || details.responseHeaders['x-redirect'];
             if( redirect ) {
                 details.responseHeaders['Location'] = redirect;
             }
-            // FIXME: expose 'Content-Length' header to fetch API for CORS requests
             if( uri.hostname.includes( 'mp4upload' ) ) {
                 //details.responseHeaders['Access-Control-Allow-Origin'] = '*';
                 //details.responseHeaders['Access-Control-Allow-Methods'] = 'HEAD, GET';
-                details.responseHeaders['Access-Control-Expose-Headers'] = 'Content-Length';
-                //console.log( 'onHeadersReceivedHandler', uri.href, details.responseHeaders );
+                details.responseHeaders['Access-Control-Expose-Headers'] = ['Content-Length'];
             }
 
             return details;

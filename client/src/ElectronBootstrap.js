@@ -183,7 +183,6 @@ module.exports = class ElectronBootstrap {
                 }
             } catch(error) {
                 this._logger.warn(error);
-                //console.warn( error );
                 callback({
                     cancel: false,
                     requestHeaders: details.requestHeaders
