@@ -12,12 +12,9 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = '9anime';
             super.label      = '9ANIME';
             this.tags        = [ 'anime', 'english' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             //this.url         = 'https://9anime.live';
             this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
             // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
@@ -64,7 +61,6 @@
          */
         _onSettingsChanged( event ) {
             this.url = this.config.domain.value;
-            this.requestOptions.headers.set( 'x-referer', this.url );
         }
 
         /**
@@ -134,39 +130,6 @@
          *
          */
         _getChapterList( manga, callback ) {
-            /*
-            let animeID = manga.id.split( '.' ).pop();
-            let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?ts=${ this.timestamp }&_=680`, this.requestOptions );
-            request.headers.set( 'x-referer', this.url + manga.id );
-            this.fetchJSON( request )
-            .then( data => {
-                let dom = this.createDOM( data.html );
-                let servers = [...dom.querySelectorAll( 'div.servers span.tab' )]
-                .map( element => {
-                    return {
-                        name: element.dataset.name,
-                        label: element.innerText.trim()
-                    };
-                } );
-                let chapterList = [...dom.querySelectorAll( 'div.servers div.server' )]
-                .reduce( ( accumulator, server ) => {
-                    let episodes = [...server.querySelectorAll( 'ul.episodes li a' )]
-                    .map( episode => {
-                        return {
-                            id: this.getRootRelativeOrAbsoluteLink( episode, this.url ),
-                            title: `${ episode.text.trim() } [${ servers.find( s => s.name === server.dataset.name ).label }]`,
-                            language: ''
-                        };
-                    } );
-                    return accumulator.concat( episodes );
-                }, [] );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-            */
             let script = `
             new Promise( resolve => {
                 setTimeout( () => {
@@ -221,17 +184,17 @@
             .then( request => this.fetchJSON( request ) )
             .then( data => {
                 switch(true) {
-                    case data.target.includes( 'prettyfast.to' ):
+                    case data.target.includes( 'prettyfast' ):
                         return this._getEpisodePrettyFast( data.target, this.config.resolution.value );
-                    case data.target.includes( 'rapidvideo.com' ):
+                    case data.target.includes( 'rapidvid' ):
                         return this._getEpisodeRapidVideo( data.target, this.config.resolution.value );
-                    case data.target.includes( 'openload.co' ):
+                    case data.target.includes( 'openload' ):
                         return this._getEpisodeOpenLoad( data.target, this.config.resolution.value );
-                    case data.target.includes( 'mcloud.to' ):
+                    case data.target.includes( 'mcloud' ):
                         return this._getEpisodeMyCloud( data.target, this.config.resolution.value );
-                    case data.target.includes( 'mp4upload.com' ):
+                    case data.target.includes( 'mp4upload' ):
                         return this._getEpisodeMp4upload( data.target, this.config.resolution.value );
-                    case data.target.includes( 'streamango.com' ):
+                    case data.target.includes( 'streamango' ):
                         return this._getEpisodeStreamango( data.target, this.config.resolution.value );
                     default:
                         throw new Error( 'Support for video stream from mirror "' + data.target + '" not implemented!' );
@@ -251,6 +214,7 @@
          */
         _getEpisodePrettyFast( link, resolution ) {
             let request = new Request( link, this.requestOptions );
+            request.headers.set( 'x-referer', this.url );
             return fetch( request )
             .then( response => response.text() )
             .then( result => {
@@ -265,6 +229,7 @@
         _getEpisodeRapidVideo( link, resolution ) {
             let request = new Request( link, this.requestOptions );
             request.headers.set( 'x-cookie', 'q=' + resolution );
+            request.headers.set( 'x-referer', this.url );
             return this.fetchDOM( request, 'video#videojs source' )
             .then( data => {
                 if( !data.length ) {
@@ -278,11 +243,13 @@
          *
          */
         _getEpisodeOpenLoad( link, resolution ) {
-            let request = new Request( link, this.requestOptions );
             let script = `
-                document.querySelector('div#videooverlay').click();
-                document.querySelector('video[id^="olvideo"]').src;
+                new Promise( resolve => {
+                    document.querySelector('div#videooverlay').click();
+                    resolve( document.querySelector('video[id^="olvideo"]').src );
+                } );
             `;
+            let request = new Request( link, this.requestOptions );
             return Engine.Request.fetchUI( request, script )
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
@@ -294,6 +261,7 @@
          */
         _getEpisodeMyCloud( link, resolution ) {
             let request = new Request( link, this.requestOptions );
+            request.headers.set( 'x-referer', this.url );
             return fetch( request )
             .then( response => response.text() )
             .then( data => {
@@ -315,9 +283,13 @@
          *
          */
         _getEpisodeMp4upload( link, resolution ) {
-            // NOT WORKING: missing content-length header when downloading stream (fetch CORS problem)
+            let script = `
+                new Promise( resolve => {
+                    resolve( document.querySelector('div#vid video#vid_html5_api').src );
+                } );
+            `;
             let request = new Request( link, this.requestOptions );
-            return Engine.Request.fetchUI( request, `document.querySelector('div#player div.jw-media video.jw-video').src;` )
+            return Engine.Request.fetchUI( request, script )
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );
@@ -327,8 +299,13 @@
          *
          */
         _getEpisodeStreamango( link, resolution ) {
+            let script = `
+                new Promise( resolve => {
+                    resolve( document.querySelector('video[id^="mgvideo"]').src );
+                } );
+            `;
             let request = new Request( link, this.requestOptions );
-            return Engine.Request.fetchUI( request, `document.querySelector('video[id^="mgvideo"]').src;` )
+            return Engine.Request.fetchUI( request, script )
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );
