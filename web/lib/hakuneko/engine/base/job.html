@@ -282,38 +282,17 @@
         _downloadVideoStream( episode, directory, callback ) {
             let basename = Date.now(); // episode.video.split( '/' ).pop();
             this.requestOptions['method'] = 'HEAD';
-            let referer = this.requestOptions.headers.get( 'x-referer' );
-            this.requestOptions.headers.set( 'x-referer', episode.video );
-            fetch( episode.video, this.requestOptions )
+            let request = new Request( episode.video, this.requestOptions );
+            request.headers.set( 'x-referer', episode.video );
+            this.requestOptions['method'] = 'GET';
+            fetch( request )
             .then( response => {
-                /*
-                // read video stream directly into chunks
-                // => problem: numer of chunks is unknown to calculate progress bar
-                let reader = response.body.getReader();
-                reader.read()
-                .then( function rd( chunk ) {
-                    if( chunk.done ) {
-                        return Promise.resolve();
-                    } else {
-                        console.log( 'CHUNK:', chunk.done, chunk.value['length'] );
-                        return reader.read().then( rd );
-                    }
-                } )
-                .then( () => {
-                    console.log( 'DONE' );
-                } )
-                .catch( error => {
-                    throw error;
-                } );
-                */
-
                 if( response.status !== 200 ) {
                     throw new Error( 'Video "' + episode.video + '" returned status: ' + response.status + ' - ' + response.statusText );
                 }
                 //if( response.headers.get( 'Accept-Ranges' ).toLowerCase() !== 'bytes' ) {
                 //    throw new Error( 'Video "' + episode.video + '" does not accept chunked download!' );
                 //}
-                // FIXME: some mirrors do not expose content-length header for CORS (e.g. fetch)
                 let size = response.headers.get( 'Content-Length' );
                 if( !size ) {
                     throw new Error( 'Failed to determine the size of the video packet!\nThe server may not use "Access-Control-Expose-Headers: Content-Length" for CORS requests.' );
@@ -329,10 +308,10 @@
                     }
                     return this._wait( 0 )
                     .then( () => {
-                        this.requestOptions.headers.set( 'Range', 'bytes=' + chunks[index] );
-                        let promise = fetch( episode.video, this.requestOptions );
-                        this.requestOptions.headers.delete( 'Range' );
-                        return promise;
+                        let request = new Request( episode.video, this.requestOptions );
+                        request.headers.set( 'Range', 'bytes=' + chunks[index] );
+                        request.headers.set( 'x-referer', episode.video );
+                        return fetch( request );
                     } )
                     .then( response => {
                         if( response.status !== 200 && response.status !== 206 ) {
@@ -367,10 +346,6 @@
                 this.setStatus( DownloadStatus.failed );
                 callback();
             } );
-            this.requestOptions['method'] = 'GET';
-            if( referer ) {
-                this.requestOptions.headers.set( 'x-referer', referer );
-            }
         }
 
         /**
