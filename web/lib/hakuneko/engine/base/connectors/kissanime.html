@@ -88,24 +88,23 @@
 
             let uri = new URL( chapter.id, this.url );
             uri.searchParams.set( 's', 'rapidvideo' );
-            this.requestOptions.headers.set( 'x-referer', this.url );
-            fetch( uri.href, this.requestOptions )
+            let request = new Request( uri.href, this.requestOptions );
+            request.headers.set( 'x-referer', this.url );
+            fetch( request )
             .then( response => response.text() )
             .then( data => {
-                let link = data.match( /src\s*=\s*"(.*?rapidvideo.*?)"/ )[1];
+                let link = data.match( /src\s*=\s*['"]([^'"]+rapidvid[^'"]+)['"]/ )[1];
                 switch(true) {
-                    case link.includes( 'rapidvideo.com' ):
+                    case link.includes( 'rapidvid' ):
                         return this._getEpisodeRapidVideo( link, this.config.resolution.value );
                     default:
                         throw new Error( 'Support for video stream from mirror "' + link + '" not implemented!' );
                 }
             } )
             .then( media => {
-                this.requestOptions.headers.delete( 'x-referer' );
                 callback( null, media );
             } )
             .catch( error => {
-                this.requestOptions.headers.delete( 'x-referer' );
                 console.error( error, chapter );
                 callback( error, undefined );
              } );
@@ -115,16 +114,16 @@
          * Same as in 9anime
          */
         _getEpisodeRapidVideo( link, resolution ) {
-            this.requestOptions.headers.set( 'x-cookie', 'q=' + resolution );
-            let promise = this.fetchDOM( link, 'video#videojs source' )
+            let request = new Request( link, this.requestOptions );
+            request.headers.set( 'x-cookie', 'q=' + resolution );
+            //request.headers.set( 'x-referer', this.url );
+            return this.fetchDOM( request, 'video#videojs source' )
             .then( data => {
                 if( !data.length ) {
                     throw new Error( `No matching video stream found for requested resolution "${resolution}"!` );
                 }
                 return Promise.resolve( { video: data[0].src, subtitles: [] } );
             } );
-            this.requestOptions.headers.delete( 'x-cookie' );
-            return promise;
         }
     }
 
