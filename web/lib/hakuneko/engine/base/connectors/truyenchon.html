@@ -8,24 +8,95 @@
     class TruyenChon extends Connector {
 
         /**
-         *
+         * Same as NetTruyen
          */
         constructor() {
             super();
             super.id         = 'truyenchon';
             super.label      = 'TruyenChon';
-            this.tags        = [];
+            this.tags        = [ 'manga', 'webtoon', 'vietnamese' ];
             this.url         = 'http://truyenchon.com';
         }
 
+        /**
+         *
+         */
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            let request = new Request( mangaPageLinks[ index ], this.requestOptions );
+            return this.fetchDOM( request, 'div.ModuleContent div.items div.item figcaption a.jtip', 5 )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
         _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            let request = new Request( this.url + '/?page=', this.requestOptions );
+            this.fetchDOM( request, 'div.pagination-outter ul.pagination li:last-of-type a' )
+            .then( data => {
+                let pageCount = parseInt( data[0].href.match(/\d+$/)[0] );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
         }
+        
+        /**
+         *
+         */
         _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            let request = new Request( this.url + manga.id, this.requestOptions );
+            this.fetchDOM( request, 'div.list-chapter ul li.row div.chapter a' )
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: ''
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
+            } );
         }
+        
+        /**
+         *
+         */
         _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            this.fetchDOM( request, 'div.reading div.page-chapter source' )
+            .then( data => {
+                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );               
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
         }
     }
 
