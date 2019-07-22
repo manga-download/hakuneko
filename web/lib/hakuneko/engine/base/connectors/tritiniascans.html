@@ -23,28 +23,6 @@
         /**
          *
          */
-        _getMangaList( callback ) {
-            // WP-Admin is disabled => get list from website
-            let request = new Request( this.url + '/index-m_orderby=alphabet.html', this.requestOptions );
-            this.fetchDOM( request, 'div.page-content-listing div.manga div.post-title h5 a' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-        }
-
-        /**
-         *
-         */
         _getPageList( manga, chapter, callback ) {
             let script = `
                 new Promise( ( resolve, reject ) => {
