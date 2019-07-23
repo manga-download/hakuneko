@@ -12,15 +12,10 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'gmanga';
             super.label      = 'GManga';
             this.tags        = [ 'manga', 'arabic' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
             this.url         = 'https://gmanga.me';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
 
             this.mangaSearch = {
                 manga_types: {
@@ -42,9 +37,11 @@
         _getMangaListFromPages( page ) {
             page = page || 1;
             this._setMangaRequestOptions( page );
-            let promise = fetch( 'https://gmanga.me/api/mangas/search', this.requestOptions )
-            .then( response => response.json() )
+            let request = new Request( this.url + '/api/mangas/search', this.requestOptions );
+            this._clearRequestOptions();
+            return this.fetchJSON( request )
             .then( data => {
+                data = data[ 'iv' ] ? this._haqiqa( data.data ) : data;
                 if( !data.mangas || !data.mangas.length ) {
                     return Promise.resolve( [] );
                 }
@@ -56,9 +53,7 @@
                 } );
                 return this._getMangaListFromPages( page + 1 )
                 .then( mangas => mangas.concat( mangaList ) );
-            } )
-            this._clearRequestOptions();
-            return promise;
+            } );
         }
 
         /**
@@ -82,6 +77,7 @@
             fetch( this.url + '/api/mangas/' + manga.id, this.requestOptions )
             .then( response => response.json() )
             .then( data => {
+                data = data[ 'isCompact' ] ? this._unpack( data ) : data;
                 let chapterList = data.mangaReleases.map( chapter => {
                     let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
                     title += ( chapter.title ? ' - ' + chapter.title : '' );
@@ -140,6 +136,63 @@
             this.requestOptions.method = 'GET';
             this.mangaSearch.page = 0;
         }
+
+        /********************
+         *** BEGIN GMANGA ***
+         *******************/
+
+        _haqiqa(t) {
+            let c = { default: CryptoJS };
+            if (!dataExists(t) || "string" != typeof t)
+                return !1;
+            var e = t.split("|")
+            , n = e[0]
+            , r = e[2]
+            , o = e[3]
+            , i = c.default.SHA256(o).toString()
+            , a = c.default.AES.decrypt({
+                ciphertext: c.default.enc.Base64.parse(n)
+            }, c.default.enc.Hex.parse(i), {
+                iv: c.default.enc.Base64.parse(r)
+            });
+            return JSON.parse(c.default.enc.Utf8.stringify(a))
+        }
+
+        _unpack(t) {
+            var e = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 1;
+            if (e > t.maxLevel)
+                return t;
+            //if (!isObject(t) || !t.isCompact)
+            //    return t;
+            var n = t.cols
+            , r = t.rows;
+            if (t.isObject) {
+                var o = {}
+                , i = 0;
+                return n.forEach(function(t) {
+                    o[t] = this._unpack(r[i], e + 1),
+                    i += 1
+                }.bind(this)),
+                o
+            }
+            if (t.isArray) {
+                o = [];
+                return r.forEach(function(t) {
+                    var e = {}
+                    , r = 0;
+                    n.forEach(function(n) {
+                        e[n] = t[r],
+                        r += 1
+                    }),
+                    o.push(e)
+                }),
+                o
+            }
+        }
+
+        /******************
+         *** END GMANGA ***
+         *****************/
     }
 
 </script>
