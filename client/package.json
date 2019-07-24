@@ -16,7 +16,7 @@
   },
   "devDependencies": {
     "asar": "latest",
-    "electron": "5.0.7",
+    "electron": "5.0.8",
     "electron-mocha": "latest",
     "ffmpeg-static": "latest",
     "innosetup-compiler": "latest",
