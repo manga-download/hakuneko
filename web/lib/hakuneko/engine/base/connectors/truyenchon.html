@@ -90,13 +90,31 @@
             let request = new Request( this.url + chapter.id, this.requestOptions );
             this.fetchDOM( request, 'div.reading div.page-chapter source' )
             .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );               
-                callback( null, pageList );
+                let pageLinks = data.map( element => {
+                    let uri = this.getAbsolutePath( element, request.url );
+                    return uri.includes( 'proxy.' ) ? this.createConnectorURI( { url: uri, referer: request.url } ) : uri;
+                } );
+                callback( null, pageLinks );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
             } );
+        }
+
+        /**
+         * 
+         */
+        _handleConnectorURI( payload ) {
+            try {
+                let request = new Request( payload.url, this.requestOptions );
+                request.headers.set( 'x-referer', payload.referer );
+                return fetch( request )
+                .then( response => response.blob() )
+                .then( data => this._blobToBuffer( data ) );
+            } catch( error ) {
+                return Promise.reject( error );
+            }
         }
     }
 
