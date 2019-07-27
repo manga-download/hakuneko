@@ -10,6 +10,13 @@ const CacheDirectoryManager = require('./CacheDirectoryManager');
 const Updater = require('./Updater');
 const ElectronBootstrap = require('./ElectronBootstrap');
 
+const loadingPage = `
+<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-family: monospace; font-size: 1.25em; font-weight: bold; text-align: center; opacity: 0.33;">
+    <div style="margin-bottom: 1.5em;">Checking for Update</div>
+    <progress></progress>
+</div>
+`;
+
 module.exports = class App {
 
     constructor(logger) {
@@ -57,6 +64,7 @@ module.exports = class App {
             // add HakuNeko's application directory to the environment variable path (make ffmpeg available on windows)
             process.env.PATH += (process.platform === 'win32' ? ';' : ':') + path.dirname(process.execPath);
             await this._electron.launch();
+            await this._electron.loadHTML(loadingPage);
             await this._updater.updateCache(this._configuration.publicKey);
             this._electron.loadURL(this._configuration.applicationStartupURL);
         } catch(error) {

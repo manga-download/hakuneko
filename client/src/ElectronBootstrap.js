@@ -2,14 +2,6 @@ const path = require('path');
 const electron = require('electron');
 const { ConsoleLogger } = require('logtrine');
 
-const loadingPage = `
-<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-family: monospace; font-size: 1.25em; font-weight: bold; text-align: center; opacity: 0.33;">
-    Checking for Update
-    <br><br>
-    <progress></progress>
-</div>
-`;
-
 module.exports = class ElectronBootstrap {
 
     constructor(configuration, logger) {
@@ -45,9 +37,9 @@ module.exports = class ElectronBootstrap {
         electron.app.setPath('userData', this._configuration.applicationUserDataDirectory);
 
         return new Promise(resolve => {
-            electron.app.on('ready', async () => {
+            electron.app.on('ready', () => {
                 this._registerCacheProtocol();
-                await this._createWindow();
+                this._createWindow();
                 resolve();
             });
             electron.app.on('activate',  this._createWindow.bind(this));
@@ -108,7 +100,7 @@ module.exports = class ElectronBootstrap {
     /**
      * 
      */
-    async _createWindow() {
+    _createWindow() {
         if(this._window) {
             return;
         }
@@ -118,6 +110,9 @@ module.exports = class ElectronBootstrap {
         this._window = new electron.BrowserWindow({
             width: 1120,
             height: 680,
+            title: 'HakuNeko',
+            show: true,
+            backgroundColor: '#f8f8f8',
             webPreferences: {
                 experimentalFeatures: true,
                 nodeIntegration: true,
@@ -127,9 +122,7 @@ module.exports = class ElectronBootstrap {
 
         this._setupBeforeSendHeaders();
         this._setupHeadersReceived();
-        this._window.setTitle('HakuNeko');
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
-        await this.loadHTML(loadingPage);
     }
 
     /**
