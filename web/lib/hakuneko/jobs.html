@@ -232,9 +232,9 @@
              */
             onBeforeClose( event ) {
                 // check if any job is running
-                let index = this.jobList.findIndex( ( job ) => {
+                let index = this.jobList.findIndex( job => {
                     return ( job.status === DownloadStatus.queued || job.status === DownloadStatus.downloading );
-                });
+                } );
                 if( index > -1 && !confirm( 'Downloads are still in progress.\nClose application anyway?' ) ) {
                     // prevent window from being closed
                     event.returnValue = true;
