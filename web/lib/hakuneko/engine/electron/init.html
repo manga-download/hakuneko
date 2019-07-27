@@ -2,16 +2,21 @@
 
     if( typeof(process) !== 'undefined' && process.versions && process.versions.electron ) {
 
-        let electronRemote = require( 'electron' ).remote;
+        let electron = require( 'electron' );
+
+        // HACK: confirm() is blocked by chrome in beforeunload event to ensure the window is not prevented from being closed,
+        //       as a result the confirm method is replaced by a confirmation dialog which is directly called from the electron main process
+        //       => https://github.com/electron/electron/issues/17364
+        confirm = msg => electron.ipcRenderer.sendSync( 'confirm', msg );
 
         /**
         * Register event listener to open developer console with F12 key.
         */
-        window.addEventListener( 'keydown', ( e ) => {
-            if( !e.ctrlKey && !e.shiftKey && !e.altKey && e.keyCode === 123 ) {
-                electronRemote.getCurrentWindow().openDevTools();
+        window.addEventListener( 'keydown', evt => {
+            if( !evt.ctrlKey && !evt.shiftKey && !evt.altKey && evt.keyCode === 123 ) {
+                electron.remote.getCurrentWindow().openDevTools();
             }
-        });
+        } );
     }
 
 </script>
