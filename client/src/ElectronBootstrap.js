@@ -111,7 +111,7 @@ module.exports = class ElectronBootstrap {
             width: 1120,
             height: 680,
             title: 'HakuNeko',
-            show: true,
+            show: false,
             backgroundColor: '#f8f8f8',
             webPreferences: {
                 experimentalFeatures: true,
@@ -122,6 +122,7 @@ module.exports = class ElectronBootstrap {
 
         this._setupBeforeSendHeaders();
         this._setupHeadersReceived();
+        this._window.once('ready-to-show', () => this._window.show());
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
     }
 
