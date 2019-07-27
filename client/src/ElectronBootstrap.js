@@ -164,7 +164,7 @@ module.exports = class ElectronBootstrap {
                 // prevent from injecting javascript into the webpage while the webcontent is not yet ready
                 // => required for loading initial page over http protocol (e.g. local hosted test page)
                 if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
-                    // inject javascript: looks stupid, but is a working solution to call a function
+                    // inject javascript: looks stupid, but is a working solution to call a function which returns data
                     // directly within the render process (without dealing with ipcRenderer)
                     let payload = Buffer.from(JSON.stringify(details)).toString('base64');
                     let result = await this._window.webContents.executeJavaScript(`Engine.Request.onBeforeSendHeadersHandler('${payload}');`);
@@ -192,7 +192,7 @@ module.exports = class ElectronBootstrap {
         electron.session.defaultSession.webRequest.onHeadersReceived(['http*://*'], async (details, callback) => {
             try {
                 if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
-                    // inject javascript: looks stupid, but is a working solution to call a function
+                    // inject javascript: looks stupid, but is a working solution to call a function which returns data
                     // directly within the render process (without dealing with ipcRenderer)
                     let payload = Buffer.from(JSON.stringify(details)).toString('base64');
                     let result = await this._window.webContents.executeJavaScript(`Engine.Request.onHeadersReceivedHandler('${payload}');`);
