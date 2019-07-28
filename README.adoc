@@ -24,7 +24,7 @@ You can download and run the installer/archive for your operating system from on
 
 Mirrors::
 
-image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/0.4.0, title="GitHub", window="_blank"]
+image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/v0.4.0, title="GitHub", window="_blank"]
 image:https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/, title="SourceForge", window="_blank"]
 
 == Introduction
