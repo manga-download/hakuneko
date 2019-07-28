@@ -22,22 +22,11 @@
             } catch ( e ) {
                 docs = '.';
             }
-            this.useGoogleDataSaver = {
-                label: 'Google Data Saver (Proxy)',
-                description: 'Use the Google Data Saver Proxy (only for http protocol)',
+            this.readerEnabled = {
+                label: 'Enable Reader',
+                description: 'Show a preview panel and a basic reader for the chapters',
                 input: Input.checkbox,
-                value: false
-            };
-            this.downloadHistoryLogFormat = {
-                label: 'Download History Format',
-                description: 'Log the history of completed chapter downloads\nThe log file(s) can be found in HakuNeko\'s user data directory',
-                input: Input.select,
-                options: [
-                    { value: HistoryFormat.none, name: 'Disabled' },
-                    //{ value: HistoryFormat.json, name: 'JSON (*.json)' },
-                    //{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
-                ],
-                value: HistoryFormat.none
+                value: true
             };
             this.baseDirectory = {
                 label: 'Manga Directory',
@@ -47,16 +36,22 @@
             };
             this.useSubdirectory = {
                 label: 'Use Sub-Directories',
-                description: 'Create sub-directories for each connector (e.g. "/manga/kissmanga/...")',
+                description: 'Create sub-directories for each website (e.g. "/downloads/mangadex/...")',
                 input: Input.checkbox,
                 value: false
+            };
+            this.chapterTitleFormat = {
+                label: 'Chapter Title Format',
+                description: 'Define the chapter name format.\nThis is an experimental feature, volume/chapter numbers are extracted directly from the original name.\nMay fail in some cases and also reduce performance!\n\nSupported placeholders:\n\n%C% - Connector title\n%M% - Manga title\n%VOL% - Volume number\n%CH% - Chapter number\n%T% - Chapter title (without volume/chapter number)\n%O% - Chapter title (original)',
+                input: Input.text,
+                value: ''
             };
             this.chapterFormat = {
                 label: 'Chapter File Format',
                 description: 'Store chapters in the selected file format',
                 input: Input.select,
                 options: [
-                    { value: ChapterFormat.img, name: 'Folder with Images (*.jpg, *.png)' },
+                    { value: ChapterFormat.img, name: 'Folder with Images (*.jpg, *.png, *.webp)' },
                     { value: ChapterFormat.cbz, name: 'Comic Book Archive (*.cbz)' },
                     { value: ChapterFormat.pdf, name: 'Portable Document (*.pdf)' },
                     { value: ChapterFormat.epub, name: 'Ebook Reader (*.epub)' },
@@ -81,6 +76,26 @@
                 min: 50,
                 max: 100,
                 value: 90
+            };
+            this.proxyRules = {
+                label: 'Proxy Rules',
+                description: 'Set the proxy servers that shall be used.\nLeave blank to ignore.\n\nExamples:\n• http=proxy.googlezip.net:80\n• http=127.0.0.1:8080;https=127.0.0.1:8080;socks=127.0.0.1:8081\n\nMore info: https://git.io/hakuneko-proxy',
+                input: Input.text,
+                options: [
+                    { value: 'http=proxy.googlezip.net:80', name: 'Google Data Saver' },
+                ],
+                value: ''
+            };
+            this.downloadHistoryLogFormat = {
+                label: 'Download History Format',
+                description: 'Log the history of completed chapter downloads.\nThe log file(s) can be found in HakuNeko\'s user data directory.',
+                input: Input.select,
+                options: [
+                    { value: HistoryFormat.none, name: 'Disabled' },
+                    //{ value: HistoryFormat.json, name: 'JSON (*.json)' },
+                    //{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
+                ],
+                value: HistoryFormat.none
             };
             this.postChapterDownloadCommand = {
                 label: 'Post Command',
