@@ -56,25 +56,6 @@
         }
 
         /**
-         * Determine if google data saver proxy is set to be used
-         */
-        get _isGoogleDataSaverActive() {
-            return Engine.Settings.proxyRules.value.includes( 'http=proxy.googlezip.net:80' );
-        }
-
-        /**
-         * Generate content of 'Chrome-Proxy' header field for use with google data saver
-         */
-        _getDataSaverHeader() {
-            let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
-            let ts = Math.floor( Date.now() / 1000 );
-            //let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
-            let hash = CryptoJS.MD5( ts + key + ts ).toString( CryptoJS.enc.Hex );
-            let rd = Math.floor( 9999 * Math.random() );
-            return 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
-        }
-
-        /**
          *
          */
         get _domPreparationScript() {
@@ -287,10 +268,6 @@
                 details.requestHeaders['Cookie'] = cookiesORG.merge( cookiesNEW ).toString();
             }
             delete details.requestHeaders['x-cookie'];
-
-            if( uri.protocol === 'http:' && this._isGoogleDataSaverActive ) {
-                details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
-            }
 
             return details;
         }

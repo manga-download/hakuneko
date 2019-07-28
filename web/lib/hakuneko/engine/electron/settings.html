@@ -79,11 +79,9 @@
             };
             this.proxyRules = {
                 label: 'Proxy Rules',
-                description: 'Set the proxy servers that shall be used.\nLeave blank to ignore.\n\nExamples:\n• http=proxy.googlezip.net:80\n• http=127.0.0.1:8080;https=127.0.0.1:8080;socks=127.0.0.1:8081\n\nMore info: https://git.io/hakuneko-proxy',
+                description: 'Set the proxy servers that shall be used.\nLeave blank to ignore.\n\nExamples:\n• http=proxy.web:80\n• http=127.0.0.1:8080;https=127.0.0.1:8080;socks=127.0.0.1:8081\n\nMore info: https://git.io/hakuneko-proxy',
                 input: Input.text,
-                options: [
-                    { value: 'http=proxy.googlezip.net:80', name: 'Google Data Saver' },
-                ],
+                options: [],
                 value: ''
             };
             this.downloadHistoryLogFormat = {
