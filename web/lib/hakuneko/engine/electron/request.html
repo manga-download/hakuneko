@@ -26,21 +26,6 @@
         /**
          *
          */
-        onSettingsChanged( event ) {
-            // set google data saver for electron browser window requests
-            let proxy = {};
-            if( event.detail.useGoogleDataSaver.value ) {
-                proxy['proxyRules'] = 'http=http://proxy.googlezip.net:80';
-                //proxy['proxyBypassRules'] = [ 'https://*' ];
-            }
-            this.electronRemote.session.defaultSession.setProxy( proxy, () => {
-                //console.log( 'SET PROXY:', proxy );
-            } );
-        }
-
-        /**
-         *
-         */
         registerProtocol( scheme, callback ) {
             // register callback for electron process (when callback becomes unavailable by e.g. reloading page,
             // the previous registered handler must be removed)
@@ -53,6 +38,40 @@
                     this.protocol.registerBufferProtocol( scheme, callback );
                 }
             } );
+        }
+
+        /**
+         *
+         */
+        onSettingsChanged( event ) {
+            // See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
+            let proxy = {};
+            if( event.detail.proxyRules.value ) {
+                proxy['proxyRules'] = event.detail.proxyRules.value;
+                //proxy['proxyBypassRules'] = [ 'https://*' ];
+            }
+            this.electronRemote.session.defaultSession.setProxy( proxy, () => {
+                //console.log( 'SET PROXY:', proxy );
+            } );
+        }
+
+        /**
+         * Determine if google data saver proxy is set to be used
+         */
+        get _isGoogleDataSaverActive() {
+            return Engine.Settings.proxyRules.value.includes( 'http=proxy.googlezip.net:80' );
+        }
+
+        /**
+         * Generate content of 'Chrome-Proxy' header field for use with google data saver
+         */
+        _getDataSaverHeader() {
+            let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
+            let ts = Math.floor( Date.now() / 1000 );
+            //let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
+            let hash = CryptoJS.MD5( ts + key + ts ).toString( CryptoJS.enc.Hex );
+            let rd = Math.floor( 9999 * Math.random() );
+            return 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
         }
 
         /**
@@ -204,22 +223,10 @@
         }
 
         /**
-         * Generate content of 'Chrome-Proxy' header field for use with google data saver
-         */
-        _getDataSaverHeader() {
-            let key = 'ac4500dd3b7579186c1b0620614fdb1f7d61f944';
-            let ts = Math.floor( Date.now() / 1000 );
-            //let hash = this.crypto.createHash( 'md5' ).update( ts + key + ts ).digest( 'hex' );
-            let hash = CryptoJS.MD5( ts + key + ts ).toString( CryptoJS.enc.Hex );
-            let rd = Math.floor( 9999 * Math.random() );
-            return 'ps=' + [ ts, rd, rd, rd ].join( '-' ) + ', sid=' + hash + ', b=3239, p=132, c=linux';
-        }
-
-        /**
          * Provide headers for the electron main process that shall be modified before every BrowserWindow request is send.
          * DO NOT RENAME THIS METHOD!
          */
-         onBeforeSendHeadersHandler( details ) {
+        onBeforeSendHeadersHandler( details ) {
             try {
                 details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
             } catch( error ) {
@@ -240,25 +247,6 @@
                 details.requestHeaders['Host'] = details.requestHeaders['x-host'];
             }
             delete details.requestHeaders['x-host'];
-
-            /*
-            // Priority 1
-            // Overwrite the User-Agent header for certain domains
-            if( 'www.mnggo.net|www.fashionlib.net|www.lady-first.me'.includes( uri.host ) ) {
-                details.requestHeaders['User-Agent'] = this.userAgent; // UserAgent.random();
-            }
-            // Priority 2
-            // Overwrite the User-Agent header with the one provided by the connector
-            else if( details.requestHeaders['x-user-agent'] ) {
-                details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
-            }
-            // Priority 3
-            // Overwrite electron's default User-Agent header ( "Mozilla/5.0 ... electron ..." )
-            else if( details.requestHeaders['User-Agent'].toLowerCase().includes( 'electron' ) ) {
-                details.requestHeaders['User-Agent'] = this.userAgent;
-            }
-            delete details.requestHeaders['x-user-agent'];
-            */
 
             // Always overwrite the electron user agent
             if( details.requestHeaders['User-Agent'].toLowerCase().includes( 'electron' ) ) {
@@ -300,7 +288,7 @@
             }
             delete details.requestHeaders['x-cookie'];
 
-            if( uri.protocol === 'http:' && Engine.Settings.useGoogleDataSaver.value ) {
+            if( uri.protocol === 'http:' && this._isGoogleDataSaverActive ) {
                 details.requestHeaders['Chrome-Proxy'] = this._getDataSaverHeader();
             }
 
@@ -311,7 +299,7 @@
          * Provide headers for the electron main process that shall be modified before every BrowserWindow response is received.
          * DO NOT RENAME THIS METHOD!
          */
-         onHeadersReceivedHandler( details ) {
+        onHeadersReceivedHandler( details ) {
             try {
                 details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
             } catch( error ) {
