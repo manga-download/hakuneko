@@ -42,7 +42,7 @@
         </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.password) ]]" restamp="false">
             <div class="stretch">
-                <input type="password" value="{{ item.value::change }}"/>
+                <input type="password" value="{{ item.value::change }}" title$="[[ item.value ]]"/>
             </div>
         </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.numeric) ]]" restamp="false">
