@@ -42,6 +42,9 @@ module.exports = class ElectronBootstrap {
                 this._createWindow();
                 resolve();
             });
+            // HACK: prevent default in main process, because it cannot be done in render process:
+            //       see: https://github.com/electron/electron/issues/9428#issuecomment-300669586
+            electron.app.on('login', evt => evt.preventDefault());
             electron.app.on('activate',  this._createWindow.bind(this));
             electron.app.on('window-all-closed',  this._allWindowsClosedHandler.bind(this));
             electron.app.on('certificate-error', this._certificateErrorHandler.bind(this));
