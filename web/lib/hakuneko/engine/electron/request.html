@@ -20,6 +20,7 @@
             this.browser = this.electronRemote.BrowserWindow;
             this.userAgent = UserAgent.random();
 
+            this.electronRemote.app.on( 'login', this._loginHandler );
             document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
         }
 
@@ -41,18 +42,28 @@
         }
 
         /**
-         *
+         * See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
          */
         onSettingsChanged( event ) {
-            // See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
             let proxy = {};
             if( event.detail.proxyRules.value ) {
                 proxy['proxyRules'] = event.detail.proxyRules.value;
-                //proxy['proxyBypassRules'] = [ 'https://*' ];
             }
-            this.electronRemote.session.defaultSession.setProxy( proxy, () => {
-                //console.log( 'SET PROXY:', proxy );
-            } );
+            this.electronRemote.session.defaultSession.setProxy( proxy, () => {} );
+        }
+
+        /**
+         *
+         */
+        _loginHandler( evt, webContent, request, authInfo, callback ) {
+            let proxyAuth = Engine.Settings.proxyAuth.value;
+            if( authInfo.isProxy && proxyAuth && proxyAuth.includes( ':' ) ) {
+                let auth = proxyAuth.split( ':' );
+                let username = auth[0];
+                let password = auth[1];
+                console.log('login event', authInfo.isProxy, username, password );
+                callback( username, password );
+            }
         }
 
         /**
