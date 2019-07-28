@@ -32,7 +32,12 @@
         </style>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.text) ]]" restamp="false">
             <div class="stretch">
-                <input type="text" value="{{ item.value::change }}"/>
+                <input type="text" value="{{ item.value::change }}" list$="DataList: [[ item.label ]]"/>
+                <datalist id$="DataList: [[ item.label ]]">
+                    <template is="dom-repeat" items="[[ item.options ]]" as="option">
+                        <option value="[[ option.value ]]">[[ option.name ]]</option>
+                    </template>
+                </datalist>
             </div>
         </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.password) ]]" restamp="false">
