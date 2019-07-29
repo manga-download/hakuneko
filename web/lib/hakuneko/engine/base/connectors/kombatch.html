@@ -43,7 +43,8 @@
                         let nextPage = dom.querySelector( 'a.page-link[aria-label^="Next"]' );
                         if( nextPage )
                         {
-                            return this._getMangaListFromPages( nextPage.href )
+                            nextPage = this.getAbsolutePath( nextPage, request.url );
+                            return this._getMangaListFromPages( nextPage )
                             .then( mangas => mangaList.concat( mangas ) );
                         }
                         else
@@ -96,7 +97,8 @@
             let request = new Request( this.url + chapter.id.replace( 'manga', 'api/chapter' ), this.requestOptions );
             this.fetchJSON( request )
             .then( data => {
-                callback( null, data.images );
+                let pageList = data.images.map( image => this.getAbsolutePath( image, this.url ) );
+                callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
