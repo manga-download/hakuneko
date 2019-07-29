@@ -481,9 +481,11 @@
          * 
          */
         createConnectorURI( payload ) {
-            let data = btoa( JSON.stringify( payload ) );
+            let data = JSON.stringify( payload );
+            let bytes = CryptoJS.enc.Utf8.parse( data );
+            let encoded = CryptoJS.enc.Base64.stringify( bytes );
             let uri = new URL( 'connector://' + this.id );
-            uri.searchParams.set( 'payload', data );
+            uri.searchParams.set( 'payload', encoded );
             return uri.href;
         }
 
@@ -491,8 +493,10 @@
          * 
          */
         handleConnectorURI( uri ) {
-            let data = uri.searchParams.get( 'payload' );
-            let payload = JSON.parse( atob( data ) );
+            let encoded = uri.searchParams.get( 'payload' );
+            let bytes = CryptoJS.enc.Base64.parse( encoded );
+            let data = bytes.toString( CryptoJS.enc.Utf8 );
+            let payload = JSON.parse( data );
             return this._handleConnectorURI( payload );
         }
 
