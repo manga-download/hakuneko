@@ -126,8 +126,9 @@ module.exports = class ElectronBootstrap {
         this._setupBeforeSendHeaders();
         this._setupHeadersReceived();
         this._window.once('ready-to-show', () => this._window.show());
+        this._window.on('close', this._mainWindowCloseHandler.bind(this));
+        electron.ipcMain.on('quit', this._mainWindowQuitHandler.bind(this));
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
-        electron.ipcMain.on('confirm', this._mainWindowConfirmHandler.bind(this));
     }
 
     /**
@@ -151,18 +152,22 @@ module.exports = class ElectronBootstrap {
 
     /**
      * 
-     * @param {*} evt  
+     * @param {*} evt 
      */
-    _mainWindowConfirmHandler(evt, msg) {
-        let result = electron.dialog.showMessageBox( this._window, {
-            title: 'HakuNeko',
-            message: msg,
-            type: 'none',
-            buttons: ['yes', 'no'],
-            defaultId: 1,
-            cancelId: 1
-        } );
-        evt.returnValue = result !== 1;
+    _mainWindowCloseHandler(evt) {
+        this._window.webContents.send('close');
+        evt.preventDefault();
+    }
+
+    /**
+     * Exit the application forcefully without raising the close event handler
+     * @param {*} evt 
+     */
+    _mainWindowQuitHandler(evt) {
+        // NOTE: removing a certain event handler seems not to work...
+        //this._window.removeListener('close', this._mainWindowCloseHandler);
+        this._window.removeAllListeners('close');
+        this._window.close();
     }
 
     /**

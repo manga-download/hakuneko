@@ -4,11 +4,6 @@
 
         let electron = require( 'electron' );
 
-        // HACK: confirm() is blocked by chrome in beforeunload event to ensure the window is not prevented from being closed,
-        //       as a result the confirm method is replaced by a confirmation dialog which is directly called from the electron main process
-        //       => https://github.com/electron/electron/issues/17364
-        confirm = msg => electron.ipcRenderer.sendSync( 'confirm', msg );
-
         /**
         * Register event listener to open developer console with F12 key.
         */
