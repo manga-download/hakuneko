@@ -65,6 +65,7 @@
 <link rel="import" href="connectors/exhentai.html">
 <link rel="import" href="connectors/eyeonmanga.html">
 <link rel="import" href="connectors/fallenangelsscans.html">
+<link rel="import" href="connectors/firstkiss.html">
 <link rel="import" href="connectors/forgottenscans.html">
 <link rel="import" href="connectors/fujoshibitches.html">
 <link rel="import" href="connectors/funmanga.html">
@@ -762,9 +763,6 @@
             Triple("es", "submanga", "https://submanga.online"),
             //NOTE: THIS SOURCE CONTAINS A CUSTOM LANGUAGE SYSTEM (which will be ignored)!
             Triple("other", "HentaiShark", "https://www.hentaishark.com"))
-
-            //Blocks bots (like this one)
-            //Triple("tr", "Epikmanga", "http://www.epikmanga.com")
             */
             // #endregion
 
@@ -817,7 +815,7 @@
             this.register( new CopyPasteScan() );
             this.register( new DarkSkyProjects() );
             this.register( new DoujinYosh() );
-            // FirstKissManga "1st Kiss", "https://1stkissmanga.com/", "en"
+            this.register( new FirstKiss() );
             this.register( new GodsRealmScan() );
             this.register( new HappyTeaScans() );
             this.register( new HentaiRead() );
