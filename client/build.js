@@ -512,6 +512,7 @@ class ElectronPackagerWindows extends ElectronPackager {
         await fs.remove(this._dirBuildRoot);
         await this._bundleElectron(false);
         await this._bundleFFMPEG(architecture === '64');
+        await this._bundleImageMagick(architecture === '64');
         await this._editResource();
         let setup = this._createScriptIS(architecture === '64');
 
@@ -531,6 +532,7 @@ class ElectronPackagerWindows extends ElectronPackager {
         await fs.remove(this._dirBuildRoot);
         await this._bundleElectron(true);
         await this._bundleFFMPEG(architecture === '64');
+        await this._bundleImageMagick(architecture === '64');
         await this._editResource();
 
         let zip = this._dirBuildRoot + '.zip';
@@ -568,6 +570,22 @@ class ElectronPackagerWindows extends ElectronPackager {
             ffmpeg = path.join(ffmpeg, 'ia32', basename);
         }
         await fs.copy(ffmpeg, path.join(this._dirBuildRoot, basename));
+    }
+
+    /**
+     * 
+     * @param {bool} is64 
+     */
+    async _bundleImageMagick(is64) {
+        console.log('Bundle ImageMagick ...');
+        let basename = 'convert.exe';
+        let convert = path.join('node_modules', 'imagemagick-static', 'bin', 'win32');
+        if(is64) {
+            convert = path.join(convert, 'x64', basename);
+        } else {
+            convert = path.join(convert, 'ia32', basename);
+        }
+        await fs.copy(convert, path.join(this._dirBuildRoot, basename));
     }
 
     /**
