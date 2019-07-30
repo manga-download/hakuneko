@@ -238,6 +238,7 @@
 <link rel="import" href="connectors/mangastream.html">
 <link rel="import" href="connectors/mangasubes.html">
 <link rel="import" href="connectors/mangatail.html">
+<link rel="import" href="connectors/mangatellers.html">
 <link rel="import" href="connectors/mangatensei.html">
 <link rel="import" href="connectors/mangatoon-cn.html">
 <link rel="import" href="connectors/mangatoon-en.html">
@@ -673,7 +674,7 @@
             this.register( new MangajinNoFansub() );
             this.register( new MangaScouts() );
             this.register( new MangaSubES() );
-            // "Mangatellers", "http://www.mangatellers.gr", "en", "/reader/reader" => "$baseUrl$urlModifier/list/$page/"
+            this.register( new Mangatellers() );
             this.register( new MenudoFansub() );
             // "Midnight Haven", "http://midnighthaven.shounen-ai.net", "en", "/reader"
             this.register( new NeoProjectScans() );
