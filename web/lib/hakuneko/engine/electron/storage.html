@@ -587,12 +587,12 @@
          *
          */
         _runPostChapterDownloadCommand( chapter, path ) {
-            let command = Engine.Settings.postChapterDownloadCommand.value; // `echo '%C% | %M% | %O%' > "%PATH%.txt"`;
+            let command = Engine.Settings.postChapterDownloadCommand.value; // `echo "%C% | %M% | %O%" > "%PATH%.txt"`;
             if( command ) {
-                command = command.replace( '%PATH%', path );
-                command = command.replace( '%C%', chapter.manga.connector.label );
-                command = command.replace( '%M%', chapter.manga.title );
-                command = command.replace( '%O%', chapter.title );
+                command = command.replace( /%PATH%/g, path );
+                command = command.replace( /%C%/g, chapter.manga.connector.label );
+                command = command.replace( /%M%/g, chapter.manga.title );
+                command = command.replace( /%O%/g, chapter.title );
                 this.exec( command, { cwd: this.path.dirname( path ), windowsHide: true }, error => {
                     if( error ) {
                         console.error( error );
