@@ -105,7 +105,8 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            fetch( this.url + chapter.id, this.requestOptions )
+            let request = new Request( this.url + chapter.id, this.requestOptions );
+            fetch( request )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
@@ -125,7 +126,7 @@
                 if( !pages ) {
                     throw new Error( `Failed to extract page list!` );
                 }
-                let pageList = JSON.parse( pages ).map( p => p.url );
+                let pageList = JSON.parse( pages ).map( p => this.getAbsolutePath( p.url, request.url ) );
                 callback( null, pageList );
             } )
             .catch( error => {
