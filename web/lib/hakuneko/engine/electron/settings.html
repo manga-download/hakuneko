@@ -42,7 +42,19 @@
             };
             this.chapterTitleFormat = {
                 label: 'Chapter Title Format',
-                description: 'Define the chapter name format.\nThis is an experimental feature, volume/chapter numbers are extracted directly from the original name.\nMay fail in some cases and also reduce performance!\n\nSupported placeholders:\n\n%C% - Connector title\n%M% - Manga title\n%VOL% - Volume number\n%CH% - Chapter number\n%T% - Chapter title (without volume/chapter number)\n%O% - Chapter title (original)',
+                description: [
+                    'Define the chapter name format.',
+                    'This is an experimental feature, volume/chapter numbers are extracted directly from the original name.',
+                    'May fail in some cases and also reduce performance!',
+                    '',
+                    'Supported placeholders:',
+                    '  %C% - Connector title',
+                    '  %M% - Manga title',
+                    '  %VOL% - Volume number',
+                    '  %CH% - Chapter number',
+                    '  %T% - Chapter title (without volume/chapter number)',
+                    '  %O% - Chapter title (original)'
+                ].join( '\n' ),
                 input: Input.text,
                 value: ''
             };
@@ -60,7 +72,11 @@
             };
             this.recompressionFormat = {
                 label: 'De-Scrambling Format',
-                description: 'Select the re-compression format that shall be used for scrambled images.\nOnly applies to scrambled images!\nUnscrambled images are stored natively (no re-compression will be applied).',
+                description: [
+                    'Select the re-compression format that shall be used for scrambled images.',
+                    'Only applies to scrambled images!',
+                    'Unscrambled images are stored natively (no re-compression will be applied).'
+                ].join( '\n' ),
                 input: Input.select,
                 options: [
                     { value: 'image/webp', name: 'WEBP (*.webp)' },
@@ -71,7 +87,10 @@
             };
             this.recompressionQuality = {
                 label: 'De-Scrambling Quality',
-                description: 'Select the re-compression quality that shall be used for scrambled images.\nOnly applies to WEBP and JPEG, has no effect on PNG (which is lossless).',
+                description: [
+                    'Select the re-compression quality that shall be used for scrambled images.',
+                    'Only applies to WEBP and JPEG, has no effect on PNG (which is lossless).'
+                ].join( '\n' ),
                 input: Input.numeric,
                 min: 50,
                 max: 100,
@@ -79,20 +98,39 @@
             };
             this.proxyRules = {
                 label: 'Proxy Rules',
-                description: 'Set the proxy servers that shall be used.\nLeave blank to ignore.\n\nExamples:\n• http=proxy.web:80\n• http=127.0.0.1:8080;https=127.0.0.1:8080;socks=127.0.0.1:8081\n\nMore info: https://git.io/hakuneko-proxy',
+                description: [
+                    'Set the proxy servers that shall be used.',
+                    'Leave blank to ignore.',
+                    '',
+                    'Examples:',
+                    '  http=proxy.web:80',
+                    '  http=127.0.0.1:8080;https=127.0.0.1:8080;socks=127.0.0.1:8081',
+                    '',
+                    'More info: https://git.io/hakuneko-proxy'
+                ].join( '\n' ),
                 input: Input.text,
                 options: [],
                 value: ''
             };
             this.proxyAuth = {
                 label: 'Proxy Authentication',
-                description: 'Set the username and password for the proxy server(s).\nUse ":" as separator.\nOnly supports basic auth!\n\nExample:\nusername:password',
+                description: [
+                    'Set the username and password for the proxy server(s).',
+                    'Use ":" as separator between both terms.',
+                    'Only basic auth is supported!',
+                    '',
+                    'Examples:',
+                    '  username:password'
+                ].join( '\n' ),
                 input: Input.password,
                 value: ''
             };
             this.downloadHistoryLogFormat = {
                 label: 'Download History Format',
-                description: 'Log the history of completed chapter downloads.\nThe log file(s) can be found in HakuNeko\'s user data directory.',
+                description: [
+                    'Log the history of completed chapter downloads.',
+                    'The log file(s) can be found in HakuNeko\'s user data directory.'
+                ].join( '\n' ),
                 input: Input.select,
                 options: [
                     { value: HistoryFormat.none, name: 'Disabled' },
@@ -103,7 +141,21 @@
             };
             this.postChapterDownloadCommand = {
                 label: 'Post Command',
-                description: 'This command will be executed after a chapter download is complete.\nThe working directory is the folder containing the downloaded chapter.\nLeave blank to ignore.\n\nSupported placeholders:\n\n%PATH% - Path to downloaded chapter folder/file\n%C% - Connector title\n%M% - Manga title\n%O% - Chapter title',
+                description: [
+                    'This command will be executed after a chapter download is complete.',
+                    'The working directory is the folder containing the downloaded chapter.',
+                    'Leave blank to ignore.',
+                    '',
+                    'Supported placeholders:',
+                    '  %PATH% - Path to downloaded chapter folder/file',
+                    '  %C% - Connector title',
+                    '  %M% - Manga title',
+                    '  %O% - Chapter title',
+                    '',
+                    'Examples:',
+                    '  convert "%PATH%\\*.webp" -scene 1 "%PATH%\\%03d.png"',
+                    '  md "%O%_conv" & convert "%PATH%\\*.*" -scene 1 "%O%_conv\\%03d.png"'
+                ].join( '\n' ),
                 input: Input.text,
                 value: ''
             };
