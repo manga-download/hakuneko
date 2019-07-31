@@ -31,7 +31,7 @@ describe('Configuration', function() {
         });
 
         it('applicationUpdateURL', () => {
-            assert.equal(testee.applicationUpdateURL, 'http://static.hakuneko.download/5.0/latest');
+            assert.equal(testee.applicationUpdateURL, 'http://static.hakuneko.download/5.0.8/latest');
         });
 
         it('connectorProtocol', () => {
