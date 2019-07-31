@@ -127,8 +127,8 @@ module.exports = class ElectronBootstrap {
         this._setupHeadersReceived();
         this._window.once('ready-to-show', () => this._window.show());
         this._window.on('close', this._mainWindowCloseHandler.bind(this));
-        electron.ipcMain.on('quit', this._mainWindowQuitHandler.bind(this));
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
+        electron.ipcMain.on('quit', this._mainWindowQuitHandler.bind(this));
     }
 
     /**
