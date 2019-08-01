@@ -6,18 +6,16 @@ jobs:
   pool:
     vmImage: 'ubuntu-latest'
   steps:
-  - template: templates/npm-steps.yml
+  - template: azure-pipelines-template.yml
 
 - job: macOS
   pool:
     vmImage: 'macOS-latest'
   steps:
-  - template: templates/npm-steps.yml
+  - template: azure-pipelines-template.yml
 
 - job: Windows
   pool:
     vmImage: 'windows-latest'
   steps:
-  - script: echo This script runs before the template's steps, only on Windows.
-  - template: templates/npm-steps.yml
-  - script: echo This step runs after the template's steps.
+  - template: azure-pipelines-template.yml
