@@ -19,7 +19,6 @@ steps:
   displayName: 'Install NPM Packages'
 
 - script: |
-    npm bin
     npm run test:app
   displayName: 'Tests'
 
