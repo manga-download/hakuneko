@@ -14,6 +14,7 @@ steps:
   displayName: 'Install Node.js'
 
 - script: |
-    'npm install'
-    'npm run test:app'
+    npm install
+    electron-mocha --colors --recursive test/app
+    npm run test:app
   displayName: 'Build, Test & Deploy'
