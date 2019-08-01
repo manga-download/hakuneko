@@ -19,7 +19,8 @@ steps:
   displayName: 'Install NPM Packages'
 
 - script: |
-    npm run test:app
+    ls -l node_modules/.bin
+    npx run test:app
   displayName: 'Tests'
 
 - script: |
