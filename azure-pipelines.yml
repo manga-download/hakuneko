@@ -1,0 +1,23 @@
+# Microsoft Azure Build Pipeline Templates/Jobs
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops
+
+jobs:
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - template: templates/npm-steps.yml
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-latest'
+  steps:
+  - template: templates/npm-steps.yml
+
+- job: Windows
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - script: echo This script runs before the template's steps, only on Windows.
+  - template: templates/npm-steps.yml
+  - script: echo This step runs after the template's steps.
