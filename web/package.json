@@ -8,6 +8,7 @@
     "type": "git",
     "url": "https://github.com/manga-download/hakuneko"
   },
+  "main": "index.html",
   "devDependencies": {
     "polymer-cli": "latest"
   },
