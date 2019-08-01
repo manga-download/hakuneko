@@ -66,7 +66,7 @@ module.exports = class UpdateServerManager {
     getUpdateInfo() {
         return this._request(this._applicationUpdateURL)
         .then(data => {
-            let link = data.toString('utf8');
+            let link = data.toString('utf8').trim();
             let info = new UpdatePackageInfo(link.substring(0, 6), url.parse(link, true).query.signature, url.resolve(this._applicationUpdateURL, link));
             return Promise.resolve(info);
         });
