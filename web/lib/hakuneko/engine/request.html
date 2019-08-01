@@ -1,19 +1,17 @@
-<link rel="import" href="../base/request.html">
-<link rel="import" href="../base/useragent.html">
-<link rel="import" href="../base/cookie.html">
+<link rel="import" href="useragent.html">
+<link rel="import" href="cookie.html">
 
 <script>
 
     /**
      *
      */
-    class RequestElectron extends RequestBase {
+    class RequestElectron {
 
         /**
          *
          */
         constructor() {
-            super();
             let electron = require( 'electron' );
             this.electronRemote = electron.remote;
             this.protocol = this.electronRemote.require( 'electron' ).protocol;

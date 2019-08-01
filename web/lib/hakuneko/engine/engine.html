@@ -1,9 +1,13 @@
-<link rel="import" href="electron.html">
-<link rel="import" href="base/history.html">
-<link rel="import" href="base/downloader.html">
-<link rel="import" href="base/connectors.html">
-<link rel="import" href="base/bookmarks.html">
-<link rel="import" href="base/chaptermarks.html">
+<link rel="import" href="init.html">
+<link rel="import" href="request.html">
+<link rel="import" href="settings.html">
+<link rel="import" href="storage.html">
+<link rel="import" href="blacklist.html">
+<link rel="import" href="history.html">
+<link rel="import" href="downloader.html">
+<link rel="import" href="connectors.html">
+<link rel="import" href="bookmarks.html">
+<link rel="import" href="chaptermarks.html">
 
 <script>
 
@@ -44,8 +48,8 @@
         }
 
         /**
-        *
-        */
+         *
+         */
         static get ChaptermarkManager() {
             if( !this._instanceChaptermarkManager ) {
                 this._instanceChaptermarkManager = new ChaptermarkManager();
@@ -68,7 +72,7 @@
          */
         static get Settings() {
             if( !this._instanceSettings ) {
-                this._instanceSettings = new SettingsElectron();
+                this._instanceSettings = new Settings();
             }
             return this._instanceSettings;
         }
@@ -78,7 +82,7 @@
          */
         static get Storage() {
             if( !this._instanceStorage ) {
-                this._instanceStorage = new StorageElectron();
+                this._instanceStorage = new Storage();
             }
             return this._instanceStorage;
         }

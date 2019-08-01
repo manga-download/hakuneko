@@ -1,17 +1,16 @@
-<link rel="import" href="../base/storage.html">
+<link rel="import" href="ebook.html">
 
 <script>
 
     /**
      *
      */
-    class StorageElectron extends StorageBase {
+    class Storage {
 
         /**
          *
          */
         constructor() {
-            super();
             let electron = require( 'electron' );
             this.dialog = electron.remote.dialog;
             this.platform = electron.remote.process.platform;
