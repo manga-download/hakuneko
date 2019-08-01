@@ -15,6 +15,5 @@ steps:
 
 - script: |
     npm install
-    npm run build:app
     npm run test:app
   displayName: 'Build, Test & Deploy'
