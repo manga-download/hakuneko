@@ -1,0 +1,20 @@
+# Microsoft Azure Build Pipeline
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install
+    npm run build:app
+    npm run test:app
+  displayName: 'Build, Test & Deploy'
