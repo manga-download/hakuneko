@@ -47,9 +47,14 @@ async function sslPack(archive, meta) {
  * 
  */
 async function gitCommit() {
+    let cwd = process.cwd();
+    if(config.source) {
+        process.chdir(config.target);
+    }
     await execute(`git add .`);
     await execute(`git commit -m 'updated releases'`);
     await execute(`git push origin master`);
+    process.chdir(cwd);
 }
 
 /**
@@ -63,7 +68,7 @@ async function main() {
     await fs.mkdir(config.target);
     await fs.move(path.resolve(config.source, meta), path.resolve(config.target, meta));
     await fs.move(path.resolve(config.source, archive), path.resolve(config.target, archive));
-    gitCommit();
+    await gitCommit();
 }
 
 main();
