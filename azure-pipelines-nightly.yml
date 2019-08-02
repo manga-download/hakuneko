@@ -1,0 +1,36 @@
+# Microsoft Azure Build Pipeline
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
+schedules:
+- cron: "0 0 * * *"
+  displayName: Nightly Build
+  branches:
+    include:
+    - master
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - template: azure-pipelines-nightly-template.yml
+    parameters:
+      artifact: 'nightly-windows'
+
+- job: Linux
+  pool:
+    vmImage: 'ubuntu-latest'
+  steps:
+  - script: sudo apt-get -y install dpkg rpm fakeroot lintian
+  - template: azure-pipelines-nightly-template.yml
+    parameters:
+      artifact: 'nightly-ubuntu'
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-latest'
+  steps:
+  - template: azure-pipelines-nightly-template.yml
+    parameters:
+      artifact: 'nightly-macos'

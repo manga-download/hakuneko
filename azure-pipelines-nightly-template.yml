@@ -1,0 +1,36 @@
+# Microsoft Azure Build Pipeline Templates/Jobs
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/artifacts/artifacts-overview?view=azure-devops
+
+steps:
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/node-js?view=azure-devops
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/package/npm?view=azure-devops
+- task: Npm@1
+  inputs:
+    command: install
+  displayName: 'Install NPM Packages'
+
+- script: |
+    npm run build:app
+    npm run build:web
+  displayName: 'Build'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=azure-devops&tabs=yaml
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: '**/$(BuildConfiguration)/**/?(*.exe|*.dll|*.pdb)'
+  displayName: 'Copy Build Artifacts'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: ${{ parameters.artifact }}
+  displayName: 'Publish Build Artifacts'
