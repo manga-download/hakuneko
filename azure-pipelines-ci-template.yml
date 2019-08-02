@@ -30,7 +30,7 @@ steps:
     testResultsFormat: 'JUnit'
     testResultsFiles: '**/test-*.xml'
     mergeTestResults: true
-    #testRunTitle: ''
+    testRunTitle: 'TestResults_$(Agent.OS)'
     buildConfiguration: $(Agent.OS)
     buildPlatform: $(Agent.OSArchitecture)
   displayName: 'Publish Test Results'
