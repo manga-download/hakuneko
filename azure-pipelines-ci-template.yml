@@ -1,0 +1,35 @@
+# Microsoft Azure Build Pipeline Templates/Jobs
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/templates?view=azure-devops
+
+steps:
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/node-js?view=azure-devops
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.x'
+  displayName: 'Install Node.js'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/package/npm?view=azure-devops
+- task: Npm@1
+  inputs:
+    command: install
+  displayName: 'Install NPM Packages'
+
+- script: npm run build:web
+  displayName: 'Build'
+
+- script: |
+    npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
+    npm run test:web -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml
+  displayName: 'Test'
+
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/test-*.xml'
+    mergeTestResults: true
+    #testRunTitle: ''
+    buildConfiguration: ${{ parameters.configuration }}
+    buildPlatform: ${{ parameters.platform }}
+  displayName: 'Publish Test Results'
