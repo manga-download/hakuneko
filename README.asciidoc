@@ -27,6 +27,21 @@ Mirrors::
 image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%200.4.0&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/v0.4.0, title="GitHub", window="_blank"]
 image:https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%200.4.0&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/0.4.0/, title="SourceForge", window="_blank"]
 
+== Continuous Integration
+
+This section shows the latest build and test results for the master branch of the mirrored repository on link:https://dev.azure.com/hakuneko/app/_build?definitionId=5[Azure].
+
+Summary::
+
+image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master[Build Status, link="https://dev.azure.com/hakuneko/app/_build/latest?definitionId=5&branchName=master"]
+image:https://img.shields.io/azure-devops/tests/hakuneko/app/5?label=Test%20Results&logo=azure-pipelines[]
+
+Details::
+
+image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master&jobName=Windows&label=Windows[]
+image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master&jobName=Linux&label=Ubuntu[]
+image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master&jobName=macOS&label=macOS[]
+
 == Introduction
 
 HakuNeko is a cross-platform downloader for manga and anime from various websites.
