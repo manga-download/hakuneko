@@ -22,11 +22,16 @@ steps:
   displayName: 'Build'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=azure-devops&tabs=yaml
+# https://facelessuser.github.io/wcmatch/glob/
 - task: CopyFiles@2
   inputs:
-    contents: '**/?(*.exe|*.zip|*.deb|*.rpm|*.dmg)'
-    sourceFolder: '$(Build.SourcesDirectory)'
+    contents: |
+      'hakuneko-*@(.exe|.zip|.deb|.rpm|.dmg)'
+      'latest/**'
+    sourceFolder: '$(Build.SourcesDirectory)/build'
     targetFolder: '$(Build.ArtifactStagingDirectory)'
+    cleanTargetFolder: true
+    flattenFolders: false
   displayName: 'Copy Artifacts'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
