@@ -18,11 +18,13 @@ steps:
 - script: npm run build:web
   displayName: 'Build'
 
-- script: |
-    npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
-    npm run test:web -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml --renderer
+- script: npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
   continueOnError: true
-  displayName: 'Test'
+  displayName: 'Test (app)'
+
+- script: npm run test:web -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml --renderer
+  continueOnError: true
+  displayName: 'Test (web)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops
 - task: PublishTestResults@2
