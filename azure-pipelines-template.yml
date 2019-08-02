@@ -13,8 +13,18 @@ steps:
   displayName: 'Install NPM Packages'
 
 - script: |
-    npm run test:app
+    npm run test:app -- --reporter mocha-junit-reporter
   displayName: 'Tests'
+
+- task: PublishTestResults@2
+  inputs:
+    testResultsFormat: 'JUnit'
+    testResultsFiles: '**/TEST-*.xml'
+    mergeTestResults: true
+    testRunTitle: ''
+    buildPlatform: ''
+    buildConfiguration: ''
+  displayName: 'Publish Test Results'
 
 - script: |
     npm run build:web

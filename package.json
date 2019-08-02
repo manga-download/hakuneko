@@ -19,6 +19,7 @@
     "innosetup-compiler": "latest",
     "jszip": "latest",
     "logtrine": "latest",
+    "mocha-junit-reporter": "latest",
     "polymer-build": "latest",
     "rcedit": "latest",
     "win-7zip": "latest"
