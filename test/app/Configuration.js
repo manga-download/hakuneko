@@ -3,8 +3,6 @@ const fs = require('fs-extra');
 const assert = require('assert');
 const Configuration = require('../../src/app/Configuration.js');
 
-new Configuration(undefined).printInfo();
-
 describe('Configuration', function() {
 
     describe('defaults must be valid', function() {
