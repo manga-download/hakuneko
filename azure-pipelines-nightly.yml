@@ -1,13 +1,16 @@
 # Microsoft Azure Build Pipeline
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#scheduled-triggers
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops
+pr: none
+trigger: none
 schedules:
-- cron: "0 0 * * *"
-  displayName: Nightly Build
+- cron: "0 3 * * *"
+  displayName: 'Nightly Build'
   branches:
     include:
     - master
+  always: true
 
 jobs:
 - job: Windows

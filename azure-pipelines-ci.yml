@@ -1,7 +1,8 @@
 # Microsoft Azure Build Pipeline
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema?view=azure-devops&tabs=schema
 
-# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops&tabs=yaml#ci-triggers
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/build/triggers?view=azure-devops
+pr: none
 trigger:
 - master
 
