@@ -32,7 +32,7 @@ jobs:
 
 - job: macOS
   pool:
-    vmImage: 'macOS-latest'
+    vmImage: 'macOS-10.13'
   steps:
   - template: azure-pipelines-nightly-template.yml
     parameters:
