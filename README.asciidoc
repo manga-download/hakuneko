@@ -46,7 +46,6 @@ image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?b
 image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Ubuntu&label=Nightly%20-%20Ubuntu[]
 image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=macOS&label=Nightly%20-%20macOS[]
 
-
 == Introduction
 
 HakuNeko is a cross-platform downloader for manga and anime from various websites.
