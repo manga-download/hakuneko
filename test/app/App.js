@@ -14,4 +14,19 @@ describe('App', function() {
         });
     });
 
+    describe('MOCK TEST', function() {
+
+        it.skip('must skip', () => {
+            //
+        });
+
+        xit('must ignore', () => {
+            //
+        });
+
+        it('must fail', () => {
+            throw new Error('Not Implemented');
+        });
+    });
+
 });
