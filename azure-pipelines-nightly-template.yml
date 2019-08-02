@@ -16,10 +16,11 @@ steps:
     command: install
   displayName: 'Install NPM Packages'
 
-- script: |
-    npm run build:app
-    npm run build:web
-  displayName: 'Build'
+- script: npm run build:app
+  displayName: 'Build (app)'
+
+- script: npm run build:web
+  displayName: 'Build (web)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=azure-devops
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/file-matching-patterns

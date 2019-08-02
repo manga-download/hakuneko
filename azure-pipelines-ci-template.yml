@@ -16,7 +16,7 @@ steps:
   displayName: 'Install NPM Packages'
 
 - script: npm run build:web
-  displayName: 'Build'
+  displayName: 'Build (web)'
 
 - script: npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
   continueOnError: true
