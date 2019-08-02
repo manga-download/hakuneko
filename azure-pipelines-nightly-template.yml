@@ -22,16 +22,24 @@ steps:
 - script: npm run build:web
   displayName: 'Build (web)'
 
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/archive-files?view=azure-devops
+- task: ArchiveFiles@2
+  inputs:
+    rootFolderOrFile: '$(Build.BinariesDirectory)/build/latest' 
+    includeRootFolder: false 
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.SourceVersion).zip' 
+    replaceExistingArchive: true
+
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=azure-devops
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/file-matching-patterns
 - task: CopyFiles@2
   inputs:
-    contents: |
-      hakuneko-*@(.exe|.zip|.deb|.rpm|.dmg)
-      latest/**
+    contents: hakuneko-*@(.exe|.zip|.deb|.rpm|.dmg)
     sourceFolder: '$(Build.SourcesDirectory)/build'
     targetFolder: '$(Build.ArtifactStagingDirectory)'
-    cleanTargetFolder: true
+    cleanTargetFolder: false
+    overWrite: true
     flattenFolders: false
   displayName: 'Copy Artifacts'
 
@@ -39,5 +47,5 @@ steps:
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: ${{ parameters.artifact }}
+    artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)-$(Build.SourceVersion)'
   displayName: 'Publish Artifacts'
