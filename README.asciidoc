@@ -34,7 +34,7 @@ This section shows the latest build and test results for the master branch of th
 Summary::
 
 image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master[Build Status, link="https://dev.azure.com/hakuneko/app/_build/latest?definitionId=5&branchName=master"]
-image:https://img.shields.io/azure-devops/tests/hakuneko/app/5?label=Test%20Results&logo=azure-pipelines[]
+image:https://img.shields.io/azure-devops/tests/hakuneko/app/5?label=Test%20Results&logo=azure-pipelines[Test Results, link="https://dev.azure.com/hakuneko/app/_testManagement/runs?_a=runQuery"]
 
 Details::
 
