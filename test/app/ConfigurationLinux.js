@@ -3,8 +3,6 @@ const fs = require('fs-extra');
 const assert = require('assert');
 const ConfigurationLinux = require('../../src/app/ConfigurationLinux.js');
 
-new ConfigurationLinux(undefined).printInfo();
-
 describe('ConfigurationLinux', function() {
 
     describe('defaults must be valid', function() {

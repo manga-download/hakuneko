@@ -3,8 +3,6 @@ const fs = require('fs-extra');
 const assert = require('assert');
 const ConfigurationWindows = require('../../src/app/ConfigurationWindows.js');
 
-new ConfigurationWindows(undefined).printInfo();
-
 describe('ConfigurationWindows', function() {
 
     describe('defaults must be valid', function() {

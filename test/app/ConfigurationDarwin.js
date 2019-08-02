@@ -3,8 +3,6 @@ const fs = require('fs-extra');
 const assert = require('assert');
 const ConfigurationDarwin = require('../../src/app/ConfigurationDarwin.js');
 
-new ConfigurationDarwin(undefined).printInfo();
-
 describe('ConfigurationDarwin', function() {
 
     describe('defaults must be valid', function() {
