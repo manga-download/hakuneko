@@ -30,6 +30,6 @@ steps:
     testResultsFiles: '**/test-*.xml'
     mergeTestResults: true
     #testRunTitle: ''
-    buildConfiguration: ${{ parameters.configuration }}
-    buildPlatform: ${{ parameters.platform }}
+    buildConfiguration: $(Agent.OS)
+    buildPlatform: $(Agent.OSArchitecture)
   displayName: 'Publish Test Results'

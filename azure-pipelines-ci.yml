@@ -11,24 +11,15 @@ jobs:
     vmImage: 'windows-latest'
   steps:
   - template: azure-pipelines-ci-template.yml
-    parameters:
-      configuration: 'Windows'
-      platform: 'x64'
 
 - job: Ubuntu
   pool:
     vmImage: 'ubuntu-latest'
   steps:
   - template: azure-pipelines-ci-template.yml
-    parameters:
-      configuration: 'Ubuntu'
-      platform: 'x64'
 
 - job: macOS
   pool:
     vmImage: 'macOS-latest'
   steps:
   - template: azure-pipelines-ci-template.yml
-    parameters:
-      configuration: 'macOS'
-      platform: 'x64'
