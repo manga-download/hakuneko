@@ -7,7 +7,7 @@ steps:
 - task: NodeTool@0
   inputs:
     versionSpec: '10.x'
-  displayName: 'Install Node.js'
+  displayName: 'Install NodeJS'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/package/npm?view=azure-devops
 - task: Npm@1
