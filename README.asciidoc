@@ -29,18 +29,23 @@ image:https://img.shields.io/sourceforge/dt/hakuneko/0.4.0.svg?label=HakuNeko%20
 
 == Continuous Integration
 
-This section shows the latest build and test results for the master branch of the mirrored repository on link:https://dev.azure.com/hakuneko/app/_build?definitionId=5[Azure].
+This section shows the latest build and test results for the master branch of the mirrored repository on link:https://dev.azure.com/manga-download/hakuneko/_build[Azure].
 
 Summary::
 
-image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master[Build Status, link="https://dev.azure.com/hakuneko/app/_build/latest?definitionId=5&branchName=master"]
-image:https://img.shields.io/azure-devops/tests/hakuneko/app/5?label=Test%20Results&logo=azure-pipelines[Test Results, link="https://dev.azure.com/hakuneko/app/_testManagement/runs?_a=runQuery"]
+image:https://img.shields.io/azure-devops/tests/manga-download/hakuneko/5?label=CI%20Tests&logo=azure-pipelines[Test Results, link="https://dev.azure.com/manga-download/hakuneko/_testManagement/runs?_a=runQuery"]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&label=CI%20Pipeline[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=5&branchName=master"]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&label=Nightly%20Build[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=7&branchName=master"]
 
 Details::
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Windows&label=CI%20-%20Windows[]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Ubuntu&label=CI%20-%20Ubuntu[]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=macOS&label=CI%20-%20macOS[]
+ +
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Windows&label=Nightly%20-%20Windows[]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Ubuntu&label=Nightly%20-%20Ubuntu[]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=macOS&label=Nightly%20-%20macOS[]
 
-image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master&jobName=Windows&label=Windows[]
-image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master&jobName=Linux&label=Ubuntu[]
-image:https://dev.azure.com/hakuneko/app/_apis/build/status/app/app%20CI?branchName=master&jobName=macOS&label=macOS[]
 
 == Introduction
 

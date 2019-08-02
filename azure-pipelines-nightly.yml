@@ -19,7 +19,7 @@ jobs:
   steps:
   - template: azure-pipelines-nightly-template.yml
 
-- job: Linux
+- job: Ubuntu
   pool:
     vmImage: 'ubuntu-latest'
   steps:
