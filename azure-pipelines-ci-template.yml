@@ -19,8 +19,8 @@ steps:
   displayName: 'Build'
 
 - script: |
-    npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
-    npm run test:web -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml
+    electron-mocha --recursive test/app --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml || exit 0
+    electron-mocha --recursive test/web --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml --renderer || exit 0
   displayName: 'Test'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops
