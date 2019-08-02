@@ -129,4 +129,6 @@ async function main() {
     await gitStashPop(stashID);
 }
 
+// exit application as soon as any uncaught exception is thrown
+process.on('unhandledRejection', error => { throw error });
 main();

@@ -839,4 +839,6 @@ async function main() {
     }
 }
 
+// exit application as soon as any uncaught exception is thrown
+process.on('unhandledRejection', error => { throw error });
 main();
