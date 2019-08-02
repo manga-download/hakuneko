@@ -4,6 +4,9 @@
 
 steps:
 
+# https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops
+#- script: echo '##vso[task.setvariable variable=SourceVersionShort]$(Build.SourceVersion | cut -c 1-8)'
+
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/node-js?view=azure-devops
 - task: NodeTool@0
   inputs:
@@ -28,7 +31,7 @@ steps:
     rootFolderOrFile: '$(Build.SourcesDirectory)/build/latest' 
     includeRootFolder: false 
     archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.SourceVersion).zip' 
+    archiveFile: '$(Build.ArtifactStagingDirectory)/web-$(Build.SourceVersion).zip' 
     replaceExistingArchive: true
   displayName: 'Copy Artifacts (web)'
 
@@ -48,5 +51,5 @@ steps:
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)-$(Build.SourceVersion)'
+    artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
   displayName: 'Publish Artifacts'
