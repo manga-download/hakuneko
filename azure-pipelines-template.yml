@@ -17,7 +17,7 @@ steps:
   displayName: 'Tests'
 
 - script: |
-    npm run build:app
+    npm run build:web
   displayName: 'Build'
 
 - script: |
