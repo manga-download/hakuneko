@@ -25,11 +25,12 @@ steps:
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/archive-files?view=azure-devops
 - task: ArchiveFiles@2
   inputs:
-    rootFolderOrFile: '$(Build.BinariesDirectory)/build/latest' 
+    rootFolderOrFile: '$(Build.SourcesDirectory)/build/latest' 
     includeRootFolder: false 
     archiveType: 'zip'
     archiveFile: '$(Build.ArtifactStagingDirectory)/$(Build.SourceVersion).zip' 
     replaceExistingArchive: true
+  displayName: 'Copy Artifacts (web)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=azure-devops
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/file-matching-patterns
@@ -41,7 +42,7 @@ steps:
     cleanTargetFolder: false
     overWrite: true
     flattenFolders: false
-  displayName: 'Copy Artifacts'
+  displayName: 'Copy Artifacts (app)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
 - task: PublishBuildArtifacts@1
