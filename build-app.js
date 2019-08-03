@@ -127,6 +127,50 @@ class ElectronPackager {
 
     /**
      * 
+     * @param {string} moduleName 
+     * @param {string} imageName Name of the binary image (wihtout any extension)
+     * @param {string} platform 
+     * @param {bool} is64 
+     */
+    async _bundleStaticBinary(moduleName, imageName, platform, is64) {
+        let architecture = is64 ? 'x64' : 'ia32';
+        let binary = imageName + (proces.platform === 'win32' ? '.exe' : '');;
+        let source = path.join('node_modules', moduleName, 'bin', platform, architecture, binary);
+        let target = path.join(this._dirBuildRoot, binary);
+        console.log(`Bundle '${source}' ...`);
+        if(await fs.exists(source)) {
+            await fs.copy(source, target);
+        } else {
+            console.log('  => File not found: skipped');
+        }
+    }
+
+    /**
+     * 
+     * @param {bool} is64 
+     */
+    async _bundleFFMPEG(is64) {
+        await this._bundleStaticBinary('ffmpeg-binaries', 'ffmpeg', process.platform, is64);
+    }
+
+    /**
+     * 
+     * @param {bool} is64 
+     */
+    async _bundleImageMagick(is64) {
+        await this._bundleStaticBinary('imagemagick-binaries', 'convert', process.platform, is64);
+    }
+
+    /**
+     * 
+     * @param {bool} is64 
+     */
+    async _bundleKindleGenerate(is64) {
+        await this._bundleStaticBinary('kindlegen-binaries', 'kindlegen', process.platform, is64);
+    }
+
+    /**
+     * 
      * @param {string} command 
      * @param {bool} silent 
      */
@@ -216,6 +260,9 @@ class ElectronPackagerLinux extends ElectronPackager {
         await fs.remove(this._dirBuildRoot);
         await this._copySkeletonDEB();
         await this._bundleElectron();
+        await this._bundleFFMPEG(architecture === '64');
+        await this._bundleImageMagick(architecture === '64');
+        await this._bundleKindleGenerate(architecture === '64');
         this._createManpage();
         this._createChangelog();
         //this._createMenuEntry(); // => only menu or desktop is recommend
@@ -242,6 +289,9 @@ class ElectronPackagerLinux extends ElectronPackager {
         await fs.remove(this._dirBuildRoot);
         await this._copySkeletonRPM();
         await this._bundleElectron();
+        await this._bundleFFMPEG(architecture === '64');
+        await this._bundleImageMagick(architecture === '64');
+        await this._bundleKindleGenerate(architecture === '64');
         this._createManpage();
         this._createChangelog();
         //this._createMenuEntry(); // => only menu or desktop is recommend
@@ -513,6 +563,7 @@ class ElectronPackagerWindows extends ElectronPackager {
         await this._bundleElectron(false);
         await this._bundleFFMPEG(architecture === '64');
         await this._bundleImageMagick(architecture === '64');
+        await this._bundleKindleGenerate(architecture === '64');
         await this._editResource();
         let setup = this._createScriptIS(architecture === '64');
 
@@ -533,6 +584,7 @@ class ElectronPackagerWindows extends ElectronPackager {
         await this._bundleElectron(true);
         await this._bundleFFMPEG(architecture === '64');
         await this._bundleImageMagick(architecture === '64');
+        await this._bundleKindleGenerate(architecture === '64');
         await this._editResource();
 
         let zip = this._dirBuildRoot + '.zip';
@@ -554,38 +606,6 @@ class ElectronPackagerWindows extends ElectronPackager {
         }
         await asar.createPackage(config.src, path.join(folder, 'resources', 'app.asar'));
         await fs.move(path.join(folder, 'electron.exe'), path.join(folder, this._configuration.binary.windows));
-    }
-
-    /**
-     * 
-     * @param {bool} is64 
-     */
-    async _bundleFFMPEG(is64) {
-        console.log('Bundle FFmpeg ...');
-        let basename = 'ffmpeg.exe';
-        let ffmpeg = path.join('node_modules', 'ffmpeg-static', 'bin', 'win32');
-        if(is64) {
-            ffmpeg = path.join(ffmpeg, 'x64', basename);
-        } else {
-            ffmpeg = path.join(ffmpeg, 'ia32', basename);
-        }
-        await fs.copy(ffmpeg, path.join(this._dirBuildRoot, basename));
-    }
-
-    /**
-     * 
-     * @param {bool} is64 
-     */
-    async _bundleImageMagick(is64) {
-        console.log('Bundle ImageMagick ...');
-        let basename = 'convert.exe';
-        let convert = path.join('node_modules', 'imagemagick-static', 'bin', 'win32');
-        if(is64) {
-            convert = path.join(convert, 'x64', basename);
-        } else {
-            convert = path.join(convert, 'ia32', basename);
-        }
-        await fs.copy(convert, path.join(this._dirBuildRoot, basename));
     }
 
     /**
@@ -712,6 +732,9 @@ class ElectronPackagerDarwin extends ElectronPackager {
 
         await fs.remove(this._dirBuildRoot);
         await this._bundleElectron(false);
+        await this._bundleFFMPEG(architecture === '64');
+        await this._bundleImageMagick(architecture === '64');
+        await this._bundleKindleGenerate(architecture === '64');
         await this._createPList();
 
         let dmg = this._dirBuildRoot + '.dmg';
