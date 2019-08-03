@@ -134,8 +134,8 @@ class ElectronPackager {
      */
     async _bundleStaticBinary(moduleName, imageName, platform, is64) {
         let architecture = is64 ? 'x64' : 'ia32';
-        let binary = imageName + (proces.platform === 'win32' ? '.exe' : '');;
-        let source = path.join('node_modules', moduleName, 'bin', platform, architecture, binary);
+        let binary = imageName + (process.platform === 'win32' ? '.exe' : '');;
+        let source = path.join('node_modules', '@hakuneko', moduleName, 'bin', platform, architecture, binary);
         let target = path.join(this._dirBuildRoot, binary);
         console.log(`Bundle '${source}' ...`);
         if(await fs.exists(source)) {
