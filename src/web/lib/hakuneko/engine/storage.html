@@ -427,30 +427,30 @@
                 });
                 let output = this._chapterOutputPath( chapter );
 
+                let promise = Promise.reject( new Error( 'Unsupported output format: ' + Engine.Settings.chapterFormat.value ) );
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
                     this._createDirectoryChain( output );
-                    return this._saveChapterPagesFolder( output, pageData )
+                    promise = this._saveChapterPagesFolder( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
                     this._createDirectoryChain( this.path.dirname( output ) );
-                    return this._saveChapterPagesCBZ( output, pageData )
+                    promise = this._saveChapterPagesCBZ( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
                     this._createDirectoryChain( this.path.dirname( output ) );
-                    return this._saveChapterPagesPDF( output, pageData )
+                    promise = this._saveChapterPagesPDF( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
                     this._createDirectoryChain( this.path.dirname( output ) );
-                    return this._saveChapterPagesEPUB( output, pageData )
+                    promise = this._saveChapterPagesEPUB( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
-
-                throw new Error( 'Unsupported output format: ' + Engine.Settings.chapterFormat.value );
+                return promise;
             } catch( error ) {
-                Promise.reject( error );
+                return Promise.reject( error );
             }
         }
 
