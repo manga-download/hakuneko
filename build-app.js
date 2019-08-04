@@ -726,7 +726,7 @@ class ElectronPackagerDarwin extends ElectronPackager {
      * 
      */
     get _stagingExecutableDirectory() {
-        return path.join(this._dirBuildRoot, 'Electron.app', 'Contents');
+        return path.join(this._dirBuildRoot, this._configuration.name.product + '.app', 'Contents', 'MacOS');
     }
 
     _wait(milliseconds) {
@@ -781,7 +781,7 @@ class ElectronPackagerDarwin extends ElectronPackager {
      */
     async _bundleElectron() {
         console.log('Bundle electron ...');
-        let folder = this._stagingExecutableDirectory;
+        let folder = path.join(this._dirBuildRoot, 'Electron.app', 'Contents');
         await this._downloadElectron(this._configuration.version, this._architecture.platform, this._dirBuildRoot);
         await fs.remove(path.join(folder, 'Resources', 'default_app.asar'));
         await asar.createPackage(config.src, path.join(folder, 'Resources', 'app.asar'));
