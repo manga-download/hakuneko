@@ -136,10 +136,11 @@ class ElectronPackager {
         let architecture = is64 ? 'x64' : 'ia32';
         let binary = imageName + (process.platform === 'win32' ? '.exe' : '');;
         let source = path.join('node_modules', '@hakuneko', moduleName, 'bin', platform, architecture, binary);
-        let target = path.join(this._dirBuildRoot, binary);
+        let target = path.join(this._stagingExecutableDirectory, binary);
         console.log(`Bundle '${source}' ...`);
         if(await fs.exists(source)) {
             await fs.copy(source, target);
+            console.log(`  => File bundled: '${target}'`);
         } else {
             console.log('  => File not found: skipped');
         }
@@ -240,6 +241,13 @@ class ElectronPackagerLinux extends ElectronPackager {
         return path.join('build', `${this._configuration.name.package}_${this._configuration.version}_${this._architecture.suffix}`);
     }
 
+    /**
+     * 
+     */
+    get _stagingExecutableDirectory() {
+        return path.join(this._dirBuildRoot, 'usr', 'lib', this._configuration.name.package);
+    }
+
 	/**
 	 * 
 	 * @param {string} architecture '32' or '64'
@@ -310,7 +318,7 @@ class ElectronPackagerLinux extends ElectronPackager {
      */
     async _bundleElectron() {
         console.log('Bundle electron ...');
-        let folder = path.join(this._dirBuildRoot, 'usr', 'lib', this._configuration.name.package);
+        let folder = this._stagingExecutableDirectory;
         await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
         await fs.remove(path.join(folder, 'resources', 'default_app.asar'));
         await asar.createPackage(config.src, path.join(folder, 'resources', 'app.asar'));
@@ -541,6 +549,13 @@ class ElectronPackagerWindows extends ElectronPackager {
         return path.join('build', `${this._configuration.name.package}_${this._configuration.version}_${this._architecture.suffix}`);
     }
 
+    /**
+     * 
+     */
+    get _stagingExecutableDirectory() {
+        return this._dirBuildRoot;
+    }
+
 	/**
 	 * 
 	 * @param {string} architecture '32' or '64'
@@ -598,7 +613,7 @@ class ElectronPackagerWindows extends ElectronPackager {
      */
     async _bundleElectron(portable) {
         console.log('Bundle electron ...');
-        let folder = this._dirBuildRoot;
+        let folder = this._stagingExecutableDirectory;
         await this._downloadElectron(this._configuration.version, this._architecture.platform, folder);
         await fs.remove(path.join(folder, 'resources', 'default_app.asar'));
         if(portable) {
@@ -707,6 +722,13 @@ class ElectronPackagerDarwin extends ElectronPackager {
         return path.join('build', `${this._configuration.name.package}_${this._configuration.version}_${this._architecture.suffix}`);
     }
 
+    /**
+     * 
+     */
+    get _stagingExecutableDirectory() {
+        return path.join(this._dirBuildRoot, 'Electron.app', 'Contents');
+    }
+
     _wait(milliseconds) {
         return new Promise(resolve => {
             setTimeout(() => resolve(), milliseconds);
@@ -759,7 +781,7 @@ class ElectronPackagerDarwin extends ElectronPackager {
      */
     async _bundleElectron() {
         console.log('Bundle electron ...');
-        let folder = path.join(this._dirBuildRoot, 'Electron.app', 'Contents');
+        let folder = this._stagingExecutableDirectory;
         await this._downloadElectron(this._configuration.version, this._architecture.platform, this._dirBuildRoot);
         await fs.remove(path.join(folder, 'Resources', 'default_app.asar'));
         await asar.createPackage(config.src, path.join(folder, 'Resources', 'app.asar'));
