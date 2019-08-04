@@ -224,7 +224,7 @@
             .then( () => {
                 let promises = episode.subtitles.map( ( subtitle, index ) => {
                     let file = 'media.' + subtitle.locale + '.' + subtitle.format;
-                    ffmpeg.inputs.push( '-i', '"' + file + '"' );
+                    ffmpeg.inputs.push( '-i', `"${file}"` );
                     ffmpeg.maps.push( '-map', ( index + 1 ) + ':s' );
                     ffmpeg.metas.push( '-metadata:s:s:' + index, 'language=' + subtitle.locale );
                     // make english the default subtitle

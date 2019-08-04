@@ -697,7 +697,7 @@
                 this._createDirectoryChain( directory );
                 let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mkv ) );
                 directory = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
-                ffmpeg += ' -f matroska -y "' + file + '"';
+                ffmpeg += ` -f matroska -y "${file}"`;
                 this.exec( ffmpeg, { cwd: directory, windowsHide: true }, error => {
                     if( error ) {
                         reject( error );
