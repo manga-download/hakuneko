@@ -33,7 +33,7 @@
                 let mangaList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.querySelector( 'source.js-lazy-thumb' ).getAttribute( 'alt' ).trim()
+                        title: element.querySelector( 'source' ).getAttribute( 'alt' ).trim()
                     };
                 } );
                 return this._getMangaListFromPages( this.path.map( path => this.url + path ) )
