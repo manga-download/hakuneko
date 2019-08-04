@@ -140,6 +140,7 @@ class ElectronPackager {
         console.log(`Bundle '${source}' ...`);
         if(await fs.exists(source)) {
             await fs.copy(source, target);
+            await fs.chmod(target, '0755');
             console.log(`  => File bundled: '${target}'`);
         } else {
             console.log('  => File not found: skipped');
