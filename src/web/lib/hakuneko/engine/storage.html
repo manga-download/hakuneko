@@ -425,9 +425,9 @@
                         data: page
                     }
                 });
-                let output = this._chapterOutputPath( chapter );
 
-                let promise = Promise.reject( new Error( 'Unsupported output format: ' + Engine.Settings.chapterFormat.value ) );
+                let promise = undefined;
+                let output = this._chapterOutputPath( chapter );
                 if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
                     this._createDirectoryChain( output );
                     promise = this._saveChapterPagesFolder( output, pageData )
@@ -448,7 +448,7 @@
                     promise = this._saveChapterPagesEPUB( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
                 }
-                return promise;
+                return promise || Promise.reject( new Error( 'Unsupported output format: ' + Engine.Settings.chapterFormat.value ) );
             } catch( error ) {
                 return Promise.reject( error );
             }
