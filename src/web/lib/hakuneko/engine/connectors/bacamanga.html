@@ -30,7 +30,7 @@
             return fetch( request )
             .then( response => response.text() )
             .then( data => {
-                let encoded = data.match( /bm_content\s*=\s*atob\s*\(\s*['"]([^'"]+)['"]\s*\)/ )[1];
+                let encoded = data.match( /bm_?content\s*=\s*atob\s*\(\s*['"]([^'"]+)['"]\s*\)/ )[1];
                 let decoded = decodeURIComponent( ( atob( encoded ) ).replace( /\+/g, '%20' ) );
                 let regex = /src\s*=\s*['"]([^'"]+)['"]/g;
                 let match;
