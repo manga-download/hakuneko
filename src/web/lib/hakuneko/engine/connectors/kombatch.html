@@ -97,7 +97,7 @@
             let request = new Request( this.url + chapter.id.replace( 'manga', 'api/chapter' ), this.requestOptions );
             this.fetchJSON( request )
             .then( data => {
-                let pageList = data.images.map( image => this.getAbsolutePath( image, this.url ) );
+                let pageList = data.chapter.images.map( image => this.getAbsolutePath( image.text, this.url ) );
                 callback( null, pageList );
             } )
             .catch( error => {
