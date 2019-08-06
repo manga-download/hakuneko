@@ -12,17 +12,13 @@
          */
         constructor() {
             super();
-            // Public members for usage in UI (mandatory)
             super.id         = 'ciayo';
             super.label      = 'CIAYO';
-            this.tags        = [ 'webtoon', 'multi-lingual' ];
-            super.isLocked   = false;
-            // Private members for internal usage only (convenience)
-            this.url         = 'https://vueserion.ciayo.com/3.1';
-            // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-            this.config = undefined;
+            this.tags        = [];
+            this.url         = '';
+            this.baseURL     = 'https://vueserion.ciayo.com/3.1';
 
-            this.language = 'id';
+            this.language = '';
         }
 
         /**
@@ -45,10 +41,23 @@
         }
 
         /**
+         * 
+         */
+        _getMangaFromURI( uri ) {
+            let request = new Request( uri.href, this.requestOptions );
+            return this.fetchDOM( request, 'h1.comicCover-title' )
+            .then( data => {
+                let id = uri.pathname.split( '/' ).pop();
+                let title = data[0].textContent.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
+        }
+
+        /**
          *
          */
         _getMangaList( callback ) {
-            this._requestJSON( `${this.url}/comics?app=desktop&language=${this.language}&count=9999` )
+            this._requestJSON( `${this.baseURL}/comics?app=desktop&language=${this.language}&count=9999` )
             .then( data => {
                 let mangaList = data.map( item => {
                     return {
@@ -68,7 +77,7 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this._requestJSON( `${this.url}/comics/${manga.id}/chapters?app=desktop&language=${this.language}&count=9999` )
+            this._requestJSON( `${this.baseURL}/comics/${manga.id}/chapters?app=desktop&language=${this.language}&count=9999` )
             .then( data => {
                 let chapterList = data.sort( ( a, b ) => b.order - a.order ).map( item => {
                     return {
@@ -89,7 +98,7 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
-            this._requestJSON( `${this.url}/comics/${manga.id}/chapters/${chapter.id}?app=desktop&language=${this.language}&with=slices` )
+            this._requestJSON( `${this.baseURL}/comics/${manga.id}/chapters/${chapter.id}?app=desktop&language=${this.language}&with=slices` )
             .then( data => {
                 let pageList = data.slices.sort( ( a, b ) => a.order - b.order ).map( item => item.image );
                 callback( null, pageList );
