@@ -106,7 +106,7 @@
                 let pageList = data.match( /"hq_pages"\s*:\s*"(.*?)"\s*,/ )[1].split( '\\n' ).map( page => {
                     // TODO: Create protocol link and get keys ad-hoc per request, because of limited validity (lease time)
                     let uri = new URL( page.replace( '\\r', '' ).trim(), 'https://media.gmanga.me/uploads/releases/' );
-                    uri.searchParams.set( 'ak', parseInt( ( Date.now() ) / 1000 + 120 ).toString( '36' ) );
+                    uri.searchParams.set( 'ak', parseInt( ( Date.now() ) / 1000 + 120 - 5 ).toString( '36' ) );
                     return uri.href;
                 } );
                 callback( null, pageList );
@@ -141,9 +141,39 @@
          *** BEGIN GMANGA ***
          *******************/
 
+        _r(t) {
+            return (this._r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(t) {
+                return typeof t
+            }
+            : function(t) {
+                return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t
+            }
+            )(t)
+        }
+
+        _a(t) {
+            return (this._a = "function" == typeof Symbol && "symbol" === this._r(Symbol.iterator) ? function(t) {
+                return this._r(t)
+            }.bind(this)
+            : function(t) {
+                return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : this._r(t)
+            }.bind(this)
+            )(t)
+        }
+
+        _isObject(t) {
+            var e = this._a(t);
+            return "function" === e || "object" === e && !!t
+        }
+
+        _dataExists(t) {
+            var e = null !== t;
+            return "object" === this._a(t) ? e && 0 !== Object.keys(t).length : "" !== t && void 0 !== t && e
+        }
+
         _haqiqa(t) {
             let c = { default: CryptoJS };
-            if (!dataExists(t) || "string" != typeof t)
+            if (!this._dataExists(t) || "string" != typeof t)
                 return !1;
             var e = t.split("|")
             , n = e[0]
@@ -160,10 +190,10 @@
 
         _unpack(t) {
             var e = arguments.length > 1 && void 0 !== arguments[1] ? arguments[1] : 1;
-            if (e > t.maxLevel)
+            if (!t || e > t.maxLevel)
                 return t;
-            //if (!isObject(t) || !t.isCompact)
-            //    return t;
+            if (!this._isObject(t) || !t.isCompact)
+                return t;
             var n = t.cols
             , r = t.rows;
             if (t.isObject) {
