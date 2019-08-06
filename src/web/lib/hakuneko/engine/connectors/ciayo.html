@@ -16,7 +16,7 @@
             super.label      = 'CIAYO';
             this.tags        = [];
             this.url         = '';
-            this.baseURL     = 'https://vueserion.ciayo.com/3.1';
+            this.baseURL     = 'https://vueserion.ciayo.com/3.2';
 
             this.language = '';
         }
@@ -25,13 +25,9 @@
          *
          */
         _requestJSON( url ) {
-            return fetch( url, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive JSON (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.json();
-            } )
+            let request = new Request( url, this.requestOptions );
+            return fetch( request )
+            .then( response => response.json() )
             .then( data => {
                 if( data.c.status.error ) {
                     throw new Error( data.c.status.message );
@@ -56,8 +52,9 @@
         /**
          *
          */
-        _getMangaList( callback ) {
-            this._requestJSON( `${this.baseURL}/comics?app=desktop&language=${this.language}&count=9999` )
+        _getMangaListFromPages( mangaPageLinks, index ) {
+            index = index || 0;
+            return this._requestJSON( mangaPageLinks[ index ] )
             .then( data => {
                 let mangaList = data.map( item => {
                     return {
@@ -65,7 +62,27 @@
                         title: item.title
                     };
                 } );
-                callback( null, mangaList );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+        }
+
+        /**
+         *
+         */
+        _getMangaList( callback ) {
+            this._requestJSON( `${this.baseURL}/challenges/volumes?app=desktop&language=${this.language}` )
+            .then( data => {
+                let pageLinks = data.map( volume => `${this.baseURL}/challenges/volumes/${volume.alias}?count=9999&app=desktop&language=${this.language}` );
+                pageLinks.push( `${this.baseURL}/comics?app=desktop&count=9999&language=${this.language}` );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, this );
