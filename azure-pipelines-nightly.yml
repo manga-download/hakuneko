@@ -5,7 +5,7 @@
 pr: none
 trigger: none
 schedules:
-- cron: "0 3 * * *"
+- cron: "0 0 * * *"
   displayName: 'Nightly Build'
   branches:
     include:
