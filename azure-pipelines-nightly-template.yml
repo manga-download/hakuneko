@@ -9,15 +9,15 @@ steps:
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/tool/node-js?view=azure-devops
 - task: NodeTool@0
+  displayName: 'Install NodeJS'
   inputs:
     versionSpec: '10.x'
-  displayName: 'Install NodeJS'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/package/npm?view=azure-devops
 - task: Npm@1
+  displayName: 'Install NPM Packages'
   inputs:
     command: install
-  displayName: 'Install NPM Packages'
 
 - script: npm run build:app
   displayName: 'Build (app)'
@@ -26,18 +26,19 @@ steps:
   displayName: 'Build (web)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/archive-files?view=azure-devops
-- task: ArchiveFiles@2
-  inputs:
-    rootFolderOrFile: '$(Build.SourcesDirectory)/build/latest' 
-    includeRootFolder: false 
-    archiveType: 'zip'
-    archiveFile: '$(Build.ArtifactStagingDirectory)/web-$(Build.SourceVersion).zip' 
-    replaceExistingArchive: true
-  displayName: 'Copy Artifacts (web)'
+#- task: ArchiveFiles@2
+#  displayName: 'Copy Artifacts (web)'
+#  inputs:
+#    rootFolderOrFile: '$(Build.SourcesDirectory)/build/latest' 
+#    includeRootFolder: false 
+#    archiveType: 'zip'
+#    archiveFile: '$(Build.ArtifactStagingDirectory)/web-$(Build.SourceVersion).zip' 
+#    replaceExistingArchive: true
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=azure-devops
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/file-matching-patterns
 - task: CopyFiles@2
+  displayName: 'Copy Artifacts (app)'
   inputs:
     contents: hakuneko-*@(.exe|.zip|.deb|.rpm|.dmg)
     sourceFolder: '$(Build.SourcesDirectory)/build'
@@ -45,11 +46,29 @@ steps:
     cleanTargetFolder: false
     overWrite: true
     flattenFolders: false
-  displayName: 'Copy Artifacts (app)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
 - task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifacts'
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
-  displayName: 'Publish Artifacts'
+
+- task: GithubRelease@0
+  displayName: 'Create/Update GitHub Release'
+  inputs:
+    gitHubConnection: manga-download
+    repositoryName: manga-download/hakuneko
+    action: 'create' # Options: create, edit, delete
+    target: '$(Build.SourceVersion)'
+    tagSource: manual
+    tag: '$nightly-(Build.BuildNumber)'
+    isDraft: false
+    isPreRelease: true
+    addChangeLog: false
+    assets: |
+         $(Build.ArtifactStagingDirectory)/*.exe
+         $(Build.ArtifactStagingDirectory)/*.zip
+         $(Build.ArtifactStagingDirectory)/*.deb
+         $(Build.ArtifactStagingDirectory)/*.rpm
+         $(Build.ArtifactStagingDirectory)/*.dmg
