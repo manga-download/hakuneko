@@ -2,6 +2,7 @@ const path = require('path');
 const fs = require('fs-extra');
 const electron = require('electron');
 const { ConsoleLogger } = require('logtrine');
+const urlFilterAll = { urls: ['http://*/*', 'https://*/*'] };
 
 module.exports = class ElectronBootstrap {
 
@@ -194,7 +195,7 @@ module.exports = class ElectronBootstrap {
      */
     _setupBeforeSendHeaders() {
         // inject headers before a request is made (call the handler in the webapp to do the dirty work)
-        electron.session.defaultSession.webRequest.onBeforeSendHeaders(['http*://*'], async (details, callback) => {
+        electron.session.defaultSession.webRequest.onBeforeSendHeaders(urlFilterAll, async (details, callback) => {
             try {
                 // prevent from injecting javascript into the webpage while the webcontent is not yet ready
                 // => required for loading initial page over http protocol (e.g. local hosted test page)
@@ -224,7 +225,7 @@ module.exports = class ElectronBootstrap {
      * 
      */
     _setupHeadersReceived() {
-        electron.session.defaultSession.webRequest.onHeadersReceived(['http*://*'], async (details, callback) => {
+        electron.session.defaultSession.webRequest.onHeadersReceived(urlFilterAll, async (details, callback) => {
             try {
                 if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
                     // inject javascript: looks stupid, but is a working solution to call a function which returns data
