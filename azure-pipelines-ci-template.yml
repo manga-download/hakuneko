@@ -18,7 +18,7 @@ steps:
 - script: npm run build:web
   displayName: 'Build (web)'
 
-- script: electron ./src/app --update-url=DISABLED --cache-directory=../web
+- script: ./node_modules/.bin/electron ./src/app --update-url=DISABLED --cache-directory=../web
   continueOnError: true
   displayName: 'Test (app)'
 
