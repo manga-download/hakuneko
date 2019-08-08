@@ -47,6 +47,19 @@
         }
 
         /**
+         * 
+         */
+        _getMangaFromURI( uri ) {
+            let request = new Request( uri.href, this.requestOptions );
+            return this.fetchDOM( request, 'div#mangadetail div.container-fluid div.row h1' )
+            .then( data => {
+                let id = uri.pathname.split( '/' ).pop();
+                let title = data[0].firstChild.textContent.trim();
+                return Promise.resolve( new Manga( this, id, title ) );
+            } );
+        }
+
+        /**
          *
          */
         _getMangaListFromPages( offset ) {
