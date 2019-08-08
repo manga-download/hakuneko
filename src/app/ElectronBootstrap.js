@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs-extra');
 const electron = require('electron');
 const { ConsoleLogger } = require('logtrine');
 
@@ -57,11 +58,20 @@ module.exports = class ElectronBootstrap {
      * 
      */
     _registerCacheProtocol() {
-        electron.protocol.registerFileProtocol(this._configuration.applicationProtocol, (request, callback) => {
-            let sub = path.normalize(new URL(request.url).pathname);
-            let response = path.join(this._configuration.applicationCacheDirectory, sub);
-            callback(response);
-        } );
+        electron.protocol.registerBufferProtocol(this._configuration.applicationProtocol, async (request, callback) => {
+            try {
+                let sub = path.normalize(new URL(request.url).pathname);
+                let file = path.join(this._configuration.applicationCacheDirectory, sub);
+                let buffer = await fs.readFile(file);
+                let mime = file.endsWith('.mjs') ? 'text/javascript' : ''; // leaving this blank seems to use autodetect
+                callback({
+                    mimeType: mime, 
+                    data: buffer
+                });
+            } catch(error) {
+                callback(undefined);
+            }
+        });
     }
 
     /**
