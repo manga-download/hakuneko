@@ -57,7 +57,7 @@ steps:
 - task: GithubRelease@0
   displayName: 'Create/Update GitHub Release'
   inputs:
-    gitHubConnection: manga-download
+    gitHubConnection: hakuneko-bot@HakuNeko
     repositoryName: manga-download/hakuneko
     action: 'create' # Options: create, edit, delete
     target: '$(Build.SourceVersion)'
