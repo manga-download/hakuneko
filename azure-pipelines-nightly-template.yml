@@ -54,22 +54,22 @@ steps:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
 
-- task: GithubRelease@0
-  displayName: 'Create/Update GitHub Release'
-  inputs:
-    gitHubConnection: hakuneko-bot@HakuNeko
-    repositoryName: manga-download/hakuneko
-    action: 'create' # Options: create, edit, delete
-    target: '$(Build.SourceVersion)'
-    tagSource: manual
-    tag: 'nightly-$(Build.BuildNumber)'
-    releaseNotesSource: 'input'
-    isDraft: false
-    isPreRelease: true
-    addChangeLog: false
-    assets: |
-         $(Build.ArtifactStagingDirectory)/*.exe
-         $(Build.ArtifactStagingDirectory)/*.zip
-         $(Build.ArtifactStagingDirectory)/*.deb
-         $(Build.ArtifactStagingDirectory)/*.rpm
-         $(Build.ArtifactStagingDirectory)/*.dmg
+#- task: GithubRelease@0
+#  displayName: 'Create/Update GitHub Release'
+#  inputs:
+#    gitHubConnection: hakuneko-bot@HakuNeko
+#    repositoryName: manga-download/hakuneko
+#    action: 'create' # Options: create, edit, delete
+#    target: '$(Build.SourceVersion)'
+#    tagSource: manual
+#    tag: 'nightly-$(Build.BuildNumber)'
+#    releaseNotesSource: 'input'
+#    isDraft: false
+#    isPreRelease: true
+#    addChangeLog: false
+#    assets: |
+#         $(Build.ArtifactStagingDirectory)/*.exe
+#         $(Build.ArtifactStagingDirectory)/*.zip
+#         $(Build.ArtifactStagingDirectory)/*.deb
+#         $(Build.ArtifactStagingDirectory)/*.rpm
+#         $(Build.ArtifactStagingDirectory)/*.dmg
