@@ -28,11 +28,13 @@ jobs:
   - script: |
       set -e
       sudo apt-get update
-      sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0
+      sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
       disown -ar
     displayName: 'Starting X Virtual Frame Buffer (Port 99)'
   #- script: sudo apt-get update && sudo apt-get install libgconf-2-4 -y
   #  displayName: Install libgconf Dependency for electron
+  - script: 'sudo ps -A'
+    displayName: 'Debug Output'
   - template: azure-pipelines-ci-template.yml
     parameters:
       export: 'DISPLAY=:99' # Configure WSL to redirect XDisplay output to windows host
