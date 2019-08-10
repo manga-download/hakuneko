@@ -65,7 +65,7 @@ jobs:
         title: 'nightly-$(Build.BuildNumber)'
         releaseNotesSource: 'input'
         releaseNotes: |
-          This is a client build of a current repository snapshot.
+          This is an automated repository snapshot build.
           It is untested and not intended for use in production.
         isDraft: false
         isPreRelease: true
