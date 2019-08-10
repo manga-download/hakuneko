@@ -15,37 +15,28 @@ jobs:
     vmImage: 'windows-latest'
   steps:
   - template: azure-pipelines-ci-template.yml
-    parameters:
-      export: ''
 
 - job: Ubuntu
   pool:
     vmImage: 'ubuntu-latest'
   variables:
-    display: ':99' # his will also set the environment variable 'DISPLAY=:99'
+    display: ':99' # This will also set the environment variable 'DISPLAY=:99' required for apps to connect to the X-Server
   steps:
-  # Problem with electron tests not running:
+  # Running electron on Ubuntu requires an X-server:
   # https://github.com/Microsoft/azure-pipelines-image-generation/issues/239
-  # This snippet was partially stolen from VSCode to fix running electron on Ubuntu
   # It is also possible to use X-Server for just a single command:
   # https://manpages.ubuntu.com/manpages/trusty/man1/xvfb-run.1.html
+  # This snippet was partially stolen from VSCode to support running electron on Ubuntu
   - script: |
       #sudo apt-get update
       #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
-      #echo export DISPLAY=:99 >> ~/.bashrc
       sudo /usr/bin/Xvfb $(display) -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
       disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
     displayName: 'Starting X Virtual Frame Buffer (Port 99)'
-  - script: 'echo Display: $DISPLAY'
-    displayName: 'Debug Output'
   - template: azure-pipelines-ci-template.yml
-    parameters:
-      export: '' # Configure WSL to redirect XDisplay output to windows host
 
 - job: macOS
   pool:
     vmImage: 'macOS-latest'
   steps:
   - template: azure-pipelines-ci-template.yml
-    parameters:
-      export: ''
