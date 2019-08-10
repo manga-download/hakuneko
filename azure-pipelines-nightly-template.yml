@@ -65,7 +65,7 @@ steps:
     action: 'create' # Options: create, edit, delete
     target: '$(Build.SourceVersion)'
     tagSource: 'manual'
-    tag: 'v0.0.0'
+    tag: 'nightly'
     releaseNotesSource: 'input'
     isDraft: false
     isPreRelease: true
