@@ -1,11 +1,9 @@
 = HakuNeko
-
 :toc:
 :numbered:
 :icons: font
 :linkattrs:
 :imagesdir: ./assets
-
 ifdef::env-github[]
 :tip-caption: :bulb:
 :note-caption: :information_source:
@@ -14,39 +12,49 @@ ifdef::env-github[]
 :warning-caption: :warning:
 endif::[]
 
-== Download
+---
 
-image:logo_64.png[float="left"]
-Yes, the download section comes first (even before the introduction), because this is what most users are looking for anyway.
-HakuNeko provides different installation files for various operating systems.
-There is also a portable version available which stores all its application data inside the application folder.
-You can download and run the installer/archive for your operating system from one of the mirror sites below.
+=== Download
 
-Mirrors::
+image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%205.0.8&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/v5.0.8, title="Download from GitHub", window="_blank"]
+or
+image:https://img.shields.io/sourceforge/dt/hakuneko/5.0.8.svg?label=HakuNeko%205.0.8&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/5.0.8/, title="Download from SourceForge", window="_blank"]
 
-image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%205.0.8&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/v5.0.8, title="GitHub", window="_blank"]
-image:https://img.shields.io/sourceforge/dt/hakuneko/5.0.8.svg?label=HakuNeko%205.0.8&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/5.0.8/, title="SourceForge", window="_blank"]
+Yes, the download section comes first, because this is what most users are looking for anyway.
+You can download and run the installer/archive for your operating system from one of the mirror sites above.
+There is also a portable version available for Windows which stores all its application data inside the application folder.
 
-== Continuous Integration
+---
+
+=== Status
 
 This section shows the latest build and test results for the master branch of the mirrored repository on link:https://dev.azure.com/manga-download/hakuneko/_build[Azure].
 
-Summary::
+image:https://img.shields.io/azure-devops/tests/manga-download/hakuneko/5?label=CI%20Tests&logo=azure-pipelines[Test Results, link="https://dev.azure.com/manga-download/hakuneko/_testManagement/runs?_a=runQuery", title="List of CI Test Results"]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&label=CI%20Pipeline[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=5&branchName=master", title="Latest CI Pipeline Summary"]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&label=Nightly%20Build[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=7&branchName=master", title="Latest Nightly Build Summary"]
 
-image:https://img.shields.io/azure-devops/tests/manga-download/hakuneko/5?label=CI%20Tests&logo=azure-pipelines[Test Results, link="https://dev.azure.com/manga-download/hakuneko/_testManagement/runs?_a=runQuery"]
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&label=CI%20Pipeline[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=5&branchName=master"]
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&label=Nightly%20Build[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=7&branchName=master"]
+[%collapsible, title="Details"]
+====
 
-Details::
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Windows&label=CI%20-%20Windows[]
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Ubuntu&label=CI%20-%20Ubuntu[]
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=macOS&label=CI%20-%20macOS[]
+Continuous Integration::
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Windows&label=CI%20-%20Windows[title="CI Pipeline: Windows"]
  +
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Windows&label=Nightly%20-%20Windows[]
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Ubuntu&label=Nightly%20-%20Ubuntu[]
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=macOS&label=Nightly%20-%20macOS[]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Ubuntu&label=CI%20-%20Ubuntu[title="CI Pipeline: Ubuntu"]
+ +
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=macOS&label=CI%20-%20macOS[title="CI Pipeline: macOS"]
 
-== Introduction
+Nightly Builds::
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Windows&label=Nightly%20-%20Windows[title="Nightly Build: Windows"]
+ +
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Ubuntu&label=Nightly%20-%20Ubuntu[title="Nightly Build: Ubuntu"]
+ +
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=macOS&label=Nightly%20-%20macOS[title="Nightly Build: macOS"]
+====
+
+---
+
+=== Introduction
 
 HakuNeko is a cross-platform downloader for manga and anime from various websites.
 HakuNeko was made to help users downloading media for circumstances that require offline usage.
@@ -65,6 +73,10 @@ image::screenshot-pages.png[link=screenshot-pages.png, width=720, title="HakuNek
 image::screenshot-video.png[link=screenshot-video.png, width=720, title="HakuNeko - Anime Playback", window=_blank]
 --
 
-== Development
+---
+
+=== Development
 
 For developer documentation please check the link:https://github.com/manga-download/hakuneko/wiki/Developer-Manual[Wiki]
+
+---
