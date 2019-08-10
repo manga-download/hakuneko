@@ -15,14 +15,17 @@ steps:
     command: install
   displayName: 'Install NPM Packages'
 
-- script: npm run build:web
+-script: echo Export: ${{ parameters.export }}
+  displayName: 'DEBUG'
+
+- script: ${{ parameters.export }} npm run build:web
   displayName: 'Build (web)'
 
-- script: npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
+- script: ${{ parameters.export }} npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
   continueOnError: true
   displayName: 'Test (app)'
 
-- script: npm run test:web -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml --renderer
+- script: ${{ parameters.export }} npm run test:web -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml --renderer
   continueOnError: true
   displayName: 'Test (web)'
 
