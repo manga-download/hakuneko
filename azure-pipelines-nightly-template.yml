@@ -56,11 +56,11 @@ steps:
     artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-pipeline-artifact?view=azure-devops
-- task: PublishPipelineArtifact@1
-  displayName: 'Publish Pipeline Artifacts'
-  inputs:
-    path: '$(Build.ArtifactStagingDirectory)'
-    artifact: '$(Agent.JobName)-$(Build.BuildNumber)'
+#- task: PublishPipelineArtifact@1
+#  displayName: 'Publish Pipeline Artifacts'
+#  inputs:
+#    path: '$(Build.ArtifactStagingDirectory)'
+#    artifact: '$(Agent.JobName)-$(Build.BuildNumber)'
 
 # Difference between Build and Pipeline Artifacts:
 # https://github.com/MicrosoftDocs/vsts-docs/issues/2341#issuecomment-439483135
