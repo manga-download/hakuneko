@@ -25,13 +25,16 @@ jobs:
   # Problem with electron tests not running:
   # https://github.com/Microsoft/azure-pipelines-image-generation/issues/239
   # This snippet was partially stolen from VSCode to fix running electron on Ubuntu
+  # It is also possible to use X-Server for just a single command:
+  # https://manpages.ubuntu.com/manpages/trusty/man1/xvfb-run.1.html
   - script: |
       #sudo apt-get update
       #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
-      sudo /usr/bin/Xvfb :99 -ac &> /tmp/Xvfb.out &
+      echo export DISPLAY=:99 >> ~/.bashrc
+      sudo /usr/bin/Xvfb :99 -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
       disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
     displayName: 'Starting X Virtual Frame Buffer (Port 99)'
-  - script: 'sudo ps -A'
+  - script: 'cat ~/.bashrc'
     displayName: 'Debug Output'
   - template: azure-pipelines-ci-template.yml
     parameters:
