@@ -63,7 +63,7 @@ steps:
     action: 'create' # Options: create, edit, delete
     target: '$(Build.SourceVersion)'
     tagSource: 'manual'
-    tag: 'nightly-$(Build.BuildNumber)'
+    tag: 'nightly'
     releaseNotesSource: 'input'
     isDraft: false
     isPreRelease: true
