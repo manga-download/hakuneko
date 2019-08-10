@@ -14,7 +14,7 @@
     "@hakuneko/imagemagick-binaries": "latest",
     "@hakuneko/kindlegen-binaries": "latest",
     "asar": "latest",
-    "electron": "6.0.1",
+    "electron": "5.0.9",
     "electron-mocha": "latest",
     "fs-extra": "latest",
     "innosetup-compiler": "latest",
