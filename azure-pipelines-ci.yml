@@ -35,7 +35,7 @@ jobs:
     displayName: 'Debug Output'
   - template: azure-pipelines-ci-template.yml
     parameters:
-      export: 'DISPLAY=:99' # Configure WSL to redirect XDisplay output to windows host
+      export: '' # Configure WSL to redirect XDisplay output to windows host
 
 - job: macOS
   pool:
