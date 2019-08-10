@@ -55,7 +55,7 @@ steps:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
 
-#- task: GithubRelease@0
+- task: GithubRelease@0
   displayName: 'GitHub Release'
   inputs:
     gitHubConnection: 'hakuneko-bot@github'
