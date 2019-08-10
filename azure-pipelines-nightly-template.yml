@@ -69,8 +69,8 @@ steps:
     repositoryName: 'manga-download/hakuneko'
     action: 'edit'
     target: '$(Build.SourceVersion)'
-    #tagSource: 'manual'
-    #tag: 'nightly-$(Build.BuildNumber)'
+    tagSource: 'manual'
+    tag: 'nightly-$(Build.BuildNumber)'
     releaseNotesSource: 'input'
     #isDraft: false
     #isPreRelease: true
