@@ -63,14 +63,14 @@ steps:
     action: 'create' # Options: create, edit, delete
     target: '$(Build.SourceVersion)'
     tagSource: 'manual'
-    tag: 'nightly'
+    tag: 'nightly-$(Build.BuildNumber)'
     releaseNotesSource: 'input'
     isDraft: false
     isPreRelease: true
     addChangeLog: false
     assets: |
-         $(Build.ArtifactStagingDirectory)/*.exe
-         $(Build.ArtifactStagingDirectory)/*.zip
-         $(Build.ArtifactStagingDirectory)/*.deb
-         $(Build.ArtifactStagingDirectory)/*.rpm
-         $(Build.ArtifactStagingDirectory)/*.dmg
+        $(Build.ArtifactStagingDirectory)/*.exe
+        $(Build.ArtifactStagingDirectory)/*.zip
+        $(Build.ArtifactStagingDirectory)/*.deb
+        $(Build.ArtifactStagingDirectory)/*.rpm
+        $(Build.ArtifactStagingDirectory)/*.dmg
