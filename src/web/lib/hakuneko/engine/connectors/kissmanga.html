@@ -80,8 +80,9 @@
                         if( a && a.href ) {
                             this.cfMailDecrypt( a );
                             chapterList.push( {
-                                //id: this.getRelativeLink( a ),
-                                id: encodeURI( a.href.trim().replace( /\s+/, '' ).replace( this.url, '' ).replace( window.location.origin, '' ) ),
+                                // https://kissmanga.com/Manga/29-sai-Dokushin-wa-Isekai-de-Jiyuu-ni-Ikita……katta => Contains special characters
+                                // https://kissmanga.com/Manga/Kino-no-Tabi- the-Beautiful-World-SHIOMIYA-Iruka => Contains unescaped space
+                                id: this.getRootRelativeOrAbsoluteLink( a, this.url ),
                                 title: a.text.replace( /read online/i, '' ).replace( manga.title, '' ).trim(),
                                 language: 'en'
                             });
@@ -109,8 +110,13 @@
             setTimeout( () => {
                 this.unlock( key );
             }, this.pageLoadDelay );
+            let script = `
+                new Promise(resolve => {
+                    resolve(lstImages);
+                });
+            `;
             let request = new Request( this.url + chapter.id, this.requestOptions );
-            Engine.Request.fetchUI( request, 'lstImages' )
+            Engine.Request.fetchUI( request, script )
             .then( data => {
                 let pageList = data.map( link => ( new URL( link, this.url ) ).href );
                 callback( null, pageList );
