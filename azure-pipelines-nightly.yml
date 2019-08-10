@@ -64,7 +64,11 @@ jobs:
         target: '$(Build.SourceVersion)'
         tagSource: 'manual'
         tag: 'nightly-$(Build.BuildNumber)'
+        title: 'nightly-$(Build.BuildNumber)'
         releaseNotesSource: 'input'
+        releaseNotes: |
+          This is an untested snapshot of the current repository.
+          It is untested and not intended for use in production.
         isDraft: false
         isPreRelease: true
         addChangeLog: false
