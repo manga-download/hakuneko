@@ -50,8 +50,6 @@ jobs:
         downloadPath: '$(System.ArtifactsDirectory)'
     # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/download-pipeline-artifact?view=azure-devops
     # alternative to build artifacts, pipeline artifacts could be used ...
-    - script: 'ls -l $(System.ArtifactsDirectory)'
-      displayName: 'Debug'
     # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/github-release?view=azure-devops
     - task: GithubRelease@0
       displayName: 'GitHub Release'
