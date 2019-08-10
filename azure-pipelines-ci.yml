@@ -29,6 +29,7 @@ jobs:
       set -e
       sudo apt-get update
       sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
+      sudo /usr/bin/Xvfb :99 -ac &
       disown -ar
     displayName: 'Starting X Virtual Frame Buffer (Port 99)'
   #- script: sudo apt-get update && sudo apt-get install libgconf-2-4 -y
