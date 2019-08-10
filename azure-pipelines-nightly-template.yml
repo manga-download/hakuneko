@@ -50,15 +50,16 @@ steps:
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=azure-devops
 - task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifacts'
+  displayName: 'Publish Build Artifacts'
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
 
 - task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifacts'
   inputs:
     path: '$(Build.ArtifactStagingDirectory)'
-    artifact: '$(Build.BuildNumber)'
+    artifact: '$(Agent.JobName)-$(Build.BuildNumber)'
 
 - task: GithubRelease@0
   displayName: 'GitHub Release'
@@ -72,8 +73,8 @@ steps:
     tagSource: 'manual'
     tag: 'nightly-$(Build.BuildNumber)'
     releaseNotesSource: 'input'
-    #isDraft: false
-    #isPreRelease: true
+    isDraft: false
+    isPreRelease: true
     addChangeLog: false
     assets: |
         $(Build.ArtifactStagingDirectory)/*.exe
