@@ -21,7 +21,7 @@ jobs:
     vmImage: 'ubuntu-latest'
   steps:
   - script: export DISPLAY=:10 # Configure WSL to redirect XDisplay output to windows host
-  - script: echo "Display: $DISPLAY"
+  - script: 'echo Display: $DISPLAY'
   - template: azure-pipelines-ci-template.yml
 
 - job: macOS
