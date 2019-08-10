@@ -15,7 +15,7 @@ steps:
     command: install
   displayName: 'Install NPM Packages'
 
--script: echo Export: ${{ parameters.export }}
+-script: 'echo Export: ${{ parameters.export }}'
   displayName: 'DEBUG'
 
 - script: ${{ parameters.export }} npm run build:web
