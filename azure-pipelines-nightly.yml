@@ -13,13 +13,33 @@ schedules:
   always: true
 
 jobs:
+- job: GitHub
+  steps:
+    - task: GithubRelease@0
+      displayName: 'GitHub Release'
+      inputs:
+        # NOTE: The service connection to GitHub must be configured to use Personal Access Token
+        # OAuth regsitered applications seems not to work (404 not found when creating release tag)
+        gitHubConnection: 'hakuneko-bot@github'
+        repositoryName: 'manga-download/hakuneko'
+        action: 'create'
+        target: '$(Build.SourceVersion)'
+        tagSource: 'manual'
+        tag: 'nightly-$(Build.BuildNumber)'
+        releaseNotesSource: 'input'
+        isDraft: false
+        isPreRelease: true
+        addChangeLog: false
+
 - job: Windows
+  dependsOn: GitHub
   pool:
     vmImage: 'windows-latest'
   steps:
   - template: azure-pipelines-nightly-template.yml
 
 - job: Ubuntu
+  dependsOn: GitHub
   pool:
     vmImage: 'ubuntu-latest'
   steps:
@@ -27,6 +47,7 @@ jobs:
   - template: azure-pipelines-nightly-template.yml
 
 - job: macOS
+  dependsOn: GitHub
   pool:
     vmImage: 'macOS-10.13'
   steps:

@@ -55,6 +55,11 @@ steps:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
     artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
 
+- task: PublishPipelineArtifact@1
+  inputs:
+    path: '$(Build.ArtifactStagingDirectory)'
+    artifact: '$(Build.BuildNumber)'
+
 - task: GithubRelease@0
   displayName: 'GitHub Release'
   inputs:
@@ -62,13 +67,13 @@ steps:
     # OAuth regsitered application seems not to work (404 not found when creating release tag)
     gitHubConnection: 'hakuneko-bot@github'
     repositoryName: 'manga-download/hakuneko'
-    action: 'create' # Options: create, edit, delete
+    action: 'edit'
     target: '$(Build.SourceVersion)'
-    tagSource: 'manual'
-    tag: 'nightly'
+    #tagSource: 'manual'
+    #tag: 'nightly-$(Build.BuildNumber)'
     releaseNotesSource: 'input'
-    isDraft: false
-    isPreRelease: true
+    #isDraft: false
+    #isPreRelease: true
     addChangeLog: false
     assets: |
         $(Build.ArtifactStagingDirectory)/*.exe
