@@ -21,6 +21,8 @@ jobs:
 - job: Ubuntu
   pool:
     vmImage: 'ubuntu-latest'
+  variables:
+    display: ':99' # his will also set the environment variable 'DISPLAY=:99'
   steps:
   # Problem with electron tests not running:
   # https://github.com/Microsoft/azure-pipelines-image-generation/issues/239
@@ -30,15 +32,15 @@ jobs:
   - script: |
       #sudo apt-get update
       #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
-      echo export DISPLAY=:99 >> ~/.bashrc
-      sudo /usr/bin/Xvfb :99 -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
+      #echo export DISPLAY=:99 >> ~/.bashrc
+      sudo /usr/bin/Xvfb $(display) -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
       disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
     displayName: 'Starting X Virtual Frame Buffer (Port 99)'
-  - script: 'cat ~/.bashrc'
+  - script: 'echo Display: $DISPLAY'
     displayName: 'Debug Output'
   - template: azure-pipelines-ci-template.yml
     parameters:
-      export: 'DISPLAY=:99' # Configure WSL to redirect XDisplay output to windows host
+      export: '' # Configure WSL to redirect XDisplay output to windows host
 
 - job: macOS
   pool:
