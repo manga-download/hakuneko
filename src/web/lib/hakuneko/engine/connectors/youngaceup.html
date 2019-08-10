@@ -1,31 +1,23 @@
-<link rel="import" href="../connector.html">
+<link rel="import" href="./webace.html">
 
 <script>
 
     /**
      *
      */
-    class YoungAceUp extends Connector {
+    class YoungAceUp extends WebAce {
 
         /**
          *
          */
-        constructor() {
+         constructor() {
             super();
             super.id         = 'youngaceup';
-            super.label      = 'YoungAceUp';
-            this.tags        = [];
-            this.url         = 'https://web-ace.jp/youngaceup';
-        }
+            super.label      = 'ヤングエースUP (Young Ace UP)';
+            this.tags        = ['manga', 'japanese'];
+            this.url         = 'https://web-ace.jp/youngaceup'; // URL for copy/paste detection
 
-        _getMangaList( callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getChapterList( manga, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-        }
-        _getPageList( manga, chapter, callback ) {
-            callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+            this.path = '/youngaceup/schedule/';
         }
     }
 
