@@ -67,8 +67,8 @@ jobs:
         isPreRelease: true
         addChangeLog: false
         assets: |
-            $(System.ArtifactsDirectory)/*.exe
-            $(System.ArtifactsDirectory)/*.zip
-            $(System.ArtifactsDirectory)/*.deb
-            $(System.ArtifactsDirectory)/*.rpm
-            $(System.ArtifactsDirectory)/*.dmg
+            $(System.ArtifactsDirectory)/*/*.exe
+            $(System.ArtifactsDirectory)/*/*.zip
+            $(System.ArtifactsDirectory)/*/*.deb
+            $(System.ArtifactsDirectory)/*/*.rpm
+            $(System.ArtifactsDirectory)/*/*.dmg
