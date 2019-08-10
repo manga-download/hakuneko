@@ -18,13 +18,17 @@ jobs:
     parameters:
       export: ''
 
+# Problem with electron tests not running:
+# https://github.com/Microsoft/azure-pipelines-image-generation/issues/239
 - job: Ubuntu
   pool:
     vmImage: 'ubuntu-latest'
   steps:
+  - script: sudo apt-get update && sudo apt-get install libgconf-2-4 -y
+    displayName: Install libgconf Dependency for electron
   - template: azure-pipelines-ci-template.yml
     parameters:
-      export: 'export DISPLAY=:10' # Configure WSL to redirect XDisplay output to windows host
+      export: 'DISPLAY=:10' # Configure WSL to redirect XDisplay output to windows host
 
 - job: macOS
   pool:
