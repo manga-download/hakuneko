@@ -26,14 +26,15 @@ steps:
   displayName: 'Build (web)'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/archive-files?view=azure-devops
-#- task: ArchiveFiles@2
-#  displayName: 'Copy Artifacts (web)'
-#  inputs:
-#    rootFolderOrFile: '$(Build.SourcesDirectory)/build/latest' 
-#    includeRootFolder: false 
-#    archiveType: 'zip'
-#    archiveFile: '$(Build.ArtifactStagingDirectory)/web-$(Build.SourceVersion).zip' 
-#    replaceExistingArchive: true
+- task: ArchiveFiles@2
+  displayName: 'Copy Artifacts (web)'
+  inputs:
+    rootFolderOrFile: '$(Build.SourcesDirectory)/build/latest' 
+    includeRootFolder: false 
+    archiveType: 'tar'
+    tarCompression: 'xz'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/web-$(Build.SourceVersion).tar.xz' 
+    replaceExistingArchive: true
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=azure-devops
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/file-matching-patterns
@@ -55,21 +56,21 @@ steps:
     artifactName: '$(Agent.OS)-$(Agent.OSArchitecture)_$(Build.BuildNumber)'
 
 #- task: GithubRelease@0
-#  displayName: 'Create/Update GitHub Release'
-#  inputs:
-#    gitHubConnection: hakuneko-bot@HakuNeko
-#    repositoryName: manga-download/hakuneko
-#    action: 'create' # Options: create, edit, delete
-#    target: '$(Build.SourceVersion)'
-#    tagSource: manual
-#    tag: 'nightly-$(Build.BuildNumber)'
-#    releaseNotesSource: 'input'
-#    isDraft: false
-#    isPreRelease: true
-#    addChangeLog: false
-#    assets: |
-#         $(Build.ArtifactStagingDirectory)/*.exe
-#         $(Build.ArtifactStagingDirectory)/*.zip
-#         $(Build.ArtifactStagingDirectory)/*.deb
-#         $(Build.ArtifactStagingDirectory)/*.rpm
-#         $(Build.ArtifactStagingDirectory)/*.dmg
+  displayName: 'GitHub Release'
+  inputs:
+    gitHubConnection: 'hakuneko-bot@github'
+    repositoryName: 'manga-download/hakuneko'
+    action: 'create' # Options: create, edit, delete
+    target: '$(Build.SourceVersion)'
+    tagSource: 'manual'
+    tag: 'nightly-$(Build.BuildNumber)'
+    releaseNotesSource: 'input'
+    isDraft: false
+    isPreRelease: true
+    addChangeLog: false
+    assets: |
+         $(Build.ArtifactStagingDirectory)/*.exe
+         $(Build.ArtifactStagingDirectory)/*.zip
+         $(Build.ArtifactStagingDirectory)/*.deb
+         $(Build.ArtifactStagingDirectory)/*.rpm
+         $(Build.ArtifactStagingDirectory)/*.dmg
