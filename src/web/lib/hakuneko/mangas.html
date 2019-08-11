@@ -328,6 +328,10 @@
              */
             onPaste( e ) {
                 try {
+                    if( !e.path.includes( this ) ) {
+                        // neither this element nor any of its descandants are active
+                        return;
+                    }
                     let mangaLinks = e.clipboardData.getData( 'text' ).split( '\n' );
                     let clipboardConnector = new ClipboardConnector();
                     if( clipboardConnector.initialize( mangaLinks ) ) {
