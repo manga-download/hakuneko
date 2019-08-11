@@ -334,7 +334,15 @@
              * otherwise the window cannot be closed anymore (electron does not show the confirmation).
              */
             openWindow( event ) {
-                window.open( event.target.dataset.href, '', 'nodeIntegration=no' ).eval( `setTimeout( () => { window.onbeforeunload = evt => undefined; }, 1000 )` );
+                let popup = window.open( event.target.dataset.href, '', 'nodeIntegration=no' );
+                // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
+                let watchdog = setInterval( () => {
+                    if( popup.closed ) {
+                        clearInterval(watchdog);
+                    } else {
+                        popup.eval( `window.onbeforeunload = evt => undefined;` );
+                    }
+                }, 500 );
             }
 
             /**

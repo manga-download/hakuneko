@@ -296,7 +296,15 @@
              */
             openWebsite( evt ) {
                 if( evt.model.item.url ) {
-                    window.open( evt.model.item.url, evt.model.label, 'nodeIntegration=no' );
+                    let popup = window.open( evt.model.item.url, evt.model.label, 'nodeIntegration=no' );
+                    // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
+                    let watchdog = setInterval( () => {
+                        if( popup.closed ) {
+                            clearInterval(watchdog);
+                        } else {
+                            popup.eval( `window.onbeforeunload = evt => undefined;` );
+                        }
+                    }, 500 );
                 }
                 evt.cancelBubble = true;
                 evt.stopPropagation();
