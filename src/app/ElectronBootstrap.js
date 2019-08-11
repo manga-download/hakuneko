@@ -87,6 +87,7 @@ module.exports = class ElectronBootstrap {
      * 
      */
     _registerHotkeys() {
+        electron.globalShortcut.register('F12', this._toggleDevTools.bind(this));
         electron.globalShortcut.register('F11', this._toggleFullscreen.bind(this));
     }
 
@@ -94,7 +95,19 @@ module.exports = class ElectronBootstrap {
      * 
      */
     _unregisterHotkeys() {
+        electron.globalShortcut.unregister('F12');
         electron.globalShortcut.unregister('F11');
+    }
+
+    /**
+     * 
+     */
+    _toggleDevTools() {
+        if(this._window.webContents.isDevToolsOpened()) {
+            this._window.webContents.closeDevTools();
+        } else {
+            this._window.webContents.openDevTools();
+        }
     }
 
     /**
