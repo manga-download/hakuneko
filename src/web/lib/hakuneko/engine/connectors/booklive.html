@@ -44,7 +44,7 @@
          */
         _getChapterList( manga, callback ) {
             let request = new Request( this.url + manga.id, this.requestOptions );
-            this.fetchDOM( request, 'div#product_detail_area div.product_actions ul.sub_actions a.bl-bviewer' )
+            this.fetchDOM( request, 'div#product_detail_area div.product_actions ul[class*="_actions"] a.bl-bviewer' )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
