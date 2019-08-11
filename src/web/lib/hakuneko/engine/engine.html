@@ -15,7 +15,7 @@
      * Inverse of control container providing instances of all important engine modules.
      * Each module may depend on the corresponding underlying platform.
      */
-    class HakuNeko {
+    class Engine {
 
         /**
          *
@@ -98,12 +98,12 @@
         }
     }
 
-    // alias for support of obsolete usage
-    const Engine = HakuNeko;
+    // alias for forward compatibility for new module based engine
+    const HakuNeko = window['HakuNeko'] || Engine;
 
     new HistoryWorker();
-    HakuNeko.Settings.loadProfile( 'default', undefined );
-    HakuNeko.BookmarkManager.loadProfile( 'default', undefined );
-    HakuNeko.ChaptermarkManager.loadChaptermarks( undefined );
+    Engine.Settings.loadProfile( 'default', undefined );
+    Engine.BookmarkManager.loadProfile( 'default', undefined );
+    Engine.ChaptermarkManager.loadChaptermarks( undefined );
 
 </script>
