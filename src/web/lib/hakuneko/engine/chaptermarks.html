@@ -46,9 +46,17 @@
              } );
         }
 
-        getChapterIdentifier( chapter ) {
-            // some chapter are using objects as ID, these will provide a hash as identifier
+        _getChapterIdentifier( chapter ) {
+            // some chapters are using objects as ID, these will provide a hash as identifier
             return ( chapter.id.hash || chapter.id );
+        }
+
+        isChapterMarked( chapter, mark ) {
+            return mark
+                && chapter
+                && mark.chapterID === this._getChapterIdentifier( chapter )
+                && mark.mangaID === chapter.manga.id
+                && mark.connectorID === chapter.manga.connector.id;
         }
 
         /**
@@ -84,12 +92,17 @@
          * Get the chapter mark for the given manga (or undefined if no chapter is marked for the manga)
          */
         getChaptermark( manga ) {
+            let chaptermark = undefined;
             if( manga ) {
-                return this.chaptermarks.find( ( chaptermark ) => {
-                    return ( chaptermark.mangaID === manga.id && chaptermark.connectorID === manga.connector.id ); 
+                chaptermark = this.chaptermarks.find( mark => {
+                    return ( mark.mangaID === manga.id && mark.connectorID === manga.connector.id ); 
                 } );
+                // backward compatibility (old chaptermarks don't have a title)
+                if( chaptermark ) {
+                    chaptermark['title'] = chaptermark['title'] || 'Chapter Title Unavailable';
+                }
             }
-            return undefined;
+            return chaptermark;
         }
 
         /**
@@ -102,7 +115,8 @@
             let chaptermark = {
                 connectorID: chapter.manga.connector.id,
                 mangaID: chapter.manga.id,
-                chapterID: this.getChapterIdentifier( chapter )
+                chapterID: this._getChapterIdentifier( chapter ),
+                chapterTitle: chapter.title
             };
             let index = this._findIndex( chaptermark );
             if( this._findIndex( chaptermark ) > -1 ) {
@@ -116,15 +130,7 @@
         /**
          *
          */
-        deleteChaptermark( chapter ) {
-            if( !chapter || !chapter.manga || !chapter.manga.connector ) {
-                return;
-            }
-            let chaptermark = {
-                connectorID: chapter.manga.connector.id,
-                mangaID: chapter.manga.id,
-                chapterID: this.getChapterIdentifier( chapter )
-            };
+        deleteChaptermark( chaptermark ) {
             let index = this._findIndex( chaptermark );
             if( index > -1 ) {
                 this.chaptermarks.splice( index, 1 );

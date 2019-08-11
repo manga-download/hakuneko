@@ -134,19 +134,19 @@
         </table>
         <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
         <ul class="list" >
-            <template is="dom-if" if="[[ existChaptermarkForChapters(markedChapterID, chapterList) ]]">
+            <template is="dom-if" if="[[ existChaptermarkForChapters(markedChapter, chapterList) ]]">
                 <li>
                     <i class="fas fa-fw"></i>
                     <i class="fas fa-fw"></i>
-                    <i class="fas fa-fw fa-bookmark markerRemoved"></i>
-                    <span class="title markerRemoved" title$="The chapter that has been marked as 'recently read' is no longer available&#10;ID: [[ markedChapterID ]]&#10;Title: -">Chapter not Found</span>
+                    <i class="fas fa-fw fa-bookmark button markerRemoved" title="Click to remove the marked chapter" on-click="onUnmarkChapterClick"></i>
+                    <span class="title markerRemoved" title$="The chapter has been marked as &quot;recently read&quot; but is no longer available&#10;ID: [[ markedChapter.chapterID ]]">[[ markedChapter.chapterTitle ]]</span>
                 </li>
             </template>
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" sort="[[ sortChapters(chapterSort) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fas fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
                     <i class="far fa-fw fa-image button" style$="[[ getPagePreviewStyle(readerEnabled) ]]" on-click="onSelectChapterClick" title="Show preview of chapter's pages"></i>
-                    <i class$="fa-fw fa-bookmark button [[ getChapterMarkClass(markedChapterID, item) ]]" on-click="onMarkChapterClick" title$="[[ getChapterMarkTooltip(markedChapterID, item) ]]"></i>
+                    <i class$="fa-fw fa-bookmark button [[ getChapterMarkClass(markedChapter, item) ]]" on-click="onMarkChapterClick" title$="[[ getChapterMarkTooltip(markedChapter, item) ]]"></i>
                     <span class$="title [[ item.status ]]" title$="[[ item.title ]]&#10;Doubleclick to open the folder with your file manager" on-dblclick="onShowFileManagerClick">[[ item.title ]]</span>
                 </li>
             </template>
@@ -213,7 +213,7 @@
                 // list of all existing languages in the chapter list
                 this.languageList = undefined;
                 // the chapter that has been marked as last read by the user
-                this.markedChapterID = undefined;
+                this.markedChapter = undefined;
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
@@ -329,22 +329,22 @@
             /**
              *
              */
-            existChaptermarkForChapters( markedChapterID, chapterList ) {
-                return markedChapterID && chapterList && !chapterList.find( chapter => markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) );
+            existChaptermarkForChapters( markedChapter, chapterList ) {
+                return markedChapter && chapterList && !chapterList.find( chapter => Engine.ChaptermarkManager.isChapterMarked( chapter, markedChapter ) );
             }
 
             /**
              *
              */
-            getChapterMarkTooltip( markedChapterID, chapter ) {
-                return ( markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ? 'Remove the "recently read" marker from this chapter' : 'Mark this chapter as "recently read"');
+            getChapterMarkTooltip( markedChapter, chapter ) {
+                return ( Engine.ChaptermarkManager.isChapterMarked( chapter, markedChapter ) ? 'Remove the "recently read" marker from this chapter' : 'Mark this chapter as "recently read"');
             }
 
             /**
              *
              */
-            getChapterMarkClass( markedChapterID, chapter ) {
-                return ( markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ? 'fas markerActive' : 'far markerInactive');
+            getChapterMarkClass( markedChapter, chapter ) {
+                return ( Engine.ChaptermarkManager.isChapterMarked( chapter, markedChapter ) ? 'fas markerActive' : 'far markerInactive');
             }
 
             /**
@@ -441,6 +441,13 @@
             }
 
             /**
+             * 
+             */
+            onUnmarkChapterClick( event ) {
+                Engine.ChaptermarkManager.deleteChaptermark( this.markedChapter );
+            }
+
+            /**
              *
              */
             onMarkChapterClick( e ) {
@@ -448,8 +455,8 @@
                     return;
                 }
                 let chapter = e.model.item;
-                if( this.markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) ) {
-                    Engine.ChaptermarkManager.deleteChaptermark( chapter );
+                if( Engine.ChaptermarkManager.isChapterMarked( chapter, this.markedChapter ) ) {
+                    Engine.ChaptermarkManager.deleteChaptermark( this.markedChapter );
                 } else {
                     Engine.ChaptermarkManager.addChaptermark( chapter );
                 }
@@ -460,7 +467,7 @@
              */
             onChaptermarksChanged( e ) {
                 let chaptermark = Engine.ChaptermarkManager.getChaptermark( this.selectedManga );
-                this.set( 'markedChapterID', ( chaptermark ? chaptermark.chapterID : undefined ) );
+                this.set( 'markedChapter', chaptermark );
             }
 
             /**
