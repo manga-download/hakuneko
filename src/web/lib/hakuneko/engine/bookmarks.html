@@ -145,7 +145,7 @@
          * Callback will be provided with an error (or null if no error).
          */
         saveProfile( profile, callback ) {
-            Engine.Storage.saveConfig( 'bookmarks', this.bookmarks )
+            Engine.Storage.saveConfig( 'bookmarks', this.bookmarks, 2 )
             .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
                 if( typeof( callback ) === typeof( Function ) ) {

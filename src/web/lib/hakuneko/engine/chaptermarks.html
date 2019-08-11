@@ -1,7 +1,7 @@
 <script>
 
     /**
-     * Base class for common BookmarkManager class implementation
+     * 
      */
     class ChaptermarkManager {
 
@@ -34,7 +34,7 @@
          * Will reset chaptermarks when saving fails.
          */
         _syncChaptermarks( callback ) {
-            Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks )
+            Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
             .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
                 if( typeof( callback ) === typeof( Function ) ) {
