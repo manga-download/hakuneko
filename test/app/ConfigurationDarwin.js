@@ -29,7 +29,7 @@ describe('ConfigurationDarwin', function() {
         });
 
         it('applicationUpdateURL', () => {
-            assert.equal(testee.applicationUpdateURL, 'http://static.hakuneko.download/5.0.8/latest');
+            assert.equal(testee.applicationUpdateURL, 'http://static.hakuneko.download/6.0/latest');
         });
 
         it('connectorProtocol', () => {
