@@ -1,5 +1,5 @@
 {
-  "name": "hakuneko",
+  "name": "hakuneko-dev",
   "version": "1.0.0",
   "description": "HakuNeko",
   "author": "Ronny Wegener <wegener.ronny@gmail.com>",
@@ -28,8 +28,8 @@
   "scripts": {
     "postinstall": "cd src/app && npm install",
     "start": "npm run start:dev",
-    "start:dev": "electron ./src/app --update-url=DISABLED --cache-directory=../web",
-    "start:build": "npm run build:web && electron ./src/app --update-url=DISABLED --cache-directory=../../build/latest",
+    "start:dev": "electron . --update-url=DISABLED --cache-directory=./src/web",
+    "start:build": "npm run build:web && electron . --update-url=DISABLED --cache-directory=./build/latest",
     "build:app": "node build-app.js",
     "build:web": "node build-web.js",
     "deploy:web": "npm run build:web && node deploy-web.js",
