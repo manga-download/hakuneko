@@ -93,7 +93,7 @@
             .then( chapters => {
                 for( let existingChapterTitle in this.existingChapters ) {
                     if( !this.isChapterFileCached( existingChapterTitle ) ) {
-                        this.chapterCache.push( new Chapter( this, Symbol(), existingChapterTitle, undefined, DownloadStatus.offline ) );
+                        this.chapterCache.push( new Chapter( this, 'file:///' + existingChapterTitle, existingChapterTitle, undefined, DownloadStatus.offline ) );
                     }
                 }
                 callback( null, this.chapterCache );
