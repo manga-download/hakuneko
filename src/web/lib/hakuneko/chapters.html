@@ -1,5 +1,6 @@
 <link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../polymer/lib/elements/dom-if.html">
 <link rel="import" href="engine/engine.html">
 <link rel="import" href="engine/enums.html">
 <link rel="import" href="status.html">
@@ -81,6 +82,9 @@
             .markerInactive {
                 color: var(--chapter-marker-inactive-color);
             }
+            .markerRemoved {
+                color: var(--chapter-marker-removed-color);
+            }
             .markerDisabled {
                 visibility: hidden !important;
             }
@@ -130,6 +134,14 @@
         </table>
         <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
         <ul class="list" >
+            <template is="dom-if" if="[[ existChaptermarkForChapters(markedChapterID, chapterList) ]]">
+                <li>
+                    <i class="fas fa-fw"></i>
+                    <i class="fas fa-fw"></i>
+                    <i class="fas fa-fw fa-bookmark markerRemoved"></i>
+                    <span class="title markerRemoved" title$="The chapter that has been marked as 'recently read' is no longer available&#10;ID: [[ markedChapterID ]]&#10;Title: -">Chapter not Found</span>
+                </li>
+            </template>
             <template is="dom-repeat" items="[[ chapterList ]]" filter="[[ filterChapters(searchPattern, searchLanguage) ]]" sort="[[ sortChapters(chapterSort) ]]" rendered-item-count="{{ chapterFilteredCount }}" initial-count="500" target-framerate="5">
                 <li class$="[[ getChapterClass(selectedChapter, item.id) ]]">
                     <i class$="fas fa-fw button [[ getChapterDownloadClass(item.status) ]]" on-click="onProcessChapterClick" title$="[[ getChapterDownloadTooltip(item.status) ]]"></i>
@@ -312,6 +324,13 @@
                     default:
                         return '';
                 }
+            }
+
+            /**
+             *
+             */
+            existChaptermarkForChapters( markedChapterID, chapterList ) {
+                return markedChapterID && chapterList && !chapterList.find( chapter => markedChapterID === Engine.ChaptermarkManager.getChapterIdentifier( chapter ) );
             }
 
             /**
