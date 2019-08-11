@@ -23,7 +23,7 @@ module.exports = class Configuration {
     constructor(configuration) {
         let options = configuration || {};
         let applicationExecutableDirectory = path.dirname(electron.app.getPath('exe'));
-        this._applicationUpdateURL = options['applicationUpdateURL'] || 'http://static.hakuneko.download/5.0.8/latest';
+        this._applicationUpdateURL = options['applicationUpdateURL'] || 'http://static.hakuneko.download/6.0/latest';
         this._applicationStartupURL = options['applicationStartupURL'] || 'cache://hakuneko/index.html';
         this._applicationCacheDirectory = options['applicationCacheDirectory'] || path.join(applicationExecutableDirectory, 'cache');
         this._applicationUserDataDirectory = options['applicationUserDataDirectory'] || path.join(applicationExecutableDirectory, 'userdata');
