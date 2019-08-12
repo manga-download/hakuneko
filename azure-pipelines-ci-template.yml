@@ -18,19 +18,15 @@ steps:
 - script: npm run build:web
   displayName: 'Build (web)'
 
-- script: npm run test:app -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-app.xml
+- script: npm run test
   continueOnError: true
-  displayName: 'Test (app)'
-
-- script: npm run test:web -- --reporter mocha-junit-reporter --reporter-options mochaFile=test-web.xml --renderer
-  continueOnError: true
-  displayName: 'Test (web)'
+  displayName: 'Test'
 
 # https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=azure-devops
 - task: PublishTestResults@2
   inputs:
     testResultsFormat: 'JUnit'
-    testResultsFiles: '**/test-*.xml'
+    testResultsFiles: '**/junit.xml'
     mergeTestResults: true
     testRunTitle: 'TestResults_$(Agent.OS)'
     buildConfiguration: $(Agent.OS)
