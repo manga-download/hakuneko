@@ -1,6 +1,5 @@
 const path = require('path');
 const fs = require('fs-extra');
-const assert = require('assert');
 const { FileLogger } = require('logtrine');
 const CacheDirectoryManager = require('../../src/app/CacheDirectoryManager');
 var logger = new FileLogger(__filename + '.log', FileLogger.LEVEL.All);
@@ -72,76 +71,66 @@ class TestFixture {
  * MODULE TESTS
  */
 describe('CacheDirectoryManager', function () {
-
-    this.timeout(5000);
-
     describe('getCurrentVersion()', function () {
-
         it('when file exist then valid result', async () => {
             TestFixture.createMockDirectory();
             let testee = TestFixture.createTestee();
             let version = await testee.getCurrentVersion();
             TestFixture.deleteMockDirectory();
-            assert.equal(version, TestFixture.version.content);
+            expect(version).toEqual(TestFixture.version.content);
         });
-
         it('when file not exist then undefined', async () => {
             TestFixture.deleteMockDirectory();
             let testee = TestFixture.createTestee();
             let version = await testee.getCurrentVersion();
-            assert.equal(version, undefined);
+            expect(version).toEqual(undefined);
         });
     });
-
     describe('applyUpdateArchive()', function () {
-
         it('when archive invalid and cache empty then cache empty', async () => {
             TestFixture.deleteMockDirectory();
             let testee = TestFixture.createTestee();
+            expect.assertions(2);
             try {
                 await testee.applyUpdateArchive('111111', TestFixture.archiveInvalidMock);
-                assert.fail('Expected error not thrown!');
             } catch(error) {
-                assert.equal(error.message.split(':')[0].trim(), 'Can\'t find end of central directory');
-                assert.equal(fs.existsSync(TestFixture.applicationCacheDirectory), false);
+                expect(error.message.split(':')[0].trim()).toEqual('Can\'t find end of central directory');
+                expect(fs.existsSync(TestFixture.applicationCacheDirectory)).toEqual(false);
             } finally {
                 TestFixture.deleteMockDirectory();
             }
         });
-
         it('when archive invalid and cache exist then cache kept', async () => {
             TestFixture.createMockDirectory();
             let testee = TestFixture.createTestee();
+            expect.assertions(4);
             try {
                 await testee.applyUpdateArchive('111111', TestFixture.archiveInvalidMock);
-                assert.fail('Expected error not thrown!');
             } catch(error) {
-                assert.equal(error.message.split(':')[0].trim(), 'Can\'t find end of central directory');
-                assert.equal(fs.readFileSync(TestFixture.version.file, 'utf8'), TestFixture.version.content);
-                assert.equal(fs.readFileSync(TestFixture.dummy.file, 'utf8'), TestFixture.dummy.content);
-                assert.equal(fs.existsSync(TestFixture.index.file), false);
+                expect(error.message.split(':')[0].trim()).toEqual('Can\'t find end of central directory');
+                expect(fs.readFileSync(TestFixture.version.file, 'utf8')).toEqual(TestFixture.version.content);
+                expect(fs.readFileSync(TestFixture.dummy.file, 'utf8')).toEqual(TestFixture.dummy.content);
+                expect(fs.existsSync(TestFixture.index.file)).toEqual(false);
             } finally {
                 TestFixture.deleteMockDirectory();
             }
         });
-
         it('when archive valid and cache empty then cache created', async () => {
             TestFixture.deleteMockDirectory();
             let testee = TestFixture.createTestee();
             await testee.applyUpdateArchive('111111', TestFixture.archiveValidMock);
-            assert.equal(fs.readFileSync(TestFixture.version.file, 'utf8'), '111111');
-            assert.equal(fs.readFileSync(TestFixture.index.file, 'utf8'), 'OK');
-            assert.equal(fs.existsSync(TestFixture.dummy.file), false);
+            expect(fs.readFileSync(TestFixture.version.file, 'utf8')).toEqual('111111');
+            expect(fs.readFileSync(TestFixture.index.file, 'utf8')).toEqual('OK');
+            expect(fs.existsSync(TestFixture.dummy.file)).toEqual(false);
             TestFixture.deleteMockDirectory();
         });
-
         it('when archive valid and cache exist then cache replaced', async () => {
             TestFixture.createMockDirectory();
             let testee = TestFixture.createTestee();
             await testee.applyUpdateArchive('111111', TestFixture.archiveValidMock);
-            assert.equal(fs.readFileSync(TestFixture.version.file, 'utf8'), '111111');
-            assert.equal(fs.readFileSync(TestFixture.index.file, 'utf8'), 'OK');
-            assert.equal(fs.existsSync(TestFixture.dummy.file), false);
+            expect(fs.readFileSync(TestFixture.version.file, 'utf8')).toEqual('111111');
+            expect(fs.readFileSync(TestFixture.index.file, 'utf8')).toEqual('OK');
+            expect(fs.existsSync(TestFixture.dummy.file)).toEqual(false);
             TestFixture.deleteMockDirectory();
         });
     });
