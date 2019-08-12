@@ -15,12 +15,12 @@
     "@hakuneko/kindlegen-binaries": "latest",
     "asar": "latest",
     "electron": "6.0.1",
-    "electron-mocha": "latest",
     "fs-extra": "latest",
     "innosetup-compiler": "latest",
+    "jest": "latest",
+    "jest-junit": "latest",
     "jszip": "latest",
     "logtrine": "latest",
-    "mocha-junit-reporter": "latest",
     "polymer-build": "latest",
     "rcedit": "latest",
     "win-7zip": "latest"
@@ -33,8 +33,8 @@
     "build:app": "node build-app.js",
     "build:web": "node build-web.js",
     "deploy:web": "npm run build:web && node deploy-web.js",
-    "test": "npm run test:app && npm run test:web",
-    "test:app": "electron-mocha --colors --recursive test/app",
-    "test:web": "electron-mocha --colors --recursive --renderer test/web"
+    "test": "jest --color --reporters=default --reporters=jest-junit",
+    "test:app": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/test/app",
+    "test:web": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/test/web"
   }
 }

@@ -11,3 +11,4 @@ cache
 .helper
 /redist/*.zip
 /test/*.log
+junit.xml
