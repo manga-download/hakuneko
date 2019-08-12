@@ -1,4 +1,3 @@
-const assert = require('assert');
 const CommandlineArgumentExtractor = require('../../src/app/CommandlineArgumentExtractor.js');
 
 describe('CommandlineArgumentExtractor', function() {
@@ -7,42 +6,42 @@ describe('CommandlineArgumentExtractor', function() {
 
         it('contains flag', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '-c']);
-            assert.equal(testee._get('-b', true), true);
+            expect(testee._get('-b', true)).toEqual(true);
         });
 
         it('does not contain flag', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '-c']);
-            assert.equal(testee._get('-x', true), false);
+            expect(testee._get('-x', true)).toEqual(false);
         });
         
         it('contains flag when followed by value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '1']);
-            assert.equal(testee._get('-b', true), true);
+            expect(testee._get('-b', true)).toEqual(true);
         });
         
         it('followed by value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', 'x']);
-            assert.equal(testee._get('-b'), 'x');
+            expect(testee._get('-b')).toEqual('x');
         });
         
         it('followed by option instead of value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '-c']);
-            assert.equal(testee._get('-b'), undefined);
+            expect(testee._get('-b')).toEqual(undefined);
         });
         
         it('no value because at end', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '-c']);
-            assert.equal(testee._get('-c'), undefined);
+            expect(testee._get('-c')).toEqual(undefined);
         });
         
         it('assigned value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b=x', '-c']);
-            assert.equal(testee._get('-b'), 'x');
+            expect(testee._get('-b')).toEqual('x');
         });
         
         it('assigned nothing', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b=', '-c']);
-            assert.equal(testee._get('-b'), undefined);
+            expect(testee._get('-b')).toEqual(undefined);
         });
     });
 
@@ -51,37 +50,37 @@ describe('CommandlineArgumentExtractor', function() {
         it('--update-url', () => {
             let expected = 'https://raw.gihub.com/manga-downloader/releases/0.4.0/latest';
             let testee = new CommandlineArgumentExtractor([`--update-url=${expected}`]);
-            assert.equal(testee.options.applicationUpdateURL, expected);
+            expect(testee.options.applicationUpdateURL).toEqual(expected);
         });
 
         it('-u', () => {
             let expected = 'https://raw.gihub.com/manga-downloader/releases/0.4.0/latest';
             let testee = new CommandlineArgumentExtractor(['-u', expected]);
-            assert.equal(testee.options.applicationUpdateURL, expected);
+            expect(testee.options.applicationUpdateURL).toEqual(expected);
         });
 
         it('--startup-url', () => {
             let expected = 'cache://hakuneko/index.html';
             let testee = new CommandlineArgumentExtractor([`--startup-url=${expected}`]);
-            assert.equal(testee.options.applicationStartupURL, expected);
+            expect(testee.options.applicationStartupURL).toEqual(expected);
         });
 
         it('--cache-directory', () => {
             let expected = './cache';
             let testee = new CommandlineArgumentExtractor([`--cache-directory=${expected}`]);
-            assert.equal(testee.options.applicationCacheDirectory, expected);
+            expect(testee.options.applicationCacheDirectory).toEqual(expected);
         });
 
         it('-c', () => {
             let expected = './cache';
             let testee = new CommandlineArgumentExtractor(['-c', expected]);
-            assert.equal(testee.options.applicationCacheDirectory, expected);
+            expect(testee.options.applicationCacheDirectory).toEqual(expected);
         });
 
         it('--user-directory', () => {
             let expected = './user';
             let testee = new CommandlineArgumentExtractor([`--user-directory=${expected}`]);
-            assert.equal(testee.options.applicationUserDataDirectory, expected);
+            expect(testee.options.applicationUserDataDirectory).toEqual(expected);
         });
     });
 
@@ -89,32 +88,32 @@ describe('CommandlineArgumentExtractor', function() {
 
         it('--update-url', () => {
             let testee = new CommandlineArgumentExtractor([]);
-            assert.equal(testee.options.applicationUpdateURL, undefined);
+            expect(testee.options.applicationUpdateURL).toEqual(undefined);
         });
 
         it('-u', () => {
             let testee = new CommandlineArgumentExtractor([]);
-            assert.equal(testee.options.applicationUpdateURL, undefined);
+            expect(testee.options.applicationUpdateURL).toEqual(undefined);
         });
 
         it('--startup-url', () => {
             let testee = new CommandlineArgumentExtractor([]);
-            assert.equal(testee.options.applicationStartupURL, undefined);
+            expect(testee.options.applicationStartupURL).toEqual(undefined);
         });
 
         it('--cache-directory', () => {
             let testee = new CommandlineArgumentExtractor([]);
-            assert.equal(testee.options.applicationCacheDirectory, undefined);
+            expect(testee.options.applicationCacheDirectory).toEqual(undefined);
         });
 
         it('-c', () => {
             let testee = new CommandlineArgumentExtractor([]);
-            assert.equal(testee.options.applicationCacheDirectory, undefined);
+            expect(testee.options.applicationCacheDirectory).toEqual(undefined);
         });
 
         it('--user-directory', () => {
             let testee = new CommandlineArgumentExtractor([]);
-            assert.equal(testee.options.applicationUserDataDirectory, undefined);
+            expect(testee.options.applicationUserDataDirectory).toEqual(undefined);
         });
     });
 
