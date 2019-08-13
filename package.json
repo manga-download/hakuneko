@@ -34,7 +34,7 @@
     "build:web": "node build-web.js",
     "deploy:web": "npm run build:web && node deploy-web.js",
     "test": "jest --color --reporters=default --reporters=jest-junit",
-    "test:app": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/test/app",
-    "test:web": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/test/web"
+    "test:app": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/app",
+    "test:web": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/web"
   }
 }
