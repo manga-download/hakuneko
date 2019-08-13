@@ -27,7 +27,7 @@ module.exports = class CacheDirectoryManager {
      * @param {JSZip} archive 
      * @param {string} directory 
      * @param {string} entry 
-     * @returns {Promise<void>} A promise that will resolve on successful, otherwise reject with a related error
+     * @returns {Promise<void>} A promise that will resolve on success, otherwise reject with a related error
      */
     _extractZipEntry(archive, directory, entry) {
         if(!archive.files[entry].dir) {
@@ -36,6 +36,8 @@ module.exports = class CacheDirectoryManager {
             return fs.ensureDir(path.dirname(file))
             .then(() => archive.files[entry].async('uint8array'))
             .then(data => fs.writeFile(file, data));
+        } else {
+            return Promise.resolve();
         }
     }
 
