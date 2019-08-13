@@ -1,4 +1,4 @@
-const CommandlineArgumentExtractor = require('../../src/app/CommandlineArgumentExtractor.js');
+const CommandlineArgumentExtractor = require('../CommandlineArgumentExtractor.js');
 
 describe('CommandlineArgumentExtractor', function() {
 
