@@ -1,3 +1,4 @@
+const path = require('path');
 const { FileLogger } = require('logtrine');
 const CacheDirectoryManager = require('../CacheDirectoryManager');
 var logger = new FileLogger(__filename + '.log', FileLogger.LEVEL.All);
@@ -73,9 +74,9 @@ describe('CacheDirectoryManager', function () {
             let testee = new CacheDirectoryManager('/cache', logger);
             await testee._extractZipEntry(archiveMock, '/cache', 'dir/sub/file');
             expect(fs.ensureDir).toHaveBeenCalledTimes(1);
-            expect(fs.ensureDir).toHaveBeenLastCalledWith('/cache/dir/sub');
+            expect(fs.ensureDir).toHaveBeenLastCalledWith(path.normalize('/cache/dir/sub'));
             expect(fs.writeFile).toHaveBeenCalledTimes(1);
-            expect(fs.writeFile).toHaveBeenLastCalledWith('/cache/dir/sub/file', 'RAW BYTES');
+            expect(fs.writeFile).toHaveBeenLastCalledWith(path.normalize('/cache/dir/sub/file'), 'RAW BYTES');
             expect(archiveMock.files['dir/sub/file'].async).toHaveBeenCalledTimes(1);
             expect(archiveMock.files['dir/sub/file'].async).toHaveBeenLastCalledWith('uint8array');
         });
@@ -112,13 +113,13 @@ describe('CacheDirectoryManager', function () {
             expect(loadAsyncMock).toHaveBeenCalledTimes(1);
             expect(loadAsyncMock).toHaveBeenLastCalledWith('ARCHIVE BYTES', {});
             expect(fs.remove).toHaveBeenCalled();
-            expect(fs.remove).toHaveBeenLastCalledWith('/cache');
+            expect(fs.remove).toHaveBeenLastCalledWith(path.normalize('/cache'));
             expect(fs.writeFile).toHaveBeenCalled();
-            expect(fs.writeFile).toHaveBeenLastCalledWith('/cache/version', '1.0.0');
+            expect(fs.writeFile).toHaveBeenLastCalledWith(path.normalize('/cache/version'), '1.0.0');
             expect(testee._extractZipEntry).toHaveBeenCalledTimes(3);
-            expect(testee._extractZipEntry).toHaveBeenCalledWith(archive, '/cache', 'index.html');
-            expect(testee._extractZipEntry).toHaveBeenCalledWith(archive, '/cache', 'js');
-            expect(testee._extractZipEntry).toHaveBeenCalledWith(archive, '/cache', 'js/app.js');
+            expect(testee._extractZipEntry).toHaveBeenCalledWith(archive, path.normalize('/cache'), 'index.html');
+            expect(testee._extractZipEntry).toHaveBeenCalledWith(archive, path.normalize('/cache'), 'js');
+            expect(testee._extractZipEntry).toHaveBeenCalledWith(archive, path.normalize('/cache'), 'js/app.js');
         });
     });
 });
