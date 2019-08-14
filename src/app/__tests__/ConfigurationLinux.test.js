@@ -23,7 +23,13 @@ jest.mock('electron', () => {
 });
 const electron = require('electron');
 
-(process.platform === 'linux' ? describe : describe.skip)('ConfigurationLinux', function() {
+if(process.platform !== 'linux') {
+    let noop = () => {};
+    test.skip('ConfigurationLinux', noop);
+    describe = noop;
+}
+
+describe('ConfigurationLinux', function() {
 
     beforeEach(() => {
         jest.clearAllMocks();

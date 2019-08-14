@@ -24,7 +24,13 @@ jest.mock('electron', () => {
 });
 const electron = require('electron');
 
-(process.platform === 'win32' ? describe : describe.skip)('ConfigurationWindows', function() {
+if(process.platform !== 'win32') {
+    let noop = () => {};
+    test.skip('ConfigurationWindows', noop);
+    describe = noop;
+}
+
+describe('ConfigurationWindows', function() {
 
     beforeEach(() => {
         jest.clearAllMocks();

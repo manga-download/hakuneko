@@ -23,7 +23,13 @@ jest.mock('electron', () => {
 });
 const electron = require('electron');
 
-(process.platform === 'darwin' ? describe : describe.skip)('ConfigurationDarwin', function() {
+if(process.platform !== 'darwin') {
+    let noop = () => {};
+    test.skip('ConfigurationDarwin', noop);
+    describe = noop;
+}
+
+describe('ConfigurationDarwin', function() {
 
     beforeEach(() => {
         jest.clearAllMocks();
