@@ -1,5 +1,5 @@
 const assert = require('assert');
-const UpdatePackageInfo = require('../../src/app/UpdatePackageInfo');
+const UpdatePackageInfo = require('../UpdatePackageInfo');
 const publicKey =
 `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzx5ZZjtNPDbf/iGqdjQj
@@ -39,18 +39,16 @@ class TestFixture {
  */
 describe('UpdatePackageInfo', function () {
 
-    this.timeout(5000);
+    describe('validate()', function () {
 
-    describe('validate', function () {
-
-        it('when signature matches archive then resolve', async () => {
+        it('should get result when the signature is valid for the archive', async () => {
             let expected = TestFixture.archiveMock.archive;
             let testee = new UpdatePackageInfo('', TestFixture.archiveMock.signature, '');
             let result = await testee.validate(expected, publicKey);
             assert.equal(result, expected);
         });
 
-        it('when signature mismatches archive then reject', async () => {
+        it('should throw error when the signature is invalid for the archive', async () => {
             let testee = new UpdatePackageInfo('', TestFixture.emptyMock.signature, '');
             try {
                 await testee.validate(TestFixture.archiveMock.archive, publicKey);
