@@ -15,7 +15,8 @@ jest.mock('electron', () => {
                     case 'userCache': return undefined;
                     default: return undefined;
                 }
-            })
+            }),
+            getName: jest.fn(() => 'HakuNeko')
         }
     };
 });

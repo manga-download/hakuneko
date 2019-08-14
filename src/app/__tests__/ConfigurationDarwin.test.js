@@ -16,7 +16,8 @@ jest.mock('electron', () => {
                     case 'userCache': return path.resolve(process.env.HOME, 'Library', 'Caches', 'HakuNeko');
                     default: return undefined;
                 }
-            })
+            }),
+            getName: jest.fn(() => 'HakuNeko')
         }
     };
 });
