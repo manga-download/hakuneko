@@ -1,7 +1,7 @@
 const http = require('http');
 const assert = require('assert');
 const { FileLogger } = require('logtrine');
-const UpdateServerManager = require('../../src/app/UpdateServerManager');
+const UpdateServerManager = require('../UpdateServerManager');
 var logger = new FileLogger(__filename + '.log', FileLogger.LEVEL.All);
 logger.clear();
 
@@ -88,35 +88,34 @@ class TestFixture {
  */
 describe('UpdateServerManager', function () {
 
-    this.timeout(5000);
     let fixture = new TestFixture();
 
-    describe('constructor', function () {
+    describe('constructor()', function () {
 
-        it('when valid URL then assigned', async () => {
+        it('should use URL when URL is valid', async () => {
             let testee = new UpdateServerManager('https://localhost', logger);
             assert.equal(testee._applicationUpdateURL, 'https://localhost');
         });
         
-        it('when invalid URL then default', async () => {
+        it('should use default when URL is invalid', async () => {
             let testee = new UpdateServerManager('null', logger);
             assert.equal(testee._applicationUpdateURL, undefined);
         });
         
-        it('when undefined URL then default', async () => {
+        it('should use default when URL is undefined', async () => {
             let testee = new UpdateServerManager(undefined, logger);
             assert.equal(testee._applicationUpdateURL, undefined);
         });
         
-        it('when invalid URL type then default', async () => {
+        it('should use default when URL has wrong type', async () => {
             let testee = new UpdateServerManager(123, logger);
             assert.equal(testee._applicationUpdateURL, undefined);
         });
     });
 
-    describe('getUpdateInfo', function () {
+    describe('getUpdateInfo()', function () {
 
-        it('when valid URL then valid result', async () => {
+        it('should get valid result when URL is valid', async () => {
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
             let testee = fixture.createTestee();
             let info = await testee.getUpdateInfo();
@@ -129,7 +128,7 @@ describe('UpdateServerManager', function () {
             assert.equal(info.link, expected);
         });
         
-        it('when inexistent URL then error', async () => {
+        it('should throw error when URL does not exist', async () => {
             let testee = new UpdateServerManager(fixture.applicationUpdateURL + '/invalid', logger);
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
             try {
@@ -142,7 +141,7 @@ describe('UpdateServerManager', function () {
             }
         });
         
-        it('when unreachable URL then error', async () => {
+        it('should throw error when host cannot be reached', async () => {
             let testee = fixture.createTestee();
             try {
                 await testee.getUpdateInfo();
@@ -152,7 +151,7 @@ describe('UpdateServerManager', function () {
             }
         });
         
-        it('when invalid URL then error', async () => {
+        it('should throw error when URL is invalid', async () => {
             let testee = new UpdateServerManager('null', logger);
             try {
                 await testee.getUpdateInfo();
@@ -162,7 +161,7 @@ describe('UpdateServerManager', function () {
             }
         });
         
-        it('when default URL then error', async () => {
+        it('should throw error when URL is undefined', async () => {
             let testee = new UpdateServerManager(undefined, logger);
             try {
                 await testee.getUpdateInfo();
@@ -173,9 +172,9 @@ describe('UpdateServerManager', function () {
         });
     });
 
-    describe('getUpdateArchive', function () {
+    describe('getUpdateArchive()', function () {
 
-        it('when valid URL then valid result', async () => {
+        it('should get valid result when URL is valid', async () => {
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
             let testee = fixture.createTestee();
             let info = await testee.getUpdateInfo();
@@ -184,7 +183,7 @@ describe('UpdateServerManager', function () {
             assert.equal(archive.length, fixture.archiveMock.archive.length);
         });
         
-        it('when inexistent URL then error', async () => {
+        it('should throw error when URL does not exist', async () => {
             let testee = fixture.createTestee();
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
             try {
@@ -197,7 +196,7 @@ describe('UpdateServerManager', function () {
             }
         });
 
-        it('when unreachable URL then error', async () => {
+        it('should throw error when host cannot be reached', async () => {
             let testee = fixture.createTestee();
             try {
                 await testee.getUpdateArchive({link: fixture.applicationUpdateURL + '.zip'});
@@ -207,17 +206,17 @@ describe('UpdateServerManager', function () {
             }
         });
         
-        it('when invalid URL then error', async () => {
+        it('should throw error when URL is invalid', async () => {
             let testee = fixture.createTestee();
             try {
                 await testee.getUpdateArchive({link: 'null'});
                 assert.fail('Expected error not thrown!');
             } catch(error) {
-                assert.equal(error.message, 'Invalid URL: null');
+                assert.equal(error.message, 'Unable to determine the domain name');
             }
         });
         
-        it('when undefined URL then error', async () => {
+        it('should throw error when URL is undefined', async () => {
             let testee = fixture.createTestee();
             try {
                 await testee.getUpdateArchive({link: undefined});
