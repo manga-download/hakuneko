@@ -3,9 +3,9 @@ const path = require('path');
 const fs = require('fs-extra');
 const assert = require('assert');
 const { FileLogger } = require('logtrine');
-const UpdateServerManager = require('../../src/app/UpdateServerManager');
-const CacheDirectoryManager = require('../../src/app/CacheDirectoryManager');
-const Updater = require('../../src/app/Updater');
+const UpdateServerManager = require('../UpdateServerManager');
+const CacheDirectoryManager = require('../CacheDirectoryManager');
+const Updater = require('../Updater');
 var logger = new FileLogger(__filename + '.log', FileLogger.LEVEL.All);
 logger.clear();
 
@@ -142,12 +142,11 @@ class TestFixture {
  */
 describe('Updater', function () {
 
-    this.timeout(5000);
     let fixture = new TestFixture();
 
-    describe('updateCache', function () {
+    describe('updateCache()', function () {
 
-        it('when cache is non-empty and server is newer and archive is valid then update cache', async () => {
+        it('should update cache when when cache is non-empty and server is newer and archive is valid', async () => {
             fixture.createMockDirectory();
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
             let testee = fixture.createTestee();
@@ -159,7 +158,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is non-empty and server is newer and archive is invalid then keep cache', async () => {
+        it('should keep cache when cache is non-empty and server is newer and archive is invalid', async () => {
             fixture.createMockDirectory();
             fixture.serverStart(fixture.emptyMock.signature, fixture.emptyMock.archive);
             let testee = fixture.createTestee();
@@ -171,7 +170,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is non-empty and server is newer and archive is valid and signature mismatch then keep cache', async () => {
+        it('should keep cache when cache is non-empty and server is newer and archive is valid and signature mismatch', async () => {
             fixture.createMockDirectory();
             fixture.serverStart(fixture.emptyMock.signature, fixture.archiveMock.archive);
             let testee = fixture.createTestee();
@@ -183,7 +182,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is non-empty and server is same and archive is valid then keep cache', async () => {
+        it('should keep cache when cache is non-empty and server is same and archive is valid', async () => {
             fixture.createMockDirectory();
             fs.writeFileSync(fixture.version.file, '111111');
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
@@ -196,7 +195,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is non-empty and server is same and archive is invalid then keep cache', async () => {
+        it('should keep cache when cache is non-empty and server is same and archive is invalid', async () => {
             fixture.createMockDirectory();
             fs.writeFileSync(fixture.version.file, '000000');
             fixture.serverStart(fixture.emptyMock.signature, fixture.emptyMock.archive);
@@ -209,7 +208,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is non-empty and server has error then keep cache', async () => {
+        it('should keep cache when cache is non-empty and server has error', async () => {
             fixture.createMockDirectory();
             fixture.serverStop();
             let testee = fixture.createTestee();
@@ -220,7 +219,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is empty and server is newer and archive is valid then update cache', async () => {
+        it('should update cache when cache is empty and server is newer and archive is valid', async () => {
             fixture.deleteMockDirectory();
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
             let testee = fixture.createTestee();
@@ -232,7 +231,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is empty and server is newer and archive is invalid then cache empty', async () => {
+        it('should keep (empty) cache when cache is empty and server is newer and archive is invalid', async () => {
             fixture.deleteMockDirectory();
             fixture.serverStart(fixture.emptyMock.signature, fixture.emptyMock.archive);
             let testee = fixture.createTestee();
@@ -244,7 +243,7 @@ describe('Updater', function () {
             fixture.deleteMockDirectory();
         });
 
-        it('when cache is empty and server has error then cache empty', async () => {
+        it('should keep (empty) when cache is empty and server has error', async () => {
             fixture.deleteMockDirectory();
             fixture.serverStop();
             let testee = fixture.createTestee();
