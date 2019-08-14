@@ -1,3 +1,4 @@
+const path = require('path');
 const Configuration = require('../Configuration.js');
 
 jest.mock('fs-extra');
@@ -29,8 +30,8 @@ describe('Configuration', function() {
         applicationUpdateURL: 'applicationUpdateURL',
         connectorProtocol: 'connectorProtocol',
         applicationStartupURL: 'protocol://applicationStartupURL',
-        applicationCacheDirectory: '/home/.cache/hakuneko',
-        applicationUserDataDirectory: '/home/.config/hakuneko'
+        applicationCacheDirectory: path.resolve('/home/.cache/hakuneko'),
+        applicationUserDataDirectory: path.resolve('/home/.config/hakuneko')
     };
 
     describe('isPortable', function() {
@@ -109,7 +110,7 @@ describe('Configuration', function() {
     describe('applicationCacheDirectory', function() {
         it('should have default after initialization', () => {
             let testee = new Configuration(undefined);
-            expect(testee.applicationCacheDirectory).toEqual('/usr/bin/cache');
+            expect(testee.applicationCacheDirectory).toEqual(path.resolve('/usr/bin/cache'));
             expect(electron.app.getPath).toHaveBeenCalledTimes(1);
             expect(electron.app.getPath).toHaveBeenLastCalledWith('exe');
         });
@@ -119,14 +120,14 @@ describe('Configuration', function() {
         });
         it('should be overwritten by relative cache directory from options', () => {
             let testee = new Configuration({ applicationCacheDirectory: '../cache' });
-            expect(testee.applicationCacheDirectory).toEqual('/usr/cache');
+            expect(testee.applicationCacheDirectory).toEqual(path.resolve('/usr/cache'));
         });
     });
 
     describe('applicationUserDataDirectory', function() {
         it('should have default after initialization', () => {
             let testee = new Configuration(undefined);
-            expect(testee.applicationUserDataDirectory).toEqual('/usr/bin/userdata');
+            expect(testee.applicationUserDataDirectory).toEqual(path.resolve('/usr/bin/userdata'));
             expect(electron.app.getPath).toHaveBeenCalledTimes(1);
             expect(electron.app.getPath).toHaveBeenLastCalledWith('exe');
         });
@@ -136,7 +137,7 @@ describe('Configuration', function() {
         });
         it('should be overwritten by relative user data directory from options', () => {
             let testee = new Configuration({ applicationUserDataDirectory: '../data' });
-            expect(testee.applicationUserDataDirectory).toEqual('/usr/data');
+            expect(testee.applicationUserDataDirectory).toEqual(path.resolve('/usr/data'));
         });
     });
 });
