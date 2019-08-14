@@ -8,7 +8,14 @@ jest.mock('electron', () => {
     return {
         app: {
             getAppPath: jest.fn(() => '/usr/bin'),
-            getPath: jest.fn(type => type === 'exe' ? '/usr/bin/hakuneko' : undefined)
+            getPath: jest.fn(type => {
+                switch(type) {
+                    case 'exe': return '/usr/bin/hakuneko';
+                    case 'userData': return undefined;
+                    case 'userCache': return undefined;
+                    default: return undefined;
+                }
+            })
         }
     };
 });
