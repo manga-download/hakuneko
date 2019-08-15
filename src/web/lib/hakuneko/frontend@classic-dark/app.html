@@ -1,0 +1,176 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../engine/engine.html">
+<link rel="import" href="menu.html">
+<link rel="import" href="mangas.html">
+<link rel="import" href="chapters.html">
+<link rel="import" href="pages.html">
+<link rel="import" href="jobs.html">
+<link rel="import" href="quotes.html">
+
+<dom-module id="hakuneko-app">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                display: flex;
+                flex-direction: row;
+                width: 100%;
+                height: 100%;
+            }
+            .control {
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+                flex: 1;
+                border-right: var(--app-control-border);
+                -webkit-box-shadow: var(--app-control-shadow);
+                   -moz-box-shadow: var(--app-control-shadow);
+                        box-shadow: var(--app-control-shadow);
+                z-index: 1;
+            }
+            .show {
+                display: flex;
+            }
+            .hide {
+                display: none;
+            }
+            .mangas {
+                display: flex;
+                flex-direction: row;
+                /*width: 100%;*/
+                /*height: 100%;*/
+                flex: 1;
+                border-top: var(--app-control-border);
+                border-bottom: var(--app-control-border);
+                min-height: 0; /* fix for firefox to limit flexbox height to fit in parent */
+            }
+            hakuneko-menu {
+                flex: 0;
+            }
+            hakuneko-jobs {
+                flex: 0;
+            }
+            hakuneko-pages {
+                flex: 100;
+                z-index: 0;
+                overflow-x: hidden;
+            }
+
+            #loader {
+                position: fixed;
+                color: var(--app-loading-screen-color);
+                background-color: var(--app-loading-screen-background-color);
+                text-align: center;
+                font-size: 1.5em;
+                padding: 1em;
+                top: 0%;
+                left: 0%;
+                bottom: 0%;
+                right: 0%;
+                z-index: 9999;
+            }
+
+            .quote {
+                display: inline-block;
+                max-width: 75%;
+                text-align: left;
+            }
+
+            .quoteText {
+                border-left: var(--app-loading-screen-quote-border);
+                padding-left: 0.5em;
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+                font-weight: bold;
+                font-style: italic;
+            }
+
+            .quoteAuthor {
+                text-align: right;
+                font-style: italic;
+            }
+
+            .suggestion {
+                position: absolute;
+                right: 0;
+                bottom: 0;
+                margin: 0.25em;
+                color: var(--app-loading-screen-link-color);
+                font-size: 0.75em;
+                text-decoration: none;
+            }
+        </style>
+        <div class$="control [[ getControlClass(selectedMediaIndex) ]]">
+            <hakuneko-menu></hakuneko-menu>
+            <div class="mangas">
+                <hakuneko-mangas style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
+                <hakuneko-chapters style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
+            </div>
+            <hakuneko-jobs></hakuneko-jobs>
+        </div>
+        <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled) ]]" selected-chapter="[[ chapter ]]" selected-media="{{ selectedMediaIndex }}"></hakuneko-pages>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoApp extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-app';
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.loadingMessage = quotes[Math.floor(Math.random()*quotes.length)];
+                // load settings in case UI was not ready when the settings were loaded and event was fired
+                this.readerEnabled = Engine.Settings.readerEnabled.value;
+                // register callbacks for published events
+                document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+            }
+
+            /**
+             *
+             */
+            getControlClass( index ) {
+                return ( index < 0 ? 'show' : 'hide' );
+            }
+
+            /**
+             *
+             */
+            getMangaListStyle(readerEnabled) {
+                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+            }
+
+            /**
+             *
+             */
+            getChapterListStyle(readerEnabled) {
+                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+            }
+
+            /**
+             *
+             */
+            getPagePanelStyle(readerEnabled) {
+                return ( readerEnabled ? '' : 'display: none;' );
+            }
+
+            /**
+             *
+             */
+            onSettingsChanged( e ) {
+                this.readerEnabled = Engine.Settings.readerEnabled.value;
+            }
+        }
+        window.customElements.define(HakunekoApp.is, HakunekoApp);
+    </script>
+
+</dom-module>

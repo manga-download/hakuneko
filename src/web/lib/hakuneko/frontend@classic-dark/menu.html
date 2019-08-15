@@ -1,0 +1,373 @@
+<link rel="import" href="../version.html">
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../engine/bookmarks-importer.html">
+<link rel="import" href="../engine/engine.html">
+<link rel="import" href="input.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-menu">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                background-color: var(--menu-control-background-color);
+            }
+            a {
+                text-decoration: none;
+            }
+            .item {
+                margin: 0.25em;
+                cursor: pointer;
+            }
+            .title {
+                font-weight: bold;
+                font-size: 1.5em;
+                color: var(--menu-control-title-color);
+            }
+            .popup {
+                flex-direction: column;
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                border: var(--menu-control-border);
+                background-color: var(--menu-control-background-color);
+                padding: 0em;
+                margin: 0.5em;
+                border-radius: 0em;
+                -webkit-box-shadow: var(--menu-control-shadow);
+                   -moz-box-shadow: var(--menu-control-shadow);
+                        box-shadow: var(--menu-control-shadow);
+                z-index: 1;
+            }
+            .show {
+                display: flex;
+            }
+            .hide {
+                display: none;
+            }
+            .separator {
+                font-weight: bold;
+                color: var(--menu-control-category-color);
+                border-bottom: var(--menu-control-separator);
+                /*margin-bottom: 0.5em;*/
+                padding-left: 0.5em;
+                padding-top: 0.5em;
+                padding-bottom: 0.25em;
+                text-transform: uppercase;
+            }
+            .about {
+                display: flex;
+                margin: 0.5em;
+            }
+            .logo {
+                flex: 0;
+            }
+            .logo img {
+                border: var(--menu-control-border);
+            }
+            .info {
+                margin-left: 0.5em;
+            }
+            .credits {
+                background-color: var(--menu-credits-background-color);
+                padding: 0.5em;
+                border: var(--menu-control-border);
+                margin-top: 0.5em;
+                margin-bottom: 0.5em;
+            }
+            .settings {
+                flex: 1;
+                overflow-y: scroll;
+                background-color: var(--menu-settings-background-color);
+                padding: 0.5em;
+            }
+            td {
+                white-space: nowrap;
+                overflow-x: hidden;
+                border-bottom: var(--menu-settings-row-border);
+            }
+            .group {
+                font-weight: bold;
+                color: var(--menu-control-category-color);
+                padding: 0.5em;
+                text-align: center;
+                text-transform: uppercase;
+            }
+            .button {
+                cursor: pointer;
+            }
+            .buttons {
+                display: flex;
+            }
+            .buttonsLeft {
+                flex: 1;
+                text-align: left;
+            }
+            .buttonsRight {
+                flex: 1;
+                text-align: right;
+            }
+            #importFile {
+                display: none;
+            }
+        </style>
+        <i class="fas fa-fw fa-bars fa-2x item" title="Toggle menu" on-click="togglePopup"></i>
+        <span class="title">HakuNeko</span>
+        <div class$="popup [[ getPopupClass(popupVisibility) ]]">
+            <div class="separator">
+                <label>About</label>
+            </div>
+            <div class="about">
+                <div class="logo">
+                    <img src="./img/logo_m.png"/>
+                </div>
+                <div class="info">
+                    <div>A simple and easy Manga Downloader&hellip;</div>
+                    <div class="credits">
+                        <div>&copy; [[ year ]] <a href="https://github.com/manga-download/hakuneko" target="_blank">HakuNeko</a> rev.<a href$="[[ revision.url ]]" target="_blank">[[ revision.id ]]</a><hr></div>
+                        <div><a href="https://github.com/ronny1982" target="_blank">Ronny Wegener</a> (Application)</div>
+                        <div><a href="https://sourceforge.net/u/medmig/profile/" target="_blank">Neogeek</a> (Connectors)</div>
+                        <div><a href="http://hakuneko3kune.deviantart.com/" target="_blank">HakuNeko3Kune</a> (Artwork)</div>
+                    </div>
+                    <div>
+                        <i class="fas fa-fw fa-book button" on-click="openWindow" title="Read User Documentation (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki"></i>
+                        <i class="fas fa-fw fa-exclamation-circle button" on-click="openWindow" title="Show Troubleshooting (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki/Troubleshooting"></i>
+                        <i class="fas fa-fw fa-comment button" on-click="openWindow" title="Support Channel (Discord)" data-href="https://discord.gg/FdgZ7Mr"></i>
+                        <i class="fas fa-fw fa-bug button" on-click="openWindow" title="Report Problem (GitHub Issues)" data-href="https://docs.google.com/forms/d/e/1FAIpQLSfHUn92wqncQUKbJAqY-NUYdshOoyyRYGcxHjGGUaqYuyBqCw/viewform?hl=en&usp=pp_url&entry.535298315=HakuNeko+User"></i>
+                        <i class="fas fa-fw fa-network-wired button" on-click="openWindow" title="IP Geolocation Lookup" data-href="https://ipinfo.io/json"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="separator">
+                <label>Settings</label>
+            </div>
+            <div class="settings">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td colspan="2" class="group">
+                            <label>General</label>
+                        </td>
+                    </tr>
+                    <template is="dom-repeat" items="[[ settingsGeneral ]]">
+                        <tr>
+                            <td width="1"><label title="[[ item.description ]]">[[ item.label ]]:</label></td>
+                            <td>
+                                <hakuneko-input item="{{ item }}"></hakuneko-input>
+                            </td>
+                        </tr>
+                    </template>
+                    <template is="dom-repeat" items="[[ settingsConnectors ]]">
+                        <tr>
+                            <td colspan="2" class="group">
+                                <label>[[ item.label ]]</label>
+                            </td>
+                        </tr>
+                        <template is="dom-repeat" items="[[ item.properties ]]">
+                            <tr>
+                                <td width="1"><label title="[[ item.description ]]">[[ item.label ]]:</label></td>
+                                <td>
+                                    <hakuneko-input item="{{ item }}"></hakuneko-input>
+                                </td>
+                            </tr>
+                        </template>
+                    </template>
+                </table>
+            </div>
+            <div class="buttons">
+                <div class="buttonsLeft">
+                    <i class="fas fa-file-import fa-2x item" title="Import bookmarks" on-click="import"></i>
+                    <input type="file" id="importFile" accept="application/x-sqlite3,.db,.db3" on-change="onImport" />
+                </div>
+                <div class="buttonsRight">
+                    <i class="fas fa-check-circle fa-2x item" title="Save settings and close menu" on-click="saveSettings"></i><i class="fas fa-times-circle fa-2x item" title="Close menu without saving settings" on-click="closePopup"></i>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoMenu extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-menu';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {};
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.year = (new Date()).getFullYear();
+                this.revision = revision;
+                this.popupVisibility = false;
+                // cannot directly access settings and connector configurations through binding, because of save/cancel staging
+                this.settingsGeneral = [];
+                this.settingsConnectors = [];
+            }
+
+            /**
+             *
+             */
+            getPopupClass( visibility ) {
+                return (visibility ? 'show' : 'hide');
+            }
+
+            /**
+             *
+             */
+            togglePopup() {
+                this.revertSettings();
+                this.set( 'popupVisibility', !this.popupVisibility );
+            }
+
+            /**
+             *
+             */
+            closePopup() {
+                this.revertSettings();
+                this.set( 'popupVisibility', false );
+            }
+
+            /**
+             * Transfer the current settings and configurations from the data layer to the binding model for the UI.
+             */
+            revertSettings() {
+                //
+                this.settingsGeneral = [];
+                for( let property in Engine.Settings ) {
+                    this.settingsGeneral.push( {
+                        id: property,
+                        label: Engine.Settings[property].label,
+                        description: Engine.Settings[property].description,
+                        input: Engine.Settings[property].input,
+                        options: Engine.Settings[property].options,
+                        min: Engine.Settings[property].min,
+                        max: Engine.Settings[property].max,
+                        value: Engine.Settings[property].value
+                    });
+                }
+                this.notifyPath( 'settingsGeneral' );
+
+                //
+                this.settingsConnectors = [];
+                for( let connector of Engine.Connectors ) {
+                    let config = {
+                        id: connector.id,
+                        label: connector.label,
+                        properties: []
+                    };
+                    for( let property in connector.config ) {
+                        config.properties.push( {
+                            id: property,
+                            label: connector.config[property].label,
+                            description: connector.config[property].description,
+                            input: connector.config[property].input,
+                            options: connector.config[property].options,
+                            min: connector.config[property].min,
+                            max: connector.config[property].max,
+                            value: connector.config[property].value
+                        });
+                    }
+                    if( config.properties.length > 0 ) {
+                        this.settingsConnectors.push( config );
+                    }
+                }
+                this.notifyPath( 'settingsConnectors' );
+            }
+
+            /**
+             * Transfer the current settings and configurations from the binding model for the UI to the data layer.
+             */
+            applySettings() {
+                //
+                for( let property in Engine.Settings ) {
+                    let setting = this.settingsGeneral.find( ( setting ) => {
+                        return ( property === setting.id );
+                    });
+                    if( setting ) {
+                        Engine.Settings[property].value = setting.value;
+                    }
+                }
+
+                //
+                for( let connector of Engine.Connectors ) {
+                    let config = this.settingsConnectors.find( ( config ) => {
+                        return ( connector.id === config.id );
+                    });
+                    for( let property in connector.config ) {
+                        let setting = config.properties.find( ( setting ) => {
+                            return ( property === setting.id );
+                        });
+                        if( setting ) {
+                            connector.config[property].value = setting.value;
+                        }
+                    }
+                }
+            }
+
+            /**
+             * Save the current settings and configurations of the data layer.
+             */
+            saveSettings() {
+                this.applySettings();
+                Engine.Settings.saveProfile( 'default', ( error ) => {
+                    this.popupVisibility = false;
+                });
+            }
+
+            /**
+             * Open a new window and always disable the "Stay or Leave" confirmation,
+             * otherwise the window cannot be closed anymore (electron does not show the confirmation).
+             */
+            openWindow( event ) {
+                let popup = window.open( event.target.dataset.href, '', 'nodeIntegration=no' );
+                // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
+                let watchdog = setInterval( () => {
+                    if( popup.closed ) {
+                        clearInterval(watchdog);
+                    } else {
+                        popup.eval( `window.onbeforeunload = evt => undefined;` );
+                    }
+                }, 500 );
+            }
+
+            /**
+             *
+             */
+            import( event ) {
+                this.$.importFile.click();
+            }
+
+            /**
+             *
+             */
+            onImport( event ) {
+                try {
+                    let importer = new BookmarkImporter();
+                    importer.importBookmarks( event.target.files );
+                } catch( e ) {
+                    alert( e.message );
+                } finally {
+                    // reset input file field or it cannot be used again
+                    this.$.importFile.value = null;
+                }
+            }
+        }
+        window.customElements.define(HakunekoMenu.is, HakunekoMenu);
+    </script>
+
+</dom-module>

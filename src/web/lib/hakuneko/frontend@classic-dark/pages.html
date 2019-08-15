@@ -1,0 +1,493 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="../engine/engine.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-pages">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            #container {
+                width: calc(100% - 2em);
+                height: calc(100% - 2em);
+                padding: 1em;
+                overflow-y: scroll;
+                background-image: var(--page-background-image);
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: left top;
+                user-select: none;
+            }
+            .thumbnail {
+                display: inline-block;
+                border: var(--page-thumbnail-border);
+                background-color: var(--page-thumbnail-background-color);
+                background-position: center;
+                background-size: contain;
+                background-repeat: no-repeat;
+                border-radius: 1em;
+                margin: 0.5em;
+                width: 16em;
+                height: 16em;
+                cursor: pointer;
+                -webkit-box-shadow: var(--page-thumbnail-shadow);
+                   -moz-box-shadow: var(--page-thumbnail-shadow);
+                        box-shadow: var(--page-thumbnail-shadow);
+            }
+            .show {
+                display: block ;
+            }
+            .hide {
+                display: none;
+            }
+            .image {
+                display: block;
+                margin-left: auto !important;
+                margin-right: auto !important;
+            }
+            #buttons {
+                position: fixed;
+                top: 0;
+                right: 0;
+                padding-left: 1em;  
+                padding-right: 2.0em;
+                opacity: 0.05;
+                transition: opacity 0.25s;
+                background-color: var(--page-viewer-title-background-color);
+                border-bottom-left-radius: 1em;
+                box-shadow: var(--page-viewer-title-shadow);
+                outline: none; /* disable focus border */
+            }
+            #buttons:hover {
+                opacity: 1.0;
+            }
+            #buttons:hover > .title {
+                display: inline;
+            }
+            .title {
+                display: none;
+                font-weight: bold;
+                font-size: 1.25em;
+                color: var(--page-chapter-title-color);
+            }
+            .button {
+                cursor: pointer;
+                margin: 0.25em;
+            }
+            #fullscreen {
+                width: 100%;
+                height: 100%;
+                background-color: var(--page-video-background-color);
+            }
+            #video {
+                width: 100%;
+                height: 100%;
+                object-fit: contain;
+                outline: none !important;
+            }
+            video::-webkit-media-controls-fullscreen-button {
+                display: none;
+            }
+            /* hack to allow video to expand size when wrapped in subtitle container */
+            .ASS-container, .ASS-container svg {
+                width: 100% !important;
+                height: 100% !important;
+            }
+            /* hack to show subtitles when video is in fullscreen mode */
+            .ASS-stage {
+                z-index: 2147483647;
+            }
+        </style>
+        <div id="container" style$="background-color: [[ getContainerColor(selectedMedia) ]];">
+            <template is="dom-if" if="[[ thumbnailViewMode(media,selectedMedia) ]]">
+                <template is="dom-repeat" items="[[ media ]]">
+                    <div class="thumbnail" style$="background-image: url('[[ escapeBackgroundURI(item) ]]');" on-click="showViewer" title$="Page [[ index ]]"></div>
+                </template>
+            </template>
+            <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
+                <div id="buttons" tabindex="0" onblur="this.focus()" on-keydown="onKeyDown">
+                    <span class="title">[[ selectedChapter.title ]]</span>
+                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down (PageDown)" on-click="requestChapterDown"></i>
+                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up (PageUp)" on-click="requestChapterUp"></i>
+                    &nbsp;
+                    <i class="fas fa-compress fa-2x button" title="Decrease spacing between images (CTRL ➖)" on-click="decreaseImagePadding"></i>
+                    <i class="fas fa-expand fa-2x button" title="Increase spacing between images (CTRL ➕)" on-click="increaseImagePadding"></i>
+                    &nbsp;
+                    <i class="fas fa-search-plus fa-2x button" title="Zoom In (➕)" on-click="zoomIn"></i>
+                    <i class="fas fa-search-minus fa-2x button" title="Zoom Out (➖)" on-click="zoomOut"></i>
+                    &nbsp
+                    <i class="fas fa-times-circle fa-2x button" title="Close (ESC)" on-click="hideViewer"></i>
+                </div>
+                <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
+                    <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%; margin: [[ imagePadding ]]em;"></div>
+                </template>
+            </template>
+            <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
+                <div id="fullscreen" on-dblclick="toggleFullscreen">
+                    <video id="video" controls disablePictureInPicture controlsList="nodownload nofullscreen">
+                        <!-- dummy tracks to show subtitle menu in video player -->
+                        <template is="dom-repeat" items="[[ media.subtitles ]]">
+                            <track kind="subtitles" src="data:text/vtt,WEBVTT" label$="[[ item.locale ]]" srclang$="[[ item.locale ]]" />
+                        </template>
+                    </video>
+                </div>
+            </template>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoPages extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-pages';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    selectedChapter: {
+                        type: Object,
+                        value: undefined,
+                        observer: 'onSelectedChapterChanged'
+                    },
+                    selectedMedia: {
+                        type: Number,
+                        value: -1,
+                        notify: true // enable upward data flow
+                        //readOnly: true // prevent downward data flow
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.media = undefined;
+                this.selectedMedia = -1;
+                this.selectedSubtitle = -1;
+                this.imageWidth = 75;
+                this.imagePadding = 2;
+                this.hls = undefined;
+                this.ass = undefined;
+                this.videoResizeObserver = new ResizeObserver( this.onVideoResized.bind( this ) );
+            }
+
+            /**
+             *
+             */
+            onKeyDown( event ) {
+                switch( true ) {
+                    case event.key === 'ArrowUp' && !event.ctrlKey:
+                        this.$.container.scrollTop -= 64;
+                        break;
+                    case event.key === 'ArrowDown' && !event.ctrlKey:
+                        this.$.container.scrollTop += 64;
+                        break;
+                    case event.key === 'PageUp' && !event.ctrlKey:
+                        this.requestChapterUp( event );
+                        break;
+                    case event.key === 'PageDown' && !event.ctrlKey:
+                        this.requestChapterDown( event );
+                        break;
+                    case event.key === '+' && !event.ctrlKey:
+                        this.zoomIn( event );
+                        break;
+                    case event.key === '-' && !event.ctrlKey:
+                        this.zoomOut( event );
+                        break;
+                    case event.key === '+' && event.ctrlKey:
+                        this.increaseImagePadding( event );
+                        break;
+                    case event.key === '-' && event.ctrlKey:
+                        this.decreaseImagePadding( event );
+                        break;
+                    case event.key === 'Escape' && !event.ctrlKey:
+                        this.hideViewer( event );
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            /**
+             * Observer will be executed, whenever the 'selectedChapter' is changed.
+             */
+            onSelectedChapterChanged( chapter ) {
+                this.set( 'media', undefined );
+                if( !chapter ) {
+                    return;
+                }
+                // TODO: abort any pending page request (maybe store current request in global variable?)
+                chapter.getPages( ( error, media ) => {
+                    if( chapter === this.selectedChapter ) {
+                        this.set( 'media', media );
+                        if( error ) {
+                            alert( error.message );
+                        }
+                        // scroll to first page when chapter was changed
+                        if( this.selectedMedia > -1 ) {
+                            this.set( 'selectedMedia', 0 );
+                        }
+                    }
+                } );
+                this.resetSubtitles( true );
+            }
+
+            /**
+             * 
+             */
+            resetSubtitles( clearTracks ) {
+                this.selectedSubtitle = -1;
+                if( this.ass ) {
+                    this.ass.destroy();
+                    this.ass = undefined;
+                }
+                if( clearTracks ) {
+                    let element = this.shadowRoot.querySelector( '#video' );
+                    if( element ) {
+                        let tracks = element.textTracks;
+                        let i = 0;
+                        while( tracks[i] ) {
+                            tracks[i].mode = 'disabled';
+                            i++;
+                        }
+                        tracks.onchange = this.onSelectedSubtitleChanged.bind( this );
+                    }
+                }
+            }
+
+            /**
+             * 
+             */
+             toggleFullscreen( event ) {
+                if( document.fullscreenElement ) {
+                    document.exitFullscreen();
+                } else {
+                    this.shadowRoot.querySelector( '#fullscreen' ).requestFullscreen();
+                }
+                event.preventDefault();
+                return false;
+            }
+
+            /**
+             *
+             */
+            onSelectedSubtitleChanged( event ) {
+                // Yield with timeout, so UI element can be attached to DOM and update its properties before we access it ...
+                setTimeout( () => {
+                    let video = this.shadowRoot.querySelector( '#video' );
+                    // assumption: tracks are in same order as subtitles ...
+                    let subtitle = [...event.target].findIndex( track => track.mode === 'showing' );
+                    if( this.selectedSubtitle !== subtitle ) {
+                        this.resetSubtitles( false ); // NOTE: this will also set this.selectedSubtitle to -1
+                        this.selectedSubtitle = subtitle;
+                        if( subtitle > -1 ) {
+                            let sub = this.media.subtitles[this.selectedSubtitle];
+                            if( sub.content ) {
+                                this.ass = new ASS( sub.content, video );
+                            } else {
+                                fetch( sub.url )
+                                .then( response => {
+                                    if( response.status !== 200 ) {
+                                        throw new Error();
+                                    }
+                                    return response.text();
+                                } )
+                                .then( data => {
+                                    sub.content = data;
+                                    this.ass = new ASS( sub.content, video );
+                                } )
+                                .catch( error => {
+                                    console.warn( error, sub.url );
+                                } );
+                            }
+                        }
+                    }
+                }, 250 );
+            }
+
+            /**
+             *
+             */
+            showViewer( event ) {
+                this.set( 'selectedMedia', event.model.index );
+                this.set( 'viewerStyle.bgImage', this.media[this.selectedMedia] );
+            }
+
+            /**
+             *
+             */
+            hideViewer( event ) {
+                this.set( 'selectedMedia', -1 );
+            }
+
+            /**
+             *
+             */
+            getContainerColor( selectedMedia ) {
+                return ( ( selectedMedia > -1 ) ? 'var(--page-reader-background-color)' : 'var(--page-control-background-color)' );
+            }
+
+            /**
+            *
+            */
+            thumbnailViewMode( media, selectedMedia ) {
+                return ( media && media.length && selectedMedia < 0 );
+            }
+
+            /**
+             *
+             */
+            pageViewMode( media, selectedMedia ) {
+                if( media instanceof Array ) {
+                    // embed in timeout function to ensure image layout is updated before adjusting scroll offsetTop
+                    setTimeout( () => {
+                        if( this.selectedMedia > -1 ) {
+                            this.$.container.scrollTop = this.$.container.querySelector( '#page_' + this.selectedMedia ).offsetTop;
+                            this.$.container.querySelector( '#buttons' ).focus();
+                        } else {
+                            this.$.container.scrollTop = 0;
+                        }
+                    }, 0 );
+                }
+                return ( media instanceof Array && selectedMedia > -1 );
+            }
+
+            /**
+             *
+             */
+            videoViewMode( media, selectedMedia ) {
+                return ( media && ( media.mirrors instanceof Array || typeof media.video === 'string' ) );
+            }
+
+            /**
+             * 
+             */
+            escapeBackgroundURI( uri ) {
+                return uri.replace( /'/g, '\\\'' );
+            }
+
+            /**
+             *
+             */
+            onVideoElementChanged( event ) {
+                this.resetSubtitles( true );
+                let element = this.shadowRoot.querySelector( '#video' );
+//console.log( 'VIDEO', element, element.querySelector( 'input::-webkit-media-controls-toggle-closed-captions-button' ) );
+                if( element ) {
+                    element.pause();
+                    // destroying seems the only way to flush buffers and prevent packets from the previous stream being played
+                    if( this.hls ) {
+                        this.hls.destroy();
+                    }
+                    element.src = '';
+                    if( this.media && this.media.mirrors ) {
+                        // TODO: select random mirror?
+                        this.hls = new Hls();
+                        this.hls.attachMedia( element );
+                        this.hls.loadSource( this.media.mirrors[0] );
+                    }
+                    if( this.media && this.media.video ) {
+                        element.src = this.media.video;
+                    }
+                    this.videoResizeObserver.observe( element );
+                }
+            }
+
+            /**
+             *
+             */
+            onVideoResized( e ) {
+                if( this.ass ) {
+                    this.ass.resize();
+                }
+            }
+
+            /**
+             * fire event to request the next chapter
+             */
+            requestChapterUp( event ) {
+                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterUp, { detail: this.selectedChapter } ) );
+            }
+
+            /**
+             * fire event to request the previous chapter
+             */
+            requestChapterDown( event ) {
+                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterDown, { detail: this.selectedChapter } ) );
+            }
+
+            /**
+             *
+             */
+            decreaseImagePadding( event ) {
+                this.setImagePadding( this.imagePadding - 1 );
+            }
+
+            /**
+             *
+             */
+            increaseImagePadding( event ) {
+                this.setImagePadding( this.imagePadding + 1 );
+            }
+
+            /**
+             *
+             */
+            setImagePadding( padding ) {
+                let offset = this.$.container.scrollTop / this.$.container.scrollHeight;
+                this.set( 'imagePadding', Math.max( 0, padding ) );
+                /*
+                // embed in timeout function to ensure image layout is updated before adjusting scroll offsetTop
+                setTimeout( () => {
+                    this.$.container.scrollTop = offset * this.$.container.scrollHeight;
+                }, 0 );
+                */
+                this.$.container.scrollTop = offset * this.$.container.scrollHeight;
+
+
+            }
+
+            /**
+             *
+             */
+            zoomIn( event ) {
+                let scale = this.imageWidth + 15;
+                this.zoom( ( scale > 400 ? 400 : scale ) );
+            }
+
+            /**
+             *
+             */
+            zoomOut( event ) {
+                let scale = this.imageWidth - 15;
+                this.zoom( ( scale < 25 ? 25 : scale ) );
+            }
+
+            /**
+             *
+             */
+            zoom( scale ) {
+                let previousHeight = this.$.container.scrollHeight;
+                let previousOffset = this.$.container.scrollTop;
+                this.set( 'imageWidth', scale );
+                // embed in timeout function to ensure layout is updated before adjusting offsetY
+                //setTimeout( function() {
+                    // adjust new offsetY depending on height changed ratio of container after scaling images
+                    this.$.container.scrollTop = previousOffset * this.$.container.scrollHeight / previousHeight;
+                //}.bind( this ), 0 );
+            }
+        }
+        window.customElements.define( HakunekoPages.is, HakunekoPages );
+    </script>
+
+</dom-module>

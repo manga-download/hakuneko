@@ -2,14 +2,16 @@ export default class FrontendLoader {
 
     static load(identifier) {
         switch(identifier) {
+            case 'frontend@classic-dark':
+                return FrontendLoader._loadClassicPolymer(identifier);
             case 'frontend@classic-light':
-                return FrontendLoader._loadClassicLightPolymer(identifier);
+                return FrontendLoader._loadClassicPolymer(identifier);
             default:
               console.error(`Failed to load frontend with id '${identifier}'!`);
         }
     }
 
-    static _loadClassicLightPolymer(identifier) {
+    static _loadClassicPolymer(identifier) {
 
         let element = document.createElement('hakuneko-app');
         document.body.appendChild(element);
