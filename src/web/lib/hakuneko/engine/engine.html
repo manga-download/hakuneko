@@ -98,8 +98,8 @@
     }
 
     // alias for forward compatibility for new module based engine
-    const HakuNeko = window['HakuNeko'] || Engine;
-
+    const HakuNeko = Engine;
+    
     new HistoryWorker();
     Engine.Settings.loadProfile( 'default', undefined );
     Engine.BookmarkManager.loadProfile( 'default', undefined );
