@@ -51,6 +51,7 @@
                 flex: 1;
                 display: flex;
                 flex-direction: row;
+                overflow-y: hidden; /* Fixes overflow scrolling issue in flexbox, because inherited value is 'visible' */
             }
             .filters {
                 flex: 0;
