@@ -15,6 +15,7 @@ window.DownloadStatus = window.HakuNeko.Enums.DownloadStatus;
 window.EventListener = window.HakuNeko.Enums.EventListener;
 
 // load a UI frontend after HakuNeko engine is globally accessable
-let option = { value: 'frontend@classic-light', name: 'Classic (Light)' };
+let option = { value: 'frontend@classic-dark', name: 'Classic (Dark)' };
+//let option = { value: 'frontend@classic-light', name: 'Classic (Light)' };
 console.log('Loading Frontend:', option.name);
 FrontendLoader.load(option.value);
