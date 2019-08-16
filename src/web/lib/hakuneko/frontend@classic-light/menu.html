@@ -340,7 +340,14 @@
                     if( popup.closed ) {
                         clearInterval(watchdog);
                     } else {
-                        popup.eval( `window.onbeforeunload = evt => undefined;` );
+                        let script = `
+                            window.onbeforeunload = evt => undefined;
+                            let warning = document.querySelector('div.unsupported-browser');
+                            if(warning) {
+                                warning.parentNode.removeChild(warning);
+                            }
+                        `;
+                        popup.eval(script);
                     }
                 }, 500 );
             }
