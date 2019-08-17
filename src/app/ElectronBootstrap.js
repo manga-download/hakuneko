@@ -37,6 +37,10 @@ module.exports = class ElectronBootstrap {
 
         // update userdata path (e.g. for portable version)
         electron.app.setPath('userData', this._configuration.applicationUserDataDirectory);
+        
+        // HACK: Create a dummy menu to support local hotkeys (only accessable when app is focused)
+        //       This has to be done, because F12 key cannot be used as global key in windows
+        this._registerLocalHotkeys();
 
         return new Promise(resolve => {
             electron.app.on('ready', () => {
@@ -50,8 +54,6 @@ module.exports = class ElectronBootstrap {
             electron.app.on('activate',  this._createWindow.bind(this));
             electron.app.on('window-all-closed',  this._allWindowsClosedHandler.bind(this));
             electron.app.on('certificate-error', this._certificateErrorHandler.bind(this));
-            electron.app.on('browser-window-focus', this._registerHotkeys.bind(this));
-            electron.app.on('browser-window-blur', this._unregisterHotkeys.bind(this));
         });
     }
 
@@ -86,17 +88,25 @@ module.exports = class ElectronBootstrap {
     /**
      * 
      */
-    _registerHotkeys() {
-        electron.globalShortcut.register('F12', this._toggleDevTools.bind(this));
-        electron.globalShortcut.register('F11', this._toggleFullscreen.bind(this));
-    }
+    _registerLocalHotkeys() {
+        let items = [
+            {
+                visible: false,
+                accelerator: 'F11',
+                label: 'Toggle Fullscreen',
+                click: this._toggleFullscreen.bind(this)
+            },
+            {
+                visible: false,
+                accelerator: 'F12',
+                label: 'Toggle Developer Tools',
+                click: this._toggleDevTools.bind(this)
+            }
+        ];
 
-    /**
-     * 
-     */
-    _unregisterHotkeys() {
-        electron.globalShortcut.unregister('F12');
-        electron.globalShortcut.unregister('F11');
+        let menu = new electron.Menu();
+        items.forEach(item => menu.append(new electron.MenuItem(item)));
+        electron.Menu.setApplicationMenu(menu);
     }
 
     /**
@@ -132,8 +142,6 @@ module.exports = class ElectronBootstrap {
             return;
         }
 
-        electron.Menu.setApplicationMenu(null);
-
         this._window = new electron.BrowserWindow({
             width: 1120,
             height: 680,
@@ -149,6 +157,7 @@ module.exports = class ElectronBootstrap {
 
         this._setupBeforeSendHeaders();
         this._setupHeadersReceived();
+        this._window.setMenuBarVisibility(false);
         this._window.once('ready-to-show', () => this._window.show());
         this._window.on('close', this._mainWindowCloseHandler.bind(this));
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
