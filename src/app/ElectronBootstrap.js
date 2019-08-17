@@ -89,24 +89,25 @@ module.exports = class ElectronBootstrap {
      * 
      */
     _registerLocalHotkeys() {
-        let items = [
+        let menu = [
             {
-                visible: false,
-                accelerator: 'F11',
-                label: 'Toggle Fullscreen',
-                click: this._toggleFullscreen.bind(this)
-            },
-            {
-                visible: false,
-                accelerator: 'F12',
-                label: 'Toggle Developer Tools',
-                click: this._toggleDevTools.bind(this)
+                label: 'View',
+                submenu: [
+                    {
+                        label: 'Toggle Fullscreen',
+                        // NOTE: on macOS F11 key is reserved for system usage ...
+                        accelerator: process.platform === 'darwin' ? 'Control+Command+F' : 'F11' ,
+                        click: this._toggleFullscreen.bind(this)
+                    },
+                    {
+                        label: 'Toggle DevTools',
+                        accelerator: 'F12',
+                        click: this._toggleDevTools.bind(this)
+                    }
+                ]
             }
         ];
-
-        let menu = new electron.Menu();
-        items.forEach(item => menu.append(new electron.MenuItem(item)));
-        electron.Menu.setApplicationMenu(menu);
+        electron.Menu.setApplicationMenu(electron.Menu.buildFromTemplate(menu));
     }
 
     /**
