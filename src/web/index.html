@@ -12,6 +12,11 @@
     <script src="./js/hls.light.min.js" defer></script>
     <script src="./js/ass.min.js" defer></script>
     <script src="./js/sql.min.js" defer></script>
+
+    <!-- Link Polymer Frontends, otherwise they cannot be found when building -->
+    <link rel="import" src="./lib/hakuneko/frontend@classic-dark/app.html" />
+    <link rel="import" src="./lib/hakuneko/frontend@classic-light/app.html" />
+
     <script type="module">
         import HakuNeko from './mjs/HakuNeko.mjs'
 
