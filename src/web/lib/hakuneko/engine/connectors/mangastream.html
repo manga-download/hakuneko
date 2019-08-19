@@ -81,8 +81,8 @@
             let request = new Request( this.url + chapter.id, this.requestOptions );
             this.fetchDOM( request, 'div.btn-reader-page ul.dropdown-menu li a' )
             .then( data => {
-                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
-                pageList = this._interpolatePages( pageList );
+                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );
+                pageList = this._interpolatePages( pageList ).map( page => this.createConnectorURI( page ) );
                 callback( null, pageList );
             } )
             .catch( error => {
