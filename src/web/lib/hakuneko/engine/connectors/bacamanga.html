@@ -26,19 +26,15 @@
          *
          */
         _getPageList( manga, chapter, callback ) {
+            let script = `
+                new Promise( resolve => {
+                    resolve( [...document.querySelectorAll('div.maincontent div#readerarea p img')].map( img => img.src ) );
+                } );
+            `;
             let request = new Request( this.url + chapter.id, this.requestOptions );
-            return fetch( request )
-            .then( response => response.text() )
+            Engine.Request.fetchUI( request, script )
             .then( data => {
-                let encoded = data.match( /bm_?content\s*=\s*atob\s*\(\s*['"]([^'"]+)['"]\s*\)/ )[1];
-                let decoded = decodeURIComponent( ( atob( encoded ) ).replace( /\+/g, '%20' ) );
-                let regex = /src\s*=\s*['"]([^'"]+)['"]/g;
-                let match;
-                let pageLinks = [];
-                while( match = regex.exec( decoded ) ) {
-                    pageLinks.push( match[1] );
-                }
-                callback( null, pageLinks );
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, chapter );
