@@ -17,8 +17,6 @@ endif::[]
 === Download
 
 image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total.svg?label=HakuNeko%205.0.8&logo=github[link=https://github.com/manga-download/hakuneko/releases/tag/v5.0.8, title="Download from GitHub", window="_blank"]
-or
-image:https://img.shields.io/sourceforge/dt/hakuneko/5.0.8.svg?label=HakuNeko%205.0.8&logo=sourceforge[link=https://sourceforge.net/projects/hakuneko/files/5.0.8/, title="Download from SourceForge", window="_blank"]
 
 Yes, the download section comes first, because this is what most users are looking for anyway.
 You can download and run the installer/archive for your operating system from one of the mirror sites above.
