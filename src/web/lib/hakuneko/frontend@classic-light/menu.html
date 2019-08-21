@@ -115,7 +115,7 @@
                 display: none;
             }
         </style>
-        <i class="fas fa-fw fa-bars fa-2x item" title="Toggle menu" on-click="togglePopup"></i>
+        <i class="fas fa-fw fa-bars fa-2x item button" title="Toggle menu" on-click="togglePopup"></i>
         <span class="title">HakuNeko</span>
         <div class$="popup [[ getPopupClass(popupVisibility) ]]">
             <div class="separator">
@@ -179,11 +179,11 @@
             </div>
             <div class="buttons">
                 <div class="buttonsLeft">
-                    <i class="fas fa-file-import fa-2x item" title="Import bookmarks" on-click="import"></i>
+                    <i class="fas fa-file-import fa-2x item button" title="Import bookmarks" on-click="import"></i>
                     <input type="file" id="importFile" accept="application/x-sqlite3,.db,.db3" on-change="onImport" />
                 </div>
                 <div class="buttonsRight">
-                    <i class="fas fa-check-circle fa-2x item" title="Save settings and close menu" on-click="saveSettings"></i><i class="fas fa-times-circle fa-2x item" title="Close menu without saving settings" on-click="closePopup"></i>
+                    <i class="fas fa-check-circle fa-2x item button" title="Save settings and close menu" on-click="saveSettings"></i><i class="fas fa-times-circle fa-2x item button" title="Close menu without saving settings" on-click="closePopup"></i>
                 </div>
             </div>
         </div>
