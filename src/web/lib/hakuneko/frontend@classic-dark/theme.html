@@ -38,9 +38,9 @@
                 /*
                  * application control group
                  */
-                --app-loading-screen-color: #c0c0c0;
-                --app-loading-screen-background-color: #f8f8f8;
-                --app-loading-screen-quote-border: 8px solid lightgrey;
+                --app-loading-screen-color: #aaabad;
+                --app-loading-screen-background-color: #202225;
+                --app-loading-screen-quote-border: 8px solid #aaabad;
                 --app-loading-screen-link-color: #7289da;
                 --app-control-border: 1px solid #000000;
                 --app-control-shadow: 0.25em 0em 1em 0em rgba(0, 0, 0, 0.25);
@@ -48,7 +48,7 @@
                 /*
                  * style of menu
                  */
-                --menu-control-title-color: #a6a7a8; /* 'Hakuneko' at the top */
+                --menu-control-title-color: #aaabad; /* 'Hakuneko' at the top */
                 --menu-control-category-color: #72767d; /* Category names */
                 --menu-control-background-color: #202225; /* Top space where 'HakuNeko' and hamburger button is. Space above and below setting space */
                 --menu-control-border: 1px solid #000000; /* Border of entire section and credits box */
@@ -56,7 +56,7 @@
                 --menu-control-shadow: 0.25em 0.25em 2em 0.5em rgba(0, 0, 0, 0.5);
                 --menu-credits-background-color: #292b2f; /* Where credits are listed. Next to HakuNeko's Face. */
                 --menu-settings-background-color: #2f3136; /* Setting space. Where scroll bar is. */
-                --menu-settings-row-border: 1px solid #40444b;
+                --menu-settings-row-border: 1px solid #40444b; 
 
                 /*
                  * style of connector list
@@ -69,8 +69,8 @@
                 --connector-card-background-color: #2f3136;
                 --connector-card-border: 1px solid #000000;  /* Border of each connector card */
                 --connector-card-shadow: 0.25em 0.25em 0.5em 0.25em rgba(0, 0, 0, 0.25);
-                --connector-card-selected: #42464d;
-                --connector-card-highlighted: #42464d;
+                --connector-card-selected: #40444b;
+                --connector-card-highlighted: #40444b;
                 /*
                 rgba(255, 255, 255) ⊗ rgba(0, 128, 255, 0.15)
                     R = 0.15 *   0 + 0.85 * 255
@@ -79,11 +79,11 @@
                 */
                 --connector-title-border: 1px solid #40444b; /* Line below names of each source */
                 --connector-button-clear-color: #f04747; /* X at the top */
-                --connector-tag-list-background-color: #36393f; /* Space where tags are */
-                --connector-tag-color: #72767d; /* Name of tags */
-                --connector-tag-background-color: #34363c; /* Space around tags */
-                --connector-tag-border: 1px solid #808080; /* No clue what this changes */
-                --connector-tag-selected: #292b2f;
+                --connector-tag-list-background-color: #2f3136; /* Space where tags are */
+                --connector-tag-color: #dcddde; /* Name of tags */
+                --connector-tag-background-color: #202225; /* Space around tags */
+                --connector-tag-border: 1px solid #72767d; /* No clue what this changes */
+                --connector-tag-selected: #40444b;
 
                 /*
                  * style of manga list
@@ -93,22 +93,22 @@
                 --manga-list-notification-color: #f04747; /* Notification box that pops up at top of list space */
                 --manga-list-notification-border: 1px solid #f69191; /* Border of notification box */
                 --manga-list-background-color: #2f3136; /* Space where manga are listed */
-                --manga-list-border: 1px solid rgba(0, 0, 0, 0.35);
+                --manga-list-border: 0px solid rgba(0, 0, 0, 0.35);
                 --manga-list-selected: #40444b;
                 --manga-list-highlighted: #292b2f;
                 --manga-refresh-button-color: #43b581; /* Refresh button. For both the one next to the input and notification box */
                 --manga-refresh-button-shadow: 0px 0px 2px rgba(0, 0, 0, 0.75); /* Shadow of refresh button */
                 --manga-bookmark-button-color: #faa61a; /* Favorite button */
                 --manga-bookmark-button-shadow: 0px 0px 2px rgba(0, 0, 0, 0.75); /* Shadow of favorite button */
-                --manga-button-disabled-color: #808080 !important; /*  */
+                --manga-button-disabled-color: #72767d !important; /*  */
 
                 /*
                  * style of chapter list
                  */
                 --chapter-control-background-color: #202225; /* Outside Section*/
                 --chapter-control-separator: 2px groove #4a4249; /* Lines above and below search bars */
-                --chapter-list-background-color: #36393f; /* Space where chapters are listed */
-                --chapter-list-border: 1px solid rgba(0, 0, 0, 0.35);
+                --chapter-list-background-color: #2f3136; /* Space where chapters are listed */
+                --chapter-list-border: 0px solid rgba(0, 0, 0, 0.35);
                 --chapter-list-selected: #40444b;
                 --chapter-list-highlighted: #292b2f;
                 --chapter-button-offline-color: #faa61a; /* When chapter is only available from files in computer (folder icon_*/
@@ -134,7 +134,7 @@
                  * style of download manager
                  */
                 --job-control-background-color: #202225; /* Outside section */
-                --job-list-background-color: #2b2c31; /* Space where downloads are listed */
+                --job-list-background-color: #292b2f; /* Space where downloads are listed */
                 --job-list-row-border: 1px solid #000000; /* Line that separates downloads */
                 --job-list-progress-background-color: #202225; /* Download bar space */
                 --job-list-progress-color: #7289da; /* Download bar filling */
@@ -146,17 +146,30 @@
                 /*
                  * style of page view
                  */
-                --page-background-image: url('/img/background-classic-dark.png');
-                --page-control-background-color: #1d1f22; /* When nothing is selected */
+                --page-background-image: url('/img/background.png');
+                --page-control-background-color: #202225; /* When nothing is selected */
                 --page-thumbnail-background-color: #202225;
                 --page-thumbnail-border: 1px solid #000000;
                 --page-thumbnail-shadow: 1em 1em 2em rgba(0, 0, 0, 0.25);
                 --page-viewer-background-color: rgba(0, 0, 0, 0.95);
-                --page-reader-background-color: #1d1f22; /* When pages are selected */
-                --page-video-background-color: #1d1f22; /* When video is selected */
+                --page-reader-background-color: #202225; /* When pages are selected */
+                --page-video-background-color: #202225; /* When video is selected */
                 --page-viewer-title-background-color: rgba(32, 34, 37, 0.95);
                 --page-viewer-title-shadow: 0em 0em 1em rgba(0, 0, 0, 0.5);
                 --page-chapter-title-color: #dcddde;
+            }
+
+            ::-webkit-scrollbar {
+                width: 1em; /* Necessary so scrollbar changes from default*/
+            }
+
+            ::-webkit-scrollbar-track {
+                background:#36393f; /* Background of scrollbar */
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background:#202225; /* Scroll marker */
+                border-radius: 2em; /* So marker has rounded edges */
             }
 
             a {
@@ -169,8 +182,8 @@
             }
 
             input[type="text"]:disabled, input[type="password"]:disabled {
-                color: #c8cacb;
-                background-color: #484c52;
+                color: #dcddde;
+                background-color: #40444b; /* Color of search bar */
                 border-bottom: 1px solid #202225;
             }
 
@@ -186,7 +199,7 @@
             select {
                 width: calc(100% - 0em - 0.5em); /* adjust with padding and margin */
                 padding-right: 1.5em !important;
-                background-image: url('/img/dropdown-classic-dark.png');
+                background-image: url('/img/dropdown.png');
                 background-position: right center;
                 background-size: auto 1.5em;
                 background-repeat: no-repeat;
@@ -199,10 +212,10 @@
                         appearance: none;
                 font-family: Arial, Helvetica, sans-serif;
                 font-size: 10pt;
-                color: #c8cacb;
+                color: #dcddde;
                 border: none;
                 border-bottom: 1px solid #7289da;
-                background-color: #484c52;
+                background-color: #40444b; /* Color of search bar */
                 margin: 0.25em;
                 padding: 0.25em;
                 border-radius: 0.25em;
@@ -218,7 +231,7 @@
 
             /* style for an item (chapter/manga) that can be added to the download list */
             .available {
-                color: #72767d;
+                color: #95989d;
             }
 
             /* style for an item (chapter/manga) that is queued for download to the users device */
@@ -245,8 +258,14 @@
             }
 
             .fas, .far, .fab {
+                color: #aaabad;
+            }
+
+            .button {
                 color: #7289da;
             }
+
+            
 
             /******************************************************************/
             /* Font Awesome 5.8.2 classes for re-use in each shadow DOM scope */
