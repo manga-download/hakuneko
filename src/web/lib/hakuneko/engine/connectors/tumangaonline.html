@@ -92,7 +92,8 @@
          *
          */
         _getChapterList( manga, callback ) {
-            this.fetchDOM( this.url + manga.id, 'div.chapters ul.list-group li.list-group-item.p-0' )
+            let request = new Request( this.url + manga.id, this.requestOptions);
+            this.fetchDOM( request, 'div.chapters ul.list-group li.list-group-item.p-0' )
             .then( data => {
                 let chapterList = data.reduce( ( accumulator, element ) => {
                     let title = element.querySelector( 'h4  a[role="button"]' ).text;
@@ -122,6 +123,7 @@
          */
         _getPageList( manga, chapter, callback ) {
             let request = new Request( this.url + chapter.id, this.requestOptions );
+            request.headers.set( 'x-referer', this.url + manga.id );
             fetch( request )
             .then( response => {
                 if( !response.redirected ) {
@@ -131,13 +133,28 @@
                 return this.fetchDOM( request, 'div.viewer-image-container source' );
             } )
             .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );
+                let pageList = data.map( element => this.createConnectorURI( {
+                    url: this.getAbsolutePath( element, request.url ),
+                    referer: request.url
+                } ) );
                 callback( null, pageList );
             } )
             .catch( error => {
                 console.error( error, chapter );
                 callback( error, undefined );
             } );
+        }
+
+        /**
+         * 
+         */
+        _handleConnectorURI( payload ) {
+            // TODO: only perform requests when from download manager
+            // or when from browser for preview and selected chapter matches
+            this.requestOptions.headers.set( 'x-referer', payload.referer );
+            let promise = super._handleConnectorURI( payload.url );
+            this.requestOptions.headers.delete( 'x-referer' );
+            return promise;
         }
     }
 
