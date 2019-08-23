@@ -54,7 +54,7 @@ export default class Storage {
     /**
      * Load the value for the given key from the persistant storage
      */
-    loadConfig( key ) {
+    async loadConfig( key ) {
         //return fetch( this.config + key ).then( response => response.json() );
         return new Promise( ( resolve, reject ) => {
             this.fs.readFile( this.config + key, 'utf8', ( error, data ) => {
@@ -100,7 +100,7 @@ export default class Storage {
     /**
      * Return a promise that will be fulfilled if the corresponding path is an existing directory.
      */
-    directoryExist( path ) {
+    async directoryExist( path ) {
         return new Promise( ( resolve, reject ) => {
             this.fs.stat( path, ( error, stats ) => {
                 try {
