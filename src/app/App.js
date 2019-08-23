@@ -46,14 +46,14 @@ module.exports = class App {
 
     printInfo() {
         let separator = '--------------';
-        console.log();
+        console.log('');
         console.log(separator);
         console.log('Framework Info');
         console.log(separator );
         console.log('Electron :', process.versions.electron);
         console.log('Chrome   :', process.versions.chrome);
         console.log('Node     :', process.versions.node);
-        console.log();
+        console.log('');
     }
 
     async run() {

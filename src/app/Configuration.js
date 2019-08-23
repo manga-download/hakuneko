@@ -31,7 +31,7 @@ module.exports = class Configuration {
 
     printInfo() {
         let separator = '-------------';
-        console.log();
+        console.log('');
         console.log(separator);
         console.log('Configuration');
         console.log(separator);
@@ -41,7 +41,7 @@ module.exports = class Configuration {
         console.log('Startup URL          :', this.applicationStartupURL);
         console.log('AppCache Directory   :', this.applicationCacheDirectory);
         console.log('UserData Directory   :', this.applicationUserDataDirectory);
-        console.log();
+        console.log('');
     }
 
     static get isPortableMode() {

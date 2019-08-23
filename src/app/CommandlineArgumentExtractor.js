@@ -29,10 +29,10 @@ module.exports = class CommandlineArgumentExtractor {
      * See: http://docopt.org
      */
     printInfo() {
-        console.log();
+        console.log('');
         console.log('Usage:');
         console.log(' ', process.execPath, '[OPTIONS]');
-        console.log();
+        console.log('');
         console.log('Options:');
         console.log(' ', '-u, --update-url=<URL>     ', 'URL to be checked for web-application updates');
         console.log(' ', '                           ', 'Default: "http://static.hakuneko.download/5.0/latest"');
@@ -42,7 +42,7 @@ module.exports = class CommandlineArgumentExtractor {
         console.log(' ', '                           ', 'Default: system\'s default');
         console.log(' ', '--user-directory=<DIR>     ', 'Directory where user settings are stored');
         console.log(' ', '                           ', 'Default: system\'s default');
-        console.log();
+        console.log('');
     }
 
     /**
