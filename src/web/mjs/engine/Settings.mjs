@@ -21,7 +21,7 @@ export default class Settings {
             input: Input.select,
             options: [
                 { value: 'frontend@classic-light', name: 'Classic (Light)' },
-                { value: 'frontend@classic-dark', name: 'Kenneth\'s Dark Theme' }
+                { value: 'frontend@classic-dark', name: 'Ken\'s Daedal Dark' }
             ],
             value: 'frontend@classic-light'
         };
