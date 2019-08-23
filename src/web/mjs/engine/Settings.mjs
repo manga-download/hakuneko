@@ -11,6 +11,20 @@ export default class Settings {
         } catch ( e ) {
             docs = '.';
         }
+        this.frontend = {
+            label: 'Frontend ⁽¹⁾',
+            description: [
+                'Select the UI frontend that should be used for the manga download engine.',
+                '',
+                '⁽¹⁾ Restart required to take affect',
+            ].join('\n'),
+            input: Input.select,
+            options: [
+                { value: 'frontend@classic-light', name: 'Classic (Light)' },
+                { value: 'frontend@classic-dark', name: 'Kenneth\'s Dark Theme' }
+            ],
+            value: 'frontend@classic-light'
+        };
         this.readerEnabled = {
             label: 'Enable Reader',
             description: 'Show a preview panel and a basic reader for the chapters',
@@ -123,8 +137,10 @@ export default class Settings {
             input: Input.select,
             options: [
                 { value: HistoryFormat.none, name: 'Disabled' },
-                //{ value: HistoryFormat.json, name: 'JSON (*.json)' },
-                //{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
+                /*
+                 *{ value: HistoryFormat.json, name: 'JSON (*.json)' },
+                 *{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
+                 */
             ],
             value: HistoryFormat.none
         };
@@ -149,22 +165,22 @@ export default class Settings {
             value: ''
         };
     }
-/*
-    // expose property iterator through a generator function
-    static *[Symbol.iterator]() {
-        for( let property in this) {
-            yield this[property];
-        }
-    }
-*/
+    /*
+     * // expose property iterator through a generator function
+     * static *[Symbol.iterator]() {
+     * for( let property in this) {
+     * yield this[property];
+     * }
+     * }
+     */
     /**
      * Load and apply the settings and configurations from the given profile.
      * Callback will be executed after the data has been loaded.
      * Callback will be provided with an error (or null if no error).
      */
-        loadProfile( profile, callback ) {
-        Engine.Storage.loadConfig( 'settings' )
-        .then( data => {
+    async loadProfile() {
+        try {
+            let data = await Engine.Storage.loadConfig( 'settings' );
             // apply general settings
             for( let property in this) {
                 if( data && property in data ) {
@@ -172,9 +188,13 @@ export default class Settings {
                 }
             }
             // check manga base directory existence
-            Engine.Storage.directoryExist( this.baseDirectory.value ).catch( error => alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message ) );
+            try {
+                await Engine.Storage.directoryExist( this.baseDirectory.value );
+            } catch( error ) {
+                alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message );
+            }
             // apply settings to each connector
-            Engine.Connectors.forEach( ( connector ) => {
+            Engine.Connectors.forEach( connector => {
                 for( let property in connector.config ) {
                     if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
                         connector.config[property].value = this._getDecryptedValue( connector.config[property].input, data.connectors[connector.id][property] );
@@ -183,15 +203,9 @@ export default class Settings {
                 }
             } );
             document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( null );
-            }
-        } )
-        .catch( error => {
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( error );
-            }
-        } );
+        } catch( error ) {
+            console.error('Failed to load HakuNeko settings!', error);
+        }
     }
 
     /**
@@ -217,28 +231,30 @@ export default class Settings {
         });
 
         Engine.Storage.saveConfig( 'settings', data, 2 )
-        .then( () => {
-            document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( null );
-            }
-        } )
-        .catch( error => {
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( error );
-            }
-        } );
+            .then( () => {
+                document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
+                }
+            } )
+            .catch( error => {
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( error );
+                }
+            } );
     }
 
     /**
-     * 
+     *
      */
     _getEncryptedValue( inputType, decryptedValue ) {
         if( inputType !== Input.password || !decryptedValue || decryptedValue.length < 1 ) {
             return decryptedValue;
         }
-        // hakuneko must be portable and work offline => impossible to generate a secure key
-        // so keep things simple and at least secure the password in case the data was leeched and cannot be asociated with hakuneko
+        /*
+         * hakuneko must be portable and work offline => impossible to generate a secure key
+         * so keep things simple and at least secure the password in case the data was leeched and cannot be asociated with hakuneko
+         */
         return CryptoJS.AES.encrypt( decryptedValue, 'HakuNeko!' ).toString();
     }
 
@@ -257,17 +273,17 @@ export default class Settings {
      */
     _getValidValue( connectorProperty ) {
         switch( connectorProperty.input ) {
-            case Input.numeric:
-                let value = connectorProperty.value;
-                if( connectorProperty.min !== undefined ) {
-                    value = Math.max( value, connectorProperty.min );
-                }
-                if( connectorProperty.max !== undefined ) {
-                    value = Math.min( value, connectorProperty.max );
-                }
-                return value;
-            default:
-                return connectorProperty.value;
+        case Input.numeric:
+            let value = connectorProperty.value;
+            if( connectorProperty.min !== undefined ) {
+                value = Math.max( value, connectorProperty.min );
+            }
+            if( connectorProperty.max !== undefined ) {
+                value = Math.min( value, connectorProperty.max );
+            }
+            return value;
+        default:
+            return connectorProperty.value;
 
         }
     }
