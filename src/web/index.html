@@ -20,21 +20,18 @@
     <script type="module">
         import HakuNeko from './mjs/HakuNeko.mjs'
 
-        function loadEngine() {
+        async function loadEngine() {
             console.log('Loading Engine:', 'HakuNeko');
-            let instance = new HakuNeko();
-            window.HakuNeko = instance;
-            // TODO: remove backward compatibility when all references are set to HakuNeko engine
-            //window.Engine = instance;
-
-            // TODO: remove backward compatibility for global aliases of enums
-            // when all their references are set to HakuNeko engine
-            window.Input = instance.Enums.Input;
-            window.EpisodeFormat = instance.Enums.EpisodeFormat;
-            window.ChapterFormat = instance.Enums.ChapterFormat;
-            window.HistoryFormat = instance.Enums.HistoryFormat;
-            window.DownloadStatus = instance.Enums.DownloadStatus;
-            window.EventListener = instance.Enums.EventListener;
+            window.HakuNeko = new HakuNeko(window);
+            // TODO: remove backward compatibility alias 'Engine' when all references are set to HakuNeko engine
+            window.Engine = window.HakuNeko;
+            
+            await Engine.initialize();
+            // TODO: remove stuff that requires various globals, incl. global HakuNeko engine
+            //new HistoryWorker();
+            Engine.Settings.loadProfile( 'default', undefined );
+            Engine.BookmarkManager.loadProfile( 'default', undefined );
+            Engine.ChaptermarkManager.loadChaptermarks( undefined );
         }
 
         function loadFrontend(option) {
@@ -69,12 +66,14 @@
             notification.parentNode.removeChild(notification);
         }
 
-        //window.onload = evt => {
-            loadEngine();
+        async function main() {
+            await loadEngine();
             // TODO: get frontend identifier from e.g. HakuNeko settings
             let option = { value: 'frontend@classic-dark', name: 'Classic (Dark)' };
             loadFrontend(option);
-        //}
+        }
+
+        main();
     </script>
     <style>
         html, body {

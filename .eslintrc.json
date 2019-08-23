@@ -1,0 +1,37 @@
+{
+    "env": {
+        "es6": true,
+        "node": true,
+        "browser": true,
+        "jest": true
+    },
+    "extends": [
+        "eslint:recommended"
+    ],
+    "globals": {
+        "HakuNeko": "readonly",
+        "Engine": "readonly",
+        "Input": "readonly",
+        "EpisodeFormat": "readonly",
+        "ChapterFormat": "readonly",
+        "HistoryFormat": "readonly",
+        "DownloadStatus": "readonly",
+        "EventListener": "readonly",
+        "BookmarkImporter": "readonly",
+        "Connector": "readonly",
+        "ClipboardConnector": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "rules": {
+        "semi": ["error", "always"],
+        "indent": ["warn", 4],
+        "no-trailing-spaces": "warn",
+        "no-multiple-empty-lines": ["warn", {"max": 1, "maxBOF": 0, "maxEOF": 0}],
+        "eol-last": ["warn", "never"],
+        "no-multi-spaces": "warn",
+        "multiline-comment-style": ["warn", "starred-block"]
+    }
+}

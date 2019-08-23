@@ -1,0 +1,136 @@
+export default class ChaptermarkManager {
+
+    // TODO: use dependency injection instead of globals for Engine.Storage
+    constructor() {
+        this.chaptermarks = [];
+    }
+
+    /**
+     *
+     */
+    mergeChaptermarks( chaptermarks ) {
+        if( !chaptermarks ) {
+            return;
+        }
+        
+        let marks = chaptermarks.filter( c => this._findIndex( c ) < 0 );
+        this.chaptermarks = this.chaptermarks.concat( marks );
+        this._syncChaptermarks( undefined );
+    }
+
+    /**
+     *
+     */
+    _findIndex( chaptermark ) {
+        return this.chaptermarks.findIndex( c => c.connectorID === chaptermark.connectorID && c.mangaID === chaptermark.mangaID );
+    }
+
+    /**
+     * Try to save the current chaptermarks.
+     * Will reset chaptermarks when saving fails.
+     */
+    _syncChaptermarks( callback ) {
+        Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
+        .then( () => {
+            document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+            if( typeof( callback ) === typeof( Function ) ) {
+                callback( null );
+            }
+        } )
+        .catch( error => {
+            this.loadChaptermarks( callback );
+            } );
+    }
+
+    _getChapterIdentifier( chapter ) {
+        // some chapters are using objects as ID, these will provide a hash as identifier
+        return ( chapter.id.hash || chapter.id );
+    }
+
+    isChapterMarked( chapter, mark ) {
+        return mark
+            && chapter
+            && mark.chapterID === this._getChapterIdentifier( chapter )
+            && mark.mangaID === chapter.manga.id
+            && mark.connectorID === chapter.manga.connector.id;
+    }
+
+    /**
+     *
+     */
+    loadChaptermarks( callback ) {
+        Engine.Storage.loadConfig( 'chaptermarks' )
+        .then( data => {
+            try {
+                if( !data ) {
+                    throw new Error( 'Invalid chaptermark list!' );
+                }
+                this.chaptermarks = data;
+                document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
+                }
+            } catch( e ) {
+                console.error( 'Failed to load chaptermarks:', e.message );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( e );
+                }
+            }
+        } )
+        .catch( error => {
+            if( typeof( callback ) === typeof( Function ) ) {
+                callback( error );
+            }
+        } );
+    }
+
+    /**
+     * Get the chapter mark for the given manga (or undefined if no chapter is marked for the manga)
+     */
+    getChaptermark( manga ) {
+        let chaptermark = undefined;
+        if( manga ) {
+            chaptermark = this.chaptermarks.find( mark => {
+                return ( mark.mangaID === manga.id && mark.connectorID === manga.connector.id ); 
+            } );
+            // backward compatibility (old chaptermarks don't have a title)
+            if( chaptermark ) {
+                chaptermark['chapterTitle'] = chaptermark['chapterTitle'] || 'Chapter Title Unavailable';
+            }
+        }
+        return chaptermark;
+    }
+
+    /**
+     * Mark the given chapter (replace any existing marked chapter for this connector/manga)
+     */
+    addChaptermark( chapter ) {
+        if( !chapter || !chapter.manga || !chapter.manga.connector ) {
+            return;
+        }
+        let chaptermark = {
+            connectorID: chapter.manga.connector.id,
+            mangaID: chapter.manga.id,
+            chapterID: this._getChapterIdentifier( chapter ),
+            chapterTitle: chapter.title
+        };
+        let index = this._findIndex( chaptermark );
+        if( this._findIndex( chaptermark ) > -1 ) {
+            this.chaptermarks[index] = chaptermark;
+        } else { 
+            this.chaptermarks.push( chaptermark );
+        }
+        this._syncChaptermarks();
+    }
+
+    /**
+     *
+     */
+    deleteChaptermark( chaptermark ) {
+        let index = this._findIndex( chaptermark );
+        if( index > -1 ) {
+            this.chaptermarks.splice( index, 1 );
+            this._syncChaptermarks();
+        }
+    }
+}

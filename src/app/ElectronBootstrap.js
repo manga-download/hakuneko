@@ -91,19 +91,32 @@ module.exports = class ElectronBootstrap {
     _registerLocalHotkeys() {
         let menu = [
             {
-                label: 'View',
+                role: 'viewMenu',
                 submenu: [
                     {
-                        label: 'Toggle Fullscreen',
-                        // NOTE: on macOS F11 key is reserved for system usage ...
-                        accelerator: process.platform === 'darwin' ? 'Control+Command+F' : 'F11' ,
-                        click: this._toggleFullscreen.bind(this)
+                        role: 'togglefullscreen'
                     },
                     {
-                        label: 'Toggle DevTools',
-                        accelerator: 'F12',
-                        click: this._toggleDevTools.bind(this)
-                    }
+                        role: 'toggleDevTools',
+                        accelerator: 'F12'
+                    },
+                ]
+            },
+            {
+                role: 'editMenu',
+                submenu: [
+                    {
+                        //role: 'copy',
+                        label: 'Copy URL',
+                        accelerator: 'Shift+C',
+                        click: this._copyURL.bind(this)
+                    },
+                    {
+                        //role: 'paste',
+                        label: 'Paste URL',
+                        accelerator: 'Shift+V',
+                        click: this._pasteURL.bind(this)
+                    },
                 ]
             }
         ];
@@ -113,19 +126,19 @@ module.exports = class ElectronBootstrap {
     /**
      * 
      */
-    _toggleDevTools() {
-        if(this._window.webContents.isDevToolsOpened()) {
-            this._window.webContents.closeDevTools();
-        } else {
-            this._window.webContents.openDevTools();
+    _copyURL(menu, window, event) {
+        if(window !== this._window) {
+            electron.clipboard.writeText(window.webContents.getURL());
         }
     }
 
     /**
      * 
      */
-    _toggleFullscreen() {
-        this._window.setFullScreen(!this._window.isFullScreen());
+    _pasteURL(menu, window, event) {
+        if(window !== this._window) {
+            window.webContents.loadURL(electron.clipboard.readText());
+        }
     }
 
     /**

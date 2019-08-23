@@ -2,8 +2,6 @@
 <link rel="import" href="../../polymer/polymer-element.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
-<link rel="import" href="../engine/bookmarks-importer.html">
-<link rel="import" href="../engine/engine.html">
 <link rel="import" href="input.html">
 <link rel="import" href="theme.html">
 
@@ -341,10 +339,17 @@
                         clearInterval(watchdog);
                     } else {
                         let script = `
-                            window.onbeforeunload = evt => undefined;
-                            let warning = document.querySelector('div.unsupported-browser');
-                            if(warning) {
-                                warning.parentNode.removeChild(warning);
+                            // loal scope for variable declaration
+                            {
+                                window.onbeforeunload = evt => undefined;
+                                let warning = document.querySelector('div.unsupported-browser');
+                                if(warning) {
+                                    warning.parentNode.removeChild(warning);
+                                }
+                                let signup = document.querySelector('div.signup-prompt');
+                                if(signup) {
+                                    signup.parentNode.removeChild(signup);
+                                }
                             }
                         `;
                         popup.eval(script);
