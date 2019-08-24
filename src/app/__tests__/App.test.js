@@ -3,7 +3,7 @@ const Configuration = require('../Configuration');
 const ConfigurationLinux = require('../ConfigurationLinux');
 const ConfigurationDarwin = require('../ConfigurationDarwin');
 const ConfigurationWindows = require('../ConfigurationWindows');
-const { FileLogger } = require('logtrine');
+const { FileLogger } = require('@logtrine/logtrine');
 var logger = new FileLogger(__filename + '.log', FileLogger.LEVEL.All);
 logger.clear();
 

@@ -10,8 +10,8 @@
   },
   "main": "main.js",
   "dependencies": {
+    "@logtrine/logtrine": "latest",
     "fs-extra": "latest",
-    "jszip": "latest",
-    "logtrine": "latest"
+    "jszip": "latest"
   }
 }

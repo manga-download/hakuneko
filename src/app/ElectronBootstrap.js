@@ -1,7 +1,7 @@
 const path = require('path');
 const fs = require('fs-extra');
 const electron = require('electron');
-const { ConsoleLogger } = require('logtrine');
+const { ConsoleLogger } = require('@logtrine/logtrine');
 const urlFilterAll = { urls: ['http://*/*', 'https://*/*'] };
 
 module.exports = class ElectronBootstrap {

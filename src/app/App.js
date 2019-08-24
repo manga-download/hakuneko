@@ -1,5 +1,5 @@
 const path = require('path');
-const { ConsoleLogger } = require('logtrine');
+const { ConsoleLogger } = require('@logtrine/logtrine');
 const Configuration = require('./Configuration');
 const ConfigurationLinux = require('./ConfigurationLinux');
 const ConfigurationDarwin = require('./ConfigurationDarwin');

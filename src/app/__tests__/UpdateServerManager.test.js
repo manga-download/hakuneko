@@ -1,6 +1,6 @@
 const http = require('http');
 const assert = require('assert');
-const { FileLogger } = require('logtrine');
+const { FileLogger } = require('@logtrine/logtrine');
 const UpdateServerManager = require('../UpdateServerManager');
 var logger = new FileLogger(__filename + '.log', FileLogger.LEVEL.All);
 logger.clear();

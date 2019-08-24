@@ -13,6 +13,7 @@
     "@hakuneko/ffmpeg-binaries": "latest",
     "@hakuneko/imagemagick-binaries": "latest",
     "@hakuneko/kindlegen-binaries": "latest",
+    "@logtrine/logtrine": "latest",
     "asar": "latest",
     "electron": "6.0.3",
     "eslint": "latest",
@@ -21,7 +22,6 @@
     "jest": "latest",
     "jest-junit": "latest",
     "jszip": "latest",
-    "logtrine": "latest",
     "polymer-build": "latest",
     "rcedit": "latest",
     "win-7zip": "latest"
