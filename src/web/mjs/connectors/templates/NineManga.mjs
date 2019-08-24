@@ -1,13 +1,13 @@
-import TAADD from '../TAADD.mjs'
+import TAADD from '../TAADD.mjs';
 
 export default class NineManga extends TAADD {
 
     constructor() {
         super();
-        super.id         = undefined;
-        super.label      = undefined;
-        this.tags        = [];
-        this.url         = undefined;
+        super.id = undefined;
+        super.label = undefined;
+        this.tags = [];
+        this.url = undefined;
 
         //this.queryMangasPageCount = '';
         this.pageCount = undefined;

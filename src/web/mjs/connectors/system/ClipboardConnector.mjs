@@ -10,15 +10,15 @@ export default class ClipboardConnector {
      */
     constructor() {
         // Public members for usage in UI (mandatory)
-        this.id       = 'clipboard';
-        this.label    = ' 【Clipboard】';
-        this.icon     = '/img/connectors/' + this.id;
-        this.tags     = [];
+        this.id = 'clipboard';
+        this.label = ' 【Clipboard】';
+        this.icon = '/img/connectors/' + this.id;
+        this.tags = [];
         this.isLocked = false;
         // Private members for internal usage only (convenience)
-        this.url      = undefined;
-        this.referer  = undefined;
-        this.agent    = undefined;
+        this.url = undefined;
+        this.referer = undefined;
+        this.agent = undefined;
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = undefined;
 
@@ -29,8 +29,10 @@ export default class ClipboardConnector {
      *
      */
     _getLinksFromClipboard() {
-        // TODO: get links from clipboard...
-        // navigator.clipboard.readText().then( text => console.log( 'DBG:', text) );
+        /*
+         * TODO: get links from clipboard...
+         * navigator.clipboard.readText().then( text => console.log( 'DBG:', text) );
+         */
         return [];
     }
 
@@ -47,7 +49,7 @@ export default class ClipboardConnector {
                 }
                 let connectors = Engine.Connectors.filter( connector => connector.url === uri.origin );
                 if( !connectors.length ) {
-                    connectors =  Engine.Connectors.filter( connector => connector.url && connector.url.includes( uri.hostname ) );
+                    connectors = Engine.Connectors.filter( connector => connector.url && connector.url.includes( uri.hostname ) );
                 }
                 if( connectors.length > 1 ) {
                     connectors = connectors.filter( connector => uri.pathname.startsWith( new URL( connector.url ).pathname ) );
@@ -98,9 +100,9 @@ export default class ClipboardConnector {
             return Promise.resolve( error );
         } ) );
         Promise.all( promises )
-        .then( mangas => {
-            mangas = mangas.filter( manga => !(manga instanceof Error) );
-            callback( null, mangas );
-        } );
+            .then( mangas => {
+                mangas = mangas.filter( manga => !(manga instanceof Error) );
+                callback( null, mangas );
+            } );
     }
 }

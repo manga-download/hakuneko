@@ -1,12 +1,12 @@
-import Connector from '../../engine/Connector.mjs'
+import Connector from '../../engine/Connector.mjs';
 
 export default class WordPressClarityMangaReader extends Connector {
 
     constructor() {
         super();
-        super.id         = undefined;
-        super.label      = undefined;
-        this.url         = undefined;
+        super.id = undefined;
+        super.label = undefined;
+        this.url = undefined;
 
         this.paths = [];
         this.queryMangas = 'a.vc_gitem-link.vc-zone-link';
@@ -17,9 +17,11 @@ export default class WordPressClarityMangaReader extends Connector {
         this.formManga.set( 'action', 'vc_get_vc_grid_data' );
         //this.formManga.set( 'vc_action', 'vc_get_vc_grid_data' );
         this.formManga.set( 'tag', 'vc_masonry_grid' );
-        //this.formManga.set( 'data[visible_pages]', 5 );
-        //this.formManga.set( 'data[style]', 'load-more-masonry' );
-        //this.formManga.set( 'data[action]', 'vc_get_vc_grid_data' );
+        /*
+         *this.formManga.set( 'data[visible_pages]', 5 );
+         *this.formManga.set( 'data[style]', 'load-more-masonry' );
+         *this.formManga.set( 'data[action]', 'vc_get_vc_grid_data' );
+         */
         this.formManga.set( 'data[items_per_page]', 250 );
         //this.formManga.set( 'data[tag]', 'vc_masonry_grid' );
     }
@@ -30,23 +32,23 @@ export default class WordPressClarityMangaReader extends Connector {
     _extractRequestVC( path ) {
         let request = new Request( this.url + path );
         return this.fetchDOM( request, 'div[data-vc-request]' )
-        .then( data => {
-            let vc = data[0].dataset;
-            let shortcode = document.createElement('div');
-            shortcode.innerHTML = vc.vcGridSettings;
-            shortcode = JSON.parse( shortcode.innerText ).shortcode_id;
-            //this.formManga.set( 'vc_post_id', vc.vcPostId );
-            this.formManga.set( 'data[page_id]', vc.vcPostId );
-            this.formManga.set( 'data[shortcode_id]', shortcode );
-            this.formManga.set( '_vcnonce', vc.vcPublicNonce );
-            this.requestOptions.method = 'POST';
-            this.requestOptions.body = this.formManga.toString();
-            let request = new Request( vc.vcRequest, this.requestOptions );
-            request.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
-            this.requestOptions.method = 'GET';
-            delete this.requestOptions.body;
-            return Promise.resolve( request );
-        } );
+            .then( data => {
+                let vc = data[0].dataset;
+                let shortcode = document.createElement('div');
+                shortcode.innerHTML = vc.vcGridSettings;
+                shortcode = JSON.parse( shortcode.innerText ).shortcode_id;
+                //this.formManga.set( 'vc_post_id', vc.vcPostId );
+                this.formManga.set( 'data[page_id]', vc.vcPostId );
+                this.formManga.set( 'data[shortcode_id]', shortcode );
+                this.formManga.set( '_vcnonce', vc.vcPublicNonce );
+                this.requestOptions.method = 'POST';
+                this.requestOptions.body = this.formManga.toString();
+                let request = new Request( vc.vcRequest, this.requestOptions );
+                request.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
+                this.requestOptions.method = 'GET';
+                delete this.requestOptions.body;
+                return Promise.resolve( request );
+            } );
     }
 
     /**
@@ -55,21 +57,21 @@ export default class WordPressClarityMangaReader extends Connector {
     _getMangaListFromPages( mangaPageLinks, index ) {
         index = index || 0;
         return this._extractRequestVC( mangaPageLinks[ index ] )
-        .then( data => this.fetchDOM( data, this.queryMangas, 5 ) )
-        .then( data => {
-            let mangaList = data.map( element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
-                    title: element.title.trim()
-                };
+            .then( data => this.fetchDOM( data, this.queryMangas, 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
+                        title: element.title.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                        .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
             } );
-            if( index < mangaPageLinks.length - 1 ) {
-                return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                .then( mangas => mangaList.concat( mangas ) );
-            } else {
-                return Promise.resolve( mangaList );
-            }
-        } );
     }
 
     /**
@@ -77,13 +79,13 @@ export default class WordPressClarityMangaReader extends Connector {
      */
     _getMangaList( callback ) {
         this._getMangaListFromPages( this.paths )
-        .then( data => {
-            callback( null, data );
-        } )
-        .catch( error => {
-            console.error( error, this );
-            callback( error, undefined );
-        } );
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
     }
 
     /**
@@ -93,20 +95,20 @@ export default class WordPressClarityMangaReader extends Connector {
         let uri = new URL( manga.id, this.url );
         let request = new Request(uri.href, this.requestOptions );
         this.fetchDOM( request, this.queryChapters )
-        .then( data => {
-            let chapterList = data.map( element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink( element.dataset.ref, request.url ),
-                    title: element.textContent.replace( manga.title, '' ).trim(),
-                    language: ''
-                };
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element.dataset.ref, request.url ),
+                        title: element.textContent.replace( manga.title, '' ).trim(),
+                        language: ''
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
-            callback( null, chapterList );
-        } )
-        .catch( error => {
-            console.error( error, manga );
-            callback( error, undefined );
-        } );
     }
 
     /**
@@ -121,12 +123,12 @@ export default class WordPressClarityMangaReader extends Connector {
         let uri = new URL( chapter.id, this.url );
         let request = new Request( uri.href, this.requestOptions );
         Engine.Request.fetchUI( request, script )
-        .then( data => {
-            callback( null, data );
-        } )
-        .catch( error => {
-            console.error( error, chapter );
-            callback( error, undefined );
-        } ); 
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
     }
 }

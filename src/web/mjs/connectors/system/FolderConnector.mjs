@@ -1,5 +1,5 @@
-import Manga from '../../engine/Manga.mjs'
-import Chapter from '../../engine/Chapter.mjs'
+import Manga from '../../engine/Manga.mjs';
+import Chapter from '../../engine/Chapter.mjs';
 
 /**
  * A special connector to show all mangas from a given local folder.
@@ -10,12 +10,12 @@ export default class FolderConnector {
     // TODO: dependency injection for Engine.Settings, Engine.Storage
     constructor() {
         // Public members for usage in UI (mandatory)
-        this.id       = 'folder';
-        this.label    = ' 【Folder Viewer】';
-        this.icon     = '/img/connectors/' + this.id;
-        this.tags     = [ /* 'bookmarks', 'favorites' */ ];
+        this.id = 'folder';
+        this.label = ' 【Folder Viewer】';
+        this.icon = '/img/connectors/' + this.id;
+        this.tags = [ /* 'bookmarks', 'favorites' */ ];
         // Private members for internal usage only (convenience)
-        this.url      = undefined;
+        this.url = undefined;
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             path: {
@@ -47,19 +47,19 @@ export default class FolderConnector {
     _getMangaList( callback ) {
         let directory = this.config.path.value;
         Engine.Storage._readDirectoryEntries( directory )
-        .then( entries => {
-            let mangaList = entries.map( entry => {
+            .then( entries => {
+                let mangaList = entries.map( entry => {
                 // TODO: exclude files
-                let manga = new Manga( this, Engine.Storage.path.join( directory, entry ), entry, DownloadStatus.completed );
-                manga.getChapters = this.getChapters.bind( manga );
-                return manga;
+                    let manga = new Manga( this, Engine.Storage.path.join( directory, entry ), entry, DownloadStatus.completed );
+                    manga.getChapters = this.getChapters.bind( manga );
+                    return manga;
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, [] );
             } );
-            callback( null, mangaList );
-        } )
-        .catch( error => {
-            console.error( error, this );
-            callback( error, [] );
-        } );
     }
 
     /**
@@ -72,18 +72,18 @@ export default class FolderConnector {
             return callback( new Error( 'This method must be used from a <Manga> object\'s context!' ), [] );
         }
         Engine.Storage._readDirectoryEntries( manga.id )
-        .then( entries => {
-            let chapterList = entries.map( entry => {
-                let chapter = new Chapter( manga, Engine.Storage.path.join( manga.id, entry ), entry, undefined, DownloadStatus.offline );
-                chapter.getPages = manga.connector.getPages.bind( chapter );
-                return chapter;
+            .then( entries => {
+                let chapterList = entries.map( entry => {
+                    let chapter = new Chapter( manga, Engine.Storage.path.join( manga.id, entry ), entry, undefined, DownloadStatus.offline );
+                    chapter.getPages = manga.connector.getPages.bind( chapter );
+                    return chapter;
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, [] );
             } );
-            callback( null, chapterList );
-        } )
-        .catch( error => {
-            console.error( error, manga );
-            callback( error, [] );
-        } );
     }
 
     /**
@@ -103,13 +103,13 @@ export default class FolderConnector {
             return callback( new Error( 'This method must be used from a <Chapter> object\'s context!' ), [] );
         }
         Engine.Storage.loadChapterPages( chapter.id )
-        .then( pages => {
-            callback( null, pages );
-        } )
-        .catch( error => {
-            console.error( error, chapter );
-            callback( error, [] );
-        } );
+            .then( pages => {
+                callback( null, pages );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, [] );
+            } );
     }
 
     /**

@@ -1,14 +1,14 @@
-import Connector from '../../engine/Connector.mjs'
+import Connector from '../../engine/Connector.mjs';
 
-export default class ReaderFront extends Connector  {
+export default class ReaderFront extends Connector {
 
     constructor() {
         super();
         // Public members for usage in UI (mandatory)
-        super.id         = undefined;
-        super.label      = undefined;
-        this.url         = undefined;
-        this.baseURL     = undefined;
+        super.id = undefined;
+        super.label = undefined;
+        this.url = undefined;
+        this.baseURL = undefined;
 
         this.language = '';
         this.languageMap = {
@@ -19,23 +19,23 @@ export default class ReaderFront extends Connector  {
     }
 
     /**
-     * 
+     *
      */
     _getJsonResponse( payload, type ) {
         this.requestOptions.method = 'POST';
         this.requestOptions.body = JSON.stringify( payload );
         this.requestOptions.headers.set( 'content-type', 'application/json' );
         let promise = fetch( this.baseURL, this.requestOptions )
-        .then( response => response.json() )
-        .then( data => {
-            if( data[ 'errors' ] ) {
-                throw new Error( this.label + ' errors: ' + data.errors.map( error => error.message ).join( '\n' ) );
-            }
-            if( !data[ 'data' ] ) {
-                throw new Error( this.label + 'No data available!' );
-            }
-            return Promise.resolve( data.data );
-        } );
+            .then( response => response.json() )
+            .then( data => {
+                if( data[ 'errors' ] ) {
+                    throw new Error( this.label + ' errors: ' + data.errors.map( error => error.message ).join( '\n' ) );
+                }
+                if( !data[ 'data' ] ) {
+                    throw new Error( this.label + 'No data available!' );
+                }
+                return Promise.resolve( data.data );
+            } );
         this.requestOptions.headers.delete( 'content-type' );
         delete this.requestOptions.body;
         this.requestOptions.method = 'GET';
@@ -60,19 +60,19 @@ export default class ReaderFront extends Connector  {
                     }`
         };
         this._getJsonResponse( payload, 'mangas' )
-        .then( data => {
-            let mangaList = data.works.map( manga => {
-                return {
-                    id: manga.stub, // manga.id
-                    title: manga.name
-                };
+            .then( data => {
+                let mangaList = data.works.map( manga => {
+                    return {
+                        id: manga.stub, // manga.id
+                        title: manga.name
+                    };
+                } );
+                callback( null, mangaList );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
             } );
-            callback( null, mangaList );
-        } )
-        .catch( error => {
-            console.error( error, this );
-            callback( error, undefined );
-        } );
     }
 
     /**
@@ -100,30 +100,32 @@ export default class ReaderFront extends Connector  {
                     }`
         };
         this._getJsonResponse( payload, 'chapters' )
-        .then( data => {
-            let chapterList = data.work.chapters.map( chapter => {
+            .then( data => {
+                let chapterList = data.work.chapters.map( chapter => {
                 // .padStart( 4, '0' )
-                let title = `Vol. ${chapter.volume} Ch. ${chapter.chapter}.${chapter.subchapter} - ${chapter.name}`;
-                return {
-                    id: chapter.id, // chapter.stub,
-                    title: title.trim(),
-                    language: this.language
-                };
+                    let title = `Vol. ${chapter.volume} Ch. ${chapter.chapter}.${chapter.subchapter} - ${chapter.name}`;
+                    return {
+                        id: chapter.id, // chapter.stub,
+                        title: title.trim(),
+                        language: this.language
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
-            callback( null, chapterList );
-        } )
-        .catch( error => {
-            console.error( error, manga );
-            callback( error, undefined );
-        } );
     }
 
     /**
      *
      */
     _getPageList( manga, chapter, callback ) {
-        // pagesByChapter
-        // chapterById
+        /*
+         * pagesByChapter
+         * chapterById
+         */
         let payload = {
             operationName: 'ChapterById',
             variables: {
@@ -143,25 +145,27 @@ export default class ReaderFront extends Connector  {
                     }`
         };
         this._getJsonResponse( payload, 'pages' )
-        .then( data => {
-            let chapter = data.chapterById;
-            let pageList = chapter.pages.map( page => {
-                let uri = new URL( ['/works', chapter.work.uniqid, chapter.uniqid, page.filename].join( '/' ), this.baseURL );
-                return uri.href;
-                //let hash = 1; // 0 ~ 2
-                // CDN: Google
-                //return `https://images${hash}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1&rewriteMime=image/*&url=${encodeURIComponent(uri.href)}`;
-                // CDN: Photon
-                //return `https://i${hash}.wp.com/${uri.hostname + uri.pathname}`;
-                // CDN: staticaly
-                //return `https://cdn.staticaly.com/img/${uri.hostname + uri.pathname}`;
+            .then( data => {
+                let chapter = data.chapterById;
+                let pageList = chapter.pages.map( page => {
+                    let uri = new URL( ['/works', chapter.work.uniqid, chapter.uniqid, page.filename].join( '/' ), this.baseURL );
+                    return uri.href;
+                /*
+                 *let hash = 1; // 0 ~ 2
+                 * CDN: Google
+                 *return `https://images${hash}-focus-opensocial.googleusercontent.com/gadgets/proxy?container=focus&gadget=a&no_expand=1&rewriteMime=image/*&url=${encodeURIComponent(uri.href)}`;
+                 * CDN: Photon
+                 *return `https://i${hash}.wp.com/${uri.hostname + uri.pathname}`;
+                 * CDN: staticaly
+                 *return `https://cdn.staticaly.com/img/${uri.hostname + uri.pathname}`;
+                 */
+                } );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
-            callback( null, pageList );
-        } )
-        .catch( error => {
-            console.error( error, manga );
-            callback( error, undefined );
-        } );
         // `works/${chapter.work.uniqid}/${chapter.uniqid}/`
     }
 }

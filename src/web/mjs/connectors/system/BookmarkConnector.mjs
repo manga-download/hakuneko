@@ -1,5 +1,5 @@
-import InvalidConnector from './InvalidConnector.mjs'
-import Manga from '../../engine/Manga.mjs'
+import InvalidConnector from './InvalidConnector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
 /**
  * System
@@ -10,15 +10,15 @@ export default class BookmarkConnector {
 
     constructor() {
         // Public members for usage in UI (mandatory)
-        this.id       = 'bookmarks';
-        this.label    = ' 【Bookmarks】';
-        this.icon     = '/img/connectors/' + this.id;
-        this.tags     = [ /* 'bookmarks', 'favorites' */ ];
+        this.id = 'bookmarks';
+        this.label = ' 【Bookmarks】';
+        this.icon = '/img/connectors/' + this.id;
+        this.tags = [ /* 'bookmarks', 'favorites' */ ];
         this.isLocked = false;
         // Private members for internal usage only (convenience)
-        this.url      = undefined;
-        this.referer  = undefined;
-        this.agent    = undefined;
+        this.url = undefined;
+        this.referer = undefined;
+        this.agent = undefined;
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = undefined;
     }
@@ -50,19 +50,21 @@ export default class BookmarkConnector {
      *
      */
     _getMangaList( callback ) {
-        // get mangas and check status
-        // use a different approach to determine existence of manga, since it can be expected that
-        // the bookmark list is way shorter than a manga list of a connector => no performance issues expected
+        /*
+         * get mangas and check status
+         * use a different approach to determine existence of manga, since it can be expected that
+         * the bookmark list is way shorter than a manga list of a connector => no performance issues expected
+         */
         let mangas = Engine.BookmarkManager.bookmarks.map( bookmark => {
             let manga = new Manga( this._getConnectorByID( bookmark.key.connector ), bookmark.key.manga, bookmark.title.manga );
             // determine if manga directory exist on disk
             Engine.Storage.mangaDirectoryExist( manga )
-            .then( () => {
+                .then( () => {
                 // set existing manga list for related connector (used by manga.updateStatus function)
-                manga.connector.existingMangas[ Engine.Storage.sanatizePath ( manga.title ) ] = true;
-                manga.updateStatus();
-            } )
-            .catch( error => { /* directory for bookmark does not yet exist */ } );
+                    manga.connector.existingMangas[ Engine.Storage.sanatizePath ( manga.title ) ] = true;
+                    manga.updateStatus();
+                } )
+                .catch( error => { /* directory for bookmark does not yet exist */ } );
             return manga;
         });
         mangas.sort( ( a, b ) => {

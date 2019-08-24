@@ -1,13 +1,13 @@
-import Connector from '../../engine/Connector.mjs'
+import Connector from '../../engine/Connector.mjs';
 
 export default class Publus extends Connector {
 
     constructor() {
         super();
-        super.id         = undefined;
-        super.label      = undefined;
-        this.tags        = [];
-        this.url         = undefined;
+        super.id = undefined;
+        super.label = undefined;
+        this.tags = [];
+        this.url = undefined;
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             scrapeDelay: {
@@ -40,65 +40,69 @@ export default class Publus extends Connector {
             } );
         `;
         Engine.Request.fetchUI( request, script )
-        .then( data => {
-            let pageList = data.map( link => this.createConnectorURI( this.getAbsolutePath( link, request.url ) ) );
-            callback( null, pageList );
-        } )
-        .catch( error => {
-            console.error( error, chapter );
-            callback( error, undefined );
-        } );
+            .then( data => {
+                let pageList = data.map( link => this.createConnectorURI( this.getAbsolutePath( link, request.url ) ) );
+                callback( null, pageList );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
     }
 
     /**
-     * 
+     *
      */
     _handleConnectorURI( payload ) {
         let request = new Request( payload, this.requestOptions );
         return fetch( request )
-        .then( response => response.blob() )
-        .then( data => {
+            .then( response => response.blob() )
+            .then( data => {
             //if( true ) {
                 return this._descrambleImage( data, request.url );
-            //} else {
-            //    return Promise.resolve( data );
-            //}
-        } )
-        .then( data => this._blobToBuffer( data ) );
+            /*
+             *} else {
+             *    return Promise.resolve( data );
+             *}
+             */
+            } )
+            .then( data => this._blobToBuffer( data ) );
     }
 
-    /*******************************
+    /**
+     ******************************
      *** GANGANONLINE CODE BEGIN ***
-     ******************************/
+     *****************************
+     */
 
     /**
-     * 
+     *
      */
     _descrambleImage( blob, path ) {
         return createImageBitmap( blob )
-        .then( bitmap => {
-            return new Promise( ( resolve, reject ) => {
-                let canvas = document.createElement( 'canvas' );
-                canvas.width = bitmap.width;
-                canvas.height = bitmap.height;
-                var ctx = canvas.getContext( '2d' );
+            .then( bitmap => {
+                return new Promise( ( resolve, reject ) => {
+                    let canvas = document.createElement( 'canvas' );
+                    canvas.width = bitmap.width;
+                    canvas.height = bitmap.height;
+                    var ctx = canvas.getContext( '2d' );
 
-                let blocks = this.NFBR_a3E_a3f(bitmap.width, bitmap.height, this.NFBR_a0X_a3g, this.NFBR_a0X_a3G, this.descramblePattern( path ));
-                for (let q of blocks)
-                {
+                    let blocks = this.NFBR_a3E_a3f(bitmap.width, bitmap.height, this.NFBR_a0X_a3g, this.NFBR_a0X_a3G, this.descramblePattern( path ));
+                    for (let q of blocks)
+                    {
                     /*if(q.srcX < l.x + l.width && q.srcX + q.width >= l.x && q.srcY < l.y + l.height && q.srcY + q.height >= l.y)*/
-                    ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
-                }
+                        ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
+                    }
 
-                canvas.toBlob( data => {
-                    resolve( data );
-                }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
+                    canvas.toBlob( data => {
+                        resolve( data );
+                    }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
+                } );
             } );
-        } );
     }
 
     /**
-     * 
+     *
      */
     descramblePattern( path ) {
         let F = path.match( /item.*\d+/ )[0];
@@ -109,26 +113,26 @@ export default class Publus extends Connector {
     }
 
     /**
-     * 
+     *
      */
     get NFBR_a0X_a3g() {
         return 64;
     }
-    
+
     /**
-     * 
+     *
      */
     get NFBR_a0X_a3G() {
         return 64;
     }
 
     /**
-     * 
+     *
      */
     get NFBR_a0X_a3h() {
         return 4;
     }
-    
+
     /**
      * a => image width
      * f => image height
@@ -138,7 +142,7 @@ export default class Publus extends Connector {
      */
     NFBR_a3E_a3f(a, f, b, e, d) {
         var c = Math.floor(a / b)
-        , h = Math.floor(f / e);
+            , h = Math.floor(f / e);
         a %= b;
         f %= e;
         var g, l, k, m, p, r, t, q, u = [];
@@ -208,53 +212,55 @@ export default class Publus extends Connector {
                     width: b,
                     height: e
                 });
-        return u
+        return u;
     }
 
     /**
-     * 
+     *
      */
     calcPositionWithRest_(a, f, b, e) {
-        return a * e + (a >= f ? b : 0)
+        return a * e + (a >= f ? b : 0);
     }
 
     /**
-     * 
+     *
      */
     calcXCoordinateXRest_(a, f, b) {
-        return (a + 61 * b) % f
+        return (a + 61 * b) % f;
     }
 
     /**
-     * 
+     *
      */
     calcYCoordinateXRest_(a, f, b, e, d) {
         var c = 1 === d % 2;
         (a < f ? c : !c) ? (e = b,
         f = 0) : (e -= b,
         f = b);
-        return (a + 53 * d + 59 * b) % e + f
+        return (a + 53 * d + 59 * b) % e + f;
     }
 
     /**
-     * 
+     *
      */
     calcXCoordinateYRest_(a, f, b, e, d) {
         var c = 1 == d % 2;
         (a < b ? c : !c) ? (e -= f,
         b = f) : (e = f,
         b = 0);
-        return (a + 67 * d + f + 71) % e + b
+        return (a + 67 * d + f + 71) % e + b;
     }
 
     /**
-     * 
+     *
      */
     calcYCoordinateYRest_(a, f, b) {
-        return (a + 73 * b) % f
+        return (a + 73 * b) % f;
     }
 
-    /*****************************
+    /**
+     ****************************
      *** GANGANONLINE CODE END ***
-     ****************************/
+     ***************************
+     */
 }

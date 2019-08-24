@@ -1,82 +1,86 @@
-import Connector from '../../engine/Connector.mjs'
+import Connector from '../../engine/Connector.mjs';
 
 export default class SpeedBinb extends Connector {
 
     constructor() {
         super();
-        super.id         = undefined;
-        super.label      = undefined;
-        this.tags        = [];
-        this.url         = undefined;
-    }
-
-    /**
-     * 
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.getAbsolutePath( chapter.id, this.url ), this.requestOptions );
-        this.fetchDOM( request, 'div#content.pages' )
-        .then( data => {
-            data = data[0];
-            if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )
-            {
-                return this._getPageList_v016113( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
-            }
-            if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
-                return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
-            }
-            let imageConfigurtions = data.querySelectorAll( 'div[data-ptimg$="ptimg.json"]' );
-            if( imageConfigurtions.length > 0 ) {
-                return this._getPageList_v016061( [...imageConfigurtions], request.url );
-            }
-            // 
-            throw new Error( 'Unsupported version of SpeedBinb reader!' )
-        } )
-        .then( pageList => callback( null, pageList ) )
-        .catch( error => {
-            console.error( error, chapter );
-            callback( error, undefined );
-        } );
+        super.id = undefined;
+        super.label = undefined;
+        this.tags = [];
+        this.url = undefined;
     }
 
     /**
      *
      */
-        _handleConnectorURI( payload ) {
-        // TODO: only perform requests when from download manager
-        // or when from browser for preview and selected chapter matches
-        let promise;
-        switch( true ) {
-            case payload.endsWith( 'ptimg.json' ):
-                promise = this._process_v016061( payload );
-                break;
-            case payload.includes( 'sbcGetImg' ):
-                promise = this._process_v016130( payload );
-                break;
-            case payload.includes( 'M_L.jpg' ):
-                promise = this._process_v016130( payload );
-                break;
-            case payload.includes( 'M_H.jpg' ):
-                promise = this._process_v016130( payload );
-                break;
-            case payload.includes( '/img/' ):
-                promise = this._process_v016130( payload );
-                break;
-            default:
-                promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
-                break;
-        }
-        return promise.then( data => this._blobToBuffer( data ) )
-        .then( data => {
-            this._applyRealMime( data );
-            return Promise.resolve( data );
-        } );
+    _getPageList( manga, chapter, callback ) {
+        let request = new Request( this.getAbsolutePath( chapter.id, this.url ), this.requestOptions );
+        this.fetchDOM( request, 'div#content.pages' )
+            .then( data => {
+                data = data[0];
+                if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )
+                {
+                    return this._getPageList_v016113( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
+                }
+                if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
+                    return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
+                }
+                let imageConfigurtions = data.querySelectorAll( 'div[data-ptimg$="ptimg.json"]' );
+                if( imageConfigurtions.length > 0 ) {
+                    return this._getPageList_v016061( [...imageConfigurtions], request.url );
+                }
+                //
+                throw new Error( 'Unsupported version of SpeedBinb reader!' );
+            } )
+            .then( pageList => callback( null, pageList ) )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
     }
 
-    /**************************
+    /**
+     *
+     */
+    _handleConnectorURI( payload ) {
+        /*
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
+        let promise;
+        switch( true ) {
+        case payload.endsWith( 'ptimg.json' ):
+            promise = this._process_v016061( payload );
+            break;
+        case payload.includes( 'sbcGetImg' ):
+            promise = this._process_v016130( payload );
+            break;
+        case payload.includes( 'M_L.jpg' ):
+            promise = this._process_v016130( payload );
+            break;
+        case payload.includes( 'M_H.jpg' ):
+            promise = this._process_v016130( payload );
+            break;
+        case payload.includes( '/img/' ):
+            promise = this._process_v016130( payload );
+            break;
+        default:
+            promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
+            break;
+        }
+        return promise.then( data => this._blobToBuffer( data ) )
+            .then( data => {
+                this._applyRealMime( data );
+                return Promise.resolve( data );
+            } );
+    }
+
+    /**
+     *************************
      *** SpeedBinb v01.6061 ***
-        *** Comic Meteor       ***
-        **************************/
+     * ** Comic Meteor       ***
+     *************************
+     */
 
     /**
      *
@@ -92,15 +96,15 @@ export default class SpeedBinb extends Connector {
     _process_v016061( ptimgConfigURL ) {
         let views;
         return fetch( ptimgConfigURL, this.requestOptions )
-        .then( response => response.json() )
-        .then( data => {
-            let href = ( new URL( data.resources.i.src, ptimgConfigURL ) ).href;
-            views = data.views;
-            return fetch( href, this.requestOptions );
-        } )
-        .then( response => response.blob() )
-        .then( data => createImageBitmap( data ) )
-        .then( bitmap => this._descramble_v016061( bitmap, views ) );
+            .then( response => response.json() )
+            .then( data => {
+                let href = ( new URL( data.resources.i.src, ptimgConfigURL ) ).href;
+                views = data.views;
+                return fetch( href, this.requestOptions );
+            } )
+            .then( response => response.blob() )
+            .then( data => createImageBitmap( data ) )
+            .then( bitmap => this._descramble_v016061( bitmap, views ) );
     }
 
     /**
@@ -131,24 +135,28 @@ export default class SpeedBinb extends Connector {
         } );
     }
 
-    /**************************
+    /**
+     *************************
      *** SpeedBinb v01.6113 ***
-        *** Ohtabooks          *** 
-        **************************/
+     * ** Ohtabooks          ***
+     *************************
+     */
 
     // Fully compatible to v01.6130
     _getPageList_v016113( chapterID, apiURL ) {
         return this._getPageList_v016130( chapterID, apiURL );
     }
 
-    /**************************
+    /**
+     *************************
      *** SpeedBinb v01.6130 ***
-        *** BookLive           ***
-        **************************/
-    
-        /**
-         * 
-         */
+     * ** BookLive           ***
+     *************************
+     */
+
+    /**
+     *
+     */
     _getPageList_v016130( chapterID, apiURL ) {
         let config;
         let cid = new URL( chapterID, this.url ).searchParams.get( 'cid' );
@@ -159,19 +167,21 @@ export default class SpeedBinb extends Connector {
         uri.searchParams.set( 'k', sharingKey );
         let request = new Request( uri.href, this.requestOptions );
         return fetch( request )
-        .then( response => response.json() )
-        .then( data => {
-            return this._getPageLinks_v016130( data.items[0], sharingKey );
-        } );
+            .then( response => response.json() )
+            .then( data => {
+                return this._getPageLinks_v016130( data.items[0], sharingKey );
+            } );
     }
 
     /**
-     * 
+     *
      */
     _getPageLinks_v016130( configuration, sharingKey ) {
         let cid = configuration['ContentID'];
-        //let stbl = this._pt( cid, sharingKey, configuration.stbl );
-        //let ttbl = this._pt( cid, sharingKey, configuration.ttbl );
+        /*
+         *let stbl = this._pt( cid, sharingKey, configuration.stbl );
+         *let ttbl = this._pt( cid, sharingKey, configuration.ttbl );
+         */
         configuration.ctbl = this._pt( cid, sharingKey, configuration.ctbl );
         configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
 
@@ -194,17 +204,17 @@ export default class SpeedBinb extends Connector {
         uri.searchParams.set( 'p', configuration['p'] );
         uri.searchParams.set( 'vm', configuration['ViewMode'] );
         return fetch( new Request( uri.href, this.requestOptions ) )
-        .then( response => response.json() )
-        .then( data => {
-            let dom = this.createDOM( data.ttx );
-            let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
-                let src = img.getAttribute( 'src' );
-                uri.searchParams.set( 'src', src );
-                uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
-                return this.createConnectorURI( uri.href.replace( 'sbcGetCntnt.php', 'sbcGetImg.php' ) );
+            .then( response => response.json() )
+            .then( data => {
+                let dom = this.createDOM( data.ttx );
+                let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
+                    let src = img.getAttribute( 'src' );
+                    uri.searchParams.set( 'src', src );
+                    uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
+                    return this.createConnectorURI( uri.href.replace( 'sbcGetCntnt.php', 'sbcGetImg.php' ) );
+                } );
+                return Promise.resolve( pageLinks );
             } );
-            return Promise.resolve( pageLinks );
-        } );
     }
 
     _getPageLinksContent_v016130( configuration ) {
@@ -212,16 +222,16 @@ export default class SpeedBinb extends Connector {
         uri.pathname += '/content';
         uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
         return fetch( new Request( uri.href, this.requestOptions ) )
-        .then( response => response.json() )
-        .then( data => {
-            let dom = this.createDOM( data.ttx );
-            let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
-                let src = img.getAttribute( 'src' );
-                uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
-                return this.createConnectorURI( uri.href.replace( '/content', '/img/' + src ) );
+            .then( response => response.json() )
+            .then( data => {
+                let dom = this.createDOM( data.ttx );
+                let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
+                    let src = img.getAttribute( 'src' );
+                    uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
+                    return this.createConnectorURI( uri.href.replace( '/content', '/img/' + src ) );
+                } );
+                return Promise.resolve( pageLinks );
             } );
-            return Promise.resolve( pageLinks );
-        } );
     }
 
     _getPageLinksContentJS_v016130( configuration ) {
@@ -230,34 +240,34 @@ export default class SpeedBinb extends Connector {
         uri.pathname += 'content.js';
         uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
         return fetch( new Request( uri.href, this.requestOptions ) )
-        .then( response => response.text() )
-        .then( data => JSON.parse( data.slice( 16, -1 ) ) )
-        .then( data => {
-            let dom = this.createDOM( data.ttx );
-            let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
-                let src = img.getAttribute( 'src' );
-                uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
-                return this.createConnectorURI( uri.href.replace( 'content.js', src + '/M_H.jpg' ) ); // '/M_L.jpg'
+            .then( response => response.text() )
+            .then( data => JSON.parse( data.slice( 16, -1 ) ) )
+            .then( data => {
+                let dom = this.createDOM( data.ttx );
+                let pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
+                    let src = img.getAttribute( 'src' );
+                    uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
+                    return this.createConnectorURI( uri.href.replace( 'content.js', src + '/M_H.jpg' ) ); // '/M_L.jpg'
+                } );
+                return Promise.resolve( pageLinks );
             } );
-            return Promise.resolve( pageLinks );
-        } );
     }
 
     /**
-     * 
+     *
      */
     _process_v016130( scrambledImageURL ) {
         let uri = new URL( scrambledImageURL );
         let request = new Request( uri.href, this.requestOptions );
         let descrambleKeyPair = JSON.parse( atob( uri.hash.slice( 1 ) ) );
         return fetch( scrambledImageURL, this.requestOptions )
-        .then( response => response.blob() )
-        .then( data => createImageBitmap( data ) )
-        .then( bitmap => this._descramble_v016130( bitmap, descrambleKeyPair ) );
+            .then( response => response.blob() )
+            .then( data => createImageBitmap( data ) )
+            .then( bitmap => this._descramble_v016130( bitmap, descrambleKeyPair ) );
     }
 
     /**
-     * 
+     *
      */
     _descramble_v016130( bitmap, keys ) {
         return new Promise( ( resolve, reject ) => {
@@ -282,12 +292,14 @@ export default class SpeedBinb extends Connector {
                 resolve( data );
             }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
         } );
-    }     
+    }
 
-    /**********************
+    /**
+     *********************
      *** SpeedBinb Base ***
-     *********************/
-    
+     ********************
+     */
+
     /**
      * Copied from official SpeedBinb library
      */
@@ -303,8 +315,8 @@ export default class SpeedBinb extends Connector {
             return s ^= n.charCodeAt(i),
             u ^= r.charCodeAt(i),
             h ^= e.charCodeAt(i),
-            t + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"[s + u + h & 63]
-        }).join("")
+            t + "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"[s + u + h & 63];
+        }).join("");
     }
 
     // NOTE: i = p.tt(t)
@@ -320,12 +332,12 @@ export default class SpeedBinb extends Connector {
         for (s = 0; s < n.length; s++) {
             h = h >>> 1 ^ 1210056708 & -(1 & h);
             var o = (n.charCodeAt(s) - 32 + h) % 94 + 32;
-            u += String.fromCharCode(o)
+            u += String.fromCharCode(o);
         }
         try {
-            return JSON.parse(u)
+            return JSON.parse(u);
         } catch (t) {}
-        return null
+        return null;
     }
 
     /**
@@ -339,12 +351,12 @@ export default class SpeedBinb extends Connector {
             for (var n = t.lastIndexOf("/") + 1, r = t.length - n, e = 0; e < r; e++)
                 i[e % 2] += t.charCodeAt(e + n);
             i[0] %= 8,
-            i[1] %= 8
+            i[1] %= 8;
         }
         var s = ptbl[i[0]]
             , u = ctbl[i[1]];
         // get a descrambler based on the descramble key pair
-        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u,s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u,s) : "" === u && "" === s ? new _speedbinb_h : null
+        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u,s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u,s) : "" === u && "" === s ? new _speedbinb_h : null;
     }
 
     /**
@@ -357,7 +369,7 @@ export default class SpeedBinb extends Connector {
             for (var n = t.lastIndexOf("/") + 1, r = t.length - n, e = 0; e < r; e++)
                 i[e % 2] += t.charCodeAt(e + n);
             i[0] %= 8,
-            i[1] %= 8
+            i[1] %= 8;
         }
         return { s: ptbl[i[0]], u: ctbl[i[1]] };
     }
@@ -366,7 +378,7 @@ export default class SpeedBinb extends Connector {
      * Get a descrambler based on the descramble key pair from ctbl / ptbl
      */
     _lt_002(s, u) {
-        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u,s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u,s) : "" === u && "" === s ? new _speedbinb_h : null
+        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u,s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u,s) : "" === u && "" === s ? new _speedbinb_h : null;
     }
 
     /**
@@ -394,7 +406,7 @@ export default class SpeedBinb extends Connector {
                     height: n
                 })
             }]
-        }
+        };
     }
 
     /**
@@ -405,10 +417,10 @@ export default class SpeedBinb extends Connector {
         if (!Array.isArray(t))
             throw TypeError();
         if (t.some(function(t) {
-            return "string" != typeof t
+            return "string" != typeof t;
         }))
             throw TypeError();
-        return t
+        return t;
     }
 
     /**
@@ -419,16 +431,18 @@ export default class SpeedBinb extends Connector {
         if (!Array.isArray(t))
             throw TypeError();
         if (t.some(function(t) {
-            return "number" != typeof t
+            return "number" != typeof t;
         }))
             throw TypeError();
-        return t
+        return t;
     }
 }
 
-/********************************
+/**
+ *******************************
  *** Prototypes for SpeedBinb ***
- *******************************/
+ ******************************
+ */
 
 /**
  * Copied from official SpeedBinb library
@@ -438,7 +452,7 @@ var _speedbinb_f = function() {
     function s(t, i) {
         this.Mt = null;
         var n = t.match(/^=([0-9]+)-([0-9]+)([-+])([0-9]+)-([-_0-9A-Za-z]+)$/)
-        , r = i.match(/^=([0-9]+)-([0-9]+)([-+])([0-9]+)-([-_0-9A-Za-z]+)$/);
+            , r = i.match(/^=([0-9]+)-([0-9]+)([-+])([0-9]+)-([-_0-9A-Za-z]+)$/);
         if (null !== n && null !== r && n[1] === r[1] && n[2] === r[2] && n[4] === r[4] && "+" === n[3] && "-" === r[3] && (this.C = parseInt(n[1], 10),
         this.I = parseInt(n[2], 10),
         this.jt = parseInt(n[4], 10),
@@ -446,32 +460,32 @@ var _speedbinb_f = function() {
             var e = this.C + this.I + this.C * this.I;
             if (n[5].length === e && r[5].length === e) {
                 var s = this.yt(n[5])
-                , u = this.yt(r[5]);
+                    , u = this.yt(r[5]);
                 this.xt = s.n,
                 this.Et = s.t,
                 this.It = u.n,
                 this.St = u.t,
                 this.Mt = [];
                 for (var h = 0; h < this.C * this.I; h++)
-                    this.Mt.push(s.p[u.p[h]])
+                    this.Mt.push(s.p[u.p[h]]);
             }
         }
     }
     return s.prototype.vt = function() {
-        return null !== this.Mt
+        return null !== this.Mt;
     }
     ,
     s.prototype.bt = function(t) {
         var i = 2 * this.C * this.jt
-        , n = 2 * this.I * this.jt;
-        return t.width >= 64 + i && t.height >= 64 + n && t.width * t.height >= (320 + i) * (320 + n)
+            , n = 2 * this.I * this.jt;
+        return t.width >= 64 + i && t.height >= 64 + n && t.width * t.height >= (320 + i) * (320 + n);
     }
     ,
     s.prototype.dt = function(t) {
         return this.bt(t) ? {
             width: t.width - 2 * this.C * this.jt,
             height: t.height - 2 * this.I * this.jt
-        } : t
+        } : t;
     }
     ,
     s.prototype.gt = function(t) {
@@ -488,15 +502,15 @@ var _speedbinb_f = function() {
             }];
         for (var i = t.width - 2 * this.C * this.jt, n = t.height - 2 * this.I * this.jt, r = Math.floor((i + this.C - 1) / this.C), e = i - (this.C - 1) * r, s = Math.floor((n + this.I - 1) / this.I), u = n - (this.I - 1) * s, h = [], o = 0; o < this.C * this.I; ++o) {
             var a = o % this.C
-            , f = Math.floor(o / this.C)
-            , c = this.jt + a * (r + 2 * this.jt) + (this.It[f] < a ? e - r : 0)
-            , l = this.jt + f * (s + 2 * this.jt) + (this.St[a] < f ? u - s : 0)
-            , v = this.Mt[o] % this.C
-            , d = Math.floor(this.Mt[o] / this.C)
-            , g = v * r + (this.xt[d] < v ? e - r : 0)
-            , p = d * s + (this.Et[v] < d ? u - s : 0)
-            , b = this.It[f] === a ? e : r
-            , m = this.St[a] === f ? u : s;
+                , f = Math.floor(o / this.C)
+                , c = this.jt + a * (r + 2 * this.jt) + (this.It[f] < a ? e - r : 0)
+                , l = this.jt + f * (s + 2 * this.jt) + (this.St[a] < f ? u - s : 0)
+                , v = this.Mt[o] % this.C
+                , d = Math.floor(this.Mt[o] / this.C)
+                , g = v * r + (this.xt[d] < v ? e - r : 0)
+                , p = d * s + (this.Et[v] < d ? u - s : 0)
+                , b = this.It[f] === a ? e : r
+                , m = this.St[a] === f ? u : s;
             0 < i && 0 < n && h.push({
                 xsrc: c,
                 ysrc: l,
@@ -504,9 +518,9 @@ var _speedbinb_f = function() {
                 height: m,
                 xdest: g,
                 ydest: p
-            })
+            });
         }
-        return h
+        return h;
     }
     ,
     s.prototype.yt = function(t) {
@@ -521,13 +535,12 @@ var _speedbinb_f = function() {
             t: n,
             n: r,
             p: e
-        }
+        };
     }
     ,
     s.Tt = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, 63, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1],
-    s
+    s;
 }();
-
 
 /**
  * Copied from official SpeedBinb library
@@ -538,20 +551,20 @@ var _speedbinb_a = function() {
         this.mt = null,
         this.wt = null;
         var n = this.yt(t)
-        , r = this.yt(i);
+            , r = this.yt(i);
         n && r && n.ndx === r.ndx && n.ndy === r.ndy && (this.mt = n,
-        this.wt = r)
+        this.wt = r);
     }
     return t.prototype.vt = function() {
-        return null !== this.mt && null !== this.wt
+        return null !== this.mt && null !== this.wt;
     }
     ,
     t.prototype.bt = function(t) {
-        return 64 <= t.width && 64 <= t.height && 102400 <= t.width * t.height
+        return 64 <= t.width && 64 <= t.height && 102400 <= t.width * t.height;
     }
     ,
     t.prototype.dt = function(t) {
-        return t
+        return t;
     }
     ,
     t.prototype.gt = function(t) {
@@ -568,7 +581,7 @@ var _speedbinb_a = function() {
             }];
         for (var i = [], n = t.width - t.width % 8, r = Math.floor((n - 1) / 7) - Math.floor((n - 1) / 7) % 8, e = n - 7 * r, s = t.height - t.height % 8, u = Math.floor((s - 1) / 7) - Math.floor((s - 1) / 7) % 8, h = s - 7 * u, o = this.mt.piece.length, a = 0; a < o; a++) {
             var f = this.mt.piece[a]
-            , c = this.wt.piece[a];
+                , c = this.wt.piece[a];
             i.push({
                 xsrc: Math.floor(f.x / 2) * r + f.x % 2 * e,
                 ysrc: Math.floor(f.y / 2) * u + f.y % 2 * h,
@@ -576,10 +589,10 @@ var _speedbinb_a = function() {
                 height: Math.floor(f.h / 2) * u + f.h % 2 * h,
                 xdest: Math.floor(c.x / 2) * r + c.x % 2 * e,
                 ydest: Math.floor(c.y / 2) * u + c.y % 2 * h
-            })
+            });
         }
         var l = r * (this.mt.ndx - 1) + e
-        , v = u * (this.mt.ndy - 1) + h;
+            , v = u * (this.mt.ndy - 1) + h;
         return l < t.width && i.push({
             xsrc: l,
             ysrc: 0,
@@ -596,7 +609,7 @@ var _speedbinb_a = function() {
             xdest: 0,
             ydest: v
         }),
-        i
+        i;
     }
     ,
     t.prototype.yt = function(t) {
@@ -606,8 +619,8 @@ var _speedbinb_a = function() {
         if (3 != i.length)
             return null;
         var n = parseInt(i[0], 10)
-        , r = parseInt(i[1], 10)
-        , e = i[2];
+            , r = parseInt(i[1], 10)
+            , e = i[2];
         if (e.length != n * r * 2)
             return null;
         for (var s, u, h, o, a = (n - 1) * (r - 1) - 1, f = a + (n - 1), c = f + (r - 1), l = c + 1, v = [], d = 0; d < n * r; d++)
@@ -626,35 +639,35 @@ var _speedbinb_a = function() {
             ndx: n,
             ndy: r,
             piece: v
-        }
+        };
     }
     ,
     t.prototype.Ot = function(t) {
         var i = 0
-        , n = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(t);
+            , n = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".indexOf(t);
         return n < 0 ? n = "abcdefghijklmnopqrstuvwxyz".indexOf(t) : i = 1,
-        i + 2 * n
+        i + 2 * n;
     }
     ,
-    t
+    t;
 }();
 
 /**
  * Copied from official SpeedBinb library
  * define prototype for h
- */ 
+ */
 var _speedbinb_h = function() {
     function t() {}
     return t.prototype.vt = function() {
-        return !0
+        return !0;
     }
     ,
     t.prototype.bt = function(t) {
-        return !1
+        return !1;
     }
     ,
     t.prototype.dt = function(t) {
-        return t
+        return t;
     }
     ,
     t.prototype.gt = function(t) {
@@ -665,8 +678,8 @@ var _speedbinb_h = function() {
             height: t.height,
             xdest: 0,
             ydest: 0
-        }]
+        }];
     }
     ,
-    t
+    t;
 }();

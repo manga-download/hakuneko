@@ -1,17 +1,17 @@
-import Enums from './engine/Enums.mjs'
-import Connector from './engine/Connector.mjs'
-import ClipboardConnector from './connectors/system/ClipboardConnector.mjs'
+import Enums from './engine/Enums.mjs';
+import Connector from './engine/Connector.mjs';
+import ClipboardConnector from './connectors/system/ClipboardConnector.mjs';
 
-import Blacklist from './engine/Blacklist.mjs'
-import BookmarkImporter from './engine/BookmarkImporter.mjs'
-import BookmarkManager from './engine/BookmarkManager.mjs'
-import ChaptermarkManager from './engine/ChaptermarkManager.mjs'
-import Connectors from './engine/Connectors.mjs'
-import DownloadManager from './engine/DownloadManager.mjs'
+import Blacklist from './engine/Blacklist.mjs';
+import BookmarkImporter from './engine/BookmarkImporter.mjs';
+import BookmarkManager from './engine/BookmarkManager.mjs';
+import ChaptermarkManager from './engine/ChaptermarkManager.mjs';
+import Connectors from './engine/Connectors.mjs';
+import DownloadManager from './engine/DownloadManager.mjs';
 //import HistoryWorker from './engine/HistoryWorker.mjs'
-import Request from './engine/Request.mjs'
-import Settings from './engine/Settings.mjs'
-import Storage from './engine/Storage.mjs'
+import Request from './engine/Request.mjs';
+import Settings from './engine/Settings.mjs';
+import Storage from './engine/Storage.mjs';
 
 export default class HakuNeko {
 
@@ -20,7 +20,7 @@ export default class HakuNeko {
         this._initializeGlobals(context);
 
         this._enums = Enums;
-        
+
         this._blacklist = new Blacklist();
         this._bookmarkImporter = new BookmarkImporter();
         this._bookmarkManager = new BookmarkManager();
@@ -35,7 +35,7 @@ export default class HakuNeko {
     /**
      * Backward compatibility to expose various members and classes as globals to the given context.
      * This is required because the UI elements acess these globals directly instead of the engine.
-     * @param context 
+     * @param context
      */
     _initializeGlobals(context) {
         // TODO: remove backward compatibility for global aliases when all their references are set to HakuNeko engine

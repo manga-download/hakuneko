@@ -1,4 +1,4 @@
-import Connector from '../../engine/Connector.mjs'
+import Connector from '../../engine/Connector.mjs';
 
 /**
  * System
@@ -9,8 +9,8 @@ export default class InvalidConnector extends Connector {
 
     constructor( id, label ) {
         super();
-        super.id       = id;
-        super.label    = label;
+        super.id = id;
+        super.label = label;
     }
 
     /**

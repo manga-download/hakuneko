@@ -1,12 +1,12 @@
-import Connector from '../../engine/Connector.mjs'
+import Connector from '../../engine/Connector.mjs';
 
 export default class WordPressMadara extends Connector {
 
     constructor() {
         super();
-        super.id         = undefined;
-        super.label      = undefined;
-        this.url         = undefined;
+        super.id = undefined;
+        super.label = undefined;
+        this.url = undefined;
 
         this.queryMangas = 'div.post-title h5 a';
         this.queryChapters = 'li.wp-manga-chapter > a';
@@ -33,20 +33,20 @@ export default class WordPressMadara extends Connector {
         this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
         let uri = this.url + '/wp-admin/admin-ajax.php';
         let promise = this.fetchDOM( uri, this.queryMangas, 5 )
-        .then( data => {
-            let mangaList = data.map( element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink( element, uri ),
-                    title: element.text.trim()
-                };
+            .then( data => {
+                let mangaList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( mangaList.length > 0 ) {
+                    return this._getMangaListFromPages( page + 1 )
+                        .then( mangas => mangaList.concat( mangas ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
             } );
-            if( mangaList.length > 0 ) {
-                return this._getMangaListFromPages( page + 1 )
-                .then( mangas => mangaList.concat( mangas ) );
-            } else {
-                return Promise.resolve( mangaList );
-            }
-        } );
         this.requestOptions.headers.delete( 'content-type' );
         delete this.requestOptions.body;
         this.requestOptions.method = 'GET';
@@ -58,13 +58,13 @@ export default class WordPressMadara extends Connector {
      */
     _getMangaList( callback ) {
         this._getMangaListFromPages()
-        .then( data => {
-            callback( null, data );
-        } )
-        .catch( error => {
-            console.error( error, this );
-            callback( error, undefined );
-        } );
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
     }
 
     /**
@@ -73,20 +73,20 @@ export default class WordPressMadara extends Connector {
     _getChapterList( manga, callback ) {
         let uri = new URL( manga.id, this.url );
         this.fetchDOM( uri.href, this.queryChapters )
-        .then( data => {
-            let chapterList = data.map( element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink( element, uri.href ),
-                    title: element.text.replace( manga.title, '' ).trim(),
-                    language: ''
-                };
+            .then( data => {
+                let chapterList = data.map( element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink( element, uri.href ),
+                        title: element.text.replace( manga.title, '' ).trim(),
+                        language: ''
+                    };
+                } );
+                callback( null, chapterList );
+            } )
+            .catch( error => {
+                console.error( error, manga );
+                callback( error, undefined );
             } );
-            callback( null, chapterList );
-        } )
-        .catch( error => {
-            console.error( error, manga );
-            callback( error, undefined );
-        } );
     }
 
     /**
@@ -98,14 +98,14 @@ export default class WordPressMadara extends Connector {
         uri.searchParams.set( 'style', 'list' );
         let request = new Request( uri.href, this.requestOptions );
         this.fetchDOM( request, this.queryPages )
-        .then( data => {
-            let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset['src'] || element, request.url ) ) );
-            callback( null, pageLinks );
-        } )
-        .catch( error => {
-            console.error( error, chapter );
-            callback( error, undefined );
-        } ); 
+            .then( data => {
+                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset['src'] || element, request.url ) ) );
+                callback( null, pageLinks );
+            } )
+            .catch( error => {
+                console.error( error, chapter );
+                callback( error, undefined );
+            } );
     }
 
     /**
@@ -113,8 +113,10 @@ export default class WordPressMadara extends Connector {
      */
     _handleConnectorURI( payload ) {
         let uri = new URL( payload );
-        // TODO: only perform requests when from download manager
-        // or when from browser for preview and selected chapter matches
+        /*
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
         this.requestOptions.headers.set( 'x-referer', uri.origin );
         let promise = super._handleConnectorURI( payload );
         this.requestOptions.headers.delete( 'x-referer' );

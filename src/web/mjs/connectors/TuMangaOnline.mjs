@@ -149,8 +149,10 @@ export default class TuMangaOnline extends Connector {
      *
      */
     _handleConnectorURI( payload ) {
-        // TODO: only perform requests when from download manager
-        // or when from browser for preview and selected chapter matches
+        /*
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
         this.requestOptions.headers.set( 'x-referer', payload.referer );
         let promise = super._handleConnectorURI( payload.url );
         this.requestOptions.headers.delete( 'x-referer' );
