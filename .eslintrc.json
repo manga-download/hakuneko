@@ -9,6 +9,9 @@
         "eslint:recommended"
     ],
     "globals": {
+        "CryptoJS":"readonly",
+        "JSZip":"readonly",
+        "jsPDF":"readonly",
         "HakuNeko": "readonly",
         "Engine": "readonly",
         "Input": "readonly",
@@ -27,6 +30,7 @@
     },
     "rules": {
         "semi": ["error", "always"],
+        //"no-extra-parens": "warn",
         "indent": ["warn", 4],
         "no-trailing-spaces": "warn",
         "no-multiple-empty-lines": ["warn", {"max": 1, "maxBOF": 0, "maxEOF": 0}],
