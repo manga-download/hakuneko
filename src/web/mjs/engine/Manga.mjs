@@ -153,8 +153,8 @@ export default class Manga {
         }
 
         let name = title;
-        let reVol = /\s*(?:vol\.?|volume)\s*(\d+)/i;
-        let reCh = /\s*(?:^|ch\.?|chapter|tome)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i; // $ not working in character groups => [\s\:$]+ does not work
+        let reVol = /\s*(?:vol\.?|volume|tome)\s*(\d+)/i;
+        let reCh = /\s*(?:^|ch\.?|chapter|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i; // $ not working in character groups => [\s\:$]+ does not work
 
         // extract volume number
         let volume = name.match( reVol );
