@@ -33,7 +33,7 @@
     "start:build": "npm run build:web && electron . --update-url=DISABLED --cache-directory=./build/latest",
     "lint": "npm run lint:app && npm run lint:web",
     "lint:app": "eslint ./src/app --ignore-path .gitignore",
-    "lint:web": "eslint ./src/web/mjs/**/*.mjs --ignore-path .gitignore",
+    "lint:web": "eslint ./src/web/mjs/**/*.mjs --ignore-path .gitignore --ignore-pattern Connectors.mjs",
     "format": "npm run format:app && npm run format:web",
     "format:app": "npm run lint:app -- --fix",
     "format:web": "npm run lint:web -- --fix",

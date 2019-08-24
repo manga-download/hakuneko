@@ -34,7 +34,7 @@ export default class Connectors {
                 } catch(error) {
                     console.warn(`Failed to load connector "${file}"`, error);
                 }
-            };
+            }
             this._list.sort( ( a, b ) => {
                 return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
             } );
