@@ -1,14 +1,12 @@
 const { ConsoleLogger } = require('logtrine');
-const UpdateServerManager = require('./UpdateServerManager');
-const CacheDirectoryManager = require('./CacheDirectoryManager');
 
 module.exports = class Updater {
 
     /**
-     * 
-     * @param {UpdateServerManager} serverManager 
-     * @param {CacheDirectoryManager} cacheManager 
-     * @param {Logger} logger 
+     *
+     * @param {UpdateServerManager} serverManager
+     * @param {CacheDirectoryManager} cacheManager
+     * @param {Logger} logger
      */
     constructor(serverManager, cacheManager, logger) {
         this._logger = logger || new ConsoleLogger(ConsoleLogger.LEVEL.Info);
@@ -17,7 +15,7 @@ module.exports = class Updater {
     }
 
     /**
-     * 
+     *
      */
     async updateCache(pubkey) {
         try {
@@ -39,4 +37,4 @@ module.exports = class Updater {
             this._logger.error('Update Failed!', error);
         }
     }
-}
+};

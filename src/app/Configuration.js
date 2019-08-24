@@ -79,4 +79,4 @@ module.exports = class Configuration {
     _absolute(endpoint) {
         return path.resolve(electron.app.getAppPath(), path.normalize(endpoint));
     }
-}
+};

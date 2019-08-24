@@ -13,32 +13,32 @@ describe('CommandlineArgumentExtractor', function() {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '-c']);
             expect(testee._get('-x', true)).toEqual(false);
         });
-        
+
         it('contains flag when followed by value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '1']);
             expect(testee._get('-b', true)).toEqual(true);
         });
-        
+
         it('followed by value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', 'x']);
             expect(testee._get('-b')).toEqual('x');
         });
-        
+
         it('followed by option instead of value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '-c']);
             expect(testee._get('-b')).toEqual(undefined);
         });
-        
+
         it('no value because at end', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b', '-c']);
             expect(testee._get('-c')).toEqual(undefined);
         });
-        
+
         it('assigned value', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b=x', '-c']);
             expect(testee._get('-b')).toEqual('x');
         });
-        
+
         it('assigned nothing', () => {
             let testee = new CommandlineArgumentExtractor(['-a', '-b=', '-c']);
             expect(testee._get('-b')).toEqual(undefined);

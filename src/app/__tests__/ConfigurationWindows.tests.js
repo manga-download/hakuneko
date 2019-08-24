@@ -11,11 +11,11 @@ jest.mock('electron', () => {
             getAppPath: jest.fn(() => '/usr/bin'),
             getPath: jest.fn(type => {
                 switch(type) {
-                    case 'exe': return '/usr/bin/hakuneko';
-                    case 'appData': return path.resolve(process.env.HOME, 'AppData', 'Roaming');
-                    case 'userData': return path.resolve(process.env.HOME, 'AppData', 'Roaming', 'HakuNeko');
-                    case 'userCache': return path.resolve(process.env.HOME, 'AppData', 'Local', 'HakuNeko', 'cache');
-                    default: return undefined;
+                case 'exe': return '/usr/bin/hakuneko';
+                case 'appData': return path.resolve(process.env.HOME, 'AppData', 'Roaming');
+                case 'userData': return path.resolve(process.env.HOME, 'AppData', 'Roaming', 'HakuNeko');
+                case 'userCache': return path.resolve(process.env.HOME, 'AppData', 'Local', 'HakuNeko', 'cache');
+                default: return undefined;
                 }
             }),
             getName: jest.fn(() => 'HakuNeko')
@@ -24,13 +24,7 @@ jest.mock('electron', () => {
 });
 const electron = require('electron');
 
-if(process.platform !== 'win32') {
-    let noop = () => {};
-    test.skip('ConfigurationWindows', noop);
-    describe = noop;
-}
-
-describe('ConfigurationWindows', function() {
+var suite = function() {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -162,4 +156,10 @@ describe('ConfigurationWindows', function() {
             expect(testee.applicationUserDataDirectory).toEqual(path.resolve('/usr/data'));
         });
     });
-});
+};
+
+if(process.platform === 'win32') {
+    describe('ConfigurationWindows', suite);
+} else {
+    describe.skip(`ConfigurationWindows @ ${process.platform}`, test.todo);
+}

@@ -28,18 +28,22 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
+     *
      */
     launch() {
-        // See: https://fossies.org/linux/electron/atom/browser/api/atom_api_protocol.cc
-        // { standard, secure, bypassCSP, corsEnabled, supportFetchAPI, allowServiceWorkers }
+        /*
+         * See: https://fossies.org/linux/electron/atom/browser/api/atom_api_protocol.cc
+         * { standard, secure, bypassCSP, corsEnabled, supportFetchAPI, allowServiceWorkers }
+         */
         electron.protocol.registerSchemesAsPrivileged(this._schemes);
 
         // update userdata path (e.g. for portable version)
         electron.app.setPath('userData', this._configuration.applicationUserDataDirectory);
-        
-        // HACK: Create a dummy menu to support local hotkeys (only accessable when app is focused)
-        //       This has to be done, because F12 key cannot be used as global key in windows
+
+        /*
+         * HACK: Create a dummy menu to support local hotkeys (only accessable when app is focused)
+         *       This has to be done, because F12 key cannot be used as global key in windows
+         */
         this._registerLocalHotkeys();
 
         return new Promise(resolve => {
@@ -48,17 +52,19 @@ module.exports = class ElectronBootstrap {
                 this._createWindow();
                 resolve();
             });
-            // HACK: prevent default in main process, because it cannot be done in render process:
-            //       see: https://github.com/electron/electron/issues/9428#issuecomment-300669586
+            /*
+             * HACK: prevent default in main process, because it cannot be done in render process:
+             *       see: https://github.com/electron/electron/issues/9428#issuecomment-300669586
+             */
             electron.app.on('login', evt => evt.preventDefault());
-            electron.app.on('activate',  this._createWindow.bind(this));
-            electron.app.on('window-all-closed',  this._allWindowsClosedHandler.bind(this));
+            electron.app.on('activate', this._createWindow.bind(this));
+            electron.app.on('window-all-closed', this._allWindowsClosedHandler.bind(this));
             electron.app.on('certificate-error', this._certificateErrorHandler.bind(this));
         });
     }
 
     /**
-     * 
+     *
      */
     _registerCacheProtocol() {
         electron.protocol.registerBufferProtocol(this._configuration.applicationProtocol, async (request, callback) => {
@@ -68,7 +74,7 @@ module.exports = class ElectronBootstrap {
                 let buffer = await fs.readFile(file);
                 let mime = file.endsWith('.mjs') ? 'text/javascript' : ''; // leaving this blank seems to use autodetect
                 callback({
-                    mimeType: mime, 
+                    mimeType: mime,
                     data: buffer
                 });
             } catch(error) {
@@ -86,7 +92,7 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
+     *
      */
     _registerLocalHotkeys() {
         let menu = [
@@ -124,32 +130,32 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
+     *
      */
-    _copyURL(menu, window, event) {
+    _copyURL(menu, window) {
         if(window !== this._window) {
             electron.clipboard.writeText(window.webContents.getURL());
         }
     }
 
     /**
-     * 
+     *
      */
-    _pasteURL(menu, window, event) {
+    _pasteURL(menu, window) {
         if(window !== this._window) {
             window.webContents.loadURL(electron.clipboard.readText());
         }
     }
 
     /**
-     * 
+     *
      */
     _allWindowsClosedHandler() {
         electron.app.quit();
     }
 
     /**
-     * 
+     *
      */
     _createWindow() {
         if(this._window) {
@@ -179,8 +185,8 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
-     * @param {string} uri 
+     *
+     * @param {string} uri
      * @returns {Promise}
      */
     loadURL(uri) {
@@ -188,8 +194,8 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
-     * @param {string} html 
+     *
+     * @param {string} html
      * @returns {Promise}
      */
     loadHTML(html) {
@@ -198,8 +204,8 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
-     * @param {*} evt 
+     *
+     * @param {*} evt
      */
     _mainWindowCloseHandler(evt) {
         this._window.webContents.send('close');
@@ -208,17 +214,18 @@ module.exports = class ElectronBootstrap {
 
     /**
      * Exit the application forcefully without raising the close event handler
-     * @param {*} evt 
      */
-    _mainWindowQuitHandler(evt) {
-        // NOTE: removing a certain event handler seems not to work...
-        //this._window.removeListener('close', this._mainWindowCloseHandler);
+    _mainWindowQuitHandler() {
+        /*
+         * NOTE: removing a certain event handler seems not to work...
+         *this._window.removeListener('close', this._mainWindowCloseHandler);
+         */
         this._window.removeAllListeners('close');
         this._window.close();
     }
 
     /**
-     * 
+     *
      */
     _mainWindowClosedHandler() {
         // close all existing windows
@@ -227,17 +234,21 @@ module.exports = class ElectronBootstrap {
     }
 
     /**
-     * 
+     *
      */
     _setupBeforeSendHeaders() {
         // inject headers before a request is made (call the handler in the webapp to do the dirty work)
         electron.session.defaultSession.webRequest.onBeforeSendHeaders(urlFilterAll, async (details, callback) => {
             try {
-                // prevent from injecting javascript into the webpage while the webcontent is not yet ready
-                // => required for loading initial page over http protocol (e.g. local hosted test page)
+                /*
+                 * prevent from injecting javascript into the webpage while the webcontent is not yet ready
+                 * => required for loading initial page over http protocol (e.g. local hosted test page)
+                 */
                 if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
-                    // inject javascript: looks stupid, but is a working solution to call a function which returns data
-                    // directly within the render process (without dealing with ipcRenderer)
+                    /*
+                     * inject javascript: looks stupid, but is a working solution to call a function which returns data
+                     * directly within the render process (without dealing with ipcRenderer)
+                     */
                     let payload = Buffer.from(JSON.stringify(details)).toString('base64');
                     let result = await this._window.webContents.executeJavaScript(`HakuNeko.Request.onBeforeSendHeadersHandler('${payload}');`);
                     callback({
@@ -256,16 +267,18 @@ module.exports = class ElectronBootstrap {
             }
         });
     }
-    
+
     /**
-     * 
+     *
      */
     _setupHeadersReceived() {
         electron.session.defaultSession.webRequest.onHeadersReceived(urlFilterAll, async (details, callback) => {
             try {
                 if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
-                    // inject javascript: looks stupid, but is a working solution to call a function which returns data
-                    // directly within the render process (without dealing with ipcRenderer)
+                    /*
+                     * inject javascript: looks stupid, but is a working solution to call a function which returns data
+                     * directly within the render process (without dealing with ipcRenderer)
+                     */
                     let payload = Buffer.from(JSON.stringify(details)).toString('base64');
                     let result = await this._window.webContents.executeJavaScript(`HakuNeko.Request.onHeadersReceivedHandler('${payload}');`);
                     callback({
@@ -286,4 +299,4 @@ module.exports = class ElectronBootstrap {
             }
         });
     }
-}
+};

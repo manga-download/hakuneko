@@ -98,9 +98,9 @@ class TestFixture {
     }
 
     /**
-     * 
-     * @param {Request} request 
-     * @param {Response} response 
+     *
+     * @param {Request} request
+     * @param {Response} response
      */
     _listener(request, response) {
         if(request.url === '/latest') {
@@ -119,9 +119,9 @@ class TestFixture {
     }
 
     /**
-     * 
-     * @param {string} latest 
-     * @param {Uint8Array | Buffer} archive 
+     *
+     * @param {string} latest
+     * @param {Uint8Array | Buffer} archive
      */
     serverStart(latest, archive) {
         this._latest = latest;
@@ -130,7 +130,7 @@ class TestFixture {
     }
 
     /**
-     * 
+     *
      */
     serverStop() {
         this._server.close();

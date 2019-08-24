@@ -9,4 +9,4 @@ module.exports = class ConfigurationDarwin extends Configuration {
         this._applicationCacheDirectory = options['applicationCacheDirectory'] || electron.app.getPath('userCache'); // => ~/Library/Caches/hakuneko-desktop
         this._applicationUserDataDirectory = options['applicationUserDataDirectory'] || electron.app.getPath('userData');
     }
-}
+};

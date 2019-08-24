@@ -11,10 +11,10 @@ jest.mock('electron', () => {
             getAppPath: jest.fn(() => '/usr/bin'),
             getPath: jest.fn(type => {
                 switch(type) {
-                    case 'exe': return '/usr/bin/hakuneko';
-                    case 'userData': return path.resolve(process.env.HOME, 'Library', 'Application Support', 'HakuNeko');
-                    case 'userCache': return path.resolve(process.env.HOME, 'Library', 'Caches', 'HakuNeko');
-                    default: return undefined;
+                case 'exe': return '/usr/bin/hakuneko';
+                case 'userData': return path.resolve(process.env.HOME, 'Library', 'Application Support', 'HakuNeko');
+                case 'userCache': return path.resolve(process.env.HOME, 'Library', 'Caches', 'HakuNeko');
+                default: return undefined;
                 }
             }),
             getName: jest.fn(() => 'HakuNeko')
@@ -23,13 +23,7 @@ jest.mock('electron', () => {
 });
 const electron = require('electron');
 
-if(process.platform !== 'darwin') {
-    let noop = () => {};
-    test.skip('ConfigurationDarwin', noop);
-    describe = noop;
-}
-
-describe('ConfigurationDarwin', function() {
+var suite = function() {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -159,4 +153,10 @@ describe('ConfigurationDarwin', function() {
             expect(testee.applicationUserDataDirectory).toEqual(path.resolve('/usr/data'));
         });
     });
-});
+};
+
+if(process.platform === 'darwin') {
+    describe('ConfigurationDarwin', suite);
+} else {
+    describe.skip(`ConfigurationDarwin @ ${process.platform}`, test.todo);
+}

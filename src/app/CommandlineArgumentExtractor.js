@@ -56,4 +56,4 @@ module.exports = class CommandlineArgumentExtractor {
             applicationUserDataDirectory: this._get('--user-directory')
         };
     }
-}
+};

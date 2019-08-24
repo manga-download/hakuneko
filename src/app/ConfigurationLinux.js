@@ -9,4 +9,4 @@ module.exports = class ConfigurationLinux extends Configuration {
         this._applicationCacheDirectory = options['applicationCacheDirectory'] || electron.app.getPath('userCache'); // => ~/.cache/hakuneko-desktop
         this._applicationUserDataDirectory = options['applicationUserDataDirectory'] || electron.app.getPath('userData');
     }
-}
+};

@@ -19,8 +19,8 @@ module.exports = class UpdateServerManager {
     }
 
     /**
-     * 
-     * @param {string | URL | RequestOptions} options 
+     *
+     * @param {string | URL | RequestOptions} options
      */
     _getClient(options) {
         let uri = '';
@@ -38,7 +38,7 @@ module.exports = class UpdateServerManager {
 
     /**
      * Download content via HTTP(S).
-     * @param {string | URL | RequestOptions} options 
+     * @param {string | URL | RequestOptions} options
      */
     _request(options) {
         return new Promise((resolve, reject) => {
@@ -61,23 +61,23 @@ module.exports = class UpdateServerManager {
     }
 
     /**
-     * @returns {Promise<UpdatePackageInfo>} 
+     * @returns {Promise<UpdatePackageInfo>}
      */
     getUpdateInfo() {
         return this._request(this._applicationUpdateURL)
-        .then(data => {
-            let link = data.toString('utf8').trim();
-            let info = new UpdatePackageInfo(link.substring(0, 6), url.parse(link, true).query.signature, url.resolve(this._applicationUpdateURL, link));
-            return Promise.resolve(info);
-        });
+            .then(data => {
+                let link = data.toString('utf8').trim();
+                let info = new UpdatePackageInfo(link.substring(0, 6), url.parse(link, true).query.signature, url.resolve(this._applicationUpdateURL, link));
+                return Promise.resolve(info);
+            });
     }
 
     /**
-     * 
+     *
      * @param {UpdatePackageInfo} info The update package information received with getUpdateInfo()
      * @returns {Promise<Uint8Array>} A promise that resolves with the received bytes
      */
     getUpdateArchive(info) {
         return this._request(info.link);
     }
-}
+};

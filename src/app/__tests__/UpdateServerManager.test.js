@@ -14,7 +14,7 @@ class TestFixture {
     }
 
     /**
-     * 
+     *
      */
     get applicationUpdateURL() {
         return 'http://127.0.0.1:8080/latest';
@@ -37,16 +37,16 @@ class TestFixture {
     }
 
     /**
-     * 
+     *
      */
     createTestee() {
         return new UpdateServerManager(this.applicationUpdateURL, logger);
     }
 
     /**
-     * 
-     * @param {Request} request 
-     * @param {Response} response 
+     *
+     * @param {Request} request
+     * @param {Response} response
      */
     _listener(request, response) {
         if(request.url === '/latest') {
@@ -65,9 +65,9 @@ class TestFixture {
     }
 
     /**
-     * 
-     * @param {string} latest 
-     * @param {Uint8Array | Buffer} archive 
+     *
+     * @param {string} latest
+     * @param {Uint8Array | Buffer} archive
      */
     serverStart(latest, archive) {
         this._latest = latest;
@@ -76,7 +76,7 @@ class TestFixture {
     }
 
     /**
-     * 
+     *
      */
     serverStop() {
         this._server.close();
@@ -96,17 +96,17 @@ describe('UpdateServerManager', function () {
             let testee = new UpdateServerManager('https://localhost', logger);
             assert.equal(testee._applicationUpdateURL, 'https://localhost');
         });
-        
+
         it('should use default when URL is invalid', async () => {
             let testee = new UpdateServerManager('null', logger);
             assert.equal(testee._applicationUpdateURL, undefined);
         });
-        
+
         it('should use default when URL is undefined', async () => {
             let testee = new UpdateServerManager(undefined, logger);
             assert.equal(testee._applicationUpdateURL, undefined);
         });
-        
+
         it('should use default when URL has wrong type', async () => {
             let testee = new UpdateServerManager(123, logger);
             assert.equal(testee._applicationUpdateURL, undefined);
@@ -127,7 +127,7 @@ describe('UpdateServerManager', function () {
             let expected = fixture.applicationUpdateURL.replace('latest', info.version + '.zip?signature=' + info.signature);
             assert.equal(info.link, expected);
         });
-        
+
         it('should throw error when URL does not exist', async () => {
             let testee = new UpdateServerManager(fixture.applicationUpdateURL + '/invalid', logger);
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
@@ -140,7 +140,7 @@ describe('UpdateServerManager', function () {
                 fixture.serverStop();
             }
         });
-        
+
         it('should throw error when host cannot be reached', async () => {
             let testee = fixture.createTestee();
             try {
@@ -150,7 +150,7 @@ describe('UpdateServerManager', function () {
                 assert.equal(error.message, 'connect ECONNREFUSED 127.0.0.1:8080');
             }
         });
-        
+
         it('should throw error when URL is invalid', async () => {
             let testee = new UpdateServerManager('null', logger);
             try {
@@ -160,7 +160,7 @@ describe('UpdateServerManager', function () {
                 assert.equal(error.message, 'Invalid request for connection to the update server!');
             }
         });
-        
+
         it('should throw error when URL is undefined', async () => {
             let testee = new UpdateServerManager(undefined, logger);
             try {
@@ -182,7 +182,7 @@ describe('UpdateServerManager', function () {
             fixture.serverStop();
             assert.equal(archive.length, fixture.archiveMock.archive.length);
         });
-        
+
         it('should throw error when URL does not exist', async () => {
             let testee = fixture.createTestee();
             fixture.serverStart(fixture.archiveMock.signature, fixture.archiveMock.archive);
@@ -205,7 +205,7 @@ describe('UpdateServerManager', function () {
                 assert.equal(error.message, 'connect ECONNREFUSED 127.0.0.1:8080');
             }
         });
-        
+
         it('should throw error when URL is invalid', async () => {
             let testee = fixture.createTestee();
             try {
@@ -215,7 +215,7 @@ describe('UpdateServerManager', function () {
                 assert.equal(error.message, 'Unable to determine the domain name');
             }
         });
-        
+
         it('should throw error when URL is undefined', async () => {
             let testee = fixture.createTestee();
             try {

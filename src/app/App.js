@@ -71,4 +71,4 @@ module.exports = class App {
             this._logger.error('Failed to start application!', error);
         }
     }
-}
+};

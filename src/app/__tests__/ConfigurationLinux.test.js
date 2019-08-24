@@ -11,10 +11,10 @@ jest.mock('electron', () => {
             getAppPath: jest.fn(() => '/usr/bin'),
             getPath: jest.fn(type => {
                 switch(type) {
-                    case 'exe': return '/usr/bin/hakuneko';
-                    case 'userData': return path.resolve(process.env.HOME, '.config', 'HakuNeko');
-                    case 'userCache': return path.resolve(process.env.HOME, '.cache', 'HakuNeko');
-                    default: return undefined;
+                case 'exe': return '/usr/bin/hakuneko';
+                case 'userData': return path.resolve(process.env.HOME, '.config', 'HakuNeko');
+                case 'userCache': return path.resolve(process.env.HOME, '.cache', 'HakuNeko');
+                default: return undefined;
                 }
             }),
             getName: jest.fn(() => 'HakuNeko')
@@ -23,13 +23,7 @@ jest.mock('electron', () => {
 });
 const electron = require('electron');
 
-if(process.platform !== 'linux') {
-    let noop = () => {};
-    test.skip('ConfigurationLinux', noop);
-    describe = noop;
-}
-
-describe('ConfigurationLinux', function() {
+var suite = function() {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -159,4 +153,10 @@ describe('ConfigurationLinux', function() {
             expect(testee.applicationUserDataDirectory).toEqual(path.resolve('/usr/data'));
         });
     });
-});
+};
+
+if(process.platform === 'linux') {
+    describe('ConfigurationLinux', suite);
+} else {
+    describe.skip(`ConfigurationLinux @ ${process.platform}`, test.todo);
+}

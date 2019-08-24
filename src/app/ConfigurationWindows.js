@@ -11,4 +11,4 @@ module.exports = class ConfigurationWindows extends Configuration {
         this._applicationCacheDirectory = options['applicationCacheDirectory'] || path.join(applicationLocalDirectory, 'cache'); // => ~\AppData\Local\hakuneko-desktop\cache
         this._applicationUserDataDirectory = options['applicationUserDataDirectory'] || electron.app.getPath('userData');
     }
-}
+};

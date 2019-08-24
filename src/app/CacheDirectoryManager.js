@@ -6,9 +6,9 @@ const { ConsoleLogger } = require('logtrine');
 module.exports = class CacheDirectoryManager {
 
     /**
-     * 
-     * @param {string} applicationCacheDirectory 
-     * @param {Logger} logger 
+     *
+     * @param {string} applicationCacheDirectory
+     * @param {Logger} logger
      */
     constructor(applicationCacheDirectory, logger) {
         try {
@@ -24,9 +24,9 @@ module.exports = class CacheDirectoryManager {
     /**
      * Extract an entry from an archive to the given directory
      * and resolve a promise with the path to the extracted file.
-     * @param {JSZip} archive 
-     * @param {string} directory 
-     * @param {string} entry 
+     * @param {JSZip} archive
+     * @param {string} directory
+     * @param {string} entry
      * @returns {Promise<void>} A promise that will resolve on success, otherwise reject with a related error
      */
     _extractZipEntry(archive, directory, entry) {
@@ -34,27 +34,27 @@ module.exports = class CacheDirectoryManager {
             let file = path.join(directory, entry);
             this._logger.verbose('Extracting:', file);
             return fs.ensureDir(path.dirname(file))
-            .then(() => archive.files[entry].async('uint8array'))
-            .then(data => fs.writeFile(file, data));
+                .then(() => archive.files[entry].async('uint8array'))
+                .then(data => fs.writeFile(file, data));
         } else {
             return Promise.resolve();
         }
     }
 
     /**
-     * 
+     *
      * @returns {Promise<string>}
      */
     getCurrentVersion() {
         return fs.readFile(this._versionFile, 'utf8')
-        .catch(error => Promise.resolve(undefined));
+            .catch(() => Promise.resolve(undefined));
     }
 
     /**
-     * 
-     * @param {string} version 
-     * @param {Uint8Array} data 
-     * @returns {void} 
+     *
+     * @param {string} version
+     * @param {Uint8Array} data
+     * @returns {void}
      */
     async applyUpdateArchive(version, data) {
         let zip = new jszip();
@@ -65,4 +65,4 @@ module.exports = class CacheDirectoryManager {
         await Promise.all(promises);
         await fs.writeFile(this._versionFile, version);
     }
-}
+};
