@@ -1,6 +1,8 @@
 export default class Blacklist {
-    // https://developer.chrome.com/extensions/match_patterns
-    // https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Match_patterns
+    /*
+     * https://developer.chrome.com/extensions/match_patterns
+     * https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Match_patterns
+     */
     constructor() {
         this.patterns = [
             '*://*.2mdnsys.com/*',
@@ -91,12 +93,12 @@ export default class Blacklist {
             '*://*.w55c.net/*',
             '*://*.yieldbird.com/*',
             '*://*.yimg.com/*',
-            '*://*.zryydi.com/*',                
+            '*://*.zryydi.com/*',
         ];
     }
 
     /**
-     * 
+     *
      */
     addPattern( pattern ) {
         if( !this.patterns.includes( pattern ) ) {

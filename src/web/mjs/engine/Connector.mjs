@@ -1,4 +1,4 @@
-import Manga from './Manga.mjs'
+import Manga from './Manga.mjs';
 
 /**
  * Base class for connector plugins
@@ -10,8 +10,10 @@ export default class Connector {
         this.id = Symbol();
         this.label = '';
         this.tags = [];
-        // READONLY: lock state may used to prevent to many concurrent requests per second
-        // do not set directly, use lock() and unlock()
+        /*
+         * READONLY: lock state may used to prevent to many concurrent requests per second
+         * do not set directly, use lock() and unlock()
+         */
         this.isLocked = false;
         this.initialized = false;
         //
@@ -20,9 +22,11 @@ export default class Connector {
         this.mangaCache = undefined;
         //
         this.existingMangas = [];
-        // initialize the default request options
-        // these request options will also be used for download jobs (image/media stream downloads)
-        // https://developer.mozilla.org/en-US/docs/Web/API/Request/Request 'init' parameter
+        /*
+         * initialize the default request options
+         * these request options will also be used for download jobs (image/media stream downloads)
+         * https://developer.mozilla.org/en-US/docs/Web/API/Request/Request 'init' parameter
+         */
         this.requestOptions = {
             method: 'GET',
             mode: 'cors',
@@ -30,10 +34,12 @@ export default class Connector {
             // include credentials to apply cookies from browser window
             credentials: 'same-origin', // 'include',
             headers: new Headers()
-            // body
-            // cache
-            // referrer
-            // integrity
+            /*
+             * body
+             * cache
+             * referrer
+             * integrity
+             */
         };
     }
 
@@ -49,8 +55,10 @@ export default class Connector {
      * This method can be overwritten by the connector for a specific implementation of the initialization process
      */
     _initializeConnector() {
-        // sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
-        // => append random search parameter to avoid caching
+        /*
+         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+         * => append random search parameter to avoid caching
+         */
         let uri = new URL( this.url );
         uri.searchParams.set( 'ts', Date.now() );
         uri.searchParams.set( 'rd', Math.random() );
@@ -63,25 +71,25 @@ export default class Connector {
      */
     initialize() {
         return Promise.resolve()
-        .then( () => {
-            if( this.initialized ) {
-                return Promise.resolve();
-            } else {
-                return this._initializeConnector();
-            }
-        } )
-        .then( () => {
-            this.initialized = true;
-        } )
-        .catch( error => {
-            this.initialized = false;
-            // in offline mode set initialization to false, but do not throw
-            if( error.stack.startsWith( 'ERR_INTERNET_DISCONNECTED' ) ) {
+            .then( () => {
+                if( this.initialized ) {
+                    return Promise.resolve();
+                } else {
+                    return this._initializeConnector();
+                }
+            } )
+            .then( () => {
+                this.initialized = true;
+            } )
+            .catch( error => {
+                this.initialized = false;
+                // in offline mode set initialization to false, but do not throw
+                if( error.stack.startsWith( 'ERR_INTERNET_DISCONNECTED' ) ) {
                 //console.warn( 'Initialization Failed', this, JSON.stringify(error) );
-                return Promise.resolve();
-            }
-            throw error;
-        } );
+                    return Promise.resolve();
+                }
+                throw error;
+            } );
     }
 
     /**
@@ -90,10 +98,10 @@ export default class Connector {
     findMatchingManga( pattern ) {
         let needle = pattern.toLowerCase();
         return Engine.Storage.loadMangaList( this.id )
-        .then( mangas => {
-            return Promise.resolve( mangas.find( manga => manga.title.toLowerCase().includes( needle ) ) );
-        } )
-        .catch( error => Promise.resolve( undefined ) );
+            .then( mangas => {
+                return Promise.resolve( mangas.find( manga => manga.title.toLowerCase().includes( needle ) ) );
+            } )
+            .catch( () => Promise.resolve( undefined ) );
     }
 
     /**
@@ -106,42 +114,42 @@ export default class Connector {
         }
         this.isUpdating = true;
         this.initialize()
-        .then( () => {
-            this._getMangaList( ( error, mangas ) => {
-                if( error || !mangas ) {
-                    this.isUpdating = false;
-                    callback( error, undefined );
-                    return;
-                }
-                // remove duplicates by checking if manga with given ID is first occurance in list
-                mangas = mangas.filter( ( manga, index ) => {
-                    return index === mangas.findIndex( m => m.id === manga.id );
+            .then( () => {
+                this._getMangaList( ( error, mangas ) => {
+                    if( error || !mangas ) {
+                        this.isUpdating = false;
+                        callback( error, undefined );
+                        return;
+                    }
+                    // remove duplicates by checking if manga with given ID is first occurance in list
+                    mangas = mangas.filter( ( manga, index ) => {
+                        return index === mangas.findIndex( m => m.id === manga.id );
+                    } );
+                    // sort by title
+                    mangas.sort( ( a, b ) => {
+                        return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
+                    } );
+
+                    this.mangaCache = undefined;
+                    Engine.Storage.saveMangaList( this.id, mangas )
+                        .then( () => {
+                            // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                            this.isUpdating = false;
+                            this.getMangas( callback );
+                        } )
+                        .catch( error => {
+                            // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                            this.isUpdating = false;
+                            console.error( error.message );
+                            callback( error, undefined );
+                        } );
                 } );
-                // sort by title
-                mangas.sort( ( a, b ) => {
-                    return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
-                } );
-                
-                this.mangaCache = undefined;
-                Engine.Storage.saveMangaList( this.id, mangas )
-                .then( () => {
-                    // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
-                    this.isUpdating = false;
-                    this.getMangas( callback );
-                } )
-                .catch( error => {
-                    // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
-                    this.isUpdating = false;
-                    console.error( error.message );
-                    callback( error, undefined );
-                } );
-            } );
-        } )
-        .catch( error => {
+            } )
+            .catch( error => {
             // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
-            this.isUpdating = false;
-            callback( error, undefined );
-        } );
+                this.isUpdating = false;
+                callback( error, undefined );
+            } );
     }
 
     /**
@@ -151,26 +159,25 @@ export default class Connector {
     getMangas( callback ) {
         // find all manga titles (sanitized) that are found in the base directory for this connector
         return Engine.Storage.getExistingMangaTitles( this )
-        .catch( error => {
-            // Ignore manga file reading errors (e.g. root directory not exist)
-            //console.warn( 'getMangas', error );
-            return Promise.resolve( [] );
-        } )
-        .then( existingMangaTitles => {
-            this.existingManga = existingMangaTitles;
-            // check if manga list is cached
-            return ( this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() );
-        } )
-        .then( mangas => {
-            callback( null, mangas );
-            return Promise.resolve( mangas );
-        } )
-        .catch( error => {
+            .catch( () => {
+                // Ignore manga file reading errors (e.g. root directory not exist)
+                return Promise.resolve( [] );
+            } )
+            .then( existingMangaTitles => {
+                this.existingManga = existingMangaTitles;
+                // check if manga list is cached
+                return ( this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() );
+            } )
+            .then( mangas => {
+                callback( null, mangas );
+                return Promise.resolve( mangas );
+            } )
+            .catch( error => {
             // TODO: remove log ... ?
-            console.warn( 'getMangas', error );
-            callback( error, this.mangaCache );
-            return Promise.reject( error );
-        } );
+                console.warn( 'getMangas', error );
+                callback( error, this.mangaCache );
+                return Promise.reject( error );
+            } );
     }
 
     /**
@@ -178,7 +185,7 @@ export default class Connector {
      * This method can be overwritten by connector implementations.
      */
     _getMangaFromURI( uri ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             let id = uri.pathname + uri.search;
             let title = 'Manga #' + id.split( '' ).reduce( ( a, v ) => a + a % 31 + v.charCodeAt(), id.length ).toString( 16 ).toUpperCase();
             resolve( new Manga( this, id, title ) );
@@ -190,10 +197,12 @@ export default class Connector {
      * The promise will NOT reject!
      */
     getMangaFromURI( uri ) {
-        // TODO: try to find title in cached manga list first
-        //       => this.getMangas().then( ... )
+        /*
+         * TODO: try to find title in cached manga list first
+         *       => this.getMangas().then( ... )
+         */
         return this.initialize()
-        .then( () => this._getMangaFromURI( uri ) );
+            .then( () => this._getMangaFromURI( uri ) );
     }
 
     /**
@@ -214,25 +223,25 @@ export default class Connector {
     _getUpdatedMangasFromFile() {
         // get manga list from the local storage and cache them
         return Engine.Storage.loadMangaList( this.id )
-        .then( mangas => {
+            .then( mangas => {
             // de-serialize mangas into objects
-            this.mangaCache = mangas.map( manga => {
-                return new Manga( this, manga.id, manga.title );
-            } );
-            return Promise.resolve( this.mangaCache );
-        } )
-        .catch( error => {
+                this.mangaCache = mangas.map( manga => {
+                    return new Manga( this, manga.id, manga.title );
+                } );
+                return Promise.resolve( this.mangaCache );
+            } )
+            .catch( error => {
             // TODO: remove log ... ?
-            console.warn( '_getUpdatedMangasFromFile', error );
-            return Promise.resolve( this.mangaCache || [] );
-        } );
+                console.warn( '_getUpdatedMangasFromFile', error );
+                return Promise.resolve( this.mangaCache || [] );
+            } );
     }
 
     /**
      * Return a promise that will be resolved after the given amount of time in milliseconds
      */
     wait( time ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             setTimeout( resolve, time );
         } );
     }
@@ -265,7 +274,7 @@ export default class Connector {
      * Helper function to decrypt the protected email within the given DOM element.
      */
     cfMailDecrypt( element ) {
-        [...element.querySelectorAll( 'span[data-cfemail]' )].forEach(  ( span ) => {
+        [...element.querySelectorAll( 'span[data-cfemail]' )].forEach( ( span ) => {
             let encrypted = span.getAttribute( 'data-cfemail' ); // span.dataset.cfmail
             if( encrypted ) {
                 // decrypt mail
@@ -294,10 +303,12 @@ export default class Connector {
                 refURI.hostname = baseURI.hostname;
             }
 
-            // case: element.href => protocol expanded to window location (e.g. //domain.net/sub/page.html => protocol://domain.net/sub/page.html)
-            // HakuNeko uses its own protocol for local hosted application files
-            // expansion of hrefs may lead to wrong protocol for external links
-            // => use the protocol of the connector's base url
+            /*
+             * case: element.href => protocol expanded to window location (e.g. //domain.net/sub/page.html => protocol://domain.net/sub/page.html)
+             * HakuNeko uses its own protocol for local hosted application files
+             * expansion of hrefs may lead to wrong protocol for external links
+             * => use the protocol of the connector's base url
+             */
             if( refURI.protocol === window.location.protocol ) {
                 refURI.protocol = baseURI.protocol;
             }
@@ -312,44 +323,44 @@ export default class Connector {
     }
 
     /**
-     * 
+     *
      */
     getAbsolutePath( reference, base ) {
         let baseURI;
         switch( true ) {
-            case base instanceof URL:
-                baseURI = base;
-                break;
-            case typeof base === 'string':
-                baseURI = new URL( base );
-                break;
-            default:
-                throw new Error( 'Failed to extract relative link (parameter "base" is invalid)!' );
+        case base instanceof URL:
+            baseURI = base;
+            break;
+        case typeof base === 'string':
+            baseURI = new URL( base );
+            break;
+        default:
+            throw new Error( 'Failed to extract relative link (parameter "base" is invalid)!' );
         }
 
         let refURI;
         switch( true ) {
-            case reference instanceof URL:
-                refURI = reference;
-                break;
-            case typeof reference === 'string':
-                refURI = new URL( reference, baseURI.href );
-                break;
-            case reference['src'] !== undefined:
-                refURI = new URL( reference.getAttribute( 'src' ), baseURI.href );
-                break;
-            case reference['href'] !== undefined:
-                refURI = new URL( reference.getAttribute( 'href' ), baseURI.href );
-                break;
-            default:
-                throw new Error( 'Failed to extract relative link (parameter "reference" is invalid)!' );
+        case reference instanceof URL:
+            refURI = reference;
+            break;
+        case typeof reference === 'string':
+            refURI = new URL( reference, baseURI.href );
+            break;
+        case reference['src'] !== undefined:
+            refURI = new URL( reference.getAttribute( 'src' ), baseURI.href );
+            break;
+        case reference['href'] !== undefined:
+            refURI = new URL( reference.getAttribute( 'href' ), baseURI.href );
+            break;
+        default:
+            throw new Error( 'Failed to extract relative link (parameter "reference" is invalid)!' );
         }
 
         return refURI.href;
     }
 
     /**
-     * 
+     *
      */
     getRootRelativeOrAbsoluteLink( reference, base ) {
         let uri = new URL( this.getAbsolutePath( reference, base ) );
@@ -400,20 +411,20 @@ export default class Connector {
             request = new Request( request.href, this.requestOptions );
         }
         return fetch( request )
-        .then( response => {
-            if( response.status >= 500 && retries > 0 ) {
-                return this.wait( 5000 )
-                .then( () => this.fetchDOM( request, selector, retries - 1 ) );
-            }
-            if( response.status === 200 ) {
-                return response.text()
-                .then( data => {
-                    let dom = this.createDOM( data );
-                    return Promise.resolve( [...dom.querySelectorAll( selector )] );
-                } );
-            }
-            throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
-        } );
+            .then( response => {
+                if( response.status >= 500 && retries > 0 ) {
+                    return this.wait( 5000 )
+                        .then( () => this.fetchDOM( request, selector, retries - 1 ) );
+                }
+                if( response.status === 200 ) {
+                    return response.text()
+                        .then( data => {
+                            let dom = this.createDOM( data );
+                            return Promise.resolve( [...dom.querySelectorAll( selector )] );
+                        } );
+                }
+                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
+            } );
     }
 
     /**
@@ -429,50 +440,50 @@ export default class Connector {
             request = new Request( request.href, this.requestOptions );
         }
         return fetch( request )
-        .then( response => {
-            if( response.status >= 500 && retries > 0 ) {
-                return this.wait( 5000 )
-                .then( () => this.fetchJSON( request, retries - 1 ) );
-            }
-            if( response.status === 200 ) {
-                return response.json();
-            }
-            throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
-        } );
+            .then( response => {
+                if( response.status >= 500 && retries > 0 ) {
+                    return this.wait( 5000 )
+                        .then( () => this.fetchJSON( request, retries - 1 ) );
+                }
+                if( response.status === 200 ) {
+                    return response.json();
+                }
+                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
+            } );
     }
 
     /**
      *
      */
     /*
-    // https://developer.mozilla.org/en-US/docs/Web/API/XPathResult#Constants
-    fetchXPATH( request, xpath, resultType, retries ) {
-        return fetch( request )
-        .then( response => response.text() )
-        .then( data => {
-            let dom = this.createDOM( data );
-            let result = document.evaluate( xpath, dom, null, resultType, null);
-            if( result.resultType > 3 ) {
-                // transform iterator into array
-            }
-            return Promise.resolve( result );
-        } )
-    }
-
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchXPATH( request, '//div[@id="tomos"]/div[@id="tomo"]/a', XPathResult.ORDERED_NODE_ITERATOR_TYPE )
-        .then( data => {
-            console.log( data.iterateNext(); );
-            callback( null, [] );
-        } )
-        .catch( error => {
-            console.error( error, manga );
-            callback( error, undefined );
-        } );
-    */
+     * // https://developer.mozilla.org/en-US/docs/Web/API/XPathResult#Constants
+     * fetchXPATH( request, xpath, resultType, retries ) {
+     * return fetch( request )
+     * .then( response => response.text() )
+     * .then( data => {
+     * let dom = this.createDOM( data );
+     * let result = document.evaluate( xpath, dom, null, resultType, null);
+     * if( result.resultType > 3 ) {
+     * // transform iterator into array
+     * }
+     * return Promise.resolve( result );
+     * } )
+     * }
+     *
+     * let request = new Request( this.url + manga.id, this.requestOptions );
+     * this.fetchXPATH( request, '//div[@id="tomos"]/div[@id="tomo"]/a', XPathResult.ORDERED_NODE_ITERATOR_TYPE )
+     * .then( data => {
+     * console.log( data.iterateNext(); );
+     * callback( null, [] );
+     * } )
+     * .catch( error => {
+     * console.error( error, manga );
+     * callback( error, undefined );
+     * } );
+     */
 
     /**
-     * 
+     *
      */
     createConnectorURI( payload ) {
         let data = JSON.stringify( payload );
@@ -484,7 +495,7 @@ export default class Connector {
     }
 
     /**
-     * 
+     *
      */
     handleConnectorURI( uri ) {
         let encoded = uri.searchParams.get( 'payload' );
@@ -502,11 +513,13 @@ export default class Connector {
         try {
             //console.log( `Connector '${this.id}' has not implemented protocol handling. Using fallback implementation (fetch blob with default request options)!` );
             let request = new Request( payload, this.requestOptions );
-            // TODO: only perform requests when from download manager
-            // or when from browser for preview and selected chapter matches
+            /*
+             * TODO: only perform requests when from download manager
+             * or when from browser for preview and selected chapter matches
+             */
             return fetch( request )
-            .then( response => response.blob() )
-            .then( data => this._blobToBuffer( data ) );
+                .then( response => response.blob() )
+                .then( data => this._blobToBuffer( data ) );
         } catch( error ) {
             return Promise.reject( error );
         }
@@ -528,7 +541,7 @@ export default class Connector {
             };
             reader.onerror = event => {
                 reject( event.target.error );
-            }
+            };
             reader.readAsArrayBuffer( blob );
         } );
     }

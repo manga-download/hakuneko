@@ -17,7 +17,7 @@ export default class UserAgent {
 
     static get _osMacOSX() {
         let $ = UserAgent;
-        let sep = ['_', '.']
+        let sep = ['_', '.'];
         let major = ['10'];
         let minor = ['8','9', '10', '11', '12', '13'];
         let patch = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
@@ -69,10 +69,12 @@ export default class UserAgent {
      */
     static random() {
         let $ = UserAgent;
-        //return $._rd( [$._browserChrome, $._browserFirefox, $._browserIE] );
-        // only return chrome because it has over 7E+014 signature possibilites
-        // => low chance of duplicate calls
-        // (firefox only has 0.6E+006 signature possiblities)
+        /*
+         *return $._rd( [$._browserChrome, $._browserFirefox, $._browserIE] );
+         * only return chrome because it has over 7E+014 signature possibilites
+         * => low chance of duplicate calls
+         * (firefox only has 0.6E+006 signature possiblities)
+         */
         return $._browserChrome;
     }
 }

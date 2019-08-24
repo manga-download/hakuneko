@@ -12,7 +12,7 @@ export default class Enums {
             checkbox:  Symbol( 'checkbox' ),
             file:      Symbol( 'file' ),
             directory: Symbol( 'directory' )
-        }
+        };
     }
 
     static get EpisodeFormat() {
@@ -20,16 +20,16 @@ export default class Enums {
             m3u8: '.m3u8',
             mkv:  '.mkv',
             mp4:  '.mp4'
-        }
+        };
     }
 
     static get ChapterFormat() {
         return {
-            img:  'img',  // images within a folder
+            img:  'img', // images within a folder
             cbz:  '.cbz', // comic book archive extension
             pdf:  '.pdf', // portable document format extension
             epub: '.epub' // e-book reader format extension
-        }
+        };
     }
 
     static get HistoryFormat() {
@@ -37,7 +37,7 @@ export default class Enums {
             none: '',
             json: '.json',
             csv:  '.csv'
-        }
+        };
     }
 
     /**
@@ -47,13 +47,13 @@ export default class Enums {
     static get DownloadStatus() {
         return {
             unavailable: 'unavailable', // chapter/manga that cannot be downloaded
-            offline:     'offline',     // chapter/manga that cannot be downloaded, but exist in manga directory
-            available:   'available',   // chapter/manga that can be added to the download list
-            queued:      'queued',      // chapter/manga that is queued for download to the users device
+            offline:     'offline', // chapter/manga that cannot be downloaded, but exist in manga directory
+            available:   'available', // chapter/manga that can be added to the download list
+            queued:      'queued', // chapter/manga that is queued for download to the users device
             downloading: 'downloading', // chapter/manga that is currently downloaded to the users device
-            completed:   'completed',   // chapter/manga that already exist on the users device
-            failed:      'failed'       // chapter/manga that failed to be downloaded
-        }
+            completed:   'completed', // chapter/manga that already exist on the users device
+            failed:      'failed' // chapter/manga that failed to be downloaded
+        };
     }
 
     /**
@@ -61,14 +61,14 @@ export default class Enums {
      */
     static get EventListener() {
         return {
-            onSettingsChanged:        'onSettingsChanged',       // ...
-            onBookmarksChanged:       'onBookmarksChanged',      // ...
-            onChaptermarksChanged:    'onChaptermarksChanged',   // ...
-            onMangaStatusChanged:     'onMangaStatusChanged',    // ...
-            onChapterStatusChanged:   'onChapterStatusChanged',  // ...
+            onSettingsChanged:        'onSettingsChanged', // ...
+            onBookmarksChanged:       'onBookmarksChanged', // ...
+            onChaptermarksChanged:    'onChaptermarksChanged', // ...
+            onMangaStatusChanged:     'onMangaStatusChanged', // ...
+            onChapterStatusChanged:   'onChapterStatusChanged', // ...
             onDownloadStatusUpdated:  'onDownloadStatusUpdated', // ...
-            onRequestChapterUp:       'onRequestChapterUp',      // ...
-            onRequestChapterDown:     'onRequestChapterDown'     // ...
-        }
+            onRequestChapterUp:       'onRequestChapterUp', // ...
+            onRequestChapterDown:     'onRequestChapterDown' // ...
+        };
     }
 }

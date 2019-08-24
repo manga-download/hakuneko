@@ -1,4 +1,4 @@
-import DownloadJob from './DownloadJob.mjs'
+import DownloadJob from './DownloadJob.mjs';
 
 export default class DownloadManager {
 
@@ -33,7 +33,7 @@ export default class DownloadManager {
     }
 
     /**
-     * 
+     *
      */
     processQueue() {
         // find a connector in queue that has downloads available and is not locked

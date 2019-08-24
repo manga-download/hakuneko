@@ -9,7 +9,7 @@ export default class HistoryWorker {
     /**
      *
      */
-        onDownloadStatusUpdated( evt ) {
+    onDownloadStatusUpdated( evt ) {
         let job = evt.detail;
         if( job.status === DownloadStatus.completed) {
             let entry = {
@@ -23,7 +23,7 @@ export default class HistoryWorker {
     }
 
     /**
-     * 
+     *
      */
     appendEntry( data ) {
         let entry = Object.assign( { _time: new Date().toISOString() }, data );

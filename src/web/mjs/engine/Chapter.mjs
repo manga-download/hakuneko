@@ -10,7 +10,7 @@ export default class Chapter {
         this.status = status;
         this.pageProcess = false;
         this.pageCache = undefined;
-        
+
         if( !this.status ) {
             this.updateStatus();
         }
@@ -27,7 +27,7 @@ export default class Chapter {
     }
 
     /**
-     * 
+     *
      */
     _getRawFileName( title ) {
         return {
@@ -38,7 +38,7 @@ export default class Chapter {
     }
 
     /**
-     * 
+     *
      */
     _getSanatizedFileName( title ) {
         let name = Engine.Storage.sanatizePath( title );
@@ -51,7 +51,7 @@ export default class Chapter {
     }
 
     /**
-     * 
+     *
      */
     updateStatus() {
         // do not overwrite download status ...
@@ -75,13 +75,13 @@ export default class Chapter {
     getPages( callback ) {
         if( this.status === DownloadStatus.offline || this.status === DownloadStatus.completed ) {
             Engine.Storage.loadChapterPages( this )
-            .then( pages => {
-                callback( null, pages );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+                .then( pages => {
+                    callback( null, pages );
+                } )
+                .catch( error => {
+                    console.error( error, this );
+                    callback( error, undefined );
+                } );
         } else {
             // check if page list is cached
             if( this.pageCache && this.pageCache.length ) {
@@ -89,19 +89,19 @@ export default class Chapter {
                 return;
             }
             this.manga.connector.initialize()
-            .then( () => {
+                .then( () => {
                 // get page list directly from the connector interface and cache them
-                this.manga.connector._getPageList( this.manga, this, ( error, pages ) => {
-                    this.pageCache = [];
-                    if( !error ) {
-                        this.pageCache = pages;
-                    }
-                    callback( error, this.pageCache );
+                    this.manga.connector._getPageList( this.manga, this, ( error, pages ) => {
+                        this.pageCache = [];
+                        if( !error ) {
+                            this.pageCache = pages;
+                        }
+                        callback( error, this.pageCache );
+                    } );
+                } )
+                .catch( error => {
+                    callback( error, undefined );
                 } );
-            } )
-            .catch( error => {
-                callback( error, undefined );
-            } );
         }
     }
 }

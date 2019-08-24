@@ -3,11 +3,11 @@ export default class Cookie {
     constructor( cookies ) {
         this.list = {};
         ( cookies || '' ).split( ';' )
-        .filter( cookie => cookie.trim() )
-        .forEach( cookie => {
-            let pair = cookie.split( '=' );
-            this.set( pair.shift(), pair.join( '=' ) );
-        } );
+            .filter( cookie => cookie.trim() )
+            .forEach( cookie => {
+                let pair = cookie.split( '=' );
+                this.set( pair.shift(), pair.join( '=' ) );
+            } );
     }
 
     /**

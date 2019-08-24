@@ -259,7 +259,7 @@ export default class Settings {
     }
 
     /**
-     * 
+     *
      */
     _getDecryptedValue( inputType, encryptedValue ) {
         if( inputType !== Input.password || !encryptedValue || encryptedValue.length < 1 ) {
@@ -269,21 +269,21 @@ export default class Settings {
     }
 
     /**
-     * 
+     *
      */
     _getValidValue( connectorProperty ) {
+        let value = connectorProperty.value;
         switch( connectorProperty.input ) {
         case Input.numeric:
-            let value = connectorProperty.value;
-            if( connectorProperty.min !== undefined ) {
-                value = Math.max( value, connectorProperty.min );
+            if( connectorProperty.min !== undefined && value < connectorProperty.min ) {
+                return connectorProperty.min;
             }
-            if( connectorProperty.max !== undefined ) {
-                value = Math.min( value, connectorProperty.max );
+            if( connectorProperty.max !== undefined && value > connectorProperty.max ) {
+                return connectorProperty.max;
             }
             return value;
         default:
-            return connectorProperty.value;
+            return value;
 
         }
     }

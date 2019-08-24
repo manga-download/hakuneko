@@ -1,4 +1,4 @@
-import Bookmark from './Bookmark.mjs'
+import Bookmark from './Bookmark.mjs';
 
 export default class BookmarkManager {
 
@@ -111,29 +111,29 @@ export default class BookmarkManager {
      */
     loadProfile( profile, callback ) {
         Engine.Storage.loadConfig( 'bookmarks' )
-        .then( data => {
-            try {
-                if( !data || !data.length || data.length === 0 ) {
-                    throw new Error( 'Invalid bookmark list!' );
+            .then( data => {
+                try {
+                    if( !data || !data.length || data.length === 0 ) {
+                        throw new Error( 'Invalid bookmark list!' );
+                    }
+                    this.bookmarks = data;
+                    this.bookmarks.sort( this.compareBookmarks );
+                    document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( null );
+                    }
+                } catch( e ) {
+                    console.error( 'Failed to load bookmarks:', e.message );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( e );
+                    }
                 }
-                this.bookmarks = data;
-                this.bookmarks.sort( this.compareBookmarks );
-                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+            } )
+            .catch( error => {
                 if( typeof( callback ) === typeof( Function ) ) {
-                    callback( null );
+                    callback( error );
                 }
-            } catch( e ) {
-                console.error( 'Failed to load bookmarks:', e.message );
-                if( typeof( callback ) === typeof( Function ) ) {
-                    callback( e );
-                }
-            }
-        } )
-        .catch( error => {
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( error );
-            }
-        } );
+            } );
     }
 
     /**
@@ -143,18 +143,18 @@ export default class BookmarkManager {
      */
     saveProfile( profile, callback ) {
         Engine.Storage.saveConfig( 'bookmarks', this.bookmarks, 2 )
-        .then( () => {
-            document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( null );
-            }
-        } )
-        .catch( error => {
-            console.error( 'Failed to save bookmarks:', error.message );
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( error );
-            }
-        } );
+            .then( () => {
+                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
+                }
+            } )
+            .catch( error => {
+                console.error( 'Failed to save bookmarks:', error.message );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( error );
+                }
+            } );
     }
 
     /**

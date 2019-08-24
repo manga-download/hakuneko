@@ -12,7 +12,7 @@ export default class ChaptermarkManager {
         if( !chaptermarks ) {
             return;
         }
-        
+
         let marks = chaptermarks.filter( c => this._findIndex( c ) < 0 );
         this.chaptermarks = this.chaptermarks.concat( marks );
         this._syncChaptermarks( undefined );
@@ -31,14 +31,14 @@ export default class ChaptermarkManager {
      */
     _syncChaptermarks( callback ) {
         Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
-        .then( () => {
-            document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( null );
-            }
-        } )
-        .catch( error => {
-            this.loadChaptermarks( callback );
+            .then( () => {
+                document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                if( typeof( callback ) === typeof( Function ) ) {
+                    callback( null );
+                }
+            } )
+            .catch( () => {
+                this.loadChaptermarks( callback );
             } );
     }
 
@@ -60,28 +60,28 @@ export default class ChaptermarkManager {
      */
     loadChaptermarks( callback ) {
         Engine.Storage.loadConfig( 'chaptermarks' )
-        .then( data => {
-            try {
-                if( !data ) {
-                    throw new Error( 'Invalid chaptermark list!' );
+            .then( data => {
+                try {
+                    if( !data ) {
+                        throw new Error( 'Invalid chaptermark list!' );
+                    }
+                    this.chaptermarks = data;
+                    document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( null );
+                    }
+                } catch( e ) {
+                    console.error( 'Failed to load chaptermarks:', e.message );
+                    if( typeof( callback ) === typeof( Function ) ) {
+                        callback( e );
+                    }
                 }
-                this.chaptermarks = data;
-                document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+            } )
+            .catch( error => {
                 if( typeof( callback ) === typeof( Function ) ) {
-                    callback( null );
+                    callback( error );
                 }
-            } catch( e ) {
-                console.error( 'Failed to load chaptermarks:', e.message );
-                if( typeof( callback ) === typeof( Function ) ) {
-                    callback( e );
-                }
-            }
-        } )
-        .catch( error => {
-            if( typeof( callback ) === typeof( Function ) ) {
-                callback( error );
-            }
-        } );
+            } );
     }
 
     /**
@@ -91,7 +91,7 @@ export default class ChaptermarkManager {
         let chaptermark = undefined;
         if( manga ) {
             chaptermark = this.chaptermarks.find( mark => {
-                return ( mark.mangaID === manga.id && mark.connectorID === manga.connector.id ); 
+                return ( mark.mangaID === manga.id && mark.connectorID === manga.connector.id );
             } );
             // backward compatibility (old chaptermarks don't have a title)
             if( chaptermark ) {
@@ -117,7 +117,7 @@ export default class ChaptermarkManager {
         let index = this._findIndex( chaptermark );
         if( this._findIndex( chaptermark ) > -1 ) {
             this.chaptermarks[index] = chaptermark;
-        } else { 
+        } else {
             this.chaptermarks.push( chaptermark );
         }
         this._syncChaptermarks();

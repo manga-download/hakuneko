@@ -37,7 +37,7 @@ export default class EbookGenerator {
         content += '<body>\n';
         content += '    <div>\n';
         content += '        <img alt="' + pageName + '" src="../img/' + pageName + '"/>\n';
-        content += '    </div>\n'; 
+        content += '    </div>\n';
         content += '</body>\n';
         content += '</html>\n';
         return content;

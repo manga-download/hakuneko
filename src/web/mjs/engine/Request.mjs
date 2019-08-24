@@ -1,5 +1,5 @@
-import UserAgent from './UserAgent.mjs' 
-import Cookie from './Cookie.mjs'
+import UserAgent from './UserAgent.mjs';
+import Cookie from './Cookie.mjs';
 
 export default class Request {
 
@@ -19,11 +19,13 @@ export default class Request {
      *
      */
     registerProtocol( scheme, callback ) {
-        // register callback for electron process (when callback becomes unavailable by e.g. reloading page,
-        // the previous registered handler must be removed)
+        /*
+         * register callback for electron process (when callback becomes unavailable by e.g. reloading page,
+         * the previous registered handler must be removed)
+         */
         this.protocol.isProtocolHandled( scheme, error => {
             if( error ) {
-                this.protocol.unregisterProtocol( scheme, event => {
+                this.protocol.unregisterProtocol( scheme, () => {
                     this.protocol.registerBufferProtocol( scheme, callback );
                 } );
             } else {
@@ -44,8 +46,8 @@ export default class Request {
     }
 
     /**
-        *
-        */
+     *
+     */
     _loginHandler( evt, webContent, request, authInfo, callback ) {
         let proxyAuth = Engine.Settings.proxyAuth.value;
         if( authInfo.isProxy && proxyAuth && proxyAuth.includes( ':' ) ) {
@@ -58,8 +60,8 @@ export default class Request {
     }
 
     /**
-        *
-        */
+     *
+     */
     get _domPreparationScript() {
         return `
             {
@@ -73,8 +75,8 @@ export default class Request {
     }
 
     /**
-        *
-        */
+     *
+     */
     get _cfCheckScript() {
         // ensure variables in this script does not appear in the page or other injected script
         let uVar = [
@@ -104,25 +106,27 @@ export default class Request {
     }
 
     /**
-        * The browser window of electron does not support request objects,
-        * so it is required to convert the request to supported options.
-        */
-    _extractRequestOptions( request ) {
-        let referer = request.headers.get( 'x-referer' );
-        let headers = [];
-        headers = headers.join( '\n' );
+     * The browser window of electron does not support request objects,
+     * so it is required to convert the request to supported options.
+     */
+    _extractRequestOptions( /*request*/ ) {
+        /*let referer = request.headers.get( 'x-referer' );*/
+        /*let headers = [];*/
+        /*headers = headers.join( '\n' );*/
         return {
-            //httpReferrer: referer ? referer : undefined,
-            //userAgent: undefined,
-            //extraHeaders: headers ? headers : undefined,
-            //postData: undefined,
+            /*
+             *httpReferrer: referer ? referer : undefined,
+             *userAgent: undefined,
+             *extraHeaders: headers ? headers : undefined,
+             *postData: undefined,
+             */
         };
     }
 
     /**
-        * If timeout [ms] is given, the window will be kept open until timout, otherwise
-        * it will be closed after injecting the script (or after 30 seconds in case an error occured)
-        */
+     * If timeout [ms] is given, the window will be kept open until timout, otherwise
+     * it will be closed after injecting the script (or after 30 seconds in case an error occured)
+     */
     fetchUI( request, injectionScript, timeout ) {
         timeout = timeout || 60000;
         return new Promise( ( resolve, reject ) => {
@@ -135,7 +139,9 @@ export default class Request {
                 }
             } );
             //win.webContents.openDevTools();
+
             // TODO: blacklist seems to be applied to all web requests, not just to the one in this browser window
+
             win.webContents.session.webRequest.onBeforeRequest( { urls: Engine.Blacklist.patterns }, ( details, callback ) => {
                 callback( { cancel: true } );
             } );
@@ -149,34 +155,34 @@ export default class Request {
                 }
             }, timeout );
 
-            win.webContents.on( 'dom-ready', event => {
+            win.webContents.on( 'dom-ready', () => {
                 win.webContents.executeJavaScript( this._domPreparationScript );
             } );
 
-            win.webContents.on( 'did-finish-load', event => {
+            win.webContents.on( 'did-finish-load', () => {
                 win.webContents.executeJavaScript( this._cfCheckScript )
-                .then( cfResult => {
-                    if( !cfResult.redirect ) {
-                        if( cfResult.error ) {
-                            throw new Error( cfResult.error );
+                    .then( cfResult => {
+                        if( !cfResult.redirect ) {
+                            if( cfResult.error ) {
+                                throw new Error( cfResult.error );
+                            } else {
+                                return win.webContents.executeJavaScript( injectionScript )
+                                    .then( jsResult => {
+                                        preventCallback = true; // no other event shall resolve/reject this promise anymore
+                                        this._fetchUICleanup( win, abortAction );
+                                        resolve( jsResult );
+                                    } );
+                            }
                         } else {
-                            return win.webContents.executeJavaScript( injectionScript )
-                            .then( jsResult => {
-                                preventCallback = true; // no other event shall resolve/reject this promise anymore
-                                this._fetchUICleanup( win, abortAction );
-                                resolve( jsResult );
-                            } );
-                        }
-                    } else {
                         // neither reject nor resolve the promise (wait for next callback after getting redirected)
-                        console.warn( `Solving CloudFlare challenge for "${request.url}" ...`, cfResult );
-                    }
-                } )
-                .catch( error => {
-                    preventCallback = true; // no other event shall resolve/reject this promise anymore
-                    this._fetchUICleanup( win, abortAction );
-                    reject( error );
-                } );
+                            console.warn( `Solving CloudFlare challenge for "${request.url}" ...`, cfResult );
+                        }
+                    } )
+                    .catch( error => {
+                        preventCallback = true; // no other event shall resolve/reject this promise anymore
+                        this._fetchUICleanup( win, abortAction );
+                        reject( error );
+                    } );
             } );
 
             win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
@@ -192,8 +198,8 @@ export default class Request {
     }
 
     /**
-        * Close window and clear the given timeout function
-        */
+     * Close window and clear the given timeout function
+     */
     _fetchUICleanup( browserWindow, abortAction ) {
         if( abortAction ) {
             clearTimeout( abortAction );
@@ -206,9 +212,9 @@ export default class Request {
     }
 
     /**
-        * Provide headers for the electron main process that shall be modified before every BrowserWindow request is send.
-        * DO NOT RENAME THIS METHOD!
-        */
+     * Provide headers for the electron main process that shall be modified before every BrowserWindow request is send.
+     * DO NOT RENAME THIS METHOD!
+     */
     onBeforeSendHeadersHandler( details ) {
         try {
             details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
@@ -220,7 +226,7 @@ export default class Request {
 
         // Remove accidently added headers from opened developer console
         for( let header in details.requestHeaders ) {
-            if( header.startsWith( 'X-DevTools' )  ) {
+            if( header.startsWith( 'X-DevTools' ) ) {
                 delete details.requestHeaders[header];
             }
         }
@@ -241,16 +247,16 @@ export default class Request {
             delete details.requestHeaders['x-user-agent'];
         }
 
-        // Overwrite the Referer header, but
-        // NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
+        /*
+         * Overwrite the Referer header, but
+         * NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
+         */
         if( !uri.pathname.includes( 'chk_jschl' ) ) {
-            // Priority 1
-            // Force referer for certain hosts
+            // Priority 1: Force referer for certain hosts
             if( uri.hostname.includes( '.mcloud.to' ) ) {
                 details.requestHeaders['Referer'] = uri.href;
             }
-            // Priority 2
-            // Use referer provided by connector
+            // Priority 2: Use referer provided by connector
             else if( details.requestHeaders['x-referer'] ) {
                 details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
             }
@@ -287,15 +293,19 @@ export default class Request {
         }
         let uri = new URL( details.url );
 
-        // Some video sreaming sites (Streamango, OpenVideo) using 'X-Redirect' header instead of 'Location' header,
-        // but fetch API only follows 'Location' header redirects => assign redirect to location
+        /*
+         * Some video sreaming sites (Streamango, OpenVideo) using 'X-Redirect' header instead of 'Location' header,
+         * but fetch API only follows 'Location' header redirects => assign redirect to location
+         */
         let redirect = details.responseHeaders['X-Redirect'] || details.responseHeaders['x-redirect'];
         if( redirect ) {
             details.responseHeaders['Location'] = redirect;
         }
         if( uri.hostname.includes( 'mp4upload' ) ) {
-            //details.responseHeaders['Access-Control-Allow-Origin'] = '*';
-            //details.responseHeaders['Access-Control-Allow-Methods'] = 'HEAD, GET';
+            /*
+             *details.responseHeaders['Access-Control-Allow-Origin'] = '*';
+             *details.responseHeaders['Access-Control-Allow-Methods'] = 'HEAD, GET';
+             */
             details.responseHeaders['Access-Control-Expose-Headers'] = ['Content-Length'];
         }
 

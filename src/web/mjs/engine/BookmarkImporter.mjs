@@ -2,8 +2,10 @@ export default class BookmarkImporter {
 
     // TODO: use dependency injection instead of globals for Engine.BookmarkManager
     constructor() {
-        // A map from FMD connector IDs to HakuNeko connector IDs
-        // The key is based on FMD connector IDs
+        /*
+         * A map from FMD connector IDs to HakuNeko connector IDs
+         * The key is based on FMD connector IDs
+         */
         this._connectorMap = {
             '3asq': 'mangalover-archive',
             '3asqorg': 'mangalover',
@@ -77,8 +79,10 @@ export default class BookmarkImporter {
             'yaoichanru': 'yaoichan',
             'yuri-ism': 'yuriism'
         };
-        // A map of converter functions to transform FMD manga IDs to HakuNeko manga IDs
-        // The key is based on HakuNeko connector IDs
+        /*
+         * A map of converter functions to transform FMD manga IDs to HakuNeko manga IDs
+         * The key is based on HakuNeko connector IDs
+         */
         this._mangaMap = {
             'mangadex': id => id.match( /^\/[a-z]+\/(\d+)($|\/.*$)/ )[1],
             'mangarock': id => id.split( '/' ).pop(),
@@ -110,21 +114,6 @@ export default class BookmarkImporter {
     /**
      *
      */
-    _importBoommarksJSON( file ) {
-        throw new Error( 'Not implemented!' );
-        /*
-        console.log( '_importBoommarksJSON' );
-        let fileReader = new FileReader();
-        fileReader.onload = event => {
-            console.log( 'File Loaded (JSON)', event.currentTarget.result );
-        };
-        fileReader.readAsText( file );
-        */
-    }
-
-    /**
-     *
-     */
     _importBookmarksFMD( file ) {
         let fileReader = new FileReader();
         fileReader.onload = event => {
@@ -135,7 +124,7 @@ export default class BookmarkImporter {
             let rows = result[0].values;
             let bookmarks = rows.map( row => {
                 // NOTE: due to a bug in FMD sometimes the connector has 'http' postfix which needs to be removed
-                let connectorID = this._mapFMDConnectorID( row[0].replace( /http[s]?\:/, '' ).split( '/' )[0] );
+                let connectorID = this._mapFMDConnectorID( row[0].replace( /http[s]?:/, '' ).split( '/' )[0] );
                 let mangaID = this._mapFMDMangaID( connectorID, ( new URL( row[1], 'http://hostname.dummy' ) ).pathname );
                 return {
                     key: {
