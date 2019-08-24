@@ -33,7 +33,7 @@ export default class ChaptermarkManager {
         Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
             .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
-                if( typeof( callback ) === typeof( Function ) ) {
+                if( typeof callback === typeof Function ) {
                     callback( null );
                 }
             } )
@@ -44,7 +44,7 @@ export default class ChaptermarkManager {
 
     _getChapterIdentifier( chapter ) {
         // some chapters are using objects as ID, these will provide a hash as identifier
-        return ( chapter.id.hash || chapter.id );
+        return chapter.id.hash || chapter.id ;
     }
 
     isChapterMarked( chapter, mark ) {
@@ -67,18 +67,18 @@ export default class ChaptermarkManager {
                     }
                     this.chaptermarks = data;
                     document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
-                    if( typeof( callback ) === typeof( Function ) ) {
+                    if( typeof callback === typeof Function ) {
                         callback( null );
                     }
                 } catch( e ) {
                     console.error( 'Failed to load chaptermarks:', e.message );
-                    if( typeof( callback ) === typeof( Function ) ) {
+                    if( typeof callback === typeof Function ) {
                         callback( e );
                     }
                 }
             } )
             .catch( error => {
-                if( typeof( callback ) === typeof( Function ) ) {
+                if( typeof callback === typeof Function ) {
                     callback( error );
                 }
             } );
@@ -91,7 +91,7 @@ export default class ChaptermarkManager {
         let chaptermark = undefined;
         if( manga ) {
             chaptermark = this.chaptermarks.find( mark => {
-                return ( mark.mangaID === manga.id && mark.connectorID === manga.connector.id );
+                return mark.mangaID === manga.id && mark.connectorID === manga.connector.id ;
             } );
             // backward compatibility (old chaptermarks don't have a title)
             if( chaptermark ) {

@@ -19,12 +19,12 @@ export default class BookmarkManager {
         let dropped = '';
         bookmarks.forEach( bookmark => {
             // check if connector / website is supported
-            let supported = Engine.Connectors.findIndex( c => ( c.id === bookmark.key.connector ) ) > -1;
+            let supported = Engine.Connectors.findIndex( c => c.id === bookmark.key.connector ) > -1;
             if( !supported ) {
                 dropped += `<tr><td style="color: #808080; font-weight: bold; padding-right: 1em;">${ bookmark.title.connector }</td><td>${ bookmark.title.manga }</td></tr>`;
             }
             // check if bookmark does not exist
-            let exist = this.bookmarks.findIndex( b => ( bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector ) ) > -1;
+            let exist = this.bookmarks.findIndex( b => bookmark.key.manga === b.key.manga && bookmark.key.connector === b.key.connector ) > -1;
             if( exist ) {
                 exists += `<tr><td style="color: #808080; font-weight: bold; padding-right: 1em;">${ bookmark.title.connector }</td><td>${ bookmark.title.manga }</td></tr>`;
             }
@@ -119,18 +119,18 @@ export default class BookmarkManager {
                     this.bookmarks = data;
                     this.bookmarks.sort( this.compareBookmarks );
                     document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
-                    if( typeof( callback ) === typeof( Function ) ) {
+                    if( typeof callback === typeof Function ) {
                         callback( null );
                     }
                 } catch( e ) {
                     console.error( 'Failed to load bookmarks:', e.message );
-                    if( typeof( callback ) === typeof( Function ) ) {
+                    if( typeof callback === typeof Function ) {
                         callback( e );
                     }
                 }
             } )
             .catch( error => {
-                if( typeof( callback ) === typeof( Function ) ) {
+                if( typeof callback === typeof Function ) {
                     callback( error );
                 }
             } );
@@ -145,13 +145,13 @@ export default class BookmarkManager {
         Engine.Storage.saveConfig( 'bookmarks', this.bookmarks, 2 )
             .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
-                if( typeof( callback ) === typeof( Function ) ) {
+                if( typeof callback === typeof Function ) {
                     callback( null );
                 }
             } )
             .catch( error => {
                 console.error( 'Failed to save bookmarks:', error.message );
-                if( typeof( callback ) === typeof( Function ) ) {
+                if( typeof callback === typeof Function ) {
                     callback( error );
                 }
             } );
@@ -165,7 +165,7 @@ export default class BookmarkManager {
             return false;
         }
         let index = this.bookmarks.findIndex( ( bookmark ) => {
-            return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
+            return bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id ;
         });
         if( index < 0 ) {
             this.bookmarks.push( new Bookmark( manga ) );
@@ -181,7 +181,7 @@ export default class BookmarkManager {
      */
     deleteBookmark( bookmark ) {
         let index = this.bookmarks.findIndex( ( b ) => {
-            return ( b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector );
+            return b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector ;
         });
         if( index > -1 ) {
             this.bookmarks.splice( index, 1 );
@@ -195,6 +195,6 @@ export default class BookmarkManager {
      * Helper function for sorting
      */
     compareBookmarks( a, b ) {
-        return ( a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 );
+        return a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 ;
     }
 }

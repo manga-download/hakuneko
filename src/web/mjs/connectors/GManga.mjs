@@ -78,8 +78,8 @@ export default class GManga extends Connector {
                 data = data[ 'isCompact' ] ? this._unpack( data ) : data;
                 let chapterList = data.mangaReleases.map( chapter => {
                     let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
-                    title += ( chapter.title ? ' - ' + chapter.title : '' );
-                    title += ( chapter.team_name ? ' [' + chapter.team_name + ']' : '' );
+                    title += chapter.title ? ' - ' + chapter.title : '' ;
+                    title += chapter.team_name ? ' [' + chapter.team_name + ']' : '' ;
                     return {
                         id: manga.id + '/chapter/' + chapter.chapter + '/' + chapter.team_name,
                         title: title,
@@ -104,7 +104,7 @@ export default class GManga extends Connector {
                 let pageList = data.match( /"hq_pages"\s*:\s*"(.*?)"\s*,/ )[1].split( '\\n' ).map( page => {
                     // TODO: Create protocol link and get keys ad-hoc per request, because of limited validity (lease time)
                     let uri = new URL( page.replace( '\\r', '' ).trim(), 'https://media.gmanga.me/uploads/releases/' );
-                    uri.searchParams.set( 'ak', parseInt( ( Date.now() ) / 1000 + 120 - 5 ).toString( '36' ) );
+                    uri.searchParams.set( 'ak', parseInt( Date.now() / 1000 + 120 - 5 ).toString( '36' ) );
                     return uri.href;
                 } );
                 callback( null, pageList );

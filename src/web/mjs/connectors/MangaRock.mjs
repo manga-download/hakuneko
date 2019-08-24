@@ -173,7 +173,7 @@ export default class MangaRock extends Connector {
             let n = encrypted.length + 7;
             let header = Uint8Array.of( 82, 73, 70, 70, n & 255, n >> 8 & 255, n >> 16 & 255, n >> 24 & 255, 87, 69, 66, 80, 86, 80, 56 );
             let data = encrypted.map( byte => {
-                return ( key ^ byte );
+                return key ^ byte ;
             } );
             decrypted.set( header, 0 );
             decrypted.set( data, header.length );

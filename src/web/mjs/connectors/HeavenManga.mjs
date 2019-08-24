@@ -92,7 +92,7 @@ export default class HeavenManga extends Connector {
     _getChapterList( manga, callback ) {
         this.fetchDOM( this.url + manga.id, 'div.pagination-container div.pagination a.next:last-of-type' )
             .then( data => {
-                let pageCount = ( data.length === 0 ? 1 : parseInt( data[0].href.match( /(\d+)$/ )[1] ) );
+                let pageCount = data.length === 0 ? 1 : parseInt( data[0].href.match( /(\d+)$/ )[1] ) ;
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => `${this.url}${manga.id}/page-${page + 1}/` );
                 return this._getChapterListFromPages( manga, pageLinks );
             } )

@@ -51,7 +51,7 @@ export default class NineAnime extends Connector {
      */
     get timestamp() {
         // set timestamp 12 hours to the past
-        return Math.floor(Date.now() / 3600000) * 3600 - (12 * 3600);
+        return Math.floor(Date.now() / 3600000) * 3600 - 12 * 3600;
     }
 
     /**

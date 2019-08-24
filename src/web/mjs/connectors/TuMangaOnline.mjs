@@ -101,7 +101,7 @@ export default class TuMangaOnline extends Connector {
                         let id = element.querySelector( 'div.text-right a' );
                         let language = element.querySelector( 'i.flag-icon' );
                         let scanlator = element.querySelector( 'div.text-truncate a' ).text.trim();
-                        scanlator = ( scanlator ? ' [' + scanlator + ']' : '' );
+                        scanlator = scanlator ? ' [' + scanlator + ']' : '' ;
                         return {
                             id: this.getRelativeLink( id ).replace( /paginated\/?\d*$/, '/cascade' ),
                             title: title.replace( manga.title, '' ).trim() + scanlator,

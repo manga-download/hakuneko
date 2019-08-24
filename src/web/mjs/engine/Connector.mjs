@@ -127,7 +127,7 @@ export default class Connector {
                     } );
                     // sort by title
                     mangas.sort( ( a, b ) => {
-                        return ( a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 );
+                        return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 ;
                     } );
 
                     this.mangaCache = undefined;
@@ -166,7 +166,7 @@ export default class Connector {
             .then( existingMangaTitles => {
                 this.existingManga = existingMangaTitles;
                 // check if manga list is cached
-                return ( this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() );
+                return this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() ;
             } )
             .then( mangas => {
                 callback( null, mangas );
@@ -315,7 +315,7 @@ export default class Connector {
 
             // case: element.href => absolute link that contains base url of connector (e.g. http://connector.net/sub/page.html)
             if( refURI.hostname === baseURI.hostname ) {
-                return (refURI.pathname + refURI.search + refURI.hash);
+                return refURI.pathname + refURI.search + refURI.hash;
             } else {
                 return refURI.href;
             }
@@ -381,8 +381,8 @@ export default class Connector {
      *       => do not forget to remove this prefix from the links!
      */
     createDOM( content, replaceImageTags, clearIframettributes ) {
-        replaceImageTags = ( replaceImageTags !== undefined ? replaceImageTags : true );
-        clearIframettributes = ( clearIframettributes !== undefined ? clearIframettributes : true );
+        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true ;
+        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true ;
         if( replaceImageTags ) {
             content = content.replace( /<img/g, '<source');
             content = content.replace( /<\/img/g, '</source');

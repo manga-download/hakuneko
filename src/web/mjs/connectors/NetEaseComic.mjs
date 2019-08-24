@@ -88,7 +88,7 @@ export default class NetEaseComic extends Connector {
                 // NOTE: sections are nested, top level section seems to be a single fake container
                 let chapterList = data.catalog.sections[0].sections
                     .filter( section => {
-                        return ( section.price === 0 || section.needPay === 0 );
+                        return section.price === 0 || section.needPay === 0 ;
                     } )
                     .map( section => {
                         return {

@@ -94,7 +94,7 @@ export default class Storage {
             defaultPath: rootPath,
             properties: ['openDirectory']
         });
-        return ( directory && directory.length > 0 ? directory[0] : rootPath );
+        return directory && directory.length > 0 ? directory[0] : rootPath ;
     }
 
     /**
@@ -500,7 +500,7 @@ export default class Storage {
      * Add all images as PDF pages to the given document.
      */
     _addImagesToPDF( pdfDocument, pageData, pageIndex ) {
-        if( typeof( pageIndex ) !== 'number' ) {
+        if( typeof pageIndex !== 'number' ) {
             pageIndex = 0;
         }
         if( pageIndex < 0 ) {

@@ -60,10 +60,10 @@ export default class Manga {
     isChapterFileCached( fileName ) {
         // use !! to convert result to bool
         return !!this.chapterCache.find( chapter => {
-            return ( fileName === chapter.file.full
+            return fileName === chapter.file.full
                 || fileName === chapter.file.name + EpisodeFormat.mp4
                 || fileName === chapter.file.name + EpisodeFormat.mkv
-                || fileName === chapter.file.name + EpisodeFormat.m3u8 );
+                || fileName === chapter.file.name + EpisodeFormat.m3u8 ;
         } );
     }
 
@@ -81,7 +81,7 @@ export default class Manga {
             .then( existingChapterTitles => {
                 this.existingChapters = existingChapterTitles;
                 // check if chapter list is cached
-                return ( this.chapterCache && this.chapterCache.length ? this._getUpdatedChaptersFromCache() : this._getUpdatedChaptersFromWebsite() );
+                return this.chapterCache && this.chapterCache.length ? this._getUpdatedChaptersFromCache() : this._getUpdatedChaptersFromWebsite() ;
             } )
             .then( () => {
                 for( let existingChapterTitle in this.existingChapters ) {
@@ -159,7 +159,7 @@ export default class Manga {
         // extract volume number
         let volume = name.match( reVol );
         if( volume && volume.length > 1 ) {
-            volume = ( volume[1] ? volume[1] : '' );
+            volume = volume[1] ? volume[1] : '' ;
         } else {
             volume = '';
         }
@@ -169,7 +169,7 @@ export default class Manga {
         // extract chapter number
         let chapter = name.match( reCh );
         if( chapter && chapter.length > 1 ) {
-            chapter = ( chapter[1] ? chapter[1] : '' );
+            chapter = chapter[1] ? chapter[1] : '' ;
         } else {
             chapter = '';
         }
@@ -192,7 +192,7 @@ export default class Manga {
      */
     _padNumberPrefixWithZeros( text, digits ) {
         let prefix = text.toString().match( /^\d+/ );
-        let count = ( prefix && prefix.length > 0 ? prefix[0].length : 0 );
+        let count = prefix && prefix.length > 0 ? prefix[0].length : 0 ;
         count = Math.min( digits, count );
         return '0'.repeat( digits - count ) + text;
     }

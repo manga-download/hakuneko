@@ -74,7 +74,7 @@ export default class MangaGoCDN extends Connector {
             } )
             .then( data => {
                 // use the mangago protocol for images (=> de-scramble images with mangago connector)
-                let mangago = Engine.Connectors.find( connector => ( connector instanceof MangaGo ) );
+                let mangago = Engine.Connectors.find( connector => connector instanceof MangaGo );
                 let pages = data.map( page => {
                     let uri = new URL( page );
                     uri.protocol = mangago.id;

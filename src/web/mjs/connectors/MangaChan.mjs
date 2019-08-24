@@ -52,7 +52,7 @@ export default class MangaChan extends Connector {
         this.fetchDOM( request, 'div#pagination span a:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + '?offset=' + ( page * 20 ) );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + '?offset=' + page * 20 );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

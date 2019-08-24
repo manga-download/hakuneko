@@ -165,7 +165,7 @@ export default class Lezhin extends Connector {
             .then( response => response.text() )
             .then( data => {
                 let chapterList = JSON.parse( data.match( /"episodes"\s*:\s*(\[.*?\}\s*\])/ )[1] )
-                    .filter( chapter => !chapter.coin || ( chapter.freedAt && chapter.freedAt < Date.now() ) || subscription || purchased.includes( chapter.id ) )
+                    .filter( chapter => !chapter.coin || chapter.freedAt && chapter.freedAt < Date.now() || subscription || purchased.includes( chapter.id ) )
                     .map( chapter => {
                         return {
                             id: chapter.name, // chapter.id,

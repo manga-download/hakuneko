@@ -233,12 +233,12 @@ export default class Settings {
         Engine.Storage.saveConfig( 'settings', data, 2 )
             .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
-                if( typeof( callback ) === typeof( Function ) ) {
+                if( typeof callback === typeof Function ) {
                     callback( null );
                 }
             } )
             .catch( error => {
-                if( typeof( callback ) === typeof( Function ) ) {
+                if( typeof callback === typeof Function ) {
                     callback( error );
                 }
             } );

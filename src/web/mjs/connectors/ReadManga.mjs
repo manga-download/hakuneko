@@ -45,7 +45,7 @@ export default class ReadManga extends Connector {
                     let h4 = element.querySelector( 'h4' );
                     return {
                         id: this.getRelativeLink( a ),
-                        title: ( this.preferSubtitleAsMangaTitle && h4 ? h4.title : a.title )
+                        title:  this.preferSubtitleAsMangaTitle && h4 ? h4.title : a.title
                     };
                 } );
                 if( index < mangaPageLinks.length - 1 ) {
@@ -64,7 +64,7 @@ export default class ReadManga extends Connector {
         this.fetchDOM( this.url + '/list', 'span.pagination a:nth-last-child(2)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/list?offset=' + ( page * 70 ) );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/list?offset=' + page * 70 );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

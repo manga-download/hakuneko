@@ -12,7 +12,7 @@ export default class DownloadJob {
         this.requestOptions = chapter.manga.connector.requestOptions || {};
         // TODO: initialize requestOptions.headers = new Headers() if not set
         this.chunkSize = 1048576; // 1 MB
-        this.throttle = ( chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50 );
+        this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50 ;
         this.status = undefined;
         this.progress = 0;
         this.errors = [];
@@ -23,7 +23,7 @@ export default class DownloadJob {
      */
     isSame( job ) {
         // comparing chapter objects works, because chapters for each manga are cached
-        return ( this.chapter === job.chapter);
+        return this.chapter === job.chapter;
         //return ( this.chapter.id === job.chapter.id && this.chapter.manga.id === job.chapter.manga.id && this.chapter.manga.connector.id === job.chapter.manga.connector.id );
     }
 
@@ -220,7 +220,7 @@ export default class DownloadJob {
                 let promises = episode.subtitles.map( ( subtitle, index ) => {
                     let file = 'media.' + subtitle.locale + '.' + subtitle.format;
                     ffmpeg.inputs.push( '-i', `"${file}"` );
-                    ffmpeg.maps.push( '-map', ( index + 1 ) + ':s' );
+                    ffmpeg.maps.push( '-map', index + 1 + ':s' );
                     ffmpeg.metas.push( '-metadata:s:s:' + index, 'language=' + subtitle.locale );
                     // make english the default subtitle
                     if( subtitle.locale.toLowerCase() === 'en-us' ) {

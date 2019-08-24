@@ -62,7 +62,7 @@ export default class CrunchyManga extends Connector {
             } )
             .then( data => {
                 this.token = data.auth;
-                this.subscription = ( data.user.premium.includes( this.subscriptionID ) );
+                this.subscription = data.user.premium.includes( this.subscriptionID ) ;
             } )
             .catch( error => {
                 console.warn( this.label + ' initialization failed!', error );
@@ -103,7 +103,7 @@ export default class CrunchyManga extends Connector {
                 let mangaList = data.map( manga => {
                     return {
                         id: manga.series_id,
-                        title: ( manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace( /^\// , '' ) )
+                        title:  manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace( /^\// , '' )
                     };
                 } );
                 callback( null, mangaList );
@@ -222,7 +222,7 @@ export default class CrunchyManga extends Connector {
         return fetch( uri.href, this.requestOptions )
             .then( response => response.json() )
             .then( data => {
-                if( data.error || ( data.code && data.code !== 'ok' ) ) {
+                if( data.error || data.code && data.code !== 'ok' ) {
                     throw new Error( data.code + ': ' + data.message );
                 }
                 return Promise.resolve( data.data || data );

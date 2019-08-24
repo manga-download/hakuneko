@@ -47,7 +47,7 @@ export default class FlatManga extends Connector {
             .then( data => {
                 let dom = this.createDOM( data );
                 let language = dom.querySelector( 'ul.manga-info h1 span.flag-icon' );
-                language = ( language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : this.language );
+                language = language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : this.language ;
                 let chapterList = [...dom.querySelectorAll( this.queryChapters )].map( element => {
                     let title = element.text.replace( manga.title, '' );
                     let mangaTitle = manga.title.replace( /\s*-\s*RAW$/, '' );

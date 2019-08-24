@@ -170,7 +170,7 @@ export default class MangaDex extends Connector {
             } )
             .then( data => {
                 if( data.status.toLowerCase() !== 'ok' ) {
-                    let message = data.status === 'external' ? 'External reference: ' + data.external : ( data[ 'message' ] || 'No information available' );
+                    let message = data.status === 'external' ? 'External reference: ' + data.external : data[ 'message' ] || 'No information available' ;
                     throw new Error( `Failed to receive ${label} list (status: ${data.status})\n${message}` );
                 }
                 return Promise.resolve( data );

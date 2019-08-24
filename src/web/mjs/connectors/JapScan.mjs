@@ -190,15 +190,15 @@ export default class JapScan extends Connector {
             // stuff from japscan script
             let w_p = Math.floor( width / 5 );
             let h_p = Math.floor( height / 5 );
-            let r_w = width - ( w_p * 5 );
+            let r_w = width - w_p * 5 ;
             //let r_h = height - ( h_p * 5 );
-            let offsetsX = [w_p*2, w_p*4, width, (w_p*8 + r_w), (w_p*6 + r_w)];
+            let offsetsX = [w_p*2, w_p*4, width, w_p*8 + r_w, w_p*6 + r_w];
             let offsetsY = [h_p*4, h_p*3, h_p*2, h_p, 0];
 
             let clipWidth = w_p;
             let clipHeight = h_p;
             // normalize background repeats
-            offsetsX = offsetsX.map( offset => ( offset % width ) );
+            offsetsX = offsetsX.map( offset => offset % width );
             offsetsY = offsetsY.map( offset => offset % height );
 
             let canvas = document.createElement( 'canvas' );
@@ -237,8 +237,8 @@ export default class JapScan extends Connector {
                 let imageY = this._getTilePosition(row, tileRowCount, tileHeight);
                 for (let column = 0; column < tileColumnCount; column++) {
                     let imageX = this._getTilePosition(column, tileColumnCount, tileWidth);
-                    let clipWidth = ( column == tileColumnCount - 1 && tileResidualWidth > 0 ? tileResidualWidth : tileWidth );
-                    let clipHeight = ( row == tileRowCount - 1 && tileResidualHeight > 0 ? tileResidualHeight : tileHeight );
+                    let clipWidth = column == tileColumnCount - 1 && tileResidualWidth > 0 ? tileResidualWidth : tileWidth ;
+                    let clipHeight = row == tileRowCount - 1 && tileResidualHeight > 0 ? tileResidualHeight : tileHeight ;
                     ctx.drawImage( bitmap, imageX, imageY, clipWidth, clipHeight, column * tileWidth/*canvasX*/, row * tileHeight/*canvasY*/, clipWidth, clipHeight );
                 }
             }
