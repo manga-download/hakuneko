@@ -19,7 +19,7 @@ steps:
   inputs:
     command: install
 
-- script: npm run lint:app
+- script: npm run lint
   displayName: 'Lint'
 
 - script: npm run build:app
