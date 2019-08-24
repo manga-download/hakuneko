@@ -3,17 +3,13 @@ import Bookmark from './Bookmark.mjs';
 export default class BookmarkManager {
 
     // TODO: use dependency injection instead of globals for Engine.Connetors, Engine.Storage
-    constructor() {
+    constructor(bookmarkImporter) {
         this.bookmarks = [];
+        this._bookmarkImporter = bookmarkImporter;
     }
 
-    /**
-     *
-     */
-    mergeBookmarks( bookmarks ) {
-        if( !bookmarks ) {
-            return;
-        }
+    async importBookmarks( file ) {
+        let bookmarks = await this._bookmarkImporter.importBookmarks( file );
         let added = '';
         let exists = '';
         let dropped = '';

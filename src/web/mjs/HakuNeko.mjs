@@ -22,8 +22,7 @@ export default class HakuNeko {
         this._enums = Enums;
 
         this._blacklist = new Blacklist();
-        this._bookmarkImporter = new BookmarkImporter();
-        this._bookmarkManager = new BookmarkManager();
+        this._bookmarkManager = new BookmarkManager( new BookmarkImporter() );
         this._chaptermarkManager = new ChaptermarkManager();
         this._downloadManager = new DownloadManager();
         this._request = new Request();
@@ -48,8 +47,6 @@ export default class HakuNeko {
         context.DownloadStatus = Enums.DownloadStatus;
         context.EventListener = Enums.EventListener;
 
-        // required by frontend/menu.html
-        context.BookmarkImporter = BookmarkImporter;
         // required in frontende/bookmarks.html
         context.Connector = Connector;
         // required by frontend/mangas.html
@@ -62,10 +59,6 @@ export default class HakuNeko {
 
     get Blacklist() {
         return this._blacklist;
-    }
-
-    get BookmarkImporter() {
-        return this._bookmarkImporter;
     }
 
     get BookmarkManager() {

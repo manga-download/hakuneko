@@ -21,7 +21,6 @@
         "HistoryFormat": "readonly",
         "DownloadStatus": "readonly",
         "EventListener": "readonly",
-        "BookmarkImporter": "readonly",
         "Connector": "readonly",
         "ClipboardConnector": "readonly"
     },

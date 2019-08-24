@@ -369,8 +369,7 @@
              */
             onImport( event ) {
                 try {
-                    let importer = new BookmarkImporter();
-                    importer.importBookmarks( event.target.files );
+                    Engine.BookmarkManager.importBookmarks( event.target.files[0] );
                 } catch( e ) {
                     alert( e.message );
                 } finally {
