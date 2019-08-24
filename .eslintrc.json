@@ -11,6 +11,7 @@
     "globals": {
         "CryptoJS":"readonly",
         "JSZip":"readonly",
+        "OAuth":"readonly",
         "jsPDF":"readonly",
         "HakuNeko": "readonly",
         "Engine": "readonly",
