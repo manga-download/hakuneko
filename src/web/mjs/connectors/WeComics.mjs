@@ -115,6 +115,7 @@ class WeComics_Vendor {
     }
 
     static c(t) {
+        // eslint-disable-next-line no-control-regex
         if (/^[\x00-\x7f]*$/.test(t))
             return t;
         for (var e = [], n = t.length, r = 0, i = 0; r < n; ++r,
@@ -199,6 +200,7 @@ class WeComics_Vendor {
 
     static u(t, e) {
         return (void 0 === e || null === e || e < 0) && (e = t.length),
+        // eslint-disable-next-line no-control-regex
         0 === e ? "" : /^[\x00-\x7f]*$/.test(t) || !/^[\x00-\xff]*$/.test(t) ? e === t.length ? t : t.substr(0, e) : e < 65535 ? function(t, e) {
             for (var n = new Array(e), r = 0, i = 0, o = t.length; r < e && i < o; r++) {
                 var a = t.charCodeAt(i++);

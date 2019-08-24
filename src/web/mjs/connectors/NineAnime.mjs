@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-
+import Manga from '../engine/Manga.mjs';
 /**
  *
  */
@@ -57,7 +57,7 @@ export default class NineAnime extends Connector {
     /**
      *
      */
-    _onSettingsChanged( event ) {
+    _onSettingsChanged() {
         this.url = this.config.domain.value;
     }
 
@@ -210,7 +210,7 @@ export default class NineAnime extends Connector {
     /**
      *
      */
-    _getEpisodePrettyFast( link, resolution ) {
+    _getEpisodePrettyFast( link/*, resolution*/ ) {
         let request = new Request( link, this.requestOptions );
         request.headers.set( 'x-referer', this.url );
         return fetch( request )
@@ -240,7 +240,7 @@ export default class NineAnime extends Connector {
     /**
      *
      */
-    _getEpisodeOpenLoad( link, resolution ) {
+    _getEpisodeOpenLoad( link/*, resolution*/ ) {
         let script = `
                 new Promise( resolve => {
                     document.querySelector('div#videooverlay').click();
@@ -257,7 +257,7 @@ export default class NineAnime extends Connector {
     /**
      *
      */
-    _getEpisodeMyCloud( link, resolution ) {
+    _getEpisodeMyCloud( link/*, resolution*/ ) {
         let request = new Request( link, this.requestOptions );
         request.headers.set( 'x-referer', this.url );
         return fetch( request )
@@ -271,7 +271,7 @@ export default class NineAnime extends Connector {
                     .then( streamlist => {
                         let stream = streamlist.match( /^.*?\d+\.m3u8$/gm )[0].trim();
                         // stream => hls/480/480.m3u8 || hls/720/720.m3u8 || ...
-                        stream = playlist.replace( /[^\/]+$/, stream );
+                        stream = playlist.replace( /[^/]+$/, stream );
                         return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ stream ], subtitles: [] } );
                     } );
             } );
@@ -280,7 +280,7 @@ export default class NineAnime extends Connector {
     /**
      *
      */
-    _getEpisodeMp4upload( link, resolution ) {
+    _getEpisodeMp4upload( link/*, resolution*/ ) {
         let script = `
                 new Promise( resolve => {
                     resolve( document.querySelector('div#vid video#vid_html5_api').src );
@@ -296,7 +296,7 @@ export default class NineAnime extends Connector {
     /**
      *
      */
-    _getEpisodeStreamango( link, resolution ) {
+    _getEpisodeStreamango( link/*, resolution*/ ) {
         let script = `
                 new Promise( resolve => {
                     resolve( document.querySelector('video[id^="mgvideo"]').src );

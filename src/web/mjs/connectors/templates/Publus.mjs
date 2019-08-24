@@ -81,7 +81,7 @@ export default class Publus extends Connector {
     _descrambleImage( blob, path ) {
         return createImageBitmap( blob )
             .then( bitmap => {
-                return new Promise( ( resolve, reject ) => {
+                return new Promise( resolve => {
                     let canvas = document.createElement( 'canvas' );
                     canvas.width = bitmap.width;
                     canvas.height = bitmap.height;

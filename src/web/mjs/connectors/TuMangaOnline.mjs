@@ -103,7 +103,7 @@ export default class TuMangaOnline extends Connector {
                         let scanlator = element.querySelector( 'div.text-truncate a' ).text.trim();
                         scanlator = ( scanlator ? ' [' + scanlator + ']' : '' );
                         return {
-                            id: this.getRelativeLink( id ).replace( /paginated[\/]?\d*$/, '/cascade' ),
+                            id: this.getRelativeLink( id ).replace( /paginated\/?\d*$/, '/cascade' ),
                             title: title.replace( manga.title, '' ).trim() + scanlator,
                             language: language.className.match( /flag-icon-([a-z]+)/ )[1]
                         };
@@ -129,7 +129,7 @@ export default class TuMangaOnline extends Connector {
                 if( !response.redirected ) {
                     throw new Error( 'No redirect detected ...' + response.url );
                 }
-                request = new Request( response.url.replace( /paginated[\/]?\d*$/, 'cascade' ), this.requestOptions );
+                request = new Request( response.url.replace( /paginated\/?\d*$/, 'cascade' ), this.requestOptions );
                 return this.fetchDOM( request, 'div.viewer-image-container source' );
             } )
             .then( data => {

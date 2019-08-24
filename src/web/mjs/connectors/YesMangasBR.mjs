@@ -74,7 +74,7 @@ export default class YesMangasBR extends Connector { // extends MangaHost ?
                 let chapterList = data.map( element => {
                     return {
                         id: this.getRelativeLink( element ),
-                        title: element.title.replace( /^Ler\s+Online\s+\-\s+/, '' ).trim(),
+                        title: element.title.replace( /^Ler\s+Online\s+-\s+/, '' ).trim(),
                         language: 'pt'
                     };
                 } );
@@ -101,6 +101,7 @@ export default class YesMangasBR extends Connector { // extends MangaHost ?
                 let pageList = [];
                 let match = undefined;
                 let regex = new RegExp( /<img\s+id='img_\d+'\s+src='(.*?)'/g);
+                // eslint-disable-next-line no-cond-assign
                 while( match = regex.exec( data ) ) {
                     pageList.push( match[1] );
                 }

@@ -1,4 +1,5 @@
 import SpeedBinb from './templates/SpeedBinb.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *

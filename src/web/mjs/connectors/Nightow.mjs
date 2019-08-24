@@ -77,6 +77,7 @@ export default class Nightow extends Connector {
                 let pageList = [];
                 let match = undefined;
                 let regex = new RegExp( /imageArray\s*\[\s*\d+\s*\]\s*=\s*'(.*)'\s*;/g);
+                // eslint-disable-next-line no-cond-assign
                 while( match = regex.exec( data ) ) {
                     pageList.push( this.url + match[1] );
                 }

@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -84,7 +85,7 @@ export default class YaoiHavenReborn extends Connector {
      */
     _getChapterList( manga, callback ) {
         Promise.resolve()
-            .then( data => {
+            .then( () => {
                 let chapterList = [ {
                     id: manga.id,
                     title: manga.title,

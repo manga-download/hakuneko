@@ -78,6 +78,7 @@ export default class ScanManga extends Connector {
                 let pageList = [];
                 let match = undefined;
                 let regex = new RegExp( /\[\s*\d+\s*\]\s*=\s*['"](.*?zoneID.*?pageID.*?siteID.*?)['"]\s*;/g );
+                // eslint-disable-next-line no-cond-assign
                 while( match = regex.exec( data ) ) {
                     pageList.push( match[1] );
                 }

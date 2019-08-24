@@ -126,9 +126,10 @@ export default class MangaStream extends Connector {
             for( let i = forelast+1; i<=last; i++ ) {
                 result.push( `${partsLast}/${i}` );
             }
-        } finally {
-            return result;
+        } catch(error) {
+            //
         }
+        return result;
     }
 
     /**

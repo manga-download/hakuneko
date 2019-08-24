@@ -47,7 +47,7 @@ export default class MangaToon extends Connector {
      */
     _getMangaList( callback ) {
         this.fetchDOM( this.url + this.path, 'div.page div.next' )
-            .then( data => {
+            .then( () => {
                 let pageCount = 999;
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + page );
                 return this._getMangaListFromPages( pageLinks );
@@ -72,7 +72,7 @@ export default class MangaToon extends Connector {
         this.fetchDOM( this.url + manga.id + '/episodes', 'div.episodes-wrap a.episode-item' )
             .then( data => {
                 let chapterList = data.map( element => {
-                    let number = element.querySelector( 'div.item-left' ).innerText.trim();
+                    //let number = element.querySelector( 'div.item-left' ).innerText.trim();
                     let title = element.querySelector( 'div.item-right div.episode-title' ).innerText.trim();
                     return {
                         id: this.getRelativeLink( element ),

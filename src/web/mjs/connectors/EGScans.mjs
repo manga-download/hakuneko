@@ -72,6 +72,7 @@ export default class EGScans extends Connector {
                 let pageList = [];
                 let match = undefined;
                 let regex = new RegExp( /img_url\.push\s*\(\s*['"](.+)['"]\s*\)/g );
+                // eslint-disable-next-line no-cond-assign
                 while( match = regex.exec( data ) ) {
                     pageList.push( this.getAbsolutePath( match[1], this.url ) );
                 }

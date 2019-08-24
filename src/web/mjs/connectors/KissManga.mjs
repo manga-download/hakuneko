@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -37,7 +38,7 @@ export default class KissManga extends Connector {
     /**
      * Parameters mangalist and page should never be used by external calls.
      */
-    _getMangaList( callback, mangaList, page ) {
+    _getMangaList( callback ) {
         fetch( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {

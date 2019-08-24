@@ -25,7 +25,7 @@ export default class HoshiNoFansub extends FoolSlide {
         super._getMangaList( ( error, mangas ) => {
             if( !error && mangas instanceof Array ) {
                 mangas.forEach( m => {
-                    m.title = m.title.replace( /\s*[\(\[](completa|one[\s\-]?shot)[\]\)]\s*$/i, '' );
+                    m.title = m.title.replace( /\s*[([](completa|one[\s-]?shot)[\])]\s*$/i, '' );
                 } );
             }
             callback( error, mangas );

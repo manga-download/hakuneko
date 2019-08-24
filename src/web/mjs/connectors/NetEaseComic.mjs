@@ -32,12 +32,12 @@ export default class NetEaseComic extends Connector {
         return this.fetchJSON( uri.href, 5 )
             .then( data => {
                 let mangaList = data.books
-                    .filter( book => {
-                    /*
-                     * book.payType: 0
-                     * book.payTypeEnum: "FREE"
-                     * book.publishTime: "1430996543248"
-                     */
+                    .filter( (/*book*/) => {
+                        /*
+                         * book.payType: 0
+                         * book.payTypeEnum: "FREE"
+                         * book.publishTime: "1430996543248"
+                         */
                         return true;
                     } )
                     .map( book => {

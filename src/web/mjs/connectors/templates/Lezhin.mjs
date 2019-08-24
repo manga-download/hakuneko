@@ -154,10 +154,7 @@ export default class Lezhin extends Connector {
                             subscription = data.data.subscribed;
                             return Promise.resolve();
                         } )
-                        .catch( error => {
-                            //console.warn( error );
-                            return Promise.resolve();
-                        } );
+                        .catch( () => Promise.resolve() );
                     this.requestOptions.headers.delete( 'authorization' );
                     return promise;
                 } else {
@@ -212,11 +209,11 @@ export default class Lezhin extends Connector {
                  */
                 let pages = 0;
                 let path = '';
-                let q = 40;
+                //let q = 40;
                 if( data.data.extra.episode.scroll ) {
                     pages = data.data.extra.episode.scroll;
                     path = 'scroll';
-                    q = 30;
+                    //q = 30;
                 }
                 let pageList = [...( new Array( pages ) ).keys()].map( page => {
                     let uri = new URL( [this.cdnURL, 'v2/comics', comicID, 'episodes', episodeID, 'contents', path + 's', page + 1].join( '/' ) );

@@ -183,7 +183,7 @@ export default class JapScan extends Connector {
      *
      */
     _descrambleCR( bitmap ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             let width = bitmap.width;
             let height = bitmap.height;
 
@@ -191,7 +191,7 @@ export default class JapScan extends Connector {
             let w_p = Math.floor( width / 5 );
             let h_p = Math.floor( height / 5 );
             let r_w = width - ( w_p * 5 );
-            let r_h = height - ( h_p * 5 );
+            //let r_h = height - ( h_p * 5 );
             let offsetsX = [w_p*2, w_p*4, width, (w_p*8 + r_w), (w_p*6 + r_w)];
             let offsetsY = [h_p*4, h_p*3, h_p*2, h_p, 0];
 
@@ -220,7 +220,7 @@ export default class JapScan extends Connector {
      *
      */
     _descrambleCLEL( bitmap ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             let tileWidth = 100;
             let tileHeight = 100;
             let tileColumnCount = Math.ceil(bitmap.width / tileWidth);

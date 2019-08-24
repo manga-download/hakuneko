@@ -33,7 +33,7 @@ export default class HeavenManga2 extends Connector {
          * => always resolve
          */
         return Engine.Request.fetchUI( request, '' )
-            .catch( error => Promise.resolve() );
+            .catch( () => Promise.resolve() );
     }
 
     /**

@@ -111,7 +111,7 @@ export default class SpeedBinb extends Connector {
      *
      */
     _descramble_v016061( bitmap, views ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             let view = views[0];
             let canvas = document.createElement( 'canvas' );
             canvas.width = view.width;
@@ -158,7 +158,6 @@ export default class SpeedBinb extends Connector {
      *
      */
     _getPageList_v016130( chapterID, apiURL ) {
-        let config;
         let cid = new URL( chapterID, this.url ).searchParams.get( 'cid' );
         let sharingKey = this._tt( cid );
         let uri = new URL( apiURL, this.url );
@@ -258,7 +257,7 @@ export default class SpeedBinb extends Connector {
      */
     _process_v016130( scrambledImageURL ) {
         let uri = new URL( scrambledImageURL );
-        let request = new Request( uri.href, this.requestOptions );
+        //let request = new Request( uri.href, this.requestOptions );
         let descrambleKeyPair = JSON.parse( atob( uri.hash.slice( 1 ) ) );
         return fetch( scrambledImageURL, this.requestOptions )
             .then( response => response.blob() )
@@ -270,7 +269,7 @@ export default class SpeedBinb extends Connector {
      *
      */
     _descramble_v016130( bitmap, keys ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             let view = this._getImageDescrambleCoords(keys.s, keys.u, bitmap.width, bitmap.height );
 
             let canvas = document.createElement( 'canvas' );
@@ -336,6 +335,7 @@ export default class SpeedBinb extends Connector {
         }
         try {
             return JSON.parse(u);
+        // eslint-disable-next-line no-empty
         } catch (t) {}
         return null;
     }
@@ -662,6 +662,7 @@ var _speedbinb_h = function() {
         return !0;
     }
     ,
+    // eslint-disable-next-line no-unused-vars
     t.prototype.bt = function(t) {
         return !1;
     }

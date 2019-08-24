@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  * @author Neogeek
@@ -101,12 +102,12 @@ export default class MangaPark extends Connector {
                         let title = element.text.replace( manga.title, '' ).trim() + ` (${locale}) [${source}]`;
                         // remove last path element => show all images on single page
                         element.href = element.href.replace( /\/[^/]*$/, '' );
-	                    return {
-	                        id: this.getRelativeLink( element ),
-	                        title: title,
-	                        language: locale
-	                    };
-	                } );
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: title,
+                            language: locale
+                        };
+                    } );
                     chapterList = chapterList.concat( chapters );
                 } );
                 callback( null, chapterList );

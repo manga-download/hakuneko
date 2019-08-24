@@ -26,7 +26,7 @@ export default class Gntai extends BloggerManga {
      */
     _getChapterList( manga, callback ) {
         Promise.resolve()
-            .then( data => {
+            .then( () => {
                 let chapterList = [ {
                     id: manga.id,
                     title: manga.title,

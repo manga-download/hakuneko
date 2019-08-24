@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -34,7 +35,7 @@ export default class UraSunday extends Connector {
      */
     _getMangaList( callback ) {
         let request = new Request( this.url + '/list/index.html', this.requestOptions );
-        let promiseManga = this.fetchDOM( request, 'div#mainWrapper ul li.comicListWrapper div.comicListBox' )
+        /*let promiseManga = */this.fetchDOM( request, 'div#mainWrapper ul li.comicListWrapper div.comicListBox' )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {

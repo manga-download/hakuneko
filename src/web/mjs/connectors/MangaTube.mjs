@@ -32,9 +32,7 @@ export default class MangaTube extends Connector {
                 }
                 return response.text();
             } )
-            .then( data => {
-                return Promise.resolve( 75 );
-            } )
+            .then( () => Promise.resolve( 75 ) )
             .then( pageCount => {
                 this.requestOptions.method = 'POST';
                 this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
@@ -94,12 +92,12 @@ export default class MangaTube extends Connector {
                         let title = volume;
                         title += ( title && number ? ' ' : '' ) + number;
                         title += ( title && description ? ' - ' : '' ) + description;
-	                    return {
-	                        id: this.getRelativeLink( element ),
-	                        title: title.trim(),
-	                        language: 'de'
-	                    };
-	                } );
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: title.trim(),
+                            language: 'de'
+                        };
+                    } );
                     chapterList = chapterList.concat( chapters );
                 } );
                 callback( null, chapterList );

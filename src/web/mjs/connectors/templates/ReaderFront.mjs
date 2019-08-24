@@ -21,7 +21,7 @@ export default class ReaderFront extends Connector {
     /**
      *
      */
-    _getJsonResponse( payload, type ) {
+    _getJsonResponse( payload/*, type*/ ) {
         this.requestOptions.method = 'POST';
         this.requestOptions.body = JSON.stringify( payload );
         this.requestOptions.headers.set( 'content-type', 'application/json' );

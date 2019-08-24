@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -104,12 +105,12 @@ export default class MangaParkEN extends Connector {
                         element = element.querySelector( 'div.tit a.ch' );
                         // remove last path element => show all images on single page
                         element.href = element.href.replace( /\/[^/]*$/, '' );
-	                    return {
-	                        id: this.getRelativeLink( element ),
-	                        title: number + seperator + title + ` [${info}]`,
-	                        language: 'en'
-	                    };
-	                } );
+                        return {
+                            id: this.getRelativeLink( element ),
+                            title: number + seperator + title + ` [${info}]`,
+                            language: 'en'
+                        };
+                    } );
                     chapterList = chapterList.concat( chapters );
                 } );
                 callback( null, chapterList );

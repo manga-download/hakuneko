@@ -64,7 +64,7 @@ export default class BookmarkConnector {
                     manga.connector.existingMangas[ Engine.Storage.sanatizePath ( manga.title ) ] = true;
                     manga.updateStatus();
                 } )
-                .catch( error => { /* directory for bookmark does not yet exist */ } );
+                .catch( () => { /* directory for bookmark does not yet exist */ } );
             return manga;
         });
         mangas.sort( ( a, b ) => {

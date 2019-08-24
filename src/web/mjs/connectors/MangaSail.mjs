@@ -119,7 +119,7 @@ export default class MangaSail extends Connector {
     /**
      *
      */
-    _onSettingsChanged( event ) {
+    _onSettingsChanged() {
         if( this.config.username.value && this.config.password.value ) {
             fetch( this.url + '/user/logout', this.requestOptions )
                 .then( () => this.fetchDOM( this.url + '/user/login', 'form#user-login input' ) )

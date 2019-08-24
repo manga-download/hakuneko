@@ -1,4 +1,5 @@
 import Publus from './templates/Publus.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -20,7 +21,7 @@ export default class ComicEarthStar extends Publus {
      *
      */
     _getMangaFromURI( uri ) {
-        let id = uri.pathname.match( /\/([^\/]+)\/?$/ )[1];
+        let id = uri.pathname.match( /\/([^/]+)\/?$/ )[1];
         let request = new Request( this.url + '/json/contents/detail/' + id + '.json', this.requestOptions );
         return this.fetchJSON( request )
             .then( data => {

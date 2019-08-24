@@ -81,7 +81,6 @@ export default class MyReadingManga extends Connector {
                 ];
                 if( data.length > 0 ) {
                     chapterList = data.map( element => {
-                        let title = element.text.trim();
                         return {
                             id: this.getRelativeLink( element ),
                             title: element.text.trim(),

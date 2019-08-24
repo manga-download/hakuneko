@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -105,7 +106,7 @@ export default class MangaDex extends Connector {
     /**
      *
      */
-    _getChapterList( manga, callback, chapterList ) {
+    _getChapterList( manga, callback ) {
         this._requestAPI( this.url + '/api/manga/' + this._migratedMangaID( manga.id ), this.requestOptions, 'chapter' )
             .then( data => {
                 let chapterList = Object.keys( data.chapter ).map( id => {

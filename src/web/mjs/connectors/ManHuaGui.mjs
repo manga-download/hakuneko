@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -32,7 +33,7 @@ export default class ManHuaGui extends Connector {
     /**
      * Parameters mangalist and page should never be used by external calls.
      */
-    _getMangaList( callback, mangaList, page ) {
+    _getMangaList( callback ) {
         let request = new Request( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions );
         this.fetchJSON( request )
             .then( data => {

@@ -92,6 +92,7 @@ export default class RawSenManga extends Connector {
                 let pageList = [];
                 let match = undefined;
                 let regex = new RegExp( /{\s*url\s*:\s*"(http.*?)"\s*}/g );
+                // eslint-disable-next-line no-cond-assign
                 while( match = regex.exec( data ) ) {
                     pageList.push( match[1] );
                 }

@@ -43,7 +43,7 @@ export default class CrunchyManga extends Connector {
     /**
      *
      */
-    _onSettingsChanged( event ) {
+    _onSettingsChanged() {
         this._logout().then( () => this._login( this.config.username.value, this.config.password.value ) );
     }
 
@@ -52,7 +52,7 @@ export default class CrunchyManga extends Connector {
      * get full access to all chapters.
      */
     _login( username, password ) {
-        return this._crStartSession( [0,1].map(i => Math.random().toString(16).slice(-8)).join('') )
+        return this._crStartSession( [0,1].map(() => Math.random().toString(16).slice(-8)).join('') )
             .then( session => {
                 this.session = session;
                 if( !username || !password ) {

@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -167,7 +168,7 @@ export default class MangaRock extends Connector {
      *
      */
     _decryptImage( encrypted, key, mime ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             let decrypted = new Uint8Array( encrypted.length + 15 );
             let n = encrypted.length + 7;
             let header = Uint8Array.of( 82, 73, 70, 70, n & 255, n >> 8 & 255, n >> 16 & 255, n >> 24 & 255, 87, 69, 66, 80, 86, 80, 56 );

@@ -303,7 +303,7 @@ export default class VRV extends Connector {
     /**
      *
      */
-    _onSettingsChanged( e ) {
+    _onSettingsChanged() {
         this._login( this.config.username.value, this.config.password.value )
             .catch( error => {
                 console.warn( this.label + ' login failed!', error );
@@ -399,7 +399,7 @@ export default class VRV extends Connector {
      * get full access to all series.
      */
     _login( username, password ) {
-        return new Promise( ( resolve, reject ) => {
+        return new Promise( resolve => {
             this._logout();
             if( typeof( username ) === 'string' && username !== '' && typeof( password ) === 'string' && password !== '' ) {
                 resolve( {

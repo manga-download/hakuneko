@@ -80,7 +80,7 @@ export default class CoreView extends Connector {
                 domElement.innerHTML = content;
                 return Promise.resolve();
             } )
-            .catch( error => Promise.resolve() );
+            .catch( () => Promise.resolve() );
     }
 
     /**
@@ -181,7 +181,7 @@ export default class CoreView extends Connector {
     _descrambleImage( blob ) {
         return createImageBitmap( blob )
             .then( bitmap => {
-                return new Promise( ( resolve, reject ) => {
+                return new Promise( resolve => {
                     let canvas = document.createElement( 'canvas' );
                     canvas.width = bitmap.width;
                     canvas.height = bitmap.height;
