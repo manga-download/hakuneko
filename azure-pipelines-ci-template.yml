@@ -15,6 +15,9 @@ steps:
     command: install
   displayName: 'Install NPM Packages'
 
+- script: npm run lint:app
+  displayName: 'Lint'
+
 - script: npm run build:web
   displayName: 'Build (web)'
 

@@ -19,6 +19,9 @@ steps:
   inputs:
     command: install
 
+- script: npm run lint:app
+  displayName: 'Lint'
+
 - script: npm run build:app
   displayName: 'Build (app)'
 
