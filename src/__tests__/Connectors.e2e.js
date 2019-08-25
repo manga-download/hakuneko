@@ -33,6 +33,7 @@ describe("HakuNeko Engine", () => {
     beforeAll(async () => {
         //jest.clearAllMocks();
         spawn(command.app, command.args, command.opts);
+        await new Promise(resolve => setTimeout(resolve, 5000));
         browser = await puppeteer.connect(connection);
         [page] = await browser.pages();
     });
