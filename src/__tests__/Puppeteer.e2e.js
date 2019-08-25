@@ -23,6 +23,9 @@ const connection = {
     defaultViewport: null
 };
 
+test('Dummy', () => {});
+
+/*
 describe("Puppeteer", () => {
 
     jest.setTimeout(25000);
@@ -49,14 +52,27 @@ describe("Puppeteer", () => {
 
     describe('Started', function() {
 
-        it('should have visible window', async () => {
+        it('should have valid window', async () => {
             let title = await page.title();
             expect(title).toEqual('HakuNeko');
-            /*
-             *await page.waitForSelector("#demo");
-             *const text = await page.$eval("#demo", e => e.innerText);
-             *expect(text).toBe("Demo of Electron + Puppeteer + Jest.");
-             */
+            let connectors = await page.evaluate(() => Engine.Connectors.map(connector => connector.label));
+            expect(connectors.length > 400).toBeTruthy();
+
+            console.log('Connectors:', connectors);
+            let remoteConnectors = await page.evaluateHandle(() => Engine.Connectors);
+            console.log('Remote Connectors:', remoteConnectors);
+        });
+
+        it('should have available connectors', async () => {
+            let connectors = await page.evaluate(() => Engine.Connectors.map(connector => connector.id));
+            expect(connectors.length > 400).toBeTruthy();
+            expect(connectors.includes('bookmarks')).toBeTruthy();
+            expect(connectors.includes('folder_')).toBeTruthy();
+            expect(connectors.includes('mangadex')).toBeTruthy();
+
+            let remoteConnectors = await page.evaluateHandle(() => Engine.Connectors);
+            console.log('Remote Connectors:', remoteConnectors);
         });
     });
 });
+*/
