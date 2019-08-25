@@ -24,6 +24,7 @@
     "jszip": "latest",
     "polymer-build": "latest",
     "rcedit": "latest",
+    "spectron": "latest",
     "win-7zip": "latest"
   },
   "scripts": {
