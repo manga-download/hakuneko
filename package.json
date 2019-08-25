@@ -23,8 +23,8 @@
     "jest-junit": "latest",
     "jszip": "latest",
     "polymer-build": "latest",
+    "puppeteer-core": "latest",
     "rcedit": "latest",
-    "spectron": "latest",
     "win-7zip": "latest"
   },
   "scripts": {
