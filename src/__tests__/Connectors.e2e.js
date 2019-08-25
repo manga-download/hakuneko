@@ -27,20 +27,28 @@ describe("HakuNeko Engine", () => {
 
     jest.setTimeout(25000);
 
+    var process;
     var browser;
     var page;
 
+    // SetUp
     beforeAll(async () => {
         //jest.clearAllMocks();
-        spawn(command.app, command.args, command.opts);
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        process = spawn(command.app, command.args, command.opts);
+        await new Promise(resolve => setTimeout(resolve, 7500));
         browser = await puppeteer.connect(connection);
         [page] = await browser.pages();
     });
 
+    // TearDown
     afterAll(async () => {
-        await page.close();
-        await browser.close();
+        try {
+            await page.close();
+            await browser.close();
+        } catch(error) {
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            process.kill();
+        }
     });
 
     beforeEach(async () => {
