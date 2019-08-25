@@ -87,7 +87,7 @@ describe("HakuNeko Engine", () => {
                 });
             }, remoteChapter);
             expect(pages.length).toEqual(51);
-            pages.forEach(page => expect(page).toMatch(/^https:\/\/s1.mangadex.org\/data\/[0-9a-f]{32}\/R\d+\.jpg$/));
+            pages.forEach(page => expect(page).toMatch(/^https:\/\/s\d+.mangadex.org\/data\/[0-9a-f]{32}\/R\d+\.jpg$/));
         });
     });
 });
