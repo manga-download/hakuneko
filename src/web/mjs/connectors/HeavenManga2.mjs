@@ -13,7 +13,7 @@ export default class HeavenManga2 extends Connector {
         super.id = 'heavenmanga2';
         super.label = 'HeavenManga';
         this.tags = [ 'manga', 'spanish' ];
-        this.url = 'http://heavenmanga.com';
+        this.url = 'https://heavenmanga.com';
     }
 
     /**
@@ -87,10 +87,13 @@ export default class HeavenManga2 extends Connector {
         this.fetchDOM( request, 'div#cp.ad a#l' )
             .then( data => {
                 let uri = this.getAbsolutePath( data[0], request.url );
-                return this.fetchDOM( new Request( uri, this.requestOptions ), 'div.pagenav div.chaptercontrols select option' );
+                return fetch( new Request( uri, this.requestOptions ) );
             } )
+            .then( response => response.text() )
             .then( data => {
-                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.value, request.url ) ) );
+                let content = data.match( /var\s+pUrl\s*=\s*(\[[^\]]+?),?\]/ )[1] + ']';
+                let pageList = JSON.parse( content );
+                pageList = pageList.map( page => this.getAbsolutePath( page.imgURL, request.url ) );
                 callback( null, pageList );
             } )
             .catch( error => {
