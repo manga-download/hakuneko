@@ -101,17 +101,4 @@ export default class HeavenManga2 extends Connector {
                 callback( error, undefined );
             } );
     }
-
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        return this.fetchDOM( request, 'source#p' )
-            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
-    }
 }
