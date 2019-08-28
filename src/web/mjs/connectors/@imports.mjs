@@ -271,6 +271,7 @@ export default [
     '../connectors/ManhwaHentaiMe.mjs',
     '../connectors/Manhwascan.mjs',
     '../connectors/ManyToon.mjs',
+    '../connectors/MataKomik.mjs',
     '../connectors/MenudoFansub.mjs',
     '../connectors/MerakiScans.mjs',
     '../connectors/Mexat.mjs',
