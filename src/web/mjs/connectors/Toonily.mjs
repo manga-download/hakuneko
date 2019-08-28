@@ -14,5 +14,7 @@ export default class Toonily extends WordPressMadara {
         super.label = 'Toonily';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://toonily.com';
+
+        this.queryMangas = 'div.post-title h3 a';
     }
 }
