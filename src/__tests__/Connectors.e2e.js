@@ -101,17 +101,17 @@ describe("HakuNeko Engine", () => {
     describe('Connectors', function() {
 
         it('should support MangaDex', async () => {
-           await assertConnector(page, {
+            await assertConnector(page, {
                 connectorID: 'mangadex',
                 mangaURL: 'https://mangadex.org/title/20164/they-say-i-was-born-a-king-s-daughter',
                 chaptersMethod: 'shift' // first => shift, last => pop
-           }, {
+            }, {
                 connectorClass: 'MangaDex',
                 mangaTitle: '',
                 chapterTitle: '',
                 pageCount: 51,
                 pageMatcher: /^https:\/\/s\d+.mangadex.org\/data\/[0-9a-f]{32}\/R\d+\.jpg$/
-           });
+            });
         });
     });
 });
