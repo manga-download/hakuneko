@@ -1,4 +1,3 @@
-import officialPlugins from '../connectors/@imports.mjs'
 const systemPlugins = [
     '../connectors/system/BookmarkConnector.mjs',
     '../connectors/system/FolderConnector.mjs'
@@ -12,8 +11,13 @@ export default class Connectors {
     }
 
     async initialize() {
+        let response = await fetch('/mjs/connectors');
+        let plugins = await response.json();
+        plugins = plugins
+            .filter(plugin => !plugin.startsWith('.') && plugin.endsWith('.mjs'))
+            .map(plugin => '../connectors/' + plugin);
         await this.register(systemPlugins);
-        await this.register(officialPlugins);
+        await this.register(plugins);
     }
 
     get list() {
