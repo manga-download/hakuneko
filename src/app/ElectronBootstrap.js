@@ -14,7 +14,8 @@ module.exports = class ElectronBootstrap {
             {
                 scheme: this._configuration.applicationProtocol,
                 privileges: {
-                    standard: true
+                    standard: true,
+                    supportFetchAPI: true
                 }
             },
             {
