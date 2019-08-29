@@ -10,16 +10,11 @@ export default class NetEaseComic extends Connector {
      */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'neteasecomic';
         super.label = '网易漫画 (NetEase Comic)';
         this.tags = [ 'manga', 'chinese' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
-        this.url = 'https://manhua.163.com';
+        this.url = 'https://163.bilibili.com';
         this.token = '1dc94fcc556a17276b9882341fa9b6df'; // <input id="j-csrf" type="hidden" value="1dc94fcc556a17276b9882341fa9b6df" />
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
     }
 
     /**
