@@ -70,11 +70,20 @@ module.exports = class ElectronBootstrap {
         electron.protocol.registerBufferProtocol(this._configuration.applicationProtocol, async (request, callback) => {
             try {
                 let sub = path.normalize(new URL(request.url).pathname);
-                let file = path.join(this._configuration.applicationCacheDirectory, sub);
-                let buffer = await fs.readFile(file);
-                let mime = file.endsWith('.mjs') ? 'text/javascript' : ''; // leaving this blank seems to use autodetect
+                let endpoint = path.join(this._configuration.applicationCacheDirectory, sub);
+                let stats = await fs.stat(endpoint);
+                let mime;
+                let buffer;
+                if(stats.isDirectory()) {
+                    mime = 'application/json';
+                    buffer = Buffer.from(JSON.stringify(await fs.readdir(endpoint)));
+                }
+                if(stats.isFile()) {
+                    mime = endpoint.endsWith('.mjs') ? 'text/javascript' : '';
+                    buffer = await fs.readFile(endpoint);
+                }
                 callback({
-                    mimeType: mime,
+                    mimeType: mime, // leaving this blank seems to use autodetect
                     data: buffer
                 });
             } catch(error) {
