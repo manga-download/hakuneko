@@ -12,8 +12,8 @@ export default class KomikIndoWeb extends WordPressEManga {
         super();
         super.id = 'komikindoweb';
         super.label = 'KomikIndoWeb';
-        this.tags = [ 'manga', 'indonesian' ];
+        this.tags = [ 'manga', 'webtoon', 'indonesian' ];
         this.url = 'https://www.komikindo.web.id';
-        this.path = '/daftar-manga/?list';
+        this.path = '/daftar-komik/?list';
     }
 }
