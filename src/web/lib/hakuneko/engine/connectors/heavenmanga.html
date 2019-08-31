@@ -15,7 +15,24 @@
             super.id         = 'heavenmanga';
             super.label      = 'Heaven Manga';
             this.tags        = [ 'manga', 'english' ];
-            this.url         = 'http://ww2.heavenmanga.vip';
+            this.url         = 'http://ww1.heavenmanga.org';
+        }
+
+        _initializeConnector() {
+            /*
+            * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+            * => append random search parameter to avoid caching
+            */
+            let uri = new URL( this.url );
+            uri.searchParams.set( 'ts', Date.now() );
+            uri.searchParams.set( 'rd', Math.random() );
+            let request = new Request( uri.href, this.requestOptions );
+            return Engine.Request.fetchUI( request, '' )
+                .then(() => fetch(request))
+                .then(response => {
+                    this.url = new URL( response.url ).origin;
+                    return Promise.resolve();
+                });
         }
 
         /**
