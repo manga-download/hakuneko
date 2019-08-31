@@ -1,23 +1,16 @@
 import WordPressEManga from './templates/WordPressEManga.mjs';
 
-/**
- *
- */
 export default class KomikStation extends WordPressEManga {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'komikstation';
         super.label = 'KomikStation';
         this.tags = [ 'manga', 'indonesian' ];
-        // Private members for internal usage only (convenience)
         this.url = 'https://www.komikstation.com';
-        this.path = '/daftar-komik/';
+        this.path = '/manga/?list';
 
-        this.queryMangas = 'div#main div#content div.daftarkomik ul li a.series';
+        this.queryMangas = 'div#content div.soralist ul li a.series';
+        this.queryChapters = 'div.bxcl ul li span.lchx a';
     }
 }
