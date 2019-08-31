@@ -1,20 +1,25 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class PornComix extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'porncomix';
         super.label = 'PornComix';
         this.tags = [ 'hentai', 'english' ];
-        this.url = 'http://www.porncomix.info';
+        this.url = 'https://bestporncomix.com';
+        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecutive requests.',
+                input: Input.numeric,
+                min: 250,
+                max: 5000,
+                value: 500
+            }
+        };
     }
 
     /**
@@ -44,7 +49,8 @@ export default class PornComix extends Connector {
                     };
                 } );
                 if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                    return this.wait( this.config.throttle.value )
+                        .then(() => this._getMangaListFromPages( mangaPageLinks, index + 1 ))
                         .then( mangas => mangaList.concat( mangas ) );
                 } else {
                     return Promise.resolve( mangaList );
@@ -60,7 +66,7 @@ export default class PornComix extends Connector {
         this.fetchDOM( request, 'div.main div.content div.posts div.paginator a:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)\/?$/ )[1].trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + '/page/' + ( page + 1 ) + '/' );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
