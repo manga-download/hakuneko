@@ -88,7 +88,7 @@ export default class NetEaseComic extends Connector {
                     .map( section => {
                         return {
                             id: section.sectionId,
-                            title: section.title,
+                            title: section.title || section.fullTitle,
                             language: ''
                         };
                     } );
