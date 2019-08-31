@@ -93,7 +93,7 @@
                 .map( section => {
                     return {
                         id: section.sectionId,
-                        title: section.title,
+                        title: section.title || section.fullTitle,
                         language: ''
                     };
                 } );
