@@ -235,6 +235,11 @@ class ElectronPackagerLinux extends ElectronPackager {
                 suffix: 'linux_armv7l',
                 platform: 'linux-armv7l'
             },
+            'ARMHF': {
+                name: 'armhf',
+                suffix: 'linux_armhf',
+                platform: 'linux-armv7l'
+            },
             'ARMv8': {
                 name: 'arm64',
                 suffix: 'linux_arm64',
@@ -886,6 +891,7 @@ async function main() {
         await packager.buildDEB('64');
         await packager.buildDEB('32');
         await packager.buildDEB('ARMv8');
+        await packager.buildDEB('ARMHF');
         await packager.buildDEB('ARMv7');
         await packager.buildRPM('64');
         await packager.buildRPM('32');
