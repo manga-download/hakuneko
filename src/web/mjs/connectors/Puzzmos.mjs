@@ -2,6 +2,7 @@ import Connector from '../engine/Connector.mjs';
 
 /**
  * Seems to be customized FlatManga CMS
+ * Very similar to EpikManga
  */
 export default class Puzzmos extends Connector {
 

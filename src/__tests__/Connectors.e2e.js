@@ -113,5 +113,19 @@ describe("HakuNeko Engine", () => {
                 pageMatcher: /^https:\/\/s\d+.mangadex.org\/data\/[0-9a-f]{32}\/R\d+\.jpg$/
             });
         });
+
+        it('should support EpikManga', async () => {
+            await assertConnector(page, {
+                connectorID: 'epikmanga',
+                mangaURL: 'https://www.epikmanga.com/seri/battle-through-the-heavens',
+                chaptersMethod: 'pop' // first => shift, last => pop
+            }, {
+                connectorClass: 'EpikManga',
+                mangaTitle: 'Battle Through the Heavens',
+                chapterTitle: '#1 Artık Dahi Değil',
+                pageCount: 20,
+                pageMatcher: /^https:\/\/www\.epikmanga.com\/upload\/manga\/battle-through-the-heavens\/1\/\d+.jpg$/
+            });
+        });
     });
 });
