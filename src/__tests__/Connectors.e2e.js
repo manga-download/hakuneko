@@ -25,8 +25,6 @@ const connection = {
 
 async function assertConnector(browserPage, parameters, expectations) {
 
-    // or use an all in one method that runs fully in renderer scope?
-
     // get connector for website as reference to the remote instance
     let remoteConnector = await browserPage.evaluateHandle(connectorID => {
         return Engine.Connectors.find(connector => connector.id === connectorID);
@@ -38,6 +36,10 @@ async function assertConnector(browserPage, parameters, expectations) {
         return connector.getMangaFromURI(new URL(mangaURL));
     }, remoteConnector, parameters.mangaURL);
     expect(remoteManga._remoteObject.className).toEqual('Manga');
+    let remoteMangaID = await (await remoteManga.getProperty('id')).jsonValue();
+    let remoteMangaTitle = await (await remoteManga.getProperty('title')).jsonValue();
+    expect(remoteMangaID).toEqual(expectations.mangaID);
+    expect(remoteMangaTitle).toEqual(expectations.mangaTitle);
 
     // get chapters for manga as reference to the remote instance
     let remoteChapters = await browserPage.evaluateHandle(manga => {
@@ -48,11 +50,15 @@ async function assertConnector(browserPage, parameters, expectations) {
     expect(remoteChapters._remoteObject.className).toEqual('Array');
 
     // get first chapter for chapters as reference to the remote instance
-    let remoteChapter = await browserPage.evaluateHandle((chapters, chaptersMethod) => {
+    let remoteChapter = await browserPage.evaluateHandle((chapters, chaptersAccessor) => {
         // first => shift, last => pop, INT => getAtIndex
-        return chapters[chaptersMethod]();
-    }, remoteChapters, parameters.chaptersMethod);
+        return Number.isInteger(chaptersAccessor) ? chapters[chaptersAccessor] : chapters[chaptersAccessor]();
+    }, remoteChapters, parameters.chaptersAccessor);
     expect(remoteChapter._remoteObject.className).toEqual('Chapter');
+    let remoteChapterID = await (await remoteChapter.getProperty('id')).jsonValue();
+    let remoteChapterTitle = await (await remoteChapter.getProperty('title')).jsonValue();
+    expect(remoteChapterID).toEqual(expectations.chapterID);
+    expect(remoteChapterTitle).toEqual(expectations.chapterTitle);
 
     // get pages for chapter as reference to the remote instance
     let pages = await browserPage.evaluate(chapter => {
@@ -104,11 +110,13 @@ describe("HakuNeko Engine", () => {
             await assertConnector(page, {
                 connectorID: 'mangadex',
                 mangaURL: 'https://mangadex.org/title/20164/they-say-i-was-born-a-king-s-daughter',
-                chaptersMethod: 'shift' // first => shift, last => pop
+                chaptersAccessor: 0 // first => shift, last => pop, index => Integer
             }, {
                 connectorClass: 'MangaDex',
-                mangaTitle: '',
-                chapterTitle: '',
+                mangaID: '20164',
+                mangaTitle: 'They Say I Was Born a King\'s Daughter',
+                chapterID: '534370',
+                chapterTitle: 'Ch.0001 (br) [Usagi Scan]',
                 pageCount: 51,
                 pageMatcher: /^https:\/\/s\d+.mangadex.org\/data\/[0-9a-f]{32}\/R\d+\.jpg$/
             });
@@ -118,10 +126,12 @@ describe("HakuNeko Engine", () => {
             await assertConnector(page, {
                 connectorID: 'epikmanga',
                 mangaURL: 'https://www.epikmanga.com/seri/battle-through-the-heavens',
-                chaptersMethod: 'pop' // first => shift, last => pop
+                chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
             }, {
                 connectorClass: 'EpikManga',
+                mangaID: '/seri/battle-through-the-heavens',
                 mangaTitle: 'Battle Through the Heavens',
+                chapterID: '/seri/battle-through-the-heavens/bolum/6',
                 chapterTitle: '#1 Artık Dahi Değil',
                 pageCount: 20,
                 pageMatcher: /^https:\/\/www\.epikmanga.com\/upload\/manga\/battle-through-the-heavens\/1\/\d+.jpg$/
