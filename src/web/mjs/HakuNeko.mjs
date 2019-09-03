@@ -1,6 +1,5 @@
 import Enums from './engine/Enums.mjs';
 import Connector from './engine/Connector.mjs';
-import ClipboardConnector from './connectors/system/ClipboardConnector.mjs';
 
 import Blacklist from './engine/Blacklist.mjs';
 import BookmarkImporter from './engine/BookmarkImporter.mjs';
