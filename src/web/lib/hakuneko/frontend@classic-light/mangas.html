@@ -188,7 +188,6 @@
                 // currently active manga list
                 this.mangaList = this['mangaList'];
                 // register callbacks for published events
-                document.addEventListener( 'paste', this.onPaste.bind( this ) );
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
             }
@@ -325,31 +324,12 @@
             /**
              *
              */
-            onPaste( e ) {
-                try {
-                    if( !e.path.includes( this ) ) {
-                        // neither this element nor any of its descandants are active
-                        return;
-                    }
-                    let mangaLinks = e.clipboardData.getData( 'text' ).split( '\n' );
-                    let clipboardConnector = new ClipboardConnector();
-                    if( clipboardConnector.initialize( mangaLinks ) ) {
-                        this.set( 'selectedConnector', clipboardConnector );
-                        e.preventDefault();
-                    };
-                } catch( error ) {
-                    // invalid clipboard data
+            onPasteClick(evt) {
+                let clipboardConnector = Engine.Connectors.find(connector => connector.id === 'clipboard');
+                if(true/*clipboard seems to have valid manga links*/) {
+                    this.set('selectedConnector', clipboardConnector);
+                    this.onUpdateMangaListClick(evt);
                 }
-            }
-
-            /**
-             *
-             */
-            onPasteClick( e ) {
-                // paste event seems only to work properly on input element ...
-                this.$.paste.focus();
-                document.execCommand( 'paste' );
-                this.$.paste.value = '';
             }
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );

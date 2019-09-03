@@ -1,6 +1,7 @@
 const systemPlugins = [
     '../connectors/system/BookmarkConnector.mjs',
-    '../connectors/system/FolderConnector.mjs'
+    '../connectors/system/FolderConnector.mjs',
+    '../connectors/system/ClipboardConnector.mjs'
 ];
 
 export default class Connectors {

@@ -47,10 +47,8 @@ export default class HakuNeko {
         context.DownloadStatus = Enums.DownloadStatus;
         context.EventListener = Enums.EventListener;
 
-        // required in frontende/bookmarks.html
+        // required in frontend/bookmarks.html
         context.Connector = Connector;
-        // required by frontend/mangas.html
-        context.ClipboardConnector = ClipboardConnector;
     }
 
     async initialize() {
