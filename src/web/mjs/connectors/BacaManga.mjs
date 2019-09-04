@@ -25,12 +25,16 @@ export default class BacaManga extends WordPressEManga {
      */
     _getPageList( manga, chapter, callback ) {
         let script = `
-                new Promise( resolve => {
-                    setTimeout( () => {
-                        resolve( [...document.querySelectorAll('div.maincontent div#readerarea p img')].map( img => img.src ) );
-                    }, 2500 );
-                } );
-            `;
+            new Promise(resolve => {
+                // "tratshcuot nwodyek nwodesuom evomesuom tratsllorcs unemtxetnoc sserpyek leehwno".split("").reverse().join("")
+                [
+                    'onwheel', 'keypress', 'contextmenu', 'scrollstart', 'mousemove', 'mousedown', 'keydown', 'touchstart'
+                ].forEach(evt => document.dispatchEvent(new Event(evt)));
+                setTimeout(() => {
+                    resolve([...document.querySelectorAll('div.maincontent div#readerarea p img')].map(img => img.src));
+                }, 2500);
+            });
+        `;
         let request = new Request( this.url + chapter.id, this.requestOptions );
         Engine.Request.fetchUI( request, script )
             .then( data => {
