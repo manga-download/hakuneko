@@ -231,6 +231,10 @@ export default class Request {
             }
         }
 
+        if(uri.hostname.match(/^i\d+\.wp\.com$/) ) {
+            details.requestHeaders['Accept'] = 'image/webp,image/apng,image/*,*/*';
+        }
+
         // Overwrite the Host header with the one provided by the connector
         if( details.requestHeaders['x-host'] ) {
             details.requestHeaders['Host'] = details.requestHeaders['x-host'];
