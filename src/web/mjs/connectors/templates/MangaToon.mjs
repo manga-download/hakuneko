@@ -7,8 +7,9 @@ export default class MangaToon extends Connector {
         super.id = 'mangatoon';
         super.label = 'MangaToon';
         this.tags = [];
-        this.url = 'https://mangatoon.mobi'; // WEEX + VUE mobile app => https://h5.mangatoon.mobi
-        this.path = '/en/genre?page=';
+        this.url = undefined; // WEEX + VUE mobile app => https://h5.mangatoon.mobi
+        this.baseURL = 'https://mangatoon.mobi';
+        this.path = undefined;
 
         this.lockImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMTAwIiB3aWR0aD0iMjAwIj48dGV4dCB4PSI1MCUiIHk9IjUwJSIgZHk9IjAuMjVlbSIgZmlsbD0icmVkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5DaGFwdGVyIGlzIExvY2tlZCE8L3RleHQ+PC9zdmc+';
     }
@@ -46,10 +47,10 @@ export default class MangaToon extends Connector {
      *
      */
     _getMangaList( callback ) {
-        this.fetchDOM( this.url + this.path, 'div.page div.next' )
+        this.fetchDOM( this.baseURL + this.path, 'div.page div.next' )
             .then( () => {
                 let pageCount = 999;
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + page );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.baseURL + this.path + page );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -69,7 +70,7 @@ export default class MangaToon extends Connector {
          * Alternative mobile request (id, token and signature calculations are all handled within the WEEX + VUE application => to much effort to break in):
          * https://sg.mangatoon.mobi/api/content/episodes?sign=e9da6de28b76408e77040935fd221cd3&id=5&_=1557650222&_v=1.3.6&_language=en&_token=4f9b604ed0055dd569105a7b32b6489c10&_udid=1246361632e50c7a9daef1e187471778
          */
-        this.fetchDOM( this.url + manga.id + '/episodes', 'div.episodes-wrap a.episode-item' )
+        this.fetchDOM( this.baseURL + manga.id + '/episodes', 'div.episodes-wrap a.episode-item' )
             .then( data => {
                 let chapterList = data.map( element => {
                     //let number = element.querySelector( 'div.item-left' ).innerText.trim();
@@ -92,7 +93,7 @@ export default class MangaToon extends Connector {
      *
      */
     _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
+        let request = new Request( this.baseURL + chapter.id, this.requestOptions );
         fetch( request )
             .then( response => response.text() )
             .then( data => {

@@ -13,6 +13,7 @@ export default class MangaToonES extends MangaToon {
         super.id = 'mangatoon-es';
         super.label = 'MangaToon (Spanish)';
         this.tags = [ 'webtoon', 'spanish' ];
+        this.url = 'https://mangatoon.mobi/es';
         this.path = '/es/genre?page=';
     }
 }
