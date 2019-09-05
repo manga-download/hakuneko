@@ -8,7 +8,7 @@ export default class WordPressMadara extends Connector {
         super.label = undefined;
         this.url = undefined;
 
-        this.queryMangas = 'div.post-title h5 a';
+        this.queryMangas = 'div.post-title h3 a, div.post-title h5 a';
         this.queryChapters = 'li.wp-manga-chapter > a';
         this.queryPages = 'div.page-break source';
 
