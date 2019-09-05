@@ -14,7 +14,5 @@ export default class ZinManga extends WordPressMadara {
         super.label = 'Zin Manga';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://zinmanga.com';
-
-        this.queryMangas = 'div.post-title h3 a';
     }
 }
