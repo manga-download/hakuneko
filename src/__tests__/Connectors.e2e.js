@@ -131,6 +131,22 @@ describe("HakuNeko Engine", () => {
             });
         });
 
+        it('should support MangaGo', async () => {
+            await assertConnector(page, {
+                connectorID: 'mangago',
+                mangaURL: 'http://www.mangago.me/read-manga/black_clover/',
+                chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+            }, {
+                connectorClass: 'MangaGo',
+                mangaID: '/read-manga/black_clover/',
+                mangaTitle: 'Black Clover',
+                chapterID: '/read-manga/black_clover/bt/314637/Ch1/',
+                chapterTitle: 'Ch.1  : The Boy\'s Vow',
+                pageCount: 51,
+                pageMatcher: /^http:\/\/iweb\d.mangapicgallery.com\/r\/newpiclink\/black_clover\/1\/[a-z0-9]{32}\.(?:png|jpg|jpeg)$/
+            });
+        });
+
         it('should support EpikManga', async () => {
             await assertConnector(page, {
                 connectorID: 'epikmanga',
