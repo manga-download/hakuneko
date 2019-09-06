@@ -67,6 +67,15 @@ async function assertConnector(browserPage, parameters, expectations) {
         });
     }, remoteChapter);
     expect(pages.length).toEqual(expectations.pageCount);
+    pages = pages.map(page => {
+        if(page.startsWith('connector://' + parameters.connectorID)) {
+            let payload = decodeURIComponent(page.split('payload=')[1]);
+            payload = JSON.parse(Buffer.from(payload, 'base64').toString());
+            return payload.url;
+        } else {
+            return page;
+        }
+    });
     pages.forEach(page => expect(page).toMatch(expectations.pageMatcher));
 }
 
