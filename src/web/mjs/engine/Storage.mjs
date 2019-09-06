@@ -85,16 +85,16 @@ export default class Storage {
     }
 
     /**
-     * https://github.com/electron/electron/blob/master/docs/api/dialog.md
+     * https://github.com/electron/electron/blob/master/docs/api/dialog.md#dialogshowopendialogbrowserwindow-options
      */
-    folderBrowser( rootPath ) {
-        let directory = this.dialog.showOpenDialog( {
+    async folderBrowser(rootPath) {
+        let result = await this.dialog.showOpenDialog({
             title: 'Download Directory for Mangas',
             //message: 'MESSAGE',
             defaultPath: rootPath,
             properties: ['openDirectory']
         });
-        return directory && directory.length > 0 ? directory[0] : rootPath ;
+        return !result.canceled && result.filePaths.length ? result.filePaths[0] : null;
     }
 
     /**
