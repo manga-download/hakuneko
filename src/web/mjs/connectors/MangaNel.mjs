@@ -2,25 +2,18 @@ import Connector from '../engine/Connector.mjs';
 
 /**
  * @author Neogeek
- * Aliases: MangaKakalot, MangaBat (prev. MangaSupa)
+ * Affiliates: MangaKakalot, MangaBat (prev. MangaSupa), MangaIro
  */
 export default class MangaNel extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'manganel';
-        super.label = 'MangaNel';
-        this.tags = [ 'manga', 'english' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
+        super.label = 'MangaNelo';
+        this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manganelo.com';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
 
+        this.path = '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=';
         this.queryMangasPageCount = 'div.group_page a.page_last:last-of-type';
         this.queryMangas = 'div.truyen-list h3 a';
         this.queryChapters = 'div.chapter-list div.row span a';
@@ -57,10 +50,10 @@ export default class MangaNel extends Connector {
      *
      */
     _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all', this.queryMangasPageCount )
+        this.fetchDOM( this.url + this.path + '1', this.queryMangasPageCount )
             .then( data => {
-                let pageCount = parseInt( new URL( data[0].href ).searchParams.get( 'page' ) );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=' + ( page + 1 ) );
+                let pageCount = parseInt( data[0].href.match( /\d+$/ ) );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
