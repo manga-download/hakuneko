@@ -1,20 +1,12 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import Genkan from './templates/Genkan.mjs';
 
-/**
- *
- */
-export default class WoweScans extends MangaReaderCMS {
+export default class WoweScans extends Genkan {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'wowescans';
         super.label = 'Wowe Scans';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-        this.url = 'https://wowescans.net';
-
-        this.language = 'en';
+        this.url = 'https://wowescans.co';
     }
 }
