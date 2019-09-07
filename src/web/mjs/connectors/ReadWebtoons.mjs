@@ -5,7 +5,7 @@ export default class ReadWebtoons extends WordPressMadara {
     constructor() {
         super();
         super.id = 'readwebtoons';
-        super.label = 'ReadWebtoons'
+        super.label = 'ReadWebtoons';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://readwebtoons.com';
 
