@@ -34,13 +34,8 @@ export default class Connector {
             // include credentials to apply cookies from browser window
             credentials: 'same-origin', // 'include',
             headers: new Headers()
-            /*
-             * body
-             * cache
-             * referrer
-             * integrity
-             */
         };
+        this.requestOptions.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
     }
 
     /**
