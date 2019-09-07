@@ -131,6 +131,22 @@ describe("HakuNeko Engine", () => {
             });
         });
 
+        it('should support KissManga', async () => {
+            await assertConnector(page, {
+                connectorID: 'kissmanga',
+                mangaURL: 'https://kissmanga.com/Manga/Black-Clover',
+                chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+            }, {
+                connectorClass: 'KissManga',
+                mangaID: '/Manga/Black-Clover',
+                mangaTitle: 'Black Clover',
+                chapterID: '/Manga/Black-Clover/Chapter-001?id=277498',
+                chapterTitle: '001',
+                pageCount: 50,
+                pageMatcher: /^http:\/\/2\.bp\.blogspot\.com\/-[a-zA-Z0-9_-]{11}\/Vjv[a-zA-Z0-9_-]{7}I\/AAAAAAAE[a-zA-Z0-9]{3}\/[a-zA-Z0-9_-]{11}\/s16000\/0001-0\d{2}.jpg$/
+            });
+        });
+
         it('should support MangaGo', async () => {
             await assertConnector(page, {
                 connectorID: 'mangago',
