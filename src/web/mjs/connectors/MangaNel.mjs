@@ -36,7 +36,7 @@ export default class MangaNel extends Connector {
                         id: this.getRelativeLink( element ),
                         title: element.text.trim()
                     };
-                } );
+                } ).filter(manga => manga.id.startsWith('/'));
                 if( index < mangaPageLinks.length - 1 ) {
                     return this._getMangaListFromPages( mangaPageLinks, index + 1 )
                         .then( mangas => mangas.concat( mangaList ) );
