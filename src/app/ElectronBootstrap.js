@@ -26,6 +26,10 @@ module.exports = class ElectronBootstrap {
                 }
             }
         ];
+        this.directoryMap = {
+            'cache': this._configuration.applicationCacheDirectory,
+            'plugins': this._configuration.applicationUserPluginsDirectory
+        };
     }
 
     /**
@@ -70,8 +74,11 @@ module.exports = class ElectronBootstrap {
     _registerCacheProtocol() {
         electron.protocol.registerBufferProtocol(this._configuration.applicationProtocol, async (request, callback) => {
             try {
-                let sub = path.normalize(new URL(request.url).pathname);
-                let endpoint = path.join(this._configuration.applicationCacheDirectory, sub);
+                let uri = new URL(request.url);
+                let endpoint = path.join(this.directoryMap[uri.hostname], path.normalize(uri.pathname));
+                if(!await fs.exists(endpoint)) {
+                    throw -6; // https://cs.chromium.org/chromium/src/net/base/net_error_list.h
+                }
                 let stats = await fs.stat(endpoint);
                 let mime;
                 let buffer;
@@ -88,7 +95,7 @@ module.exports = class ElectronBootstrap {
                     data: buffer
                 });
             } catch(error) {
-                callback(undefined);
+                callback(error);
             }
         });
     }
