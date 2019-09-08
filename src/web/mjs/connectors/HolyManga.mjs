@@ -7,6 +7,6 @@ export default class HolyManga extends HeavenManga {
         super.id = 'holymanga';
         super.label = 'HolyManga';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'http://ww4.holymanga.net';
+        this.url = 'https://ww5.holymanga.net';
     }
 }
