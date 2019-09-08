@@ -7,7 +7,7 @@ export default class HeavenManga extends Connector {
         super.id = 'heavenmanga';
         super.label = 'Heaven Manga';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'http://ww1.heavenmanga.org';
+        this.url = 'https://ww2.heavenmanga.org';
     }
 
     _initializeConnector() {
