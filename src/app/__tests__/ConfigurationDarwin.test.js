@@ -75,7 +75,7 @@ var suite = function() {
     describe('applicationProtocol', function() {
         it('should have default after initialization', () => {
             let testee = new Configuration(undefined);
-            expect(testee.applicationProtocol).toEqual('cache');
+            expect(testee.applicationProtocol).toEqual('hakuneko');
         });
         it('should be overwritten by startup URL from options', () => {
             let testee = new Configuration(expected);
@@ -108,7 +108,7 @@ var suite = function() {
     describe('applicationStartupURL', function() {
         it('should have default after initialization', () => {
             let testee = new Configuration(undefined);
-            expect(testee.applicationStartupURL).toEqual('cache://hakuneko/index.html');
+            expect(testee.applicationStartupURL).toEqual('hakuneko://cache/index.html');
         });
         it('should be overwritten by startup URL from options', () => {
             let testee = new Configuration(expected);
@@ -151,6 +151,25 @@ var suite = function() {
         it('should be overwritten by relative user data directory from options', () => {
             let testee = new Configuration({ applicationUserDataDirectory: '../data' });
             expect(testee.applicationUserDataDirectory).toEqual(path.resolve('/usr/data'));
+        });
+    });
+
+    describe('applicationUserPluginsDirectory', function() {
+        it('should have default after initialization', () => {
+            let testee = new Configuration(undefined);
+            expect(testee.applicationUserPluginsDirectory).toEqual(path.resolve(process.env.HOME, 'Library', 'Application Support', 'HakuNeko', 'hakuneko.plugins'));
+            expect(electron.app.getPath).toHaveBeenCalledTimes(3);
+            expect(electron.app.getPath).toHaveBeenCalledWith('exe');
+            expect(electron.app.getPath).toHaveBeenCalledWith('userData');
+            expect(electron.app.getPath).toHaveBeenCalledWith('userCache');
+        });
+        it('should be changed by absolute user data directory from options', () => {
+            let testee = new Configuration(expected);
+            expect(testee.applicationUserPluginsDirectory).toEqual(path.resolve(expected.applicationUserDataDirectory, 'hakuneko.plugins'));
+        });
+        it('should be changed by relative user data directory from options', () => {
+            let testee = new Configuration({ applicationUserDataDirectory: '../data' });
+            expect(testee.applicationUserPluginsDirectory).toEqual(path.resolve('/usr/data/hakuneko.plugins'));
         });
     });
 };
