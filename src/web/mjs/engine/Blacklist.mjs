@@ -29,7 +29,7 @@ export default class Blacklist {
             '*://*.cachefly.net/*',
             '*://*.casalemedia.com/*',
             '*://*.chatango.com/*',
-            '*://*.class2deal.net/*',
+            '*://*.class2deal.com/*',
             //'*://*.cloudfront.net/*',
             '*://*.cnzz.com/*',
             '*://*.cobalten.com/*',
