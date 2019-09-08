@@ -1,9 +1,3 @@
-const systemPlugins = [
-    '../connectors/system/BookmarkConnector.mjs',
-    '../connectors/system/FolderConnector.mjs',
-    '../connectors/system/ClipboardConnector.mjs'
-];
-
 export default class Connectors {
 
     constructor(request) {
@@ -11,14 +5,29 @@ export default class Connectors {
         this._list = [];
     }
 
+    async _loadPlugins(uri) {
+        try {
+            let response = await fetch(uri);
+            let data = await response.json();
+            return data.filter(plugin => !plugin.startsWith('.') && plugin.endsWith('.mjs')).map(plugin => uri + plugin)
+        } catch(error) {
+            //console.warn(error);
+            return [];
+        }
+    }
+
     async initialize() {
-        let response = await fetch('/mjs/connectors');
-        let plugins = await response.json();
-        plugins = plugins
-            .filter(plugin => !plugin.startsWith('.') && plugin.endsWith('.mjs'))
-            .map(plugin => '../connectors/' + plugin);
+        const systemPlugins = [
+            '../connectors/system/BookmarkConnector.mjs',
+            '../connectors/system/FolderConnector.mjs',
+            '../connectors/system/ClipboardConnector.mjs'
+        ];
+        let internalPlugins = await this._loadPlugins('hakuneko://cache/mjs/connectors/');
+        let userPlugins = await this._loadPlugins('hakuneko://plugins/');
+
         await this.register(systemPlugins);
-        await this.register(plugins);
+        await this.register(internalPlugins);
+        await this.register(userPlugins);
     }
 
     get list() {
