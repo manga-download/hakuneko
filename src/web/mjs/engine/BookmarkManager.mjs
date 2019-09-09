@@ -1,9 +1,13 @@
 import Bookmark from './Bookmark.mjs';
 
-export default class BookmarkManager {
+export default class BookmarkManager extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Connetors, Engine.Storage
     constructor(bookmarkImporter) {
+        super();
+        this.eventAdded = 'added';
+        this.eventRemoved = 'removed';
+        this.eventChanged = 'changed';
         this.bookmarks = [];
         this._bookmarkImporter = bookmarkImporter;
     }
@@ -114,7 +118,7 @@ export default class BookmarkManager {
                     }
                     this.bookmarks = data;
                     this.bookmarks.sort( this.compareBookmarks );
-                    document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                    this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.bookmarks } ) );
                     if( typeof callback === typeof Function ) {
                         callback( null );
                     }
@@ -140,7 +144,7 @@ export default class BookmarkManager {
     saveProfile( profile, callback ) {
         Engine.Storage.saveConfig( 'bookmarks', this.bookmarks, 2 )
             .then( () => {
-                document.dispatchEvent( new CustomEvent( EventListener.onBookmarksChanged, { detail: this.bookmarks } ) );
+                this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.bookmarks } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }
@@ -164,9 +168,11 @@ export default class BookmarkManager {
             return bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id ;
         });
         if( index < 0 ) {
-            this.bookmarks.push( new Bookmark( manga ) );
+            let bookmark = new Bookmark( manga );
+            this.bookmarks.push( bookmark );
             this.bookmarks.sort( this.compareBookmarks );
             this.saveProfile( 'default', undefined );
+            this.dispatchEvent( new CustomEvent( this.eventAdded, { detail: bookmark } ) );
             return true;
         }
         return false;
@@ -180,8 +186,10 @@ export default class BookmarkManager {
             return b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector ;
         });
         if( index > -1 ) {
+            let bookmark = this.bookmarks[index];
             this.bookmarks.splice( index, 1 );
             this.saveProfile( 'default', undefined );
+            this.dispatchEvent( new CustomEvent( this.eventRemoved, { detail: bookmark } ) );
             return true;
         }
         return false;

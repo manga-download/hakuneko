@@ -189,7 +189,7 @@
                 this.mangaList = this['mangaList'];
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
-                document.addEventListener( EventListener.onBookmarksChanged, this.onBookmarksChanged.bind( this ) );
+                Engine.BookmarkManager.addEventListener( 'changed', this.onBookmarksChanged.bind( this ) );
             }
 
             /**
