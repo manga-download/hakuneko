@@ -1,13 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class TuMangaOnline extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         // Public members for usage in UI (mandatory)
@@ -47,45 +41,15 @@ export default class TuMangaOnline extends Connector {
     /**
      *
      */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangaList(callback) {
+        try {
+            let response = await fetch('http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions);
+            let data = await response.json();
+            callback(null, data);
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.row div.element a', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    // use title attribute to avoid cf-mail decryption
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.querySelector( 'h4' ).title.trim()
-                    };
-                } );
-                if( mangaList.length > 0 && index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
-    }
-
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        Promise.resolve( 800 )
-            .then( pageCount => {
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/library?order_item=alphabetically&order_dir=asc&page=' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
     }
 
     /**
