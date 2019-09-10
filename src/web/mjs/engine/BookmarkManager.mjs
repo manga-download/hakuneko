@@ -186,7 +186,6 @@ export default class BookmarkManager extends EventTarget {
             return b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector ;
         });
         if( index > -1 ) {
-            let bookmark = this.bookmarks[index];
             this.bookmarks.splice( index, 1 );
             this.saveProfile( 'default', undefined );
             this.dispatchEvent( new CustomEvent( this.eventRemoved, { detail: bookmark } ) );
