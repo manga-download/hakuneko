@@ -30,6 +30,7 @@ module.exports = class ElectronBootstrap {
             'cache': this._configuration.applicationCacheDirectory,
             'plugins': this._configuration.applicationUserPluginsDirectory
         };
+        this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'logo.ico'));
     }
 
     /**
@@ -183,6 +184,7 @@ module.exports = class ElectronBootstrap {
             width: 1120,
             height: 680,
             title: 'HakuNeko',
+            icon: this._appIcon,
             show: false,
             backgroundColor: '#f8f8f8',
             webPreferences: {
