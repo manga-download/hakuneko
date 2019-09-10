@@ -32,7 +32,7 @@ module.exports = class ElectronBootstrap {
             'cache': this._configuration.applicationCacheDirectory,
             'plugins': this._configuration.applicationUserPluginsDirectory
         };
-        this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'logo.ico'));
+        this._appIcon;
         this._minimizeToTray = false; // only supported when tray is shown
         this._showTray = true;
         this._tray;
@@ -59,6 +59,7 @@ module.exports = class ElectronBootstrap {
 
         return new Promise(resolve => {
             electron.app.on('ready', () => {
+                this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'logo.ico'));
                 this._registerCacheProtocol();
                 this._createWindow();
                 resolve();
