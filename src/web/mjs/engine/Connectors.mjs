@@ -22,12 +22,12 @@ export default class Connectors {
             '../connectors/system/FolderConnector.mjs',
             '../connectors/system/ClipboardConnector.mjs'
         ];
-        let internalPlugins = await this._loadPlugins('hakuneko://cache/mjs/connectors/');
         let userPlugins = await this._loadPlugins('hakuneko://plugins/');
+        let internalPlugins = await this._loadPlugins('hakuneko://cache/mjs/connectors/');
 
         await this.register(systemPlugins);
-        await this.register(internalPlugins);
         await this.register(userPlugins);
+        await this.register(internalPlugins);
     }
 
     get list() {
