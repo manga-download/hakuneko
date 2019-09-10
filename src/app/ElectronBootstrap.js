@@ -26,7 +26,7 @@ module.exports = class ElectronBootstrap {
                 }
             }
         ];
-        this.directoryMap = {
+        this._directoryMap = {
             'cache': this._configuration.applicationCacheDirectory,
             'plugins': this._configuration.applicationUserPluginsDirectory
         };
@@ -76,7 +76,7 @@ module.exports = class ElectronBootstrap {
         electron.protocol.registerBufferProtocol(this._configuration.applicationProtocol, async (request, callback) => {
             try {
                 let uri = new URL(request.url);
-                let endpoint = path.join(this.directoryMap[uri.hostname], path.normalize(uri.pathname));
+                let endpoint = path.join(this._directoryMap[uri.hostname], path.normalize(uri.pathname));
                 if(!await fs.exists(endpoint)) {
                     throw -6; // https://cs.chromium.org/chromium/src/net/base/net_error_list.h
                 }
