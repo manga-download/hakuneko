@@ -1,7 +1,11 @@
-export default class ChaptermarkManager {
+export default class ChaptermarkManager extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Storage
     constructor() {
+        super();
+        //this.eventAdded = 'added';
+        //this.eventRemoved = 'removed';
+        this.eventChanged = 'changed';
         this.chaptermarks = [];
     }
 
@@ -32,7 +36,7 @@ export default class ChaptermarkManager {
     _syncChaptermarks( callback ) {
         Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
             .then( () => {
-                document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.chaptermarks } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }
@@ -66,7 +70,7 @@ export default class ChaptermarkManager {
                         throw new Error( 'Invalid chaptermark list!' );
                     }
                     this.chaptermarks = data;
-                    document.dispatchEvent( new CustomEvent( EventListener.onChaptermarksChanged, { detail: this.chaptermarks } ) );
+                    this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.chaptermarks } ) );
                     if( typeof callback === typeof Function ) {
                         callback( null );
                     }
@@ -119,6 +123,7 @@ export default class ChaptermarkManager {
             this.chaptermarks[index] = chaptermark;
         } else {
             this.chaptermarks.push( chaptermark );
+            //this.dispatchEvent( new CustomEvent( this.eventAdded, { detail: chaptermark } ) );
         }
         this._syncChaptermarks();
     }
@@ -130,6 +135,7 @@ export default class ChaptermarkManager {
         let index = this._findIndex( chaptermark );
         if( index > -1 ) {
             this.chaptermarks.splice( index, 1 );
+            //this.dispatchEvent( new CustomEvent( this.eventRemoved, { detail: chaptermark } ) );
             this._syncChaptermarks();
         }
     }

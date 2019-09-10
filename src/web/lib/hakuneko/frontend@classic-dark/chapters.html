@@ -217,7 +217,7 @@
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
                 document.addEventListener( EventListener.onRequestChapterUp, this.onRequestChapterUp.bind( this ) );
                 document.addEventListener( EventListener.onRequestChapterDown, this.onRequestChapterDown.bind( this ) );
-                document.addEventListener( EventListener.onChaptermarksChanged, this.onChaptermarksChanged.bind( this ) );
+                Engine.ChaptermarkManager.addEventListener( 'changed', this.onChaptermarksChanged.bind( this ) );
             }
 
             /**
