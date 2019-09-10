@@ -230,6 +230,7 @@ module.exports = class ElectronBootstrap {
         this._window.on('close', this._mainWindowCloseHandler.bind(this));
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
         this._window.on('restore', this._mainWindowRestoreHandler.bind(this));
+        this._window.on('maximize', this._mainWindowRestoreHandler.bind(this));
         this._window.on('minimize', this._mainWindowMinimizeHandler.bind(this));
         electron.ipcMain.on('quit', this._mainWindowQuitHandler.bind(this));
     }
