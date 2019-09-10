@@ -3,8 +3,8 @@ const fs = require('fs-extra');
 const electron = require('electron');
 const { ConsoleLogger } = require('@logtrine/logtrine');
 const urlFilterAll = { urls: ['http://*/*', 'https://*/*'] };
-const trayTooltipMinimize = 'HakuNeko\nClick to minimize to tray';
-const trayTooltipRestore = 'HakuNeko\nClick to restore from tray';
+const trayTooltipMinimize = 'HakuNeko\nClick to hide window';
+const trayTooltipRestore = 'HakuNeko\nClick to show window';
 
 module.exports = class ElectronBootstrap {
 
