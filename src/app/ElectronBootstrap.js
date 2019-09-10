@@ -3,6 +3,8 @@ const fs = require('fs-extra');
 const electron = require('electron');
 const { ConsoleLogger } = require('@logtrine/logtrine');
 const urlFilterAll = { urls: ['http://*/*', 'https://*/*'] };
+const trayTooltipMinimize = 'HakuNeko\nClick to minimize to tray';
+const trayTooltipRestore = 'HakuNeko\nClick to restore from tray';
 
 module.exports = class ElectronBootstrap {
 
@@ -31,6 +33,9 @@ module.exports = class ElectronBootstrap {
             'plugins': this._configuration.applicationUserPluginsDirectory
         };
         this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'logo.ico'));
+        this._minimizeToTray = false; // only supported when tray is shown
+        this._showTray = true;
+        this._tray;
     }
 
     /**
@@ -174,6 +179,28 @@ module.exports = class ElectronBootstrap {
 
     /**
      *
+     * @param {bool} showTray
+     */
+    _setupTray(showTray) {
+        if(showTray) {
+            this._tray = new electron.Tray(this._appIcon);
+            this._tray.setToolTip(trayTooltipMinimize);
+            this._tray.on('click', () => {
+                if(this._window.isMinimized() || !this._window.isVisible()) {
+                    this._tray.setToolTip(trayTooltipMinimize);
+                    this._window.show();
+                } else {
+                    this._tray.setToolTip(trayTooltipRestore);
+                    this._window.hide();
+                }
+            });
+        } else {
+            this._tray = undefined;
+        }
+    }
+
+    /**
+     *
      */
     _createWindow() {
         if(this._window) {
@@ -196,10 +223,13 @@ module.exports = class ElectronBootstrap {
 
         this._setupBeforeSendHeaders();
         this._setupHeadersReceived();
+        this._setupTray(this._showTray);
         this._window.setMenuBarVisibility(false);
         this._window.once('ready-to-show', () => this._window.show());
         this._window.on('close', this._mainWindowCloseHandler.bind(this));
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
+        this._window.on('restore', this._mainWindowRestoreHandler.bind(this));
+        this._window.on('minimize', this._mainWindowMinimizeHandler.bind(this));
         electron.ipcMain.on('quit', this._mainWindowQuitHandler.bind(this));
     }
 
@@ -235,6 +265,7 @@ module.exports = class ElectronBootstrap {
      * Exit the application forcefully without raising the close event handler
      */
     _mainWindowQuitHandler() {
+        this._tray && this._tray.destroy();
         /*
          * NOTE: removing a certain event handler seems not to work...
          *this._window.removeListener('close', this._mainWindowCloseHandler);
@@ -250,6 +281,29 @@ module.exports = class ElectronBootstrap {
         // close all existing windows
         electron.BrowserWindow.getAllWindows().forEach(window => window.close());
         this._window = null;
+    }
+
+    /**
+     *
+     */
+    _mainWindowRestoreHandler() {
+        if(this._tray && this._showTray) {
+            this._tray.setToolTip(trayTooltipMinimize);
+        }
+    }
+
+    /**
+     *
+     * @param {*} evt
+     */
+    _mainWindowMinimizeHandler(evt) {
+        if(this._tray && this._showTray) {
+            this._tray.setToolTip(trayTooltipRestore);
+            if(this._minimizeToTray) {
+                this._window.hide();
+                evt.preventDefault();
+            }
+        }
     }
 
     /**
