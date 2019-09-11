@@ -3,8 +3,10 @@ export default class ChaptermarkManager extends EventTarget {
     // TODO: use dependency injection instead of globals for Engine.Storage
     constructor() {
         super();
-        //this.eventAdded = 'added';
-        //this.eventRemoved = 'removed';
+        /*
+         *this.eventAdded = 'added';
+         *this.eventRemoved = 'removed';
+         */
         this.eventChanged = 'changed';
         this.chaptermarks = [];
     }
