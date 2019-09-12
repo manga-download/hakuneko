@@ -31,39 +31,33 @@
         /**
          *
          */
-        get script() {
+         get script() {
             return `
-                let result;
-                if( isbarchpater /*document.querySelector( 'div.cp-pager-list a[data-page]'*/ ) {
-                    result = new Promise( ( resolve, reject ) => {
-                        let images = document.querySelectorAll( 'div.reader-main img.reader-main-img' );
-                        images = [...images].map( image => new URL( image.dataset['src'], window.location.href ).href );
-                        resolve( images );
-                    } );
-                } else {
-                    let promises = [...( new Array( imagecount ) ).keys()].map( p => {
-                        return Promise.resolve()
-                        .then( () => {
-                            return {
-                                url: '${this.scriptSource}',
-                                data: {
-                                    cid: chapterid,
-                                    page: p+1,
-                                    key: guidkey
-                                }
-                            };
-                        } )
-                        .then( request => $.ajax( request ) )
-                        .then( script => {
-                            eval( script );
-                            let anchor = document.createElement( 'a' );
-                            anchor.href = d[0];
-                            return Promise.resolve( anchor.href );
-                        } );
-                    } );
-                    result = Promise.all( promises );
-                }
-                result;
+                new Promise(resolve => {
+                    if(isbarchpater) {
+                        resolve(newImgs.map(image => new URL(image, window.location.href).href));
+                    } else {
+                        let promises = [...(new Array(imagecount)).keys()].map(p => {
+                            return Promise.resolve()
+                            .then(() => {
+                                return {
+                                    url: '${this.scriptSource}',
+                                    data: {
+                                        cid: chapterid,
+                                        page: p+1,
+                                        key: guidkey
+                                    }
+                                };
+                            })
+                            .then(request => $.ajax(request))
+                            .then(script => {
+                                eval(script);
+                                return Promise.resolve(new URL(d[0], window.location.href).href);
+                            });
+                        });
+                        resolve(Promise.all(promises));
+                    }
+                });
             `;
         }
 
