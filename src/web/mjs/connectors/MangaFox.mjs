@@ -1,27 +1,16 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MangaFox extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'mangafox';
         super.label = 'MangaFox';
         this.tags = [ 'manga', 'english' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://fanfox.net';
         this.requestOptions.headers.set( 'x-cookie', 'isAdult=1' );
         this.pageLoadDelay = 50;
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
 
         // this script uses chapterfun.ashx instead of chapter_bar.js as in MangaHere
         this.scriptSource = 'chapterfun.ashx';
@@ -32,17 +21,13 @@ export default class MangaFox extends Connector {
      */
     get script() {
         return `
-                let result;
-                if( isbarchpater /*document.querySelector( 'div.cp-pager-list a[data-page]'*/ ) {
-                    result = new Promise( ( resolve, reject ) => {
-                        let images = document.querySelectorAll( 'div.reader-main img.reader-main-img' );
-                        images = [...images].map( image => new URL( image.dataset['src'], window.location.href ).href );
-                        resolve( images );
-                    } );
+            new Promise(resolve => {
+                if(isbarchpater) {
+                    resolve(newImgs.map(image => new URL(image, window.location.href).href));
                 } else {
-                    let promises = [...( new Array( imagecount ) ).keys()].map( p => {
+                    let promises = [...(new Array(imagecount)).keys()].map(p => {
                         return Promise.resolve()
-                        .then( () => {
+                        .then(() => {
                             return {
                                 url: '${this.scriptSource}',
                                 data: {
@@ -51,19 +36,17 @@ export default class MangaFox extends Connector {
                                     key: guidkey
                                 }
                             };
-                        } )
-                        .then( request => $.ajax( request ) )
-                        .then( script => {
-                            eval( script );
-                            let anchor = document.createElement( 'a' );
-                            anchor.href = d[0];
-                            return Promise.resolve( anchor.href );
-                        } );
-                    } );
-                    result = Promise.all( promises );
+                        })
+                        .then(request => $.ajax(request))
+                        .then(script => {
+                            eval(script);
+                            return Promise.resolve(new URL(d[0], window.location.href).href);
+                        });
+                    });
+                    resolve(Promise.all(promises));
                 }
-                result;
-            `;
+            });
+        `;
     }
 
     /**
