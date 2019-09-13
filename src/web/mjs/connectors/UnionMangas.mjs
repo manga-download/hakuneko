@@ -7,7 +7,7 @@ export default class UnionMangas extends Connector {
         super.id = 'unionmangas';
         super.label = 'UnionMangas';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'http://unionleitor.top';
+        this.url = 'https://unionleitor.top';
     }
 
     /**
