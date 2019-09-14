@@ -1,20 +1,14 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- * @author Neogeek
- */
 export default class JapScan extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'japscan';
         super.label = 'JapScan';
         this.tags = [ 'manga', 'french' ];
-        this.url = 'https://www.japscan.to';
-        this.urlCDN = 'https://c.japscan.to/';
+        this.url = 'https://www.japscan.co';
+        this.urlCDN = 'https://c.japscan.co/';
     }
 
     /**
