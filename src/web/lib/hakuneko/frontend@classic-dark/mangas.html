@@ -86,7 +86,6 @@
             .footer {
                 flex: 0;
                 display: flex;
-                flex-direction: row;
             }
         </style>
         <div class="header separator">
@@ -135,14 +134,14 @@
                 </li>
             </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
-                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasUpdate) ]] " title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+                <li class$="manga [[ item.status ]]  [[ getMangaClass(selectedManga, item, item.hasUpdate) ]] " title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
         <!-- https://github.com/PolymerElements/iron-list/issues/536 -->
         <!--
         <iron-list class="list" items="[[ filteredMangas(mangaList,mangaPattern) ]]">
             <template>
-                <div class$="manga [[ item.status ]] [[ item.hasUpdate]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
+                <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasUpdate) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
             </template>
         </iron-list>
         -->
@@ -198,7 +197,6 @@
                 this.mangaList = this['mangaList'];
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
-                document.addEventListener( 'onCheckNewContent', this.onCheckNewContent.bind( this ) );
                 Engine.BookmarkManager.addEventListener( 'changed', this.onBookmarksChanged.bind( this ) );
                 this.set( 'updatingContent', false );
             }
@@ -251,7 +249,6 @@
                 this.notifyPath( 'selectedConnector.isUpdating' );
             }
             
-
             /**
              *
              */
@@ -275,8 +272,8 @@
             }
             
             /**
-            * Event lister attached to the refresh button
-            * Checks for new content to read by refresh the current manga list, updating the web source and checking the bookmarks
+            * Event listener attached to the refresh button
+            * Checks for new content to read by refreshing the current manga list, updating the web source and checking the bookmarks
             */
             onCheckNewContent() {
                 this.set( 'updatingContent', true );
