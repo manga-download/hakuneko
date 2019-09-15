@@ -111,7 +111,15 @@
             ready() {
                 super.ready();
                 //
-                this.inputTypes = Input;
+                this.inputTypes = {
+                    text: 'text',
+                    password: 'password',
+                    numeric: 'number',
+                    select: 'select',
+                    checkbox: 'checkbox',
+                    file: 'file',
+                    directory: 'directory'
+                };
             }
 
             /**
