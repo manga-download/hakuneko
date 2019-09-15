@@ -23,7 +23,7 @@ export default class KissAnime extends Connector {
             resolution:  {
                 label: 'Preferred Resolution',
                 description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!',
-                input: Input.select,
+                input: 'select',
                 options: [
                     { value: '', name: 'Mirror\'s Default' },
                     { value: '480', name: '480p' },

@@ -22,13 +22,13 @@ export default class MangaSail extends Connector {
             username: {
                 label: 'Username',
                 description: 'Username for login with your account.\nVarious chapters will only be accessable after login.',
-                input: Input.text,
+                input: 'text',
                 value: ''
             },
             password: {
                 label: 'Password',
                 description: 'Password for login with your account.\nVarious chapters will only be accessable after login.',
-                input: Input.password,
+                input: 'password',
                 value: ''
             }
         };

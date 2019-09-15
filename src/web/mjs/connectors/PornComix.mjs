@@ -14,7 +14,7 @@ export default class PornComix extends Connector {
             throttle: {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecutive requests.',
-                input: Input.numeric,
+                input: 'numeric',
                 min: 250,
                 max: 5000,
                 value: 500

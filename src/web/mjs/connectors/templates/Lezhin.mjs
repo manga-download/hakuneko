@@ -20,13 +20,13 @@ export default class Lezhin extends Connector {
             username: {
                 label: 'E-Mail',
                 description: 'E-Mail for login with your Lezhin account.\nAn account is required to access R-rated content.',
-                input: Input.text,
+                input: 'text',
                 value: ''
             },
             password: {
                 label: 'Password',
                 description: 'Password for login with your Lezhin account.\nAn account is required to access R-rated content.',
-                input: Input.password,
+                input: 'password',
                 value: ''
             }
         };

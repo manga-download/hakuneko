@@ -39,7 +39,6 @@ export default class HakuNeko {
         // TODO: remove backward compatibility for global aliases when all their references are set to HakuNeko engine
 
         // required by various frontend and engine components
-        context.Input = Enums.Input;
         context.DownloadStatus = Enums.DownloadStatus;
         context.EventListener = Enums.EventListener;
 

@@ -1,21 +1,6 @@
 export default class Enums {
 
     /**
-     * Enumeration of available input types for editing values.
-     */
-    static get Input() {
-        return {
-            text:      Symbol( 'text' ),
-            password:  Symbol( 'password' ),
-            numeric:   Symbol( 'number' ),
-            select:    Symbol( 'select' ),
-            checkbox:  Symbol( 'checkbox' ),
-            file:      Symbol( 'file' ),
-            directory: Symbol( 'directory' )
-        };
-    }
-
-    /**
      * Enumeration of available stauses used at various places.
      * Must be strings, because those are directly used as CSS classes in the UI.
      */

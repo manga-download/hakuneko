@@ -41,19 +41,19 @@ export default class VRV extends Connector {
             username: {
                 label: 'E-Mail',
                 description: 'E-Mail for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time.',
-                input: Input.text,
+                input: 'text',
                 value: ''
             },
             password: {
                 label: 'Password',
                 description: 'Password for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time.',
-                input: Input.password,
+                input: 'password',
                 value: ''
             },
             throttle: {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting errors during episode/movie download.',
-                input: Input.numeric,
+                input: 'numeric',
                 min: 100,
                 max: 5000,
                 value: 250

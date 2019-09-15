@@ -19,7 +19,7 @@ export default class ReadManga extends Connector {
             throttle: {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 429 errors during manga list update.',
-                input: Input.numeric,
+                input: 'numeric',
                 min: 0,
                 max: 5000,
                 value: 1500

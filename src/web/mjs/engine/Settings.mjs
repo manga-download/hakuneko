@@ -16,6 +16,16 @@ const mimes = {
     png: 'image/png'
 };
 
+const types = {
+    text: 'text',
+    password: 'password',
+    numeric: 'number',
+    select: 'select',
+    checkbox: 'checkbox',
+    file: 'file',
+    directory: 'directory'
+};
+
 export default class Settings {
 
     // TODO: use dependency injection instead of globals for Engine.Storage, Engine.Conenctors
@@ -36,7 +46,7 @@ export default class Settings {
                 '',
                 '⁽¹⁾ Restart required to take affect',
             ].join('\n'),
-            input: Input.select,
+            input: types.select,
             options: [
                 { value: 'frontend@classic-light', name: 'Classic (Light)' },
                 { value: 'frontend@classic-dark', name: 'Ken\'s Daedal Dark' }
@@ -46,19 +56,19 @@ export default class Settings {
         this.readerEnabled = {
             label: 'Enable Reader',
             description: 'Show a preview panel and a basic reader for the chapters',
-            input: Input.checkbox,
+            input: types.checkbox,
             value: true
         };
         this.baseDirectory = {
             label: 'Manga Directory',
             description: 'The base directory where all downloaded mangas will be stored',
-            input: Input.directory,
+            input: types.directory,
             value: path.join( docs, 'Mangas' )
         };
         this.useSubdirectory = {
             label: 'Use Sub-Directories',
             description: 'Create sub-directories for each website (e.g. "/downloads/mangadex/...")',
-            input: Input.checkbox,
+            input: types.checkbox,
             value: false
         };
         this.chapterTitleFormat = {
@@ -76,13 +86,13 @@ export default class Settings {
                 '  %T% - Chapter title (without volume/chapter number)',
                 '  %O% - Chapter title (original)'
             ].join( '\n' ),
-            input: Input.text,
+            input: types.text,
             value: ''
         };
         this.chapterFormat = {
             label: 'Chapter File Format',
             description: 'Store chapters in the selected file format',
-            input: Input.select,
+            input: types.select,
             options: [
                 { value: extensions.img, name: 'Folder with Images (*.jpg, *.png, *.webp)' },
                 { value: extensions.cbz, name: 'Comic Book Archive (*.cbz)' },
@@ -98,7 +108,7 @@ export default class Settings {
                 'Only applies to scrambled images!',
                 'Unscrambled images are stored natively (no re-compression will be applied).'
             ].join( '\n' ),
-            input: Input.select,
+            input: types.select,
             options: [
                 { value: mimes.webp, name: 'WEBP (*.webp)' },
                 { value: mimes.jpeg, name: 'JPEG (*.jpg)' },
@@ -112,7 +122,7 @@ export default class Settings {
                 'Select the re-compression quality that shall be used for scrambled images.',
                 'Only applies to WEBP and JPEG, has no effect on PNG (which is lossless).'
             ].join( '\n' ),
-            input: Input.numeric,
+            input: types.numeric,
             min: 50,
             max: 100,
             value: 90
@@ -129,7 +139,7 @@ export default class Settings {
                 '',
                 'More info: https://git.io/hakuneko-proxy'
             ].join( '\n' ),
-            input: Input.text,
+            input: types.text,
             options: [],
             value: ''
         };
@@ -143,7 +153,7 @@ export default class Settings {
                 'Examples:',
                 '  username:password'
             ].join( '\n' ),
-            input: Input.password,
+            input: types.password,
             value: ''
         };
         this.downloadHistoryLogFormat = {
@@ -152,7 +162,7 @@ export default class Settings {
                 'Log the history of completed chapter downloads.',
                 'The log file(s) can be found in HakuNeko\'s user data directory.'
             ].join( '\n' ),
-            input: Input.select,
+            input: types.select,
             options: [
                 { value: extensions.none, name: 'Disabled' },
                 /*
@@ -179,7 +189,7 @@ export default class Settings {
                 '  convert "%PATH%\\*.webp" -scene 1 "%PATH%\\%03d.png"',
                 '  md "%O%_conv" & convert "%PATH%\\*.*" -scene 1 "%O%_conv\\%03d.png"'
             ].join( '\n' ),
-            input: Input.text,
+            input: types.text,
             value: ''
         };
     }
@@ -266,7 +276,7 @@ export default class Settings {
      *
      */
     _getEncryptedValue( inputType, decryptedValue ) {
-        if( inputType !== Input.password || !decryptedValue || decryptedValue.length < 1 ) {
+        if( inputType !== types.password || !decryptedValue || decryptedValue.length < 1 ) {
             return decryptedValue;
         }
         /*
@@ -280,7 +290,7 @@ export default class Settings {
      *
      */
     _getDecryptedValue( inputType, encryptedValue ) {
-        if( inputType !== Input.password || !encryptedValue || encryptedValue.length < 1 ) {
+        if( inputType !== types.password || !encryptedValue || encryptedValue.length < 1 ) {
             return encryptedValue;
         }
         return CryptoJS.AES.decrypt( encryptedValue, 'HakuNeko!' ).toString( CryptoJS.enc.Utf8 );
@@ -292,7 +302,7 @@ export default class Settings {
     _getValidValue( connectorProperty ) {
         let value = connectorProperty.value;
         switch( connectorProperty.input ) {
-        case Input.numeric:
+        case types.numeric:
             if( connectorProperty.min !== undefined && value < connectorProperty.min ) {
                 return connectorProperty.min;
             }

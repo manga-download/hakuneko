@@ -13,7 +13,7 @@ export default class Publus extends Connector {
             scrapeDelay: {
                 label: 'Page Scrape Delay',
                 description: 'Time to wait until the page initialization process is complete.\nIncrease the value if no pages are found for the chapter.',
-                input: Input.numeric,
+                input: 'numeric',
                 min: 2500,
                 max: 10000,
                 value: 5000

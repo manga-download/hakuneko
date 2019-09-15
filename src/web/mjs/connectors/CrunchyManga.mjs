@@ -26,13 +26,13 @@ export default class CrunchyManga extends Connector {
             username: {
                 label: 'Username',
                 description: 'Username for login with Crunchyroll premium account.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.',
-                input: Input.text,
+                input: 'text',
                 value: ''
             },
             password: {
                 label: 'Password',
                 description: 'Password for login with Crunchyroll premium account.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time.',
-                input: Input.password,
+                input: 'password',
                 value: ''
             }
         };
