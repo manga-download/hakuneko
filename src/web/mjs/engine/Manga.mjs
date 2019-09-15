@@ -92,8 +92,9 @@ export default class Manga {
             } )
             .then( existingChapterTitles => {
                 this.existingChapters = existingChapterTitles;
-                // check if chapter list is cached
-                return this.chapterCache && this.chapterCache.length ? this._getUpdatedChaptersFromCache() : this._getUpdatedChaptersFromWebsite() ;
+                // check if chapter list is cached and has access to online chapters
+                let onlineChapters = chapter => chapter.status === statusDefinitions.completed || chapter.status === statusDefinitions.available;
+                return this.chapterCache && this.chapterCache.some(onlineChapters) ? this._getUpdatedChaptersFromCache() : this._getUpdatedChaptersFromWebsite();
             } )
             .then( () => {
                 for( let existingChapterTitle in this.existingChapters ) {
