@@ -128,7 +128,7 @@
                 this.popupVisibility = false;
                 this.jobList = [];
                 // register callbacks for events published by download manager
-                document.addEventListener( EventListener.onDownloadStatusUpdated, this.onDownloadStatusUpdated.bind( this ) );
+                Engine.DownloadManager.addEventListener('updated', this.onDownloadStatusUpdated.bind(this));
                 this.ipc.on( 'close', this.onClose.bind( this ) );
             }
 

@@ -1,7 +1,10 @@
-export default class DownloadJob {
+const eventUpdated = 'updated';
+
+export default class DownloadJob extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Storage, Enums
     constructor( chapter ) {
+        super();
         this.id = Symbol();
         this.chapter = chapter;
         this.labels = {
@@ -35,7 +38,7 @@ export default class DownloadJob {
             this.status = status;
             this.chapter.setStatus( status );
             this.chapter.manga.updateStatus();
-            document.dispatchEvent( new CustomEvent( EventListener.onDownloadStatusUpdated, { detail: this } ) );
+            this.dispatchEvent( new CustomEvent( eventUpdated, { detail: this } ) );
         }
     }
 
@@ -45,7 +48,7 @@ export default class DownloadJob {
     setProgress( progress ) {
         if( progress !== this.progress ) {
             this.progress = progress;
-            document.dispatchEvent( new CustomEvent( EventListener.onDownloadStatusUpdated, { detail: this } ) );
+            this.dispatchEvent( new CustomEvent( eventUpdated, { detail: this } ) );
         }
     }
 

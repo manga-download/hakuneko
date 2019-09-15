@@ -1,11 +1,9 @@
 import DownloadJob from './DownloadJob.mjs';
 
-export default class DownloadManager {
+export default class DownloadManager extends EventTarget {
 
-    /**
-     *
-     */
     constructor() {
+        super();
         this.queue = [];
         this.worker = setInterval( this.processQueue.bind( this ), 250 );
     }
@@ -27,6 +25,8 @@ export default class DownloadManager {
             return job.isSame( item );
         });
         if( !jobExist ) {
+            // cannot dispatch the same event twice => ceate new event
+            job.addEventListener('updated', evt => this.dispatchEvent(new CustomEvent(evt.type, evt)));
             this.queue[connector.id].push( job );
             job.setStatus( DownloadStatus.queued );
         }
