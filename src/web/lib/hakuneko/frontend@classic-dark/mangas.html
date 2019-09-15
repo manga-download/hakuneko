@@ -68,6 +68,12 @@
             .focus {
                 background-color: var(--manga-list-selected) !important;
             }
+            .newcontent {
+                color: var(--manga-list-newcontent);
+            }
+            .test {
+                flex:1;
+            }
             .button {
                 cursor: pointer;
             }
@@ -82,6 +88,8 @@
             }
             .footer {
                 flex: 0;
+                display: flex;
+                flex-direction: row;
             }
         </style>
         <div class="header separator">
@@ -122,27 +130,31 @@
             </tr>
         </table>
         <ul class="list" >
-            <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
-                <li class="notification">
-                    Manga list is loading or empty<br>
-                    Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
-                    button to update list
-                </li>
-            </template>
-            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
-                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+                <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
+                    <li class="notification">
+                        Manga list is loading or empty<br>
+                        Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
+                        button to update list
+                    </li>
+                </template>
+            <template id='mangatable' is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasUpdate) ]] " title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
         <!-- https://github.com/PolymerElements/iron-list/issues/536 -->
         <!--
         <iron-list class="list" items="[[ filteredMangas(mangaList,mangaPattern) ]]">
             <template>
-                <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
+                <div class$="manga [[ item.status ]] [[ item.hasUpdate]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
             </template>
         </iron-list>
         -->
         <div class="footer">
             <hakuneko-status id="status" message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"></hakuneko-status>
+            &nbsp;<i class$="fas [[ getContentUpdateClass(updatingContent) ]] button" title="Check new content" on-click="onCheckNewContent"></i>
+            <template is="dom-if" if="[[ isUpdatingContent(updatingContent) ]]">                        
+                   ([[ nbContentUpdating ]])
+            </template>
         </div>
     </template>
 
@@ -189,7 +201,9 @@
                 this.mangaList = this['mangaList'];
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
+                document.addEventListener( 'onCheckNewContent', this.onCheckNewContent.bind( this ) );
                 Engine.BookmarkManager.addEventListener( 'changed', this.onBookmarksChanged.bind( this ) );
+                this.set( 'updatingContent', false );
             }
 
             /**
@@ -239,6 +253,7 @@
                 // trigger update for refresh button style (update started)
                 this.notifyPath( 'selectedConnector.isUpdating' );
             }
+            
 
             /**
              *
@@ -261,12 +276,92 @@
             onSelectedMangaChanged( manga ) {
                 //
             }
+            
+            /**
+            * Event lister attached to the refresh button in the jobs
+            * Checks for new content to read by refresh the current manga list, updating the web source and checking the bookmarks
+            */
+            onCheckNewContent() {
+                this.set( 'updatingContent', true );
+                console.debug('Checking new mangas');
+                let newContent=[];
+                let connectors=[];
+                let nbContentUpdating=0;
+                let context=this;
+                 // Check connectors to initialize
+                this.mangaList.forEach( ( manga, i ) => {
+                    if (! manga.connector.initialized && ! manga.connector.isUpdating ) {
+                        manga.connector.isUpdating=true;
+                        connectors.push(manga.connector);
+                    }
+                });
 
+                //Function to initialize connector
+                const initConnector = async function initConnector(connector){
+                        await connector.initialize();
+                        return Promise.resolve(); 
+                };
+                //Function to refresh chapters and check if new content
+                const checkManga = async function checkManga(manga){
+                    context.set('nbContentUpdating',++nbContentUpdating);
+                    await manga._getUpdatedChaptersFromWebsite();
+                    //console.debug(`Check manga: ${manga.title} with connector ${manga.connector.label} initialized: ${manga.connector.initialized} - ${manga.connector.isUpdating}`);           
+                    await manga.getChapters( ( error, chapters ) => {
+                        //Is the first chapter on the top of the list marked ? If not, we have new content !
+                        manga.hasUpdate=false;
+                        if( ! Engine.ChaptermarkManager.isChapterMarked(chapters[0],Engine.ChaptermarkManager.getChaptermark( manga))){
+                            console.log('New chapter for '+manga.title);
+                            manga.hasUpdate=true;
+                            newContent.push(manga);
+                        }       
+                    });
+                    context.set('nbContentUpdating',--nbContentUpdating);
+                    return Promise.resolve(manga); 
+                };
+                context.set('nbContentUpdating','init');
+                //Init all connectors
+                Promise.all(connectors.map(initConnector))
+                .then(() => {
+                    //Checking mangas changes
+                    return Promise.all( this.mangaList.map(checkManga));
+                })
+                .then(() => {
+                    //Do we have new content ?
+                    if (!newContent.length == 0){
+                        let contentShort=[];
+                        for (var i = 0; i < newContent.length; i++) {
+                            //Prepare notificiiton text (new)
+                            contentShort.push(newContent[i].title);
+                            //Notify dom update
+                            //Find the ID
+                            let index = this.mangaList.findIndex( ( item ) => {
+                                // mangas may be different objects (synchronizing connector list) but still be equivalent
+                                // => comparing ids instead of comparing the objects directly
+                                return ( item.id === newContent[i].id );
+                            });
+                            if( index > -1 ) {
+                                this.notifyPath( 'mangaList.' + index + '.hasUpdate' );
+                            }
+                        }
+                       //Send Notification
+                        console.log(`${newContent.length} New content: ${contentShort}`); 
+                        let myNotification = new Notification('Hakuneko', {
+                            body: 'New content : '+contentShort.join(',').substring(0,185)
+                        })
+                    }
+                    this.set('updatingContent', false );
+                    this.set('nbContentUpdating',0);
+                })
+                .catch(e => console.log(`Error checking new chapters  ${e}`)); // Catch the error
+            }
             /**
              *
              */
-            getMangaClass( selectedManga, id ) {
-                return ( !selectedManga || selectedManga.id !== id ? '' : 'focus' );
+            getMangaClass( selectedManga, manga, hasUpdate ) {
+                if(manga.hasUpdate)  { return 'newcontent'}
+                else if (!selectedManga) return('');
+                else if (selectedManga.id == manga.id) { return 'focus' }
+                else('');
             }
 
             /**
@@ -276,6 +371,15 @@
                 return ( isUpdating ? 'fa-pulse disabled' : '' );
             }
 
+            /**
+             *
+             */
+            getContentUpdateClass ( isUpdatingContent ) {
+                return (isUpdatingContent ? 'fa-pulse fa-sync disabled' : 'fa-sync');
+            }
+            isUpdatingContent( isUpdatingContent ) {
+                return (isUpdatingContent);
+            }
             /**
              *
              */

@@ -22,7 +22,7 @@ export default class Manga {
         this.status = status;
         this.chapterCache = [];
         this.existingChapters = [];
-
+        this.hasUpdate=false;
         if( !this.status ) {
             this.updateStatus();
         }
