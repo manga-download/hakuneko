@@ -1,5 +1,5 @@
 const extensions = {
-    img: '.img'
+    img: 'img'
 };
 
 const statusDefinitions = {
