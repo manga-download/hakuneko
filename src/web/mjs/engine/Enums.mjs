@@ -15,23 +15,6 @@ export default class Enums {
         };
     }
 
-    static get EpisodeFormat() {
-        return {
-            m3u8: '.m3u8',
-            mkv:  '.mkv',
-            mp4:  '.mp4'
-        };
-    }
-
-    static get ChapterFormat() {
-        return {
-            img:  'img', // images within a folder
-            cbz:  '.cbz', // comic book archive extension
-            pdf:  '.pdf', // portable document format extension
-            epub: '.epub' // e-book reader format extension
-        };
-    }
-
     static get HistoryFormat() {
         return {
             none: '',

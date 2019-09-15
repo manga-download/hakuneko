@@ -1,3 +1,16 @@
+const extensions = {
+    img:  'img',
+    cbz:  '.cbz',
+    pdf:  '.pdf',
+    epub: '.epub'
+};
+
+const mimes = {
+    webp: 'image/webp',
+    jpeg: 'image/jpeg',
+    png: 'image/png'
+};
+
 export default class Settings {
 
     // TODO: use dependency injection instead of globals for Engine.Storage, Engine.Conenctors
@@ -66,12 +79,12 @@ export default class Settings {
             description: 'Store chapters in the selected file format',
             input: Input.select,
             options: [
-                { value: ChapterFormat.img, name: 'Folder with Images (*.jpg, *.png, *.webp)' },
-                { value: ChapterFormat.cbz, name: 'Comic Book Archive (*.cbz)' },
-                { value: ChapterFormat.pdf, name: 'Portable Document (*.pdf)' },
-                { value: ChapterFormat.epub, name: 'Ebook Reader (*.epub)' },
+                { value: extensions.img, name: 'Folder with Images (*.jpg, *.png, *.webp)' },
+                { value: extensions.cbz, name: 'Comic Book Archive (*.cbz)' },
+                { value: extensions.pdf, name: 'Portable Document (*.pdf)' },
+                { value: extensions.epub, name: 'Ebook Reader (*.epub)' },
             ],
-            value: ChapterFormat.img
+            value: extensions.img
         };
         this.recompressionFormat = {
             label: 'De-Scrambling Format',
@@ -82,11 +95,11 @@ export default class Settings {
             ].join( '\n' ),
             input: Input.select,
             options: [
-                { value: 'image/webp', name: 'WEBP (*.webp)' },
-                { value: 'image/jpeg', name: 'JPEG (*.jpg)' },
-                { value: 'image/png', name: 'PNG (*.png)' },
+                { value: mimes.webp, name: 'WEBP (*.webp)' },
+                { value: mimes.jpeg, name: 'JPEG (*.jpg)' },
+                { value: mimes.png, name: 'PNG (*.png)' },
             ],
-            value: 'image/jpeg'
+            value: mimes.jpeg
         };
         this.recompressionQuality = {
             label: 'De-Scrambling Quality',

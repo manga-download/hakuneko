@@ -1,5 +1,11 @@
 import Chapter from './Chapter.mjs';
 
+const extensions = {
+    m3u8: '.m3u8',
+    mkv:  '.mkv',
+    mp4:  '.mp4'
+};
+
 export default class Manga {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Storage, all Enums
@@ -52,18 +58,18 @@ export default class Manga {
             return false;
         }
         return this.existingChapters[chapter.file.full]
-            || this.existingChapters[chapter.file.name + EpisodeFormat.mp4]
-            || this.existingChapters[chapter.file.name + EpisodeFormat.mkv]
-            || this.existingChapters[chapter.file.name + EpisodeFormat.m3u8];
+            || this.existingChapters[chapter.file.name + extensions.mp4]
+            || this.existingChapters[chapter.file.name + extensions.mkv]
+            || this.existingChapters[chapter.file.name + extensions.m3u8];
     }
 
     isChapterFileCached( fileName ) {
         // use !! to convert result to bool
         return !!this.chapterCache.find( chapter => {
             return fileName === chapter.file.full
-                || fileName === chapter.file.name + EpisodeFormat.mp4
-                || fileName === chapter.file.name + EpisodeFormat.mkv
-                || fileName === chapter.file.name + EpisodeFormat.m3u8 ;
+                || fileName === chapter.file.name + extensions.mp4
+                || fileName === chapter.file.name + extensions.mkv
+                || fileName === chapter.file.name + extensions.m3u8 ;
         } );
     }
 

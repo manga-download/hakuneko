@@ -1,3 +1,7 @@
+const extensions = {
+    img: '.img'
+};
+
 export default class Chapter {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Storage, all Enums
@@ -42,7 +46,7 @@ export default class Chapter {
      */
     _getSanatizedFileName( title ) {
         let name = Engine.Storage.sanatizePath( title );
-        let extension = Engine.Settings.chapterFormat.value !== ChapterFormat.img ? Engine.Settings.chapterFormat.value : '';
+        let extension = Engine.Settings.chapterFormat.value !== extensions.img ? Engine.Settings.chapterFormat.value : '';
         return {
             name: name,
             extension: extension,

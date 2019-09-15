@@ -16,8 +16,6 @@
         "HakuNeko": "readonly",
         "Engine": "readonly",
         "Input": "readonly",
-        "EpisodeFormat": "readonly",
-        "ChapterFormat": "readonly",
         "HistoryFormat": "readonly",
         "DownloadStatus": "readonly",
         "EventListener": "readonly",

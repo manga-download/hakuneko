@@ -40,8 +40,6 @@ export default class HakuNeko {
 
         // required by various frontend and engine components
         context.Input = Enums.Input;
-        context.EpisodeFormat = Enums.EpisodeFormat;
-        context.ChapterFormat = Enums.ChapterFormat;
         context.HistoryFormat = Enums.HistoryFormat;
         context.DownloadStatus = Enums.DownloadStatus;
         context.EventListener = Enums.EventListener;

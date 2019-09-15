@@ -1,6 +1,18 @@
 import EbookGenerator from './EbookGenerator.mjs';
 import Chapter from './Chapter.mjs';
 
+const extensions = {
+    // chapter format
+    img:  'img',
+    cbz:  '.cbz',
+    pdf:  '.pdf',
+    epub: '.epub',
+    // episode format
+    m3u8: '.m3u8',
+    mkv:  '.mkv',
+    mp4:  '.mp4'
+};
+
 export default class Storage {
 
     // TODO: use dependency injection instead of globals for EbookGenerator
@@ -178,12 +190,12 @@ export default class Storage {
                 /*
                  * entries = entries.filter( path => {
                  * return (
-                 * path.endsWith( EpisodeFormat.m3u8 ) ||
-                 * path.endsWith( EpisodeFormat.mkv ) ||
-                 * path.endsWith( EpisodeFormat.mp4 ) ||
-                 * path.endsWith( ChapterFormat.epub ) ||
-                 * path.endsWith( ChapterFormat.cbz ) ||
-                 * path.endsWith( ChapterFormat.pdf )
+                 * path.endsWith( extensions.m3u8 ) ||
+                 * path.endsWith( extensions.mkv ) ||
+                 * path.endsWith( extensions.mp4 ) ||
+                 * path.endsWith( extensions.epub ) ||
+                 * path.endsWith( extensions.cbz ) ||
+                 * path.endsWith( extensions.pdf )
                  * // what about directory with images ???
                  * );
                  * } );
@@ -207,22 +219,22 @@ export default class Storage {
         if( typeof path !== 'string' ) {
             return Promise.reject( new Error( 'Invalid parameter "chapter", must be <String> or <Chapter> type!' ) );
         }
-        if( path.endsWith( EpisodeFormat.m3u8 ) ) {
+        if( path.endsWith( extensions.m3u8 ) ) {
             return this._loadEpisodeM3U8( path );
         }
-        if( path.endsWith( EpisodeFormat.mkv ) ) {
+        if( path.endsWith( extensions.mkv ) ) {
             return this._loadEpisodeMKV( path );
         }
-        if( path.endsWith( EpisodeFormat.mp4 ) ) {
+        if( path.endsWith( extensions.mp4 ) ) {
             return this._loadEpisodeMP4( path );
         }
-        if( path.endsWith( ChapterFormat.epub ) ) {
+        if( path.endsWith( extensions.epub ) ) {
             return this._loadChapterPagesEPUB( path );
         }
-        if( path.endsWith( ChapterFormat.pdf ) ) {
+        if( path.endsWith( extensions.pdf ) ) {
             return this._loadChapterPagesPDF( path );
         }
-        if( path.endsWith( ChapterFormat.cbz ) ) {
+        if( path.endsWith( extensions.cbz ) ) {
             return this._loadChapterPagesCBZ( path );
         }
         return this._loadChapterPagesFolder( path );
@@ -242,7 +254,7 @@ export default class Storage {
             } );
         } ) )
             .then( files => {
-                let playlist = files.find( file => file.endsWith( EpisodeFormat.m3u8 ) );
+                let playlist = files.find( file => file.endsWith( extensions.m3u8 ) );
                 let subtitles = files.filter( file => file.endsWith( '.ass' ) || file.endsWith( '.ssa' ) );
                 let media = {
                     mirrors: [ this._makeValidFileURL( directory, playlist ) ],
@@ -424,22 +436,22 @@ export default class Storage {
 
             let promise = undefined;
             let output = this._chapterOutputPath( chapter );
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.img ) {
+            if( Engine.Settings.chapterFormat.value === extensions.img ) {
                 this._createDirectoryChain( output );
                 promise = this._saveChapterPagesFolder( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
             }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.cbz ) {
+            if( Engine.Settings.chapterFormat.value === extensions.cbz ) {
                 this._createDirectoryChain( this.path.dirname( output ) );
                 promise = this._saveChapterPagesCBZ( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
             }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.pdf ) {
+            if( Engine.Settings.chapterFormat.value === extensions.pdf ) {
                 this._createDirectoryChain( this.path.dirname( output ) );
                 promise = this._saveChapterPagesPDF( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
             }
-            if( Engine.Settings.chapterFormat.value === ChapterFormat.epub ) {
+            if( Engine.Settings.chapterFormat.value === extensions.epub ) {
                 this._createDirectoryChain( this.path.dirname( output ) );
                 promise = this._saveChapterPagesEPUB( output, pageData )
                     .then( () => this._runPostChapterDownloadCommand( chapter, output ) );
@@ -473,7 +485,7 @@ export default class Storage {
             } );
         } );
         let uid = btoa( encodeURIComponent( ebook ) ).replace(/[^a-zA-Z]/g, '');
-        let title = `${this.path.basename( this.path.dirname( ebook ) )} ${this.path.sep} ${this.path.basename( ebook, ChapterFormat.epub )}`;
+        let title = `${this.path.basename( this.path.dirname( ebook ) )} ${this.path.sep} ${this.path.basename( ebook, extensions.epub )}`;
         oebps.file( 'content.opf', EbookGenerator.createContentOPF( uid, title, params ) );
         oebps.file( 'toc.ncx', EbookGenerator.createTocNCX( uid, '', params ) );
         return zip.generateAsync( { compression: 'STORE', type: 'uint8array' } )
@@ -655,7 +667,7 @@ export default class Storage {
             if( !fileOut ) {
                 let directory = this._mangaOutputPath( chapter.manga );
                 this._createDirectoryChain( directory );
-                let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mp4 ) );
+                let file = this.path.join( directory, this.sanatizePath( chapter.title + extensions.mp4 ) );
                 fileOut = this.fs.openSync( file, 'w' );
             }
             let data = this.fs.readFileSync( files[index] );
@@ -673,7 +685,7 @@ export default class Storage {
     saveChapterFileM3U8( chapter, content ) {
         try {
             let file = this._mangaOutputPath( chapter.manga );
-            file = this.path.join( file, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
+            file = this.path.join( file, this.sanatizePath( chapter.title + extensions.m3u8 ) );
             this._createDirectoryChain( file );
             file = this.path.join( file, this.sanatizePath( content.name ) );
             return this._writeFile( file, content.data );
@@ -691,8 +703,8 @@ export default class Storage {
         return new Promise( ( resolve, reject ) => {
             let directory = this._mangaOutputPath( chapter.manga );
             this._createDirectoryChain( directory );
-            let file = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.mkv ) );
-            directory = this.path.join( directory, this.sanatizePath( chapter.title + EpisodeFormat.m3u8 ) );
+            let file = this.path.join( directory, this.sanatizePath( chapter.title + extensions.mkv ) );
+            directory = this.path.join( directory, this.sanatizePath( chapter.title + extensions.m3u8 ) );
             ffmpeg += ` -f matroska -y "${file}"`;
             this.exec( ffmpeg, { cwd: directory, windowsHide: true }, error => {
                 if( error ) {
@@ -734,19 +746,19 @@ export default class Storage {
             return output;
         }
         // only valid for loading anime episodes, ignored when save pages
-        if( this.fs.existsSync( output + EpisodeFormat.m3u8 ) ) {
-            return output + EpisodeFormat.m3u8;
+        if( this.fs.existsSync( output + extensions.m3u8 ) ) {
+            return output + extensions.m3u8;
         }
         // only valid for loading anime episodes, ignored when save pages
-        if( this.fs.existsSync( output + EpisodeFormat.mkv ) ) {
-            return output + EpisodeFormat.mkv;
+        if( this.fs.existsSync( output + extensions.mkv ) ) {
+            return output + extensions.mkv;
         }
         // only valid for loading anime episodes, ignored when save pages
-        if( this.fs.existsSync( output + EpisodeFormat.mp4 ) ) {
-            return output + EpisodeFormat.mp4;
+        if( this.fs.existsSync( output + extensions.mp4 ) ) {
+            return output + extensions.mp4;
         }
         // used when loading and saving manga chapters
-        if( Engine.Settings.chapterFormat.value !== ChapterFormat.img ) {
+        if( Engine.Settings.chapterFormat.value !== extensions.img ) {
             output += Engine.Settings.chapterFormat.value;
         }
         return output;
