@@ -15,14 +15,6 @@ export default class Enums {
         };
     }
 
-    static get HistoryFormat() {
-        return {
-            none: '',
-            json: '.json',
-            csv:  '.csv'
-        };
-    }
-
     /**
      * Enumeration of available stauses used at various places.
      * Must be strings, because those are directly used as CSS classes in the UI.

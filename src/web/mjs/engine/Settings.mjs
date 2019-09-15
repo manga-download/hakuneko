@@ -1,8 +1,13 @@
 const extensions = {
+    // chapter formats
     img:  'img',
     cbz:  '.cbz',
     pdf:  '.pdf',
-    epub: '.epub'
+    epub: '.epub',
+    // history formats
+    none: '',
+    json: '.json',
+    csv:  '.csv'
 };
 
 const mimes = {
@@ -149,13 +154,13 @@ export default class Settings {
             ].join( '\n' ),
             input: Input.select,
             options: [
-                { value: HistoryFormat.none, name: 'Disabled' },
+                { value: extensions.none, name: 'Disabled' },
                 /*
-                 *{ value: HistoryFormat.json, name: 'JSON (*.json)' },
-                 *{ value: HistoryFormat.csv, name: 'CSV (*.csv)' },
+                 *{ value: extensions.json, name: 'JSON (*.json)' },
+                 *{ value: extensions.csv, name: 'CSV (*.csv)' },
                  */
             ],
-            value: HistoryFormat.none
+            value: extensions.none
         };
         this.postChapterDownloadCommand = {
             label: 'Post Command',

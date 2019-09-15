@@ -1,3 +1,9 @@
+const formats = {
+    none: '',
+    json: '.json',
+    csv:  '.csv'
+};
+
 export default class HistoryWorker {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Enums
@@ -29,7 +35,7 @@ export default class HistoryWorker {
      */
     appendEntry( data ) {
         let entry = Object.assign( { _time: new Date().toISOString() }, data );
-        if( Engine.Settings.downloadHistoryLogFormat.value !== HistoryFormat.none ) {
+        if( Engine.Settings.downloadHistoryLogFormat.value !== formats.none ) {
             console.log( 'Log Download History:', Engine.Settings.downloadHistoryLogFormat.value );
             console.log( JSON.stringify( entry ) );
         }
