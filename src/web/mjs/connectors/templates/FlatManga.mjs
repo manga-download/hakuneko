@@ -78,7 +78,7 @@ export default class FlatManga extends Connector {
         this.fetchDOM( request, 'source.chapter-img' )
             .then( data => {
                 let pageLinks = data
-                    .map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) )
+                    .map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset.src || element, request.url ) ) )
                     .filter( page => !page.match( /3282f6a4b7_o/ ) );
                 callback( null, pageLinks );
             } )
