@@ -415,14 +415,14 @@
              * fire event to request the next chapter
              */
             requestChapterUp( event ) {
-                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterUp, { detail: this.selectedChapter } ) );
+                window.dispatchEvent( new CustomEvent( 'chapterUp', { detail: this.selectedChapter } ) );
             }
 
             /**
              * fire event to request the previous chapter
              */
             requestChapterDown( event ) {
-                document.dispatchEvent( new CustomEvent( EventListener.onRequestChapterDown, { detail: this.selectedChapter } ) );
+                window.dispatchEvent( new CustomEvent( 'chapterDown', { detail: this.selectedChapter } ) );
             }
 
             /**

@@ -215,8 +215,8 @@
                 // register callbacks for published events
                 document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
-                document.addEventListener( EventListener.onRequestChapterUp, this.onRequestChapterUp.bind( this ) );
-                document.addEventListener( EventListener.onRequestChapterDown, this.onRequestChapterDown.bind( this ) );
+                window.addEventListener( 'chapterUp', this.onRequestChapterUp.bind( this ) );
+                window.addEventListener( 'chapterDown', this.onRequestChapterDown.bind( this ) );
                 Engine.ChaptermarkManager.addEventListener( 'changed', this.onChaptermarksChanged.bind( this ) );
             }
 
