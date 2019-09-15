@@ -1,13 +1,12 @@
+const events = {
+    changed: 'changed'
+};
+
 export default class ChaptermarkManager extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Storage
     constructor() {
         super();
-        /*
-         *this.eventAdded = 'added';
-         *this.eventRemoved = 'removed';
-         */
-        this.eventChanged = 'changed';
         this.chaptermarks = [];
     }
 
@@ -38,7 +37,7 @@ export default class ChaptermarkManager extends EventTarget {
     _syncChaptermarks( callback ) {
         Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
             .then( () => {
-                this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.chaptermarks } ) );
+                this.dispatchEvent( new CustomEvent( events.changed, { detail: this.chaptermarks } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }
@@ -72,7 +71,7 @@ export default class ChaptermarkManager extends EventTarget {
                         throw new Error( 'Invalid chaptermark list!' );
                     }
                     this.chaptermarks = data;
-                    this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.chaptermarks } ) );
+                    this.dispatchEvent( new CustomEvent( events.changed, { detail: this.chaptermarks } ) );
                     if( typeof callback === typeof Function ) {
                         callback( null );
                     }
