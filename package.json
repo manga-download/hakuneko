@@ -7,7 +7,7 @@
   "main": "src/app/main.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/manga-download/hakuneko"
+    "url": "https://git.io/hakuneko"
   },
   "devDependencies": {
     "@hakuneko/ffmpeg-binaries": "latest",
