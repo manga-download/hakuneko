@@ -134,7 +134,7 @@
                         button to update list
                     </li>
                 </template>
-            <template id='mangatable' is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
+            <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
                 <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasUpdate) ]] " title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
@@ -275,7 +275,7 @@
             }
             
             /**
-            * Event lister attached to the refresh button in the jobs
+            * Event lister attached to the refresh button
             * Checks for new content to read by refresh the current manga list, updating the web source and checking the bookmarks
             */
             onCheckNewContent() {
