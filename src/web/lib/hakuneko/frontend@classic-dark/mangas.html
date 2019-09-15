@@ -134,14 +134,14 @@
                 </li>
             </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
-                <li class$="manga [[ item.status ]]  [[ getMangaClass(selectedManga, item, item.hasUpdate) ]] " title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasNewContent) ]] " title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
         </ul>
         <!-- https://github.com/PolymerElements/iron-list/issues/536 -->
         <!--
         <iron-list class="list" items="[[ filteredMangas(mangaList,mangaPattern) ]]">
             <template>
-                <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasUpdate) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
+                <div class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasNewContent) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</div>
             </template>
         </iron-list>
         -->
@@ -302,10 +302,10 @@
                     //console.debug(`Check manga: ${manga.title} with connector ${manga.connector.label} initialized: ${manga.connector.initialized} - ${manga.connector.isUpdating}`);           
                     await manga.getChapters( ( error, chapters ) => {
                         //Is the first chapter on the top of the list marked ? If not, we have new content !
-                        manga.hasUpdate=false;
+                        manga.hasNewContent=false;
                         if( ! Engine.ChaptermarkManager.isChapterMarked(chapters[0],Engine.ChaptermarkManager.getChaptermark( manga))){
                             console.log('New chapter for '+manga.title);
-                            manga.hasUpdate=true;
+                            manga.hasNewContent=true;
                             newContent.push(manga);
                         }       
                     });
@@ -334,7 +334,7 @@
                                 return ( item.id === newContent[i].id );
                             });
                             if( index > -1 ) {
-                                this.notifyPath( 'mangaList.' + index + '.hasUpdate' );
+                                this.notifyPath( 'mangaList.' + index +'.hasNewContent');
                             }
                         }
                        //Send Notification
@@ -346,16 +346,23 @@
                     this.set('updatingContent', false );
                     this.set('nbContentUpdating',0);
                 })
-                .catch(e => console.log(`Error checking new chapters  ${e}`)); // Catch the error
+                .catch(e => console.warn(`Issue when checking new chapters  ${e}`)); // Catch the error
             }
             /**
              *
              */
-            getMangaClass( selectedManga, manga, hasUpdate ) {
-                if(manga.hasUpdate)  { return 'newcontent'}
-                else if (!selectedManga) return('');
-                else if (selectedManga.id == manga.id) { return 'focus' }
-                else('');
+            getMangaClass( selectedManga, manga ) {
+                if (!selectedManga) {
+                    if(manga.hasNewContent)  { return 'newcontent'}
+                    else { return '' }
+                }
+                else
+                {
+                    if(manga.hasNewContent && selectedManga.id == manga.id)  { return 'newcontent focus'}
+                    else if(manga.hasNewContent)  { return 'newcontent'}
+                    else if (selectedManga.id == manga.id) { return 'focus' }
+                    else { return '' }
+                }
             }
 
             /**
