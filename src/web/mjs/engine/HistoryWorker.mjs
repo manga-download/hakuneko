@@ -2,8 +2,10 @@ export default class HistoryWorker {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Enums
     constructor() {
-        //document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) ); // => Chapter object
-        document.addEventListener( EventListener.onDownloadStatusUpdated, this.onDownloadStatusUpdated.bind( this ) ); // => Job object
+        /*
+         *document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) ); // => Chapter object
+         *document.addEventListener( EventListener.onDownloadStatusUpdated, this.onDownloadStatusUpdated.bind( this ) ); // => Job object
+         */
     }
 
     /**
