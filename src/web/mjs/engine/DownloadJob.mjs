@@ -1,5 +1,15 @@
 const eventUpdated = 'updated';
 
+const statusDefinitions = {
+    unavailable: 'unavailable', // chapter/manga that cannot be downloaded
+    offline: 'offline', // chapter/manga that cannot be downloaded, but exist in manga directory
+    available: 'available', // chapter/manga that can be added to the download list
+    queued: 'queued', // chapter/manga that is queued for download to the users device
+    downloading: 'downloading', // chapter/manga that is currently downloaded to the users device
+    completed: 'completed', // chapter/manga that already exist on the users device
+    failed: 'failed' // chapter/manga that failed to be downloaded
+};
+
 export default class DownloadJob extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Storage, Enums
@@ -56,7 +66,7 @@ export default class DownloadJob extends EventTarget {
      *
      */
     downloadPages( directory, callback ) {
-        this.setStatus( DownloadStatus.downloading );
+        this.setStatus( statusDefinitions.downloading );
         this.chapter.getPages( ( error, data ) => {
             if( !error && data ) {
                 // manga pages
@@ -81,7 +91,7 @@ export default class DownloadJob extends EventTarget {
             } else {
                 this.errors.push( new Error( 'Page list is empty' ) );
             }
-            this.setStatus( DownloadStatus.failed );
+            this.setStatus( statusDefinitions.failed );
             this.setProgress( 100 );
             callback();
         } );
@@ -121,7 +131,7 @@ export default class DownloadJob extends EventTarget {
             } )
             .then( () => {
                 this.setProgress( 100 );
-                this.setStatus( DownloadStatus.completed );
+                this.setStatus( statusDefinitions.completed );
                 callback();
             } )
             .catch( error => {
@@ -132,7 +142,7 @@ export default class DownloadJob extends EventTarget {
                 this.errors.push( error );
                 console.error( error, pages );
                 this.setProgress( 100 );
-                this.setStatus( DownloadStatus.failed );
+                this.setStatus( statusDefinitions.failed );
                 callback();
             } );
     }
@@ -259,7 +269,7 @@ export default class DownloadJob extends EventTarget {
         // finalize
             .then( () => {
                 this.setProgress( 100 );
-                this.setStatus( DownloadStatus.completed );
+                this.setStatus( statusDefinitions.completed );
                 callback();
             } )
         // process error
@@ -271,7 +281,7 @@ export default class DownloadJob extends EventTarget {
                 this.errors.push( error );
                 console.error( error, episode );
                 this.setProgress( 100 );
-                this.setStatus( DownloadStatus.failed );
+                this.setStatus( statusDefinitions.failed );
                 callback();
             } );
     }
@@ -337,7 +347,7 @@ export default class DownloadJob extends EventTarget {
         // finalize
             .then( () => {
                 this.setProgress( 100 );
-                this.setStatus( DownloadStatus.completed );
+                this.setStatus( statusDefinitions.completed );
                 callback();
             } )
         // process error
@@ -345,7 +355,7 @@ export default class DownloadJob extends EventTarget {
                 this.errors.push( error );
                 console.error( error, episode );
                 this.setProgress( 100 );
-                this.setStatus( DownloadStatus.failed );
+                this.setStatus( statusDefinitions.failed );
                 callback();
             } );
     }

@@ -13,6 +13,10 @@ const extensions = {
     mp4:  '.mp4'
 };
 
+const statusDefinitions = {
+    offline: 'offline', // chapter/manga that cannot be downloaded, but exist in manga directory
+};
+
 export default class Storage {
 
     // TODO: use dependency injection instead of globals for EbookGenerator
@@ -742,7 +746,7 @@ export default class Storage {
     _chapterOutputPath( chapter ) {
         let output = this._mangaOutputPath( chapter.manga );
         output = this.path.join( output, this.sanatizePath( chapter.title ) );
-        if( chapter.status === DownloadStatus.offline ) {
+        if( chapter.status === statusDefinitions.offline ) {
             return output;
         }
         // only valid for loading anime episodes, ignored when save pages

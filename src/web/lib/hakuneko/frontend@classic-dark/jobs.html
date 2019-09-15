@@ -161,17 +161,17 @@
              */
             getStatusClass( status ) {
                 switch ( status ) {
-                    //case DownloadStatus.unavailable:
+                    //case 'unavailable':
                     //    return 'fa-exclamation-triangle';
-                    //case DownloadStatus.available:
+                    //case 'available':
                     //    return 'fa-cloud';
-                    case DownloadStatus.queued:
+                    case 'queued':
                         return 'fa-clock buttonQueued';
-                    case DownloadStatus.downloading:
+                    case 'downloading':
                         return 'fa-exchange-alt buttonDownloading';
-                    case DownloadStatus.completed:
+                    case 'completed':
                         return 'fa-check button buttonCompleted';
-                    case DownloadStatus.failed:
+                    case 'failed':
                         return 'fa-exclamation-triangle button buttonFailed';
                     default:
                         return '';
@@ -192,7 +192,7 @@
              */
             restartDownload( e ) {
                 let job = e.model.item;
-                if( job.status === DownloadStatus.failed || job.status === DownloadStatus.completed ) {
+                if( job.status === 'failed' || job.status === 'completed' ) {
                     Engine.DownloadManager.addDownload( job.chapter );
                 }
             }
@@ -207,10 +207,10 @@
                     // force an UI update of the changed job
                     this.notifyPath( 'jobList.' + index + '.status' );
                     this.notifyPath( 'jobList.' + index + '.progress' );
-                    if( job.status === DownloadStatus.completed ) {
+                    if( job.status === 'completed' ) {
                         this.splice( 'jobList', index, 1 );
                     }
-                    if( job.status === DownloadStatus.failed && job.errors && job.errors.length > 0 ) {
+                    if( job.status === 'failed' && job.errors && job.errors.length > 0 ) {
                         this.notifyPath( 'jobList.' + index + '.errors' );
                     }
                 } else {
@@ -218,11 +218,11 @@
                     let position = this.jobList.findIndex( (item) => {
                         return job.isSame( item );
                     });
-                    if( position > -1 && this.jobList[position].status === DownloadStatus.failed ) {
+                    if( position > -1 && this.jobList[position].status === 'failed' ) {
                         this.splice( 'jobList', position, 1 );
                     }
                     // add new job
-                    if( job.status === DownloadStatus.queued || job.status === DownloadStatus.downloading ) {
+                    if( job.status === 'queued' || job.status === 'downloading' ) {
                         this.push( 'jobList', job );
                     }
                 }
@@ -234,7 +234,7 @@
             onClose( event ) {
                 // check if any job is running
                 let index = this.jobList.findIndex( job => {
-                    return ( job.status === DownloadStatus.queued || job.status === DownloadStatus.downloading );
+                    return ( job.status === 'queued' || job.status === 'downloading' );
                 } );
                 if( index < 0 || confirm( 'Downloads are still in progress.\nClose application anyway?' ) ) {
                     this.ipc.send( 'quit' );

@@ -281,19 +281,19 @@
              */
             getChapterDownloadTooltip( status ) {
                 switch ( status ) {
-                    case DownloadStatus.unavailable:
+                    case 'unavailable':
                         return 'Chapter is not available';
-                    case DownloadStatus.offline:
+                    case 'offline':
                         return 'OFFLINE\nThe chapter is only accessable from the manga directory';
-                    case DownloadStatus.available:
+                    case 'available':
                         return 'AVAILABLE\nClick to download chapter';
-                    case DownloadStatus.queued:
+                    case 'queued':
                         return 'QUEUED\nClick to remove chapter from download manager';
-                    case DownloadStatus.downloading:
+                    case 'downloading':
                         return 'DOWNLOADING';
-                    case DownloadStatus.completed:
+                    case 'completed':
                         return 'DOWNLOADED\nClick to delete and re-download chapter';
-                    case DownloadStatus.failed:
+                    case 'failed':
                         return 'DOWNLOAD FAILED\nCheck the exclamation mark in the joblist for details\nClick to delete and re-download the chapter';
                     default:
                         return 'No tooltip available!';
@@ -305,19 +305,19 @@
              */
             getChapterDownloadClass( status ) {
                 switch ( status ) {
-                    case DownloadStatus.unavailable:
+                    case 'unavailable':
                         return 'fa-exclamation-triangle';
-                    case DownloadStatus.offline:
+                    case 'offline':
                         return 'fa-folder buttonOffline';
-                    case DownloadStatus.available:
+                    case 'available':
                         return 'fa-cloud buttonAvailable';
-                    case DownloadStatus.queued:
+                    case 'queued':
                         return 'fa-cloud-download-alt buttonQueued';
-                    case DownloadStatus.downloading:
+                    case 'downloading':
                         return 'fa-cloud-download-alt buttonDownloading';
-                    case DownloadStatus.completed:
+                    case 'completed':
                         return 'fa-folder-open buttonCompleted';
-                    case DownloadStatus.failed:
+                    case 'failed':
                         return 'fa-exclamation-triangle buttonFailed';
                     default:
                         return '';
@@ -358,21 +358,21 @@
             onProcessChapterClick( e ) {
                 let chapter = e.model.item;
                 switch ( chapter.status ) {
-                    case DownloadStatus.unavailable:
+                    case 'unavailable':
                         alert( 'No action available!' );
                         break;
-                    case DownloadStatus.offline:
+                    case 'offline':
                         alert( 'No action available!' );
                         break;
-                    case DownloadStatus.available:
+                    case 'available':
                         Engine.DownloadManager.addDownload( chapter );
                         break;
-                    case DownloadStatus.completed:
+                    case 'completed':
                         if( confirm( 'Re-download existing chapter?' ) ) {
                             Engine.DownloadManager.addDownload( chapter );
                         }
                         break;
-                    case DownloadStatus.failed:
+                    case 'failed':
                         Engine.DownloadManager.addDownload( chapter );
                         break;
                     default:
@@ -399,7 +399,7 @@
                     chapterList = chapterList.filter( filterFunction );
                 }
                 chapterList = chapterList.filter( ( chapter ) => {
-                    return ( chapter.status === DownloadStatus.available );
+                    return ( chapter.status === 'available' );
                 });
                 if( chapterList.length > 0 && confirm( 'Download ' + chapterList.length + ' new chapter(s) from the current chapter list?' ) ) {
                     chapterList.forEach( ( chapter ) => {

@@ -2,6 +2,12 @@ const extensions = {
     img: '.img'
 };
 
+const statusDefinitions = {
+    offline: 'offline', // chapter/manga that cannot be downloaded, but exist in manga directory
+    available: 'available', // chapter/manga that can be added to the download list
+    completed: 'completed', // chapter/manga that already exist on the users device
+};
+
 export default class Chapter {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Storage, all Enums
@@ -9,7 +15,7 @@ export default class Chapter {
         this.manga = manga;
         this.id = id;
         this.title = title;
-        this.file = status === DownloadStatus.offline ? this._getRawFileName( title ) : this._getSanatizedFileName( title ) ;
+        this.file = status === statusDefinitions.offline ? this._getRawFileName( title ) : this._getSanatizedFileName( title ) ;
         this.language = language;
         this.status = status;
         this.pageProcess = false;
@@ -59,14 +65,14 @@ export default class Chapter {
      */
     updateStatus() {
         // do not overwrite download status ...
-        if( !this.status || this.status === DownloadStatus.available || this.status === DownloadStatus.completed ) {
+        if( !this.status || this.status === statusDefinitions.available || this.status === statusDefinitions.completed ) {
             if( !this.manga ) {
                 return;
             }
             if( this.manga.isChapterFileExisting( this ) ) {
-                this.setStatus( DownloadStatus.completed );
+                this.setStatus( statusDefinitions.completed );
             } else {
-                this.setStatus( DownloadStatus.available );
+                this.setStatus( statusDefinitions.available );
             }
         }
     }
@@ -77,7 +83,7 @@ export default class Chapter {
      * and a reference to the page list (undefined on error).
      */
     getPages( callback ) {
-        if( this.status === DownloadStatus.offline || this.status === DownloadStatus.completed ) {
+        if( this.status === statusDefinitions.offline || this.status === statusDefinitions.completed ) {
             Engine.Storage.loadChapterPages( this )
                 .then( pages => {
                     callback( null, pages );

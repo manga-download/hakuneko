@@ -1,5 +1,9 @@
 import DownloadJob from './DownloadJob.mjs';
 
+const statusDefinitions = {
+    queued: 'queued', // chapter/manga that is queued for download to the users device
+};
+
 export default class DownloadManager extends EventTarget {
 
     constructor() {
@@ -28,7 +32,7 @@ export default class DownloadManager extends EventTarget {
             // cannot dispatch the same event twice => ceate new event
             job.addEventListener('updated', evt => this.dispatchEvent(new CustomEvent(evt.type, evt)));
             this.queue[connector.id].push( job );
-            job.setStatus( DownloadStatus.queued );
+            job.setStatus( statusDefinitions.queued );
         }
     }
 

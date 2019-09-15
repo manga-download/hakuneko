@@ -15,7 +15,6 @@
         "jsPDF":"readonly",
         "HakuNeko": "readonly",
         "Engine": "readonly",
-        "DownloadStatus": "readonly",
         "EventListener": "readonly",
         "Connector": "readonly",
         "ClipboardConnector": "readonly"

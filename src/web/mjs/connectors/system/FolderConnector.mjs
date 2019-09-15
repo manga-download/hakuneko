@@ -1,6 +1,11 @@
 import Manga from '../../engine/Manga.mjs';
 import Chapter from '../../engine/Chapter.mjs';
 
+const statusDefinitions = {
+    offline: 'offline', // chapter/manga that cannot be downloaded, but exist in manga directory
+    completed: 'completed', // chapter/manga that already exist on the users device
+};
+
 /**
  * A special connector to show all mangas from a given local folder.
  * This connector does not implement the connector base class, because it operates different.
@@ -50,7 +55,7 @@ export default class FolderConnector {
             .then( entries => {
                 let mangaList = entries.map( entry => {
                 // TODO: exclude files
-                    let manga = new Manga( this, Engine.Storage.path.join( directory, entry ), entry, DownloadStatus.completed );
+                    let manga = new Manga( this, Engine.Storage.path.join( directory, entry ), entry, statusDefinitions.completed );
                     manga.getChapters = this.getChapters.bind( manga );
                     return manga;
                 } );
@@ -74,7 +79,7 @@ export default class FolderConnector {
         Engine.Storage._readDirectoryEntries( manga.id )
             .then( entries => {
                 let chapterList = entries.map( entry => {
-                    let chapter = new Chapter( manga, Engine.Storage.path.join( manga.id, entry ), entry, undefined, DownloadStatus.offline );
+                    let chapter = new Chapter( manga, Engine.Storage.path.join( manga.id, entry ), entry, undefined, statusDefinitions.offline );
                     chapter.getPages = manga.connector.getPages.bind( chapter );
                     return chapter;
                 } );

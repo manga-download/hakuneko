@@ -4,6 +4,10 @@ const formats = {
     csv:  '.csv'
 };
 
+const statusDefinitions = {
+    completed: 'completed', // chapter/manga that already exist on the users device
+};
+
 export default class HistoryWorker {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Enums
@@ -19,7 +23,7 @@ export default class HistoryWorker {
      */
     onDownloadStatusUpdated( evt ) {
         let job = evt.detail;
-        if( job.status === DownloadStatus.completed) {
+        if( job.status === statusDefinitions.completed) {
             let entry = {
                 website: job.labels.connector,
                 manga: job.labels.manga,

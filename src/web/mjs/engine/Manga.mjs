@@ -6,6 +6,12 @@ const extensions = {
     mp4:  '.mp4'
 };
 
+const statusDefinitions = {
+    offline: 'offline', // chapter/manga that cannot be downloaded, but exist in manga directory
+    available: 'available', // chapter/manga that can be added to the download list
+    completed: 'completed', // chapter/manga that already exist on the users device
+};
+
 export default class Manga {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Storage, all Enums
@@ -47,9 +53,9 @@ export default class Manga {
         }
         let sanatizedTitle = Engine.Storage.sanatizePath ( this.title );
         if( this.connector.existingMangas[sanatizedTitle] ) {
-            this.setStatus( DownloadStatus.completed );
+            this.setStatus( statusDefinitions.completed );
         } else {
-            this.setStatus( DownloadStatus.available );
+            this.setStatus( statusDefinitions.available );
         }
     }
 
@@ -92,7 +98,7 @@ export default class Manga {
             .then( () => {
                 for( let existingChapterTitle in this.existingChapters ) {
                     if( !this.isChapterFileCached( existingChapterTitle ) ) {
-                        this.chapterCache.push( new Chapter( this, 'file:///' + existingChapterTitle, existingChapterTitle, undefined, DownloadStatus.offline ) );
+                        this.chapterCache.push( new Chapter( this, 'file:///' + existingChapterTitle, existingChapterTitle, undefined, statusDefinitions.offline ) );
                     }
                 }
                 callback( null, this.chapterCache );
