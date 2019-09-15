@@ -127,13 +127,13 @@
             </tr>
         </table>
         <ul class="list" >
-                <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
-                    <li class="notification">
-                        Manga list is loading or empty<br>
-                        Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
-                        button to update list
-                    </li>
-                </template>
+            <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
+                <li class="notification">
+                    Manga list is loading or empty<br>
+                    Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
+                    button to update list
+                </li>
+            </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
                 <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item, item.hasUpdate) ]] " title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
             </template>
