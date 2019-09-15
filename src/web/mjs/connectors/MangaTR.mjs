@@ -52,7 +52,7 @@ export default class MangaTR extends Connector {
         this.requestOptions.method = 'POST';
         this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
         this.requestOptions.body = 'page=' + page;
-        let promise = this.fetchDOM( link, 'table.table tr td.table-bordered:first-of-type a', 5 )
+        let promise = this.fetchDOM( link, 'table.table tr td.table-bordered:first-of-type > a', 5 )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
