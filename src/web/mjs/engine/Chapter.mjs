@@ -1,3 +1,7 @@
+const events = {
+    updated: 'updated'
+};
+
 const extensions = {
     img: 'img'
 };
@@ -8,10 +12,11 @@ const statusDefinitions = {
     completed: 'completed', // chapter/manga that already exist on the users device
 };
 
-export default class Chapter {
+export default class Chapter extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Storage, all Enums
     constructor( manga, id, title, language, status ) {
+        super();
         this.manga = manga;
         this.id = id;
         this.title = title;
@@ -32,6 +37,7 @@ export default class Chapter {
     setStatus( status ) {
         if( this.status !== status ) {
             this.status = status;
+            this.dispatchEvent( new CustomEvent( events.updated, { detail: this } ) );
             document.dispatchEvent( new CustomEvent( EventListener.onChapterStatusChanged, { detail: this } ) );
         }
     }
