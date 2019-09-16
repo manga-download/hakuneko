@@ -35,7 +35,7 @@ export default class MangaToon extends Connector {
             return null;
         }
     }
-    
+
     /**
      *
      */
