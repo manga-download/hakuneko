@@ -1,13 +1,16 @@
 import Bookmark from './Bookmark.mjs';
 
+const events = {
+    added: 'added',
+    removed: 'removed',
+    changed: 'changed'
+};
+
 export default class BookmarkManager extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Connetors, Engine.Storage
     constructor(bookmarkImporter) {
         super();
-        this.eventAdded = 'added';
-        this.eventRemoved = 'removed';
-        this.eventChanged = 'changed';
         this.bookmarks = [];
         this._bookmarkImporter = bookmarkImporter;
     }
@@ -118,7 +121,7 @@ export default class BookmarkManager extends EventTarget {
                     }
                     this.bookmarks = data;
                     this.bookmarks.sort( this.compareBookmarks );
-                    this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.bookmarks } ) );
+                    this.dispatchEvent( new CustomEvent( events.changed, { detail: this.bookmarks } ) );
                     if( typeof callback === typeof Function ) {
                         callback( null );
                     }
@@ -144,7 +147,7 @@ export default class BookmarkManager extends EventTarget {
     saveProfile( profile, callback ) {
         Engine.Storage.saveConfig( 'bookmarks', this.bookmarks, 2 )
             .then( () => {
-                this.dispatchEvent( new CustomEvent( this.eventChanged, { detail: this.bookmarks } ) );
+                this.dispatchEvent( new CustomEvent( events.changed, { detail: this.bookmarks } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }
@@ -172,7 +175,7 @@ export default class BookmarkManager extends EventTarget {
             this.bookmarks.push( bookmark );
             this.bookmarks.sort( this.compareBookmarks );
             this.saveProfile( 'default', undefined );
-            this.dispatchEvent( new CustomEvent( this.eventAdded, { detail: bookmark } ) );
+            this.dispatchEvent( new CustomEvent( events.added, { detail: bookmark } ) );
             return true;
         }
         return false;
@@ -188,7 +191,7 @@ export default class BookmarkManager extends EventTarget {
         if( index > -1 ) {
             this.bookmarks.splice( index, 1 );
             this.saveProfile( 'default', undefined );
-            this.dispatchEvent( new CustomEvent( this.eventRemoved, { detail: bookmark } ) );
+            this.dispatchEvent( new CustomEvent( events.removed, { detail: bookmark } ) );
             return true;
         }
         return false;
