@@ -1,4 +1,6 @@
-const eventUpdated = 'updated';
+const events = {
+    updated: 'updated'
+};
 
 const statusDefinitions = {
     unavailable: 'unavailable', // chapter/manga that cannot be downloaded
@@ -48,7 +50,7 @@ export default class DownloadJob extends EventTarget {
             this.status = status;
             this.chapter.setStatus( status );
             this.chapter.manga.updateStatus();
-            this.dispatchEvent( new CustomEvent( eventUpdated, { detail: this } ) );
+            this.dispatchEvent( new CustomEvent( events.updated, { detail: this } ) );
         }
     }
 
@@ -58,7 +60,7 @@ export default class DownloadJob extends EventTarget {
     setProgress( progress ) {
         if( progress !== this.progress ) {
             this.progress = progress;
-            this.dispatchEvent( new CustomEvent( eventUpdated, { detail: this } ) );
+            this.dispatchEvent( new CustomEvent( events.updated, { detail: this } ) );
         }
     }
 
