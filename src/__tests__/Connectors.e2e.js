@@ -29,13 +29,13 @@ async function assertConnector(browserPage, parameters, expectations) {
     let remoteConnector = await browserPage.evaluateHandle(connectorID => {
         return Engine.Connectors.find(connector => connector.id === connectorID);
     }, parameters.connectorID);
-    expect(remoteConnector._remoteObject.className).toEqual(expectations.connectorClass);
+    expect(await browserPage.evaluate(o => o.constructor.name, remoteConnector)).toEqual(expectations.connectorClass);
 
     // get manga for website as reference to the remote instance
     let remoteManga = await browserPage.evaluateHandle((connector, mangaURL) => {
         return connector.getMangaFromURI(new URL(mangaURL));
     }, remoteConnector, parameters.mangaURL);
-    expect(remoteManga._remoteObject.className).toEqual('Manga');
+    expect(await browserPage.evaluate(o => o.constructor.name, remoteManga)).toEqual('Manga');
     let remoteMangaID = await (await remoteManga.getProperty('id')).jsonValue();
     let remoteMangaTitle = await (await remoteManga.getProperty('title')).jsonValue();
     expect(remoteMangaID).toEqual(expectations.mangaID);
@@ -54,7 +54,7 @@ async function assertConnector(browserPage, parameters, expectations) {
         // first => shift, last => pop, INT => getAtIndex
         return Number.isInteger(chaptersAccessor) ? chapters[chaptersAccessor] : chapters[chaptersAccessor]();
     }, remoteChapters, parameters.chaptersAccessor);
-    expect(remoteChapter._remoteObject.className).toEqual('Chapter');
+    expect(await browserPage.evaluate(o => o.constructor.name, remoteChapter)).toEqual('Chapter');
     let remoteChapterID = await (await remoteChapter.getProperty('id')).jsonValue();
     let remoteChapterTitle = await (await remoteChapter.getProperty('title')).jsonValue();
     expect(remoteChapterID).toEqual(expectations.chapterID);
