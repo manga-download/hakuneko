@@ -29,7 +29,7 @@ export default class DownloadManager extends EventTarget {
             return job.isSame( item );
         });
         if( !jobExist ) {
-            // cannot dispatch the same event twice => ceate new event
+            // cannot dispatch the same event twice => create new event
             job.addEventListener('updated', evt => this.dispatchEvent(new CustomEvent(evt.type, evt)));
             this.queue[connector.id].push( job );
             job.setStatus( statusDefinitions.queued );
