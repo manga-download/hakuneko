@@ -1,5 +1,9 @@
 import Chapter from './Chapter.mjs';
 
+const events = {
+    updated: 'updated'
+};
+
 const extensions = {
     m3u8: '.m3u8',
     mkv:  '.mkv',
@@ -12,10 +16,11 @@ const statusDefinitions = {
     completed: 'completed', // chapter/manga that already exist on the users device
 };
 
-export default class Manga {
+export default class Manga extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Storage, all Enums
     constructor( connector, id, title, status ) {
+        super();
         this.connector = connector;
         this.id = id;
         this.title = title;
@@ -34,6 +39,7 @@ export default class Manga {
     setStatus( status ) {
         if( this.status !== status ) {
             this.status = status;
+            this.dispatchEvent( new CustomEvent( events.updated, { detail: this } ) );
             document.dispatchEvent( new CustomEvent( EventListener.onMangaStatusChanged, { detail: this } ) );
             /*
              * TODO: thousands of mangas means thousands of event listeners... performance issues?
