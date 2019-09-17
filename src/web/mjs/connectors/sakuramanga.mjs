@@ -1,20 +1,16 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-
 export default class SakuraManga extends Connector {
-
     constructor() {
         super();
         super.id = 'sakuramanga';
         super.label = 'Sakura Manga';
         this.tags = ['manga', 'japanese'];
         this.url = 'https://sakuramanga.net';
-
         this.list = '/japanese-manga-list';
         this.japanese = 'japanese-manga';
         this.english = 'truyen-tranh-tieng-anh-english-manga';
     }
-
     async _getMangaFromURI(uri) {
         try {
             let request = new Request(uri, this.requestOptions);
@@ -26,7 +22,6 @@ export default class SakuraManga extends Connector {
             return error;
         }
     }
-
     async _getMangaList(callback) {
         try {
             let request = new Request(this.url + this.list, this.requestOptions);
@@ -43,7 +38,6 @@ export default class SakuraManga extends Connector {
             callback(error, undefined);
         }
     }
-
     async _getChapterList(manga, callback) {
         try {
             let request = new Request(this.url + manga.id, this.requestOptions);
@@ -61,7 +55,6 @@ export default class SakuraManga extends Connector {
             callback(error, undefined);
         }
     }
-
     async _getPageList(manga, chapter, callback) {
         try {
             let request = new Request(this.url + chapter.id, this.requestOptions);
@@ -81,4 +74,3 @@ export default class SakuraManga extends Connector {
         }
     }
 }
-
