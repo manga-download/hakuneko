@@ -11,8 +11,6 @@ export default class SakuraManga extends Connector {
         this.url = 'https://sakuramanga.net';
 
         this.list = '/japanese-manga-list';
-        this.japanese = 'japanese-manga';
-        this.english = 'truyen-tranh-tieng-anh-english-manga';
     }
 
     async _getMangaFromURI(uri) {
@@ -28,28 +26,26 @@ export default class SakuraManga extends Connector {
     }
 
     async _getMangaList(callback) {
-        let request = new Request(this.url + this.list, this.requestOptions);
-        this.fetchDOM(request, 'ul[id*="menu-menu-sidebar-"] li[id*="menu-item-"] a')
-
-            .then(data => {
-                let mangaList = data.map(element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                        title: element.text.trim()
-                    };
-                });
-                callback(null, mangaList);
-            })
-            .catch(error => {
-                console.error(error, this);
-                callback(error, undefined);
+        try {
+            let request = new Request(this.url + '/seri-listesi?type=text', this.requestOptions);
+            let data = await this.fetchDOM(request, 'ul[id*="menu-menu-sidebar-"] li[id*="menu-item-"] a');
+            let mangaList = data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: element.text.trim()
+                };
             });
+            callback(null, mangaList);
+        } catch (error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
     }
 
     async _getChapterList(manga, callback) {
         try {
             let request = new Request(this.url + manga.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'article[id*="post-"] header div a')
+            let data = await this.fetchDOM(request, 'article[id*="post-"] header div a');
             let chapterList = data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, request.url),
