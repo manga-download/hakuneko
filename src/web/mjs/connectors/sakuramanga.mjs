@@ -45,7 +45,7 @@ export default class SakuraManga extends Connector {
             let chapterList = data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: element.text.trim(),
+                    title: element.text.substring(element.text.lastIndexOf("chap")).trim(),
                     language: ''
                 };
             });
