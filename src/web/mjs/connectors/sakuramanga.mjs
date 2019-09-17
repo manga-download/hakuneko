@@ -11,6 +11,8 @@ export default class SakuraManga extends Connector {
         this.url = 'https://sakuramanga.net';
 
         this.list = '/japanese-manga-list';
+        this.japanese = 'japanese-manga';
+        this.english = 'truyen-tranh-tieng-anh-english-manga';
     }
 
     async _getMangaFromURI(uri) {
@@ -27,7 +29,7 @@ export default class SakuraManga extends Connector {
 
     async _getMangaList(callback) {
         try {
-            let request = new Request(this.url + '/seri-listesi?type=text', this.requestOptions);
+            let request = new Request(this.url + this.list, this.requestOptions);
             let data = await this.fetchDOM(request, 'ul[id*="menu-menu-sidebar-"] li[id*="menu-item-"] a');
             let mangaList = data.map(element => {
                 return {
