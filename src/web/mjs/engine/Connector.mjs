@@ -282,6 +282,40 @@ export default class Connector {
             }
         });
     }
+    // TODO: The decryption is outdated and no longer works...
+    /*
+     * deobfuscateMail($, element) {
+     * let parent = element.parent();
+     *
+     * // Step 1: decode plain mail text
+     * parent.find('[data-cfemail]').each((index, node) => {
+     * node = $(node);
+     * node.html(this._decryptMail(node.data('cfemail')));
+     * });
+     *
+     * // Step 2: decode mail links
+     * parent.find('a[href]').each((index, node) => {
+     * node = $(node);
+     * let match = node.attr('href').match(/^\/cdn-cgi.*?email-protection#?(.*?)$/);
+     * if(match) {
+     * node.attr('href', match[1] ? 'mailto:' + this._decryptMail(match[1]) : null);
+     * }
+     * });
+     * }
+     *
+     * _decryptMail(encrypted) {
+     * encrypted = typeof encrypted === 'string' ? encrypted : encrypted.toString();
+     * let decrypted = encrypted;
+     * if(encrypted) {
+     * decrypted = '';
+     * let key = parseInt(encrypted.substr(0, 2), 16);
+     * for (let i = 2; i < encrypted.length; i += 2) {
+     * decrypted += String.fromCharCode(parseInt(encrypted.substr(i, 2), 16) ^ key);
+     * }
+     * }
+     * return decrypted;
+     * }
+     */
 
     /**
      * [OBSOLETE => use getRootRelativeLink( element, base )]
