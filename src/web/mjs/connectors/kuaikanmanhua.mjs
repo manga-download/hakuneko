@@ -1,0 +1,99 @@
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
+export default class Kauikanmanhua extends Connector {
+    constructor() {
+        super();
+        super.id = 'kuaikanmanhua';
+        super.label = 'Kuaikanmanhua';
+        this.tags = ['manga', 'japanese'];
+        this.url = 'https://www.kuaikanmanhua.com';
+        this.list = '/tag/0';
+    }
+    async _getMangaFromURI(uri) {
+        try {
+            let request = new Request(uri, this.requestOptions);
+            let data = await this.fetchDOM(request, 'head title');
+            let id = uri.pathname;
+            let title = data[0].text.split(' | ')[0].trim();
+            return new Manga(this, id, title);
+        } catch (error) {
+            return error;
+        }
+    }
+    _getMangaListFromPages( mangaPageLinks, index ) {
+        if( index === undefined ) {
+            index = 0;
+        }
+        return this.wait( 0 )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.tagContent div a', 5 ) )
+            .then( data => {
+                let mangaList = data.map( element => {
+                    this.cfMailDecrypt( element );
+                    return {
+                        id: this.getRelativeLink( element ),
+                        title: element.text.trim()
+                    };
+                } );
+                if( index < mangaPageLinks.length - 1 ) {
+                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
+                        .then( mangas => mangas.concat( mangaList ) );
+                } else {
+                    return Promise.resolve( mangaList );
+                }
+            } );
+    }
+    _getMangaList( callback ) {
+        this.fetchDOM( this.url + this.list, 'ul.pagination li:nth-last-child(2) a' )
+            .then( data => {
+                let pageCount = parseInt( data[0].text.match( /\d+/ )[0] );
+                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.list + '?page=' + ( page + 1 ) );
+                return this._getMangaListFromPages( pageLinks );
+            } )
+            .then( data => {
+                callback( null, data );
+            } )
+            .catch( error => {
+                console.error( error, this );
+                callback( error, undefined );
+            } );
+    }
+
+
+
+
+    async _getChapterList(manga, callback) {
+        try {
+            let request = new Request(this.url + manga.id, this.requestOptions);
+            let data = await this.fetchDOM(request, 'article[id*="post-"] header div a');
+            let chapterList = data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: element.text.substring(element.text.lastIndexOf("chap")).trim(),
+                    language: ''
+                };
+            });
+            callback(null, chapterList);
+        } catch (error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
+    }
+    async _getPageList(manga, chapter, callback) {
+        try {
+            let request = new Request(this.url + chapter.id, this.requestOptions);
+            let data = await this.fetchDOM(request, 'div.entry-content noscript');
+            let copy = [];
+            data.forEach(function (item) {
+                //create new variable to work with
+                let str = item.innerText;
+                //push only the url of "src" into the copy array
+                copy.push(str.substring(str.lastIndexOf("src='") + 5, str.lastIndexOf("g'") + 1));
+            });
+            let pageList = copy.map(element => this.getAbsolutePath(element, request.url));
+            callback(null, pageList);
+        } catch (error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
+    }
+}
