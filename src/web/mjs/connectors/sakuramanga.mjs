@@ -16,7 +16,7 @@ export default class SakuraManga extends Connector {
             let request = new Request(uri, this.requestOptions);
             let data = await this.fetchDOM(request, 'head title');
             let id = uri.pathname;
-            let title = data[0].text.split(' | ')[0].trim();
+            let title = data[0].text.substring(0, data[0].text.indexOf("- Sakura Manga")).trim();
             return new Manga(this, id, title);
         } catch (error) {
             return error;
