@@ -1,0 +1,14 @@
+name: CI
+
+on: push
+
+jobs:
+  my-job:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+    - name: Print a greeting
+      env:
+        PROJECT: HakuNeko
+      run: |
+        echo $PROJECT
