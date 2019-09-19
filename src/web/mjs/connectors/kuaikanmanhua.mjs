@@ -14,7 +14,7 @@ export default class Kauikanmanhua extends Connector {
             let request = new Request(uri, this.requestOptions);
             let data = await this.fetchDOM(request, 'head title');
             let id = uri.pathname;
-            let title = data[0].text.split(' | ')[0].trim();
+            let title = data[0].text.split('|')[0].trim();
             return new Manga(this, id, title);
         } catch (error) {
             return error;
@@ -57,18 +57,14 @@ export default class Kauikanmanhua extends Connector {
                 callback( error, undefined );
             } );
     }
-
-
-
-
     async _getChapterList(manga, callback) {
         try {
             let request = new Request(this.url + manga.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'article[id*="post-"] header div a');
+            let data = await this.fetchDOM(request, 'div.TopicList div div.TopicItem div.title a');
             let chapterList = data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: element.text.substring(element.text.lastIndexOf("chap")).trim(),
+                    title: element.text.trim(),
                     language: ''
                 };
             });
@@ -81,15 +77,9 @@ export default class Kauikanmanhua extends Connector {
     async _getPageList(manga, chapter, callback) {
         try {
             let request = new Request(this.url + chapter.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.entry-content noscript');
-            let copy = [];
-            data.forEach(function (item) {
-                //create new variable to work with
-                let str = item.innerText;
-                //push only the url of "src" into the copy array
-                copy.push(str.substring(str.lastIndexOf("src='") + 5, str.lastIndexOf("g'") + 1));
-            });
-            let pageList = copy.map(element => this.getAbsolutePath(element, request.url));
+            let data = await this.fetchDOM(request, 'div.imgList source');
+            //TODO: lazyload
+            let pageList = data.map(element => this.getAbsolutePath(element, request.url));
             callback(null, pageList);
         } catch (error) {
             console.error(error, manga);
