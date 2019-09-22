@@ -48,14 +48,14 @@ export default class Kauikanmanhua extends Connector {
                 let pageCount = parseInt( data[0].text.match( /\d+/ )[0] );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.list + '?page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
-            } )
+            })
             .then( data => {
                 callback( null, data );
-            } )
+            })
             .catch( error => {
                 console.error( error, this );
                 callback( error, undefined );
-            } );
+            });
     }
     async _getChapterList(manga, callback) {
         try {
@@ -76,10 +76,13 @@ export default class Kauikanmanhua extends Connector {
     }
     async _getPageList(manga, chapter, callback) {
         try {
+            let script = `
+            new Promise(resolve => {
+                let pages = __NUXT__.data[0].comicInfo.comicImages.map(img => img.url);
+                resolve(pages);
+            });`;
             let request = new Request(this.url + chapter.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.imgList source');
-            //TODO: lazyload
-            let pageList = data.map(element => this.getAbsolutePath(element, request.url));
+            let pageList = await Engine.Request.fetchUI(request, script);
             callback(null, pageList);
         } catch (error) {
             console.error(error, manga);
