@@ -1,20 +1,12 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
-export default class OnManga extends MangaReaderCMS {
+export default class OnManga extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'onmanga';
-        super.label = 'مانجا اون لاين (OnManga)';
-        this.tags = [ 'manga', 'webtoon', 'arabic' ];
-        this.url = 'https://www.on-manga.me';
-
-        this.language = 'ar';
+        super.label = 'On Manga';
+        this.tags = [ 'webtoon', 'english' ];
+        this.url = 'https://onmanga.com';
     }
 }

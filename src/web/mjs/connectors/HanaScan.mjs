@@ -1,13 +1,7 @@
 import FlatManga from './templates/FlatManga.mjs';
 
-/**
- *
- */
 export default class HanaScan extends FlatManga {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'hanascan';

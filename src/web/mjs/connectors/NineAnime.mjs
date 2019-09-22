@@ -46,6 +46,33 @@ export default class NineAnime extends Connector {
         document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
     }
 
+    async _checkCaptcha(request) {
+        let response = await fetch(request);
+        let body = await response.text();
+        if(body.includes('/waf-verify')) {
+            return new Promise((resolve, reject) => {
+                let win = window.open(request.url);
+                let timer = setInterval(() => {
+                    if(win.closed) {
+                        clearTimeout(timeout);
+                        clearInterval(timer);
+                        resolve();
+                    } else {
+                        //console.log('OPEN:', win.location.href);
+                    }
+                }, 750);
+                let timeout = setTimeout(() => {
+                    clearTimeout(timeout);
+                    clearInterval(timer);
+                    win.close();
+                    reject(new Error('Captcha has not been solved within the given timeout!'));
+                }, 60000);
+            });
+        } else {
+            return Promise.resolve();
+        }
+    }
+
     /**
      *
      */
@@ -66,7 +93,8 @@ export default class NineAnime extends Connector {
      */
     _getMangaFromURI( uri ) {
         let request = new Request( uri.href, this.requestOptions );
-        return fetch( request )
+        return this._checkCaptcha(request)
+            .then(() => fetch( request ))
             .then( response => response.text() )
             .then( data => {
                 let dom = this.createDOM( data );
@@ -87,7 +115,8 @@ export default class NineAnime extends Connector {
     _getMangaListFromPages( mangaPageLinks, index ) {
         index = index || 0;
         let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this.fetchDOM( request, 'div.film-list div.item div.inner a.name', 5 )
+        return this._checkCaptcha(request)
+            .then(() => this.fetchDOM( request, 'div.film-list div.item div.inner a.name', 5 ))
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -109,7 +138,8 @@ export default class NineAnime extends Connector {
      */
     _getMangaList( callback ) {
         let request = new Request( this.url + '/filter?page=', this.requestOptions );
-        this.fetchDOM( request, 'div.paging-wrapper form span.total' )
+        this._checkCaptcha(request)
+            .then(() => this.fetchDOM( request, 'div.paging-wrapper form span.total' ))
             .then( data => {
                 let pageCount = parseInt( data[0].textContent.trim() );
                 let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
@@ -152,7 +182,8 @@ export default class NineAnime extends Connector {
             } );
             `;
         let request = new Request( this.url + manga.id, this.requestOptions );
-        Engine.Request.fetchUI( request, script )
+        this._checkCaptcha(request)
+            .then(() => Engine.Request.fetchUI( request, script ))
             .then( data => {
                 let episodeList = data.reduce( ( accumulator, server ) => accumulator.concat( server.episodes ), [] );
                 callback( null, episodeList );
@@ -171,7 +202,8 @@ export default class NineAnime extends Connector {
         let episodeID = chapter.id.split( '/' ).pop();
         let request = new Request( `${ this.url }/ajax/film/servers/${ animeID }?episode=${ episodeID }&ts=${ this.timestamp }&_=732`, this.requestOptions );
         request.headers.set( 'x-referer', this.url + chapter.id );
-        this.fetchJSON( request )
+        this._checkCaptcha(request)
+            .then(() => this.fetchJSON( request ))
             .then( data => {
                 let dom = this.createDOM( data.html );
                 let server = dom.querySelector( 'div.servers div.server.active' ).dataset;
@@ -179,7 +211,10 @@ export default class NineAnime extends Connector {
                 let uri = `${ this.url }/ajax/episode/info?server=${ server.id }&id=${ episode.id }&ts=${ this.timestamp }&_=780`;
                 return Promise.resolve( new Request( uri, request ) );
             } )
-            .then( request => this.fetchJSON( request ) )
+            .then( request => {
+                return this._checkCaptcha(request)
+                    .then(() => this.fetchJSON(request));
+            } )
             .then( data => {
                 switch(true) {
                 case data.target.includes( 'prettyfast' ):

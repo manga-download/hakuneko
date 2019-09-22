@@ -1,21 +1,14 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class KissAnime extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'kissanime';
         super.label = 'KissAnime';
         this.tags = [ 'anime', 'english' ];
         super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://kissanime.ru';
         this.pageLoadDelay = 5000;
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
@@ -36,38 +29,45 @@ export default class KissAnime extends Connector {
     }
 
     /**
-     *
+     * Overwrite base function to get manga from clipboard link.
      */
-    _getMangaList( callback ) {
-        this.fetchJSON( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', 3 )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaFromURI(uri) {
+        try {
+            let data = await this.fetchDOM(uri.href, 'div#container div.barContent a.bigChar', 3);
+            let id = uri.pathname;
+            let title = data[0].text.trim();
+            return Promise.resolve(new Manga(this, id, title));
+        } catch(error) {
+            return null;
+        }
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div.episodeList table.listing tr td:first-of-type a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim() + ' [RapidVideo]',
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
+    async _getMangaList(callback) {
+        try {
+            let data = await this.fetchJSON('http://cdn.hakuneko.download/' + this.id + '/mangas.json', 3);
+            callback(null, data);
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
+    }
+
+    async _getChapterList(manga, callback) {
+        try {
+            let request = new Request(this.url + manga.id, this.requestOptions);
+            let data = await this.fetchDOM(request, 'div.episodeList table.listing tr td:first-of-type a');
+            let chapterList = data.map( element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: element.text.replace(manga.title, '').trim() + ' [RapidVideo]',
+                    language: ''
+                };
             } );
+            callback( null, chapterList );
+        } catch(error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
     }
 
     /**

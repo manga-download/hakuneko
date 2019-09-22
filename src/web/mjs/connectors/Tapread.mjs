@@ -33,14 +33,22 @@ export default class Tapread extends Connector {
      */
     async _getMangaList(callback) {
         try {
-            let request = new Request(this.url + '/comic/moredetail', this.requestOptions);
-            let data = await this.fetchJSON(request);
-            let mangaList = data.result.moreDetailList.map(entry => {
-                return {
-                    id: entry.comicId,
-                    title: entry.comicName
-                };
-            });
+            let mangaList = [];
+            for(let page = 1; page < 99; page++)
+            {
+                let request = new Request(this.url + '/comic/moredetail?pageNo=' + page, this.requestOptions);
+                let data = await this.fetchJSON(request);
+                if(!data.result) {
+                    break;
+                }
+                let mangas = data.result.moreDetailList.map(entry => {
+                    return {
+                        id: entry.comicId,
+                        title: entry.comicName
+                    };
+                });
+                mangaList = mangaList.concat(mangas);
+            }
             callback(null, mangaList);
         } catch(error) {
             console.error(error, this);
