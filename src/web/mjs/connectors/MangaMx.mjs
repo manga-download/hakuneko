@@ -83,8 +83,8 @@ export default class MangaMx extends Connector {
             let script = `
                 new Promise(resolve => {
                     let images = cap_info[1];
-                    let base = images.shift();
-                    images = images.map(image => new URL(base + image, window.location.href).href);
+                    let baseURL = images.shift();
+                    images = images.map(image => new URL(baseURL + image, window.location.href).href);
                     resolve(images);
                 });
             `;
