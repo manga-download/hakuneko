@@ -1,6 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+
 export default class Kauikanmanhua extends Connector {
+
     constructor() {
         super();
         super.id = 'kuaikanmanhua';
@@ -9,6 +11,7 @@ export default class Kauikanmanhua extends Connector {
         this.url = 'https://www.kuaikanmanhua.com';
         this.list = '/tag/0';
     }
+
     async _getMangaFromURI(uri) {
         try {
             let request = new Request(uri, this.requestOptions);
@@ -20,6 +23,7 @@ export default class Kauikanmanhua extends Connector {
             return error;
         }
     }
+
     _getMangaListFromPages( mangaPageLinks, index ) {
         if( index === undefined ) {
             index = 0;
@@ -42,6 +46,7 @@ export default class Kauikanmanhua extends Connector {
                 }
             } );
     }
+
     _getMangaList( callback ) {
         this.fetchDOM( this.url + this.list, 'ul.pagination li:nth-last-child(2) a' )
             .then( data => {
@@ -57,6 +62,7 @@ export default class Kauikanmanhua extends Connector {
                 callback( error, undefined );
             });
     }
+
     async _getChapterList(manga, callback) {
         try {
             let request = new Request(this.url + manga.id, this.requestOptions);
@@ -67,13 +73,14 @@ export default class Kauikanmanhua extends Connector {
                     title: element.text.trim(),
                     language: ''
                 };
-            });
+            }).filter(chapter => chapter.id !== 'javascript:void(0);');
             callback(null, chapterList);
         } catch (error) {
             console.error(error, manga);
             callback(error, undefined);
         }
     }
+
     async _getPageList(manga, chapter, callback) {
         try {
             let script = `
