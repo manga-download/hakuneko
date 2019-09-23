@@ -19,7 +19,7 @@ const mimes = {
 const types = {
     text: 'text',
     password: 'password',
-    numeric: 'number',
+    numeric: 'numeric',
     select: 'select',
     checkbox: 'checkbox',
     file: 'file',
