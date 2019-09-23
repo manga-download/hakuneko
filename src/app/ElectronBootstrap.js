@@ -190,9 +190,15 @@ module.exports = class ElectronBootstrap {
             this._tray.on('click', () => {
                 if(this._window.isMinimized() || !this._window.isVisible()) {
                     this._tray.setToolTip(trayTooltipMinimize);
+                    if(process.platform === 'darwin') {
+                        electron.app.dock.show();
+                    }
                     this._window.show();
                 } else {
                     this._tray.setToolTip(trayTooltipRestore);
+                    if(process.platform === 'darwin') {
+                        electron.app.dock.hide();
+                    }
                     this._window.hide();
                 }
             });
