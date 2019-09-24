@@ -59,7 +59,7 @@ module.exports = class ElectronBootstrap {
 
         return new Promise(resolve => {
             electron.app.on('ready', () => {
-                this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'logo.png'));
+                this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'tray', process.platform === 'win32' ? 'logo.ico' : 'logo.png'));
                 this._registerCacheProtocol();
                 this._createWindow();
                 resolve();
@@ -184,7 +184,6 @@ module.exports = class ElectronBootstrap {
      */
     _setupTray(showTray) {
         if(showTray) {
-            console.log(this._appIcon);
             this._tray = new electron.Tray(this._appIcon);
             this._tray.setToolTip(trayTooltipMinimize);
             this._tray.on('click', () => {
