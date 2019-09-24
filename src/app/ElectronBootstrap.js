@@ -184,23 +184,35 @@ module.exports = class ElectronBootstrap {
      */
     _setupTray(showTray) {
         if(showTray) {
-            this._tray = new electron.Tray(this._appIcon);
-            this._tray.setToolTip(trayTooltipMinimize);
-            this._tray.on('click', () => {
-                if(this._window.isMinimized() || !this._window.isVisible()) {
-                    this._tray.setToolTip(trayTooltipMinimize);
-                    if(process.platform === 'darwin') {
-                        electron.app.dock.show();
+            let menu = [
+                {
+                    label: 'Minimize to Tray',
+                    //enabled: true,
+                    click: item => {
+                        if(process.platform === 'darwin') {
+                            electron.app.dock.hide();
+                        }
+                        this._window.hide();
+                        //item.enabled = false;
                     }
-                    this._window.show();
-                } else {
-                    this._tray.setToolTip(trayTooltipRestore);
-                    if(process.platform === 'darwin') {
-                        electron.app.dock.hide();
+                },
+                {
+                    label: 'Restore from Tray',
+                    //enabled: false,
+                    click: item => {
+                        if(process.platform === 'darwin') {
+                            electron.app.dock.show();
+                        }
+                        this._window.show();
+                        //item.enabled = false;
                     }
-                    this._window.hide();
+                },
+                {
+                    role: 'quit',
                 }
-            });
+            ];
+            this._tray = new electron.Tray(this._appIcon);
+            this._tray.setContextMenu(electron.Menu.buildFromTemplate(menu));
         } else {
             this._tray = undefined;
         }
