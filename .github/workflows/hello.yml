@@ -10,14 +10,22 @@ jobs:
     name: Ubuntu
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
-        with:
-          node-version: 10.x
-    - name: Build
+    - name: Print a greeting
       env:
-        PROJECT: HakuNeko
-      working-directory: ${{ github.workspace }}
+        MY_VAR: Hi there! My name is
+        FIRST_NAME: Mona
+        MIDDLE_NAME: The
+        LAST_NAME: Octocat
       run: |
-        echo $PROJECT
-        ls -la
+        echo $MY_VAR $FIRST_NAME $MIDDLE_NAME $LAST_NAME.
+    #- uses: actions/checkout@v1
+    #- uses: actions/setup-node@v1
+    #    with:
+    #      node-version: 10.x
+    #- name: Build
+    #  env:
+    #    PROJECT: HakuNeko
+    #  working-directory: ${{ github.workspace }}
+    #  run: |
+    #    echo $PROJECT
+    #    ls -la
