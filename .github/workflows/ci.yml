@@ -15,7 +15,7 @@ jobs:
       - name: Starting X Virtual Frame Buffer (Port 99)
         env:
           DISPLAY: ':99'
-        run:|
+        run: |
           #sudo apt-get update
           #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
           sudo /usr/bin/Xvfb 99 -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
