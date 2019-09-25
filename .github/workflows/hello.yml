@@ -10,6 +10,7 @@ jobs:
     name: Ubuntu
     runs-on: ubuntu-latest
     steps:
+    - uses: actions/checkout@v1
     - name: Print a greeting
       env:
         MY_VAR: Hi there! My name is
@@ -18,7 +19,7 @@ jobs:
         LAST_NAME: Octocat
       run: |
         echo $MY_VAR $FIRST_NAME $MIDDLE_NAME $LAST_NAME.
-    #- uses: actions/checkout@v1
+    #
     #- uses: actions/setup-node@v1
     #    with:
     #      node-version: 10.x
