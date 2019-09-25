@@ -188,7 +188,7 @@ module.exports = class ElectronBootstrap {
                 {
                     label: 'Minimize to Tray',
                     //enabled: true,
-                    click: item => {
+                    click: () => {
                         if(process.platform === 'darwin') {
                             electron.app.dock.hide();
                         }
@@ -199,7 +199,7 @@ module.exports = class ElectronBootstrap {
                 {
                     label: 'Restore from Tray',
                     //enabled: false,
-                    click: item => {
+                    click: () => {
                         if(process.platform === 'darwin') {
                             electron.app.dock.show();
                         }
