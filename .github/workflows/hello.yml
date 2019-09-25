@@ -6,15 +6,18 @@ on:
       - master
 
 jobs:
-  my-job:
-    name: My Job
+  linux:
+    name: Ubuntu
     runs-on: ubuntu-latest
     steps:
-    - name: Print a greeting
+    - uses: actions/checkout@v1
+    - uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+    - name: Build
       env:
-        MY_VAR: Hi there! My name is
-        FIRST_NAME: Mona
-        MIDDLE_NAME: The
-        LAST_NAME: Octocat
+        PROJECT: HakuNeko
+      working-directory: ${{ github.workspace }}
       run: |
-        echo $MY_VAR $FIRST_NAME $MIDDLE_NAME $LAST_NAME.
+        echo $PROJECT
+        ls -la
