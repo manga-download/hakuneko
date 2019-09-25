@@ -94,12 +94,12 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                     <td>
-                        Chapter List 
+                        Chapter List
                     </td>
-                    <td width="1"> 
+                    <td width="1">
                         <i class$="fas fa-fw button [[ getSortClass(chapterSort) ]]" on-click="onToggleSortClick" title="Click to toggle chapter sorting"></i>
                     </td>
-                    <td width="1"> 
+                    <td width="1">
                         <i class="fas fa-fw fa-download button" on-click="onDownloadChaptersClick" title="Click to download all chapters currently shown in the filtered and sorted list"></i>
                     </td>
                 </tr>
@@ -217,6 +217,7 @@
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
                 window.addEventListener( 'chapterUp', this.onRequestChapterUp.bind( this ) );
                 window.addEventListener( 'chapterDown', this.onRequestChapterDown.bind( this ) );
+                window.addEventListener( 'hideViewer', this.onRequestHideViewer.bind( this ) );
                 Engine.ChaptermarkManager.addEventListener( 'changed', this.onChaptermarksChanged.bind( this ) );
             }
 
@@ -436,10 +437,16 @@
                     return;
                 }
                 this.set( 'selectedChapter', e.model.item );
+                Engine.ChaptermarkManager.addChaptermark( this.selectedChapter );
+            }
+
+            onRequestHideViewer ( e ) {
+                this.set('selectedChapter', e.detail);
+                Engine.ChaptermarkManager.addChaptermark( this.selectedChapter );
             }
 
             /**
-             * 
+             *
              */
             onUnmarkChapterClick( event ) {
                 Engine.ChaptermarkManager.deleteChaptermark( this.markedChapter );
@@ -482,7 +489,7 @@
                 //e.model.item.openInFileBrowser();
                 Engine.Storage.showFolderContent( e.model.item );
             }
-            
+
             /**
              *
              */
@@ -491,7 +498,7 @@
                 let chapterList = this.getFilteredAndSortedList();
                 let index = chapterList.findIndex( ( c ) => { return c === chapter; } );
                 if( index > 0 ) {
-                   this.selectedChapter = chapterList[index-1]; 
+                   this.selectedChapter = chapterList[index-1];
                 }
             }
 
@@ -504,7 +511,7 @@
                 let chapterList = this.getFilteredAndSortedList();
                 let index = chapterList.findIndex( ( c ) => { return c === chapter; } );
                 if( index < chapterList.length-1 ) {
-                   this.selectedChapter = chapterList[index+1]; 
+                   this.selectedChapter = chapterList[index+1];
                 }
             }
 
@@ -574,7 +581,7 @@
             }
 
             /**
-             * 
+             *
              */
             onChapterStatusChanged( e ) {
                 let chapter = e.detail;
@@ -582,8 +589,8 @@
                     || !this.selectedManga
                     || !this.selectedConnector
                     || this.selectedManga.id !== chapter.manga.id
-                    || (this.selectedConnector.id !== this.bookmarkConnectorID 
-                        && this.selectedConnector.id !== this.clipboardConnectorID 
+                    || (this.selectedConnector.id !== this.bookmarkConnectorID
+                        && this.selectedConnector.id !== this.clipboardConnectorID
                         && this.selectedConnector.id !== chapter.manga.connector.id)
                 ) {
                     return;
