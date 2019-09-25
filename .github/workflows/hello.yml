@@ -1,6 +1,9 @@
-name: Greeting from Mona
+name: CI
 
-on: push
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   my-job:
