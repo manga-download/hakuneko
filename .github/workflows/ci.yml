@@ -19,7 +19,7 @@ jobs:
       - name: Build
         env:
           PROJECT: HakuNeko
-        working-directory: ${{ github.workspace }}
+        #working-directory: ${{ github.workspace }}
         run: |
           echo $PROJECT
           ls -la
