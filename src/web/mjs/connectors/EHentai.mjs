@@ -9,6 +9,9 @@ export default class EHentai extends Connector {
         super.label = 'E-Hentai';
         this.tags = ['hentai', 'multi-lingual'];
         this.url = 'https://e-hentai.org';
+        this.links = {
+            login: 'https://forums.e-hentai.org/index.php?act=Login&CODE=00'
+        };
     }
 
     /**
