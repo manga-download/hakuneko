@@ -38,6 +38,16 @@
             .button {
                 cursor: pointer;
             }
+            .link {
+                margin-left: 0.5em;
+            }
+            .active {
+                cursor: pointer;
+            }
+            .disabled {
+                cursor: not-allowed;
+                opacity: 0.25;
+            }
             .clear {
                 color: var(--connector-button-clear-color);
             }
@@ -122,16 +132,17 @@
                 display: flex;
                 flex-direction: row;
                 flex: 0;
+                margin-bottom: 0.25em;
+                border-bottom: var(--connector-title-border);
             }
             .title {
                 flex: 1;
                 font-size: 1.25em;
                 font-weight: bold;
-                margin-bottom: 0.25em;
-                border-bottom: var(--connector-title-border);
             }
             .control {
                 flex: 0;
+                white-space: nowrap;
             }
             .tag {
                 white-space: nowrap;
@@ -180,13 +191,15 @@
                     </div>
                     <div class="scroll">
                         <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern, selectedTags) ]]">
-                            <div class$="card button [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
+                            <div class$="card [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
                                 <img class="icon" src$="[[ item.icon ]]" onerror="this.src='/img/connectors/default';" />
                                 <div class="description">
                                     <div class="heading">
                                         <div class="title">[[ item.label ]]</div>
-                                        <div class$="control">
-                                            <i class="fas fa-external-link-square-alt button" title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha" on-click="openWebsite"></i>
+                                        <div class="control">
+                                            <i class$="fas fa-sign-in-alt link [[ getLoginClass(item.links) ]]" title="Click to open the login page" on-click="openLogin"></i>
+                                            <i class$="fas fa-coffee link [[ getDonationClass(item.links) ]]" title="Click to open the donation page" on-click="openDonation"></i>
+                                            <i class="fas fa-external-link-square-alt link active" title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha" on-click="openWebsite"></i>
                                         </div>
                                     </div>
                                     <div>
@@ -290,24 +303,48 @@
                 this.set( 'selectedConnector', evt.model.item );
                 this.closePopup();
             }
+
+            /**
+             *
+             */
+            _openLink(evt, link) {
+                if(link) {
+                    let popup = window.open(link, evt.model.label, 'nodeIntegration=no');
+                    // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
+                    let watchdog = setInterval(() => {
+                        if(popup.closed) {
+                            clearInterval(watchdog);
+                        } else {
+                            popup.eval(`window.onbeforeunload = evt => undefined;`);
+                        }
+                    }, 500);
+                }
+                evt.cancelBubble = true;
+                evt.stopPropagation();
+            }
             
             /**
              *
              */
-            openWebsite( evt ) {
-                if( evt.model.item.url ) {
-                    let popup = window.open( evt.model.item.url, evt.model.label, 'nodeIntegration=no' );
-                    // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
-                    let watchdog = setInterval( () => {
-                        if( popup.closed ) {
-                            clearInterval(watchdog);
-                        } else {
-                            popup.eval( `window.onbeforeunload = evt => undefined;` );
-                        }
-                    }, 500 );
-                }
-                evt.cancelBubble = true;
-                evt.stopPropagation();
+            openWebsite(evt) {
+                let item = evt.model.item;
+                this._openLink(evt, item.url);
+            }
+            
+            /**
+             *
+             */
+            openLogin(evt) {
+                let links = evt.model.item.links;
+                this._openLink(evt, links ? links.login : undefined);
+            }
+            
+            /**
+             *
+             */
+            openDonation(evt) {
+                let links = evt.model.item.links;
+                this._openLink(evt, links ? links.donation : undefined);
             }
 
             /**
@@ -387,6 +424,20 @@
              */
             getTagClass( selectedTags, tag ) {
                 return ( selectedTags.includes( tag ) ? 'tagSelected' : '' );
+            }
+
+            /**
+             *
+             */
+            getLoginClass(links) {
+                return links && links.login ? 'active' : 'disabled';
+            }
+
+            /**
+             *
+             */
+            getDonationClass(links) {
+                return links && links.donation ? 'active' : 'disabled';
             }
         }
         window.customElements.define(HakunekoConnectors.is, HakunekoConnectors);
