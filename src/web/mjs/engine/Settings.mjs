@@ -71,8 +71,12 @@ export default class Settings {
         //HYPOFLEX
         let electron = require( 'electron' );
         this.bookmarkDirectory = {
-            label: 'Bookmarks Directory',
-            description: 'The directory where bookmarks file will be stored',
+            label: 'Bookmarks Directory ⁽¹⁾',
+            description: [
+                'The directory where bookmarks file will be stored',
+                '',
+                '⁽¹⁾ Restart required to take affect',
+            ].join('\n'),
             input: types.directory,
             value: path.join( electron.remote.app.getPath( 'userData' ) )
             // value: path.join( docs )
