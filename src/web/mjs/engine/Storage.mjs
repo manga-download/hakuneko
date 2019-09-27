@@ -878,4 +878,40 @@ export default class Storage {
         }
         return undefined;
     }
+
+    /**
+     * HYPOFLEX
+     * Save the given value for the given key in the bookmark storage
+     */
+    saveBookmarks( key, value, indentation ) {
+        return new Promise( ( resolve, reject ) => {
+            this.fs.writeFile( Engine.Settings.bookmarkDirectory.value + '\\hakuneko.' + key, JSON.stringify( value, undefined, indentation ), function( error ) {
+                if( error ) {
+                    reject( error );
+                } else {
+                    resolve();
+                }
+            } );
+        } );
+    }
+
+    /**
+     * HYPOFLEX
+     * Load the value for the given key from the bookmark storage
+     */
+    async loadBookmarks( key ) {
+        //return fetch( this.config + key ).then( response => response.json() );
+        return new Promise( ( resolve, reject ) => {
+            this.fs.readFile( Engine.Settings.bookmarkDirectory.value + '\\hakuneko.' + key, 'utf8', ( error, data ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    resolve( JSON.parse( data ) );
+                } catch( e ) {
+                    reject( e );
+                }
+            } );
+        } );
+    }
 }

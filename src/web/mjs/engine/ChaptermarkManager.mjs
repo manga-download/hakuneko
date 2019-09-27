@@ -65,7 +65,7 @@ export default class ChaptermarkManager extends EventTarget {
      *
      */
     loadChaptermarks( callback ) {
-        Engine._settings.loadBookmarks( 'chaptermarks' )
+        Engine.Storage.loadBookmarks( 'chaptermarks' )
             .then( data => {
                 try {
                     if( !data ) {

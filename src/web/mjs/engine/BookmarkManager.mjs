@@ -114,7 +114,7 @@ export default class BookmarkManager extends EventTarget {
      */
     loadProfile( profile, callback ) {
         //HYPOFLEX
-        Engine._settings.loadBookmarks( 'bookmarks' )
+        Engine.Storage.loadBookmarks( 'bookmarks' )
             .then( data => {
                 try {
                     if( !data || !data.length || data.length === 0 ) {

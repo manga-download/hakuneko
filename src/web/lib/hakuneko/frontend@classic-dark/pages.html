@@ -327,7 +327,7 @@
              */
             hideViewer( event ) {
                 this.set( 'selectedMedia', -1 );
-                window.dispatchEvent( new CustomEvent( 'hideViewer', { detail: this.selectedChapter } ) );
+                Engine.ChaptermarkManager.addChaptermark( this.selectedChapter );
             }
 
             /**

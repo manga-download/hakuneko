@@ -217,7 +217,6 @@
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
                 window.addEventListener( 'chapterUp', this.onRequestChapterUp.bind( this ) );
                 window.addEventListener( 'chapterDown', this.onRequestChapterDown.bind( this ) );
-                window.addEventListener( 'hideViewer', this.onRequestHideViewer.bind( this ) );
                 Engine.ChaptermarkManager.addEventListener( 'changed', this.onChaptermarksChanged.bind( this ) );
             }
 
@@ -437,11 +436,6 @@
                     return;
                 }
                 this.set( 'selectedChapter', e.model.item );
-                Engine.ChaptermarkManager.addChaptermark( this.selectedChapter );
-            }
-
-            onRequestHideViewer ( e ) {
-                this.set('selectedChapter', e.detail);
                 Engine.ChaptermarkManager.addChaptermark( this.selectedChapter );
             }
 
