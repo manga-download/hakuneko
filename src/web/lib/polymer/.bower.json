@@ -76,12 +76,12 @@
     "test-fixture": "3.0.0-rc.1"
   },
   "homepage": "https://github.com/Polymer/polymer",
-  "version": "2.7.1",
-  "_release": "2.7.1",
+  "version": "2.8.0",
+  "_release": "2.8.0",
   "_resolution": {
     "type": "version",
-    "tag": "v2.7.1",
-    "commit": "d8b1863aac84238d972bafb9f54f39ff70cebffd"
+    "tag": "v2.8.0",
+    "commit": "0d7fe49a1ac992d287684c0ad5a01161c766971f"
   },
   "_source": "https://github.com/Polymer/polymer.git",
   "_target": "1.9 - 2",
