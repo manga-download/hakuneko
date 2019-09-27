@@ -885,7 +885,7 @@ export default class Storage {
      */
     saveBookmarks( key, value, indentation ) {
         return new Promise( ( resolve, reject ) => {
-            this.fs.writeFile( Engine.Settings.bookmarkDirectory.value + '\\hakuneko.' + key, JSON.stringify( value, undefined, indentation ), function( error ) {
+            this.fs.writeFile( this.path.join(Engine.Settings.bookmarkDirectory.value, 'hakuneko.' + key), JSON.stringify( value, undefined, indentation ), function( error ) {
                 if( error ) {
                     reject( error );
                 } else {
@@ -900,10 +900,8 @@ export default class Storage {
      * Load the value for the given key from the bookmark storage
      */
     async loadBookmarks( key ) {
-        //return fetch( this.config + key ).then( response => response.json() );
         return new Promise( ( resolve, reject ) => {
-            console.log(Engine.Settings.bookmarkDirectory.value + '\\hakuneko.' + key);
-            this.fs.readFile( Engine.Settings.bookmarkDirectory.value + '\\hakuneko.' + key, 'utf8', ( error, data ) => {
+            this.fs.readFile( this.path.join(Engine.Settings.bookmarkDirectory.value, 'hakuneko.' + key), 'utf8', ( error, data ) => {
                 try {
                     if( error ) {
                         throw error;
