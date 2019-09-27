@@ -145,10 +145,10 @@
             /**
              *
              */
-            clickChooseDirectory( e ) {
-                let path = Engine.Storage.folderBrowser( this.item.value );
-                if( path ) {
-                    this.set( 'item.value', path );
+             async clickChooseDirectory(evt) {
+                let path = await Engine.Storage.folderBrowser(this.item.value);
+                if(path) {
+                    this.set('item.value', path);
                 }
             }
         }
