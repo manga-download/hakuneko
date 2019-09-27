@@ -721,6 +721,15 @@ export default class Storage {
     }
 
     /**
+     * Helper function to generate the path where the bookmarks and markers are stored.
+     * HYPOFLEX
+     */
+    _bookmarkOutputPath( ) {
+        let output = Engine.Settings.bookmarkDirectory.value;
+        return output;
+    }
+
+    /**
      * Helper function to generate the path where the connector mangas are stored.
      */
     _connectorOutputPath( connector ) {

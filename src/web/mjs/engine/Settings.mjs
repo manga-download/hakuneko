@@ -39,6 +39,9 @@ export default class Settings {
         } catch ( e ) {
             docs = '.';
         }
+        //HYPOFLEX
+        this.fs = require( 'fs' );
+
         this.frontend = {
             label: 'Frontend ⁽¹⁾',
             description: [
@@ -64,6 +67,15 @@ export default class Settings {
             description: 'The base directory where all downloaded mangas will be stored',
             input: types.directory,
             value: path.join( docs, 'Mangas' )
+        };
+        //HYPOFLEX
+        let electron = require( 'electron' );
+        this.bookmarkDirectory = {
+            label: 'Bookmarks Directory',
+            description: 'The directory where bookmarks file will be stored',
+            input: types.directory,
+            value: path.join( electron.remote.app.getPath( 'userData' ) )
+            // value: path.join( docs )
         };
         this.useSubdirectory = {
             label: 'Use Sub-Directories',
@@ -221,6 +233,15 @@ export default class Settings {
             } catch( error ) {
                 alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message );
             }
+            /**
+             * HYPOFLEX
+             * check bookmark directory existence
+             */
+            try {
+                await Engine.Storage.directoryExist( this.bookmarkDirectory.value );
+            } catch( error ) {
+                alert( 'WARNING: Cannot access the bookmark directory!\n\n' + error.message );
+            }
             // apply settings to each connector
             Engine.Connectors.forEach( connector => {
                 for( let property in connector.config ) {
@@ -314,5 +335,41 @@ export default class Settings {
             return value;
 
         }
+    }
+
+    /**
+     * HYPOFLEX
+     * Save the given value for the given key in the bookmark storage
+     */
+    saveBookmarks( key, value, indentation ) {
+        return new Promise( ( resolve, reject ) => {
+            this.fs.writeFile( this.bookmarkDirectory.value + '\\hakuneko.' + key, JSON.stringify( value, undefined, indentation ), function( error ) {
+                if( error ) {
+                    reject( error );
+                } else {
+                    resolve();
+                }
+            } );
+        } );
+    }
+
+    /**
+     * HYPOFLEX
+     * Load the value for the given key from the bookmark storage
+     */
+    async loadBookmarks( key ) {
+        //return fetch( this.config + key ).then( response => response.json() );
+        return new Promise( ( resolve, reject ) => {
+            this.fs.readFile( this.bookmarkDirectory.value + '\\hakuneko.' + key, 'utf8', ( error, data ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    resolve( JSON.parse( data ) );
+                } catch( e ) {
+                    reject( e );
+                }
+            } );
+        } );
     }
 }

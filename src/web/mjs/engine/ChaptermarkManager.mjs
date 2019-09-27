@@ -35,7 +35,8 @@ export default class ChaptermarkManager extends EventTarget {
      * Will reset chaptermarks when saving fails.
      */
     _syncChaptermarks( callback ) {
-        Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
+        //HYPOFLEX
+        Engine._settings.saveBookmarks( 'chaptermarks', this.chaptermarks, 2 )
             .then( () => {
                 this.dispatchEvent( new CustomEvent( events.changed, { detail: this.chaptermarks } ) );
                 if( typeof callback === typeof Function ) {
@@ -64,7 +65,7 @@ export default class ChaptermarkManager extends EventTarget {
      *
      */
     loadChaptermarks( callback ) {
-        Engine.Storage.loadConfig( 'chaptermarks' )
+        Engine._settings.loadBookmarks( 'chaptermarks' )
             .then( data => {
                 try {
                     if( !data ) {
