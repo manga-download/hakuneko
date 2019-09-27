@@ -146,7 +146,7 @@ export default class BookmarkManager extends EventTarget {
      * Callback will be provided with an error (or null if no error).
      */
     saveProfile( profile, callback ) {
-        Engine._settings.saveBookmarks( 'bookmarks', this.bookmarks, 2 )
+        Engine.Storage.saveBookmarks( 'bookmarks', this.bookmarks, 2 )
             .then( () => {
                 this.dispatchEvent( new CustomEvent( events.changed, { detail: this.bookmarks } ) );
                 if( typeof callback === typeof Function ) {

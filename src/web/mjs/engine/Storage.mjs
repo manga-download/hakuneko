@@ -902,6 +902,7 @@ export default class Storage {
     async loadBookmarks( key ) {
         //return fetch( this.config + key ).then( response => response.json() );
         return new Promise( ( resolve, reject ) => {
+            console.log(Engine.Settings.bookmarkDirectory.value + '\\hakuneko.' + key);
             this.fs.readFile( Engine.Settings.bookmarkDirectory.value + '\\hakuneko.' + key, 'utf8', ( error, data ) => {
                 try {
                     if( error ) {

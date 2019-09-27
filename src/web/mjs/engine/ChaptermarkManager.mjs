@@ -36,7 +36,7 @@ export default class ChaptermarkManager extends EventTarget {
      */
     _syncChaptermarks( callback ) {
         //HYPOFLEX
-        Engine._settings.saveBookmarks( 'chaptermarks', this.chaptermarks, 2 )
+        Engine.Storage.saveBookmarks( 'chaptermarks', this.chaptermarks, 2 )
             .then( () => {
                 this.dispatchEvent( new CustomEvent( events.changed, { detail: this.chaptermarks } ) );
                 if( typeof callback === typeof Function ) {
