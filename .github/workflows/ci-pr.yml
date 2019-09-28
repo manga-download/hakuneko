@@ -6,18 +6,34 @@ name: Continuous Integration (PR)
 on: pull_request
 
 jobs:
-  linux:
-    name: Ubuntu
-    runs-on: ubuntu-latest
+  pr-integration:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macOS-latest]
+    name: 'System: ${{ matrix.os }}'
+    runs-on: ${{ matrix.os }}
     steps:
+      - name: Starting X Virtual Frame Buffer (Port 99)
+        if: startsWith(matrix.os, 'ubuntu')
+        env:
+          DISPLAY: ':99'
+        run: |
+          #sudo apt-get update
+          #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
+          sudo /usr/bin/Xvfb 99 -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
+          disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
       - uses: actions/checkout@v1
         with:
           fetch-depth: 1
-      - name: Dump PR Info
-        run: |
-          echo REF ${{ github.ref }}
-          echo REPO ${{ github.repository }}
-          echo SOURCE ${{ github.head_ref }}
-          echo Target ${{ github.base_ref }}
-          git branch -vv
-          ls -l
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install NPM Packages
+        run: npm install
+      - name: Lint
+        run: npm run lint
+      - name: Build (web)
+        run: npm run build:web
+      - name: Test
+        run: npm run test
