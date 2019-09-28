@@ -14,6 +14,8 @@ jobs:
     name: 'System: ${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
     steps:
+      - name: DEBUG
+        run: sudo /usr/bin/Xvfb -ac :88 -screen 0 1920x1080x24
       - name: Starting X Virtual Frame Buffer (Port 99)
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -40,5 +42,3 @@ jobs:
         #env:
         #  DISPLAY: ':99'
         run: npm run test
-      - name: DEBUG
-        run: sudo /usr/bin/Xvfb -ac :88 -screen 0 1920x1080x24
