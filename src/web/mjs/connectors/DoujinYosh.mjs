@@ -13,6 +13,6 @@ export default class DoujinYosh extends MangaYosh {
         super.id = 'doujinyosh';
         super.label = 'DoujinYosh';
         this.tags = [ 'hentai', 'indonesian' ];
-        this.url = 'https://doujinyosh.com';
+        this.url = 'https://doujinyosh.xyz';
     }
 }
