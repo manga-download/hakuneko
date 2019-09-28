@@ -34,7 +34,7 @@ module.exports = class ElectronBootstrap {
         };
         this._appIcon;
         this._minimizeToTray = false; // only supported when tray is shown
-        this._showTray = true;
+        this._showTray = false;
         this._tray;
     }
 
