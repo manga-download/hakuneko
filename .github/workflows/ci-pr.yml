@@ -9,7 +9,8 @@ jobs:
   pr-integration:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macOS-latest]
+        #os: [windows-latest, ubuntu-latest, macOS-latest]
+        os: [ubuntu-latest]
     name: 'System: ${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
     steps:
