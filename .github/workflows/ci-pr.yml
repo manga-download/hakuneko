@@ -12,17 +12,12 @@ jobs:
     steps:
       - uses: actions/checkout@v1
         with:
-          ref: ${{ github.base_ref }}
           fetch-depth: 1
       - name: Dump PR Info
-        env:
-          REF: ${{ github.ref }}
-          REPO: ${{ github.repository }}
-          SOURCE: ${{ github.head_ref }}
-          TARGET: ${{ github.base_ref }}
         run: |
-          echo REF $REF
-          echo REPO $REPO
-          echo SOURCE $SOURCE
-          echo TARGET $TARGET
+          echo REF ${{ github.ref }}
+          echo REPO ${{ github.repository }}
+          echo SOURCE ${{ github.head_ref }}
           echo Target ${{ github.base_ref }}
+          git branch -vv
+          ls -l
