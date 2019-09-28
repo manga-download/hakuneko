@@ -37,6 +37,6 @@ jobs:
       - name: Build (web)
         run: npm run build:web
       - name: Test
-        env:
-          DISPLAY: ':99'
+        #env:
+        #  DISPLAY: ':99'
         run: npm run test
