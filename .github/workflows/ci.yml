@@ -1,6 +1,7 @@
 # https://help.github.com/en/articles/workflow-syntax-for-github-actions
+# https://help.github.com/en/articles/contexts-and-expression-syntax-for-github-actions
 
-name: CI
+name: Continuous Integration
 
 on:
   push:
