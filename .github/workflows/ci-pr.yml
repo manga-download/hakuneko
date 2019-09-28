@@ -15,7 +15,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: DEBUG
-        run: sudo /usr/bin/Xvfb -ac :88 -screen 0 1920x1080x24
+        run: |
+          sudo /usr/bin/Xvfb -ac :88 -screen 0 1920x1080x24 &
+          sleep 10
       - name: Starting X Virtual Frame Buffer (Port 99)
         if: startsWith(matrix.os, 'ubuntu')
         run: |
