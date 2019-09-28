@@ -1,0 +1,28 @@
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+# https://help.github.com/en/articles/contexts-and-expression-syntax-for-github-actions
+
+name: Continuous Integration (PR)
+
+on: pull_request
+
+jobs:
+  linux:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          ref: ${{ github.base_ref }}
+          fetch-depth: 1
+      - name: Dump PR Info
+        env:
+          REF: ${{ github.ref }}
+          REPO: ${{ github.repository }}
+          SOURCE: ${{ github.head_ref }}
+          TARGET: ${{ github.base_ref }}
+        run: |
+          echo REF $REF
+          echo REPO $REPO
+          echo SOURCE $SOURCE
+          echo TARGET $TARGET
+          echo Target ${{ github.base_ref }}
