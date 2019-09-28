@@ -14,16 +14,12 @@ jobs:
     name: 'System: ${{ matrix.os }}'
     runs-on: ${{ matrix.os }}
     steps:
-      - name: DEBUG
-        run: |
-          sudo /usr/bin/Xvfb -ac :88 -screen 0 1920x1080x24 &
-          sleep 10
       - name: Starting X Virtual Frame Buffer (Port 99)
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           #sudo apt-get update
           #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
-          sudo /usr/bin/Xvfb -ac :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          /usr/bin/Xvfb -ac :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
           disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
           export DISPLAY=:99.0
       - name: Checkout ${{ github.repository }} @ ${{ github.ref }}
@@ -41,6 +37,6 @@ jobs:
       - name: Build (web)
         run: npm run build:web
       - name: Test
-        #env:
-        #  DISPLAY: ':99'
+        env:
+          DISPLAY: ':99'
         run: npm run test
