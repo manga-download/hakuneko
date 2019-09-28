@@ -13,7 +13,7 @@ export default class MangaYosh extends WordPressMadara {
         super.id = 'mangayosh';
         super.label = 'MangaYosh';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://mangayosh.com';
+        this.url = 'https://mangayosh.xyz';
     }
 
     /**
