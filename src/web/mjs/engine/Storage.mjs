@@ -722,7 +722,6 @@ export default class Storage {
 
     /**
      * Helper function to generate the path where the bookmarks and markers are stored.
-     * HYPOFLEX
      */
     _bookmarkOutputPath( ) {
         let output = Engine.Settings.bookmarkDirectory.value;
@@ -880,7 +879,6 @@ export default class Storage {
     }
 
     /**
-     * HYPOFLEX
      * Save the given value for the given key in the bookmark storage
      */
     saveBookmarks( key, value, indentation ) {
@@ -896,7 +894,6 @@ export default class Storage {
     }
 
     /**
-     * HYPOFLEX
      * Load the value for the given key from the bookmark storage
      */
     async loadBookmarks( key ) {

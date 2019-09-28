@@ -39,7 +39,6 @@ export default class Settings {
         } catch ( e ) {
             docs = '.';
         }
-        //HYPOFLEX
         this.fs = require( 'fs-extra' );
 
         this.frontend = {
@@ -68,7 +67,6 @@ export default class Settings {
             input: types.directory,
             value: path.join( docs, 'Mangas' )
         };
-        //HYPOFLEX
         let electron = require( 'electron' );
         this.bookmarkDirectory = {
             label: 'Bookmarks Directory ⁽¹⁾',
@@ -238,7 +236,6 @@ export default class Settings {
                 alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message );
             }
             /**
-             * HYPOFLEX
              * check bookmark directory existence
              */
             try {
@@ -286,6 +283,7 @@ export default class Settings {
         Engine.Storage.saveConfig( 'settings', data, 2 )
             .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
+                document.dispatchEvent( new CustomEvent( EventListener.onSettingsSaved, { detail: this } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }

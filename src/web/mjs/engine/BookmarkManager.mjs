@@ -13,6 +13,8 @@ export default class BookmarkManager extends EventTarget {
         super();
         this.bookmarks = [];
         this._bookmarkImporter = bookmarkImporter;
+
+        document.addEventListener( EventListener.onSettingsSaved, this.saveProfile.bind( this ) );
     }
 
     async importBookmarks( file ) {
@@ -113,7 +115,6 @@ export default class BookmarkManager extends EventTarget {
      * Callback will be provided with an error (or null if no error).
      */
     loadProfile( profile, callback ) {
-        //HYPOFLEX
         Engine.Storage.loadBookmarks( 'bookmarks' )
             .then( data => {
                 try {
