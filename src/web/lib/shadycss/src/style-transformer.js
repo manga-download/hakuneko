@@ -338,6 +338,8 @@ class StyleTransformer {
     if (isNth) {
       selector = this._twiddleNthPlus(selector);
     }
+    selector = selector.replace(DIR_PAREN, (m, before, dir, after) =>
+      `[dir="${dir}"] ${before}${after}, ${before}[dir="${dir}"]${after}`);
     return selector;
   }
 
@@ -367,8 +369,6 @@ class StyleTransformer {
         selector = selector.replace(SLOTTED_PAREN, (m, paren) => ` > ${paren}`);
       }
     }
-    selector = selector.replace(DIR_PAREN, (m, before, dir) =>
-      `[dir="${dir}"] ${before}, ${before}[dir="${dir}"]`);
     return {value: selector, combinator, stop};
   }
 
@@ -476,7 +476,7 @@ const SLOTTED_START = new RegExp(`^(${SLOTTED})`);
 const HOST_PAREN = /(:host)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))/;
 // similar to HOST_PAREN
 const SLOTTED_PAREN = /(?:::slotted)(?:\(((?:\([^)(]*\)|[^)(]*)+?)\))/;
-const DIR_PAREN = /(.*):dir\((?:(ltr|rtl))\)/;
+const DIR_PAREN = /(.*):dir\((?:(ltr|rtl))\)(.*)/;
 const CSS_CLASS_PREFIX = '.';
 const PSEUDO_PREFIX = ':';
 const CLASS = 'class';

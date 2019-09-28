@@ -68,6 +68,12 @@ WCT = {waitFor: function (cb) {HTMLImports.whenReady(cb)}}
   :host(:dir(rtl)) {
     color: blue;
   }
+  :dir(rtl) > .pin.expand > .slider-knob > .slider-knob-inner::after {
+    color: blue;
+  }
+  span:dir(rtl) > div > x-bar {
+    color: blue;
+  }
   </style>
 </template>
 
@@ -187,6 +193,15 @@ suite('Style Transformer', function() {
       assert.equal(ast.rules[1].selector, '[dir="rtl"] x-dir, x-dir[dir="rtl"]');
     });
 
+    test('complicated :dir', function() {
+      // :dir(rtl) > .pin.expand > .slider-knob > .slider-knob-inner::after
+      assert.equal(ast.rules[2].selector, '[dir="rtl"] .x-dir > .pin.expand.x-dir > .slider-knob.x-dir > .slider-knob-inner.x-dir::after, .x-dir[dir="rtl"] > .pin.expand.x-dir > .slider-knob.x-dir > .slider-knob-inner.x-dir::after');
+    });
+
+    test(':dir with before segment, and after segment', function() {
+      // span:dir(rtl) > div > x-bar
+      assert.equal(ast.rules[3].selector, '[dir="rtl"] span.x-dir > div.x-dir > x-bar.x-dir, span.x-dir[dir="rtl"] > div.x-dir > x-bar.x-dir');
+    });
   });
 
   suite('custom-style transforms', function() {
