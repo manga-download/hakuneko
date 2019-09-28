@@ -91,6 +91,12 @@ describe("HakuNeko Engine", () => {
     beforeAll(async () => {
         //jest.clearAllMocks();
         process = spawn(command.app, command.args, command.opts);
+        process.stdout.on('data', (data) => {
+            console.log(`hakuneko [stdout]: ${data}`);
+        });
+        process.stderr.on('data', (data) => {
+            console.error(`hakuneko [stderr]: ${data}`);
+        });
         await new Promise(resolve => setTimeout(resolve, 7500));
         browser = await puppeteer.connect(connection);
         [page] = await browser.pages();
