@@ -1,7 +1,7 @@
 # https://help.github.com/en/articles/workflow-syntax-for-github-actions
 # https://help.github.com/en/articles/contexts-and-expression-syntax-for-github-actions
 
-name: Continuous Integration (PR)
+name: Continuous Integration
 
 on: pull_request
 
@@ -11,7 +11,7 @@ jobs:
       matrix:
         #os: [windows-latest, ubuntu-latest, macOS-latest]
         os: [ubuntu-latest]
-    name: 'System: ${{ matrix.os }}'
+    name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
       - name: Starting X Virtual Frame Buffer (Port 99)
