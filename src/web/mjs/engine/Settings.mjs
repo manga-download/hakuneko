@@ -254,7 +254,8 @@ export default class Settings {
             } );
             document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
         } catch( error ) {
-            console.error('Failed to load HakuNeko settings!', error);
+            console.error('Failed to load HakuNeko settings! New settings file created.', error);
+            this.saveProfile();
         }
     }
 
