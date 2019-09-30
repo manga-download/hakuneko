@@ -132,7 +132,7 @@ export default class UraSunday extends Connector {
             let ext = '.jpg';
             let max = parseInt( data.match( /comicMax\s*=\s*(\d+)/ )[1] );
 
-            let images = [...( new Array( max ) ).keys()].map( page => {
+            let images = [... new Array( max ).keys()].map( page => {
                 let index = page + 1;
                 index = index < 10 ? '0' + index : index;
                 return [ base, comic, type, subpath, imgid + '_' + index + ext ].join( '/' );
@@ -164,7 +164,7 @@ export default class UraSunday extends Connector {
             return fetch( request )
                 .then( response => response.text() )
                 .then( token => {
-                    let images = [...( new Array( max ) ).keys()].map( page => {
+                    let images = [... new Array( max ).keys()].map( page => {
                         let index = page + 1;
                         return base + index + token;
                     } );

@@ -53,7 +53,7 @@ export default class GoldenMangas extends Connector {
         this.fetchDOM( this.url + '/mangas', 'nav ul.pagination li:nth-last-child(2) a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas?pagina=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/mangas?pagina=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

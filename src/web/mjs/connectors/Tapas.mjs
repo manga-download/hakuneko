@@ -50,7 +50,7 @@ export default class Tapas extends Connector {
         this.fetchDOM( this.url + '/comics?browse=ALL&sort_type=TITLE', 'div.global-pagination-wrap a.page-num' )
             .then( data => {
                 let pageCount = parseInt( data.pop().text );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/comics?browse=ALL&sort_type=TITLE&pageNumber=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/comics?browse=ALL&sort_type=TITLE&pageNumber=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

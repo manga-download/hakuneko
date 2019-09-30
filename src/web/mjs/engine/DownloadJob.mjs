@@ -368,7 +368,7 @@ export default class DownloadJob extends EventTarget {
     _splitRange( size ) {
         let part = this.chunkSize;
         let chunks = Math.ceil( size / part );
-        chunks = [...(new Array( chunks )).keys()];
+        chunks = [...new Array( chunks ).keys()];
         chunks = chunks.map(index => {
             let start = index * part;
             let end = start + part - 1;

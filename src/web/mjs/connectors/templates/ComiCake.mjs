@@ -44,7 +44,7 @@ export default class ComiCake extends Connector {
         this.fetchDOM( this.url + this.path, 'div.pagination a.fright' )
             .then( data => {
                 let pageCount = data.length === 0 ? this.defaultPageCount : parseInt( data[0].href.match(/(\d+)\/$/)[1] ) ;
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

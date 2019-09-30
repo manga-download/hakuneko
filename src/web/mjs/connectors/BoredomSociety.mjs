@@ -75,7 +75,7 @@ export default class BoredomSociety extends Connector {
         this.fetchDOM( this.url + '/titles/page/', 'div.titles_pages a:nth-last-of-type(2)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/titles/page/' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/titles/page/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -119,7 +119,7 @@ export default class BoredomSociety extends Connector {
     _getPageList( manga, chapter, callback ) {
         this.fetchDOM( this.url + chapter.id, 'div.reader_mangaimagebox source.reader_mangaimage' )
             .then( data => {
-                let pageList = data.map( element => ( new URL( this.getRelativeLink( element ), this.url ) ).href );
+                let pageList = data.map( element => new URL( this.getRelativeLink( element ), this.url ).href );
                 callback( null, pageList );
             } )
             .catch( error => {

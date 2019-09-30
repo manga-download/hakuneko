@@ -80,7 +80,7 @@ export default class AnimExtremist extends Connector {
         return this.fetchDOM( request, 'source#photo' )
             .then( data => {
                 let link = this.getRootRelativeOrAbsoluteLink( data[0], request.url ).replace( /^\//, '' );
-                link = ( new URL( link, request.url ) ).href;
+                link = new URL( link, request.url ).href;
                 return fetch( link, this.requestOptions );
             } )
             .then( response => response.blob() )

@@ -48,7 +48,7 @@ export default class WordPressLightPro extends Connector {
         this.fetchDOM( this.url + this.path, this.queryMangasPageCount )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)\/$/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + this.path + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -91,7 +91,7 @@ export default class WordPressLightPro extends Connector {
         this.fetchDOM( this.url + manga.id, this.queryChaptersPageCount )
             .then( data => {
                 let pageCount = data.length === 0 ? 1 : parseInt( data[0].href.match( /(\d+)\/$/ )[1] ) ;
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + manga.id + 'chapters-list/' + ( page + 1 ) + '/' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + manga.id + 'chapters-list/' + ( page + 1 ) + '/' );
                 pageLinks[0] = this.url + manga.id;
                 return this._getChapterListFromPages( manga, pageLinks );
             } )

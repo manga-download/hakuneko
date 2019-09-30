@@ -38,7 +38,7 @@ export default class MangaTube extends Connector {
                 this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
                 let params = new URLSearchParams();
                 params.append( 'action', 'load_series_list_entries' );
-                let promises = [...( new Array( pageCount ) ).keys()].map( page => {
+                let promises = [... new Array( pageCount ).keys()].map( page => {
                     return this.wait( 50 * page )
                         .then( () => {
                             params.set( 'parameter[page]', page + 1 );

@@ -65,7 +65,7 @@ export default class MangaHasu extends Connector {
         this.fetchDOM( this.url + '/directory.html', 'div.pagination-ct a:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match(/(\d+)$/)[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory.html?page=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/directory.html?page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

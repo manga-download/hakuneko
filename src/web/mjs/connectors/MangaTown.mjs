@@ -53,7 +53,7 @@ export default class MangaTown extends Connector {
         this.fetchDOM( this.url + '/directory/', 'div.next-page a:nth-last-child(3)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory/0-0-0-0-0-0/' + ( page + 1 ) + '.htm' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/directory/0-0-0-0-0-0/' + ( page + 1 ) + '.htm' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

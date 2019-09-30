@@ -51,7 +51,7 @@ export default class Kauikanmanhua extends Connector {
         this.fetchDOM( this.url + this.list, 'ul.pagination li:nth-last-child(2) a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.match( /\d+/ )[0] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.list + '?page=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + this.list + '?page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             })
             .then( data => {

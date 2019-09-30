@@ -44,7 +44,7 @@ export default class JapScan extends Connector {
         this.fetchDOM( this.url + '/mangas/1', 'div.card ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/mangas/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

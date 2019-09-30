@@ -44,7 +44,7 @@ export default class NineHentai extends Connector {
         try {
             let request = this._createPageListRequest(chapter.id);
             let data = await this.fetchJSON(request);
-            let pageList = [...(new Array(data.results.total_page)).keys()].map(page => {
+            let pageList = [...new Array(data.results.total_page).keys()].map(page => {
                 return data.results.image_server + data.results.id + '/' + (page + 1) + '.jpg';
             });
             callback(null, pageList);
