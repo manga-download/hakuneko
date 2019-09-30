@@ -67,7 +67,6 @@ export default class Settings {
             input: types.directory,
             value: path.join( docs, 'Mangas' )
         };
-        let electron = require( 'electron' );
         this.bookmarkDirectory = {
             label: 'Bookmarks Directory ⁽¹⁾',
             description: [
@@ -76,7 +75,7 @@ export default class Settings {
                 '⁽¹⁾ Restart required to take affect',
             ].join('\n'),
             input: types.directory,
-            value: path.join( electron.remote.app.getPath( 'userData' ) )
+            value: path.join( app.getPath( 'userData' ) )
             // value: path.join( docs )
         };
         this.useSubdirectory = {
@@ -254,8 +253,7 @@ export default class Settings {
             } );
             document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
         } catch( error ) {
-            console.error('Failed to load HakuNeko settings! New settings file created.', error);
-            this.saveProfile();
+            console.error('Failed to load HakuNeko settings!', error);
         }
     }
 
