@@ -68,7 +68,7 @@ export default class MangaSail extends Connector {
         this.fetchDOM( this.url + '/directory?page=9999', 'ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory?page=' + page );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/directory?page=' + page );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

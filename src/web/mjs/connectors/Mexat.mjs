@@ -71,7 +71,7 @@ export default class Mexat extends Connector {
                 let pageLinks = [ request.url ];
                 if( data.length > 0 ) {
                     let pageCount = parseInt( data[0].href.match( /\/(\d+)\/?$/ )[1] );
-                    pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
+                    pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
                 }
                 return this._getChapterListFromPages( manga, pageLinks );
             } )

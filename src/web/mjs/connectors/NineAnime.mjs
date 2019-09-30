@@ -142,7 +142,7 @@ export default class NineAnime extends Connector {
             .then(() => this.fetchDOM( request, 'div.paging-wrapper form span.total' ))
             .then( data => {
                 let pageCount = parseInt( data[0].textContent.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

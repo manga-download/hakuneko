@@ -68,7 +68,7 @@ export default class MangaParkEN extends Connector {
         this.fetchDOM( this.url + '/search?orderby=a-z', 'div.manga-list ul.paging li:nth-last-child(3) a' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /page=(\d+)/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/search?orderby=a-z&page=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/search?orderby=a-z&page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

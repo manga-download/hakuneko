@@ -98,7 +98,7 @@ export default class SpeedBinb extends Connector {
         return fetch( ptimgConfigURL, this.requestOptions )
             .then( response => response.json() )
             .then( data => {
-                let href = ( new URL( data.resources.i.src, ptimgConfigURL ) ).href;
+                let href = new URL( data.resources.i.src, ptimgConfigURL ).href;
                 views = data.views;
                 return fetch( href, this.requestOptions );
             } )

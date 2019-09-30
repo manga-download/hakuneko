@@ -72,7 +72,7 @@ export default class MangaReaderCMS extends Connector {
                 let pageList = data.map( element => {
                     let src = ( element.dataset['src'] || element.src ).trim();
                     if( src.startsWith( '//' ) ) {
-                        src = ( new URL( this.url ) ).protocol + src;
+                        src = new URL( this.url ).protocol + src;
                     }
                     return src;
                 } );

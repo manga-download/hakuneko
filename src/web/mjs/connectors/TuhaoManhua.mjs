@@ -48,7 +48,7 @@ export default class TuhaoManhua extends Connector {
         this.fetchDOM( this.url + '/f-1------updatetime--9999.html', 'div.page-pagination ul li:last-of-type a.active' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/f-1------updatetime--' + ( page + 1 ) + '.html' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/f-1------updatetime--' + ( page + 1 ) + '.html' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -93,7 +93,7 @@ export default class TuhaoManhua extends Connector {
                 uri.searchParams.set( 'did', data.match( /var\s+did\s*=\s*(\d+)\s*;/ )[1] );
                 uri.searchParams.set( 'sid', data.match( /var\s+sid\s*=\s*(\d+)\s*;/ )[1] );
                 let pageCount = parseInt( data.match( /var\s+pcount\s*=\s*(\d+)\s*;/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => {
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => {
                     uri.searchParams.set( 'iid', page + 1 );
                     uri.searchParams.set( 'tmp', Math.random() );
                     return this.createConnectorURI( uri.href );

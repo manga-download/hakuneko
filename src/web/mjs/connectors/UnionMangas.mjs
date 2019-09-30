@@ -43,7 +43,7 @@ export default class UnionMangas extends Connector {
         this.fetchDOM( this.url + '/mangas/visualizacoes', 'nav ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match(/(\d+)$/)[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/visualizacoes/' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/mangas/visualizacoes/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -85,7 +85,7 @@ export default class UnionMangas extends Connector {
             .then( data => {
                 let pageList = data.map( element => {
                     let uri = new URL( element.src );
-                    uri.protocol = ( new URL( this.url ) ).protocol;
+                    uri.protocol = new URL( this.url ).protocol;
                     return uri.href;
                 } );
                 pageList = pageList.filter( page => {

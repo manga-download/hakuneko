@@ -66,7 +66,7 @@ export default class BloggerManga extends Connector {
         Engine.Request.fetchUI( request, script )
             .then( data => {
                 let pageCount = parseInt( data );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + `/feeds/posts/${this.feed}?alt=json&max-results=${this.queryMangasPerPage}&start-index=` + ( this.queryMangasPerPage * page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + `/feeds/posts/${this.feed}?alt=json&max-results=${this.queryMangasPerPage}&start-index=` + ( this.queryMangasPerPage * page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

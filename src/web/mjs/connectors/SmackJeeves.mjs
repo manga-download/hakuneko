@@ -84,7 +84,7 @@ export default class SmackJeeves extends Connector {
                 } else {
                     chapterList = chapterList.map( element => {
                         return {
-                            id: ( new URL( element.value || comicURL, comicURL ) ).href,
+                            id:  new URL( element.value || comicURL, comicURL ).href,
                             title: element.label.trim() || element.textContent.trim(),
                             language: 'en'
                         };
