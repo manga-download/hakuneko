@@ -723,8 +723,8 @@ export default class Storage {
     /**
      * Helper function to generate the path where the bookmarks and markers are stored.
      */
-     get _bookmarkOutputPath() {
-        return Engine.Settings.bookmarkDirectory.value;
+    get _bookmarkOutputPath() {
+        return Engine.Settings.bookmarkDirectory;
     }
 
     /**
