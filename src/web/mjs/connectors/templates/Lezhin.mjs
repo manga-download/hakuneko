@@ -45,7 +45,7 @@ export default class Lezhin extends Connector {
                     // TODO: remove own credentials
                     form.append( 'username', this.config.username.value );
                     form.append( 'password', this.config.password.value );
-                    form.append( 'redirect', ( new URL( this.url ) ).pathname + '/account' );
+                    form.append( 'redirect', new URL( this.url ).pathname + '/account' );
                     this.requestOptions.method = 'POST';
                     this.requestOptions.body = form.toString();
                     this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
@@ -215,7 +215,7 @@ export default class Lezhin extends Connector {
                     path = 'scroll';
                     //q = 30;
                 }
-                let pageList = [...( new Array( pages ) ).keys()].map( page => {
+                let pageList = [... new Array( pages ).keys()].map( page => {
                     let uri = new URL( [this.cdnURL, 'v2/comics', comicID, 'episodes', episodeID, 'contents', path + 's', page + 1].join( '/' ) );
                     uri.searchParams.set( 'access_token', this.accessToken );
                     //uri.searchParams.set( 'purchased', false );

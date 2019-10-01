@@ -53,7 +53,7 @@ export default class MangaNel extends Connector {
         this.fetchDOM( this.url + this.path + '1', this.queryMangasPageCount )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /\d+$/ ) );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.path + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + this.path + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -70,7 +70,7 @@ export default class MangaNel extends Connector {
      */
     _getChapterList( manga, callback ) {
         // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
-        let uri = ( new URL( manga.id, this.url ) ).href; // ( manga.id.startsWith( 'http' ) ? '' : this.url ) + manga.id;
+        let uri = new URL( manga.id, this.url ).href; // ( manga.id.startsWith( 'http' ) ? '' : this.url ) + manga.id;
         fetch( uri, this.requestOptions )
             .then( response => {
                 if( response.status !== 200 ) {
@@ -104,7 +104,7 @@ export default class MangaNel extends Connector {
      */
     _getPageList( manga, chapter, callback ) {
         // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
-        let uri = ( new URL( chapter.id, this.url ) ).href; // ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id;
+        let uri = new URL( chapter.id, this.url ).href; // ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id;
         this.fetchDOM( uri, this.queryPages )
             .then( data => {
                 let pageList = data.map( element => element.src );

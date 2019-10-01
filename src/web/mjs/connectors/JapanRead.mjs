@@ -55,7 +55,7 @@ export default class JapanRead extends Connector {
         this.fetchDOM( request, 'nav ul.pagination li.page-item:nth-last-of-type(2) a.page-link' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + '?page=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + '?page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

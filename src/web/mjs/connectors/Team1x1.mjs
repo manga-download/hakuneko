@@ -47,7 +47,7 @@ export default class Team1x1 extends Connector {
         this.fetchDOM( request, 'div.pagination div.wp-pagenavi > a.page:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

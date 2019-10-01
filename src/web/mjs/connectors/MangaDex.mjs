@@ -91,7 +91,7 @@ export default class MangaDex extends Connector {
         this.fetchDOM( this.url + '/titles/2/250', 'nav ul.pagination li.page-link:last-of-type a.page-link' )
             .then( data => {
                 let pageCount = !data.length ? 999 : parseInt( data[0].href.match( /(\d+)\/$/)[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/titles/2/' + ( page + 1 ) + '/' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/titles/2/' + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

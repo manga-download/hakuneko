@@ -47,7 +47,7 @@ export default class ElevenToon extends Connector {
         this.fetchDOM( request, 'main.main nav.pg_wrap span.pg a.pg_end' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /\d+$/ )[0] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -94,7 +94,7 @@ export default class ElevenToon extends Connector {
                 let pageLinks = [ request.url ];
                 if( data.length > 0 ) {
                     let pageCount = parseInt( data[0].href.match( /\d+$/ )[0] );
-                    pageLinks = [...( new Array( pageCount ) ).keys()].map( page => {
+                    pageLinks = [... new Array( pageCount ).keys()].map( page => {
                         uri.searchParams.set( 'page', page + 1 );
                         return uri.href;
                     } );

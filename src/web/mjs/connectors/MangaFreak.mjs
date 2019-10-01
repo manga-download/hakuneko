@@ -47,7 +47,7 @@ export default class MangaFreak extends Connector {
         this.fetchDOM( request, 'div.list_main div.pagination a.last_p' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /\d+$/ )[0].trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + '/' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + '/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

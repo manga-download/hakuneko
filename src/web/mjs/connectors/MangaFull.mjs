@@ -47,7 +47,7 @@ export default class MangaFull extends Connector {
         this.fetchDOM( request, 'div.pagelistcate div.pagelist div.pagination ul.pagination li:nth-last-of-type(2) a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

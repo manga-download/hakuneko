@@ -55,7 +55,7 @@ export default class TAADD extends Connector {
     _getMangaList( callback ) {
         return Promise.resolve( this.pageCount )
             .then( pageCount => {
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/search/?completed_series=either&page=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/search/?completed_series=either&page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

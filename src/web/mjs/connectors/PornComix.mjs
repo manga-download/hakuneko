@@ -66,7 +66,7 @@ export default class PornComix extends Connector {
         this.fetchDOM( request, 'div.main div.content div.posts div.paginator a:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)\/?$/ )[1].trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + 'page/' + ( page + 1 ) + '/' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

@@ -93,7 +93,7 @@ export default class MangaFox extends Connector {
         this.fetchDOM( this.url + '/directory/', 'div.pager-list div.pager-list-left a:nth-last-child(2)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/directory/' + ( page + 1 ) + '.htm' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/directory/' + ( page + 1 ) + '.htm' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

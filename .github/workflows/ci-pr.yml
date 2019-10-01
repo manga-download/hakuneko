@@ -3,25 +3,25 @@
 
 name: Continuous Integration
 
-on:
-  push:
-    branches:
-      - master
+on: pull_request
 
 jobs:
-  linux:
-    name: Ubuntu
-    runs-on: ubuntu-latest
+  pr-integration:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macOS-latest]
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Starting X Virtual Frame Buffer (Port 99)
-        env:
-          DISPLAY: ':99'
+        if: startsWith(matrix.os, 'ubuntu')
         run: |
           #sudo apt-get update
           #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
-          sudo /usr/bin/Xvfb 99 -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
+          sudo /usr/bin/Xvfb -ac :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
           disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
-      - uses: actions/checkout@v1
+      - name: Checkout ${{ github.repository }} @ ${{ github.ref }}
+        uses: actions/checkout@v1
         with:
           fetch-depth: 1
       - name: Install NodeJS
@@ -35,11 +35,6 @@ jobs:
       - name: Build (web)
         run: npm run build:web
       - name: Test
-        run: npm run test
-      - name: HELLO WORLD
         env:
-          PROJECT: HakuNeko
-        #working-directory: ${{ github.workspace }}
-        run: |
-          echo $PROJECT
-          ls -la
+          DISPLAY: ':99'
+        run: npm run test

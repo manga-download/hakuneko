@@ -77,7 +77,7 @@ export default class TimelessLeaf extends Connector {
             .then( data => {
                 let pageList = data.map( element => {
                     if( element['srcset'] ) {
-                        let host = ( new URL( this.url ) ).hostname;
+                        let host = new URL( this.url ).hostname;
                         let source = element.srcset.split( ',' )
                             // split into links and resolution
                             .map( src => src.trim().split( ' ' ) )

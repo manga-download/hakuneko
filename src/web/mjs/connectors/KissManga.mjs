@@ -119,7 +119,7 @@ export default class KissManga extends Connector {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         Engine.Request.fetchUI( request, script )
             .then( data => {
-                let pageList = data.map( link => ( new URL( link, this.url ) ).href );
+                let pageList = data.map( link => new URL( link, this.url ).href );
                 callback( null, pageList );
             } )
             .catch( error => {
