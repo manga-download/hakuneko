@@ -28,14 +28,35 @@ function execute(command, silent) {
 }
 
 /**
+ * NOTE: same function as in build-web => merge
+ * @param {string} identifier 
+ */
+async function gitStashPush(glob, identifier) {
+    identifier = identifier || 'HTDOCS#' + Date.now().toString(16).toUpperCase();
+    await execute(`git stash push -u -m '${identifier}' ${glob}`);
+    return identifier;
+}
+
+/**
+ * NOTE: same function as in build-web => merge
+ * @param {string} identifier 
+ */
+async function gitStashPop(identifier) {
+    let out = await execute(`git stash list`);
+    if(out.includes(identifier)) {
+        await execute(`git stash pop`);
+    }
+}
+
+/**
  * currently limited to unix systems only => TODO: use node modules instead of cmd tools
  * @param {string} archive 
  */
 async function sslPack(archive, meta) {
     let key = path.resolve(config.key);
     let cwd = process.cwd();
-    if(config.source) {
-        process.chdir(config.source);
+    if(config.build) {
+        process.chdir(config.build);
     }
     await execute(`zip -r ${archive} .`);
     let signature = await execute(`openssl dgst -sha256 -hex -sign ${key} ${archive} | cut -d' ' -f2`);
@@ -46,15 +67,11 @@ async function sslPack(archive, meta) {
 /**
  * 
  */
-async function gitCommit() {
-    let cwd = process.cwd();
-    if(config.source) {
-        process.chdir(config.target);
-    }
-    await execute(`git add .`);
-    await execute(`git commit -m 'updated releases'`);
+async function gitCommit(glob) {
+    // TODO: provide user credentials to push changes
+    await execute(`git add ${glob}`);
+    await execute(`git commit -m 'deploy release: ${config.deploy}'`);
     await execute(`git push origin master`);
-    process.chdir(cwd);
 }
 
 /**
@@ -62,13 +79,18 @@ async function gitCommit() {
  */
 async function main() {
     let meta = 'latest';
+    let glob = path.join(config.deploy, '*');
     let archive = Date.now().toString(36).toUpperCase() + '.zip';
     await sslPack(archive, meta);
-    await fs.remove(config.target);
-    await fs.mkdir(config.target);
-    await fs.move(path.resolve(config.source, meta), path.resolve(config.target, meta));
-    await fs.move(path.resolve(config.source, archive), path.resolve(config.target, archive));
-    await gitCommit();
+    await fs.remove(config.deploy);
+    await fs.mkdir(config.deploy);
+    await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
+    await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
+    let stashID = await gitStashPush(glob);
+    await execute(`git checkout gh-pages`);
+    await fs.remove(config.deploy);
+    await gitStashPop(stashID);
+    await gitCommit(glob);
 }
 
 // exit application as soon as any uncaught exception is thrown
