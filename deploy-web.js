@@ -28,6 +28,27 @@ function execute(command, silent) {
 }
 
 /**
+ * NOTE: same function as in build-web => merge
+ * @param {string} identifier 
+ */
+async function gitStashPush(identifier) {
+    identifier = identifier || 'HTDOCS#' + Date.now().toString(16).toUpperCase();
+    await execute(`git stash push -u -m '${identifier}'`);
+    return identifier;
+}
+
+/**
+ * NOTE: same function as in build-web => merge
+ * @param {string} identifier 
+ */
+async function gitStashPop(identifier) {
+    let out = await execute(`git stash list`);
+    if(out.includes(identifier)) {
+        await execute(`git stash pop`);
+    }
+}
+
+/**
  * currently limited to unix systems only => TODO: use node modules instead of cmd tools
  * @param {string} archive 
  */
@@ -69,8 +90,11 @@ async function main() {
     await fs.move(path.resolve(config.source, meta), path.resolve(config.deploy, meta));
     await fs.move(path.resolve(config.source, archive), path.resolve(config.deploy, archive));
     // git stash directory `config.deploy`
+    //let stashID = await gitStashPush();
     // switch to gh-pages branch
+    //await ...
     // pop stash `config.deploy`
+    //await gitStashPop(stashID);
     //await gitCommit();
 }
 
