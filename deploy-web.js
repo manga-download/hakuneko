@@ -34,8 +34,8 @@ function execute(command, silent) {
 async function sslPack(archive, meta) {
     let key = path.resolve(config.key);
     let cwd = process.cwd();
-    if(config.source) {
-        process.chdir(config.source);
+    if(config.build) {
+        process.chdir(config.build);
     }
     await execute(`zip -r ${archive} .`);
     let signature = await execute(`openssl dgst -sha256 -hex -sign ${key} ${archive} | cut -d' ' -f2`);
@@ -48,8 +48,8 @@ async function sslPack(archive, meta) {
  */
 async function gitCommit() {
     let cwd = process.cwd();
-    if(config.source) {
-        process.chdir(config.target);
+    if(config.build) {
+        process.chdir(config.deploy);
     }
     await execute(`git add .`);
     await execute(`git commit -m 'updated releases'`);
@@ -64,11 +64,14 @@ async function main() {
     let meta = 'latest';
     let archive = Date.now().toString(36).toUpperCase() + '.zip';
     await sslPack(archive, meta);
-    await fs.remove(config.target);
-    await fs.mkdir(config.target);
-    await fs.move(path.resolve(config.source, meta), path.resolve(config.target, meta));
-    await fs.move(path.resolve(config.source, archive), path.resolve(config.target, archive));
-    await gitCommit();
+    await fs.remove(config.deploy);
+    await fs.mkdir(config.deploy);
+    await fs.move(path.resolve(config.source, meta), path.resolve(config.deploy, meta));
+    await fs.move(path.resolve(config.source, archive), path.resolve(config.deploy, archive));
+    // git stash directory `config.deploy`
+    // switch to gh-pages branch
+    // pop stash `config.deploy`
+    //await gitCommit();
 }
 
 // exit application as soon as any uncaught exception is thrown
