@@ -47,7 +47,7 @@ export default class TruyenChon extends Connector {
         this.fetchDOM( request, 'div.pagination-outter ul.pagination li:last-of-type a' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match(/\d+$/)[0] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

@@ -53,7 +53,7 @@ export default class YesMangasBR extends Connector { // extends MangaHost ?
         this.fetchDOM( this.url + '/mangas', 'div#mangas div.pagination a.last' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)$/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/page/' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/mangas/page/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

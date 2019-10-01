@@ -68,7 +68,7 @@ export default class YaoiHavenReborn extends Connector {
         this.fetchDOM( request, 'div.container div.card-header nav.navigation ul.pagination li.page-item a:not([rel])' )
             .then( data => {
                 let pageCount = parseInt( data.pop().text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

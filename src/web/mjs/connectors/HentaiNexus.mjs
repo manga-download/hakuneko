@@ -64,7 +64,7 @@ export default class HentaiNexus extends Connector {
         this.fetchDOM( request, 'nav.pagination ul.pagination-list li:last-of-type a.pagination-link' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/page/' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/page/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

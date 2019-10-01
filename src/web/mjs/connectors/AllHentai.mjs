@@ -47,7 +47,7 @@ export default class AllHentai extends Connector {
             let request = new Request(this.url + '/list', this.requestOptions);
             let data = await this.fetchDOM(request, 'span.pagination:first-of-type a.step');
             let pageCount = parseInt(data.pop().text);
-            let pageLinks = [...(new Array(pageCount)).keys()].map(page => {
+            let pageLinks = [...new Array(pageCount).keys()].map(page => {
                 let uri = new URL('list', this.url);
                 uri.searchParams.set('offset', 60 * page);
                 uri.searchParams.set('max', 60);

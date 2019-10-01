@@ -72,7 +72,7 @@ export default class Naver extends Connector {
         this.fetchDOM( request, 'div#content div.paginate div.page_wrap .page:last-child em.num_page' )
             .then( data => {
                 let pageCount = parseInt( data[0].innerText.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => {
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => {
                     uri.searchParams.set( 'page', page + 1 );
                     return uri.href;
                 } );

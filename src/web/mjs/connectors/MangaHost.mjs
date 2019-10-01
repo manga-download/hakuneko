@@ -48,7 +48,7 @@ export default class MangaHost extends Connector {
         this.fetchDOM( this.url + '/mangas', 'div.paginador div.wp-pagenavi a.last' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)$/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/mangas/page/' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/mangas/page/' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

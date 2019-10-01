@@ -82,7 +82,7 @@ export default class KissComic extends Connector {
         let request = new Request( uri.href, this.requestOptions );
         Engine.Request.fetchUI( request, 'lstImages' )
             .then( data => {
-                let pageList = data.map( link => ( new URL( link, this.url ) ).href );
+                let pageList = data.map( link => new URL( link, this.url ).href );
                 callback( null, pageList );
             } )
             .catch( error => {

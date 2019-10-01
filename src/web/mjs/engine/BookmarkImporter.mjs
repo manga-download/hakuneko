@@ -128,7 +128,7 @@ export default class BookmarkImporter {
     _mapFMDRowToManga(row) {
         // NOTE: due to a bug in FMD sometimes the connector has 'http' postfix which needs to be removed
         let connectorID = this._mapFMDConnectorID( row[0].replace( /http[s]?:/, '' ).split( '/' )[0] );
-        let mangaID = this._mapFMDMangaID( connectorID, ( new URL( row[1], 'http://hostname.dummy' ) ).pathname );
+        let mangaID = this._mapFMDMangaID( connectorID, new URL( row[1], 'http://hostname.dummy' ).pathname );
         return {
             key: {
                 connector: connectorID,

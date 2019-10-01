@@ -54,7 +54,7 @@ export default class MangaArab extends Connector {
         this.fetchDOM( this.url + '/manga', 'div.pagination a:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/manga/page:' + ( page + 1 ) + '|order:english_name' );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/manga/page:' + ( page + 1 ) + '|order:english_name' );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

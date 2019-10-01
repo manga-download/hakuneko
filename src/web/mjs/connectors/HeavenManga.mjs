@@ -59,7 +59,7 @@ export default class HeavenManga extends Connector {
         this.fetchDOM( this.url + '/manga-list/', 'div.pagination-container div.pagination a.next:last-of-type' )
             .then( data => {
                 let pageCount = parseInt( data[0].href.match( /(\d+)$/ )[1] );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => `${this.url}/manga-list/page-${page + 1}/` );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => `${this.url}/manga-list/page-${page + 1}/` );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {
@@ -104,7 +104,7 @@ export default class HeavenManga extends Connector {
         this.fetchDOM( this.url + manga.id, 'div.pagination-container div.pagination a.next:last-of-type' )
             .then( data => {
                 let pageCount = data.length === 0 ? 1 : parseInt( data[0].href.match( /(\d+)$/ )[1] ) ;
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => `${this.url}${manga.id}/page-${page + 1}/` );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => `${this.url}${manga.id}/page-${page + 1}/` );
                 return this._getChapterListFromPages( manga, pageLinks );
             } )
             .then( data => {

@@ -70,7 +70,7 @@ export default class KissDoujin extends Connector {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         Engine.Request.fetchUI( request, 'lstImages' )
             .then( data => {
-                let pageList = data.map( link => ( new URL( link, request.url ) ).href );
+                let pageList = data.map( link => new URL( link, request.url ).href );
                 callback( null, pageList );
             } )
             .catch( error => {

@@ -64,7 +64,7 @@ export default class ReadManga extends Connector {
         this.fetchDOM( this.url + '/list', 'span.pagination a:nth-last-child(2)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + '/list?offset=' + page * 70 );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/list?offset=' + page * 70 );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

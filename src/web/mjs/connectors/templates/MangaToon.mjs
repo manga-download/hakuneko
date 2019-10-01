@@ -65,7 +65,7 @@ export default class MangaToon extends Connector {
         this.fetchDOM( this.baseURL + this.path, 'div.page div.next' )
             .then( () => {
                 let pageCount = 999;
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.baseURL + this.path + page );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.baseURL + this.path + page );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

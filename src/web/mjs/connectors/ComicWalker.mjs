@@ -61,7 +61,7 @@ export default class ComicWalker extends Connector {
         this.fetchDOM( request, 'div.comicPage div.pager ul.clearfix li:nth-last-of-type(2) a' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => request.url + '?p=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + '?p=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

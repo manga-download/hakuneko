@@ -42,7 +42,7 @@ export default class MangaEden extends Connector {
         this.fetchDOM( this.url + this.urlMangas, 'div.pagination a:nth-last-child(2)' )
             .then( data => {
                 let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [...( new Array( pageCount ) ).keys()].map( page => this.url + this.urlMangas + '?page=' + ( page + 1 ) );
+                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + this.urlMangas + '?page=' + ( page + 1 ) );
                 return this._getMangaListFromPages( pageLinks );
             } )
             .then( data => {

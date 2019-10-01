@@ -248,7 +248,7 @@ export default class Storage {
      *
      */
     _loadEpisodeM3U8( directory ) {
-        return ( new Promise( ( resolve, reject ) => {
+        return new Promise( ( resolve, reject ) => {
             this.fs.readdir( directory, ( error, files ) => {
                 if( error ) {
                     reject( error );
@@ -256,7 +256,7 @@ export default class Storage {
                     resolve( files );
                 }
             } );
-        } ) )
+        } )
             .then( files => {
                 let playlist = files.find( file => file.endsWith( extensions.m3u8 ) );
                 let subtitles = files.filter( file => file.endsWith( '.ass' ) || file.endsWith( '.ssa' ) );
@@ -396,7 +396,7 @@ export default class Storage {
      * and a reference to the page list (undefined on error).
      */
     _loadChapterPagesFolder( directory ) {
-        return ( new Promise( ( resolve, reject ) => {
+        return new Promise( ( resolve, reject ) => {
             this.fs.readdir( directory, ( error, files ) => {
                 if( error ) {
                     reject( error );
@@ -404,7 +404,7 @@ export default class Storage {
                     resolve( files );
                 }
             } );
-        } ) )
+        } )
             .then( files => {
                 let pages = files.map( file => this._makeValidFileURL( directory, file ) );
                 return Promise.resolve( pages );
