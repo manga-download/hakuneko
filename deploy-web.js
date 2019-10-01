@@ -67,9 +67,9 @@ async function sslPack(archive, meta) {
 /**
  * 
  */
-async function gitCommit() {
+async function gitCommit(glob) {
     // TODO: provide user credentials to push changes
-    await execute(`git add .`);
+    await execute(`git add ${glob}`);
     await execute(`git commit -m 'deploy release: ${config.deploy}'`);
     await execute(`git push origin master`);
 }
@@ -79,16 +79,17 @@ async function gitCommit() {
  */
 async function main() {
     let meta = 'latest';
+    let glob = path.join(config.deploy, '*');
     let archive = Date.now().toString(36).toUpperCase() + '.zip';
     await sslPack(archive, meta);
     await fs.remove(config.deploy);
     await fs.mkdir(config.deploy);
     await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
-    let stashID = await gitStashPush(path.join(config.deploy, '*'));
+    let stashID = await gitStashPush(glob);
     await execute(`git checkout gh-pages`);
     await gitStashPop(stashID);
-    //await gitCommit();
+    //await gitCommit(glob);
 }
 
 // exit application as soon as any uncaught exception is thrown
