@@ -89,7 +89,7 @@ async function main() {
     let stashID = await gitStashPush(glob);
     await execute(`git checkout gh-pages`);
     await gitStashPop(stashID);
-    //await gitCommit(glob);
+    await gitCommit(glob);
 }
 
 // exit application as soon as any uncaught exception is thrown
