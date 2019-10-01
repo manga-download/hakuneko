@@ -87,8 +87,8 @@ async function main() {
     await sslPack(archive, meta);
     await fs.remove(config.deploy);
     await fs.mkdir(config.deploy);
-    await fs.move(path.resolve(config.source, meta), path.resolve(config.deploy, meta));
-    await fs.move(path.resolve(config.source, archive), path.resolve(config.deploy, archive));
+    await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
+    await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
     // git stash directory `config.deploy`
     //let stashID = await gitStashPush();
     // switch to gh-pages branch
