@@ -88,6 +88,7 @@ async function main() {
     await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
     let stashID = await gitStashPush(glob);
     await execute(`git checkout gh-pages`);
+    await fs.remove(config.deploy);
     await gitStashPop(stashID);
     await gitCommit(glob);
 }
