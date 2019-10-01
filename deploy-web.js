@@ -68,14 +68,9 @@ async function sslPack(archive, meta) {
  * 
  */
 async function gitCommit() {
-    let cwd = process.cwd();
-    if(config.build) {
-        process.chdir(config.deploy);
-    }
     await execute(`git add .`);
     await execute(`git commit -m 'updated releases'`);
     await execute(`git push origin master`);
-    process.chdir(cwd);
 }
 
 /**
@@ -90,11 +85,11 @@ async function main() {
     await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
     // git stash directory `config.deploy`
-    //let stashID = await gitStashPush();
+    let stashID = await gitStashPush();
     // switch to gh-pages branch
     //await ...
     // pop stash `config.deploy`
-    //await gitStashPop(stashID);
+    await gitStashPop(stashID);
     //await gitCommit();
 }
 
