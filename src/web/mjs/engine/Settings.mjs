@@ -39,7 +39,6 @@ export default class Settings {
         } catch ( e ) {
             docs = '.';
         }
-        this.fs = require( 'fs-extra' );
 
         this.frontend = {
             label: 'Frontend ⁽¹⁾',
