@@ -1,24 +1,13 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class Submanga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'submanga';
         super.label = 'Submanga';
-        this.tags = [ 'manga', 'spanish' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
-        this.url = 'https://submanga.online';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
+        this.tags = [ 'manga', 'webtoon', 'spanish' ];
+        this.url = 'https://submanga.li';
     }
 
     /**
