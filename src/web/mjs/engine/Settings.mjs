@@ -39,6 +39,8 @@ export default class Settings {
         } catch ( e ) {
             docs = '.';
         }
+        this.fs = require( 'fs-extra' );
+
         this.frontend = {
             label: 'Frontend ⁽¹⁾',
             description: [
@@ -64,6 +66,17 @@ export default class Settings {
             description: 'The base directory where all downloaded mangas will be stored',
             input: types.directory,
             value: path.join( docs, 'Mangas' )
+        };
+        this.bookmarkDirectory = {
+            label: 'Bookmarks Directory ⁽¹⁾',
+            description: [
+                'The directory where bookmarks file will be stored',
+                '',
+                '⁽¹⁾ Restart required to take affect',
+            ].join('\n'),
+            input: types.directory,
+            value: path.join( app.getPath( 'userData' ) )
+            // value: path.join( docs )
         };
         this.useSubdirectory = {
             label: 'Use Sub-Directories',
@@ -221,6 +234,14 @@ export default class Settings {
             } catch( error ) {
                 alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message );
             }
+            /**
+             * check bookmark directory existence
+             */
+            try {
+                await Engine.Storage.directoryExist( this.bookmarkDirectory.value );
+            } catch( error ) {
+                alert( 'WARNING: Cannot access the bookmark directory!\n\n' + error.message );
+            }
             // apply settings to each connector
             Engine.Connectors.forEach( connector => {
                 for( let property in connector.config ) {
@@ -261,6 +282,7 @@ export default class Settings {
         Engine.Storage.saveConfig( 'settings', data, 2 )
             .then( () => {
                 document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
+                document.dispatchEvent( new CustomEvent( EventListener.onSettingsSaved, { detail: this } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }

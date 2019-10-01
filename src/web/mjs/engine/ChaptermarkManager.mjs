@@ -8,6 +8,8 @@ export default class ChaptermarkManager extends EventTarget {
     constructor() {
         super();
         this.chaptermarks = [];
+
+        document.addEventListener( EventListener.onSettingsSaved, this._syncChaptermarks.bind( this ) );
     }
 
     /**
@@ -35,7 +37,7 @@ export default class ChaptermarkManager extends EventTarget {
      * Will reset chaptermarks when saving fails.
      */
     _syncChaptermarks( callback ) {
-        Engine.Storage.saveConfig( 'chaptermarks', this.chaptermarks, 2 )
+        Engine.Storage.saveBookmarks( 'chaptermarks', this.chaptermarks, 2 )
             .then( () => {
                 this.dispatchEvent( new CustomEvent( events.changed, { detail: this.chaptermarks } ) );
                 if( typeof callback === typeof Function ) {
@@ -64,7 +66,7 @@ export default class ChaptermarkManager extends EventTarget {
      *
      */
     loadChaptermarks( callback ) {
-        Engine.Storage.loadConfig( 'chaptermarks' )
+        Engine.Storage.loadBookmarks( 'chaptermarks' )
             .then( data => {
                 try {
                     if( !data ) {

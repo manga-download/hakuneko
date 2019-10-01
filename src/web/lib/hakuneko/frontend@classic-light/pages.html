@@ -50,7 +50,7 @@
                 position: fixed;
                 top: 0;
                 right: 0;
-                padding-left: 1em;  
+                padding-left: 1em;
                 padding-right: 2.0em;
                 opacity: 0.05;
                 transition: opacity 0.25s;
@@ -242,7 +242,7 @@
             }
 
             /**
-             * 
+             *
              */
             resetSubtitles( clearTracks ) {
                 this.selectedSubtitle = -1;
@@ -265,7 +265,7 @@
             }
 
             /**
-             * 
+             *
              */
              toggleFullscreen( event ) {
                 if( document.fullscreenElement ) {
@@ -327,6 +327,7 @@
              */
             hideViewer( event ) {
                 this.set( 'selectedMedia', -1 );
+                Engine.ChaptermarkManager.addChaptermark( this.selectedChapter );
             }
 
             /**
@@ -369,7 +370,7 @@
             }
 
             /**
-             * 
+             *
              */
             escapeBackgroundURI( uri ) {
                 return uri.replace( /'/g, '\\\'' );

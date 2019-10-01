@@ -13,6 +13,8 @@ export default class BookmarkManager extends EventTarget {
         super();
         this.bookmarks = [];
         this._bookmarkImporter = bookmarkImporter;
+
+        document.addEventListener( EventListener.onSettingsSaved, this.saveProfile.bind( this ) );
     }
 
     async importBookmarks( file ) {
@@ -113,7 +115,7 @@ export default class BookmarkManager extends EventTarget {
      * Callback will be provided with an error (or null if no error).
      */
     loadProfile( profile, callback ) {
-        Engine.Storage.loadConfig( 'bookmarks' )
+        Engine.Storage.loadBookmarks( 'bookmarks' )
             .then( data => {
                 try {
                     if( !data || !data.length || data.length === 0 ) {
@@ -145,7 +147,7 @@ export default class BookmarkManager extends EventTarget {
      * Callback will be provided with an error (or null if no error).
      */
     saveProfile( profile, callback ) {
-        Engine.Storage.saveConfig( 'bookmarks', this.bookmarks, 2 )
+        Engine.Storage.saveBookmarks( 'bookmarks', this.bookmarks, 2 )
             .then( () => {
                 this.dispatchEvent( new CustomEvent( events.changed, { detail: this.bookmarks } ) );
                 if( typeof callback === typeof Function ) {

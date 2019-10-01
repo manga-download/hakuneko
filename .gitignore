@@ -12,3 +12,4 @@ cache
 /redist/*.zip
 /test/*.log
 junit.xml
+.idea/

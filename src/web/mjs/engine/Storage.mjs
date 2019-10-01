@@ -721,6 +721,13 @@ export default class Storage {
     }
 
     /**
+     * Helper function to generate the path where the bookmarks and markers are stored.
+     */
+    get _bookmarkOutputPath() {
+        return Engine.Settings.bookmarkDirectory;
+    }
+
+    /**
      * Helper function to generate the path where the connector mangas are stored.
      */
     _connectorOutputPath( connector ) {
@@ -868,5 +875,38 @@ export default class Storage {
             return 'PNG';
         }
         return undefined;
+    }
+
+    /**
+     * Save the given value for the given key in the bookmark storage
+     */
+    saveBookmarks( key, value, indentation ) {
+        return new Promise( ( resolve, reject ) => {
+            this.fs.writeFile( this.path.join(this._bookmarkOutputPath.value, 'hakuneko.' + key), JSON.stringify( value, undefined, indentation ), function(error ) {
+                if( error ) {
+                    reject( error );
+                } else {
+                    resolve();
+                }
+            } );
+        } );
+    }
+
+    /**
+     * Load the value for the given key from the bookmark storage
+     */
+    async loadBookmarks( key ) {
+        return new Promise( ( resolve, reject ) => {
+            this.fs.readFile( this.path.join(this._bookmarkOutputPath.value, 'hakuneko.' + key), 'utf8', (error, data ) => {
+                try {
+                    if( error ) {
+                        throw error;
+                    }
+                    resolve( JSON.parse( data ) );
+                } catch( e ) {
+                    reject( e );
+                }
+            } );
+        } );
     }
 }
