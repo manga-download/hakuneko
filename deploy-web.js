@@ -31,9 +31,9 @@ function execute(command, silent) {
  * NOTE: same function as in build-web => merge
  * @param {string} identifier 
  */
-async function gitStashPush(identifier) {
+async function gitStashPush(glob, identifier) {
     identifier = identifier || 'HTDOCS#' + Date.now().toString(16).toUpperCase();
-    await execute(`git stash push -u -m '${identifier}'`);
+    await execute(`git stash push -u -m '${identifier}' ${glob}`);
     return identifier;
 }
 
@@ -68,8 +68,9 @@ async function sslPack(archive, meta) {
  * 
  */
 async function gitCommit() {
+    // TODO: provide user credentials to push changes
     await execute(`git add .`);
-    await execute(`git commit -m 'updated releases'`);
+    await execute(`git commit -m 'deploy release: ${config.deploy}'`);
     await execute(`git push origin master`);
 }
 
@@ -84,11 +85,8 @@ async function main() {
     await fs.mkdir(config.deploy);
     await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
-    // git stash directory `config.deploy`
-    let stashID = await gitStashPush();
-    // switch to gh-pages branch
-    //await ...
-    // pop stash `config.deploy`
+    let stashID = await gitStashPush(path.join(config.deploy, '*'));
+    await execute(`git checkout gh-pages`);
     await gitStashPop(stashID);
     //await gitCommit();
 }
