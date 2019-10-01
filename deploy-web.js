@@ -71,7 +71,7 @@ async function gitCommit(glob) {
     // TODO: provide user credentials to push changes
     await execute(`git add ${glob}`);
     await execute(`git commit -m 'deploy release: ${config.deploy}'`);
-    await execute(`git push origin master`);
+    await execute(`git push`);
 }
 
 /**
