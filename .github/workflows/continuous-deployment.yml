@@ -7,15 +7,13 @@ on:
   push:
     branches:
       - master
-      # TODO: use pattern, or set different branch per workflow branch?
-      - '5.0.8'
+      - '*.*.*'
 
 jobs:
   linux:
     name: Ubuntu
     runs-on: ubuntu-latest
     steps:
-      # TODO: checkout the branch that triggered the change
       - uses: actions/checkout@v1
         with:
           fetch-depth: 1
@@ -27,6 +25,9 @@ jobs:
         run: npm install
       - name: Lint
         run: npm run lint
+      # Tests are currently disabled, because they do not work properly (unreliable)
+      #- name: Test
+      #  run: npm run test
       - name: Deploy (web)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
