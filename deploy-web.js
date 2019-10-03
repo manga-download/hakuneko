@@ -31,9 +31,9 @@ function execute(command, silent) {
  * NOTE: same function as in build-web => merge
  * @param {string} identifier 
  */
-async function gitStashPush(glob, identifier) {
+async function gitStashPush(identifier) {
     identifier = identifier || 'HTDOCS#' + Date.now().toString(16).toUpperCase();
-    await execute(`git stash push -u -m '${identifier}' ${glob}`);
+    await execute(`git stash push -u -m '${identifier}'`);
     return identifier;
 }
 
@@ -86,7 +86,7 @@ async function main() {
     await fs.mkdir(config.deploy);
     await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
-    let stashID = await gitStashPush(glob);
+    let stashID = await gitStashPush();
     await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
     await fs.remove(config.deploy);
     await gitStashPop(stashID);
