@@ -6,7 +6,7 @@ name: Continuous Integration
 on:
   push:
     branches:
-      - master
+      - DISABLED
 
 jobs:
   linux:
@@ -36,10 +36,3 @@ jobs:
         run: npm run build:web
       - name: Test
         run: npm run test
-      - name: HELLO WORLD
-        env:
-          PROJECT: HakuNeko
-        #working-directory: ${{ github.workspace }}
-        run: |
-          echo $PROJECT
-          ls -la
