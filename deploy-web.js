@@ -68,7 +68,8 @@ async function sslPack(archive, meta) {
  * 
  */
 async function gitCommit() {
-    let auth = Buffer.from(process.env.GITHUB_ACTOR + ':' + process.env.GITHUB_TOKEN).toString('base64');
+    let user = process.env.GITHUB_ACTOR;
+    let auth = Buffer.from(user + ':' + process.env.GITHUB_TOKEN).toString('base64');
     await execute(`git add ${config.deploy}/*`);
     await execute(`git -c user.name="${user}" commit -m 'Deployed Release: ${config.deploy}'`);
     await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${config.branch}`);
