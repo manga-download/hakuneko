@@ -88,7 +88,7 @@ async function main() {
     await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
     let stashID = await gitStashPush();
     await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
-    await execute(`git rm -r ${config.deploy}/*.zip`);
+    await execute(`git rm -r ${config.deploy}`);
     await gitStashPop(stashID);
     await gitCommit();
 }
