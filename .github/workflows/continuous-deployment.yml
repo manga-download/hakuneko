@@ -1,0 +1,33 @@
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+# https://help.github.com/en/articles/contexts-and-expression-syntax-for-github-actions
+
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - master
+      - '*.*.*'
+
+jobs:
+  linux:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install NPM Packages
+        run: npm install
+      # Tests are currently disabled, because they do not work properly (unreliable)
+      #- name: Test
+      #  run: npm run test
+      - name: Deploy (web)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAKUNEKO_PASSPHRASE: ${{ secrets.HAKUNEKO_PASSPHRASE }}
+        run: npm run deploy:web
