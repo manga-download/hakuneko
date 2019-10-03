@@ -1,0 +1,34 @@
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+# https://help.github.com/en/articles/contexts-and-expression-syntax-for-github-actions
+
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - master
+      # TODO: use pattern, or set different branch per workflow branch?
+      - '5.0.8'
+
+jobs:
+  linux:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      # TODO: checkout the branch that triggered the change
+      - uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 10.x
+      - name: Install NPM Packages
+        run: npm install
+      - name: Lint
+        run: npm run lint
+      - name: Deploy (web)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAKUNEKO_PASSPHRASE: ${{ secrets.HAKUNEKO_PASSPHRASE }}
+        run: npm run deploy:web
