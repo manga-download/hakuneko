@@ -31,9 +31,9 @@ function execute(command, silent) {
  * NOTE: same function as in build-web => merge
  * @param {string} identifier 
  */
-async function gitStashPush(glob, identifier) {
+async function gitStashPush(identifier) {
     identifier = identifier || 'HTDOCS#' + Date.now().toString(16).toUpperCase();
-    await execute(`git stash push -u -m '${identifier}' ${glob}`);
+    await execute(`git stash push -u -m '${identifier}'`);
     return identifier;
 }
 
@@ -59,7 +59,7 @@ async function sslPack(archive, meta) {
         process.chdir(config.build);
     }
     await execute(`zip -r ${archive} .`);
-    let signature = await execute(`openssl dgst -sha256 -hex -sign ${key} ${archive} | cut -d' ' -f2`);
+    let signature = await execute(`openssl dgst -sha256 -hex -sign ${key} -passin ${config.passphrase} ${archive} | cut -d' ' -f2`);
     await fs.writeFile(meta, `${archive}?signature=${signature}`);
     process.chdir(cwd);
 }
@@ -67,11 +67,12 @@ async function sslPack(archive, meta) {
 /**
  * 
  */
-async function gitCommit(glob) {
-    // TODO: provide user credentials to push changes
-    await execute(`git add ${glob}`);
-    await execute(`git commit -m 'deploy release: ${config.deploy}'`);
-    await execute(`git push`);
+async function gitCommit() {
+    let user = process.env.GITHUB_ACTOR;
+    let auth = Buffer.from(user + ':' + process.env.GITHUB_TOKEN).toString('base64');
+    await execute(`git add ${config.deploy}/*`);
+    await execute(`git -c user.name="${user}" commit -m 'Deployed Release: ${config.deploy}'`);
+    await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${config.branch}`);
 }
 
 /**
@@ -79,18 +80,17 @@ async function gitCommit(glob) {
  */
 async function main() {
     let meta = 'latest';
-    let glob = path.join(config.deploy, '*');
     let archive = Date.now().toString(36).toUpperCase() + '.zip';
     await sslPack(archive, meta);
     await fs.remove(config.deploy);
     await fs.mkdir(config.deploy);
     await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
-    let stashID = await gitStashPush(glob);
-    await execute(`git checkout gh-pages`);
+    let stashID = await gitStashPush();
+    await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
     await fs.remove(config.deploy);
     await gitStashPop(stashID);
-    await gitCommit(glob);
+    await gitCommit();
 }
 
 // exit application as soon as any uncaught exception is thrown
