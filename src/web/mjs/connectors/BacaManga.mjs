@@ -26,6 +26,8 @@ export default class BacaManga extends WordPressEManga {
     _getPageList( manga, chapter, callback ) {
         let script = `
             new Promise(resolve => {
+                /*
+                This script does no longer work when window is not shown ...
                 // "tratshcuot nwodyek nwodesuom evomesuom tratsllorcs unemtxetnoc sserpyek leehwno".split("").reverse().join("")
                 [
                     'onwheel', 'keypress', 'contextmenu', 'scrollstart', 'mousemove', 'mousedown', 'keydown', 'touchstart'
@@ -33,6 +35,8 @@ export default class BacaManga extends WordPressEManga {
                 setTimeout(() => {
                     resolve([...document.querySelectorAll('div.maincontent div#readerarea p img')].map(img => img.src));
                 }, 2500);
+                */
+                resolve([...jQuery('img', jQuery.parseHTML(window[telekleinchung.split('').reverse().join('')]))].map(img => img.src));
             });
         `;
         let request = new Request( this.url + chapter.id, this.requestOptions );
