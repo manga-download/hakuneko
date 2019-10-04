@@ -11,6 +11,7 @@ on:
 
 jobs:
   linux:
+    #if: github.actor && secrets['HAKUNEKO_PASSPHRASE']
     name: Ubuntu
     runs-on: ubuntu-latest
     steps:
