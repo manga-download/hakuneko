@@ -27,6 +27,18 @@ function execute(command, silent) {
     });
 }
 
+function validateEnvironment() {
+    if(process.env.GITHUB_ACTOR === '') {
+        throw new Error('Missing environment variable "GITHUB_ACTOR" providing the contributor name!');
+    }
+    if(process.env.GITHUB_TOKEN === '') {
+        throw new Error('Missing environment variable "GITHUB_TOKEN" to provide access to the git repository!');
+    }
+    if(process.env.HAKUNEKO_PASSPHRASE === '') {
+        throw new Error('Missing environment variable "HAKUNEKO_PASSPHRASE" to decrypt private key for signature!');
+    }
+}
+
 /**
  * NOTE: same function as in build-web => merge
  * @param {string} identifier 
@@ -79,18 +91,23 @@ async function gitCommit() {
  * 
  */
 async function main() {
-    let meta = 'latest';
-    let archive = Date.now().toString(36).toUpperCase() + '.zip';
-    await sslPack(archive, meta);
-    await fs.remove(config.deploy);
-    await fs.mkdir(config.deploy);
-    await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
-    await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
-    let stashID = await gitStashPush();
-    await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
-    await execute(`git rm -r ${config.deploy}`);
-    await gitStashPop(stashID);
-    await gitCommit();
+    try {
+        validateEnvironment();
+        let meta = 'latest';
+        let archive = Date.now().toString(36).toUpperCase() + '.zip';
+        await sslPack(archive, meta);
+        await fs.remove(config.deploy);
+        await fs.mkdir(config.deploy);
+        await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
+        await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
+        let stashID = await gitStashPush();
+        await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
+        await execute(`git rm -r ${config.deploy}`);
+        await gitStashPop(stashID);
+        await gitCommit();
+    } catch(error) {
+        throw error;
+    }
 }
 
 // exit application as soon as any uncaught exception is thrown
