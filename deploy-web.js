@@ -28,13 +28,13 @@ function execute(command, silent) {
 }
 
 function validateEnvironment() {
-    if(process.env.GITHUB_ACTOR === '') {
+    if(!process.env.GITHUB_ACTOR) {
         throw new Error('Missing environment variable "GITHUB_ACTOR" providing the contributor name!');
     }
-    if(process.env.GITHUB_TOKEN === '') {
+    if(!process.env.GITHUB_TOKEN) {
         throw new Error('Missing environment variable "GITHUB_TOKEN" to provide access to the git repository!');
     }
-    if(process.env.HAKUNEKO_PASSPHRASE === '') {
+    if(!process.env.HAKUNEKO_PASSPHRASE) {
         throw new Error('Missing environment variable "HAKUNEKO_PASSPHRASE" to decrypt private key for signature!');
     }
 }
