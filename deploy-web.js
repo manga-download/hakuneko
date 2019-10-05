@@ -5,8 +5,8 @@ const config = require('./deploy-web.config');
 
 /**
  * NOTE: same function as in build-web => merge
- * @param {string} command 
- * @param {bool} silent 
+ * @param {string} command
+ * @param {bool} silent
  */
 function execute(command, silent) {
     if(!silent) {
@@ -41,7 +41,7 @@ function validateEnvironment() {
 
 /**
  * NOTE: same function as in build-web => merge
- * @param {string} identifier 
+ * @param {string} identifier
  */
 async function gitStashPush(identifier) {
     identifier = identifier || 'HTDOCS#' + Date.now().toString(16).toUpperCase();
@@ -51,7 +51,7 @@ async function gitStashPush(identifier) {
 
 /**
  * NOTE: same function as in build-web => merge
- * @param {string} identifier 
+ * @param {string} identifier
  */
 async function gitStashPop(identifier) {
     let out = await execute(`git stash list`);
@@ -62,7 +62,7 @@ async function gitStashPop(identifier) {
 
 /**
  * currently limited to unix systems only => TODO: use node modules instead of cmd tools
- * @param {string} archive 
+ * @param {string} archive
  */
 async function sslPack(archive, meta) {
     let key = path.resolve(config.key);
@@ -77,39 +77,36 @@ async function sslPack(archive, meta) {
 }
 
 /**
- * 
+ *
  */
 async function gitCommit() {
     let user = process.env.GITHUB_ACTOR;
-    let auth = Buffer.from(user + ':' + process.env.GITHUB_TOKEN).toString('base64');
+    let mail = user + '@users.noreply.github.com';
+    let auth = Buffer.from('x-access-token:' + process.env.GITHUB_TOKEN).toString('base64');
     await execute(`git add ${config.deploy}/*`);
-    await execute(`git -c user.name="${user}" commit -m 'Deployed Release: ${config.deploy}'`);
+    await execute(`git -c user.name="${user}" -c user.email="${mail}" commit -m 'Deployed Release: ${config.deploy}'`);
     await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${config.branch}`);
 }
 
 /**
- * 
+ *
  */
 async function main() {
-    try {
-        validateEnvironment();
-        let meta = 'latest';
-        let archive = Date.now().toString(36).toUpperCase() + '.zip';
-        await sslPack(archive, meta);
-        await fs.remove(config.deploy);
-        await fs.mkdir(config.deploy);
-        await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
-        await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
-        let stashID = await gitStashPush();
-        await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
-        await execute(`git rm -r ${config.deploy}`);
-        await gitStashPop(stashID);
-        await gitCommit();
-    } catch(error) {
-        throw error;
-    }
+    validateEnvironment();
+    let meta = 'latest';
+    let archive = Date.now().toString(36).toUpperCase() + '.zip';
+    await sslPack(archive, meta);
+    await fs.remove(config.deploy);
+    await fs.mkdir(config.deploy);
+    await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
+    await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
+    let stashID = await gitStashPush();
+    await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
+    await execute(`git rm -r ${config.deploy}`);
+    await gitStashPop(stashID);
+    await gitCommit();
 }
 
 // exit application as soon as any uncaught exception is thrown
-process.on('unhandledRejection', error => { throw error });
+process.on('unhandledRejection', error => { throw error; });
 main();
