@@ -1,34 +1,17 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-/**
- *
- */
+
 export default class NineAnime extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = '9anime';
         super.label = '9ANIME';
         this.tags = [ 'anime', 'english' ];
-        //this.url         = 'https://9anime.live';
+        this.url = 'https://9anime.one';
         this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
-            domain:  {
-                label: 'Mirror URL',
-                description: '',
-                input: 'select',
-                options: [
-                    { value: 'https://9anime.to', name: '9anime.to' },
-                    { value: 'https://9anime.live', name: '9anime.live' },
-                    { value: 'https://9anime.ru', name: '9anime.ru' },
-                    { value: 'https://www2.9anime.nl', name: '9anime.nl' }
-                ],
-                value: 'https://9anime.live'
-            },
             resolution:  {
                 label: 'Preferred Resolution',
                 description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!',
@@ -42,8 +25,6 @@ export default class NineAnime extends Connector {
                 value: ''
             }
         };
-
-        document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
     }
 
     async _checkCaptcha(request) {
@@ -79,13 +60,6 @@ export default class NineAnime extends Connector {
     get timestamp() {
         // set timestamp 12 hours to the past
         return Math.floor(Date.now() / 3600000) * 3600 - 12 * 3600;
-    }
-
-    /**
-     *
-     */
-    _onSettingsChanged() {
-        this.url = this.config.domain.value;
     }
 
     /**
