@@ -130,8 +130,7 @@
                 this.loadingMessage = quotes[Math.floor(Math.random()*quotes.length)];
                 // load settings in case UI was not ready when the settings were loaded and event was fired
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
-                // register callbacks for published events
-                document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+                Engine.Settings.addEventListener('saved', this.onSettingsSaved.bind(this));
             }
 
             /**
@@ -165,7 +164,7 @@
             /**
              *
              */
-            onSettingsChanged( e ) {
+             onSettingsSaved(event) {
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
             }
         }

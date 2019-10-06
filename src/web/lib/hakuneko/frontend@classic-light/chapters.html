@@ -212,8 +212,8 @@
                 this.languageList = undefined;
                 // the chapter that has been marked as last read by the user
                 this.markedChapter = undefined;
-                // register callbacks for published events
-                document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+
+                Engine.Settings.addEventListener('saved', this.onSettingsSaved.bind(this));
                 document.addEventListener( EventListener.onChapterStatusChanged, this.onChapterStatusChanged.bind( this ) );
                 window.addEventListener( 'chapterUp', this.onRequestChapterUp.bind( this ) );
                 window.addEventListener( 'chapterDown', this.onRequestChapterDown.bind( this ) );
@@ -562,7 +562,7 @@
             /**
              *
              */
-            onSettingsChanged( e ) {
+            onSettingsSaved( e ) {
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
                 // chapter naming format may have been changed => reload chapter list
                 if( this.selectedManga ) {
