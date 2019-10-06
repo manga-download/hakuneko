@@ -1,23 +1,14 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class MangaSail extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'mangasail';
         super.label = 'MangaSail';
         this.tags = [ 'manga', 'english' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://www.mangasail.co';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+
         this.config = {
             username: {
                 label: 'Username',
@@ -33,7 +24,9 @@ export default class MangaSail extends Connector {
             }
         };
 
-        document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
+        // TODO: change behavior to login on demand (if not logged-in and credentials exist, try login), instead of event listener login
+        Engine.Settings.addEventListener('loaded', this._onSettingsChanged.bind(this));
+        Engine.Settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
     /**
@@ -120,7 +113,11 @@ export default class MangaSail extends Connector {
      *
      */
     _onSettingsChanged() {
-        if( this.config.username.value && this.config.password.value ) {
+        let user = this.config.username.value;
+        let pass = this.config.username.value;
+        let credentials = user + pass;
+        if(this._credentials !== credentials && user && pass) {
+            this._credentials = credentials;
             fetch( this.url + '/user/logout', this.requestOptions )
                 .then( () => this.fetchDOM( this.url + '/user/login', 'form#user-login input' ) )
                 .then( data => {
@@ -131,8 +128,8 @@ export default class MangaSail extends Connector {
                     data.forEach( input => {
                         form.append( input.name, input.value );
                     } );
-                    form.set( 'name', this.config.username.value );
-                    form.set( 'pass', this.config.password.value );
+                    form.set( 'name', user );
+                    form.set( 'pass', pass );
                     return Promise.resolve( form );
                 } )
                 .then( form => {
@@ -149,7 +146,7 @@ export default class MangaSail extends Connector {
                         && data[0]['command'] === 'settings'
                         && data[1]['command'] === 'modal_display'
                         && data[2]['command'] === 'reload';
-                    return Promise.resolve( success );
+                    return success ? Promise.resolve() : Promise.reject(new Error('Invalid login credentials!'));
                 } )
                 .catch( error => console.warn( 'Login failed', this.label, error ) );
         }
