@@ -99,7 +99,10 @@ export default class WordPressMadara extends Connector {
         let request = new Request( uri.href, this.requestOptions );
         this.fetchDOM( request, this.queryPages )
             .then( data => {
-                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset['src'] || element, request.url ) ) );
+                let pageLinks = data.map( element => this.createConnectorURI( {
+                    url: this.getAbsolutePath( element.dataset['src'] || element, request.url ),
+                    referer: request.url
+                } ) );
                 callback( null, pageLinks );
             } )
             .catch( error => {
@@ -112,13 +115,12 @@ export default class WordPressMadara extends Connector {
      *
      */
     _handleConnectorURI( payload ) {
-        let uri = new URL( payload );
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set( 'x-referer', uri.origin );
-        let promise = super._handleConnectorURI( payload );
+        this.requestOptions.headers.set( 'x-referer', payload.referer );
+        let promise = super._handleConnectorURI( payload.url );
         this.requestOptions.headers.delete( 'x-referer' );
         return promise;
     }
