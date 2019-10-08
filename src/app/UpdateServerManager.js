@@ -46,6 +46,7 @@ module.exports = class UpdateServerManager {
                 throw new Error('Invalid request for connection to the update server!');
             }
             let request = this._getClient(options).request(options, response => {
+                // TODO: add support to follow redirects, e.g. 301
                 if(response.statusCode !== 200) {
                     reject(new Error('Status: ' + response.statusCode));
                 }
