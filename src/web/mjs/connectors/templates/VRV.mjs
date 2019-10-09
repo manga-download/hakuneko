@@ -2,18 +2,8 @@ import Connector from '../../engine/Connector.mjs';
 
 export default class VRV extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        /*
-         * Public members for usage in UI (mandatory)
-         *super.id       = 'vrv';
-         *super.label    = 'VRV Premium*';
-         */
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.api = {
             base: 'https://api.vrv.co',
             core: 'https://api.vrv.co/core',
@@ -36,7 +26,7 @@ export default class VRV extends Connector {
             }
         } );
         this.oauthToken = undefined;
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+
         this.config = {
             username: {
                 label: 'E-Mail',
@@ -60,8 +50,9 @@ export default class VRV extends Connector {
             }
         };
 
-        // Various other initilaizations ...
-        document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
+        // TODO: change behavior to login on demand (if not logged-in and credentials exist, try login), instead of event listener login
+        Engine.Settings.addEventListener('loaded', this._onSettingsChanged.bind(this));
+        Engine.Settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
     /**
@@ -304,15 +295,21 @@ export default class VRV extends Connector {
      *
      */
     _onSettingsChanged() {
-        this._login( this.config.username.value, this.config.password.value )
-            .catch( error => {
-                console.warn( this.label + ' login failed!', error );
-                return Promise.resolve();
-            } )
-            .then( () => this._init() )
-            .catch( error => {
-                console.warn( this.label + ' initialization failed!', error );
-            } );
+        let user = this.config.username.value;
+        let pass = this.config.password.value;
+        let credentials = user + pass;
+        if(this._credentials !== credentials) {
+            this._credentials = credentials;
+            this._login(user, pass)
+                .catch( error => {
+                    console.warn( this.label + ' login failed!', error );
+                    return Promise.resolve();
+                } )
+                .then( () => this._init() )
+                .catch( error => {
+                    console.warn( this.label + ' initialization failed!', error );
+                } );
+        }
     }
 
     /**

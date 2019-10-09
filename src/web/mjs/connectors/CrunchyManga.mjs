@@ -1,27 +1,18 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class CrunchyManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'crunchymanga';
         super.label = 'CrunchyManga (Premium*)';
         this.tags = [ 'manga', 'high-quality', 'english' ];
         this.url = 'https://www.crunchyroll.com';
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.subscriptionID = 'manga';
         this.subscription = false;
         this.session = undefined;
         this.token = undefined;
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+
         this.config = {
             username: {
                 label: 'Username',
@@ -37,14 +28,19 @@ export default class CrunchyManga extends Connector {
             }
         };
 
-        document.addEventListener( EventListener.onSettingsChanged, this._onSettingsChanged.bind( this ) );
+        // TODO: change behavior to login on demand (if not logged-in and credentials exist, try login), instead of event listener login
+        Engine.Settings.addEventListener('loaded', this._onSettingsChanged.bind(this));
+        Engine.Settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
-    /**
-     *
-     */
     _onSettingsChanged() {
-        this._logout().then( () => this._login( this.config.username.value, this.config.password.value ) );
+        let user = this.config.username.value;
+        let pass = this.config.username.value;
+        let credentials = user + pass;
+        if(this._credentials !== credentials) {
+            this._credentials = credentials;
+            this._logout().then(() => this._login(user, pass));
+        }
     }
 
     /**

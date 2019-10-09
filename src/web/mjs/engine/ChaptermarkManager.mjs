@@ -5,11 +5,17 @@ const events = {
 export default class ChaptermarkManager extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Storage
-    constructor() {
+    constructor(settings) {
         super();
         this.chaptermarks = [];
+        this._settings = settings;
 
-        document.addEventListener( EventListener.onSettingsSaved, this._syncChaptermarks.bind( this ) );
+        this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
+    }
+
+    _onSettingsChanged() {
+        // TODO: only save chaptermarks if the bookmark directory has changed
+        this._syncChaptermarks(undefined);
     }
 
     /**

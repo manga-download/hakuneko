@@ -41,11 +41,6 @@ export default class Manga extends EventTarget {
             this.status = status;
             this.dispatchEvent( new CustomEvent( events.updated, { detail: this } ) );
             document.dispatchEvent( new CustomEvent( EventListener.onMangaStatusChanged, { detail: this } ) );
-            /*
-             * TODO: thousands of mangas means thousands of event listeners... performance issues?
-             *       maybe it would be better to clean cache in a central place (e.g. mangas.html)
-             */
-            document.addEventListener( EventListener.onSettingsChanged, () => { this.chapterCache = []; } );
         }
     }
 

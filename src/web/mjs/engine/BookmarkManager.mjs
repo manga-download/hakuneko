@@ -9,12 +9,18 @@ const events = {
 export default class BookmarkManager extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Connetors, Engine.Storage
-    constructor(bookmarkImporter) {
+    constructor(settings, bookmarkImporter) {
         super();
         this.bookmarks = [];
+        this._settings = settings;
         this._bookmarkImporter = bookmarkImporter;
 
-        document.addEventListener( EventListener.onSettingsSaved, this.saveProfile.bind( this ) );
+        this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
+    }
+
+    _onSettingsChanged() {
+        // TODO: only save bookmarks if the bookmark directory has changed
+        this.saveProfile('default', undefined);
     }
 
     async importBookmarks( file ) {

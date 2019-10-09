@@ -1,3 +1,8 @@
+const events = {
+    loaded: 'loaded',
+    saved: 'saved'
+};
+
 const extensions = {
     // chapter formats
     img:  'img',
@@ -26,10 +31,11 @@ const types = {
     directory: 'directory'
 };
 
-export default class Settings {
+export default class Settings extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Storage, Engine.Conenctors
     constructor() {
+        super();
         let app = require( 'electron' ).remote.app;
         let path = require( 'path' );
         let docs = undefined;
@@ -74,8 +80,7 @@ export default class Settings {
                 '⁽¹⁾ Restart required to take affect',
             ].join('\n'),
             input: types.directory,
-            value: path.join( app.getPath( 'userData' ) )
-            // value: path.join( docs )
+            value: app.getPath( 'userData' )
         };
         this.useSubdirectory = {
             label: 'Use Sub-Directories',
@@ -250,7 +255,7 @@ export default class Settings {
                     }
                 }
             } );
-            document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
+            this.dispatchEvent( new CustomEvent( events.loaded, { detail: this } ) );
         } catch( error ) {
             console.error('Failed to load HakuNeko settings!', error);
         }
@@ -280,8 +285,7 @@ export default class Settings {
 
         Engine.Storage.saveConfig( 'settings', data, 2 )
             .then( () => {
-                document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
-                document.dispatchEvent( new CustomEvent( EventListener.onSettingsSaved, { detail: this } ) );
+                this.dispatchEvent( new CustomEvent( events.saved, { detail: this } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }
@@ -333,7 +337,6 @@ export default class Settings {
             return value;
         default:
             return value;
-
         }
     }
 }
