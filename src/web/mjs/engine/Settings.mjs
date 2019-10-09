@@ -256,7 +256,6 @@ export default class Settings extends EventTarget {
                 }
             } );
             this.dispatchEvent( new CustomEvent( events.loaded, { detail: this } ) );
-            document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
         } catch( error ) {
             console.error('Failed to load HakuNeko settings!', error);
         }
@@ -287,8 +286,6 @@ export default class Settings extends EventTarget {
         Engine.Storage.saveConfig( 'settings', data, 2 )
             .then( () => {
                 this.dispatchEvent( new CustomEvent( events.saved, { detail: this } ) );
-                document.dispatchEvent( new CustomEvent( EventListener.onSettingsChanged, { detail: this } ) );
-                document.dispatchEvent( new CustomEvent( EventListener.onSettingsSaved, { detail: this } ) );
                 if( typeof callback === typeof Function ) {
                     callback( null );
                 }
