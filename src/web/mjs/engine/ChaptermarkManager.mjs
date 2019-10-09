@@ -15,7 +15,7 @@ export default class ChaptermarkManager extends EventTarget {
 
     _onSettingsChanged() {
         // TODO: only save chaptermarks if the bookmark directory has changed
-        this.saveProfile('default', undefined);
+        this._syncChaptermarks(undefined);
     }
 
     /**
