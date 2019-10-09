@@ -24,9 +24,9 @@ export default class HakuNeko {
         this._bookmarkManager = new BookmarkManager( new BookmarkImporter() );
         this._chaptermarkManager = new ChaptermarkManager();
         this._downloadManager = new DownloadManager();
-        this._request = new Request();
-        this._connectors = new Connectors(this._request);
         this._settings = new Settings();
+        this._request = new Request(this._settings);
+        this._connectors = new Connectors(this._request);
         this._storage = new Storage();
     }
 

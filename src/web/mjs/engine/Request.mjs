@@ -4,7 +4,7 @@ import Cookie from './Cookie.mjs';
 export default class Request {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Blacklist, Enums
-    constructor() {
+    constructor(settings) {
         let electron = require( 'electron' );
         this.electronRemote = electron.remote;
         this.protocol = this.electronRemote.require( 'electron' ).protocol;
@@ -12,7 +12,9 @@ export default class Request {
         this.userAgent = UserAgent.random();
 
         this.electronRemote.app.on( 'login', this._loginHandler );
-        document.addEventListener( EventListener.onSettingsChanged, this.onSettingsChanged.bind( this ) );
+        this._settings = settings;
+        this._settings.addEventListener('loaded', this._onSettingsChanged.bind(this));
+        this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
     /**
@@ -37,7 +39,7 @@ export default class Request {
     /**
      * See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
      */
-    onSettingsChanged( event ) {
+    _onSettingsChanged( event ) {
         let proxy = {};
         if( event.detail.proxyRules.value ) {
             proxy['proxyRules'] = event.detail.proxyRules.value;
@@ -49,7 +51,7 @@ export default class Request {
      *
      */
     _loginHandler( evt, webContent, request, authInfo, callback ) {
-        let proxyAuth = Engine.Settings.proxyAuth.value;
+        let proxyAuth = this._settings.proxyAuth.value;
         if( authInfo.isProxy && proxyAuth && proxyAuth.includes( ':' ) ) {
             let auth = proxyAuth.split( ':' );
             let username = auth[0];
