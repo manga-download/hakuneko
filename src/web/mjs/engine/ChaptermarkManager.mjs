@@ -13,7 +13,7 @@ export default class ChaptermarkManager extends EventTarget {
         this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
-    _onSettingsChanged(event) {
+    _onSettingsChanged() {
         // TODO: only save chaptermarks if the bookmark directory has changed
         this.saveProfile('default', undefined);
     }
