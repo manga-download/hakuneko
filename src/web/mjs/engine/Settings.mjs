@@ -60,18 +60,21 @@ export default class Settings extends EventTarget {
             ],
             value: 'frontend@classic-light'
         };
+
         this.readerEnabled = {
             label: 'Enable Reader',
             description: 'Show a preview panel and a basic reader for the chapters',
             input: types.checkbox,
             value: true
         };
+
         this.baseDirectory = {
             label: 'Manga Directory',
             description: 'The base directory where all downloaded mangas will be stored',
             input: types.directory,
             value: path.join( docs, 'Mangas' )
         };
+
         this.bookmarkDirectory = {
             label: 'Bookmarks Directory ⁽¹⁾',
             description: [
@@ -82,12 +85,14 @@ export default class Settings extends EventTarget {
             input: types.directory,
             value: app.getPath( 'userData' )
         };
+
         this.useSubdirectory = {
             label: 'Use Sub-Directories',
             description: 'Create sub-directories for each website (e.g. "/downloads/mangadex/...")',
             input: types.checkbox,
             value: false
         };
+
         this.chapterTitleFormat = {
             label: 'Chapter Title Format',
             description: [
@@ -106,6 +111,7 @@ export default class Settings extends EventTarget {
             input: types.text,
             value: ''
         };
+
         this.chapterFormat = {
             label: 'Chapter File Format',
             description: 'Store chapters in the selected file format',
@@ -118,6 +124,7 @@ export default class Settings extends EventTarget {
             ],
             value: extensions.img
         };
+
         this.recompressionFormat = {
             label: 'De-Scrambling Format',
             description: [
@@ -133,6 +140,7 @@ export default class Settings extends EventTarget {
             ],
             value: mimes.jpeg
         };
+
         this.recompressionQuality = {
             label: 'De-Scrambling Quality',
             description: [
@@ -144,6 +152,7 @@ export default class Settings extends EventTarget {
             max: 100,
             value: 90
         };
+
         this.proxyRules = {
             label: 'Proxy Rules',
             description: [
@@ -160,6 +169,7 @@ export default class Settings extends EventTarget {
             options: [],
             value: ''
         };
+
         this.proxyAuth = {
             label: 'Proxy Authentication',
             description: [
@@ -173,6 +183,7 @@ export default class Settings extends EventTarget {
             input: types.password,
             value: ''
         };
+
         this.downloadHistoryLogFormat = {
             label: 'Download History Format',
             description: [
@@ -189,6 +200,7 @@ export default class Settings extends EventTarget {
             ],
             value: extensions.none
         };
+
         this.postChapterDownloadCommand = {
             label: 'Post Command',
             description: [
@@ -210,130 +222,137 @@ export default class Settings extends EventTarget {
             value: ''
         };
     }
-    /*
-     * // expose property iterator through a generator function
-     * static *[Symbol.iterator]() {
-     * for( let property in this) {
-     * yield this[property];
-     * }
-     * }
-     */
-    /**
-     * Load and apply the settings and configurations from the given profile.
-     * Callback will be executed after the data has been loaded.
-     * Callback will be provided with an error (or null if no error).
-     */
-    async loadProfile() {
+
+    *[Symbol.iterator]() {
+        for(let key in this) {
+            let property = this[key];
+            if(property instanceof Object && property.input) {
+                yield property;
+            }
+        }
+    }
+
+    *_getCategorizedSettings() {
+        yield {
+            category: 'General',
+            settings: [...this]
+        };
+        for(let connector of Engine.Connectors) {
+            if(connector.config instanceof Object) {
+                yield {
+                    category: connector.label,
+                    settings: Object.keys(connector.config).map(key => connector.config[key])
+                };
+            }
+        }
+    }
+
+    getCategorizedSettings() {
+        return [...this._getCategorizedSettings()];
+    }
+
+    async load() {
         try {
-            let data = await Engine.Storage.loadConfig( 'settings' );
+            let data = await Engine.Storage.loadConfig('settings');
             // apply general settings
-            for( let property in this) {
-                if( data && property in data ) {
-                    this[property].value = this._getDecryptedValue( this[property].input, data[property] );
+            for(let key in this) {
+                if(data
+                    && data[key] !== undefined
+                    && this[key]
+                    && this[key].input)
+                {
+                    this[key].value = this._getDecryptedValue(this[key].input, data[key]);
+                    this[key].value = this._getValidValue(this[key]);
                 }
-            }
-            // check manga base directory existence
-            try {
-                await Engine.Storage.directoryExist( this.baseDirectory.value );
-            } catch( error ) {
-                alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message );
-            }
-            /**
-             * check bookmark directory existence
-             */
-            try {
-                await Engine.Storage.directoryExist( this.bookmarkDirectory.value );
-            } catch( error ) {
-                alert( 'WARNING: Cannot access the bookmark directory!\n\n' + error.message );
             }
             // apply settings to each connector
-            Engine.Connectors.forEach( connector => {
-                for( let property in connector.config ) {
-                    if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
-                        connector.config[property].value = this._getDecryptedValue( connector.config[property].input, data.connectors[connector.id][property] );
-                        connector.config[property].value = this._getValidValue( connector.config[property] );
+            for(let connector of Engine.Connectors) {
+                for(let key in connector.config) {
+                    if(data
+                        && data.connectors
+                        && data.connectors[connector.id]
+                        && data.connectors[connector.id][key] !== undefined
+                        && connector.config[key]
+                        && connector.config[key].input)
+                    {
+                        connector.config[key].value = this._getDecryptedValue(connector.config[key].input, data.connectors[connector.id][key]);
+                        connector.config[key].value = this._getValidValue(connector.config[key]);
                     }
                 }
-            } );
-            this.dispatchEvent( new CustomEvent( events.loaded, { detail: this } ) );
-        } catch( error ) {
+            }
+            this.dispatchEvent(new CustomEvent(events.loaded, { detail: this }));
+        } catch(error) {
             console.error('Failed to load HakuNeko settings!', error);
         }
     }
 
-    /**
-     * Save the current settings and configurations for the given profile.
-     * Callback will be executed after the data has been saved.
-     * Callback will be provided with an error (or null if no error).
-     */
-    saveProfile( profile, callback ) {
-        let data = {
-            connectors: {}
-        };
-        // gather general settings
-        for( let property in this) {
-            //this[property] = ( property in data ? data[property] : this[property] );
-            data[property] = this._getEncryptedValue( this[property].input, this[property].value );
-        }
-        // gather settings from each connector
-        Engine.Connectors.forEach( ( connector ) => {
-            data.connectors[connector.id] = {};
-            for( let property in connector.config ) {
-                data.connectors[connector.id][property] = this._getEncryptedValue( connector.config[property].input, connector.config[property].value );
+    async save() {
+        try {
+            let data = {};
+            // gather general settings
+            for(let key in this) {
+                if(this[key] && this[key].input) {
+                    data[key] = this._getEncryptedValue(this[key].input, this[key].value);
+                }
             }
-        });
-
-        Engine.Storage.saveConfig( 'settings', data, 2 )
-            .then( () => {
-                this.dispatchEvent( new CustomEvent( events.saved, { detail: this } ) );
-                if( typeof callback === typeof Function ) {
-                    callback( null );
+            // gather settings from each connector
+            data['connectors'] = {};
+            for(let connector of Engine.Connectors) {
+                data.connectors[connector.id] = {};
+                for(let key in connector.config) {
+                    data.connectors[connector.id][key] = this._getEncryptedValue(connector.config[key].input, connector.config[key].value);
                 }
-            } )
-            .catch( error => {
-                if( typeof callback === typeof Function ) {
-                    callback( error );
-                }
-            } );
+            }
+            await Engine.Storage.saveConfig('settings', data, 2);
+            this.dispatchEvent(new CustomEvent(events.saved, { detail: this }));
+        } catch(error) {
+            console.error('Failed to save HakuNeko settings!', error);
+        }
     }
 
     /**
      *
+     * @param inputType
+     * @param decryptedValue
      */
-    _getEncryptedValue( inputType, decryptedValue ) {
-        if( inputType !== types.password || !decryptedValue || decryptedValue.length < 1 ) {
+    _getEncryptedValue(inputType, decryptedValue) {
+        if(inputType !== types.password || !decryptedValue || decryptedValue.length < 1) {
             return decryptedValue;
         }
-        /*
-         * hakuneko must be portable and work offline => impossible to generate a secure key
-         * so keep things simple and at least secure the password in case the data was leeched and cannot be asociated with hakuneko
-         */
-        return CryptoJS.AES.encrypt( decryptedValue, 'HakuNeko!' ).toString();
+        return CryptoJS.AES.encrypt(decryptedValue, 'HakuNeko!').toString();
     }
 
     /**
      *
+     * @param inputType
+     * @param encryptedValue
      */
-    _getDecryptedValue( inputType, encryptedValue ) {
-        if( inputType !== types.password || !encryptedValue || encryptedValue.length < 1 ) {
+    _getDecryptedValue(inputType, encryptedValue) {
+        if(inputType !== types.password || !encryptedValue || encryptedValue.length < 1) {
             return encryptedValue;
         }
-        return CryptoJS.AES.decrypt( encryptedValue, 'HakuNeko!' ).toString( CryptoJS.enc.Utf8 );
+        return CryptoJS.AES.decrypt(encryptedValue, 'HakuNeko!').toString(CryptoJS.enc.Utf8);
     }
 
     /**
      *
      */
-    _getValidValue( connectorProperty ) {
-        let value = connectorProperty.value;
-        switch( connectorProperty.input ) {
+    _getValidValue(setting) {
+        let value = setting.value;
+        switch(setting.input) {
         case types.numeric:
-            if( connectorProperty.min !== undefined && value < connectorProperty.min ) {
-                return connectorProperty.min;
+            if(setting.min !== undefined && value < setting.min) {
+                return setting.min;
             }
-            if( connectorProperty.max !== undefined && value > connectorProperty.max ) {
-                return connectorProperty.max;
+            if(setting.max !== undefined && value > setting.max) {
+                return setting.max;
             }
+            return value;
+        case types.directory:
+            Engine.Storage.directoryExist(value)
+                .catch(error => {
+                    alert(`WARNING: Cannot access the directory for "${setting.label}" setting!\n\n${error.message}`);
+                });
             return value;
         default:
             return value;
