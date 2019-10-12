@@ -60,18 +60,21 @@ export default class Settings extends EventTarget {
             ],
             value: 'frontend@classic-light'
         };
+
         this.readerEnabled = {
             label: 'Enable Reader',
             description: 'Show a preview panel and a basic reader for the chapters',
             input: types.checkbox,
             value: true
         };
+
         this.baseDirectory = {
             label: 'Manga Directory',
             description: 'The base directory where all downloaded mangas will be stored',
             input: types.directory,
             value: path.join( docs, 'Mangas' )
         };
+
         this.bookmarkDirectory = {
             label: 'Bookmarks Directory ⁽¹⁾',
             description: [
@@ -82,12 +85,14 @@ export default class Settings extends EventTarget {
             input: types.directory,
             value: app.getPath( 'userData' )
         };
+
         this.useSubdirectory = {
             label: 'Use Sub-Directories',
             description: 'Create sub-directories for each website (e.g. "/downloads/mangadex/...")',
             input: types.checkbox,
             value: false
         };
+
         this.chapterTitleFormat = {
             label: 'Chapter Title Format',
             description: [
@@ -106,6 +111,7 @@ export default class Settings extends EventTarget {
             input: types.text,
             value: ''
         };
+
         this.chapterFormat = {
             label: 'Chapter File Format',
             description: 'Store chapters in the selected file format',
@@ -118,6 +124,7 @@ export default class Settings extends EventTarget {
             ],
             value: extensions.img
         };
+
         this.recompressionFormat = {
             label: 'De-Scrambling Format',
             description: [
@@ -133,6 +140,7 @@ export default class Settings extends EventTarget {
             ],
             value: mimes.jpeg
         };
+
         this.recompressionQuality = {
             label: 'De-Scrambling Quality',
             description: [
@@ -144,6 +152,7 @@ export default class Settings extends EventTarget {
             max: 100,
             value: 90
         };
+
         this.proxyRules = {
             label: 'Proxy Rules',
             description: [
@@ -160,6 +169,7 @@ export default class Settings extends EventTarget {
             options: [],
             value: ''
         };
+
         this.proxyAuth = {
             label: 'Proxy Authentication',
             description: [
@@ -173,6 +183,7 @@ export default class Settings extends EventTarget {
             input: types.password,
             value: ''
         };
+
         this.downloadHistoryLogFormat = {
             label: 'Download History Format',
             description: [
@@ -189,6 +200,7 @@ export default class Settings extends EventTarget {
             ],
             value: extensions.none
         };
+
         this.postChapterDownloadCommand = {
             label: 'Post Command',
             description: [
