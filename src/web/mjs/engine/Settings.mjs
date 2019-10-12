@@ -257,7 +257,7 @@ export default class Settings extends EventTarget {
             // apply general settings
             for(let key in this) {
                 if(data
-                    && data[key]
+                    && data[key] !== undefined
                     && this[key]
                     && this[key].input)
                 {
@@ -271,7 +271,7 @@ export default class Settings extends EventTarget {
                     if(data
                         && data.connectors
                         && data.connectors[connector.id]
-                        && data.connectors[connector.id][key]
+                        && data.connectors[connector.id][key] !== undefined
                         && connector.config[key]
                         && connector.config[key].input)
                     {
