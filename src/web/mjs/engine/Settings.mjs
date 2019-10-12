@@ -256,31 +256,30 @@ export default class Settings extends EventTarget {
             let data = await Engine.Storage.loadConfig('settings');
             // apply general settings
             for(let key in this) {
-                if(data && this[key] && this[key].input && key in data) {
+                if(data
+                    && data[key]
+                    && this[key]
+                    && this[key].input)
+                {
                     this[key].value = this._getDecryptedValue(this[key].input, data[key]);
+                    this[key].value = this._getValidValue(this[key]);
                 }
             }
-            // check manga base directory existence
-            try {
-                await Engine.Storage.directoryExist(this.baseDirectory.value);
-            } catch(error) {
-                alert('WARNING: Cannot access the base directory for mangas!\n\n' + error.message);
-            }
-            // check bookmark directory existence
-            try {
-                await Engine.Storage.directoryExist(this.bookmarkDirectory.value);
-            } catch(error) {
-                alert('WARNING: Cannot access the bookmark directory!\n\n' + error.message);
-            }
             // apply settings to each connector
-            Engine.Connectors.forEach(connector => {
+            for(let connector of Engine.Connectors) {
                 for(let key in connector.config) {
-                    if(data && data.connectors && connector.id in data.connectors && key in data.connectors[connector.id]) {
+                    if(data
+                        && data.connectors
+                        && data.connectors[connector.id]
+                        && data.connectors[connector.id][key]
+                        && connector.config[key]
+                        && connector.config[key].input)
+                    {
                         connector.config[key].value = this._getDecryptedValue(connector.config[key].input, data.connectors[connector.id][key]);
                         connector.config[key].value = this._getValidValue(connector.config[key]);
                     }
                 }
-            });
+            }
             this.dispatchEvent(new CustomEvent(events.loaded, { detail: this }));
         } catch(error) {
             console.error('Failed to load HakuNeko settings!', error);
@@ -289,9 +288,7 @@ export default class Settings extends EventTarget {
 
     async save() {
         try {
-            let data = {
-                connectors: {}
-            };
+            let data = {};
             // gather general settings
             for(let key in this) {
                 if(this[key] && this[key].input) {
@@ -299,12 +296,13 @@ export default class Settings extends EventTarget {
                 }
             }
             // gather settings from each connector
-            Engine.Connectors.forEach(connector => {
+            data['connectors'] = {};
+            for(let connector of Engine.Connectors) {
                 data.connectors[connector.id] = {};
                 for(let key in connector.config) {
                     data.connectors[connector.id][key] = this._getEncryptedValue(connector.config[key].input, connector.config[key].value);
                 }
-            });
+            }
             await Engine.Storage.saveConfig('settings', data, 2);
             this.dispatchEvent(new CustomEvent(events.saved, { detail: this }));
         } catch(error) {
@@ -317,11 +315,11 @@ export default class Settings extends EventTarget {
      * @param inputType
      * @param decryptedValue
      */
-    _getEncryptedValue( inputType, decryptedValue ) {
-        if( inputType !== types.password || !decryptedValue || decryptedValue.length < 1 ) {
+    _getEncryptedValue(inputType, decryptedValue) {
+        if(inputType !== types.password || !decryptedValue || decryptedValue.length < 1) {
             return decryptedValue;
         }
-        return CryptoJS.AES.encrypt( decryptedValue, 'HakuNeko!' ).toString();
+        return CryptoJS.AES.encrypt(decryptedValue, 'HakuNeko!').toString();
     }
 
     /**
@@ -329,26 +327,32 @@ export default class Settings extends EventTarget {
      * @param inputType
      * @param encryptedValue
      */
-    _getDecryptedValue( inputType, encryptedValue ) {
-        if( inputType !== types.password || !encryptedValue || encryptedValue.length < 1 ) {
+    _getDecryptedValue(inputType, encryptedValue) {
+        if(inputType !== types.password || !encryptedValue || encryptedValue.length < 1) {
             return encryptedValue;
         }
-        return CryptoJS.AES.decrypt( encryptedValue, 'HakuNeko!' ).toString( CryptoJS.enc.Utf8 );
+        return CryptoJS.AES.decrypt(encryptedValue, 'HakuNeko!').toString(CryptoJS.enc.Utf8);
     }
 
     /**
      *
      */
-    _getValidValue( connectorProperty ) {
-        let value = connectorProperty.value;
-        switch( connectorProperty.input ) {
+    _getValidValue(setting) {
+        let value = setting.value;
+        switch(setting.input) {
         case types.numeric:
-            if( connectorProperty.min !== undefined && value < connectorProperty.min ) {
-                return connectorProperty.min;
+            if(setting.min !== undefined && value < setting.min) {
+                return setting.min;
             }
-            if( connectorProperty.max !== undefined && value > connectorProperty.max ) {
-                return connectorProperty.max;
+            if(setting.max !== undefined && value > setting.max) {
+                return setting.max;
             }
+            return value;
+        case types.directory:
+            Engine.Storage.directoryExist(value)
+                .catch(error => {
+                    alert(`WARNING: Cannot access the directory for "${setting.label}" setting!\n\n${error.message}`);
+                });
             return value;
         default:
             return value;
