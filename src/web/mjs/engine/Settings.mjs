@@ -210,14 +210,16 @@ export default class Settings extends EventTarget {
             value: ''
         };
     }
-    /*
-     * // expose property iterator through a generator function
-     * static *[Symbol.iterator]() {
-     * for( let property in this) {
-     * yield this[property];
-     * }
-     * }
-     */
+
+    *[Symbol.iterator]() {
+        for(let key in this) {
+            let property = this[key];
+            if(property instanceof Object && property.input) {
+                yield property;
+            }
+        }
+    }
+
     /**
      * Load and apply the settings and configurations from the given profile.
      * Callback will be executed after the data has been loaded.
