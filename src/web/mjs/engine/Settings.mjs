@@ -232,6 +232,25 @@ export default class Settings extends EventTarget {
         }
     }
 
+    *_getCategorizedSettings() {
+        yield {
+            category: 'General',
+            settings: [...this]
+        };
+        for(let connector of Engine.Connectors) {
+            if(connector.config instanceof Object) {
+                yield {
+                    category: connector.label,
+                    settings: Object.keys(connector.config).map(key => connector.config[key])
+                };
+            }
+        }
+    }
+
+    getCategorizedSettings() {
+        return [...this._getCategorizedSettings()];
+    }
+
     async load() {
         try {
             let data = await Engine.Storage.loadConfig('settings');
