@@ -220,101 +220,83 @@ export default class Settings extends EventTarget {
         }
     }
 
-    /**
-     * Load and apply the settings and configurations from the given profile.
-     * Callback will be executed after the data has been loaded.
-     * Callback will be provided with an error (or null if no error).
-     */
-    async loadProfile() {
+    async load() {
         try {
-            let data = await Engine.Storage.loadConfig( 'settings' );
+            let data = await Engine.Storage.loadConfig('settings');
             // apply general settings
-            for( let property in this) {
-                if( data && property in data ) {
-                    this[property].value = this._getDecryptedValue( this[property].input, data[property] );
+            for(let key in this) {
+                if(data && this[key] && this[key].input && key in data) {
+                    this[key].value = this._getDecryptedValue(this[key].input, data[key]);
                 }
             }
             // check manga base directory existence
             try {
-                await Engine.Storage.directoryExist( this.baseDirectory.value );
-            } catch( error ) {
-                alert( 'WARNING: Cannot access the base directory for mangas!\n\n' + error.message );
+                await Engine.Storage.directoryExist(this.baseDirectory.value);
+            } catch(error) {
+                alert('WARNING: Cannot access the base directory for mangas!\n\n' + error.message);
             }
-            /**
-             * check bookmark directory existence
-             */
+            // check bookmark directory existence
             try {
-                await Engine.Storage.directoryExist( this.bookmarkDirectory.value );
-            } catch( error ) {
-                alert( 'WARNING: Cannot access the bookmark directory!\n\n' + error.message );
+                await Engine.Storage.directoryExist(this.bookmarkDirectory.value);
+            } catch(error) {
+                alert('WARNING: Cannot access the bookmark directory!\n\n' + error.message);
             }
             // apply settings to each connector
-            Engine.Connectors.forEach( connector => {
-                for( let property in connector.config ) {
-                    if( data && data.connectors && connector.id in data.connectors && property in data.connectors[connector.id] ) {
-                        connector.config[property].value = this._getDecryptedValue( connector.config[property].input, data.connectors[connector.id][property] );
-                        connector.config[property].value = this._getValidValue( connector.config[property] );
+            Engine.Connectors.forEach(connector => {
+                for(let key in connector.config) {
+                    if(data && data.connectors && connector.id in data.connectors && key in data.connectors[connector.id]) {
+                        connector.config[key].value = this._getDecryptedValue(connector.config[key].input, data.connectors[connector.id][key]);
+                        connector.config[key].value = this._getValidValue(connector.config[key]);
                     }
                 }
-            } );
-            this.dispatchEvent( new CustomEvent( events.loaded, { detail: this } ) );
-        } catch( error ) {
+            });
+            this.dispatchEvent(new CustomEvent(events.loaded, { detail: this }));
+        } catch(error) {
             console.error('Failed to load HakuNeko settings!', error);
         }
     }
 
-    /**
-     * Save the current settings and configurations for the given profile.
-     * Callback will be executed after the data has been saved.
-     * Callback will be provided with an error (or null if no error).
-     */
-    saveProfile( profile, callback ) {
-        let data = {
-            connectors: {}
-        };
-        // gather general settings
-        for( let property in this) {
-            //this[property] = ( property in data ? data[property] : this[property] );
-            data[property] = this._getEncryptedValue( this[property].input, this[property].value );
-        }
-        // gather settings from each connector
-        Engine.Connectors.forEach( ( connector ) => {
-            data.connectors[connector.id] = {};
-            for( let property in connector.config ) {
-                data.connectors[connector.id][property] = this._getEncryptedValue( connector.config[property].input, connector.config[property].value );
+    async save() {
+        try {
+            let data = {
+                connectors: {}
+            };
+            // gather general settings
+            for(let key in this) {
+                if(this[key] && this[key].input) {
+                    data[key] = this._getEncryptedValue(this[key].input, this[key].value);
+                }
             }
-        });
-
-        Engine.Storage.saveConfig( 'settings', data, 2 )
-            .then( () => {
-                this.dispatchEvent( new CustomEvent( events.saved, { detail: this } ) );
-                if( typeof callback === typeof Function ) {
-                    callback( null );
+            // gather settings from each connector
+            Engine.Connectors.forEach(connector => {
+                data.connectors[connector.id] = {};
+                for(let key in connector.config) {
+                    data.connectors[connector.id][key] = this._getEncryptedValue(connector.config[key].input, connector.config[key].value);
                 }
-            } )
-            .catch( error => {
-                if( typeof callback === typeof Function ) {
-                    callback( error );
-                }
-            } );
+            });
+            await Engine.Storage.saveConfig('settings', data, 2);
+            this.dispatchEvent(new CustomEvent(events.saved, { detail: this }));
+        } catch(error) {
+            console.error('Failed to save HakuNeko settings!', error);
+        }
     }
 
     /**
      *
+     * @param inputType
+     * @param decryptedValue
      */
     _getEncryptedValue( inputType, decryptedValue ) {
         if( inputType !== types.password || !decryptedValue || decryptedValue.length < 1 ) {
             return decryptedValue;
         }
-        /*
-         * hakuneko must be portable and work offline => impossible to generate a secure key
-         * so keep things simple and at least secure the password in case the data was leeched and cannot be asociated with hakuneko
-         */
         return CryptoJS.AES.encrypt( decryptedValue, 'HakuNeko!' ).toString();
     }
 
     /**
      *
+     * @param inputType
+     * @param encryptedValue
      */
     _getDecryptedValue( inputType, encryptedValue ) {
         if( inputType !== types.password || !encryptedValue || encryptedValue.length < 1 ) {
