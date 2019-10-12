@@ -211,13 +211,15 @@
                 this.set('popupVisibility', visible);
             }
 
-            async closeDiscardChanges() {
-                await Engine.Settings.load();
+            closeDiscardChanges() {
+                Engine.Settings.load();
+                this.set('settingCategories', []);
                 this.set('popupVisibility', false);
             }
 
-            async closeSaveChanges() {
-                await Engine.Settings.save();
+            closeSaveChanges() {
+                Engine.Settings.save();
+                this.set('settingCategories', []);
                 this.set('popupVisibility', false);
             }
 
