@@ -24,7 +24,7 @@
             await Engine.initialize();
             // TODO: remove stuff that requires various globals, incl. global HakuNeko engine
             //new HistoryWorker();
-            await Engine.Settings.loadProfile();
+            await Engine.Settings.load();
             Engine.BookmarkManager.loadProfile( 'default', undefined );
             Engine.ChaptermarkManager.loadChaptermarks( undefined );
         }
