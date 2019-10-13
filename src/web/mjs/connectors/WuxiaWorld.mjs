@@ -32,10 +32,17 @@ export default class WuxiaWorld extends WordPressMadara {
     }
 
     async _getPageListNovel(request) {
+        let width = '56em'; // parseInt(1200 / window.devicePixelRatio) + 'px';
+        let pad = '1.5em';
         let script = `
             new Promise(resolve => {
+                document.body.style.width = '${width}';
+                let container = document.querySelector('div.content-area > div.container');
+                container.style.maxWidth = '${width}';
+                container.style.padding = '0';
+                container.style.margin = '0';
                 let novel = document.querySelector('div.entry-content');
-                novel.style.padding = '1.5em';
+                novel.style.padding = '${pad}';
                 let script = document.createElement('script');
                 script.onload = async function() {
                     let canvas = await html2canvas(novel);
