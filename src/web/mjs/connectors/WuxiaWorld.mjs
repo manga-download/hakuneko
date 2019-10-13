@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class WuxiaWorld extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'wuxiaworld';
@@ -15,6 +9,6 @@ export default class WuxiaWorld extends WordPressMadara {
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://wuxiaworld.site';
 
-        this.formManga.append( 'vars[wp-manga-tag]', 'webcomics' );
+        //this.formManga.append('vars[wp-manga-tag]', 'webcomics');
     }
 }
