@@ -46,9 +46,15 @@ module.exports = class UpdateServerManager {
                 throw new Error('Invalid request for connection to the update server!');
             }
             let request = this._getClient(options).request(options, response => {
-                // TODO: add support to follow redirects, e.g. 301
+                if(response.headers.location && response.headers.location.startsWith('http')) {
+                    this._request(response.headers.location)
+                        .then(data => resolve(data))
+                        .catch(error => reject(error));
+                    return;
+                }
                 if(response.statusCode !== 200) {
                     reject(new Error('Status: ' + response.statusCode));
+                    return;
                 }
                 let data = [];
                 //response.setEncoding('utf8');
@@ -58,7 +64,7 @@ module.exports = class UpdateServerManager {
             request.on('error', error => reject(error));
             //request.write(/* REQUEST BODY */);
             request.end();
-        } );
+        });
     }
 
     /**
