@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class ComicWalker extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'comicwalker';
@@ -17,9 +11,6 @@ export default class ComicWalker extends Connector {
         this.url = 'https://comic-walker.com';
     }
 
-    /**
-     *
-     */
     _getMangaFromURI( uri ) {
         let request = new Request( uri.href, this.requestOptions );
         return this.fetchDOM( request, 'div#mainContent div#detailIndex div.comicIndex-box h1' )
@@ -30,9 +21,6 @@ export default class ComicWalker extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaListFromPages( mangaPageLinks, index ) {
         index = index || 0;
         let request = new Request( mangaPageLinks[ index ], this.requestOptions );
@@ -53,9 +41,6 @@ export default class ComicWalker extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         let request = new Request( this.url + '/contents/list/', this.requestOptions );
         this.fetchDOM( request, 'div.comicPage div.pager ul.clearfix li:nth-last-of-type(2) a' )
@@ -73,9 +58,6 @@ export default class ComicWalker extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         let request = new Request( this.url + manga.id, this.requestOptions );
         this.fetchDOM( request, 'div#ulreversible ul#reversible li a' )
@@ -95,9 +77,6 @@ export default class ComicWalker extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         this.fetchDOM( request, 'div#cw-viewer' )
@@ -116,30 +95,28 @@ export default class ComicWalker extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
+    async _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        return fetch( request )
-            .then( response => response.arrayBuffer() )
-            .then( data => this._decrypt( data, request.url.split( '/' )[6] ) );
+        let passphrase = payload.split('/')[6];
+        if(passphrase) {
+            let request = new Request(payload, this.requestOptions);
+            let response = await fetch(request);
+            return this._decrypt(await response.arrayBuffer(), passphrase);
+        } else {
+            return super._handleConnectorURI(payload);
+        }
     }
 
-    /**
-     *
-     */
-    _decrypt( encrypted, passphrase ) {
-        let key = this._generateKey( passphrase );
-        let decrypted = this._xor( encrypted, key );
-        return Promise.resolve( {
+    _decrypt(encrypted, passphrase) {
+        let key = this._generateKey(passphrase);
+        let decrypted = this._xor(encrypted, key);
+        return Promise.resolve({
             mimeType: 'image/jpeg',
             data: decrypted
-        } );
+        });
     }
 
     /**
