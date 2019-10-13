@@ -1,12 +1,12 @@
-import SoraOne from './templates/SoraOne.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class ReadRawManga extends SoraOne {
+export default class ReadRawManga extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'readrawmanga';
         super.label = 'ReadRawManga';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://www.readrawmanga.com';
     }
 }
