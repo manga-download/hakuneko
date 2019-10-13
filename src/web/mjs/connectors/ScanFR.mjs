@@ -13,7 +13,7 @@ export default class ScanFR extends MangaReaderCMS {
         super.id = 'scanfr';
         super.label = 'Scan FR';
         this.tags = [ 'manga', 'french' ];
-        this.url = 'https://www.scan-fr.io';
+        this.url = 'https://www.scan-fr.co';
 
         this.queryChapters = 'ul.chapterszz li h5.chapter-title-rtlrr';
         this.language = 'fr';
