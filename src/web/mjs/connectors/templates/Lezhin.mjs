@@ -209,17 +209,15 @@ export default class Lezhin extends Connector {
                  */
                 let pages = 0;
                 let path = '';
-                //let q = 40;
                 if( data.data.extra.episode.scroll ) {
                     pages = data.data.extra.episode.scroll;
                     path = 'scroll';
-                    //q = 30;
                 }
                 let pageList = [... new Array( pages ).keys()].map( page => {
                     let uri = new URL( [this.cdnURL, 'v2/comics', comicID, 'episodes', episodeID, 'contents', path + 's', page + 1].join( '/' ) );
                     uri.searchParams.set( 'access_token', this.accessToken );
                     //uri.searchParams.set( 'purchased', false );
-                    //uri.searchParams.set( 'q', q );
+                    uri.searchParams.set('q', 40); // 40 => width 1080, 30 => width 720
                     //uri.searchParams.set( 'updated', 1539846001617 /* Date.now() */ );
                     return uri.href;
                 } );
