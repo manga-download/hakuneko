@@ -6,7 +6,7 @@ export default class Manhwa18 extends FlatManga {
         super();
         super.id = 'manhwa18';
         super.label = 'Manhwa 18 (.com)';
-        this.tags = [ 'hentai', 'english' ];
+        this.tags = [ 'hentai', 'multi-lingual' ];
         this.url = 'https://manhwa18.com';
         this.requestOptions.headers.set('x-referer', this.url);
 
