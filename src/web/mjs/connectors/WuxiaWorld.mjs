@@ -6,7 +6,7 @@ export default class WuxiaWorld extends WordPressMadara {
         super();
         super.id = 'wuxiaworld';
         super.label = 'WuxiaWorld';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = [ 'webtoon', 'novel', 'english' ];
         this.url = 'https://wuxiaworld.site';
 
         //this.formManga.append('vars[wp-manga-tag]', 'webcomics');
