@@ -44,8 +44,9 @@ export default class LineWebtoon extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.detail_body div.detail_lst ul li > a');
         return data.map(element => {
-            let title = element.querySelector('span.tx').textContent.trim(); // optional for webtoon translate
-            title += ' - ' + element.querySelector('span.subj span').textContent.trim();
+            let chapter = element.querySelector('span.tx');
+            let title = chapter ? chapter.textContent.trim() + ' - ' : '';
+            title += element.querySelector('span.subj span').textContent.trim();
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.baseURL),
                 title: title,
