@@ -80,6 +80,8 @@ export default class LineWebtoon extends Connector {
             // https://www.webtoons.com/id/horror/guidao/prolog/viewer?title_no=874&episode_no=1
             let script = `
                 new Promise(async resolve => {
+
+                    // Process motion webtoon
                     if(document.querySelector('div#ozViewer div.oz-pages')) {
                         let templateURLs = window.__motiontoonViewerState__.motiontoonParam.pathRuleParam;
                         let uri = window.__motiontoonViewerState__.motiontoonParam.viewerOptions.documentURL;
@@ -115,7 +117,35 @@ export default class LineWebtoon extends Connector {
                             }
                         }
                         resolve(data.pages);
-                    } else {
+                        return;
+                    }
+
+                    // Process soft-sub webtoon
+                    if(${this.id === 'linewebtoon-translate'}) {
+                        let pages = [...document.querySelectorAll('div.viewer div.viewer_lst div.viewer_img div.img_info')].map(page => {
+                            let cover = page.querySelector('img');
+                            return {
+                                background: {
+                                    image: cover.src
+                                },
+                                layers: [...page.querySelectorAll('span.ly_img_text')].map(layer => {
+                                    let image = layer.querySelector('img');
+                                    return {
+                                        type: 'image|text',
+                                        asset: image.src,
+                                        top: parseInt(layer.style.top),
+                                        left: parseInt(layer.style.left),
+                                        effects: {}
+                                    };
+                                })
+                            };
+                        });
+                        resolve(pages);
+                        return;
+                    }
+
+                    // Process hard-sub webtoon (default)
+                    {
                         let images = [...document.querySelectorAll('div.viewer div.viewer_lst div.viewer_img img[data-url]')];
                         let links = images.map(element => new URL(element.dataset.url, window.location).href);
                         resolve(links);
@@ -145,20 +175,29 @@ export default class LineWebtoon extends Connector {
             let data = await response.blob();
             return this._blobToBuffer(data);
         } else {
-            //console.log(payload);
             let canvas = document.createElement('canvas');
             canvas.width = payload.width;
             canvas.height = payload.height;
-            let ctx = canvas.getContext("2d");
+            let ctx = canvas.getContext('2d');
+            if(payload.background.image) {
+                let image = await this._loadImage(payload.background.image);
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0);
+            }
             if(payload.background.color) {
                 ctx.fillStyle = payload.background.color;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
             for(let layer of payload.layers) {
-                if(layer.type === 'image') {
-                    // TODO: process layer.keyframes in case top/left/width/height is animated?
+                let type = layer.type.split('|');
+                if(type[0] === 'image') {
                     let image = await this._loadImage(layer.asset);
-                    ctx.drawImage(image, layer.left, layer.top, layer.width, layer.height);
+                    if(type[1] === 'text') {
+                        this._adjustTextLayerVisibility(layer, image, canvas);
+                    }
+                    // TODO: process layer.keyframes in case top/left/width/height is animated?
+                    ctx.drawImage(image, layer.left, layer.top, layer.width || image.width, layer.height || image.height);
                 }
                 // TODO: process layer.effects?
             }
@@ -175,6 +214,33 @@ export default class LineWebtoon extends Connector {
             image.onload = () => resolve(image);
             image.src = uri.href;
         });
+    }
+
+    async _adjustTextLayerVisibility(layer, text, canvas) {
+        if(text.height > canvas.height) {
+            layer.top = 0;
+            layer.height = canvas.height;
+            // TODO: adjust layer.width to preserve ratio
+        } else {
+            if(layer.top + text.height > canvas.height) {
+                layer.top = canvas.height - text.height;
+            }
+            if(layer.top < 0) {
+                layer.top = 0;
+            }
+        }
+        if(text.width > canvas.width) {
+            layer.left = 0;
+            layer.width = canvas.width;
+            // TODO: adjust layer.height to preserve ratio
+        } else {
+            if(layer.left + text.width > canvas.width) {
+                layer.left = canvas.width - text.width;
+            }
+            if(layer.left < 0) {
+                layer.left = 0;
+            }
+        }
     }
 
     async _canvasToBlob(canvas) {
