@@ -17,60 +17,61 @@ export default class LineWebtoon extends Connector {
         return '/img/connectors/linewebtoon';
     }
 
-    _getMangaFromURI( uri ) {
-        //return this.fetchDOM( uri.href, 'div.cont_box div.detail_header div.info .subj', 3 )
-        return this.fetchDOM( uri.href, 'head meta[property="og:title"]', 3 )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].content.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI( uri ) {
+        try {
+            let request = new Request(uri, this.requestOptions);
+            let data = await this.fetchDOM(request, 'head meta[property="og:title"]');
+            let id = uri.pathname + uri.search;
+            let title = data[0].content.trim();
+            return new Manga(this, id, title);
+        } catch(error) {
+            return null;
+        }
     }
 
-    _getMangaList( callback ) {
-        this.fetchJSON( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', 3 )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaList( callback ) {
+        try {
+            let request = new Request(`http://cdn.hakuneko.download/${this.id}/mangas.json`, this.requestOptions);
+            let data = await this.fetchJSON(request);
+            callback(null, data);
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
     }
 
-    _getChapterListFromPages( manga, lastAdded, index ) {
-        lastAdded = lastAdded || [];
-        index = index || 1;
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( this.baseURL + manga.id + '&page=' + index, 'div.detail_body div.detail_lst ul li > a', 5 ) )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    let title = element.querySelector( 'span.tx' ).textContent.trim();
-                    title += ' - ' + element.querySelector( 'span.subj span' ).textContent.trim();
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, this.baseURL ),
-                        title: title,
-                        language: 'en'
-                    };
-                } ).filter( chapter => !lastAdded.find( old => old.id === chapter.id ) );
-                if( chapterList.length > 0 ) {
-                    return this._getChapterListFromPages( manga, chapterList, index + 1 )
-                        .then( chapters => chapters.concat( chapterList ) );
+    async _getChapterListPage(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.detail_body div.detail_lst ul li > a');
+        return data.map(element => {
+            let title = element.querySelector('span.tx').textContent.trim(); // optional for webtoon translate
+            title += ' - ' + element.querySelector('span.subj span').textContent.trim();
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.baseURL),
+                title: title,
+                language: ''
+            };
+        });
+    }
+
+    async _getChapterList(manga, callback) {
+        try {
+            let chapterList = [];
+            let uri = new URL(manga.id, this.baseURL);
+            for(let page = 1; page < 999; page++) {
+                uri.searchParams.set('page', page);
+                let chapters = await this._getChapterListPage(uri);
+                if(chapters.length > 0 && (chapterList.length === 0 || chapters[chapters.length - 1].id !== chapterList[chapterList.length - 1].id)) {
+                    chapterList.push(...chapters);
                 } else {
-                    return Promise.resolve( chapterList );
+                    break;
                 }
-            } );
-    }
-
-    _getChapterList( manga, callback ) {
-        this._getChapterListFromPages( manga )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+            }
+            callback(null, chapterList);
+        } catch(error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
     }
 
     async _getPageList(manga, chapter, callback) {
@@ -132,9 +133,9 @@ export default class LineWebtoon extends Connector {
 
     async _handleConnectorURI(payload) {
         /*
-        * TODO: only perform requests when from download manager
-        * or when from browser for preview and selected chapter matches
-        */
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
         if(typeof payload === 'string') {
             let uri = new URL(payload);
             uri.searchParams.delete('type');
