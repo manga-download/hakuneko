@@ -17,60 +17,62 @@ export default class LineWebtoon extends Connector {
         return '/img/connectors/linewebtoon';
     }
 
-    _getMangaFromURI( uri ) {
-        //return this.fetchDOM( uri.href, 'div.cont_box div.detail_header div.info .subj', 3 )
-        return this.fetchDOM( uri.href, 'head meta[property="og:title"]', 3 )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].content.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI( uri ) {
+        try {
+            let request = new Request(uri, this.requestOptions);
+            let data = await this.fetchDOM(request, 'head meta[property="og:title"]');
+            let id = uri.pathname + uri.search;
+            let title = data[0].content.trim();
+            return new Manga(this, id, title);
+        } catch(error) {
+            return null;
+        }
     }
 
-    _getMangaList( callback ) {
-        this.fetchJSON( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', 3 )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaList( callback ) {
+        try {
+            let request = new Request(`http://cdn.hakuneko.download/${this.id}/mangas.json`, this.requestOptions);
+            let data = await this.fetchJSON(request);
+            callback(null, data);
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
     }
 
-    _getChapterListFromPages( manga, lastAdded, index ) {
-        lastAdded = lastAdded || [];
-        index = index || 1;
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( this.baseURL + manga.id + '&page=' + index, 'div.detail_body div.detail_lst ul li > a', 5 ) )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    let title = element.querySelector( 'span.tx' ).textContent.trim();
-                    title += ' - ' + element.querySelector( 'span.subj span' ).textContent.trim();
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, this.baseURL ),
-                        title: title,
-                        language: 'en'
-                    };
-                } ).filter( chapter => !lastAdded.find( old => old.id === chapter.id ) );
-                if( chapterList.length > 0 ) {
-                    return this._getChapterListFromPages( manga, chapterList, index + 1 )
-                        .then( chapters => chapters.concat( chapterList ) );
+    async _getChapterListPage(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.detail_body div.detail_lst ul li > a');
+        return data.map(element => {
+            let chapter = element.querySelector('span.tx');
+            let title = chapter ? chapter.textContent.trim() + ' - ' : '';
+            title += element.querySelector('span.subj span').textContent.trim();
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.baseURL),
+                title: title,
+                language: ''
+            };
+        });
+    }
+
+    async _getChapterList(manga, callback) {
+        try {
+            let chapterList = [];
+            let uri = new URL(manga.id, this.baseURL);
+            for(let page = 1; page < 999; page++) {
+                uri.searchParams.set('page', page);
+                let chapters = await this._getChapterListPage(uri);
+                if(chapters.length > 0 && (chapterList.length === 0 || chapters[chapters.length - 1].id !== chapterList[chapterList.length - 1].id)) {
+                    chapterList.push(...chapters);
                 } else {
-                    return Promise.resolve( chapterList );
+                    break;
                 }
-            } );
-    }
-
-    _getChapterList( manga, callback ) {
-        this._getChapterListFromPages( manga )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+            }
+            callback(null, chapterList);
+        } catch(error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
     }
 
     async _getPageList(manga, chapter, callback) {
@@ -78,6 +80,8 @@ export default class LineWebtoon extends Connector {
             // https://www.webtoons.com/id/horror/guidao/prolog/viewer?title_no=874&episode_no=1
             let script = `
                 new Promise(async resolve => {
+
+                    // Process motion webtoon
                     if(document.querySelector('div#ozViewer div.oz-pages')) {
                         let templateURLs = window.__motiontoonViewerState__.motiontoonParam.pathRuleParam;
                         let uri = window.__motiontoonViewerState__.motiontoonParam.viewerOptions.documentURL;
@@ -113,7 +117,35 @@ export default class LineWebtoon extends Connector {
                             }
                         }
                         resolve(data.pages);
-                    } else {
+                        return;
+                    }
+
+                    // Process soft-sub webtoon
+                    if(${this.id === 'linewebtoon-translate'}) {
+                        let pages = [...document.querySelectorAll('div.viewer div.viewer_lst div.viewer_img div.img_info')].map(page => {
+                            let cover = page.querySelector('img');
+                            return {
+                                background: {
+                                    image: cover.src
+                                },
+                                layers: [...page.querySelectorAll('span.ly_img_text')].map(layer => {
+                                    let image = layer.querySelector('img');
+                                    return {
+                                        type: 'image|text',
+                                        asset: image.src,
+                                        top: parseInt(layer.style.top),
+                                        left: parseInt(layer.style.left),
+                                        effects: {}
+                                    };
+                                })
+                            };
+                        });
+                        resolve(pages);
+                        return;
+                    }
+
+                    // Process hard-sub webtoon (default)
+                    {
                         let images = [...document.querySelectorAll('div.viewer div.viewer_lst div.viewer_img img[data-url]')];
                         let links = images.map(element => new URL(element.dataset.url, window.location).href);
                         resolve(links);
@@ -132,9 +164,9 @@ export default class LineWebtoon extends Connector {
 
     async _handleConnectorURI(payload) {
         /*
-        * TODO: only perform requests when from download manager
-        * or when from browser for preview and selected chapter matches
-        */
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
         if(typeof payload === 'string') {
             let uri = new URL(payload);
             uri.searchParams.delete('type');
@@ -143,20 +175,29 @@ export default class LineWebtoon extends Connector {
             let data = await response.blob();
             return this._blobToBuffer(data);
         } else {
-            //console.log(payload);
             let canvas = document.createElement('canvas');
             canvas.width = payload.width;
             canvas.height = payload.height;
-            let ctx = canvas.getContext("2d");
+            let ctx = canvas.getContext('2d');
+            if(payload.background.image) {
+                let image = await this._loadImage(payload.background.image);
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0);
+            }
             if(payload.background.color) {
                 ctx.fillStyle = payload.background.color;
                 ctx.fillRect(0, 0, canvas.width, canvas.height);
             }
             for(let layer of payload.layers) {
-                if(layer.type === 'image') {
-                    // TODO: process layer.keyframes in case top/left/width/height is animated?
+                let type = layer.type.split('|');
+                if(type[0] === 'image') {
                     let image = await this._loadImage(layer.asset);
-                    ctx.drawImage(image, layer.left, layer.top, layer.width, layer.height);
+                    if(type[1] === 'text') {
+                        this._adjustTextLayerVisibility(layer, image, canvas);
+                    }
+                    // TODO: process layer.keyframes in case top/left/width/height is animated?
+                    ctx.drawImage(image, layer.left, layer.top, layer.width || image.width, layer.height || image.height);
                 }
                 // TODO: process layer.effects?
             }
@@ -173,6 +214,33 @@ export default class LineWebtoon extends Connector {
             image.onload = () => resolve(image);
             image.src = uri.href;
         });
+    }
+
+    async _adjustTextLayerVisibility(layer, text, canvas) {
+        if(text.height > canvas.height) {
+            layer.top = 0;
+            layer.height = canvas.height;
+            layer.width = parseInt(layer.width * canvas.height / text.height);
+        } else {
+            if(layer.top + text.height > canvas.height) {
+                layer.top = canvas.height - text.height;
+            }
+            if(layer.top < 0) {
+                layer.top = 0;
+            }
+        }
+        if(text.width > canvas.width) {
+            layer.left = 0;
+            layer.width = canvas.width;
+            layer.height = parseInt(layer.height * canvas.width / text.width);
+        } else {
+            if(layer.left + text.width > canvas.width) {
+                layer.left = canvas.width - text.width;
+            }
+            if(layer.left < 0) {
+                layer.left = 0;
+            }
+        }
     }
 
     async _canvasToBlob(canvas) {

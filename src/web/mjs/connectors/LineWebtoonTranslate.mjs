@@ -1,28 +1,14 @@
-import Connector from '../engine/Connector.mjs';
+import LineWebtoon from './templates/LineWebtoon.mjs';
 
-/**
- *
- */
-export default class LineWebtoonTranslate extends Connector {
+export default class LineWebtoonTranslate extends LineWebtoon {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'linewebtoon-translate';
         super.label = 'Line Webtoon (Translate)';
-        this.tags = [];
+        this.tags = [ 'webtoon', 'scanlation', 'multi-lingual' ];
         this.url = 'https://translate.webtoons.com';
-    }
-
-    _getMangaList( callback ) {
-        callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-    }
-    _getChapterList( manga, callback ) {
-        callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
-    }
-    _getPageList( manga, chapter, callback ) {
-        callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+        this.baseURL = 'https://translate.webtoons.com';
+        this.requestOptions.headers.set('x-referer', this.baseURL);
     }
 }
