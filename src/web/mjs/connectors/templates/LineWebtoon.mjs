@@ -220,7 +220,7 @@ export default class LineWebtoon extends Connector {
         if(text.height > canvas.height) {
             layer.top = 0;
             layer.height = canvas.height;
-            // TODO: adjust layer.width to preserve ratio
+            layer.width = parseInt(layer.width * canvas.height / text.height);
         } else {
             if(layer.top + text.height > canvas.height) {
                 layer.top = canvas.height - text.height;
@@ -232,7 +232,7 @@ export default class LineWebtoon extends Connector {
         if(text.width > canvas.width) {
             layer.left = 0;
             layer.width = canvas.width;
-            // TODO: adjust layer.height to preserve ratio
+            layer.height = parseInt(layer.height * canvas.width / text.width);
         } else {
             if(layer.left + text.width > canvas.width) {
                 layer.left = canvas.width - text.width;
