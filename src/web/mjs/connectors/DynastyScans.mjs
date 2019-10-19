@@ -26,14 +26,17 @@ export default class DynastyScans extends Connector {
      */
     _getMangaList( callback ) {
         let promises = ['/series', '/anthologies', '/issues', '/doujins'].map( page => {
-            return this.fetchDOM( this.url + page, '.tag-list dd a' )
-                .then( data => {
-                    let mangaList = data.map( element => {
-                        return {
-                            id: this.getRelativeLink( element ),
-                            title: element.text.trim()
-                        };
-                    } );
+            return this.fetchJSON( this.url + `${page}.json` )
+                .then( json => {
+                    let mangaList = [];
+                    for( let letter in json ) {
+                        mangaList = mangaList.concat( ... json[letter].map( manga => {
+                            return {
+                                id: `${page}/${manga.permalink}`,
+                                title: manga.name.trim()
+                            };
+                        }) );
+                    }
                     return Promise.resolve( mangaList );
                 } );
         } );
@@ -52,12 +55,13 @@ export default class DynastyScans extends Connector {
      *
      */
     _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, '.chapter-list dd a[class="name"]' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    let title = element.text.replace( manga.title, '' ).trim();
+        this.fetchJSON( this.url + manga.id + '.json' )
+            .then( json => {
+                // filter removes the "header" elements from the list
+                let chapterList = json['taggings'].filter( chapter => !chapter.header ).map( chapter => {
+                    let title = chapter.title.replace( manga.title, '' ).trim();
                     return {
-                        id: this.getRelativeLink( element ),
+                        id: `/chapters/${chapter.permalink}`,
                         title:  title === '' ? manga.title : title ,
                         language: 'en'
                     };
@@ -82,16 +86,9 @@ export default class DynastyScans extends Connector {
      *
      */
     _getPageList( manga, chapter, callback ) {
-        fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let pages = data.match( /var\s+pages\s*=\s*(\[.*?\])\s*;/ )[1];
-                let pageList = JSON.parse( pages ).map( p => this.url + p.image );
+        this.fetchJSON( this.url + chapter.id + '.json' )
+            .then( json => {
+                let pageList = json['pages'].map( page => this.url + page.url );
                 callback( null, pageList );
             } )
             .catch( error => {
