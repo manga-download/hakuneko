@@ -35,7 +35,7 @@ module.exports = class CommandlineArgumentExtractor {
         console.log('');
         console.log('Options:');
         console.log(' ', '-u, --update-url=<URL>     ', 'URL to be checked for web-application updates');
-        console.log(' ', '                           ', 'Default: "http://static.hakuneko.download/{version}/latest"');
+        console.log(' ', '                           ', 'Default: "http://manga-download.github.io/hakuneko/{version}/latest"');
         console.log(' ', '--startup-url=<URL>        ', 'URL to the entrypoint of the web-application');
         console.log(' ', '                           ', 'Default: "hakuneko://cache/index.html"');
         console.log(' ', '-c, --cache-directory=<DIR>', 'Directory where the web-application is stored');
