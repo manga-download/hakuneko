@@ -80,7 +80,7 @@ export default class MangaNel extends Connector {
             } )
             .then( data => {
                 let redirect = data.match( /window.location.assign\(\s*['"]([^'"]+)['"]\s*\)/ );
-                return this.fetchDOM( redirect && !redirect[1].includes('manganel') ? redirect[1] : uri, this.queryChapters );
+                return this.fetchDOM( redirect && !this.id === 'manganel' ? redirect[1] : uri, this.queryChapters );
             } )
             .then( data => {
                 let chapterList = data.map( element => {
