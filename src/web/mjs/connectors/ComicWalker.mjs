@@ -21,41 +21,37 @@ export default class ComicWalker extends Connector {
             } );
     }
 
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this.fetchDOM( request, 'div.comicPage ul.tileList li a p.tileTitle span', 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element.closest( 'a' ), request.url ),
-                        title: element.textContent.replace( /^[^\s]+\s/, '' ).trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangaListPage(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.comicPage ul.tileList li a p.tileTitle span');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.closest('a'), request.url),
+                title: element.textContent.replace(/^[^\s]+\s/, '').trim()
+            };
+        });
     }
 
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/contents/list/', this.requestOptions );
-        this.fetchDOM( request, 'div.comicPage div.pager ul.clearfix li:nth-last-of-type(2) a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + '?p=' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaList(callback) {
+        try {
+            let mangaList = [];
+            for(let language of ['en', 'tw', 'jp']) {
+                let uri = new URL('/contents/list/', this.url);
+                let request = new Request(`${this.url}/set_lang/${language}/`, this.requestOptions);
+                request.headers.set('x-referer', uri.href);
+                let data = await this.fetchDOM(request, 'div.comicPage div.pager ul.clearfix li:nth-last-of-type(2) a');
+                let pageCount = parseInt(data[0].text.trim());
+                for(let page = 1; page <= pageCount; page++) {
+                    uri.searchParams.set('p', page);
+                    let mangas = await this._getMangaListPage(uri);
+                    mangaList.push(...mangas);
+                }
+            }
+            callback(null, mangaList);
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
     }
 
     _getChapterList( manga, callback ) {
