@@ -36,11 +36,11 @@ image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?b
 [%collapsible, title="Details"]
 ====
 Continuous Integration::
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Windows&label=CI%20-%20Windows[title="CI Pipeline: Windows"]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=CI&configuration=CI%20Windows&label=CI%20-%20Windows[title="CI Pipeline: Windows"]
  +
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=Ubuntu&label=CI%20-%20Ubuntu[title="CI Pipeline: Ubuntu"]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=CI&configuration=CI%20Ubuntu&label=CI%20-%20Ubuntu[title="CI Pipeline: Ubuntu"]
  +
-image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=macOS&label=CI%20-%20macOS[title="CI Pipeline: macOS"]
+image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&jobName=CI&configuration=CI%20macOS&label=CI%20-%20macOS[title="CI Pipeline: macOS"]
 
 Nightly Builds::
 image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&jobName=Windows&label=Nightly%20-%20Windows[title="Nightly Build: Windows"]
