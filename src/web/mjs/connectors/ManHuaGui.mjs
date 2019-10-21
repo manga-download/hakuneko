@@ -1,21 +1,16 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class ManHuaGui extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'manhuagui';
         super.label = 'ManHuaGui';
         this.tags = [ 'manga', 'chinese' ];
         this.url = 'https://www.manhuagui.com';
-        this.requestOptions.headers.set( 'x-referer', this.url );
+        this.requestOptions.headers.set('x-referer', this.url);
+        this.requestOptions.headers.set('x-cookie', 'isAdult=1');
     }
 
     /**
@@ -45,26 +40,31 @@ export default class ManHuaGui extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'div.chapter div.chapter-list ul li a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.title.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapterList( manga, callback ) {
+        try {
+            let script = `
+                new Promise(resolve => {
+                    let button = document.querySelector('#checkAdult');
+                    if(button) {
+                        button.click();
+                    }
+                    chapterList = [...document.querySelectorAll('div.chapter div.chapter-list ul li a')].map(element => {
+                        return {
+                            id: new URL(element.href, window.location).pathname,
+                            title: element.title.trim(),
+                            language: ''
+                        };
+                    });
+                    resolve(chapterList);
+                });
+            `;
+            let request = new Request(this.url + manga.id, this.requestOptions);
+            let data = await Engine.Request.fetchUI(request, script);
+            callback(null, data);
+        } catch(error) {
+            console.error( error, manga );
+            callback( error, undefined );
+        }
     }
 
     /**
