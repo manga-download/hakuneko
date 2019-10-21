@@ -262,7 +262,7 @@ export default class Settings extends EventTarget {
                     && this[key].input)
                 {
                     this[key].value = this._getDecryptedValue(this[key].input, data[key]);
-                    this[key].value = this._getValidValue(this[key]);
+                    this[key].value = this._getValidValue('General', this[key]);
                 }
             }
             // apply settings to each connector
@@ -276,7 +276,7 @@ export default class Settings extends EventTarget {
                         && connector.config[key].input)
                     {
                         connector.config[key].value = this._getDecryptedValue(connector.config[key].input, data.connectors[connector.id][key]);
-                        connector.config[key].value = this._getValidValue(connector.config[key]);
+                        connector.config[key].value = this._getValidValue(connector.label, connector.config[key], true);
                     }
                 }
             }
@@ -337,7 +337,7 @@ export default class Settings extends EventTarget {
     /**
      *
      */
-    _getValidValue(setting) {
+    _getValidValue(scope, setting, silent) {
         let value = setting.value;
         switch(setting.input) {
         case types.numeric:
@@ -351,7 +351,12 @@ export default class Settings extends EventTarget {
         case types.directory:
             Engine.Storage.directoryExist(value)
                 .catch(error => {
-                    alert(`WARNING: Cannot access the directory for "${setting.label}" setting!\n\n${error.message}`);
+                    let message = `WARNING: Cannot access the directory for "${setting.label}" from "${scope}" settings!\n\n${error.message}`;
+                    if(silent) {
+                        console.warn(message, error);
+                    } else {
+                        alert(message);
+                    }
                 });
             return value;
         default:
