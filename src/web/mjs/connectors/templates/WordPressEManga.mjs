@@ -15,45 +15,39 @@ export default class WordPressEManga extends Connector {
         this.queryPages = 'div#readerarea source[src]:not([src=""])';
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + this.path, this.queryMangas )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaList(callback) {
+        try {
+            let request = new Request(this.url + this.path, this.requestOptions);
+            let data = await this.fetchDOM(request, this.queryMangas);
+            let mangaList = data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: element.text.trim()
+                };
+            });
+            callback(null, mangaList);
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        return this.fetchDOM( this.url + manga.id, this.queryChapters )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapterList(manga, callback) {
+        try {
+            let request = new Request(this.url + manga.id, this.requestOptions);
+            let data = await this.fetchDOM(request, this.queryChapters);
+            let chapterList = data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: element.text.replace(manga.title, '').trim(),
+                    language: ''
+                };
+            });
+            callback(null, chapterList);
+        } catch(error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
     }
 
     async _getPageList(manga, chapter, callback) {
