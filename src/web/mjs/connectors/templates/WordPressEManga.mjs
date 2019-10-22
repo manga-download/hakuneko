@@ -56,22 +56,16 @@ export default class WordPressEManga extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        return this.fetchDOM( this.url + chapter.id, this.queryPages )
-            .then( data => {
-                let pageLinks = data.map( element => {
-                    let link = element.dataset['lazySrc'] || element.src;
-                    return ( link.startsWith( 'http' ) ? '' : 'http:' ) + link;
-                } )
-                    .filter( link => !link.includes( 'histats.com' ) );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPageList(manga, chapter, callback) {
+        try {
+            let request = new Request(this.url + chapter.id, this.requestOptions);
+            let data = await this.fetchDOM(request, this.queryPages);
+            let pageLinks = data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element, request.url));
+            pageLinks = pageLinks.filter(link => !link.includes('histats.com'));
+            callback(null, pageLinks);
+        } catch(error) {
+            console.error(error, chapter);
+            callback(error, undefined);
+        }
     }
 }
