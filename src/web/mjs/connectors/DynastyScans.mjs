@@ -24,79 +24,70 @@ export default class DynastyScans extends Connector {
     /**
      *
      */
-    _getMangaList( callback ) {
-        let promises = ['/series', '/anthologies', '/issues', '/doujins'].map( page => {
-            return this.fetchDOM( this.url + page, '.tag-list dd a' )
-                .then( data => {
-                    let mangaList = data.map( element => {
+    async _getMangaList( callback ) {
+        try {
+            let promises = ['/series', '/anthologies', '/issues', '/doujins'].map( async page => {
+                let json = await this.fetchJSON( this.url + `${page}.json` );
+                let mangaList = [];
+                for( let letter in json ) {
+                    mangaList = mangaList.concat( ... json[letter].map( manga => {
                         return {
-                            id: this.getRelativeLink( element ),
-                            title: element.text.trim()
+                            id: `${page}/${manga.permalink}`,
+                            title: manga.name.trim()
                         };
-                    } );
-                    return Promise.resolve( mangaList );
-                } );
-        } );
-
-        Promise.all( promises )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
+                    }) );
+                }
+                return mangaList;
             } );
+            let mangas = await Promise.all( promises );
+            callback( null, [].concat( ... mangas ) );
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
+    }
+
+
+    /**
+     *
+     */
+    async _getChapterList( manga, callback ) {
+        try {
+            let json = await this.fetchJSON( new URL(this.url + manga.id + '.json', this.url).href );
+            // filter removes the "header" elements from the list
+            let chapterList = json['taggings'].filter( chapter => !('header' in chapter) ).map( chapter => {
+                return {
+                    id: `/chapters/${chapter.permalink}`,
+                    title: chapter.title.trim(),
+                    language: 'en'
+                };
+            } );
+            // rename duplicate chapters, using a stack to count preceding chapters with the same name
+            let titleStack = [];
+            for( let chapter of chapterList ) {
+                // do not change the command order!
+                let duplicateCount = titleStack.filter( t => t === chapter.title ).length;
+                titleStack.push( chapter.title );
+                chapter.title += duplicateCount > 0 ? ' #' + duplicateCount : '' ;
+            }
+            callback( null, chapterList );
+        } catch(error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
     }
 
     /**
      *
      */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, '.chapter-list dd a[class="name"]' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    let title = element.text.replace( manga.title, '' ).trim();
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title:  title === '' ? manga.title : title ,
-                        language: 'en'
-                    };
-                } );
-                // rename duplicate chapters, using a stack to count preceding chapters with the same name
-                let titleStack = [];
-                for( let chapter of chapterList ) {
-                    // do not change the command order!
-                    let duplicateCount = titleStack.filter( t => t === chapter.title ).length;
-                    titleStack.push( chapter.title );
-                    chapter.title += duplicateCount > 0 ? ' #' + duplicateCount : '' ;
-                }
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let pages = data.match( /var\s+pages\s*=\s*(\[.*?\])\s*;/ )[1];
-                let pageList = JSON.parse( pages ).map( p => this.url + p.image );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPageList( manga, chapter, callback ) {
+        try {
+            let json = await this.fetchJSON( new URL(this.url + chapter.id + '.json', this.url).href );
+            let pageList = json['pages'].map( page => this.url + page.url );
+            callback( null, pageList );
+        } catch(error) {
+            console.error(error, chapter);
+            callback(error, undefined);
+        }
     }
 }
