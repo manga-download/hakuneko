@@ -1,6 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+
 export default class SakuraManga extends Connector {
+
     constructor() {
         super();
         super.id = 'sakuramanga';
@@ -11,17 +13,15 @@ export default class SakuraManga extends Connector {
         this.japanese = 'japanese-manga';
         this.english = 'truyen-tranh-tieng-anh-english-manga';
     }
+
     async _getMangaFromURI(uri) {
-        try {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'head title');
-            let id = uri.pathname;
-            let title = data[0].text.substring(0, data[0].text.indexOf("- Sakura Manga")).trim();
-            return new Manga(this, id, title);
-        } catch (error) {
-            return error;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'head title');
+        let id = uri.pathname;
+        let title = data[0].text.substring(0, data[0].text.indexOf("- Sakura Manga")).trim();
+        return new Manga(this, id, title);
     }
+
     async _getMangaList(callback) {
         try {
             let request = new Request(this.url + this.list, this.requestOptions);
@@ -38,6 +38,7 @@ export default class SakuraManga extends Connector {
             callback(error, undefined);
         }
     }
+
     async _getChapterList(manga, callback) {
         try {
             let request = new Request(this.url + manga.id, this.requestOptions);
@@ -55,6 +56,7 @@ export default class SakuraManga extends Connector {
             callback(error, undefined);
         }
     }
+
     async _getPageList(manga, chapter, callback) {
         try {
             let request = new Request(this.url + chapter.id, this.requestOptions);

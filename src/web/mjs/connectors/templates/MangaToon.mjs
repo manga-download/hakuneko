@@ -22,18 +22,12 @@ export default class MangaToon extends Connector {
         return '/img/connectors/mangatoon';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
     async _getMangaFromURI(uri) {
-        try {
-            let data = await this.fetchDOM(uri.href, 'div.detail-top h1.comics-title', 3);
-            let id = uri.pathname.replace('/episodes', '');
-            let title = data[0].textContent.trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            return null;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.detail-top h1.comics-title', 3);
+        let id = uri.pathname.replace('/episodes', '');
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

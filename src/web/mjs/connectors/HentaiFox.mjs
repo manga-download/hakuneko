@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class HentaiFox extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'hentaifox';
@@ -17,16 +11,12 @@ export default class HentaiFox extends Connector {
         this.url = 'https://hentaifox.com';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div.block div.info h1', 3 )
-            .then( data => {
-                let id = uri.pathname;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.block div.info h1', 3);
+        let id = uri.pathname;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

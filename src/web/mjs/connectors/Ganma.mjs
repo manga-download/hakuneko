@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class Ganma extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'ganma';
@@ -18,17 +12,12 @@ export default class Ganma extends Connector {
         this.requestOptions.headers.set( 'x-from', this.url );
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( this.url + '/api/2.0/magazines/' + uri.pathname.split( '/' ).pop(), this.requestOptions );
-        return this.fetchJSON( request )
-            .then( data => {
-                let id = data.root.id; // panel.alias, panel.link
-                let title = data.root.title.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(this.url + '/api/2.0/magazines/' + uri.pathname.split('/').pop(), this.requestOptions);
+        let data = await this.fetchJSON(request);
+        let id = data.root.id; // panel.alias, panel.link
+        let title = data.root.title.trim();
+        return new Manga(this, id, title);
     }
 
     /**

@@ -1,22 +1,13 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MangaDex extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'mangadex';
         super.label = 'MangaDex';
         this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://mangadex.org';
         this.requestOptions.headers.set( 'x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2' );
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
@@ -32,16 +23,12 @@ export default class MangaDex extends Connector {
         };
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div.card h6.card-header span.mx-1', 3 )
-            .then( data => {
-                let id = uri.pathname.match( /\/(\d+)\/?/ )[1];
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.card h6.card-header span.mx-1', 3);
+        let id = uri.pathname.match(/\/(\d+)\/?/)[1];
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

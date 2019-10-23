@@ -1,14 +1,8 @@
 import Publus from './templates/Publus.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class ComicEarthStar extends Publus {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'comicearthstar';
@@ -17,17 +11,12 @@ export default class ComicEarthStar extends Publus {
         this.url = 'https://www.comic-earthstar.jp';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let id = uri.pathname.match( /\/([^/]+)\/?$/ )[1];
-        let request = new Request( this.url + '/json/contents/detail/' + id + '.json', this.requestOptions );
-        return this.fetchJSON( request )
-            .then( data => {
-                let title = data.categorys.comic_category_title;
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let id = uri.pathname.match(/\/([^/]+)\/?$/)[1];
+        let request = new Request(this.url + '/json/contents/detail/' + id + '.json', this.requestOptions);
+        let data = await this.fetchJSON(request);
+        let title = data.categorys.comic_category_title;
+        return new Manga(this, id, title);
     }
 
     /**

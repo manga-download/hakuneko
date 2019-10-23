@@ -3,9 +3,6 @@ import Manga from '../../engine/Manga.mjs';
 
 export default class Ciayo extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'ciayo';
@@ -32,17 +29,12 @@ export default class Ciayo extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'h1.comicCover-title' )
-            .then( data => {
-                let id = uri.pathname.split( '/' ).pop();
-                let title = data[0].textContent.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'h1.comicCover-title');
+        let id = uri.pathname.split('/').pop();
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

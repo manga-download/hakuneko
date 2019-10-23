@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class Buka extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'buka';
@@ -17,16 +11,12 @@ export default class Buka extends Connector {
         this.url = 'http://www.buka.cn';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'section.main div.manga-title div.wrap h1.title-font', 3 )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'section.main div.manga-title div.wrap h1.title-font', 3);
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

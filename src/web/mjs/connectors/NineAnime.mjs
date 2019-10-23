@@ -47,7 +47,7 @@ export default class NineAnime extends Connector {
                     clearInterval(timer);
                     win.close();
                     reject(new Error('Captcha has not been solved within the given timeout!'));
-                }, 60000);
+                }, 120000);
             });
         } else {
             return Promise.resolve();
@@ -62,25 +62,17 @@ export default class NineAnime extends Connector {
         return Math.floor(Date.now() / 3600000) * 3600 - 12 * 3600;
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this._checkCaptcha(request)
-            .then(() => fetch( request ))
-            .then( response => response.text() )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let metaURL = dom.querySelector( 'meta[property="og:url"]' ).content.trim();
-                let metaTitle = dom.querySelector( 'div.head h2[data-jtitle].title' ); // 'meta[property="og:title"]'
-                let id = this.getRootRelativeOrAbsoluteLink( metaURL, request.url );
-                let title = metaTitle.dataset.jtitle.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } )
-            .catch( error => {
-                console.error( error );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        await this._checkCaptcha(request);
+        let response = await fetch(request);
+        let data = await response.text();
+        let dom = this.createDOM(data);
+        let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
+        let metaTitle = dom.querySelector('div.head h2[data-jtitle].title'); // 'meta[property="og:title"]'
+        let id = this.getRootRelativeOrAbsoluteLink(metaURL, request.url);
+        let title = metaTitle.dataset.jtitle.trim();
+        return new Manga(this, id, title);
     }
 
     /**

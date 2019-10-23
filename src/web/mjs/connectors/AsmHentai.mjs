@@ -11,20 +11,14 @@ export default class AsmHentai extends Connector {
         this.url = 'https://asmhentai.com';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
     async _getMangaFromURI(uri) {
-        try {
-            let data = await this.fetchDOM(uri.href, 'div.book_page div.info h1', 3);
-            let id = uri.pathname;
-            let element = data[0];
-            this.cfMailDecrypt(element);
-            let title = element.textContent.trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            return null;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.book_page div.info h1', 3);
+        let id = uri.pathname;
+        let element = data[0];
+        this.cfMailDecrypt(element);
+        let title = element.textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaList(callback) {

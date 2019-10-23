@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class SoManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'somanga';
@@ -17,16 +11,12 @@ export default class SoManga extends Connector {
         this.url = 'https://somangas.net';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div.manga div.col-sm-8 h2', 3 )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.manga div.col-sm-8 h2', 3);
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

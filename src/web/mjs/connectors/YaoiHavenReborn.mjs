@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class YaoiHavenReborn extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'yaoihavenreborn';
@@ -17,25 +11,17 @@ export default class YaoiHavenReborn extends Connector {
         this.url = 'https://www.yaoihavenreborn.com/';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return Promise.resolve()
-            .then( () => {
-                if( !uri.pathname.startsWith( '/doujinshi' ) ) {
-                    throw new Error( 'Only doujins are supported, galleries cannot be downloaded!' );
-                }
-            } )
-            .then( () => this.fetchDOM( uri.href, 'div.container div.card h4.card-header b', 3 ) )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        if(uri.pathname.startsWith('/doujinshi')) {
+            let request = new Request(uri, this.requestOptions);
+            let data = await this.fetchDOM(request, 'div.container div.card h4.card-header b', 3);
+            let id = uri.pathname + uri.search;
+            let title = data[0].innerText.trim();
+            return new Manga(this, id, title);
+        } else {
+            throw new Error('Only doujins are supported, galleries cannot be downloaded!');
+        }
     }
-
-    //
 
     /**
      *

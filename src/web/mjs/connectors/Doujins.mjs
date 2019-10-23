@@ -11,18 +11,12 @@ export default class Doujins extends Connector {
         this.url = 'https://doujins.com';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
     async _getMangaFromURI(uri) {
-        try {
-            let data = await this.fetchDOM(uri.href, 'head title', 3);
-            let id = uri.pathname;
-            let title = data[0].textContent.trim();
-            return Promise.resolve(new Manga(this, id, title));
-        } catch(error) {
-            return null;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'head title', 3);
+        let id = uri.pathname;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaList(callback) {

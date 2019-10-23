@@ -1,38 +1,23 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- * @author Neogeek
- */
 export default class MangaPark extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'mangapark';
         super.label = 'MangaPark (2018)';
         this.tags = [ 'manga', 'multi-lingual' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://mangapark.org';
         this.requestOptions.headers.set( 'x-cookie', 'h=1' );
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div.container div.mt-4 h3 a', 3 )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.container div.mt-4 h3 a', 3);
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

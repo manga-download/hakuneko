@@ -13,15 +13,11 @@ export default class Kauikanmanhua extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        try {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'head title');
-            let id = uri.pathname;
-            let title = data[0].text.split('|')[0].trim();
-            return new Manga(this, id, title);
-        } catch (error) {
-            return error;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'head title');
+        let id = uri.pathname;
+        let title = data[0].text.split('|')[0].trim();
+        return new Manga(this, id, title);
     }
 
     _getMangaListFromPages( mangaPageLinks, index ) {

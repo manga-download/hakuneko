@@ -1,14 +1,8 @@
 import Connector from '../../engine/Connector.mjs';
 import Manga from '../../engine/Manga.mjs';
 
-/**
- *
- */
 export default class Toomics extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'toomics';
@@ -32,17 +26,12 @@ export default class Toomics extends Connector {
         return '/img/connectors/toomics';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, this.queryMangaHeading )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].textContent.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangaHeading);
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

@@ -11,18 +11,12 @@ export default class AllHentai extends Connector {
         this.url = 'http://allhentai.ru';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
     async _getMangaFromURI(uri) {
-        try {
-            let data = await this.fetchDOM(uri.href, 'meta[itemprop="name"]', 3);
-            let id = uri.pathname;
-            let title = data[0].content.trim();
-            return Promise.resolve(new Manga(this, id, title));
-        } catch(error) {
-            return null;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'meta[itemprop="name"]', 3);
+        let id = uri.pathname;
+        let title = data[0].content.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaListFromPages(mangaPageLinks, index) {
