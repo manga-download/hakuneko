@@ -49,42 +49,30 @@ export default class Connector {
      * See: this._initialize()
      * This method can be overwritten by the connector for a specific implementation of the initialization process
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         /*
          * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
          * => append random search parameter to avoid caching
          */
-        let uri = new URL( this.url );
-        uri.searchParams.set( 'ts', Date.now() );
-        uri.searchParams.set( 'rd', Math.random() );
-        let request = new Request( uri.href, this.requestOptions );
-        return Engine.Request.fetchUI( request, '' );
+        let uri = new URL(this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri.href, this.requestOptions);
+        return Engine.Request.fetchUI(request, '');
     }
 
-    /**
-     *
-     */
-    initialize() {
-        return Promise.resolve()
-            .then( () => {
-                if( this.initialized ) {
-                    return Promise.resolve();
-                } else {
-                    return this._initializeConnector();
-                }
-            } )
-            .then( () => {
+    async initialize() {
+        try {
+            if(!this.initialized) {
+                await this._initializeConnector();
                 this.initialized = true;
-            } )
-            .catch( error => {
-                this.initialized = false;
-                // in offline mode set initialization to false, but do not throw
-                if( error.stack.startsWith( 'ERR_INTERNET_DISCONNECTED' ) ) {
-                //console.warn( 'Initialization Failed', this, JSON.stringify(error) );
-                    return Promise.resolve();
-                }
+            }
+        } catch(error) {
+            // only throw when not in offline mode
+            if(!error.stack.startsWith('ERR_INTERNET_DISCONNECTED')) {
                 throw error;
-            } );
+            }
+        }
     }
 
     /**
@@ -176,28 +164,27 @@ export default class Connector {
     }
 
     /**
-     * See: this.getMangaFromURI( uri )
+     * See: getMangaFromURI(uri)
      * This method can be overwritten by connector implementations.
      */
-    _getMangaFromURI( uri ) {
-        return new Promise( resolve => {
-            let id = uri.pathname + uri.search;
-            let title = 'Manga #' + id.split( '' ).reduce( ( a, v ) => a + a % 31 + v.charCodeAt(), id.length ).toString( 16 ).toUpperCase();
-            resolve( new Manga( this, id, title ) );
-        } );
+    async _getMangaFromURI(uri) {
+        let id = uri.pathname + uri.search;
+        let title = 'Manga #' + id.split('').reduce((a, v) => a + a % 31 + v.charCodeAt(), id.length).toString(16).toUpperCase();
+        return new Manga(this, id, title);
     }
 
     /**
-     * Returns a promise that resolves with a manga on success or resolves with an error on failure.
-     * The promise will NOT reject!
+     * Get the manga from the provided resource (URI).
+     * @param {URL} uri - ...
+     * @returns {Promise<Manga>} - ...
      */
-    getMangaFromURI( uri ) {
+    async getMangaFromURI(uri) {
         /*
          * TODO: try to find title in cached manga list first
          *       => this.getMangas().then( ... )
          */
-        return this.initialize()
-            .then( () => this._getMangaFromURI( uri ) );
+        await this.initialize();
+        return this._getMangaFromURI(uri);
     }
 
     /**

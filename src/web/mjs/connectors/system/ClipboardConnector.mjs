@@ -63,7 +63,7 @@ export default class ClipboardConnector {
                 }
                 return await connectors[0].getMangaFromURI(uri);
             } catch(error) {
-                //console.warn('CLIPBOARD:', line, error);
+                console.warn('CLIPBOARD:', line, error);
                 return null;
             }
         });
