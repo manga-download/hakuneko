@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class Naver extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'naver';
@@ -17,17 +11,13 @@ export default class Naver extends Connector {
         this.url = 'https://comic.naver.com';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div#content div.comicinfo div.detail h2', 3 )
-            .then( data => {
-                uri.searchParams.delete( 'page' );
-                let id = uri.pathname + uri.search;
-                let title = data[0].childNodes[0].nodeValue.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#content div.comicinfo div.detail h2', 3);
+        uri.searchParams.delete('page');
+        let id = uri.pathname + uri.search;
+        let title = data[0].childNodes[0].nodeValue.trim();
+        return new Manga(this, id, title);
     }
 
     /**

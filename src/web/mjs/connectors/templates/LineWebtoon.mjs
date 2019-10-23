@@ -17,16 +17,12 @@ export default class LineWebtoon extends Connector {
         return '/img/connectors/linewebtoon';
     }
 
-    async _getMangaFromURI( uri ) {
-        try {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'head meta[property="og:title"]');
-            let id = uri.pathname + uri.search;
-            let title = data[0].content.trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            return null;
-        }
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'head meta[property="og:title"]');
+        let id = uri.pathname + uri.search;
+        let title = data[0].content.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaList( callback ) {

@@ -7,10 +7,10 @@ export default class HeavenManga extends Connector {
         super.id = 'heavenmanga';
         super.label = 'Heaven Manga';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://ww2.heavenmanga.org';
+        this.url = 'https://ww4.heavenmanga.org';
     }
 
-    _initializeConnector() {
+    async _initializeConnector() {
         /*
          * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
          * => append random search parameter to avoid caching

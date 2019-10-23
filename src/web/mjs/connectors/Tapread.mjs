@@ -12,20 +12,12 @@ export default class Tapread extends Connector {
         this.imgURL = 'https://static.tapread.com';
     }
 
-    /**
-     *
-     */
     async _getMangaFromURI(uri) {
-        try {
-            let request = new Request(uri.href, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.book-container div.book-info div.book-name');
-            let id = uri.pathname.split('/').pop();
-            let title = data[0].textContent.trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            console.warn(error, this);
-            return Promise.reject();
-        }
+        let request = new Request(uri.href, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.book-container div.book-info div.book-name');
+        let id = uri.pathname.split('/').pop();
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

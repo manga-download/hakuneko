@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class TuMangaOnlineHentai extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'tumangaonlinehentai';
@@ -17,17 +11,12 @@ export default class TuMangaOnlineHentai extends Connector {
         this.url = 'https://tmohentai.com';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div.panel-title div.panel-heading h3.truncate' )
-            .then( data => {
-                let id = uri.pathname.split( '/' ).pop();
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.panel-title div.panel-heading h3.truncate');
+        let id = uri.pathname.split('/').pop();
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

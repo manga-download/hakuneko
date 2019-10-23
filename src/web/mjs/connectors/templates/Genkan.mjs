@@ -13,7 +13,7 @@ export default class Genkan extends Connector {
     /**
      *
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         /*
          * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
          * => append random search parameter to avoid caching

@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class WebNovel extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'webnovel';
@@ -22,7 +16,7 @@ export default class WebNovel extends Connector {
     /**
      *
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         let uri = new URL( this.url );
         uri.searchParams.set( 'ts', Date.now() );
         uri.searchParams.set( 'rd', Math.random() );
@@ -31,17 +25,12 @@ export default class WebNovel extends Connector {
             .then( data => this.token = data );
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div.det-info h2' )
-            .then( data => {
-                let id = uri.pathname.split( '/' ).pop();
-                let title = data[0].textContent.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.det-info h2');
+        let id = uri.pathname.split('/').pop();
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

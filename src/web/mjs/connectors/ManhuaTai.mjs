@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class ManhuaTai extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'manhuatai';
@@ -17,16 +11,12 @@ export default class ManhuaTai extends Connector {
         this.url = 'https://www.manhuatai.com';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div.mainctx div.mhjsbody ul li:first-of-type', 3 )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.replace( '名称：', '' ).trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.mainctx div.mhjsbody ul li:first-of-type', 3);
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.replace('名称：', '').trim();
+        return new Manga(this, id, title);
     }
 
     /**

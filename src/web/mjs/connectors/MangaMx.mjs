@@ -12,15 +12,11 @@ export default class MangaMx extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        try {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'meta[property="og:title"]');
-            let id = uri.pathname;
-            let title = data[0].content.split(' — ')[0].trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            return error;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'meta[property="og:title"]');
+        let id = uri.pathname;
+        let title = data[0].content.split(' — ')[0].trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaList(callback) {

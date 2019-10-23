@@ -12,15 +12,11 @@ export default class Tsumino extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        try {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'head meta[property="og:title"]');
-            let id = parseInt(uri.pathname.split('/').pop());
-            let title = data[0].content.trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            return error;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'head meta[property="og:title"]');
+        let id = parseInt(uri.pathname.split('/').pop());
+        let title = data[0].content.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaListPage(uri) {

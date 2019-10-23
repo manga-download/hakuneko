@@ -11,17 +11,12 @@ export default class GetManhwa extends Connector {
         this.url = 'https://www.getmanhwa.com';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div#content div.elementor-widget-wrap div.elementor-widget-container > h2.elementor-heading-title' )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#content div.elementor-widget-wrap div.elementor-widget-container > h2.elementor-heading-title');
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

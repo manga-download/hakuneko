@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class KuManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'kumanga';
@@ -18,17 +12,12 @@ export default class KuManga extends Connector {
         this.requestOptions.headers.set( 'x-referer', this.url );
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div.title_container div.h1_container h1', 5 )
-            .then( data => {
-                let id = uri.pathname.match( /^\/manga\/\d+/ )[0];
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.title_container div.h1_container h1', 5);
+        let id = uri.pathname.match(/^\/manga\/\d+/)[0];
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

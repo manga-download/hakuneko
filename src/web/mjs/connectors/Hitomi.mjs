@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class Hitomi extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'hitomi';
@@ -18,19 +12,15 @@ export default class Hitomi extends Connector {
         this.requestOptions.headers.set( 'x-referer', this.url );
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        if( uri.pathname.startsWith( '/galleries' ) ) {
-            return this.fetchDOM( uri.href, 'div.gallery h1 a', 3 )
-                .then( data => {
-                    let id = uri.pathname.match( /(\d+)\.html$/ )[1];
-                    let title = data[0].text.trim();
-                    return Promise.resolve( new Manga( this, id, title ) );
-                } );
+    async _getMangaFromURI(uri) {
+        if(uri.pathname.startsWith('/galleries')) {
+            let request = new Request(uri, this.requestOptions);
+            let data = await this.fetchDOM(request, 'div.gallery h1 a', 3);
+            let id = uri.pathname.match(/(\d+)\.html$/)[1];
+            let title = data[0].text.trim();
+            return new Manga(this, id, title);
         } else {
-            return Promise.reject( new Error( 'Only direct manga (gallery) links are supported by ' + this.label ) );
+            throw new Error('Only direct manga (gallery) links are supported by ' + this.label);
         }
     }
 
