@@ -19,7 +19,7 @@ export default class JapanRead extends Connector {
     /**
      *
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         let request = new Request( this.url + '/manga-list/switch-view/3', this.requestOptions );
         return Engine.Request.fetchUI( request, '' );
     }

@@ -22,7 +22,7 @@ export default class WebNovel extends Connector {
     /**
      *
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         let uri = new URL( this.url );
         uri.searchParams.set( 'ts', Date.now() );
         uri.searchParams.set( 'rd', Math.random() );
