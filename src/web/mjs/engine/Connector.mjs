@@ -524,6 +524,93 @@ export default class Connector {
     }
 
     /**
+     * [DEPRECATED] Use _getMangas() instead
+     * Callback based method to get all mangas from a website.
+     * Older connector implementations are implementing/overriding this method.
+     * @param callback
+     */
+    async _getMangaList(callback) {
+        try {
+            // default implementation => forward compatibility to new interface method
+            let mangas = await this._getMangas();
+            callback(null, mangas);
+        } catch(error) {
+            console.error(error, this);
+            callback(error, undefined);
+        }
+    }
+
+    /**
+     * [DEPRECATED] Use _getChapters() instead
+     * Callback based method to get all chapters from a website.
+     * Older connector implementations are implementing/overriding this method.
+     * @param manga
+     * @param callback
+     */
+    async _getChapterList(manga, callback) {
+        try {
+            // default implementation => forward compatibility to new interface method
+            let chapters = await this._getChapters(manga);
+            callback(null, chapters);
+        } catch(error) {
+            console.error(error, manga);
+            callback(error, undefined);
+        }
+    }
+
+    /**
+     * [DEPRECATED] Use _getPages() instead
+     * Callback based method to get all images from a website.
+     * Older connector implementations are implementing/overriding this method.
+     * @param manga
+     * @param chapter
+     * @param callback
+     */
+    async _getPageList(manga, chapter, callback) {
+        try {
+            // default implementation => forward compatibility to new interface method
+            let pages = await this._getPages(chapter);
+            callback(null, pages);
+        } catch(error) {
+            console.error(error, chapter);
+            callback(error, undefined);
+        }
+    }
+
+    /**
+     * Method to get all mangas from a website.
+     * New connector implementations must implementing/overriding this method.
+     * @returns {Manga[]} - A list of mangas
+     */
+    async _getMangas() {
+        throw new Error('Not implemented!');
+    }
+
+    /**
+     * Method to get all chapters from a website.
+     * New connector implementations must implementing/overriding this method.
+     * @param {Object} manga - The manga for which the chapters shall be fetched
+     * @param {string} manga.id - Unique identifier of the manga that implies the resource (URI) to get the chapters from
+     * @returns {Chapter[]} - A list of chapters
+     */
+    // eslint-disable-next-line no-unused-vars
+    async _getChapters(manga) {
+        throw new Error('Not implemented!');
+    }
+
+    /**
+     * Method to get all pages from a website.
+     * New connector implementations must implementing/overriding this method.
+     * @param {Object} chapter - The chapter for which the media shall be fetched
+     * @param {string} chapter.id - Unique identifier of the chapter that implies the resource (URI) to get the media from
+     * @returns {Promise<(string[]|Object)>} - A list of image links (USVString) or a media type
+     */
+    // eslint-disable-next-line no-unused-vars
+    async _getPages(chapter) {
+        throw new Error('Not implemented!');
+    }
+
+    /**
      *
      */
     handleConnectorURI( uri ) {
