@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MangaDropOutArchive extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangadropout-archive';
@@ -17,17 +11,12 @@ export default class MangaDropOutArchive extends Connector {
         this.url = 'https://mangadropout.net';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div.card div.card-body h4.card-title' )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].textContent.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.card div.card-body h4.card-title');
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

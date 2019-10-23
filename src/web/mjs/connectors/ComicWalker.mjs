@@ -11,14 +11,12 @@ export default class ComicWalker extends Connector {
         this.url = 'https://comic-walker.com';
     }
 
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div#mainContent div#detailIndex div.comicIndex-box h1' )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].textContent.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#mainContent div#detailIndex div.comicIndex-box h1');
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
+        return Promise.resolve(new Manga(this, id, title));
     }
 
     async _getMangaListPage(uri) {

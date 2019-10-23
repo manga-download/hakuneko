@@ -19,7 +19,7 @@ export default class MangaCanBlog extends Connector {
     /**
      * TODO: for some reason fetchUI did not return successfully
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         return Promise.resolve();
     }
 

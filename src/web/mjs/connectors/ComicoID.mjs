@@ -11,20 +11,12 @@ export default class ComicoID extends Connector {
         this.url = 'https://www.comico.co.id';
     }
 
-    /**
-     *
-     */
     async _getMangaFromURI(uri) {
-        try {
-            let request = new Request(uri.href, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.chapban div.con h2, div.package-cover_body h1.package-cover_title');
-            let id = uri.pathname;
-            let title = data[0].textContent.trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            console.warn(error, this);
-            return Promise.reject();
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.chapban div.con h2, div.package-cover_body h1.package-cover_title');
+        let id = uri.pathname;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

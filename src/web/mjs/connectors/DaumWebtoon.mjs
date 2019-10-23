@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class DaumWebtoon extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'daumwebtoon';
@@ -18,17 +12,12 @@ export default class DaumWebtoon extends Connector {
         this.apiURL = 'http://webtoon.daum.net/data/pc/webtoon';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( this.apiURL + uri.pathname + uri.search, this.requestOptions );
-        return this.fetchJSON( request )
-            .then( data => {
-                let id = data.data.webtoon.nickname;
-                let title = data.data.webtoon.title;
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(this.apiURL + uri.pathname + uri.search, this.requestOptions);
+        let data = this.fetchJSON(request);
+        let id = data.data.webtoon.nickname;
+        let title = data.data.webtoon.title;
+        return new Manga(this, id, title);
     }
 
     /**

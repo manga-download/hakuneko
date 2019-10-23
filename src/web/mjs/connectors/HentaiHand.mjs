@@ -12,15 +12,11 @@ export default class HentaiHand extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        try {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div#info-block div#info h1');
-            let id = uri.pathname + uri.search;
-            let title = data[0].innerText.trim();
-            return new Manga(this, id, title);
-        } catch(error) {
-            return error;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#info-block div#info h1');
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaList(callback) {

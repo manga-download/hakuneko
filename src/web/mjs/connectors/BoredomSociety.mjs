@@ -24,7 +24,7 @@ export default class BoredomSociety extends Connector {
     /**
      *
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         return super._initializeConnector()
             .then( () => {
                 /*

@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class HentaiNexus extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'hentainexus';
@@ -17,20 +11,15 @@ export default class HentaiNexus extends Connector {
         this.url = 'https://hentainexus.com';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let path = uri.pathname.split( '/' ).slice( 0, 3 );
+    async _getMangaFromURI(uri) {
+        let path = uri.pathname.split('/').slice(0, 3);
         path[1] = 'view';
-        uri.pathname = path.join( '/' );
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div.box div.column h1.title' )
-            .then( data => {
-                let id = uri.pathname;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+        uri.pathname = path.join('/');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.box div.column h1.title');
+        let id = uri.pathname;
+        let title = data[0].innerText.trim();
+        return new Manga( this, id, title);
     }
 
     /**

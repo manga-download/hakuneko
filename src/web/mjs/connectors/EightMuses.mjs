@@ -1,37 +1,24 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class EightMuses extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = '8muses';
         super.label = '8muses';
         this.tags = [ 'hentai', 'porn', 'english' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://www.8muses.com';
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = undefined;
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div#top-menu div.top-menu-breadcrumb ol li:nth-of-type(2) a', 3 )
-            .then( data => {
-                let id = uri.pathname;
-                let title = data[0].text.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#top-menu div.top-menu-breadcrumb ol li:nth-of-type(2) a', 3);
+        let id = uri.pathname;
+        let title = data[0].text.trim();
+        return new Manga(this, id, title);
     }
 
     /**

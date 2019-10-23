@@ -22,16 +22,12 @@ export default class PornComix extends Connector {
         };
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
-    _getMangaFromURI( uri ) {
-        return this.fetchDOM( uri.href, 'div.main div.content div.posts h2.post-title', 3 )
-            .then( data => {
-                let id = uri.pathname;
-                let title = data[0].textContent.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.main div.content div.posts h2.post-title', 3);
+        let id = uri.pathname;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**

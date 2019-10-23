@@ -16,17 +16,12 @@ export default class BloggerManga extends Connector {
         this.queryMangasPageCount = 'div#main div#blog-pager span.showpageNum:nth-last-of-type(2) a';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'meta[property="og:title"]' )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].content.replace( this.queryMangaTitleRemove, '' ).trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'meta[property="og:title"]');
+        let id = uri.pathname + uri.search;
+        let title = data[0].content.replace(this.queryMangaTitleRemove, '').trim();
+        return new Manga(this, id, title);
     }
 
     /**

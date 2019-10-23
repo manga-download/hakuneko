@@ -11,18 +11,12 @@ export default class NineHentai extends Connector {
         this.url = 'https://9hentai.com';
     }
 
-    /**
-     * Overwrite base function to get manga from clipboard link.
-     */
     async _getMangaFromURI(uri) {
-        try {
-            let data = await this.fetchDOM(uri.href, 'meta[property="og:title"]', 3);
-            let id = uri.pathname.match(/\/(\d+)\/?$/)[1];
-            let title = data[0].content.trim();
-            return Promise.resolve(new Manga(this, id, title));
-        } catch(error) {
-            return null;
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'meta[property="og:title"]', 3);
+        let id = uri.pathname.match(/\/(\d+)\/?$/)[1];
+        let title = data[0].content.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangaList(callback) {

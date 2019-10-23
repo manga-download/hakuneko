@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class ManHuaKan extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'manhuakan';
@@ -20,17 +14,12 @@ export default class ManHuaKan extends Connector {
         Engine.Blacklist.addPattern( '*://res.mhkan.com/images/cover*' );
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div.comic-view div.book-cont div.book-detail div.book-title h1 span' )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.comic-view div.book-cont div.book-detail div.book-title h1 span');
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

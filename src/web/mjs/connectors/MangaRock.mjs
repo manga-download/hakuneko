@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MangaRock extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangarock';
@@ -38,17 +32,12 @@ export default class MangaRock extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'head title' )
-            .then( data => {
-                let id = uri.pathname.split( '/' ).pop();
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'head title');
+        let id = uri.pathname.split('/').pop();
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

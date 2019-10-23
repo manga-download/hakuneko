@@ -1,14 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class UraSunday extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'urasunday';
@@ -17,17 +11,12 @@ export default class UraSunday extends Connector {
         this.url = 'https://urasunday.com';
     }
 
-    /**
-     *
-     */
-    _getMangaFromURI( uri ) {
-        let request = new Request( uri.href, this.requestOptions );
-        return this.fetchDOM( request, 'div#mainWrapper ul li.detailComicTitle h1' )
-            .then( data => {
-                let id = uri.pathname + uri.search;
-                let title = data[0].innerText.trim();
-                return Promise.resolve( new Manga( this, id, title ) );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#mainWrapper ul li.detailComicTitle h1');
+        let id = uri.pathname + uri.search;
+        let title = data[0].innerText.trim();
+        return new Manga(this, id, title);
     }
 
     /**

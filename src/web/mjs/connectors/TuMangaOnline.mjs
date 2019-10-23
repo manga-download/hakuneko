@@ -19,7 +19,7 @@ export default class TuMangaOnline extends Connector {
     /**
      *
      */
-    _initializeConnector() {
+    async _initializeConnector() {
         let domains = [
             this.url
             //'https://img1.tumangaonline.me'
