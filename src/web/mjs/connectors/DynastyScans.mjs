@@ -47,7 +47,6 @@ export default class DynastyScans extends Connector {
         }
     }
 
-
     /**
      *
      */
