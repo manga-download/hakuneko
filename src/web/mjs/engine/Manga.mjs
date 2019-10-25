@@ -100,7 +100,7 @@ export default class Manga extends EventTarget {
             .then( () => {
                 for( let existingChapterTitle in this.existingChapters ) {
                     if( !this.isChapterFileCached( existingChapterTitle ) ) {
-                        this.chapterCache.push( new Chapter( this, 'file:///' + existingChapterTitle, existingChapterTitle, undefined, statusDefinitions.offline ) );
+                        this.chapterCache.push( new Chapter( this, existingChapterTitle, existingChapterTitle, undefined, statusDefinitions.offline ) );
                     }
                 }
                 callback( null, this.chapterCache );
