@@ -1,13 +1,7 @@
 import WordPressEManga from './templates/WordPressEManga.mjs';
 
-/**
- *
- */
 export default class Kyuroku extends WordPressEManga {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'kyuroku';
@@ -16,7 +10,28 @@ export default class Kyuroku extends WordPressEManga {
         this.url = 'https://kyuroku.com';
         this.path = '/manga/?list';
 
-        this.queryMangas = 'div#content div.soralist ul li a.series';
+        this.queryMangas = 'div.cpp div.daftarkartun div.jdlbar ul li a.tip';
         this.queryChapters = 'div.bxcl ul li span.lchx a';
+    }
+
+    async _getPageList(manga, chapter, callback) {
+        try {
+            let request = new Request(this.url + chapter.id, this.requestOptions);
+            let data = await this.fetchDOM(request, 'script[src*="/wp-content/cache"][data-minify="1"]');
+            request = new Request(this.getAbsolutePath(data[0], this.url), this.requestOptions);
+            let response = await fetch(request);
+            data = await response.text();
+            let pageList = [];
+            let match = undefined;
+            let regex = new RegExp(/['"]postimg__\d+['"][,\s]+['"]([^'"]+)['"]/g);
+            // eslint-disable-next-line no-cond-assign
+            while(match = regex.exec(data)) {
+                pageList.push(this.getAbsolutePath(atob(match[1]), this.url));
+            }
+            callback(null, pageList);
+        } catch(error) {
+            console.error(error, chapter);
+            callback(error, undefined);
+        }
     }
 }
