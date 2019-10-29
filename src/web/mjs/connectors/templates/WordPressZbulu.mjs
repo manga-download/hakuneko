@@ -9,6 +9,9 @@ export default class WordPressZbulu extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
+        this.path = '/manga-list/';
+        this.pathMangas = this.path + 'page-%PAGE%/';
+        this.pathChapters = '/page-%PAGE%/';
 
         this.queryManga = 'div.comic-info div.info h1.name';
         this.queryMangasPageCount = 'div.pagination-container div.pagination a.next:last-of-type';
@@ -28,7 +31,7 @@ export default class WordPressZbulu extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url + '/manga-list/', this.requestOptions);
+        let request = new Request(this.url + this.path, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
         let pageCount = parseInt(data[0].href.match(/(\d+)$/)[1]);
         for(let page = 1; page <= pageCount; page++) {
@@ -39,7 +42,7 @@ export default class WordPressZbulu extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(`${this.url}/manga-list/page-${page}/`, this.requestOptions);
+        let request = new Request(this.url + this.pathMangas.replace('%PAGE%', page), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
@@ -62,7 +65,7 @@ export default class WordPressZbulu extends Connector {
     }
 
     async _getChaptersFromPage(manga, page) {
-        let request = new Request(`${this.url}${manga.id}/page-${page}/`, this.requestOptions);
+        let request = new Request(this.url + manga.id + this.pathChapters.replace('%PAGE%', page), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             return {
