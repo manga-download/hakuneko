@@ -29,7 +29,7 @@ There is also a portable version available for Windows which stores all its appl
 
 This section shows the latest build and test results for the master branch of the mirrored repository on link:https://dev.azure.com/manga-download/hakuneko/_build[Azure].
 
-image:https://img.shields.io/azure-devops/tests/manga-download/hakuneko/5?label=CI%20Tests&logo=azure-pipelines[Test Results, link="https://dev.azure.com/manga-download/hakuneko/_testManagement/runs?_a=runQuery", title="List of CI Test Results"]
+image:https://img.shields.io/azure-devops/tests/manga-download/hakuneko/8?label=CI%20Tests&logo=azure-pipelines[Test Results, link="https://dev.azure.com/manga-download/hakuneko/_testManagement/runs?_a=runQuery", title="List of CI Test Results"]
 image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/CI?branchName=master&label=CI%20Pipeline[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=5&branchName=master", title="Latest CI Pipeline Summary"]
 image:https://dev.azure.com/manga-download/hakuneko/_apis/build/status/Nightly?branchName=master&label=Nightly%20Build[Build Status, link="https://dev.azure.com/manga-download/hakuneko/_build/latest?definitionId=7&branchName=master", title="Latest Nightly Build Summary"]
 
