@@ -1,5 +1,6 @@
 import Connector from '../../engine/Connector.mjs';
 
+// TODO: rename theme to 'MangaStream': https://themesia.com/mangastream-wordpress-theme/
 export default class WordPressEManga extends Connector {
 
     constructor() {
