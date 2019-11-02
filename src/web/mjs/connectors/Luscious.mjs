@@ -38,7 +38,7 @@ export default class Luscious extends Connector {
         let request = new Request(new URL(path, this.url), this.requestOptions);
         try {
             let data = await this.fetchDOM(request, 'div.picture_page div.thumbnail source.safe_link');
-            return data.map(element => this.getAbsolutePath(element.dataset.src.replace(/\.\d+x\d+/, ''), request.url));
+            return data.map(element => this.createConnectorURI(this.getAbsolutePath(element.dataset.src.replace(/\.\d+x\d+\.jpg/, ''), request.url)));
         } catch(error) {
             // catch 404 error when page number exceeds available pages
             return [];
@@ -47,10 +47,23 @@ export default class Luscious extends Connector {
 
     async _getPages(chapter) {
         let pageList = [];
-        for(let page = 1; page; page++) {
+        for(let page = 1, run = true; run; page++) {
             let pages = await this._getPagesFromPage(chapter, page);
-            pages.length > 0 ? pageList.push(...pages) : page = undefined;
+            pages.length > 0 ? pageList.push(...pages) : run = false;
         }
         return pageList;
+    }
+
+    async _handleConnectorURI(payload) {
+        let promises = ['.png', '.jpg'].map(extension => {
+            let request = new Request(payload + extension, this.requestOptions);
+            return fetch(request);
+        });
+        let responses = await Promise.all(promises);
+        let response = responses.find(response => response.ok);
+        return {
+            mimeType: response.headers.get('content-type'),
+            data: new Uint8Array(await response.arrayBuffer())
+        };
     }
 }
