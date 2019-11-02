@@ -47,9 +47,9 @@ export default class Luscious extends Connector {
 
     async _getPages(chapter) {
         let pageList = [];
-        for(let page = 1; page > 0; page++) {
+        for(let page = 1; page; page++) {
             let pages = await this._getPagesFromPage(chapter, page);
-            pages.length > 0 ? pageList.push(...pages) : page = -1;
+            pages.length > 0 ? pageList.push(...pages) : page = undefined;
         }
         return pageList;
     }
