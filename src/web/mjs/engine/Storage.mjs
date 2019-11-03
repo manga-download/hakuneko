@@ -732,8 +732,13 @@ export default class Storage {
      */
     _connectorOutputPath( connector ) {
         let output = Engine.Settings.baseDirectory.value;
-        if( Engine.Settings.useSubdirectory.value ) {
-            output = this.path.join( output, this.sanatizePath( connector.label ) );
+        // NOTE: Some (system) connectors are defining their own directory
+        if(connector.config && connector.config.path) {
+            output = connector.config.path.value;
+        } else {
+            if( Engine.Settings.useSubdirectory.value ) {
+                output = this.path.join( output, this.sanatizePath( connector.label ) );
+            }
         }
         return output;
     }
