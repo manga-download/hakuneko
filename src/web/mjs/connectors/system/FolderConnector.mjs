@@ -25,7 +25,11 @@ export default class FolderConnector {
         this.config = {
             path: {
                 label: 'Manga Folder',
-                description: `A local directory from which mangas can be browsed within HakuNeko with the ${ this.label } connector`,
+                description: [
+                    `A local directory from which mangas can be shown within HakuNeko with the ${ this.label } connector`,
+                    `The directory only works with top-level manga folders, nested manga folders are not supported!`,
+                    `The manga folders must also contain their chapters in the top-level!`
+                ].join('\n'),
                 input: 'directory',
                 value: '' // Engine.Settings.baseDirectory.value
             }
