@@ -233,7 +233,7 @@
                     }
                     this.$.status.removeFromQueue( statusID );
                     if( error ) {
-                        alert( 'Failed to update manga list for ' + connector.label + '\n\n' + error.message );
+                        alert('Failed to update manga list for ' + connector.label + '\n\n' + error.message, 'HakuNeko - ' + connector.label, 'error');
                     }
                 } );
                 // trigger update for refresh button style (update started)
