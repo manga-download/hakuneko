@@ -18,25 +18,25 @@
 
         // https://github.com/electron/electron/blob/master/docs/api/dialog.md#dialogshowmessageboxbrowserwindow-options
         function replaceDialogs() {
-            alert = async message => {
+            alert = async (message, title, type) => {
                 let options = {
-                    type: 'info',
-                    title: 'Alert',
+                    type: type || 'info',
+                    title: title || 'HakuNeko',
                     message: message,
                     buttons: [ 'OK' ]
                 };
                 let response = await electronDialog.showMessageBox(options);
                 return response === options.buttons.indexOf('OK');
             };
-            confirm = async message => {
+            confirm = async (message, title, type, buttons) => {
                 let options = {
-                    type: 'question',
-                    title: 'Confirm',
+                    type: type || 'question',
+                    title: title || 'HakuNeko',
                     message: message,
-                    buttons: [ 'Yes', 'Cancel' ]
+                    buttons: buttons || [ 'OK', 'Cancel' ]
                 };
                 let response = await electronDialog.showMessageBox(options);
-                return response.response === options.buttons.indexOf('Yes');
+                return response.response === 0;
             };
         }
 
