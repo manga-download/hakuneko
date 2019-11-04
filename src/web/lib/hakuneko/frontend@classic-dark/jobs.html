@@ -231,12 +231,12 @@
             /**
              *
              */
-            onClose( event ) {
+            async onClose( event ) {
                 // check if any job is running
                 let index = this.jobList.findIndex( job => {
                     return ( job.status === 'queued' || job.status === 'downloading' );
                 } );
-                if( index < 0 || confirm( 'Downloads are still in progress.\nClose application anyway?' ) ) {
+                if( index < 0 || await confirm( 'Downloads are still in progress.\nClose application anyway?' ) ) {
                     this.ipc.send( 'quit' );
                 }
             }

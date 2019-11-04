@@ -13,7 +13,32 @@
     <script src="./js/ass.min.js" defer></script>
     <script src="./js/sql.min.js" defer></script>
     <script type="module">
+        const electronDialog = require('electron').remote.dialog
         import HakuNeko from './mjs/HakuNeko.mjs'
+
+        // https://github.com/electron/electron/blob/master/docs/api/dialog.md#dialogshowmessageboxbrowserwindow-options
+        function replaceDialogs() {
+            alert = async (message, title, type) => {
+                let options = {
+                    type: type || 'info',
+                    title: title || 'HakuNeko',
+                    message: message,
+                    buttons: [ 'OK' ]
+                };
+                let response = await electronDialog.showMessageBox(options);
+                return response === options.buttons.indexOf('OK');
+            };
+            confirm = async (message, title, type, buttons) => {
+                let options = {
+                    type: type || 'question',
+                    title: title || 'HakuNeko',
+                    message: message,
+                    buttons: buttons || [ 'Yes', 'No' ]
+                };
+                let response = await electronDialog.showMessageBox(options);
+                return response.response === 0;
+            };
+        }
 
         async function loadEngine() {
             console.log('Loading Engine:', 'HakuNeko');
@@ -29,11 +54,10 @@
             Engine.ChaptermarkManager.loadChaptermarks( undefined );
         }
 
-        function loadFrontend(option) {
+        function loadFrontend() {
             let identifier = Engine.Settings.frontend.value;
             console.log('Loading Frontend:', identifier);
             loadClassicPolymer(identifier);
-            //console.error(`Failed to load frontend with ID '${identifier}'!`);
         }
 
         function loadClassicPolymer(identifier) {
@@ -57,10 +81,9 @@
         }
 
         async function main() {
+            replaceDialogs();
             await loadEngine();
-            // TODO: get frontend identifier from e.g. HakuNeko settings
-            let option = { value: 'frontend@classic-dark', name: 'Classic (Dark)' };
-            loadFrontend(option);
+            loadFrontend();
         }
 
         main();
@@ -108,10 +131,6 @@
     <div id="notification">
         A new <strong>HakuNeko Desktop Client</strong> is available for download on
         <a href="https://github.com/manga-download/hakuneko/releases" target="_blank">GitHub</a>
-        <!--
-        or
-        <a href="https://sourceforge.net/projects/hakuneko/files/" target="_blank">SourceForge</a>
-        -->
         <span id="close" onclick="closeNotification()" title="Hide notification">✖</span><!-- ❌&times; -->
     </div>
 </body>
