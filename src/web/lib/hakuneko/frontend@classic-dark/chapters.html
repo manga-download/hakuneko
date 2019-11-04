@@ -355,7 +355,7 @@
             /**
              * Determine chapter status and execute the corresponding action
              */
-            onProcessChapterClick( e ) {
+            async onProcessChapterClick( e ) {
                 let chapter = e.model.item;
                 switch ( chapter.status ) {
                     case 'unavailable':
@@ -368,7 +368,7 @@
                         Engine.DownloadManager.addDownload( chapter );
                         break;
                     case 'completed':
-                        if( confirm( 'Re-download existing chapter?' ) ) {
+                        if(await confirm( 'Re-download existing chapter?' ) ) {
                             Engine.DownloadManager.addDownload( chapter );
                         }
                         break;
@@ -384,7 +384,7 @@
             /**
              * Add all chapters currently visible (filtered) with status available to the download manager
              */
-            onDownloadChaptersClick( e ) {
+            async onDownloadChaptersClick( e ) {
                 if(!this.chapterList || this.chapterList.length < 1) {
                     return;
                 }
@@ -401,7 +401,7 @@
                 chapterList = chapterList.filter( ( chapter ) => {
                     return ( chapter.status === 'available' );
                 });
-                if( chapterList.length > 0 && confirm( 'Download ' + chapterList.length + ' new chapter(s) from the current chapter list?' ) ) {
+                if( chapterList.length > 0 && await confirm( 'Download ' + chapterList.length + ' new chapter(s) from the current chapter list?' ) ) {
                     chapterList.forEach( ( chapter ) => {
                         Engine.DownloadManager.addDownload( chapter );
                     });
