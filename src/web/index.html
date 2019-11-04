@@ -33,7 +33,7 @@
                     type: type || 'question',
                     title: title || 'HakuNeko',
                     message: message,
-                    buttons: buttons || [ 'OK', 'Cancel' ]
+                    buttons: buttons || [ 'Yes', 'No' ]
                 };
                 let response = await electronDialog.showMessageBox(options);
                 return response.response === 0;
