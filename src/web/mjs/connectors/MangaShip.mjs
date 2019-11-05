@@ -58,6 +58,6 @@ export default class MangaShip extends WordPressMadara {
         let data = await this.fetchDOM(request, 'div.reading-content source');
         return data
             .map(element => this.getAbsolutePath(element, request.url))
-            .filter(link => !link.endsWith('zz999.jpg'));
+            .filter(link => !link.endsWith('999.jpg'));
     }
 }
