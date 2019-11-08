@@ -4,21 +4,13 @@ export default class TuMangaOnline extends Connector {
 
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'tumangaonline';
         super.label = 'TuMangaOnline';
         this.tags = [ 'manga', 'spanish' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://tmofans.com';
-        this.requestOptions.headers.set( 'x-referer', this.url );
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
-    /**
-     *
-     */
     async _initializeConnector() {
         let domains = [
             this.url
@@ -38,80 +30,53 @@ export default class TuMangaOnline extends Connector {
         return Promise.all( promises );
     }
 
-    /**
-     *
-     */
-    async _getMangaList(callback) {
-        try {
-            let response = await fetch('http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions);
-            let data = await response.json();
-            callback(null, data);
-        } catch(error) {
-            console.error(error, this);
-            callback(error, undefined);
-        }
+    async _getMangas() {
+        let request = new Request('http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions);
+        let response = await fetch(request);
+        return await response.json();
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions);
-        this.fetchDOM( request, 'div.chapters ul.list-group li.list-group-item.p-0' )
-            .then( data => {
-                let chapterList = data.reduce( ( accumulator, element ) => {
-                    let title = element.querySelector( 'h4  a[role="button"]' ).text;
-                    let chapters = [...element.querySelectorAll( 'ul.chapter-list li.list-group-item:not([style])' )].map( element => {
-                        let id = element.querySelector( 'div.text-right a' );
-                        let language = element.querySelector( 'i.flag-icon' );
-                        let scanlator = element.querySelector( 'div.text-truncate a' ).text.trim();
-                        scanlator = scanlator ? ' [' + scanlator + ']' : '' ;
-                        return {
-                            id: this.getRelativeLink( id ).replace( /paginated\/?\d*$/, '/cascade' ),
-                            title: title.replace( manga.title, '' ).trim() + scanlator,
-                            language: language.className.match( /flag-icon-([a-z]+)/ )[1]
-                        };
-                    } );
-                    return accumulator.concat( chapters );
-                }, [] );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
+    async _getChapters(manga) {
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.chapters ul.list-group li.list-group-item.p-0');
+        let chapterList = data.reduce((accumulator, element) => {
+            let title = element.querySelector('h4 a[role="button"]').text;
+            let chapters = [...element.querySelectorAll('ul.chapter-list li.list-group-item:not([style])')].map(element => {
+                let id = element.querySelector('div.text-right button').getAttribute('onclick').match(/\(['"](\d+)['"]\)/)[1];
+                let language = element.querySelector('i.flag-icon');
+                let scanlator = element.querySelector('div.text-truncate a').text.trim();
+                scanlator = scanlator ? ' [' + scanlator + ']' : '' ;
+                return {
+                    id: id, // this.getRelativeLink( id ).replace( /paginated\/?\d*$/, '/cascade' ),
+                    title: title.replace(manga.title, '').trim() + scanlator,
+                    language: language.className.match(/flag-icon-([a-z]+)/)[1]
+                };
             } );
+            return accumulator.concat( chapters );
+        }, [] );
+        return chapterList;
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        request.headers.set( 'x-referer', this.url + manga.id );
-        fetch( request )
-            .then( response => {
-                if( !response.redirected ) {
-                    throw new Error( 'No redirect detected ...' + response.url );
-                }
-                request = new Request( response.url.replace( /paginated\/?\d*$/, 'cascade' ), this.requestOptions );
-                return this.fetchDOM( request, 'div.viewer-image-container source' );
-            } )
-            .then( data => {
-                let pageList = data.map( element => this.createConnectorURI( {
-                    url: this.getAbsolutePath( element, request.url ),
-                    referer: request.url
-                } ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let script = `
+            new Promise(resolve => {
+                let func = goToId.toString();
+                let hash = func.match(/['"]:HASH['"]\\s*,\\s*['"]([^'"]+)['"]/)[1];
+                let token = func.match(/['"]value['"]\\s*,\\s*['"]([^'"]+)['"]/)[1];
+                let link = url_goto.replace(':GO_TO_ID', '${chapter.id}').replace(':HASH', hash);
+                $.post(link, { _token: token }, data => {
+                    resolve([...$(data).find('div#viewer-container div.viewer-image-container img.viewer-image')].map(img => img.src));
+                });
+            });
+        `;
+        let request = new Request(this.url + chapter.manga.id, this.requestOptions);
+        let data = await Engine.Request.fetchUI(request, script);
+        return data.map(img => this.createConnectorURI({
+            url: this.getAbsolutePath(img, request.url),
+            referer: request.url
+        }));
     }
 
-    /**
-     *
-     */
     _handleConnectorURI( payload ) {
         /*
          * TODO: only perform requests when from download manager
