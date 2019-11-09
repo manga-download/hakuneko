@@ -8,5 +8,7 @@ export default class PlotTwistScan extends WordPressMadara {
         super.label = 'Plot Twist Scan';
         this.tags = [ 'manga', 'high-quality', 'spanish', 'scanlation' ];
         this.url = 'https://www.plotwistscan.com';
+
+        this.queryChapters = 'li.wp-manga-chapter a';
     }
 }
