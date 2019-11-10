@@ -65,7 +65,14 @@ export default class TuMangaOnline extends Connector {
                 let token = func.match(/['"]value['"]\\s*,\\s*['"]([^'"]+)['"]/)[1];
                 let link = url_goto.replace(':GO_TO_ID', '${chapter.id}').replace(':HASH', hash);
                 $.post(link, { _token: token }, data => {
-                    resolve([...$(data).find('div#viewer-container div.viewer-image-container img.viewer-image')].map(img => img.src));
+                    let cascade = $(data).find('a.nav-link[title="Cascada"]');
+                    if(cascade.length > 0) {
+                        $.get(cascade[0].href, data => {
+                            resolve([...$(data).find('div#viewer-container div.viewer-image-container img.viewer-image')].map(img => img.src));
+                        });
+                    } else {
+                        resolve([...$(data).find('div#viewer-container div.viewer-image-container img.viewer-image')].map(img => img.src));
+                    }
                 });
             });
         `;
