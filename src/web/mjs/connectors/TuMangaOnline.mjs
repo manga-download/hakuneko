@@ -60,9 +60,8 @@ export default class TuMangaOnline extends Connector {
     async _getPages(chapter) {
         let script = `
             new Promise(resolve => {
-                let func = goToId.toString();
-                let hash = func.match(/['"]:HASH['"]\\s*,\\s*['"]([^'"]+)['"]/)[1];
-                let token = func.match(/['"]value['"]\\s*,\\s*['"]([^'"]+)['"]/)[1];
+                let hash = 'f454f714874fa4edbb7076d727887062';
+                let token = document.querySelector('input[name="_token"]').value;
                 let link = url_goto.replace(':GO_TO_ID', '${chapter.id}').replace(':HASH', hash);
                 $.post(link, { _token: token }, data => {
                     let cascade = $(data).find('a.nav-link[title="Cascada"]');
