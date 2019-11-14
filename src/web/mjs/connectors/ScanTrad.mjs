@@ -1,88 +1,46 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- * @author Neogeek
- */
 export default class ScanTrad extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'scantrad';
         super.label = 'ScanTrad';
         this.tags = [ 'manga', 'french', 'high-quality', 'scanlation' ];
-        this.url = 'https://scantrad.fr';
+        this.url = 'https://scantrad.net';
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/mangas', '#projects-list li a' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.querySelector('.project-name').innerHTML.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let request = new Request(this.url + '/mangas', this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.main div.home a.home-manga');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.querySelector('div.hmi-titre').textContent.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, '#project-chapters-list li' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element.querySelector('a') ),
-                        title: element.querySelector('.name-chapter').textContent.trim(),
-                        language: 'fr'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.chapitre');
+        return data.filter(element => element.querySelector('span.chl-num'))
+            .map(element => {
+                let number = element.querySelector('div.chl-titre span.chl-num').textContent.trim();
+                let title = element.querySelector('div.chl-titre span.chl-titre').textContent.trim();
+                let link = element.querySelector('div.ch-right a');
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(link, request.url),
+                    title: number + ' - ' + title,
+                    language: ''
+                };
+            });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'select[name="chapter-page"].mobile option' )
-            .then( data => {
-                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.value, request.url ) ) );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        return this.fetchDOM( request, '#content .image source' )
-            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
+    async _getPages(chapter) {
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.main_img div.sc-lel source');
+        return data.map(element => this.getAbsolutePath(element.dataset.src || element, this.url))
+            .filter(link => !link.includes('8b9fe6b2827ee50f3d43c54d6489fe31e71bd268'));
     }
 }
