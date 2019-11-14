@@ -13,88 +13,46 @@ export default class HentaiFox extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.block div.info h1', 3);
+        let data = await this.fetchDOM(request, 'div.gallery_right div.info h1', 3);
         let id = uri.pathname;
         let title = data[0].innerText.trim();
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this.fetchDOM( request, 'div.overview a div.caption', 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element.closest( 'a' ), request.url ),
-                        title: element.innerText.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(this.url, this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.pagination li:nth-last-of-type(2) a.page-link');
+        let pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url, this.requestOptions );
-        this.fetchDOM( request, 'div.pagination > a:nth-last-of-type(2)' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/pag/' + ( page + 1 ) + '/' );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let request = new Request(`${this.url}/pag/${page}/`, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.lc_galleries div.thumb div.caption h2.g_title a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        Promise.resolve()
-            .then( () => {
-                let chapterList = [ {
-                    id: manga.id,
-                    title: manga.title,
-                    language: ''
-                } ];
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        return [ {
+            id: manga.id,
+            title: manga.title,
+            language: ''
+        } ];
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'div.gallery div.preview_thumb a source' )
-            .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element.dataset['src'] || element, request.url ).replace( 't.', '.' ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.gallery_thumb div.g_thumb a source');
+        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element, request.url).replace('t.', '.'));
     }
-
 }
