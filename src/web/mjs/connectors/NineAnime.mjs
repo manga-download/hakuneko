@@ -8,7 +8,7 @@ export default class NineAnime extends Connector {
         super.id = '9anime';
         super.label = '9ANIME';
         this.tags = [ 'anime', 'english' ];
-        this.url = 'https://www.9anime.to';
+        this.url = 'https://9anime.to';
         this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
 
         this.config = {
@@ -50,6 +50,7 @@ export default class NineAnime extends Connector {
                 }, 120000);
             });
         } else {
+            await this.wait(500);
             return Promise.resolve();
         }
     }
@@ -177,11 +178,13 @@ export default class NineAnime extends Connector {
                 let uri = `${ this.url }/ajax/episode/info?server=${ server.id }&id=${ episode.id }&ts=${ this.timestamp }&_=780`;
                 return Promise.resolve( new Request( uri, request ) );
             } )
-            .then( request => {
+            .then( async request => {
+                await this.wait(500);
                 return this._checkCaptcha(request)
                     .then(() => this.fetchJSON(request));
             } )
-            .then( data => {
+            .then( async data => {
+                await this.wait(500);
                 switch(true) {
                 case data.target.includes( 'prettyfast' ):
                     return this._getEpisodePrettyFast( data.target, this.config.resolution.value );
