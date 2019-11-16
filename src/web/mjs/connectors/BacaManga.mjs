@@ -1,6 +1,5 @@
 import WordPressEManga from './templates/WordPressEManga.mjs';
 
-// limited access for indonesian (and surounding) regions only
 export default class BacaManga extends WordPressEManga {
 
     constructor() {
@@ -27,29 +26,27 @@ export default class BacaManga extends WordPressEManga {
         await Engine.Request.fetchUI(request, '', 25000);
     }
 
-    _getPageList( manga, chapter, callback ) {
+    async _getPages(chapter) {
+        // limited access for indonesian (and surounding) regions only (at least for image CDNs)
         let script = `
             new Promise(resolve => {
-                //This script does no longer work when window is not shown ...
-                /*
-                [
-                    'onwheel', 'keypress', 'contextmenu', 'scrollstart', 'mousemove', 'mousedown', 'keydown', 'touchstart'
-                ].forEach(evt => document.dispatchEvent(new Event(evt)));
-                setTimeout(() => {
-                    resolve([...document.querySelectorAll('div.maincontent div#readerarea p img')].map(img => img.src));
-                }, 2500);
-                */
-                resolve([...jQuery('img', jQuery.parseHTML(window[araarararararara.split('').reverse().join('')]))].map(img => img.src));
+                if(window['araarararararara']) {
+                    return resolve([...jQuery('img', jQuery.parseHTML(window[araarararararara.split('').reverse().join('')]))].map(img => img.src));
+                }
+                if(window['nyeh_']) {
+                    /*
+                    jQuery(document).find('body').bind('onwheel keypress contextmenu scrollstart mousemove mousedown keydown touchstart', function(evt) {
+                        nyeh();
+                        nyeh = function() {};
+                    });
+                    */
+                    nyeh();
+                    return resolve([...document.querySelectorAll('div.maincontent div#readerarea p img')].map(img => img.src));
+                }
+                throw new Error('Failed to extract image links!');
             });
         `;
         let request = new Request( this.url + chapter.id, this.requestOptions );
-        Engine.Request.fetchUI( request, script )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+        return await Engine.Request.fetchUI(request, script);
     }
 }
