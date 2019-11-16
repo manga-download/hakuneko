@@ -11,38 +11,28 @@ export default class WuxiaWorld extends WordPressMadara {
 
         //this.formManga.append('vars[wp-manga-tag]', 'webcomics');
         this.novelFormat = 'image/png';
+        this.novelWidth = '56em'; // parseInt(1200 / window.devicePixelRatio) + 'px';
+        this.novelPadding = '1.5em';
     }
 
-    async _getPageList(manga, chapter, callback) {
-        try {
-            let uri = new URL(chapter.id, this.url);
-            uri.searchParams.set('style', 'list');
-            let request = new Request(uri.href, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.reading-content div[class^="text-"');
-            if(data.length > 0) {
-                let pageLinks = await this._getPageListNovel(request);
-                callback(null, pageLinks);
-            } else {
-                super._getPageList(manga, chapter, callback);
-            }
-        } catch(error) {
-            console.error(error, chapter);
-            callback(error, undefined);
-        }
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        uri.searchParams.set('style', 'list');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.reading-content div[class^="text-"');
+        return data.length > 0 ? this._getPagesNovel(request) : super._getPages(chapter);
     }
 
-    async _getPageListNovel(request) {
-        let width = '56em'; // parseInt(1200 / window.devicePixelRatio) + 'px';
-        let pad = '1.5em';
+    async _getPagesNovel(request) {
         let script = `
             new Promise(resolve => {
-                document.body.style.width = '${width}';
+                document.body.style.width = '${this.novelWidth}';
                 let container = document.querySelector('div.content-area > div.container');
-                container.style.maxWidth = '${width}';
+                container.style.maxWidth = '${this.novelWidth}';
                 container.style.padding = '0';
                 container.style.margin = '0';
                 let novel = document.querySelector('div.entry-content');
-                novel.style.padding = '${pad}';
+                novel.style.padding = '${this.novelPadding}';
                 let script = document.createElement('script');
                 script.onload = async function() {
                     let canvas = await html2canvas(novel);
