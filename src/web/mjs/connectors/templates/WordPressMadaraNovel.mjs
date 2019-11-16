@@ -5,7 +5,8 @@ export default class WordPressMadaraNovel extends WordPressMadara {
     constructor() {
         super();
 
-        this.novelQuery = 'div.reading-content div[class^="text-"';
+        this.novelContentQuery = 'div.reading-content div[class^="text-"';
+        this.novelObstaclesQuery = '_';
         this.novelFormat = 'image/png';
         this.novelWidth = '56em'; // parseInt(1200 / window.devicePixelRatio) + 'px';
         this.novelPadding = '1.5em';
@@ -15,7 +16,7 @@ export default class WordPressMadaraNovel extends WordPressMadara {
         let uri = new URL(chapter.id, this.url);
         uri.searchParams.set('style', 'list');
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.novelQuery);
+        let data = await this.fetchDOM(request, this.novelContentQuery);
         return data.length > 0 ? this._getPagesNovel(request) : super._getPages(chapter);
     }
 
@@ -29,6 +30,7 @@ export default class WordPressMadaraNovel extends WordPressMadara {
                 container.style.margin = '0';
                 let novel = document.querySelector('div.entry-content');
                 novel.style.padding = '${this.novelPadding}';
+                document.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
                 script.onload = async function() {
                     let canvas = await html2canvas(novel);
