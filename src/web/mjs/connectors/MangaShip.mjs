@@ -10,16 +10,6 @@ export default class MangaShip extends WordPressMadara {
         this.url = 'https://www.mangaship.com';
     }
 
-    // overwrite wp-madara implementation with default implementation ...
-    async _getMangaList(callback) {
-        try {
-            callback(null, await this._getMangas());
-        } catch(error) {
-            console.error(error, this);
-            callback(error, undefined);
-        }
-    }
-
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
@@ -41,16 +31,6 @@ export default class MangaShip extends WordPressMadara {
                 title: element.title.trim()
             };
         });
-    }
-
-    // overwrite wp-madara implementation with default implementation ...
-    async _getPageList(manga, chapter, callback) {
-        try {
-            callback(null, await this._getPages(chapter));
-        } catch(error) {
-            console.error(error, chapter);
-            callback(error, undefined);
-        }
     }
 
     async _getPages(chapter) {
