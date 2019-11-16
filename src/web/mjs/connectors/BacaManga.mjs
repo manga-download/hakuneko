@@ -33,7 +33,7 @@ export default class BacaManga extends WordPressEManga {
                 if(window['araarararararara']) {
                     return resolve([...jQuery('img', jQuery.parseHTML(window[araarararararara.split('').reverse().join('')]))].map(img => img.src));
                 }
-                if(window['nyeh_']) {
+                if(window['nyeh']) {
                     /*
                     jQuery(document).find('body').bind('onwheel keypress contextmenu scrollstart mousemove mousedown keydown touchstart', function(evt) {
                         nyeh();
