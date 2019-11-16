@@ -11,117 +11,80 @@ export default class WordPressMadara extends Connector {
         this.queryMangas = 'div.post-title h3 a, div.post-title h5 a';
         this.queryChapters = 'li.wp-manga-chapter > a';
         this.queryPages = 'div.page-break source';
+    }
 
-        this.formManga = new URLSearchParams();
-        this.formManga.append( 'action', 'madara_load_more' );
-        this.formManga.append( 'template', 'madara-core/content/content-archive' );
-        this.formManga.append( 'page', '0' );
-        this.formManga.append( 'vars[paged]', '0' );
-        this.formManga.append( 'vars[post_type]', 'wp-manga' );
-        this.formManga.append( 'vars[posts_per_page]', '250' );
+    _createMangaRequest(page) {
+        let form = new URLSearchParams();
+        form.append('action', 'madara_load_more');
+        form.append('template', 'madara-core/content/content-archive');
+        form.append('page', page);
+        form.append('vars[paged]', '0');
+        form.append('vars[post_type]', 'wp-manga');
+        form.append('vars[posts_per_page]', '250');
         // inject `madara.query_vars` into any website using wp-madara to see full list of supported vars
-    }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( page ) {
-        page = page || 0;
-        this.formManga.set( 'page', page );
         this.requestOptions.method = 'POST';
-        this.requestOptions.body = this.formManga.toString();
-        this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
-        let uri = this.url + '/wp-admin/admin-ajax.php';
-        let promise = this.fetchDOM( uri, this.queryMangas, 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, uri ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( mangaList.length > 0 ) {
-                    return this._getMangaListFromPages( page + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
-        this.requestOptions.headers.delete( 'content-type' );
-        delete this.requestOptions.body;
+        this.requestOptions.body = form.toString();
+        let request = new Request(this.url + '/wp-admin/admin-ajax.php', this.requestOptions);
+        request.headers.set('content-type', 'application/x-www-form-urlencoded');
         this.requestOptions.method = 'GET';
-        return promise;
+        delete this.requestOptions.body;
+        return request;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this._getMangaListFromPages()
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        for(let page = 0, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
+    async _getMangasFromPage(page) {
+        let request = this._createMangaRequest(page);
+        let data = await this.fetchDOM(request, this.queryMangas);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim()
+            };
+        });
+    }
+
+    async _getChapters(manga) {
         let uri = new URL( manga.id, this.url );
-        this.fetchDOM( uri.href, this.queryChapters )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, uri.href ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.replace(manga.title, '').trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let uri = new URL( chapter.id, this.url );
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
         // TODO: setting this parameter seems to be problematic for various website (e.g. ChibiManga server will crash)
-        uri.searchParams.set( 'style', 'list' );
-        let request = new Request( uri.href, this.requestOptions );
-        this.fetchDOM( request, this.queryPages )
-            .then( data => {
-                let pageLinks = data.map( element => this.createConnectorURI( {
-                    url: this.getAbsolutePath( element.dataset['src'] || element, request.url ),
-                    referer: request.url
-                } ) );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+        uri.searchParams.set('style', 'list');
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => this.createConnectorURI({
+            url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
+            referer: request.url
+        }));
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
+    _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set( 'x-referer', payload.referer );
-        let promise = super._handleConnectorURI( payload.url );
-        this.requestOptions.headers.delete( 'x-referer' );
+        this.requestOptions.headers.set('x-referer', payload.referer);
+        let promise = super._handleConnectorURI(payload.url);
+        this.requestOptions.headers.delete('x-referer');
         return promise;
     }
 }
