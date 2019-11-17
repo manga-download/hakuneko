@@ -42,7 +42,7 @@ export default class TuMangaOnline extends Connector {
         let chapterList = data.reduce((accumulator, element) => {
             let title = element.querySelector('h4 a[role="button"]').text;
             let chapters = [...element.querySelectorAll('ul.chapter-list li.list-group-item:not([style])')].map(element => {
-                let id = element.querySelector('div.text-right button').getAttribute('onclick').match(/\(['"](\d+)['"]\)/)[1];
+                let id = element.querySelector('div.text-right button').getAttribute('onclick').match(/['"](\d+)['"]/)[1];
                 let language = element.querySelector('i.flag-icon');
                 let scanlator = element.querySelector('div.text-truncate a').text.trim();
                 scanlator = scanlator ? ' [' + scanlator + ']' : '' ;
