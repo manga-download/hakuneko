@@ -69,7 +69,7 @@ export default class WordPressMadara extends Connector {
         let uri = new URL(chapter.id, this.url);
         // TODO: setting this parameter seems to be problematic for various website (e.g. ChibiManga server will crash)
         uri.searchParams.set('style', 'list');
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.createConnectorURI({
             url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
