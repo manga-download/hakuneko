@@ -2,8 +2,9 @@
 export default class HydraX {
 
     // https://playhydrax.com/?v=HUId0tN4U
-    constructor(url) {
+    constructor(url, slug) {
         this._uri = new URL(url);
+        this._slug = slug || this._uri.searchParams.get('v');
         this._N = {
             protocol: this._uri.protocol
         };
@@ -71,7 +72,7 @@ export default class HydraX {
     async getPlaylist(resolution) {
         let request = new Request('https://multi.idocdn.com/guest', {
             method: 'POST',
-            body: 'slug=' + this._uri.searchParams.get('v'),
+            body: 'slug=' + this._slug,
             headers: new Headers({
                 'content-type': 'application/x-www-form-urlencoded'
             })
