@@ -45,7 +45,7 @@ export default class HydraX {
     }
 
     async _replaceRedirectLinks(playlist) {
-        let redirects = playlist.split('\n').filter(line => line.startsWith('http'));
+        let redirects = [... new Set(playlist.split('\n').filter(line => line.startsWith('http')))];
         redirects = await Promise.all(redirects.map(async redirect => {
             return {
                 source: redirect,
@@ -53,7 +53,7 @@ export default class HydraX {
             };
         }));
         for(let redirect of redirects) {
-            playlist = playlist.replace(redirect.source, redirect.target);
+            playlist = playlist.split(redirect.source).join(redirect.target);
         }
         return playlist;
     }
