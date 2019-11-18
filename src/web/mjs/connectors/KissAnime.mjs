@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+import HydraX from '../engine/HydraX.mjs';
 
 export default class KissAnime extends Connector {
 
@@ -53,7 +54,7 @@ export default class KissAnime extends Connector {
             let chapterList = data.map( element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: element.text.replace(manga.title, '').trim() + ' [RapidVideo]',
+                    title: element.text.replace(manga.title, '').trim() + ' [HydraX]',
                     language: ''
                 };
             } );
@@ -79,14 +80,16 @@ export default class KissAnime extends Connector {
         }, this.pageLoadDelay );
 
         let uri = new URL( chapter.id, this.url );
-        uri.searchParams.set( 's', 'rapidvideo' );
+        uri.searchParams.set( 's', 'hydrax' );
         let request = new Request( uri.href, this.requestOptions );
         request.headers.set( 'x-referer', this.url );
         fetch( request )
             .then( response => response.text() )
             .then( data => {
-                let link = data.match( /src\s*=\s*['"]([^'"]+rapidvid[^'"]+)['"]/ )[1];
+                let link = data.match( /src\s*=\s*['"]([^'"]+hydrax[^'"]+)['"]/ )[1];
                 switch(true) {
+                case link.includes('hydrax'):
+                    return this._getEpisodeHydraX(link, this.config.resolution.value);
                 case link.includes( 'rapidvid' ):
                     return this._getEpisodeRapidVideo( link, this.config.resolution.value );
                 default:
@@ -100,6 +103,16 @@ export default class KissAnime extends Connector {
                 console.error( error, chapter );
                 callback( error, undefined );
             } );
+    }
+
+    async _getEpisodeHydraX(link, resolution) {
+        let hydrax = new HydraX(link, link.split('#slug=')[1]);
+        let playlist = await hydrax.getPlaylist(parseInt(resolution));
+        return {
+            hash: 'id,language,resolution',
+            mirrors: [ playlist ],
+            subtitles: []
+        };
     }
 
     /**
