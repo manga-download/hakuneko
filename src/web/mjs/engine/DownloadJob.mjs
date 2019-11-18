@@ -180,28 +180,27 @@ export default class DownloadJob extends EventTarget {
         // swap the rejected promise back to its initial resolved state
             .catch( data => Promise.resolve( data ) )
             .then( playlist => {
-            /*
-             * parse links
-             * JavaScript matches anchors (^$) in the middle of CRLF/LFLF => exclude whitespace (\s) from beginning of line
-             * See also: https://www.regular-expressions.info/anchors.html
-             */
-                let packets = playlist.match( /^[^\s#].+$/gm );
-                let key = playlist.match( /URI\s*=\s*"(.*?)"/ );
-                if( key ) {
-                    packets.push( key[1] );
+                let packets = [...new Set(playlist.match(/^[^\s#].+$/gm))];
+                packets = packets.map((packet, index) => {
+                    return {
+                        needle: packet,
+                        source: new URL(packet, playlistURL),
+                        target: ('00000' + index).slice(-5) + '.ts'
+                    };
+                });
+                let key = playlist.match(/URI\s*=\s*"(.*?)"/);
+                if(key) {
+                    packets.push({
+                        needle: key[1],
+                        source: new URL(key[1], playlistURL),
+                        target: 'media.key'
+                    });
                 }
                 // modify playlist to use local files
-                packets = packets.map( ( link, index ) => {
-                    let uri = new URL( link, playlistURL );
-                    // fixme: sometimes all parts have the same last path, but differes somewhere else => use hash of uri?
-                    let file = ( '00000' + index ).slice( -5 );
-                    // ffmpeg does not support backslashes => replace with slashes
-                    playlist = playlist.replace( link, file.replace( /\\/g, '/' ) );
-                    return {
-                        source: uri.href,
-                        target: file
-                    };
-                } );
+                for(let packet of packets) {
+                    //playlist = playlist.replace(new RegExp(packet.needle, 'g'), packet.target);
+                    playlist = playlist.split(packet.needle).join(packet.target);
+                }
                 ffmpeg.inputs.push( '-i', '"media.m3u8"' );
                 return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: 'media.m3u8', data: playlist } )
                     .then( () => {

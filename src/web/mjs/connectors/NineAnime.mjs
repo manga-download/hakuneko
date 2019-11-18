@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+import HydraX from '../engine/HydraX.mjs';
 
 export default class NineAnime extends Connector {
 
@@ -188,6 +189,8 @@ export default class NineAnime extends Connector {
                 switch(true) {
                 case data.target.includes( 'prettyfast' ):
                     return this._getEpisodePrettyFast( data.target, this.config.resolution.value );
+                case data.target.includes( 'hydrax' ):
+                    return this._getEpisodeHydraX( data.target, this.config.resolution.value );
                 case data.target.includes( 'rapidvid' ):
                     return this._getEpisodeRapidVideo( data.target, this.config.resolution.value );
                 case data.target.includes( 'openload' ):
@@ -223,6 +226,16 @@ export default class NineAnime extends Connector {
                 let playlist = result.match( /playlist\s*:\s*\[\s*\{\s*file:\s*['"]([^'"]+)['"]/ )[1];
                 return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ playlist ], subtitles: [] } );
             } );
+    }
+
+    async _getEpisodeHydraX(link, resolution) {
+        let hydrax = new HydraX(link);
+        let playlist = await hydrax.getPlaylist(parseInt(resolution));
+        return {
+            hash: 'id,language,resolution',
+            mirrors: [ playlist ],
+            subtitles: []
+        };
     }
 
     /**
