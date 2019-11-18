@@ -140,7 +140,7 @@ export default class CoreView extends Connector {
             .then( data => {
                 let pageList = data.map( element => {
                     let uri = this.getAbsolutePath( element.dataset.src, request.url );
-                    return element.dataset.choJuGiga !== 'usagi' ? this.createConnectorURI( uri ) : uri;
+                    return element.dataset.choJuGiga && element.dataset.choJuGiga !== 'usagi' ? this.createConnectorURI( uri ) : uri;
                 } );
                 callback( null, pageList );
             } )
