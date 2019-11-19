@@ -1,19 +1,13 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class ScantradUnion extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'scantradunion';
         super.label = 'Scantrad Union';
         this.tags = [ 'manga', 'webtoon', 'french' ];
-        this.url = 'https://www.scantrad-union.com';
+        this.url = 'https://scantrad-union.com';
     }
 
     /**
