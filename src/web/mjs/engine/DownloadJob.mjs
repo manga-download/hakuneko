@@ -154,7 +154,7 @@ export default class DownloadJob extends EventTarget {
      */
     _downloadPlaylistHLS( episode, directory, callback ) {
         let ffmpeg = {
-            command: ['ffmpeg', '-allowed_extensions', 'ALL'],
+            command: ['ffmpeg', '-loglevel', 'error', '-allowed_extensions', 'ALL'],
             inputs: [],
             maps: ['-map', '0:v', '-map', '0:a'],
             metas: []
