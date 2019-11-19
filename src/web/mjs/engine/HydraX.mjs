@@ -53,6 +53,10 @@ export default class HydraX {
             };
         }));
         for(let redirect of redirects) {
+            if(redirect.target.includes('googleapis.com')) {
+                let uri = new URL(redirect.target);
+                redirect.target = redirects.find(r => r.target.startsWith(uri.origin + uri.pathname)).target;
+            }
             playlist = playlist.split(redirect.source).join(redirect.target);
         }
         return playlist;
