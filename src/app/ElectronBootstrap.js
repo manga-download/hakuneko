@@ -123,9 +123,7 @@ module.exports = class ElectronBootstrap {
             {
                 role: 'viewMenu',
                 submenu: [
-                    {
-                        role: 'togglefullscreen'
-                    },
+                    { role: 'togglefullscreen' },
                     {
                         role: 'toggleDevTools',
                         accelerator: 'F12'
@@ -135,18 +133,24 @@ module.exports = class ElectronBootstrap {
             {
                 role: 'editMenu',
                 submenu: [
+                    { role: 'undo' },
+                    { role: 'redo' },
+                    { type: 'separator' },
+                    { role: 'cut' },
+                    { role: 'copy' },
+                    { role: 'paste' },
+                    { role: 'selectall' },
+                    { type: 'separator' },
                     {
-                        //role: 'copy',
                         label: 'Copy URL',
                         accelerator: 'Shift+C',
                         click: this._copyURL.bind(this)
                     },
                     {
-                        //role: 'paste',
                         label: 'Paste URL',
                         accelerator: 'Shift+V',
                         click: this._pasteURL.bind(this)
-                    },
+                    }
                 ]
             }
         ];
