@@ -9,6 +9,7 @@ export default class BookmarkImporter {
             '3asq': 'mangalover-archive',
             '3asqorg': 'mangalover',
             'acqqcom': 'tencentcomic',
+            'artemisnf': 'artemisnofansub',
             'comicocoid': 'comicoid',
             'copypastescanlation': 'copypastescan',
             'coyuhi': 'universoyuri',
