@@ -24,7 +24,7 @@ export default class WordPressMadaraNovel extends WordPressMadara {
         let script = `
             new Promise(resolve => {
                 document.body.style.width = '${this.novelWidth}';
-                let container = document.querySelector('div.content-area > div.container');
+                let container = document.querySelector('div.content-area div.container');
                 container.style.maxWidth = '${this.novelWidth}';
                 container.style.padding = '0';
                 container.style.margin = '0';
