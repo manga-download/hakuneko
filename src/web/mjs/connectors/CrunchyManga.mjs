@@ -34,7 +34,7 @@ export default class CrunchyManga extends Crunchyroll {
         let data = await this.fetchJSON(request);
         return data.chapters.reverse().map(chapter => {
             // chapter.volume_number
-            let title = chapter.locale ? (chapter.locale[this.config.locale.value] || chapter.locale.enUS || '') : '';
+            let title = chapter.locale ? chapter.locale[this.config.locale.value] || chapter.locale.enUS || '' : '';
             title = title ? ' - ' + title.name : '';
             return {
                 id: chapter.chapter_id,

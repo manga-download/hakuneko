@@ -14,11 +14,11 @@ export default class CrunchyAnime extends Crunchyroll {
         throw new Error('Not implemented!');
     }
 
-    async _getChapters(manga) {
+    async _getChapters(/*manga*/) {
         throw new Error('Not implemented!');
     }
 
-    async _getPages(chapter) {
+    async _getPages(/*chapter*/) {
         throw new Error('Not implemented!');
     }
 }
