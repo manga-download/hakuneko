@@ -168,7 +168,7 @@ export default class Manga extends EventTarget {
 
         let name = title;
         let reVol = /\s*(?:vol\.?|volume|tome)\s*(\d+)/i;
-        let reCh = /\s*(?:^|ch\.?|ep\.?|chapter|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i; // $ not working in character groups => [\s\:$]+ does not work
+        let reCh = /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i; // $ not working in character groups => [\s\:$]+ does not work
 
         // extract volume number
         let volume = name.match( reVol );
