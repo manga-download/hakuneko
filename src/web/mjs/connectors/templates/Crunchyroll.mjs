@@ -1,5 +1,6 @@
 import Connector from '../../engine/Connector.mjs';
 
+// See: https://github.com/CloudMax94/crunchyroll-api/wiki/Api
 export default class Crunchyroll extends Connector {
 
     constructor() {

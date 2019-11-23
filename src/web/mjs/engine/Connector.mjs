@@ -518,6 +518,7 @@ export default class Connector {
      */
     async _getMangaList(callback) {
         try {
+            // TODO: this.initialize()
             // default implementation => forward compatibility to new interface method
             let mangas = await this._getMangas();
             callback(null, mangas);
@@ -536,6 +537,7 @@ export default class Connector {
      */
     async _getChapterList(manga, callback) {
         try {
+            // TODO: this.initialize()
             // default implementation => forward compatibility to new interface method
             let chapters = await this._getChapters(manga);
             callback(null, chapters);
@@ -555,6 +557,7 @@ export default class Connector {
      */
     async _getPageList(manga, chapter, callback) {
         try {
+            // TODO: this.initialize()
             // default implementation => forward compatibility to new interface method
             let pages = await this._getPages(chapter);
             callback(null, pages);
