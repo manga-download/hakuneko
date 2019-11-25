@@ -7,6 +7,6 @@ export default class MangaWOW extends WordPressMadara {
         super.id = 'mangawow';
         super.label = 'MangaWOW';
         this.tags = [ 'webtoon', 'turkish' ];
-        this.url = 'https://manga-wow.com';
+        this.url = 'https://mangawow.com';
     }
 }
