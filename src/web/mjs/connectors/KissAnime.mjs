@@ -1,6 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-import HydraX from '../engine/HydraX.mjs';
+import HydraX from '../videostreams/HydraX.mjs';
 
 export default class KissAnime extends Connector {
 
