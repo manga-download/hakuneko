@@ -1,14 +1,13 @@
-import Manga from './Manga.mjs';
+import Manga from "./Manga.mjs";
 
 /**
  * Base class for connector plugins
  */
 export default class Connector {
-
     // TODO: use dependency injection instead of globals for Engine.Storage, Engine.Request
     constructor() {
         this.id = Symbol();
-        this.label = '';
+        this.label = "";
         this.tags = [];
         /*
          * READONLY: lock state may used to prevent to many concurrent requests per second
@@ -28,21 +27,21 @@ export default class Connector {
          * https://developer.mozilla.org/en-US/docs/Web/API/Request/Request 'init' parameter
          */
         this.requestOptions = {
-            method: 'GET',
-            mode: 'cors',
-            redirect: 'follow',
+            method: "GET",
+            mode: "cors",
+            redirect: "follow",
             // include credentials to apply cookies from browser window
-            credentials: 'same-origin', // 'include',
+            credentials: "same-origin", // 'include',
             headers: new Headers()
         };
-        this.requestOptions.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
+        this.requestOptions.headers.set("accept", "image/webp,image/apng,image/*,*/*");
     }
 
     /**
      *
      */
     get icon() {
-        return '/img/connectors/' + this.id;
+        return "/img/connectors/" + this.id;
     }
 
     /**
@@ -55,21 +54,21 @@ export default class Connector {
          * => append random search parameter to avoid caching
          */
         let uri = new URL(this.url);
-        uri.searchParams.set('ts', Date.now());
-        uri.searchParams.set('rd', Math.random());
+        uri.searchParams.set("ts", Date.now());
+        uri.searchParams.set("rd", Math.random());
         let request = new Request(uri.href, this.requestOptions);
-        return Engine.Request.fetchUI(request, '');
+        return Engine.Request.fetchUI(request, "");
     }
 
     async initialize() {
         try {
-            if(!this.initialized) {
+            if (!this.initialized) {
                 await this._initializeConnector();
                 this.initialized = true;
             }
-        } catch(error) {
+        } catch (error) {
             // only throw when not in offline mode
-            if(!error.stack.startsWith('ERR_INTERNET_DISCONNECTED')) {
+            if (!error.stack.startsWith("ERR_INTERNET_DISCONNECTED")) {
                 throw error;
             }
         }
@@ -78,89 +77,89 @@ export default class Connector {
     /**
      * Find first manga with title that matches the given pattern (case-insensitive).
      */
-    findMatchingManga( pattern ) {
+    findMatchingManga(pattern) {
         let needle = pattern.toLowerCase();
-        return Engine.Storage.loadMangaList( this.id )
-            .then( mangas => {
-                return Promise.resolve( mangas.find( manga => manga.title.toLowerCase().includes( needle ) ) );
-            } )
-            .catch( () => Promise.resolve( undefined ) );
+        return Engine.Storage.loadMangaList(this.id)
+            .then(mangas => {
+                return Promise.resolve(mangas.find(manga => manga.title.toLowerCase().includes(needle)));
+            })
+            .catch(() => Promise.resolve(undefined));
     }
 
     /**
      * Update the manga list in the local storage.
      * Callback will be executed after completion and provided with a reference to the manga list (undefined on error).
      */
-    updateMangas( callback ) {
-        if( this.isUpdating ) {
+    updateMangas(callback) {
+        if (this.isUpdating) {
             return;
         }
         this.isUpdating = true;
         this.initialize()
-            .then( () => {
-                this._getMangaList( ( error, mangas ) => {
-                    if( error || !mangas ) {
+            .then(() => {
+                this._getMangaList((error, mangas) => {
+                    if (error || !mangas) {
                         this.isUpdating = false;
-                        callback( error, undefined );
+                        callback(error, undefined);
                         return;
                     }
                     // remove duplicates by checking if manga with given ID is first occurance in list
-                    mangas = mangas.filter( ( manga, index ) => {
-                        return index === mangas.findIndex( m => m.id === manga.id );
-                    } );
+                    mangas = mangas.filter((manga, index) => {
+                        return index === mangas.findIndex(m => m.id === manga.id);
+                    });
                     // sort by title
-                    mangas.sort( ( a, b ) => {
-                        return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 ;
-                    } );
+                    mangas.sort((a, b) => {
+                        return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
+                    });
 
                     this.mangaCache = undefined;
-                    Engine.Storage.saveMangaList( this.id, mangas )
-                        .then( () => {
+                    Engine.Storage.saveMangaList(this.id, mangas)
+                        .then(() => {
                             // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
                             this.isUpdating = false;
-                            this.getMangas( callback );
-                        } )
-                        .catch( error => {
+                            this.getMangas(callback);
+                        })
+                        .catch(error => {
                             // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
                             this.isUpdating = false;
-                            console.error( error.message );
-                            callback( error, undefined );
-                        } );
-                } );
-            } )
-            .catch( error => {
-            // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
+                            console.error(error.message);
+                            callback(error, undefined);
+                        });
+                });
+            })
+            .catch(error => {
+                // NOTE: connector.isUpdating must be set before the callback, because callback receiver relies on it
                 this.isUpdating = false;
-                callback( error, undefined );
-            } );
+                callback(error, undefined);
+            });
     }
 
     /**
      * Get all mangas for the connector.
      * Callback will be executed after completion and provided with a reference to the manga list (undefined on error).
      */
-    getMangas( callback ) {
+    getMangas(callback) {
         // find all manga titles (sanitized) that are found in the base directory for this connector
-        return Engine.Storage.getExistingMangaTitles( this )
-            .catch( () => {
+        return Engine.Storage.getExistingMangaTitles(this)
+            .catch(() => {
                 // Ignore manga file reading errors (e.g. root directory not exist)
-                return Promise.resolve( [] );
-            } )
-            .then( existingMangaTitles => {
+                return Promise.resolve([]);
+            })
+            .then(existingMangaTitles => {
                 this.existingManga = existingMangaTitles;
                 // check if manga list is cached
-                return this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() ;
-            } )
-            .then( mangas => {
-                callback( null, mangas );
-                return Promise.resolve( mangas );
-            } )
-            .catch( error => {
-            // TODO: remove log ... ?
-                console.warn( 'getMangas', error );
-                callback( error, this.mangaCache );
-                return Promise.reject( error );
-            } );
+                return this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile();
+            })
+            .then(mangas => {
+                callback(null, mangas);
+                return Promise.resolve(mangas);
+            })
+            .catch(error => {
+                // TODO: remove log ... ?
+                console.warn("getMangas", error);
+                callback(error, this.mangaCache);
+                return Promise.reject(error);
+            });
     }
 
     /**
@@ -169,7 +168,13 @@ export default class Connector {
      */
     async _getMangaFromURI(uri) {
         let id = uri.pathname + uri.search;
-        let title = 'Manga #' + id.split('').reduce((a, v) => a + a % 31 + v.charCodeAt(), id.length).toString(16).toUpperCase();
+        let title =
+            "Manga #" +
+            id
+                .split("")
+                .reduce((a, v) => a + (a % 31) + v.charCodeAt(), id.length)
+                .toString(16)
+                .toUpperCase();
         return new Manga(this, id, title);
     }
 
@@ -191,12 +196,12 @@ export default class Connector {
      *
      */
     _getUpdatedMangasFromCache() {
-        if( this.mangaCache ) {
-            this.mangaCache.forEach( manga => {
+        if (this.mangaCache) {
+            this.mangaCache.forEach(manga => {
                 manga.updateStatus();
-            } );
+            });
         }
-        return Promise.resolve( this.mangaCache );
+        return Promise.resolve(this.mangaCache);
     }
 
     /**
@@ -204,28 +209,28 @@ export default class Connector {
      */
     _getUpdatedMangasFromFile() {
         // get manga list from the local storage and cache them
-        return Engine.Storage.loadMangaList( this.id )
-            .then( mangas => {
-            // de-serialize mangas into objects
-                this.mangaCache = mangas.map( manga => {
-                    return new Manga( this, manga.id, manga.title );
-                } );
-                return Promise.resolve( this.mangaCache );
-            } )
-            .catch( error => {
-            // TODO: remove log ... ?
-                console.warn( '_getUpdatedMangasFromFile', error );
-                return Promise.resolve( this.mangaCache || [] );
-            } );
+        return Engine.Storage.loadMangaList(this.id)
+            .then(mangas => {
+                // de-serialize mangas into objects
+                this.mangaCache = mangas.map(manga => {
+                    return new Manga(this, manga.id, manga.title);
+                });
+                return Promise.resolve(this.mangaCache);
+            })
+            .catch(error => {
+                // TODO: remove log ... ?
+                console.warn("_getUpdatedMangasFromFile", error);
+                return Promise.resolve(this.mangaCache || []);
+            });
     }
 
     /**
      * Return a promise that will be resolved after the given amount of time in milliseconds
      */
-    wait( time ) {
-        return new Promise( resolve => {
-            setTimeout( resolve, time );
-        } );
+    wait(time) {
+        return new Promise(resolve => {
+            setTimeout(resolve, time);
+        });
     }
 
     /**
@@ -236,7 +241,7 @@ export default class Connector {
      * or null if the connector is already locked by a different owner.
      */
     lock() {
-        if( this.isLocked ) {
+        if (this.isLocked) {
             return null;
         }
         this.isLocked = Symbol();
@@ -246,8 +251,8 @@ export default class Connector {
     /**
      *
      */
-    unlock( key ) {
-        if( this.isLocked === key ) {
+    unlock(key) {
+        if (this.isLocked === key) {
             this.isLocked = false;
         }
     }
@@ -255,17 +260,17 @@ export default class Connector {
     /**
      * Helper function to decrypt the protected email within the given DOM element.
      */
-    cfMailDecrypt( element ) {
-        [...element.querySelectorAll( 'span[data-cfemail]' )].forEach( ( span ) => {
-            let encrypted = span.getAttribute( 'data-cfemail' ); // span.dataset.cfmail
-            if( encrypted ) {
+    cfMailDecrypt(element) {
+        [...element.querySelectorAll("span[data-cfemail]")].forEach(span => {
+            let encrypted = span.getAttribute("data-cfemail"); // span.dataset.cfmail
+            if (encrypted) {
                 // decrypt mail
-                let decrypted = '';
-                let key = '0x' + encrypted.substr(0, 2) | 0;
-                for ( let i=2; i<encrypted.length; i+=2) {
-                    decrypted += '%' + ('0' + ('0x' + encrypted.substr(i, 2) ^ key).toString(16)).slice(-2);
+                let decrypted = "";
+                let key = ("0x" + encrypted.substr(0, 2)) | 0;
+                for (let i = 2; i < encrypted.length; i += 2) {
+                    decrypted += "%" + ("0" + (("0x" + encrypted.substr(i, 2)) ^ key).toString(16)).slice(-2);
                 }
-                span.replaceWith( decodeURIComponent( decrypted ) );
+                span.replaceWith(decodeURIComponent(decrypted));
             }
         });
     }
@@ -309,13 +314,13 @@ export default class Connector {
      * Revert the expansion of relative links regarding the base url,
      * or leave the absolute url if the link seems not to been expanded.
      */
-    getRelativeLink( element ) {
-        if( element.href || element.src ) {
-            let baseURI = new URL( this.url );
-            let refURI = new URL( element.href || element.src );
+    getRelativeLink(element) {
+        if (element.href || element.src) {
+            let baseURI = new URL(this.url);
+            let refURI = new URL(element.href || element.src);
 
             // case: element.href => protocol + host expanded to window location (e.g. /sub/page.html => protocol://window/sub/page.html)
-            if( refURI.origin === window.location.origin ) {
+            if (refURI.origin === window.location.origin) {
                 refURI.hostname = baseURI.hostname;
             }
 
@@ -325,12 +330,12 @@ export default class Connector {
              * expansion of hrefs may lead to wrong protocol for external links
              * => use the protocol of the connector's base url
              */
-            if( refURI.protocol === window.location.protocol ) {
+            if (refURI.protocol === window.location.protocol) {
                 refURI.protocol = baseURI.protocol;
             }
 
             // case: element.href => absolute link that contains base url of connector (e.g. http://connector.net/sub/page.html)
-            if( refURI.hostname === baseURI.hostname ) {
+            if (refURI.hostname === baseURI.hostname) {
                 return refURI.pathname + refURI.search + refURI.hash;
             } else {
                 return refURI.href;
@@ -341,35 +346,35 @@ export default class Connector {
     /**
      *
      */
-    getAbsolutePath( reference, base ) {
+    getAbsolutePath(reference, base) {
         let baseURI;
-        switch( true ) {
-        case base instanceof URL:
-            baseURI = base;
-            break;
-        case typeof base === 'string':
-            baseURI = new URL( base );
-            break;
-        default:
-            throw new Error( 'Failed to extract relative link (parameter "base" is invalid)!' );
+        switch (true) {
+            case base instanceof URL:
+                baseURI = base;
+                break;
+            case typeof base === "string":
+                baseURI = new URL(base);
+                break;
+            default:
+                throw new Error('Failed to extract relative link (parameter "base" is invalid)!');
         }
 
         let refURI;
-        switch( true ) {
-        case reference instanceof URL:
-            refURI = reference;
-            break;
-        case typeof reference === 'string':
-            refURI = new URL( reference, baseURI.href );
-            break;
-        case reference['src'] !== undefined:
-            refURI = new URL( reference.getAttribute( 'src' ), baseURI.href );
-            break;
-        case reference['href'] !== undefined:
-            refURI = new URL( reference.getAttribute( 'href' ), baseURI.href );
-            break;
-        default:
-            throw new Error( 'Failed to extract relative link (parameter "reference" is invalid)!' );
+        switch (true) {
+            case reference instanceof URL:
+                refURI = reference;
+                break;
+            case typeof reference === "string":
+                refURI = new URL(reference, baseURI.href);
+                break;
+            case reference["src"] !== undefined:
+                refURI = new URL(reference.getAttribute("src"), baseURI.href);
+                break;
+            case reference["href"] !== undefined:
+                refURI = new URL(reference.getAttribute("href"), baseURI.href);
+                break;
+            default:
+                throw new Error('Failed to extract relative link (parameter "reference" is invalid)!');
         }
 
         return refURI.href;
@@ -378,9 +383,9 @@ export default class Connector {
     /**
      *
      */
-    getRootRelativeOrAbsoluteLink( reference, base ) {
-        let uri = new URL( this.getAbsolutePath( reference, base ) );
-        if( uri.hostname === new URL( base ).hostname ) {
+    getRootRelativeOrAbsoluteLink(reference, base) {
+        let uri = new URL(this.getAbsolutePath(reference, base));
+        if (uri.hostname === new URL(base).hostname) {
             // same domain => return only path
             return uri.pathname + uri.search + uri.hash;
         } else {
@@ -396,19 +401,19 @@ export default class Connector {
      * NOTE: When loading content into DOM, all links without a full qualified domain name will be expanded using the hostname of this app
      *       => do not forget to remove this prefix from the links!
      */
-    createDOM( content, replaceImageTags, clearIframettributes ) {
-        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true ;
-        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true ;
-        if( replaceImageTags ) {
-            content = content.replace( /<img/g, '<source');
-            content = content.replace( /<\/img/g, '</source');
-            content = content.replace( /<use/g, '<source');
-            content = content.replace( /<\/use/g, '</source');
+    createDOM(content, replaceImageTags, clearIframettributes) {
+        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true;
+        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true;
+        if (replaceImageTags) {
+            content = content.replace(/<img/g, "<source");
+            content = content.replace(/<\/img/g, "</source");
+            content = content.replace(/<use/g, "<source");
+            content = content.replace(/<\/use/g, "</source");
         }
-        if( clearIframettributes ) {
-            content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
+        if (clearIframettributes) {
+            content = content.replace(/<iframe[^<]*?>/g, "<iframe>");
         }
-        let dom = document.createElement( 'html' );
+        let dom = document.createElement("html");
         dom.innerHTML = content;
         return dom;
     }
@@ -417,55 +422,50 @@ export default class Connector {
      * Get the content for the given Request
      * and get all elements matching the given CSS selector.
      */
-    fetchDOM( request, selector, retries ) {
+    fetchDOM(request, selector, retries) {
         retries = retries || 0;
-        if( typeof request === 'string' ) {
-            request = new Request( request, this.requestOptions );
+        if (typeof request === "string") {
+            request = new Request(request, this.requestOptions);
         }
         // TODO: check if this will affect (replace) the input parameter?
-        if( request instanceof URL ) {
-            request = new Request( request.href, this.requestOptions );
+        if (request instanceof URL) {
+            request = new Request(request.href, this.requestOptions);
         }
-        return fetch( request )
-            .then( response => {
-                if( response.status >= 500 && retries > 0 ) {
-                    return this.wait( 5000 )
-                        .then( () => this.fetchDOM( request, selector, retries - 1 ) );
-                }
-                if( response.status === 200 ) {
-                    return response.text()
-                        .then( data => {
-                            let dom = this.createDOM( data );
-                            return Promise.resolve( [...dom.querySelectorAll( selector )] );
-                        } );
-                }
-                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
-            } );
+        return fetch(request).then(response => {
+            if (response.status >= 500 && retries > 0) {
+                return this.wait(5000).then(() => this.fetchDOM(request, selector, retries - 1));
+            }
+            if (response.status === 200) {
+                return response.text().then(data => {
+                    let dom = this.createDOM(data);
+                    return Promise.resolve([...dom.querySelectorAll(selector)]);
+                });
+            }
+            throw new Error(`Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}`);
+        });
     }
 
     /**
      *
      */
-    fetchJSON( request, retries ) {
+    fetchJSON(request, retries) {
         retries = retries || 0;
-        if( typeof request === 'string' ) {
-            request = new Request( request, this.requestOptions );
+        if (typeof request === "string") {
+            request = new Request(request, this.requestOptions);
         }
         // TODO: check if this will affect (replace) the input parameter?
-        if( request instanceof URL ) {
-            request = new Request( request.href, this.requestOptions );
+        if (request instanceof URL) {
+            request = new Request(request.href, this.requestOptions);
         }
-        return fetch( request )
-            .then( response => {
-                if( response.status >= 500 && retries > 0 ) {
-                    return this.wait( 5000 )
-                        .then( () => this.fetchJSON( request, retries - 1 ) );
-                }
-                if( response.status === 200 ) {
-                    return response.json();
-                }
-                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
-            } );
+        return fetch(request).then(response => {
+            if (response.status >= 500 && retries > 0) {
+                return this.wait(5000).then(() => this.fetchJSON(request, retries - 1));
+            }
+            if (response.status === 200) {
+                return response.json();
+            }
+            throw new Error(`Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}`);
+        });
     }
 
     /**
@@ -501,12 +501,12 @@ export default class Connector {
     /**
      *
      */
-    createConnectorURI( payload ) {
-        let data = JSON.stringify( payload );
-        let bytes = CryptoJS.enc.Utf8.parse( data );
-        let encoded = CryptoJS.enc.Base64.stringify( bytes );
-        let uri = new URL( 'connector://' + this.id );
-        uri.searchParams.set( 'payload', encoded );
+    createConnectorURI(payload) {
+        let data = JSON.stringify(payload);
+        let bytes = CryptoJS.enc.Utf8.parse(data);
+        let encoded = CryptoJS.enc.Base64.stringify(bytes);
+        let uri = new URL("connector://" + this.id);
+        uri.searchParams.set("payload", encoded);
         return uri.href;
     }
 
@@ -522,7 +522,7 @@ export default class Connector {
             // TODO: this.initialize()
             let mangas = await this._getMangas();
             callback(null, mangas);
-        } catch(error) {
+        } catch (error) {
             console.error(error, this);
             callback(error, undefined);
         }
@@ -541,7 +541,7 @@ export default class Connector {
             // TODO: this.initialize()
             let chapters = await this._getChapters(manga);
             callback(null, chapters);
-        } catch(error) {
+        } catch (error) {
             console.error(error, manga);
             callback(error, undefined);
         }
@@ -561,7 +561,7 @@ export default class Connector {
             // TODO: this.initialize()
             let pages = await this._getPages(chapter);
             callback(null, pages);
-        } catch(error) {
+        } catch (error) {
             console.error(error, chapter);
             callback(error, undefined);
         }
@@ -573,7 +573,7 @@ export default class Connector {
      * @returns {Manga[]} - A list of mangas
      */
     async _getMangas() {
-        throw new Error('Not implemented!');
+        throw new Error("Not implemented!");
     }
 
     /**
@@ -585,7 +585,7 @@ export default class Connector {
      */
     // eslint-disable-next-line no-unused-vars
     async _getChapters(manga) {
-        throw new Error('Not implemented!');
+        throw new Error("Not implemented!");
     }
 
     /**
@@ -597,37 +597,37 @@ export default class Connector {
      */
     // eslint-disable-next-line no-unused-vars
     async _getPages(chapter) {
-        throw new Error('Not implemented!');
+        throw new Error("Not implemented!");
     }
 
     /**
      *
      */
-    handleConnectorURI( uri ) {
-        let encoded = uri.searchParams.get( 'payload' );
-        let bytes = CryptoJS.enc.Base64.parse( encoded );
-        let data = bytes.toString( CryptoJS.enc.Utf8 );
-        let payload = JSON.parse( data );
-        return this._handleConnectorURI( payload );
+    handleConnectorURI(uri) {
+        let encoded = uri.searchParams.get("payload");
+        let bytes = CryptoJS.enc.Base64.parse(encoded);
+        let data = bytes.toString(CryptoJS.enc.Utf8);
+        let payload = JSON.parse(data);
+        return this._handleConnectorURI(payload);
     }
 
     /**
      * Return a promise that resolves with a mime typed buffer on succes,
      * or a promise that rejects with an error.
      */
-    _handleConnectorURI( payload ) {
+    _handleConnectorURI(payload) {
         try {
             //console.log( `Connector '${this.id}' has not implemented protocol handling. Using fallback implementation (fetch blob with default request options)!` );
-            let request = new Request( payload, this.requestOptions );
+            let request = new Request(payload, this.requestOptions);
             /*
              * TODO: only perform requests when from download manager
              * or when from browser for preview and selected chapter matches
              */
-            return fetch( request )
-                .then( response => response.blob() )
-                .then( data => this._blobToBuffer( data ) );
-        } catch( error ) {
-            return Promise.reject( error );
+            return fetch(request)
+                .then(response => response.blob())
+                .then(data => this._blobToBuffer(data));
+        } catch (error) {
+            return Promise.reject(error);
         }
     }
 
@@ -635,55 +635,55 @@ export default class Connector {
      * Protected helper function to convert a Blob to a MimeTypedBuffer
      * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
      */
-    _blobToBuffer( blob ) {
-        return new Promise( ( resolve, reject ) => {
+    _blobToBuffer(blob) {
+        return new Promise((resolve, reject) => {
             let reader = new FileReader();
             reader.onload = event => {
-                resolve( {
+                resolve({
                     mimeType: blob.type,
                     // NOTE: Uint8Array() seems slightly better than Buffer.from(), but both are blazing fast
-                    data: Buffer.from( event.target.result ) // new Uint8Array( event.target.result )
-                } );
+                    data: Buffer.from(event.target.result) // new Uint8Array( event.target.result )
+                });
             };
             reader.onerror = event => {
-                reject( event.target.error );
+                reject(event.target.error);
             };
-            reader.readAsArrayBuffer( blob );
-        } );
+            reader.readAsArrayBuffer(blob);
+        });
     }
 
     /**
      * Apply the real mime type to the MimeTypedBuffer (based on file signature).
      */
-    _applyRealMime( data ) {
+    _applyRealMime(data) {
         // WEBP [52 49 46 46 . . . . 57 45 42 50]
-        if( data.mimeType !== 'image/webp' && data.data[8] === 0x57 && data.data[9] === 0x45 && data.data[10] === 0x42 && data.data[11] === 0x50 ) {
-            console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/webp"!' );
-            data.mimeType = 'image/webp';
+        if (data.mimeType !== "image/webp" && data.data[8] === 0x57 && data.data[9] === 0x45 && data.data[10] === 0x42 && data.data[11] === 0x50) {
+            console.warn('Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/webp"!');
+            data.mimeType = "image/webp";
             return;
         }
-        // JPEG [FF D8 FF]
-        if( data.mimeType !== 'image/jpeg' && data.data[0] === 0xFF && data.data[1] === 0xD8 && data.data[2] === 0xFF ) {
-            console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/jpeg"!' );
-            data.mimeType = 'image/jpeg';
+        // JPEG [FF D8 FF F0]
+        if ((data.mimeType !== "image/jpeg" || data.mimeType !== "image/jpg") && data.data[0] === 0xff && data.data[1] === 0xd8 && data.data[2] === 0xff && data.data[3] === 0xf0) {
+            console.warn('Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/jpeg"!');
+            data.mimeType = "image/jpeg";
             return;
         }
         // PNG [. 50 4E 47]
-        if( data.mimeType !== 'image/png' && data.data[1] === 0x50 && data.data[2] === 0x4E && data.data[3] === 0x47 ) {
-            console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/png"!' );
-            data.mimeType = 'image/png';
+        if (data.mimeType !== "image/png" && data.data[1] === 0x50 && data.data[2] === 0x4e && data.data[3] === 0x47) {
+            console.warn('Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/png"!');
+            data.mimeType = "image/png";
             return;
         }
         // GIF [47 49 46]
-        if( data.mimeType !== 'image/gif' && data.data[0] === 0x47 && data.data[1] === 0x49 && data.data[2] === 0x46 ) {
-            console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/gif"!' );
-            data.mimeType = 'image/gif';
+        if (data.mimeType !== "image/gif" && data.data[0] === 0x47 && data.data[1] === 0x49 && data.data[2] === 0x46) {
+            console.warn('Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/gif"!');
+            data.mimeType = "image/gif";
             return;
         }
         // BMP [42 4D]
-        if( data.mimeType !== 'image/bmp' && data.data[0] === 0x42 && data.data[1] === 0x4D ) {
-            console.warn( 'Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/bmp"!' );
-            data.mimeType = 'image/bmp';
+        if (data.mimeType !== "image/bmp" && data.data[0] === 0x42 && data.data[1] === 0x4d) {
+            console.warn('Provided mime type "' + data.mimeType + '" does not match the file signature and was replaced by "image/bmp"!');
+            data.mimeType = "image/bmp";
             return;
         }
     }
