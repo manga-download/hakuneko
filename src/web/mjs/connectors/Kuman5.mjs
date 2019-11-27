@@ -7,7 +7,7 @@ export default class Kuman5 extends Connector {
     constructor() {
         super();
         super.id = "kuman5";
-        super.label = "Kuman5";
+        super.label = "酷漫屋 （Kuman5）";
         this.tags = ["manga", "chinese"];
         this.url = "http://www.kuman5.com/";
     }
@@ -80,7 +80,7 @@ export default class Kuman5 extends Connector {
      *
      */
     _getPageList(manga, chapter, callback) {
-        let request = new Request("this.url + chapter.id", this.requestOptions);
+        let request = new Request(this.url + chapter.id, this.requestOptions);
         fetch(request)
             .then(response => response.text())
             .then(data => {
