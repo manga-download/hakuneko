@@ -18,6 +18,8 @@ export default class Kiryuu extends WordPressEManga {
         let pageList = await super._getPages(chapter);
         return pageList.filter(link => {
             return !link.includes('.filerun.thumbnails')
+                && !link.endsWith('.filerun.versioning')
+                && !link.endsWith('.5.jpg')
                 && !link.endsWith(',5.jpg')
                 && !link.endsWith('ZZ.jpg');
         });
