@@ -5,7 +5,7 @@ export default class PrettyFast {
         this._referer = new URL(referer);
     }
 
-    async getPlaylist(resolution) {
+    async getPlaylist(/*resolution*/) {
         let request = new Request(this._uri.href, this.requestOptions);
         request.headers.set('x-referer', this._referer.href);
         let response = await fetch(request);
