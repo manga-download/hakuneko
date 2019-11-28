@@ -22,6 +22,7 @@ const mimes = {
 };
 
 const types = {
+    disabled: 'disabled',
     text: 'text',
     password: 'password',
     numeric: 'numeric',
@@ -36,6 +37,7 @@ export default class Settings extends EventTarget {
     // TODO: use dependency injection instead of globals for Engine.Storage, Engine.Conenctors
     constructor() {
         super();
+        let isPortable = false;
         let app = require( 'electron' ).remote.app;
         let path = require( 'path' );
         let docs = undefined;
@@ -76,13 +78,12 @@ export default class Settings extends EventTarget {
         };
 
         this.bookmarkDirectory = {
-            label: 'Bookmarks Directory ⁽¹⁾',
+            label: 'Bookmarks Directory',
             description: [
-                'The directory where bookmarks file will be stored',
-                '',
-                '⁽¹⁾ Restart required to take affect',
+                'The directory where the bookmark and chaptermark files will be stored.',
+                'This setting has no effect when the application is in portable mode!'
             ].join('\n'),
-            input: types.directory,
+            input: isPortable ? types.disabled : types.directory,
             value: app.getPath( 'userData' )
         };
 
