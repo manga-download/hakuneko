@@ -29,6 +29,11 @@
                 vertical-align: middle;
             }
         </style>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.disabled) ]]" restamp="false">
+            <div class="stretch">
+                <input type="text" value="[[ item.value ]]" title$="[[ item.value ]]" disabled/>
+            </div>
+        </template>
         <template is="dom-if" if="[[ isInputType(item.input, inputTypes.text) ]]" restamp="false">
             <div class="stretch">
                 <input type="text" value="{{ item.value::change }}" list$="DataList: [[ item.label ]]"/>
@@ -112,6 +117,7 @@
                 super.ready();
                 //
                 this.inputTypes = {
+                    disabled: 'disabled',
                     text: 'text',
                     password: 'password',
                     numeric: 'numeric',
