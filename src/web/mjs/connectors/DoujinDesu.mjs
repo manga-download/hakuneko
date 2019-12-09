@@ -79,15 +79,11 @@ export default class DoujinDesu extends BloggerManga {
             prefix: '',
             stringify: function (t) {
                 var r = this.prefix;
-                return r += t.salt.toString(),
-                    r += t.ciphertext.toString();
+                return r += t.salt.toString(), r += t.ciphertext.toString();
             },
             parse: function (t) {
-                var r = CryptoJS.lib.CipherParams.create({})
-                    , e = this.prefix.length;
-                return 0 !== t.indexOf(this.prefix) ? r : (r.ciphertext = CryptoJS.enc.Hex.parse(t.substring(16 + e)),
-                    r.salt = CryptoJS.enc.Hex.parse(t.substring(e, 16 + e)),
-                    r);
+                var r = CryptoJS.lib.CipherParams.create({}), e = this.prefix.length;
+                return 0 !== t.indexOf(this.prefix) ? r : (r.ciphertext = CryptoJS.enc.Hex.parse(t.substring(16 + e)), r.salt = CryptoJS.enc.Hex.parse(t.substring(e, 16 + e)), r);
             }
         };
     }
