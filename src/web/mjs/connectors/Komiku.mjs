@@ -18,6 +18,6 @@ export default class Komiku extends WordPressEManga {
 
         this.queryMangas = "div#a-z ol li.ranking1 h4 a";
         this.queryChapters = "section#chapter table.chapter tbody._3Rsjq tr td.judulseries a.iklan";
-        this.queryPages = 'div#readerareaimg.konten source[src]:not([src=""])';
+        this.queryPages = "div#readerareaimg.konten source[src]:not([src=''])";
     }
 }
