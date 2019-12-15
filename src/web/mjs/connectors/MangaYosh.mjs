@@ -18,24 +18,13 @@ export default class MangaYosh extends WordPressMadara {
     }
 
     _decryptChapterID(chapterID) {
-        if(chapterID.includes('subetenews.com') || chapterID.includes('tranivson.me')) {
-            return this._decryptSubeteNews(chapterID);
+        let uri = new URL(chapterID, this.url);
+        if(uri.searchParams.get('r')) {
+            return this._decryptChapterID(atob(uri.searchParams.get('r')));
         }
-        if(chapterID.includes('l.wl.co')) {
-            return this._decryptWL(chapterID);
+        if(uri.searchParams.get('u')) {
+            return this._decryptChapterID(uri.searchParams.get('u'));
         }
         return this.getRootRelativeOrAbsoluteLink(chapterID.replace(this.oldURL, this.url), this.url);
-    }
-
-    _decryptSubeteNews(chapterID) {
-        let uri = new URL(chapterID, this.url);
-        let link = atob(uri.searchParams.get('r'));
-        return this._decryptChapterID(link);
-    }
-
-    _decryptWL(chapterID) {
-        let uri = new URL(chapterID, this.url);
-        let link = uri.searchParams.get('u');
-        return this._decryptChapterID(link);
     }
 }
