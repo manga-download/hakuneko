@@ -75,6 +75,7 @@ export default class GManga extends Connector {
         fetch( this.url + '/api/mangas/' + manga.id, this.requestOptions )
             .then( response => response.json() )
             .then( data => {
+                data = data[ 'iv' ] ? this._haqiqa( data.data ) : data;
                 data = data[ 'isCompact' ] ? this._unpack( data ) : data;
                 let chapterList = data.mangaReleases.map( chapter => {
                     let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;

@@ -1,19 +1,15 @@
-import Connector from '../engine/Connector.mjs';
+import Connector from "../engine/Connector.mjs";
 
-/**
- *
- */
-export default class MangaArab extends Connector {
-
+export default class Kuman5 extends Connector {
     /**
      *
      */
     constructor() {
         super();
-        super.id = 'mangaarab';
-        super.label = 'مانجا العرب (Manga Al-arab)';
-        this.tags = ['manga', 'arabic'];
-        this.url = 'https://www.mangaae.com';
+        super.id = "kuman5";
+        super.label = "酷漫屋 （Kuman5）";
+        this.tags = ["manga", "chinese"];
+        this.url = "http://www.kuman5.com/";
     }
 
     /**
@@ -24,23 +20,16 @@ export default class MangaArab extends Connector {
             index = 0;
         }
         return this.wait(0)
-            .then(() => this.fetchDOM(mangaPageLinks[index], 'div#mangadirectory div.mangacontainer a.manga', 5))
+            .then(() => this.fetchDOM(mangaPageLinks[index], "ul.mh-list li div.mh-item-detali h2.title a", 5))
             .then(data => {
-                let mangaList = data.filter((element, index) => {
-                    /*
-                     * even link is manga with english title, odd link is same manga but arabic title
-                     *return index % 2 === 0; // english
-                     */
-                    return index % 2 === 1; // arabic
-                }).map(element => {
+                let mangaList = data.map(element => {
                     return {
                         id: this.getRelativeLink(element),
                         title: element.text.trim()
                     };
                 });
                 if (index < mangaPageLinks.length - 1) {
-                    return this._getMangaListFromPages(mangaPageLinks, index + 1)
-                        .then(mangas => mangas.concat(mangaList));
+                    return this._getMangaListFromPages(mangaPageLinks, index + 1).then(mangas => mangas.concat(mangaList));
                 } else {
                     return Promise.resolve(mangaList);
                 }
@@ -51,10 +40,10 @@ export default class MangaArab extends Connector {
      *
      */
     _getMangaList(callback) {
-        this.fetchDOM(this.url + '/manga', 'div.pagination a:last-of-type')
+        this.fetchDOM(this.url + "/rank/1-10.html", "div.page-pagination ul li a.active")
             .then(data => {
                 let pageCount = parseInt(data[0].text.trim());
-                let pageLinks = [... new Array(pageCount).keys()].map(page => this.url + '/manga/page:' + (page + 1) + '|order:english_name');
+                let pageLinks = [...new Array(pageCount).keys()].map(page => this.url + "/rank/1-" + (page + 1) + ".html");
                 return this._getMangaListFromPages(pageLinks);
             })
             .then(data => {
@@ -70,13 +59,13 @@ export default class MangaArab extends Connector {
      *
      */
     _getChapterList(manga, callback) {
-        this.fetchDOM(this.url + manga.id, 'div.indexcontainer ul.new-manga-chapters li a.chapter')
+        this.fetchDOM(this.url + "mulu/" + manga.id + "1-1.html", "div#chapterlistload ul#detail-list-select-1 li a")
             .then(data => {
                 let chapterList = data.map(element => {
                     return {
-                        id: this.getRelativeLink(element).replace(/\d+\/?$/, '0/full'),
-                        title: element.text.trim(),
-                        language: 'ae'
+                        id: this.getRelativeLink(element),
+                        title: element.childNodes[0].nodeValue.trim(),
+                        language: "zh"
                     };
                 });
                 callback(null, chapterList);
@@ -92,10 +81,19 @@ export default class MangaArab extends Connector {
      */
     _getPageList(manga, chapter, callback) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        this.fetchDOM(request, 'div#showchaptercontainer source')
+        fetch(request)
+            .then(response => response.text())
             .then(data => {
-                let pageList = data.map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
-                callback(null, pageList);
+                let uri = new URL(this.url + "/action/play/read");
+                uri.searchParams.set("did", data.match(/var\s+did\s*=\s*(\d+)\s*;/)[1]);
+                uri.searchParams.set("sid", data.match(/var\s+sid\s*=\s*(\d+)\s*;/)[1]);
+                let pageCount = parseInt(data.match(/var\s+pcount\s*=\s*(\d+)\s*;/)[1]);
+                let pageLinks = [...new Array(pageCount).keys()].map(page => {
+                    uri.searchParams.set("iid", page + 1);
+                    uri.searchParams.set("tmp", Math.random());
+                    return this.createConnectorURI(uri.href);
+                });
+                callback(null, pageLinks);
             })
             .catch(error => {
                 console.error(error, chapter);
@@ -107,13 +105,11 @@ export default class MangaArab extends Connector {
      *
      */
     _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set('x-referer', payload);
-        let promise = super._handleConnectorURI(payload);
-        this.requestOptions.headers.delete('x-referer');
-        return promise;
+        return this.fetchJSON(request).then(data => super._handleConnectorURI(this.getAbsolutePath(data.Code, request.url)));
     }
 }

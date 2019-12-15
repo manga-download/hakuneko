@@ -1,6 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-import HydraX from '../engine/HydraX.mjs';
+import PrettyFast from '../videostreams/PrettyFast.mjs';
+import HydraX from '../videostreams/HydraX.mjs';
 
 export default class NineAnime extends Connector {
 
@@ -188,7 +189,7 @@ export default class NineAnime extends Connector {
                 await this.wait(500);
                 switch(true) {
                 case data.target.includes( 'prettyfast' ):
-                    return this._getEpisodePrettyFast( data.target, this.config.resolution.value );
+                    return this._getEpisodePrettyFast(data.target, new URL(chapter.id, this.url).href, this.config.resolution.value);
                 case data.target.includes( 'hydrax' ):
                     return this._getEpisodeHydraX( data.target, this.config.resolution.value );
                 case data.target.includes( 'rapidvid' ):
@@ -217,15 +218,14 @@ export default class NineAnime extends Connector {
     /**
      *
      */
-    _getEpisodePrettyFast( link/*, resolution*/ ) {
-        let request = new Request( link, this.requestOptions );
-        request.headers.set( 'x-referer', this.url );
-        return fetch( request )
-            .then( response => response.text() )
-            .then( result => {
-                let playlist = result.match( /playlist\s*:\s*\[\s*\{\s*file:\s*['"]([^'"]+)['"]/ )[1];
-                return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ playlist ], subtitles: [] } );
-            } );
+    async _getEpisodePrettyFast(link, referer, resolution) {
+        let prettyfast = new PrettyFast(link, referer);
+        let playlist = await prettyfast.getPlaylist(parseInt(resolution));
+        return {
+            hash: 'id,language,resolution',
+            mirrors: [ playlist ],
+            subtitles: []
+        };
     }
 
     async _getEpisodeHydraX(link, resolution) {
