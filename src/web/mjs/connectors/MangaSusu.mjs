@@ -7,7 +7,7 @@ export default class MangaSusu extends MangaReaderCMS {
         super.id = 'mangasusu';
         super.label = 'MangaSusu';
         this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://www.mangasusu.me';
+        this.url = 'https://www.mangasusu.info';
 
         this.language = 'id';
     }

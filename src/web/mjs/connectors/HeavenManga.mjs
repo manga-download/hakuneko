@@ -8,7 +8,7 @@ export default class HeavenManga extends WordPressZbulu {
         super.label = 'Heaven Manga';
         this.tags = [ 'manga', 'english' ];
         // TODO: set URL so it always matches clipboard paste (e.g. http://ww5.heavenmanga.org), but also supports redirect ...
-        this.url = 'http://ww5.heavenmanga.org';
+        this.url = 'http://ww6.heavenmanga.org';
     }
 
     async _initializeConnector() {
