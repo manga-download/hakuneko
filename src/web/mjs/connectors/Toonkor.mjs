@@ -13,7 +13,7 @@ export default class Toonkor extends Connector {
         super.id = 'toonkor';
         super.label = 'Toonkor';
         this.tags = [ 'webtoon', 'korean' ];
-        this.url = 'https://toonkor.id';
+        this.url = 'https://toonkor.gdn';
     }
 
     /**
