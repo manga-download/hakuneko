@@ -8,7 +8,7 @@ export default class HolyManga extends WordPressZbulu {
         super.label = 'Holy Manga';
         this.tags = [ 'manga', 'english' ];
         // TODO: set URL so it always matches clipboard paste (e.g. http://ww7.holymanga.net), but also supports redirect ...
-        this.url = 'http://ww7.holymanga.net';
+        this.url = 'http://ww8.holymanga.net';
     }
 
     async _initializeConnector() {
