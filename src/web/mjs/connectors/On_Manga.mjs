@@ -7,7 +7,7 @@ export default class On_Manga extends MangaReaderCMS {
         super.id = 'on-manga';
         super.label = 'مانجا اون لاين (On-Manga)';
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
-        this.url = 'https://www.on-manga.me';
+        this.url = 'https://onma.me';
 
         this.language = 'ar';
     }
