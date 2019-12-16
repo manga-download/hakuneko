@@ -68,26 +68,19 @@ export default class Genkan extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'div.card div.list div.list-item a.item-author' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.col-lg-9 div.card div.list div.list-item');
+        return data.map(element => {
+            let link = element.querySelector('a.item-author');
+            let number = element.querySelector('span.text-muted').textContent.trim();
+            let title = link.text.replace(manga.title, '').trim();
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(link, request.url),
+                title: number + ' - ' + title,
+                language: ''
+            };
+        });
     }
 
     /**
