@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import Genkan from './templates/Genkan.mjs';
 
-export default class ZeroScans extends WordPressMadara {
+export default class ZeroScans extends Genkan {
 
     constructor() {
         super();
