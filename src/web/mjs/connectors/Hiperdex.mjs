@@ -7,6 +7,6 @@ export default class Hiperdex extends WordPressMadara {
         super.id = 'hiperdex';
         super.label = 'Hiperdex';
         this.tags = [ 'hentai', 'webtoon', 'english' ];
-        this.url = 'https://hiperdex.com/';
+        this.url = 'https://hiperdex.com';
     }
 }
