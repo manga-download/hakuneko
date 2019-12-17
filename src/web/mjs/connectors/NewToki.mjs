@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-//import Manga from '../engine/Manga.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class NewToki extends Connector {
 
@@ -15,15 +15,13 @@ export default class NewToki extends Connector {
         this.path = [ '/webtoon', '/comic' ];
     }
 
-    /*
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'head title');
-        let id = uri.pathname;
-        let title = data[0].text.split(' | ')[0].trim();
+        let data = await this.fetchDOM(request, 'div.page-title span.page-desc');
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
-    */
 
     async _getMangas() {
         let mangaList = [];
@@ -59,7 +57,7 @@ export default class NewToki extends Connector {
             let title = link.childNodes[0].textContent.trim() || link.childNodes[2].textContent.trim();
             return {
                 id: this.getRootRelativeOrAbsoluteLink(link, request.url),
-                title: number + ' - ' + title,
+                title: number + ' - ' + title.replace(manga.title, '').trim(),
                 language: ''
             };
         });
