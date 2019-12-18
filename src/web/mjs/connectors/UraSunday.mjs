@@ -62,20 +62,30 @@ export default class UraSunday extends Connector {
 
         try {
             images = await this._extractZao(data);
-        } catch {}
+        } catch(error) {
+            //
+        }
         try {
             images = await this._extractComicWrite(data);
-        } catch {}
+        } catch(error) {
+            //
+        }
         try {
             images = await this._extractWebarena(data);
-        } catch {}
+        } catch(error) {
+            //
+        }
         try {
             images = await this._extractWebarenaNew(data, request.url);
-        } catch {}
+        } catch(error){
+            //
+        }
         try {
             images = await this._extractWebarenaMapon(data);
-        } catch {}
-        
+        } catch(error) {
+            //
+        }
+
         if(!images) {
             throw new Error('Failed to extract images, maybe provider not supported!');
         }
