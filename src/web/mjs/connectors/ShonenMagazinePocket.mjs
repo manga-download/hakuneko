@@ -1,13 +1,7 @@
 import CoreView from './templates/CoreView.mjs';
 
-/**
- *
- */
 export default class ShonenMagazinePocket extends CoreView {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'shonenmagazine-pocket';

@@ -1,13 +1,7 @@
 import CoreView from './templates/CoreView.mjs';
 
-/**
- *
- */
 export default class ShonenJumpPlus extends CoreView {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'shonenjumpplus';
