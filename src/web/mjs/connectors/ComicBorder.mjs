@@ -1,13 +1,7 @@
 import CoreView from './templates/CoreView.mjs';
 
-/**
- *
- */
 export default class ComicBorder extends CoreView {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'comicborder';
@@ -16,23 +10,14 @@ export default class ComicBorder extends CoreView {
         this.url = 'https://comicborder.com';
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url, 'ul.index-list-all li a' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.lastChild.textContent.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let request = new Request(this.url, this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.index-list-all li a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.lastChild.textContent.trim()
+            };
+        });
     }
 }
