@@ -67,7 +67,8 @@ export default class CoreView extends Connector {
      *
      */
     _getChapterList( manga, callback ) {
-        fetch( this.url + manga.id, this.requestOptions )
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        fetch(request)
             .then( response => response.text() )
             .then( data => {
                 let dom = this.createDOM( data );
@@ -112,7 +113,7 @@ export default class CoreView extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id + '.json', this.requestOptions);
+        let request = new Request(new URL(chapter.id + '.json', this.url), this.requestOptions);
         let data = await this.fetchJSON(request);
         return data.readableProduct.pageStructure.single.filter(page => page.type === 'main').map(page => {
             if(['usagi', 'baku'].includes(page.choJuGiga)) {
