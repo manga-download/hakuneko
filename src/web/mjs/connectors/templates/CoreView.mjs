@@ -100,7 +100,7 @@ export default class CoreView extends Connector {
                         return {
                             id: parent ? this.getRelativeLink( parent ) : manga.id,
                             title: element.textContent.replace( manga.title, '' ).trim() || manga.title,
-                            language: 'jp'
+                            language: ''
                         };
                     } );
                 callback( null, chapterList );
@@ -111,23 +111,16 @@ export default class CoreView extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, this.queryPages )
-            .then( data => {
-                let pageList = data.map( element => {
-                    let uri = this.getAbsolutePath( element.dataset.src, request.url );
-                    return element.dataset.choJuGiga && element.dataset.choJuGiga !== 'usagi' ? this.createConnectorURI( uri ) : uri;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(this.url + chapter.id + '.json', this.requestOptions);
+        let data = await this.fetchJSON(request);
+        return data.readableProduct.pageStructure.single.filter(page => page.type === 'main').map(page => {
+            if(['usagi', 'baku'].includes(page.choJuGiga)) {
+                return this.createConnectorURI(page.src);
+            } else {
+                return this.getAbsolutePath(page.src, request.url);
+            }
+        });
     }
 
     /**
