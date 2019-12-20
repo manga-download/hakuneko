@@ -10,7 +10,6 @@ export default class MangaNel extends Connector {
         this.url = 'https://manganelo.com';
 
         this.path = '/genre-all/';
-
         this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
         this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
         this.queryChapters = 'ul.row-content-chapter li a.chapter-name';
