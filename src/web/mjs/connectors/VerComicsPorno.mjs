@@ -22,7 +22,7 @@ export default class VerComicsPorno extends Connector {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.href.split('/')[3].replace(/(-)/g,' ')
-            }
+            };
         }).filter(manga => manga.id.startsWith('/'));
     }
 
@@ -31,7 +31,7 @@ export default class VerComicsPorno extends Connector {
         let request = new Request(this.url + this.path + '1' , this.requestOptions);
         let data = await this.fetchDOM(request, this.pager);
         let pageCount = parseInt(data[0].href.match(/\d+$/));
-        console.log(pageCount)
+        console.log(pageCount);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -40,7 +40,7 @@ export default class VerComicsPorno extends Connector {
     }
 
     async _getChapters(manga) {
-        console.log(manga)
+        console.log(manga);
         return [{
             id: manga.id,
             title: manga.title,
@@ -52,7 +52,7 @@ export default class VerComicsPorno extends Connector {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, this.listPages);
         return data.map(element => {
-            return element.dataset['lazySrc']
+            return element.dataset['lazySrc'];
         });
     }
 
