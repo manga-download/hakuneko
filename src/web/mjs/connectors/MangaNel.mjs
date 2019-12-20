@@ -38,20 +38,12 @@ export default class MangaNel extends Connector {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.trim()
             };
-        });
+        }).filter(manga => manga.id.startsWith('/'));
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let response = await fetch(request);
-        let data = await response.text();
-        let redirect = data.match(/window.location.assign\(\s*['"]([^'"]+)['"]\s*\)/);
-        if(this.id !== 'manganel' && redirect) {
-            // eslint-disable-next-line require-atomic-updates
-            request = new Request(new URL(redirect[1], this.url), this.requestOptions);
-        }
-        data = await this.fetchDOM(request, this.queryChapters );
-
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
@@ -59,11 +51,11 @@ export default class MangaNel extends Connector {
                 title: element.text.replace(manga.title, '').trim(),
                 language: ''
             };
-        });
+        }).filter(chapter => chapter.id.startsWith('/'));
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.getAbsolutePath(element.dataset['src'] || element, request.url));
     }
