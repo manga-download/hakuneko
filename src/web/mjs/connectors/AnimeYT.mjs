@@ -1,4 +1,4 @@
-import Connector from '../engine/Connetors.mjs';
+import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 /*
  * import PrettyFast from '../videostreams/PrettyFast.mjs';
@@ -10,59 +10,129 @@ export default class AnimeYT extends Connector {
         super();
         super.id = 'animeyt';
         super.label = 'AnimeYT';
+        this.mangas = [];
         this.tags = ['anime', 'spanish'];
         this.url = 'https://animeyt2.tv';
+
+        this.path = '/animes?pages=';
+        this.pager = '.pager > nav > ul > li:nth-last-of-type(2) > a';
+        this.listChapters = '.serie-capitulos > div > div > a'
+        this.queryAnimes = '.animes-grid > article > div.anime--flip > div > div.anime--flip__front > a';
+        this.servers = '.ver-anime__mirrors > li > .ver-anime__mirror'
+
         this.requestOptions.headers.set('x-requested-with', 'XMLHttpRequest');
+        this.config = {
+            resolution:  {
+                label: 'Preferred Resolution',
+                description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!',
+                input: 'select',
+                options: [
+                    { value: '', name: 'Mirror\'s Default' },
+                    { value: '480', name: '480p' },
+                    { value: '720', name: '720p' },
+                    { value: '1080', name: '1080p' }
+                ],
+                value: ''
+            }
+        };
     }
 
-    async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let response = await fetch(request);
-        let data = await response.text();
-        let dom = this.createDom(data);
-        let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
-        let metaTitle = dom.querySelector('h3.capitulos-grid__item__title');
-        let id = this.getRootRelativeOrAbsoluteLink(metaURL, request.url);
-        let title = metaTitle.dataset.jtitle.trim();
-        return new Manga(this, id ,title);
+
+    async _getMangasFromPage(page) {
+        let request = await new Request(this.url + this.path + page, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryAnimes);
+        return data.map(element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.href.split('/')[3].replace(/(-)/g,' ')
+            }
+        })
     }
 
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this._checkCaptcha(request)
-            .then(() => this.fetchDOM( request, 'a.capitulos-grid__item__link.fakeplayer.capitulo_poster', 5 ))
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        let request = await new Request(this.url + this.path + '1' , this.requestOptions);
+        let data = await this.fetchDOM(request, this.pager);
+        let pageCount = parseInt(data[0].href.match(/\d+$/));
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            await mangaList.push(...mangas);
+        }
+
+        return mangaList;
     }
 
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/animes?page=', this.requestOptions );
-        this._checkCaptcha(request)
-            .then(() => this.fetchDOM( request, '.animes-grid .anime .anime--flip .anime--flip__front a' ))
-            .then( data => {
-                let pageCount = parseInt( data[0].textContent.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.listChapters);
+        return data.map(element => {
+            console.log({
+                element: [element],
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim(),
+            })
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim(),
+                language: ''
+            };
+        });
     }
+
+    async _getPages(chapter) {
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.servers);
+        console.log({
+            data:[data]
+        })
+        return data.map(element => this.getAbsolutePath(element, request.url));
+    }
+
+
+/*
+
+   async _getMangasFromPage(page) {
+        let request = new Request(this.url + this.path + page, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryAnimes);
+        return data.map(element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.href.split('/')[3].replace(/(-)/g,' ')
+            }
+        }).filter(manga => manga.id.startsWith('/'));
+    }
+
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(this.url + this.path + '1' , this.requestOptions);
+        let data = await this.fetchDOM(request, this.pager);
+        let pageCount = parseInt(data[0].href.match(/\d+$/));
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
+    }
+
+    async _getChapters(manga) {
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.listChapters);
+        return data.map(element => {
+            console.log({
+                element: [element],
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim(),
+                language: ''
+            })
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim(),
+                language: ''
+            };
+        });
+    }
+*/
+
 }
