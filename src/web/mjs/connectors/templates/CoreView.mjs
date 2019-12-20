@@ -26,44 +26,24 @@ export default class CoreView extends Connector {
         this.queryPages = 'source.page-image[data-src]';
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        return this.fetchDOM( mangaPageLinks[ index ], this.queryManga, 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.querySelector( this.queryMangaTitle ).textContent.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        for(let page of this.path) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        Promise.resolve()
-            .then( () => {
-                let pageLinks = this.path.map( path => this.url + path );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let request = new Request(this.url + page, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryManga);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.querySelector(this.queryMangaTitle).textContent.trim()
+            };
+        });
     }
 
     /**
@@ -87,7 +67,8 @@ export default class CoreView extends Connector {
      *
      */
     _getChapterList( manga, callback ) {
-        fetch( this.url + manga.id, this.requestOptions )
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        fetch(request)
             .then( response => response.text() )
             .then( data => {
                 let dom = this.createDOM( data );
@@ -120,7 +101,7 @@ export default class CoreView extends Connector {
                         return {
                             id: parent ? this.getRelativeLink( parent ) : manga.id,
                             title: element.textContent.replace( manga.title, '' ).trim() || manga.title,
-                            language: 'jp'
+                            language: ''
                         };
                     } );
                 callback( null, chapterList );
@@ -131,23 +112,16 @@ export default class CoreView extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, this.queryPages )
-            .then( data => {
-                let pageList = data.map( element => {
-                    let uri = this.getAbsolutePath( element.dataset.src, request.url );
-                    return element.dataset.choJuGiga && element.dataset.choJuGiga !== 'usagi' ? this.createConnectorURI( uri ) : uri;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id + '.json', this.url), this.requestOptions);
+        let data = await this.fetchJSON(request);
+        return data.readableProduct.pageStructure.single.filter(page => page.type === 'main').map(page => {
+            if(['usagi', 'baku'].includes(page.choJuGiga)) {
+                return this.createConnectorURI(page.src);
+            } else {
+                return this.getAbsolutePath(page.src, request.url);
+            }
+        });
     }
 
     /**
