@@ -14,10 +14,10 @@ export default class VerComicsPorno extends Connector {
         super.label = 'VerComicsPorno';
         this.tags = ['manga', 'comics' ,'spanish', 'english'];
         this.url = 'http://vercomicsporno.com';
-        this.path = '/page'
+        this.path = '/page';
         this.queryComics = '#posts .gallery > a';
         this.queryPages = 'ul.pagination li:last-of-type a';
-        this.listPages = '#posts source.lazy:not(:last-child)'
+        this.listPages = '#posts source.lazy:not(:last-child)';
     }
 
     /**
@@ -51,9 +51,9 @@ export default class VerComicsPorno extends Connector {
         let request = new Request(this.url + this.path + '/1', this.requestOptions);
         this.fetchDOM(request, this.queryPages)
             .then(data => {
-                let uriCount = data[0].href.split('/')
+                let uriCount = data[0].href.split('/');
                 let pageCount =parseInt(uriCount[uriCount.length - 1]);
-                let pageLinks = [...(new Array(pageCount)).keys()].map(page => this.url + this.path + '/' + (page + 1));
+                let pageLinks = [...new Array(pageCount).keys()].map(page => this.url + this.path + '/' + (page + 1));
                 return this._getMangaListFromPages(pageLinks);
             })
             .then(data => {
@@ -79,9 +79,9 @@ export default class VerComicsPorno extends Connector {
                 callback(null, chapterList);
             })
             .catch(error => {
-                console.error(error, manga)
-                callback(error, undefined)
-            })
+                console.error(error, manga);
+                callback(error, undefined);
+            });
     }
 
     /**
@@ -93,7 +93,7 @@ export default class VerComicsPorno extends Connector {
         this.fetchDOM(request, this.listPages)
             .then(data => {
                 let pageList = data.map(element => {
-                    return this.getAbsolutePath(element.dataset['lazySrc'] || element, request.url)
+                    return this.getAbsolutePath(element.dataset['lazySrc'] || element, request.url);
                 });
 
                 callback(null, pageList);
