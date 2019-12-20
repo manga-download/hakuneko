@@ -16,9 +16,9 @@ export default class AnimeYT extends Connector {
 	async _getMangaFromURI(uri) {
 		let request = new Request(uri, this.requestOptions);
 		let response = await fetch(request);
-		let data = await = response.text();
+		let data = await response.text();
 		let dom = this.createDom(data);
-		let metaURL ?= dom.querySelector('meta[property="og:url"]').content.trim();
-		let metaTitle = dom.querySelector('')
+		let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
+		let metaTitle = dom.querySelector('');
 	}
 }
