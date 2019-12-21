@@ -31,7 +31,12 @@ export default class Publus extends Connector {
             new Promise( ( resolve, reject ) => {
                 setTimeout( () => {
                     try {
-                        resolve( Object.keys( NFBR.a6G.a6L.cache.data_ ).map( key => NFBR.a6G.a6L.cache.get( key ).getUrl() ) );
+                        if(NFBR) {
+                            resolve(Object.keys(NFBR.a6G.a6L.cache.data_).map(key => NFBR.a6G.a6L.cache.get(key).getUrl()));
+                        }
+                        if(/* has script "<script src="GanGanOnline_WebViewer.d36f16fd.js"></script>" */) {
+                            //
+                        }
                     } catch ( error ) {
                         reject( error );
                     }
