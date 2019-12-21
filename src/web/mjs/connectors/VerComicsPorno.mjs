@@ -24,7 +24,7 @@ export default class VerComicsPorno extends Connector {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.href.split('/')[3].replace(/(-)/g,' ')
             };
-        }).filter(manga => manga.id.startsWith('/'));
+        });
     }
 
     async _getMangas() {
