@@ -6,7 +6,7 @@ export default class VerComicsPorno extends Connector {
         super();
         super.id = 'vercomicsporno';
         super.label = 'VerComicsPorno';
-        this.tags = ['manga', 'comics' ,'spanish', 'english'];
+        this.tags = ['porn' ,'spanish'];
         this.url = 'http://vercomicsporno.com';
         this.path = '/page';
         this.queryMangas = '#posts .gallery > a';
@@ -31,7 +31,6 @@ export default class VerComicsPorno extends Connector {
         let request = new Request(this.url + this.path + '1' , this.requestOptions);
         let data = await this.fetchDOM(request, this.pager);
         let pageCount = parseInt(data[0].href.match(/\d+$/));
-        console.log(pageCount);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -40,7 +39,6 @@ export default class VerComicsPorno extends Connector {
     }
 
     async _getChapters(manga) {
-        console.log(manga);
         return [{
             id: manga.id,
             title: manga.title,
