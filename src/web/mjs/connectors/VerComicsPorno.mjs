@@ -7,8 +7,9 @@ export default class VerComicsPorno extends Connector {
         super.id = 'vercomicsporno';
         super.label = 'VerComicsPorno';
         this.tags = ['porn' ,'spanish'];
-        this.url = 'http://vercomicsporno.com';
-        this.path = '/page';
+        this.url = 'https://vercomicsporno.com';
+
+        this.path = '/page/';
         this.queryMangas = '#posts .gallery > a';
         this.pager = 'ul.pagination li:last-of-type a';
         this.listPages = '#posts source.lazy:not(:last-child)';
@@ -23,7 +24,7 @@ export default class VerComicsPorno extends Connector {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.href.split('/')[3].replace(/(-)/g,' ')
             };
-        }).filter(manga => manga.id.startsWith('/'));
+        });
     }
 
     async _getMangas() {
@@ -49,9 +50,6 @@ export default class VerComicsPorno extends Connector {
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, this.listPages);
-        return data.map(element => {
-            return element.dataset['lazySrc'];
-        });
+        return data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element, request.url));
     }
-
 }
