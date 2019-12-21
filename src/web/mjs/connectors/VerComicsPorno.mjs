@@ -7,7 +7,8 @@ export default class VerComicsPorno extends Connector {
         super.id = 'vercomicsporno';
         super.label = 'VerComicsPorno';
         this.tags = ['porn' ,'spanish'];
-        this.url = 'http://vercomicsporno.com';
+        this.url = 'https://vercomicsporno.com';
+
         this.path = '/page';
         this.queryMangas = '#posts .gallery > a';
         this.pager = 'ul.pagination li:last-of-type a';
