@@ -1,9 +1,5 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- * @author Neogeek
- * Affiliates: MangaKakalot, MangaBat (prev. MangaSupa), MangaIro
- */
 export default class MangaNel extends Connector {
 
     constructor() {
@@ -13,106 +9,53 @@ export default class MangaNel extends Connector {
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manganelo.com';
 
-        this.path = '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=';
-        this.queryMangasPageCount = 'div.group_page a.page_last:last-of-type';
-        this.queryMangas = 'div.truyen-list h3 a';
-        this.queryChapters = 'div.chapter-list div.row span a';
-        this.queryPages = 'div#vungdoc source, div.vung-doc source, div.vung_doc source';
+        this.path = '/genre-all/';
+        this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
+        this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
+        this.queryChapters = 'ul.row-content-chapter li a.chapter-name';
+        this.queryPages = 'div.container-chapter-reader source';
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(this.url + this.path + '1', this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangasPageCount);
+        let pageCount = parseInt(data[0].href.match(/\d+$/));
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], this.queryMangas, 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } ).filter(manga => manga.id.startsWith('/'));
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + this.path + '1', this.queryMangasPageCount )
-            .then( data => {
-                let pageCount = parseInt( data[0].href.match( /\d+$/ ) );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + this.path + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let request = new Request(this.url + this.path + page, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangas);
+        return data.map(element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim()
+            };
+        }).filter(manga => manga.id.startsWith('/'));
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
-        let uri = new URL( manga.id, this.url ).href; // ( manga.id.startsWith( 'http' ) ? '' : this.url ) + manga.id;
-        fetch( uri, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let redirect = data.match( /window.location.assign\(\s*['"]([^'"]+)['"]\s*\)/ );
-                return this.fetchDOM( this.id !== 'manganel' && redirect ? redirect[1] : uri, this.queryChapters );
-            } )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim(),
-                        language: 'en'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
+        return data.map(element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.replace(manga.title, '').trim(),
+                language: ''
+            };
+        }).filter(chapter => chapter.id.startsWith('/'));
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        // is this a cross reference from any of MangaNel's descandants (e.g. MangaKakalot) to MangaNel?
-        let uri = new URL( chapter.id, this.url ).href; // ( chapter.id.startsWith( 'http' ) ? '' : this.url ) + chapter.id;
-        this.fetchDOM( uri, this.queryPages )
-            .then( data => {
-                let pageList = data.map( element => element.src );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element, request.url));
     }
 }
