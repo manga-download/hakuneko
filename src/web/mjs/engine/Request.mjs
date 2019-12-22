@@ -111,17 +111,21 @@ export default class Request {
      * The browser window of electron does not support request objects,
      * so it is required to convert the request to supported options.
      */
-    _extractRequestOptions( /*request*/ ) {
+    _extractRequestOptions(request) {
         /*let referer = request.headers.get( 'x-referer' );*/
-        /*let headers = [];*/
-        /*headers = headers.join( '\n' );*/
+        let cookie = request.headers.get('x-cookie');
+        let headers = [];
+        if(cookie) {
+            headers.push('x-cookie: ' + cookie);
+        }
+        headers = headers.join( '\n' );
         return {
             /*
              *httpReferrer: referer ? referer : undefined,
              *userAgent: undefined,
-             *extraHeaders: headers ? headers : undefined,
              *postData: undefined,
              */
+            extraHeaders: headers ? headers : undefined,
         };
     }
 
