@@ -8,23 +8,15 @@ export default class SinMH extends Connector {
         super.id = undefined;
         super.label = undefined;
         this.url = undefined;
-        this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-cookie', 'isAdult=1');
 
         this.api = 'SinMH';
-        //this.api = 'SMH';
         this.path = '/list/';
-        //this.path = '/list/';
         this.pathMatch = '/list_(\\d+)/';
-        //this.pathMatch = '/list/index_p(\\d+).html';
         this.queryManga = 'div.book-cont div.book-detail div.book-title h1';
-        //this.queryManga = 'div.book-cont div.book-detail div.book-title h1';
         this.queryMangasPageCount = 'div.page-container ul.pagination li.last a';
-        //this.queryMangasPageCount = 'div.pager-cont div.pager a:last-of-type';
         this.queryMangas = 'ul#contList li p.ell a';
-        //this.queryMangas = 'ul#contList li p.ell a';
         this.queryChapters = 'div.comic-chapters ul li a';
-        //this.queryChapters = 'div.chapter-list ul li a';
     }
 
     async _getMangaFromURI(uri) {
