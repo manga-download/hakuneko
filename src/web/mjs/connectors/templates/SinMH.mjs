@@ -40,8 +40,6 @@ export default class SinMH extends Connector {
         let request = new Request(this.url + this.path, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
         let pageCount = parseInt(new RegExp(this.pathMatch).exec(data[0].href)[1]);
-        console.log('Pages:', pageCount);
-        pageCount = 13;
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
