@@ -70,7 +70,9 @@ export default class MangaArab extends Connector {
      *
      */
     _getChapterList(manga, callback) {
-        this.fetchDOM(this.url + manga.id, 'div.indexcontainer ul.new-manga-chapters li a.chapter')
+        console.log(this.url + manga.id);
+        console.log(manga.id);
+        this.fetchDOM(manga.id, 'div.indexcontainer ul.new-manga-chapters li a.chapter')
             .then(data => {
                 let chapterList = data.map(element => {
                     return {
@@ -91,7 +93,7 @@ export default class MangaArab extends Connector {
      *
      */
     _getPageList(manga, chapter, callback) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let request = new Request(chapter.id, this.requestOptions);
         this.fetchDOM(request, 'div#showchaptercontainer source')
             .then(data => {
                 let pageList = data.map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
