@@ -7,7 +7,7 @@ export default class MangaCanBlog extends Connector {
         super.id = 'mangacanblog';
         super.label = 'MangaCan Blog';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'http://www.mangacanblog.com';
+        this.url = 'https://mangacanblog.com';
     }
 
     /**
