@@ -4,8 +4,8 @@ export default class Mangakyu extends WordPressEManga {
 
     constructor() {
         super();
-        super.id = 'mangakyu';
-        super.label = 'Mangakyu';
+        super.id = 'mangakyo';
+        super.label = 'Mangakyo';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
         this.url = 'https://www.mangakyo.com';
         this.path = '/daftar-manga/?list';
