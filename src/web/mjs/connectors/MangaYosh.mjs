@@ -25,6 +25,9 @@ export default class MangaYosh extends WordPressMadara {
         if(uri.searchParams.get('u')) {
             return this._decryptChapterID(uri.searchParams.get('u'));
         }
+        if(uri.origin.endsWith('.tranivson.me')) {
+            return uri.pathname + uri.search;
+        }
         return this.getRootRelativeOrAbsoluteLink(chapterID.replace(this.oldURL, this.url), this.url);
     }
 }
