@@ -1,24 +1,15 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class MangaArab extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangaarab';
         super.label = 'مانجا العرب (Manga Al-arab)';
         this.tags = ['manga', 'arabic'];
-        this.url = 'https://www.mangaae.com';
+        this.url = 'https://mangaae.com';
     }
 
-    /**
-     *
-     */
     _getMangaListFromPages(mangaPageLinks, index) {
         if (index === undefined) {
             index = 0;
@@ -47,9 +38,6 @@ export default class MangaArab extends Connector {
             });
     }
 
-    /**
-     *
-     */
     _getMangaList(callback) {
         this.fetchDOM(this.url + '/manga', 'div.pagination a:last-of-type')
             .then(data => {
@@ -66,9 +54,6 @@ export default class MangaArab extends Connector {
             });
     }
 
-    /**
-     *
-     */
     _getChapterList(manga, callback) {
         this.fetchDOM(this.url + manga.id, 'div.indexcontainer ul.new-manga-chapters li a.chapter')
             .then(data => {
@@ -87,9 +72,6 @@ export default class MangaArab extends Connector {
             });
     }
 
-    /**
-     *
-     */
     _getPageList(manga, chapter, callback) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         this.fetchDOM(request, 'div#showchaptercontainer source')
@@ -103,9 +85,6 @@ export default class MangaArab extends Connector {
             });
     }
 
-    /**
-     *
-     */
     _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
