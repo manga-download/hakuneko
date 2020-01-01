@@ -54,7 +54,7 @@ export default class WordPressEManga extends Connector {
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element, request.url))
+        return data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element.dataset['src'] || element, request.url))
             .filter(link => !link.includes('histats.com'));
     }
 }
