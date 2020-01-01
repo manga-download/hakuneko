@@ -45,6 +45,6 @@ export default class ManhuaID extends Connector {
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.container div.row source.img-fluid');
-        return data.map(element => this.getAbsolutePath(element, request.url));
+        return data.map(element => this.getAbsolutePath(element.dataset.src || element, request.url));
     }
 }
