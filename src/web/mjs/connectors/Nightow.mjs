@@ -66,21 +66,10 @@ export default class Nightow extends Connector {
      *
      */
     _getPageList( manga, chapter, callback ) {
-        fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        Engine.Request.fetchUI(request, `new Promise(resolve => resolve(imageArray));`)
             .then( data => {
-                let pageList = [];
-                let match = undefined;
-                let regex = new RegExp( /imageArray\s*\[\s*\d+\s*\]\s*=\s*'(.*)'\s*;/g);
-                // eslint-disable-next-line no-cond-assign
-                while( match = regex.exec( data ) ) {
-                    pageList.push( this.url + match[1] );
-                }
+                let pageList = data.map(link => this.getAbsolutePath(link, this.url));
                 callback( null, pageList );
             } )
             .catch( error => {
