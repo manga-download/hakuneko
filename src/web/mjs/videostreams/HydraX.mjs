@@ -40,6 +40,9 @@ export default class HydraX {
             })
         });
         let response = await fetch(request);
+        if(response.status !== 200) {
+            throw new Error('Failed to get redirect URL for stream packet!');
+        }
         let data = await response.json();
         return atob(data.url);
     }
@@ -83,6 +86,9 @@ export default class HydraX {
         });
         let response = await fetch(request);
         let data = await response.json();
+        if(data.msg) {
+            throw new Error(data.msg);
+        }
         let stream = this._getStream(data, resolution);
         let playlist = this.fa(stream, data.servers);
         playlist = this._setupEncryptionKey(stream, playlist);
