@@ -66,16 +66,9 @@ export default class EGScans extends Connector {
      */
     _getPageList( manga, chapter, callback ) {
         let request = new Request( this.url + chapter.id + '/', this.requestOptions );
-        fetch( request )
-            .then( response => response.text() )
+        this.fetchRegex(request, /img_url\.push\s*\(\s*['"](.+)['"]\s*\)/g)
             .then( data => {
-                let pageList = [];
-                let match = undefined;
-                let regex = new RegExp( /img_url\.push\s*\(\s*['"](.+)['"]\s*\)/g );
-                // eslint-disable-next-line no-cond-assign
-                while( match = regex.exec( data ) ) {
-                    pageList.push( this.getAbsolutePath( match[1], this.url ) );
-                }
+                let pageList = data.map(link => this.getAbsolutePath(link, this.url));
                 callback( null, pageList );
             } )
             .catch( error => {
