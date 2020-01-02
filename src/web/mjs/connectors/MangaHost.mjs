@@ -85,17 +85,10 @@ export default class MangaHost extends Connector {
      *
      */
     _getPageList( manga, chapter, callback ) {
-        fetch( this.url + chapter.id, this.requestOptions )
-            .then( response => response.text() )
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        this.fetchRegex(request, /<img\s+id='img_\d+'\s+src='(.*?)'/g)
             .then( data => {
-                let pageList = [];
-                let match = undefined;
-                let regex = new RegExp( /<img\s+id='img_\d+'\s+src='(.*?)'/g);
-                // eslint-disable-next-line no-cond-assign
-                while( match = regex.exec( data ) ) {
-                    pageList.push( match[1] );
-                }
-                callback( null, pageList );
+                callback( null, data );
             } )
             .catch( error => {
                 console.error( error, chapter );
