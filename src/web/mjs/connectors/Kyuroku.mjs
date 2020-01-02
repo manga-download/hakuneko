@@ -19,15 +19,8 @@ export default class Kyuroku extends WordPressEManga {
             let request = new Request(this.url + chapter.id, this.requestOptions);
             let data = await this.fetchDOM(request, 'script[src*="/wp-content/cache"][data-minify="1"]');
             request = new Request(this.getAbsolutePath(data[0], this.url), this.requestOptions);
-            let response = await fetch(request);
-            data = await response.text();
-            let pageList = [];
-            let match = undefined;
-            let regex = new RegExp(/['"]postimg__\d+['"][,\s]+['"]([^'"]+)['"]/g);
-            // eslint-disable-next-line no-cond-assign
-            while(match = regex.exec(data)) {
-                pageList.push(this.getAbsolutePath(atob(match[1]), this.url));
-            }
+            data = await this.fetchRegex(request, /['"]postimg__\d+['"][,\s]+['"]([^'"]+)['"]/g);
+            let pageList = data.map(link => this.getAbsolutePath(atob(link), this.url));
             callback(null, pageList);
         } catch(error) {
             console.error(error, chapter);
