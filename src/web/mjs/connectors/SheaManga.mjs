@@ -43,7 +43,16 @@ export default class SheaManga extends Connector {
     }
 
     async _getPages(chapter) {
+        let script = `
+            new Promise(resolve => {
+                if(pages && pages.length) {
+                    resolve(pages);
+                } else {
+                    resolve([...document.querySelectorAll('div.entry-content div.separator img')].map(img => img.src));
+                }
+            });
+        `;
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        return await Engine.Request.fetchUI(request, `new Promise(resolve => resolve(pages))`);
+        return await Engine.Request.fetchUI(request, script);
     }
 }
