@@ -1,13 +1,8 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MangaCross extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangacross';
@@ -16,63 +11,41 @@ export default class MangaCross extends Connector {
         this.url = 'https://mangacross.jp';
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/api/comics.json', this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                let mangaList = data.comics.map( element => {
-                    return {
-                        id: element.dir_name,
-                        title: element.title.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'head title');
+        let id = uri.pathname.split('/').pop();
+        let title = data[0].textContent.split('|')[0].trim();
+        return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + '/api/comics/' + manga.id + '/1.json', this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                // Is there a way to access the "private" chapters ? Logging in didn't change anything...
-                let chapterList = data.comic.episodes.filter( element => element.status == 'public' ).map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element.page_url, request.url ),
-                        title: element.volume.trim(),
-                        language: 'jp'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let request = new Request(new URL('/api/comics.json', this.url), this.requestOptions);
+        let data = await this.fetchJSON(request);
+        return data.comics.map(comic => {
+            return {
+                id: comic.dir_name,
+                title: comic.title.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id + '/viewer.json', this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                let pageList = data.episode_pages.map( element => this.getAbsolutePath( element.image.pc_url, request.url ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL('/api/comics/' + manga.id + '.json', this.url), this.requestOptions);
+        let data = await this.fetchJSON(request);
+        // Is there a way to access the "private" chapters ? Logging in didn't change anything...
+        return data.episodes.filter(episode => episode.status == 'public').map(episode => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(episode.page_url, this.url),
+                title: episode.volume.trim(),
+                language: ''
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id + '/viewer.json', this.url), this.requestOptions);
+        let data = await this.fetchJSON(request);
+        return data.episode_pages.map(page => this.getAbsolutePath(page.image.pc_url, this.url));
     }
 }
