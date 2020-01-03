@@ -19,14 +19,30 @@ export default class NewType extends Connector {
         return new Manga(this, id, title);
     }
 
+    async _fetchJsonDOM(request, page, query) {
+        let data = await this.fetchJSON(request);
+        if(data.next !== page) {
+            let blobURL = URL.createObjectURL(new Blob([data.html], { type: 'text/html' }));
+            data = await this.fetchDOM(new Request(blobURL, this.requestOptions), query);
+            URL.revokeObjectURL(blobURL);
+        } else {
+            data = [];
+        }
+        return data;
+    }
+
     async _getMangas() {
-        /*
-         * Cookie: contents_list_pg=1000
-         * https://comic.webnewtype.com/contents/all/
-         * https://comic.webnewtype.com/contents/all/more/1/
-         */
-        let request = new Request(new URL('/contents/all/', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul#worksPanel li a div.OblongCard-content h3.OblongCard-title');
+        let mangaList = [];
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        let request = new Request(new URL(`/contents/all/more/${page}/`, this.url), this.requestOptions);
+        let data = await this._fetchJsonDOM(request, page, 'li a div.OblongCard-content h3.OblongCard-title');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.closest('a'), request.url),
@@ -36,12 +52,17 @@ export default class NewType extends Connector {
     }
 
     async _getChapters(manga) {
-        /*
-         * https://comic.webnewtype.com/contents/k_pandora/
-         * https://comic.webnewtype.com/contents/k_pandora/more/1/
-         */
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul#episodeList li a div.description');
+        let chapterList = [];
+        for(let page = 1, run = true; run; page++) {
+            let chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(manga, page) {
+        let request = new Request(new URL(`${manga.id}/more/${page}/`, this.url), this.requestOptions);
+        let data = await this._fetchJsonDOM(request, page, 'li a div.description');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.closest('a'), request.url),
