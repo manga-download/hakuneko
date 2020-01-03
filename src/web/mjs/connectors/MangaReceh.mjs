@@ -6,7 +6,9 @@ export default class MangaReceh extends WordPressMadara {
         super();
         super.id = 'mangareceh';
         super.label = 'Mangareceh';
-        this.tags = [ 'webtoon', 'indonesian' ];
+        this.tags = [ 'manga', 'webtoon', 'indonesian' ];
         this.url = 'https://mangareceh.id';
+
+        this.queryChapters = 'li.wp-manga-chapter > a:first-of-type';
     }
 }
