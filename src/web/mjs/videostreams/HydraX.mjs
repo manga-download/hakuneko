@@ -49,6 +49,7 @@ export default class HydraX {
 
     async _replaceRedirectLinks(playlist) {
         let redirects = [... new Set(playlist.split('\n').filter(line => line.startsWith('http')))];
+        // TODO: maybe spamming requests leads to many 404 errors?
         redirects = await Promise.all(redirects.map(async redirect => {
             return {
                 source: redirect,
