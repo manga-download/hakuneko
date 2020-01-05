@@ -9,59 +9,39 @@ export default class Hitomi extends Connector {
         super.label = 'Hitomi';
         this.tags = [ 'hentai', 'english' ];
         this.url = 'https://hitomi.la';
-        this.requestOptions.headers.set( 'x-referer', this.url );
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
-        if(uri.pathname.startsWith('/galleries')) {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.gallery h1 a', 3);
-            let id = uri.pathname.match(/(\d+)\.html$/)[1];
-            let title = data[0].text.trim();
-            return new Manga(this, id, title);
-        } else {
-            throw new Error('Only direct manga (gallery) links are supported by ' + this.label);
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.gallery h1 a', 3);
+        let id = uri.pathname.match(/(\d+)\.html$/)[1];
+        let title = data[0].text.trim();
+        return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
+    async _getMangas() {
         let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
-        callback( new Error( msg ), undefined );
+        throw new Error(msg);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        try {
-            let chapterList = [ {
-                id: manga.id,
-                title: manga.title,
-                language: ''
-            } ];
-            callback( null, chapterList );
-        } catch( error ) {
-            console.error( error, manga );
-            callback( error, undefined );
-        }
+    async _getChapters(manga) {
+        return [ {
+            id: manga.id,
+            title: manga.title,
+            language: ''
+        } ];
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( `${ this.url }/reader/${ chapter.id }.html`, this.requestOptions );
-        Engine.Request.fetchUI( request, 'images' )
-            .then( data => {
-                let pageList = data.map( image => this.createConnectorURI( this.getAbsolutePath( image.path, request.url ) ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let script = `
+            new Promise(resolve =>{
+                let images = galleryinfo.map(info => url_from_url_from_hash(galleryid, info));
+                resolve(images);
+            });
+        `;
+        let request = new Request(`${this.url}/reader/${chapter.id}.html`, this.requestOptions);
+        let data = await Engine.Request.fetchUI(request, script);
+        return data.map(img => this.createConnectorURI(this.getAbsolutePath(img, request.url)));
     }
 }
