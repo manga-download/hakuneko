@@ -131,54 +131,54 @@ export default class Lezhin extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
+    async _getChapters(manga) {
+        await this._initializeAccount();
+        /*
         let purchased = [];
         let subscription = false;
-        this._initializeAccount()
-            .then( () => {
-                if( this.accessToken ) {
-                    let uri = new URL( [this.cdnURL, 'v2/contents', manga.id, 'users'].join( '/' ) );
-                    uri.searchParams.set( 'type', 'comic' );
-                    /*
-                     *uri.searchParams.set( 'country_code', 'us' );
-                     *uri.searchParams.set( '_', Date.now() );
-                     */
-                    this.requestOptions.headers.set( 'authorization', 'Bearer ' + this.accessToken );
-                    let promise = fetch( uri.href, this.requestOptions )
-                        .then( response => response.json() )
-                        .then( data => {
-                            purchased = data.data.purchased;
-                            subscription = data.data.subscribed;
-                            return Promise.resolve();
-                        } )
-                        .catch( () => Promise.resolve() );
-                    this.requestOptions.headers.delete( 'authorization' );
-                    return promise;
-                } else {
-                    return Promise.resolve();
-                }
-            } )
-            .then( () => fetch( this.url + '/comic/' + manga.id, this.requestOptions ) )
-            .then( response => response.text() )
-            .then( data => {
-                let chapterList = JSON.parse( data.match( /"episodes"\s*:\s*(\[.*?\}\s*\])/ )[1] )
-                    .filter( chapter => !chapter.coin || chapter.freedAt && chapter.freedAt < Date.now() || subscription || purchased.includes( chapter.id ) )
-                    .map( chapter => {
-                        return {
-                            id: chapter.name, // chapter.id,
-                            title: chapter.display.displayName + ' - ' + chapter.display.title,
-                            language: this.locale
-                        };
-                    } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+        if(this.accessToken) {
+            let uri = new URL(`${this.apiURL}/users/${this.userID}/contents/${mangaiD}`);
+            let request = new Request(uri, this.requestOptions);
+            request.headers.set('authorization', 'Bearer ' + this.accessToken);
+            let data = await this.fetchJSON(request);
+            purchased = data.data.purchased;
+            subscription = data.data.subscribed;
+        }
+        */
+        let script = `
+            new Promise((resolve, reject) => {
+                // wait until episodes have been updated with purchase info ...
+                setTimeout(() => {
+                    try {
+                        let chapters = __LZ_PRODUCT__.all // __LZ_PRODUCT__.product.episodes
+                        .filter(chapter => {
+                            if(chapter.purchased) {
+                                return true;
+                            }
+                            if(chapter.coin === 0) {
+                                return true;
+                            }
+                            if(chapter.freedAt && chapter.freedAt < Date.now()) {
+                                return true;
+                            }
+                            return false;
+                        })
+                        .map(chapter => {
+                            return {
+                                id: chapter.name, // chapter.id,
+                                title: chapter.display.displayName + ' - ' + chapter.display.title,
+                                language: '${this.locale}'
+                            };
+                        });
+                        resolve(chapters);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
+        `;
+        let request = new Request(new URL('/comic/' + manga.id, this.url), this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 
     /**
