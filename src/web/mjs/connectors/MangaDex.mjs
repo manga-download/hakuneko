@@ -16,7 +16,7 @@ export default class MangaDex extends Connector {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecuitive requests.',
                 input: 'numeric',
-                min: 1000,
+                min: 500,
                 max: 5000,
                 value: 2500
             }
@@ -34,6 +34,7 @@ export default class MangaDex extends Connector {
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
+            await this.wait(this.config.throttle.value);
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
