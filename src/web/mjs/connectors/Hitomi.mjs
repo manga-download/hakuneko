@@ -9,7 +9,7 @@ export default class Hitomi extends Connector {
         super.label = 'Hitomi';
         this.tags = [ 'hentai', 'english' ];
         this.url = 'https://hitomi.la';
-        this.requestOptions.headers.set( 'x-referer', this.url );
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
@@ -34,8 +34,14 @@ export default class Hitomi extends Connector {
     }
 
     async _getPages(chapter) {
+        let script = `
+            new Promise(resolve =>{
+                let images = galleryinfo.map(info => url_from_url_from_hash(galleryid, info));
+                resolve(images);
+            });
+        `;
         let request = new Request(`${this.url}/reader/${chapter.id}.html`, this.requestOptions);
-        let data = await Engine.Request.fetchUI(request, `images`);
-        return data.map(image => this.createConnectorURI(this.getAbsolutePath(image.path, request.url)));
+        let data = await Engine.Request.fetchUI(request, script);
+        return data.map(img => this.createConnectorURI(this.getAbsolutePath(img, request.url)));
     }
 }
