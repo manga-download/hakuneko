@@ -13,28 +13,18 @@ export default class Hitomi extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        if(uri.pathname.startsWith('/galleries')) {
-            let request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.gallery h1 a', 3);
-            let id = uri.pathname.match(/(\d+)\.html$/)[1];
-            let title = data[0].text.trim();
-            return new Manga(this, id, title);
-        } else {
-            throw new Error('Only direct manga (gallery) links are supported by ' + this.label);
-        }
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.gallery h1 a', 3);
+        let id = uri.pathname.match(/(\d+)\.html$/)[1];
+        let title = data[0].text.trim();
+        return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
         callback( new Error( msg ), undefined );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         try {
             let chapterList = [ {
@@ -49,9 +39,6 @@ export default class Hitomi extends Connector {
         }
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         let request = new Request( `${ this.url }/reader/${ chapter.id }.html`, this.requestOptions );
         Engine.Request.fetchUI( request, 'images' )
