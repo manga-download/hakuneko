@@ -37,7 +37,6 @@ export default class Settings extends EventTarget {
     // TODO: use dependency injection instead of globals for Engine.Storage, Engine.Conenctors
     constructor() {
         super();
-        let isPortable = false;
         let app = require( 'electron' ).remote.app;
         let path = require( 'path' );
         let docs = undefined;
@@ -83,7 +82,7 @@ export default class Settings extends EventTarget {
                 'The directory where the bookmark and chaptermark files will be stored.',
                 'This setting has no effect when the application is in portable mode!'
             ].join('\n'),
-            input: isPortable ? types.disabled : types.directory,
+            input: process.env.PORTABLE ? types.disabled : types.directory,
             value: app.getPath( 'userData' )
         };
 
@@ -260,7 +259,8 @@ export default class Settings extends EventTarget {
                 if(data
                     && data[key] !== undefined
                     && this[key]
-                    && this[key].input)
+                    && this[key].input
+                    && this[key].input !== types.disabled)
                 {
                     this[key].value = this._getDecryptedValue(this[key].input, data[key]);
                     this[key].value = this._getValidValue('General', this[key]);
@@ -292,7 +292,7 @@ export default class Settings extends EventTarget {
             let data = {};
             // gather general settings
             for(let key in this) {
-                if(this[key] && this[key].input) {
+                if(this[key] && this[key].input && this[key].input !== types.disabled) {
                     data[key] = this._getEncryptedValue(this[key].input, this[key].value);
                 }
             }
