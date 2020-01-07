@@ -205,38 +205,38 @@ class WeComics_Vendor {
             for (var n = new Array(e), r = 0, i = 0, o = t.length; r < e && i < o; r++) {
                 var a = t.charCodeAt(i++);
                 switch (a >> 4) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    n[r] = a;
-                    break;
-                case 12:
-                case 13:
-                    if (!(i < o))
-                        throw new Error("Unfinished UTF-8 octet sequence");
-                    n[r] = (31 & a) << 6 | 63 & t.charCodeAt(i++);
-                    break;
-                case 14:
-                    if (!(i + 1 < o))
-                        throw new Error("Unfinished UTF-8 octet sequence");
-                    n[r] = (15 & a) << 12 | (63 & t.charCodeAt(i++)) << 6 | 63 & t.charCodeAt(i++);
-                    break;
-                case 15:
-                    if (!(i + 2 < o))
-                        throw new Error("Unfinished UTF-8 octet sequence");
-                    var s = ((7 & a) << 18 | (63 & t.charCodeAt(i++)) << 12 | (63 & t.charCodeAt(i++)) << 6 | 63 & t.charCodeAt(i++)) - 65536;
-                    if (!(0 <= s && s <= 1048575))
-                        throw new Error("Character outside valid Unicode range: 0x" + s.toString(16));
-                    n[r++] = s >> 10 & 1023 | 55296,
-                    n[r] = 1023 & s | 56320;
-                    break;
-                default:
-                    throw new Error("Bad UTF-8 encoding 0x" + a.toString(16));
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                        n[r] = a;
+                        break;
+                    case 12:
+                    case 13:
+                        if (!(i < o))
+                            throw new Error("Unfinished UTF-8 octet sequence");
+                        n[r] = (31 & a) << 6 | 63 & t.charCodeAt(i++);
+                        break;
+                    case 14:
+                        if (!(i + 1 < o))
+                            throw new Error("Unfinished UTF-8 octet sequence");
+                        n[r] = (15 & a) << 12 | (63 & t.charCodeAt(i++)) << 6 | 63 & t.charCodeAt(i++);
+                        break;
+                    case 15:
+                        if (!(i + 2 < o))
+                            throw new Error("Unfinished UTF-8 octet sequence");
+                        var s = ((7 & a) << 18 | (63 & t.charCodeAt(i++)) << 12 | (63 & t.charCodeAt(i++)) << 6 | 63 & t.charCodeAt(i++)) - 65536;
+                        if (!(0 <= s && s <= 1048575))
+                            throw new Error("Character outside valid Unicode range: 0x" + s.toString(16));
+                        n[r++] = s >> 10 & 1023 | 55296,
+                        n[r] = 1023 & s | 56320;
+                        break;
+                    default:
+                        throw new Error("Bad UTF-8 encoding 0x" + a.toString(16));
                 }
             }
             return r < e && (n.length = r),
@@ -245,38 +245,38 @@ class WeComics_Vendor {
             for (var n = [], r = new Array(32768), i = 0, o = 0, a = t.length; i < e && o < a; i++) {
                 var s = t.charCodeAt(o++);
                 switch (s >> 4) {
-                case 0:
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                case 6:
-                case 7:
-                    r[i] = s;
-                    break;
-                case 12:
-                case 13:
-                    if (!(o < a))
-                        throw new Error("Unfinished UTF-8 octet sequence");
-                    r[i] = (31 & s) << 6 | 63 & t.charCodeAt(o++);
-                    break;
-                case 14:
-                    if (!(o + 1 < a))
-                        throw new Error("Unfinished UTF-8 octet sequence");
-                    r[i] = (15 & s) << 12 | (63 & t.charCodeAt(o++)) << 6 | 63 & t.charCodeAt(o++);
-                    break;
-                case 15:
-                    if (!(o + 2 < a))
-                        throw new Error("Unfinished UTF-8 octet sequence");
-                    var c = ((7 & s) << 18 | (63 & t.charCodeAt(o++)) << 12 | (63 & t.charCodeAt(o++)) << 6 | 63 & t.charCodeAt(o++)) - 65536;
-                    if (!(0 <= c && c <= 1048575))
-                        throw new Error("Character outside valid Unicode range: 0x" + c.toString(16));
-                    r[i++] = c >> 10 & 1023 | 55296,
-                    r[i] = 1023 & c | 56320;
-                    break;
-                default:
-                    throw new Error("Bad UTF-8 encoding 0x" + s.toString(16));
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 5:
+                    case 6:
+                    case 7:
+                        r[i] = s;
+                        break;
+                    case 12:
+                    case 13:
+                        if (!(o < a))
+                            throw new Error("Unfinished UTF-8 octet sequence");
+                        r[i] = (31 & s) << 6 | 63 & t.charCodeAt(o++);
+                        break;
+                    case 14:
+                        if (!(o + 1 < a))
+                            throw new Error("Unfinished UTF-8 octet sequence");
+                        r[i] = (15 & s) << 12 | (63 & t.charCodeAt(o++)) << 6 | 63 & t.charCodeAt(o++);
+                        break;
+                    case 15:
+                        if (!(o + 2 < a))
+                            throw new Error("Unfinished UTF-8 octet sequence");
+                        var c = ((7 & s) << 18 | (63 & t.charCodeAt(o++)) << 12 | (63 & t.charCodeAt(o++)) << 6 | 63 & t.charCodeAt(o++)) - 65536;
+                        if (!(0 <= c && c <= 1048575))
+                            throw new Error("Character outside valid Unicode range: 0x" + c.toString(16));
+                        r[i++] = c >> 10 & 1023 | 55296,
+                        r[i] = 1023 & c | 56320;
+                        break;
+                    default:
+                        throw new Error("Bad UTF-8 encoding 0x" + s.toString(16));
                 }
                 if (i >= 32766) {
                     var u = i + 1;

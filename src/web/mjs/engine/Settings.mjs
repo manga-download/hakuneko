@@ -340,27 +340,27 @@ export default class Settings extends EventTarget {
     _getValidValue(scope, setting, silent) {
         let value = setting.value;
         switch(setting.input) {
-        case types.numeric:
-            if(setting.min !== undefined && value < setting.min) {
-                return setting.min;
-            }
-            if(setting.max !== undefined && value > setting.max) {
-                return setting.max;
-            }
-            return value;
-        case types.directory:
-            Engine.Storage.directoryExist(value)
-                .catch(error => {
-                    let message = `WARNING: Cannot access the directory for "${setting.label}" from "${scope}" settings!\n\n${error.message}`;
-                    if(silent) {
-                        console.warn(message, error);
-                    } else {
-                        alert(message);
-                    }
-                });
-            return value;
-        default:
-            return value;
+            case types.numeric:
+                if(setting.min !== undefined && value < setting.min) {
+                    return setting.min;
+                }
+                if(setting.max !== undefined && value > setting.max) {
+                    return setting.max;
+                }
+                return value;
+            case types.directory:
+                Engine.Storage.directoryExist(value)
+                    .catch(error => {
+                        let message = `WARNING: Cannot access the directory for "${setting.label}" from "${scope}" settings!\n\n${error.message}`;
+                        if(silent) {
+                            console.warn(message, error);
+                        } else {
+                            alert(message);
+                        }
+                    });
+                return value;
+            default:
+                return value;
         }
     }
 }

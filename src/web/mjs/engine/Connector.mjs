@@ -344,32 +344,32 @@ export default class Connector {
     getAbsolutePath( reference, base ) {
         let baseURI;
         switch( true ) {
-        case base instanceof URL:
-            baseURI = base;
-            break;
-        case typeof base === 'string':
-            baseURI = new URL( base );
-            break;
-        default:
-            throw new Error( 'Failed to extract relative link (parameter "base" is invalid)!' );
+            case base instanceof URL:
+                baseURI = base;
+                break;
+            case typeof base === 'string':
+                baseURI = new URL( base );
+                break;
+            default:
+                throw new Error( 'Failed to extract relative link (parameter "base" is invalid)!' );
         }
 
         let refURI;
         switch( true ) {
-        case reference instanceof URL:
-            refURI = reference;
-            break;
-        case typeof reference === 'string':
-            refURI = new URL( reference, baseURI.href );
-            break;
-        case reference['src'] !== undefined:
-            refURI = new URL( reference.getAttribute( 'src' ), baseURI.href );
-            break;
-        case reference['href'] !== undefined:
-            refURI = new URL( reference.getAttribute( 'href' ), baseURI.href );
-            break;
-        default:
-            throw new Error( 'Failed to extract relative link (parameter "reference" is invalid)!' );
+            case reference instanceof URL:
+                refURI = reference;
+                break;
+            case typeof reference === 'string':
+                refURI = new URL( reference, baseURI.href );
+                break;
+            case reference['src'] !== undefined:
+                refURI = new URL( reference.getAttribute( 'src' ), baseURI.href );
+                break;
+            case reference['href'] !== undefined:
+                refURI = new URL( reference.getAttribute( 'href' ), baseURI.href );
+                break;
+            default:
+                throw new Error( 'Failed to extract relative link (parameter "reference" is invalid)!' );
         }
 
         return refURI.href;

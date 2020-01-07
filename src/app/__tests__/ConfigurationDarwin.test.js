@@ -11,10 +11,10 @@ jest.mock('electron', () => {
             getAppPath: jest.fn(() => '/usr/bin'),
             getPath: jest.fn(type => {
                 switch(type) {
-                case 'exe': return '/usr/bin/hakuneko';
-                case 'userData': return path.resolve(process.env.HOME, 'Library', 'Application Support', 'HakuNeko');
-                case 'userCache': return path.resolve(process.env.HOME, 'Library', 'Caches', 'HakuNeko');
-                default: return undefined;
+                    case 'exe': return '/usr/bin/hakuneko';
+                    case 'userData': return path.resolve(process.env.HOME, 'Library', 'Application Support', 'HakuNeko');
+                    case 'userCache': return path.resolve(process.env.HOME, 'Library', 'Caches', 'HakuNeko');
+                    default: return undefined;
                 }
             }),
             getName: jest.fn(() => 'HakuNeko')

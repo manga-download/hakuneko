@@ -61,22 +61,22 @@ export default class Publus extends Connector {
         let request = new Request(payload.imageUrl, this.requestOptions);
         let response = await fetch(request);
         switch (payload.mode) {
-        case 'puzzle': {
-            let data = await response.blob();
-            data = await this._descrambleImage(data, payload.encryptionKey);
-            return this._blobToBuffer(data);
-        }
-        case 'xor': {
-            let data = await response.arrayBuffer();
-            return {
-                mimeType: 'image/png', // response.headers.get('content-type'),
-                data: await this._decryptXOR(data, payload.encryptionKey)
-            };
-        }
-        default: {
-            let data = await response.blob();
-            return this._blobToBuffer(data);
-        }
+            case 'puzzle': {
+                let data = await response.blob();
+                data = await this._descrambleImage(data, payload.encryptionKey);
+                return this._blobToBuffer(data);
+            }
+            case 'xor': {
+                let data = await response.arrayBuffer();
+                return {
+                    mimeType: 'image/png', // response.headers.get('content-type'),
+                    data: await this._decryptXOR(data, payload.encryptionKey)
+                };
+            }
+            default: {
+                let data = await response.blob();
+                return this._blobToBuffer(data);
+            }
         }
     }
 
