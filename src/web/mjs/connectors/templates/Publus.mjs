@@ -29,7 +29,7 @@ export default class Publus extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(async () => {
                     try {
-                        if(NFBR) {
+                        if(this.NFBR) {
                             let pageList = Object.keys(NFBR.a6G.a6L.cache.data_).map(key => {
                                 let url = NFBR.a6G.a6L.cache.get(key).getUrl();
                                 let file = url.match(/item.*\\d+/)[0];
@@ -86,7 +86,6 @@ export default class Publus extends Connector {
      *****************************
      */
 
-    /*
     _decryptXOR(encrypted, key) {
         if (key) {
             let t = new Uint8Array(key.match(/.{1,2}/g).map(e => parseInt(e, 16)));
@@ -100,7 +99,6 @@ export default class Publus extends Connector {
             return encrypted;
         }
     }
-    */
 
     async _descrambleImage(scrambled, key) {
         let bitmap = await createImageBitmap(scrambled);
