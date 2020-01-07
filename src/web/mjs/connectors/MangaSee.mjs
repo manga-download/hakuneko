@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 
+// Very similar visual to MangaLife (newer viewer)
 export default class MangaSee extends Connector {
 
     constructor() {
@@ -15,7 +16,7 @@ export default class MangaSee extends Connector {
         let data = await this.fetchDOM(request, '#content p a');
         return data.map(element => {
             return {
-                id: this.getRelativeLink(element),
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.trim()
             };
         });
@@ -27,7 +28,7 @@ export default class MangaSee extends Connector {
         return data.map(element => {
             let title = element.querySelector('span.chapterLabel').textContent;
             return {
-                id: this.getRelativeLink(element).replace(/-page-\d+/, ''),
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url).replace(/-page-\d+/, ''),
                 title: title.replace(manga.title, '').trim(),
                 language: 'en'
             };
