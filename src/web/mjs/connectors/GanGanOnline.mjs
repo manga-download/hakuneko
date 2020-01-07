@@ -1,24 +1,32 @@
 import Publus from './templates/Publus.mjs';
 
-/**
- *
- */
 export default class GanGanOnline extends Publus {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'ganganonline';
         super.label = 'ガンガンONLINE (Gangan Online)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.ganganonline.com';
+
+        this.customerScriptPart = `
+            if(document.querySelector('script[src*="GanGanOnline_WebViewer"]')) {
+                let chapterID = new URL(window.location).searchParams.get('chapterId');
+                let response = await fetch('https://web-ggo.tokyo-cdn.com/web_manga_data?chapter_id=' + chapterID, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/octet-stream'
+                    }
+                });
+                let data = await response.arrayBuffer();
+                let pageList = parcelRequire.cache.KC6V.exports.Proto.Response.decode(new Uint8Array(data)).success.webMangaViewer.pages;
+                pageList = pageList.filter(page => page.image && !page.image.imageUrl.includes('extra_manga_page'));
+                pageList = pageList.map(page => Object.assign(page.image/*.linkImage*/, { mode: page.image.encryptionKey ? 'xor' : 'raw' }));
+                return resolve(pageList);
+            }
+        `;
     }
 
-    /**
-     *
-     */
     _getMangaListFromPage( link, queryLink, queryTitle ) {
         return this.fetchDOM( link, queryLink, 5 )
             .then( data => {
@@ -32,9 +40,6 @@ export default class GanGanOnline extends Publus {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         let promises = [
             this._getMangaListFromPage( this.url + '/contents/', 'div#comicList ul li a.gn_link_cList', 'span.gn_cList_title' ),
@@ -56,9 +61,6 @@ export default class GanGanOnline extends Publus {
             } );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         fetch( this.url + manga.id, this.requestOptions )
             .then( response => response.text() )

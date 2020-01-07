@@ -88,12 +88,12 @@ export default class KissAnime extends Connector {
             .then( data => {
                 let link = data.match( /src\s*=\s*['"]([^'"]+hydrax[^'"]+)['"]/ )[1];
                 switch(true) {
-                case link.includes('hydrax'):
-                    return this._getEpisodeHydraX(link, this.config.resolution.value);
-                case link.includes( 'rapidvid' ):
-                    return this._getEpisodeRapidVideo( link, this.config.resolution.value );
-                default:
-                    throw new Error( 'Support for video stream from mirror "' + link + '" not implemented!' );
+                    case link.includes('hydrax'):
+                        return this._getEpisodeHydraX(link, this.config.resolution.value);
+                    case link.includes( 'rapidvid' ):
+                        return this._getEpisodeRapidVideo( link, this.config.resolution.value );
+                    default:
+                        throw new Error( 'Support for video stream from mirror "' + link + '" not implemented!' );
                 }
             } )
             .then( media => {
