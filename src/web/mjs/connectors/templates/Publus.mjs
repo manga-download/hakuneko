@@ -53,7 +53,6 @@ export default class Publus extends Connector {
             });
         `;
         let data = await Engine.Request.fetchUI(request, script);
-        console.log('Pages:', data);
         return data.map(page => page.mode === 'raw' ? page.imageUrl : this.createConnectorURI(page));
     }
 
