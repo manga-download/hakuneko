@@ -38,7 +38,7 @@ export default class Publus extends Connector {
                                 }
                                 return {
                                     mode: 'puzzle',
-                                    imageUrl: url,
+                                    imageUrl: new URL(url, window.location).href,
                                     encryptionKey: v % NFBR.a0X.a3h + 1
                                 };
                             });
