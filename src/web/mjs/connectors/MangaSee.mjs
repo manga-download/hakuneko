@@ -16,7 +16,7 @@ export default class MangaSee extends Connector {
         let data = await this.fetchDOM(request, '#content p a');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
             };
         });
@@ -28,7 +28,7 @@ export default class MangaSee extends Connector {
         return data.map(element => {
             let title = element.querySelector('span.chapterLabel').textContent;
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url).replace(/-page-\d+/, ''),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url).replace(/-page-\d+/, ''),
                 title: title.replace(manga.title, '').trim(),
                 language: 'en'
             };
@@ -37,7 +37,7 @@ export default class MangaSee extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.fullchapimage source')
+        let data = await this.fetchDOM(request, 'div.fullchapimage source');
         return data.map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
     }
 
