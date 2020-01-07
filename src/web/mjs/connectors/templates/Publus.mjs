@@ -19,59 +19,65 @@ export default class Publus extends Connector {
                 value: 5000
             }
         };
+        this.customerScriptPart = ``;
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
+    async _getPages(chapter) {
         let uri = new URL( chapter.id, this.url );
         let request = new Request( uri.href, this.requestOptions );
         let script = `
-            new Promise( ( resolve, reject ) => {
-                setTimeout( () => {
+            new Promise((resolve, reject) => {
+                setTimeout(async () => {
                     try {
                         if(NFBR) {
-                            resolve(Object.keys(NFBR.a6G.a6L.cache.data_).map(key => NFBR.a6G.a6L.cache.get(key).getUrl()));
+                            let pageList = Object.keys(NFBR.a6G.a6L.cache.data_).map(key => {
+                                let url = NFBR.a6G.a6L.cache.get(key).getUrl();
+                                let file = url.match(/item.*\\d+/)[0];
+                                for (let d = v = 0; d < file.length; d++) {
+                                    v += file.charCodeAt(d);
+                                }
+                                return {
+                                    mode: 'puzzle',
+                                    imageUrl: url,
+                                    encryptionKey: v % NFBR.a0X.a3h + 1
+                                };
+                            });
+                            return resolve(pageList);
                         }
-                        if(/* has script "<script src="GanGanOnline_WebViewer.d36f16fd.js"></script>" */) {
-                            //
-                        }
-                    } catch ( error ) {
-                        reject( error );
+                        ${this.customerScriptPart}
+                        throw new Error('Unsupported image viewer!');
+                    } catch (error) {
+                        reject(error);
                     }
-                    resolve();
-                }, ${this.config.scrapeDelay.value} );
-            } );
+                }, ${this.config.scrapeDelay.value});
+            });
         `;
-        Engine.Request.fetchUI( request, script )
-            .then( data => {
-                let pageList = data.map( link => this.createConnectorURI( this.getAbsolutePath( link, request.url ) ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+        let data = await Engine.Request.fetchUI(request, script);
+        console.log('Pages:', data);
+        return data.map(page => page.mode === 'raw' ? page.imageUrl : this.createConnectorURI(page));
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        return fetch( request )
-            .then( response => response.blob() )
-            .then( data => {
-            //if( true ) {
-                return this._descrambleImage( data, request.url );
-            /*
-             *} else {
-             *    return Promise.resolve( data );
-             *}
-             */
-            } )
-            .then( data => this._blobToBuffer( data ) );
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.imageUrl, this.requestOptions);
+        let response = await fetch(request);
+        switch (payload.mode) {
+        case 'puzzle': {
+            let data = await response.blob();
+            data = await this._descrambleImage(data, payload.encryptionKey);
+            return this._blobToBuffer(data);
+        }
+        case 'xor': {
+            let data = await response.arrayBuffer();
+            return {
+                mimeType: 'image/png', // response.headers.get('content-type'),
+                data: await this._decryptXOR(data, payload.encryptionKey)
+            };
+        }
+        default: {
+            let data = await response.blob();
+            return this._blobToBuffer(data);
+        }
+        }
     }
 
     /**
@@ -80,41 +86,39 @@ export default class Publus extends Connector {
      *****************************
      */
 
-    /**
-     *
-     */
-    _descrambleImage( blob, path ) {
-        return createImageBitmap( blob )
-            .then( bitmap => {
-                return new Promise( resolve => {
-                    let canvas = document.createElement( 'canvas' );
-                    canvas.width = bitmap.width;
-                    canvas.height = bitmap.height;
-                    var ctx = canvas.getContext( '2d' );
-
-                    let blocks = this.NFBR_a3E_a3f(bitmap.width, bitmap.height, this.NFBR_a0X_a3g, this.NFBR_a0X_a3G, this.descramblePattern( path ));
-                    for (let q of blocks)
-                    {
-                    /*if(q.srcX < l.x + l.width && q.srcX + q.width >= l.x && q.srcY < l.y + l.height && q.srcY + q.height >= l.y)*/
-                        ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
-                    }
-
-                    canvas.toBlob( data => {
-                        resolve( data );
-                    }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
-                } );
-            } );
+    /*
+    _decryptXOR(encrypted, key) {
+        if (key) {
+            let t = new Uint8Array(key.match(/.{1,2}/g).map(e => parseInt(e, 16)));
+            let s = new Uint8Array(encrypted);
+            for (let n = 0; n < s.length; n++) {
+                s[n] ^= t[n % t.length];
+            }
+            return s;
+        } else {
+            // "image/png"
+            return encrypted;
+        }
     }
+    */
 
-    /**
-     *
-     */
-    descramblePattern( path ) {
-        let F = path.match( /item.*\d+/ )[0];
-        let v = 0;
-        for (let d = 0; d < F.length; d++)
-            v += F.charCodeAt(d);
-        return v % this.NFBR_a0X_a3h + 1;
+    async _descrambleImage(scrambled, key) {
+        let bitmap = await createImageBitmap(scrambled);
+        return new Promise(resolve => {
+            let canvas = document.createElement('canvas');
+            canvas.width = bitmap.width;
+            canvas.height = bitmap.height;
+            var ctx = canvas.getContext('2d');
+            let blocks = this.NFBR_a3E_a3f(bitmap.width, bitmap.height, this.NFBR_a0X_a3g, this.NFBR_a0X_a3G, key);
+            for (let q of blocks)
+            {
+                /*if(q.srcX < l.x + l.width && q.srcX + q.width >= l.x && q.srcY < l.y + l.height && q.srcY + q.height >= l.y)*/
+                ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
+            }
+            canvas.toBlob(data => {
+                resolve(data);
+            }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value)/100);
+        } );
     }
 
     /**
@@ -129,13 +133,6 @@ export default class Publus extends Connector {
      */
     get NFBR_a0X_a3G() {
         return 64;
-    }
-
-    /**
-     *
-     */
-    get NFBR_a0X_a3h() {
-        return 4;
     }
 
     /**
