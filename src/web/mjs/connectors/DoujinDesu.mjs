@@ -1,19 +1,13 @@
 import BloggerManga from './templates/BloggerManga.mjs';
 
-/**
- *
- */
 export default class DoujinDesu extends BloggerManga {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'doujindesu';
         super.label = 'DoujinDesu';
         this.tags = ['hentai', 'indonesian'];
-        this.url = 'https://www.doujindesu.in';
+        this.url = 'https://www.doujindesu.ch';
         this.urlBlog = 'https://doujindesu.blogspot.com';
 
         this.path = '';
@@ -22,9 +16,6 @@ export default class DoujinDesu extends BloggerManga {
         this.queryMangasPageCount = 'div#main div#blog-pager span.showpageNum:nth-last-of-type(2) a';
     }
 
-    /**
-     *
-     */
     _getChapterList(manga, callback) {
         let request = new Request(this.url + manga.id, this.requestOptions);
         this.fetchDOM(request, 'div.entry-content div.dl-box div.dl-item div.dl-anime a:last-of-type')
@@ -52,9 +43,6 @@ export default class DoujinDesu extends BloggerManga {
             });
     }
 
-    /**
-     *
-     */
     _getPageList(manga, chapter, callback) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         this.fetchDOM(request, 'div.entry-content center source')
