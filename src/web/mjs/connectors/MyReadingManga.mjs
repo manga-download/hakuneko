@@ -1,113 +1,88 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MyReadingManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'myreadingmanga';
         super.label = 'MyReadingManga';
         this.tags = [ 'manga', 'english' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://myreadingmanga.info';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'header.entry-header h1.entry-title');
+        let id = uri.pathname.replace(/\d+\/$/, '');
+        let title = data[0].textContent.replace(/^\s*\[.*?\]\s*/g, '').trim();
+        return new Manga(this, id, title);
+    }
+
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(this.url, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.pagination ul li:nth-last-child(2) a');
+        let pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'header.entry-header h2.entry-title a.entry-title-link', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( /^\s*\[.*?\]\s*/g, '' )
-                        //title: element.text.replace( /^\s*\[.*?\]\s*|\s*\[.*?\]\s*$/g, '' )
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url, 'div.pagination ul li:nth-last-child(2) a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/page/' + ( page + 1 ) + '/' );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let request = new Request(new URL(`/page/${page}/`, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'header.entry-header h2.entry-title a.entry-title-link');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.replace(/^\s*\[.*?\]\s*/g, '').trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div.chapter-class p a' )
-            .then( data => {
-                let chapterList = [
-                    {
-                        id: manga.id,
-                        title: manga.title,
-                        language: ''
-                    }
-                ];
-                if( data.length > 0 ) {
-                    chapterList = data.map( element => {
-                        return {
-                            id: this.getRelativeLink( element ),
-                            title: element.text.trim(),
-                            language: ''
-                        };
-                    } );
-                }
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.chapter-class p a, div.pagination .post-page-numbers');
+        let chapterList = data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.href || request.url, this.url),
+                title: element.textContent.trim(),
+                language: ''
+            };
+        });
+        // default chapter is always present
+        chapterList.push({
+            id: manga.id,
+            title: manga.title,
+            language: ''
+        });
+        // exclude duplicates and cross references to other mangas
+        return chapterList.filter(chapter => {
+            let isSameManga = chapter.id.startsWith(manga.id);
+            let isUniqueChapter = chapter === chapterList.find(c => c.id === chapter.id);
+            return isSameManga && isUniqueChapter;
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        this.fetchDOM( this.url + chapter.id, 'div.entry-content source' )
-            .then( data => {
-                let pageLinks = data.map( element => element.dataset['src'] || element.dataset['lazySrc'] ); // data-lazy-src
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.entry-content source');
+        return data.map(element => {
+            let payload = {
+                url: this.getAbsolutePath(element.dataset['lazySrc'] || element.dataset['src'] || element, request.url),
+                referer: request.url
+            };
+            return this.createConnectorURI(payload);
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
