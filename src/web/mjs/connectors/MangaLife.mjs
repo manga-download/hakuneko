@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 // Very similar visual to MangaSee (older viewer)
 export default class MangaLife extends Connector {
@@ -9,6 +10,14 @@ export default class MangaLife extends Connector {
         super.label = 'MangaLife';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://manga4life.com';
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.list-group li h1');
+        let id = uri.pathname.split('/').pop();
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
