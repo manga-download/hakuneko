@@ -65,9 +65,9 @@ module.exports = class App {
             process.env.PATH = path.dirname(process.execPath) + (process.platform === 'win32' ? ';' : ':') + process.env.PATH;
             // add HakuNeko's portable mode as environment variable to be easily available in render process
             if(Configuration.isPortableMode) {
-                process.env.PORTABLE = 'TRUE';
+                process.env.HAKUNEKO_PORTABLE = 'TRUE';
             } else {
-                delete process.env.PORTABLE;
+                delete process.env.HAKUNEKO_PORTABLE;
             }
             await this._electron.launch();
             await this._electron.loadHTML(loadingPage);

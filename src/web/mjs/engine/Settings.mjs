@@ -82,7 +82,7 @@ export default class Settings extends EventTarget {
                 'The directory where the bookmark and chaptermark files will be stored.',
                 'This setting has no effect when the application is in portable mode!'
             ].join('\n'),
-            input: process.env.PORTABLE ? types.disabled : types.directory,
+            input: process.env.HAKUNEKO_PORTABLE ? types.disabled : types.directory,
             value: app.getPath( 'userData' )
         };
 
