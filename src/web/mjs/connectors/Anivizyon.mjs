@@ -6,7 +6,7 @@ export default class Anivizyon extends WordPressMadara {
         super();
         super.id = 'anivizyon';
         super.label = 'Anivizyon';
-        this.tags = [ 'manga', 'webtoon', 'turkish' ];
+        this.tags = [ 'webtoon', 'turkish' ];
         this.url = 'https://www.anivizyon.com';
     }
 }
