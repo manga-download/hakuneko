@@ -8,7 +8,7 @@ export default class KuManga extends Connector {
         super.id = 'kumanga';
         super.label = 'KuManga';
         this.tags = [ 'manga', 'spanish' ];
-        this.url = 'http://www.kumanga.com';
+        this.url = 'https://www.kumanga.com';
         this.requestOptions.headers.set( 'x-referer', this.url );
     }
 
