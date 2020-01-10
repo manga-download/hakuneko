@@ -63,6 +63,12 @@ module.exports = class App {
             this._configuration.printInfo();
             // add HakuNeko's application directory to the environment variable path (make ffmpeg available on windows)
             process.env.PATH = path.dirname(process.execPath) + (process.platform === 'win32' ? ';' : ':') + process.env.PATH;
+            // add HakuNeko's portable mode as environment variable to be easily available in render process
+            if(Configuration.isPortableMode) {
+                process.env.HAKUNEKO_PORTABLE = 'TRUE';
+            } else {
+                delete process.env.HAKUNEKO_PORTABLE;
+            }
             await this._electron.launch();
             await this._electron.loadHTML(loadingPage);
             await this._updater.updateCache(this._configuration.publicKey);

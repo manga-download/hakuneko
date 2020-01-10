@@ -724,7 +724,7 @@ export default class Storage {
      * Helper function to generate the path where the bookmarks and markers are stored.
      */
     get _bookmarkOutputPath() {
-        return Engine.Settings.bookmarkDirectory;
+        return this.path.join(Engine.Settings.bookmarkDirectory.value, 'hakuneko.');
     }
 
     /**
@@ -887,7 +887,7 @@ export default class Storage {
      */
     saveBookmarks( key, value, indentation ) {
         return new Promise( ( resolve, reject ) => {
-            this.fs.writeFile( this.path.join(this._bookmarkOutputPath.value, 'hakuneko.' + key), JSON.stringify( value, undefined, indentation ), function(error ) {
+            this.fs.writeFile(this._bookmarkOutputPath + key, JSON.stringify( value, undefined, indentation ), function(error ) {
                 if( error ) {
                     reject( error );
                 } else {
@@ -902,7 +902,7 @@ export default class Storage {
      */
     async loadBookmarks( key ) {
         return new Promise( ( resolve, reject ) => {
-            this.fs.readFile( this.path.join(this._bookmarkOutputPath.value, 'hakuneko.' + key), 'utf8', (error, data ) => {
+            this.fs.readFile(this._bookmarkOutputPath + key, 'utf8', (error, data ) => {
                 try {
                     if( error ) {
                         throw error;
