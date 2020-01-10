@@ -723,7 +723,6 @@ export default class Storage {
     /**
      * Helper function to generate the path where the bookmarks and markers are stored.
      */
-    // TODO: In portable mode use
     get _bookmarkOutputPath() {
         return this.path.join(Engine.Settings.bookmarkDirectory.value, 'hakuneko.');
     }
@@ -888,9 +887,6 @@ export default class Storage {
      */
     saveBookmarks( key, value, indentation ) {
         return new Promise( ( resolve, reject ) => {
-            // TODO: how was this done before (default path)?
-            // See: saveConfig( key, value, indentation )
-            // this.config = this.path.join( electron.remote.app.getPath( 'userData' ), 'hakuneko.' );
             this.fs.writeFile(this._bookmarkOutputPath + key, JSON.stringify( value, undefined, indentation ), function(error ) {
                 if( error ) {
                     reject( error );
@@ -906,9 +902,6 @@ export default class Storage {
      */
     async loadBookmarks( key ) {
         return new Promise( ( resolve, reject ) => {
-            // TODO: how was this done before (default path)?
-            // See: loadConfig( key )
-            // this.config = this.path.join( electron.remote.app.getPath( 'userData' ), 'hakuneko.' );
             this.fs.readFile(this._bookmarkOutputPath + key, 'utf8', (error, data ) => {
                 try {
                     if( error ) {
