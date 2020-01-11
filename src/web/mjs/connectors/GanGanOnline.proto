@@ -1,0 +1,499 @@
+// Type definitions from GanGanOnline for protocol buffer
+// Based on: https://viewer.ganganonline.com/manga/GanGanOnline_WebViewer.d36f16fd.js
+
+package GanGanOnline;
+syntax = "proto3";
+
+message AdNetworkList {
+  repeated AdNetwork adNetworks = 1;
+}
+
+message AdNetwork {
+
+  message Facebook {
+    optional string placementId = 1;
+  }
+
+  message Five {
+    optional string spotId = 1;
+  }
+
+  message Unity {
+    optional string placementId = 1;
+  }
+
+  message Nend {
+    optional int32 spotId = 1;
+    optional string apiKey = 2;
+  }
+
+  message AppLovin {
+    // empty type definition
+  }
+
+  message Maio {
+    //optional TYPE NAME = 1;
+    optional string zoneId = 2;
+  }
+
+  message Zucks {
+    optional string frameId = 1;
+  }
+
+  optional Facebook facebook = 3;
+  optional Five five = 4;
+  optional Unity unity = 5;
+  optional Nend nend = 6;
+  optional AppLovin appLovin = 7;
+  optional Maio maio = 8;
+  optional Zucks zucks = 9;
+}
+
+message Banner {
+  optional uint32 id = 1;
+  optional string imageUrl = 2;
+  optional string url = 3;
+}
+
+message BillingItem {
+  optional string id = 1;
+  optional UserPoint item = 2;
+  optional string label = 3;
+  optional uint32 priceYen = 4;
+}
+
+message Chapter {
+  optional uint32 id = 1;
+  optional string mainName = 2;
+  optional string subName = 3;
+  optional string imageUrl = 4;
+  optional PointConsumption pointConsumption = 5;
+  optional uint32 endOfRentalPeriod = 6;
+  optional uint32 numberOfComments = 7;
+  optional int32 publishingType = 8;
+  optional string publishedDate = 9;
+  optional string advancePublishedDate = 10;
+  optional int32 badge = 11;
+  optional bool alreadyViewed = 12;
+  optional string firstPageImageUrl = 13;
+  optional uint32 numberOfUserLikes = 14;
+  optional uint32 titleId = 15;
+}
+
+message ChapterGroup {
+  optional Volume volume = 1;
+  //optional TYPE NAME = 2;
+  repeated Chapter chapters = 3;
+}
+
+message Comment {
+  optional uint32 id = 1;
+  optional uint32 index = 2;
+  optional bool isMyComment = 3;
+  optional bool alreadyLiked = 4;
+  optional uint32 numberOfLikes = 5;
+  optional string body = 6;
+  optional string created = 7;
+}
+
+message MangaPage {
+
+  message Image {
+    optional string imageUrl = 1;
+    optional string encryptionKey = 2;
+  }
+  
+  message WebView {
+    optional string url = 1;
+  }
+  
+  message LastPage {
+    optional Chapter nextChapter = 1;
+    optional string impressionFormUrl = 2;
+  }
+  
+  message LinkImage {
+    optional string imageUrl = 1;
+    optional string url = 2;
+  }
+
+  optional Image image = 1;
+  optional WebView webview = 2;
+  optional AdNetworkList advertisement = 3;
+  optional LastPage lastPage = 4;
+  optional LinkImage linkImage = 5;
+}
+
+message PointConsumption {
+  optional int32 type = 1;
+  optional uint32 amount = 2;
+  optional bool adEnabled = 3;
+}
+
+message PointHistory {
+  optional string detail = 1;
+  optional UserPoint item = 2;
+  optional string created = 3;
+}
+
+message Popup {
+
+  message Button {
+    optional string text = 1;
+    optional string url = 2;
+  }
+  
+  message Information {
+    optional uint32 popupId = 1;
+    optional uint32 titleId = 2;
+    optional uint32 chapterId = 3;
+  }
+
+  message OSDefaultPopup {
+    optional string subject = 1;
+    optional string body = 2;
+    optional Popup.Button okButton = 3;
+    optional Popup.Button neutralButton = 4;
+    optional Popup.Button cancelButton = 5;
+    optional Popup.Information popupInfo = 6;
+  }
+  
+  message AppDefaultPopup {
+    optional string subject = 1;
+    optional string body = 2;
+    optional string imageUrl = 3;
+    optional Popup.Button okButton = 4;
+    optional Popup.Button cancelButton = 5;
+    optional Popup.Information popupInfo = 6;
+  }
+  
+  message MovieRewardPopup {
+    optional string subject = 1;
+    optional string body = 2;
+    optional string imageUrl = 3;
+    optional AdNetworkList adNetworks = 4;
+    optional Popup.Button okButton = 5;
+    optional Popup.Button cancelButton = 6;
+    optional Popup.Information popupInfo = 7;
+  }
+
+  optional OSDefaultPopup osDefault = 1;
+  optional AppDefaultPopup appDefault = 2;
+  optional MovieRewardPopup movieReward = 3;
+}
+
+message Profile {
+  optional int32 sex = 1;
+  optional int32 year = 2;
+  optional int32 month = 3;
+}
+
+message Ranking {
+  optional int32 type = 1;
+  repeated Title titles = 2;
+}
+
+message Sns {
+  optional string body = 1;
+  optional string url = 2;
+}
+
+message Tag {
+  optional uint32 id = 1;
+  optional string name = 2;
+  optional string imageUrl = 3;
+}
+
+message Title {
+  optional uint32 id = 1;
+  optional int32 type = 2;
+  optional string titleName = 3;
+  optional string titleNameKana = 4;
+  optional string authorName = 5;
+  optional string singleListThumbnailUrl = 6;
+  optional string spreadListThumbnailUrl = 7;
+  optional string shortDescription = 8;
+  optional uint32 numberOfBookmarks = 9;
+  optional int32 badge = 10;
+  optional uint32 remainingChargeTime = 11;
+  optional uint32 remainingBonus = 12;
+  repeated Tag category = 13;
+  optional uint32 chargeTime = 14;
+  optional Tag label = 15;
+  optional bool canComment = 16;
+  optional bool isFreeTitle = 17;
+}
+
+message TitleGroup {
+  optional uint32 id = 1;
+  optional string name = 2;
+  repeated Title titles = 3;
+}
+
+message UserPoint {
+  //optional TYPE NAME = 1;
+  optional uint32 event = 2;
+  optional uint32 paid = 3;
+}
+
+message Volume {
+  optional uint32 titleId = 1;
+  optional string thumbnailImageUrl = 2;
+  optional string volumeNum = 3;
+  optional string publishedDate = 4;
+  optional string header = 5;
+}
+
+message VolumeGroup {
+  optional string publishedDate = 1;
+  repeated Volume volumes = 2;
+}
+
+message AllChaptersListView {
+  optional Title title = 1;
+  repeated ChapterGroup chapters = 2;
+}
+
+message BackgroundDownloadView {
+  repeated string imageUrls = 1;
+}
+
+message BillingItemListView {
+  repeated BillingItem billingItems = 1;
+  optional string rewardUrl = 2;
+  optional AdNetworkList movieAd = 3;
+  optional bool registered = 4;
+}
+
+message BridgeTransIdView {
+  optional uint32 bridgeTransId = 1;
+}
+
+message CommentListView {
+  repeated Comment comments = 1;
+  //optional TYPE NAME = 2;
+  optional bool canPost = 3;
+}
+
+message CommentPostView {
+  optional int32 status = 1;
+}
+
+message DeviceView {
+  optional string userSecret = 1;
+}
+
+message FeaturedTitleListView {
+  optional string imageUrl = 1;
+  optional string name = 2;
+  optional string description = 3;
+  repeated Title titles = 4;
+  optional uint32 tagId = 5;
+}
+
+message HomeView {
+  repeated Banner topBanners = 1;
+  repeated Banner subBanners = 2;
+  repeated Title updatedTitles = 3;
+  optional TitleGroup featuredTitles = 4;
+  repeated Ranking rankings = 5;
+  //optional TYPE NAME = 6;
+  repeated VolumeGroup newlyPublishedVolumes = 7;
+  optional Popup popup = 8;
+}
+
+message MangaViewerView {
+  repeated MangaPage pages = 1;
+  optional Title title = 2;
+}
+
+message MyPageView {
+  optional string tagName = 1;
+  optional string keyword = 2;
+}
+
+message NovelViewerView {
+  optional string url = 1;
+  optional Chapter currentChapter = 2;
+  //optional TYPE NAME = 3;
+  optional Chapter nextChapter = 4;
+  optional Sns sns = 5;
+  optional Title title = 6;
+}
+
+message PointHistoryView {
+  repeated PointHistory logs = 1;
+}
+
+message ProfileView {
+  optional Profile profile = 1;
+}
+
+message QuestionnaireView {
+
+  message Section {
+
+    message NormalSelection {
+
+      message Answer {
+
+        message Choice {
+          optional uint32 id = 1;
+          optional string body = 2;
+        }
+
+        message Freeform {
+          optional string body = 1;
+        }
+
+        optional Choice choice = 1;
+        optional Freeform freeform = 2;
+      }
+
+      repeated Answer answers = 1;
+    }
+
+    message ThumbnailSelection {
+
+      message Answer {
+        optional uint32 id = 1;
+        optional string body = 2;
+        optional string imageUrl = 3;
+      }
+
+      repeated Answer answers = 1;
+    }
+
+    message ImageOnlySelection {
+
+      message Answer {
+        optional uint32 id = 1;
+        optional string body = 2;
+        optional string imageUrl = 3;
+      }
+
+      repeated Answer answers = 0;
+    }
+
+    message FreeForm {
+      // empty type definition
+    }
+
+    optional uint32 id = 1;
+    optional string body = 2;
+    optional NormalSelection normal = 3;
+    optional ThumbnailSelection thumbnail = 4;
+    optional ImageOnlySelection imageOnly = 5;
+    optional uint32 limitation = 6;
+    optional FreeForm freeform = 7;
+    optional bool isMandatory = 8;
+  }
+
+  optional string name = 1;
+  optional string description = 2;
+  optional uint32 endOfTime = 3;
+  repeated Section sections = 4;
+  optional bool hasAnswered = 5;
+}
+
+message RankingView {
+  repeated Ranking rankings = 1;
+}
+
+message SearchView {
+  repeated Tag tags = 1;
+  repeated TitleGroup titleGroups = 2;
+}
+
+message TitleDetailView {
+  optional Title title = 1;
+  optional string nextUpdateInfo = 2;
+  optional string mainThumbnailUrl = 3;
+  optional string longDescription = 4;
+  optional string copyright = 5;
+  repeated Banner banners = 6;
+  repeated ChapterGroup chapters = 7;
+  optional bool isBookmarked = 8;
+  optional Sns sns = 9;
+  optional bool isFreeTitle = 10;
+}
+
+message TitleListView {
+  optional Title pickedupTitle = 1;
+  repeated Title titles = 2;
+}
+
+message WebMangaViewerView {
+
+  message WebMangaPage {
+
+    message Image {
+      optional string imageUrl = 1;
+      optional string encryptionKey = 2;
+    }
+
+    message LinkImage {
+      optional string imageUrl = 1;
+      optional string url = 2;
+    }
+
+    optional Image image = 1;
+    optional LinkImage linkImage = 2;
+  }
+
+  message LastPage {
+    optional Chapter nextChapter = 1;
+    optional string impressionFormUrl = 2;
+  }
+
+  repeated WebMangaPage pages = 1;
+  optional LastPage lastPage = 2;
+  optional Title title = 3;
+  optional bool ifLeftStart = 4;
+  optional string titleDetailUrl = 5;
+}
+
+message ErrorResult {
+  optional Popup popup = 1;
+  optional UserPoint userItem = 2;
+  optional int32 action = 3;
+}
+
+message Response {
+  optional SuccessResult success = 1;
+  optional ErrorResult error = 2;
+  optional uint32 serverTime = 3;
+  repeated string debugInfo = 4;
+}
+
+message SuccessResult {
+
+  message Notification {
+    optional string subject = 1;
+    optional UserPoint point = 2;
+  }
+  
+  optional UserPoint userItem = 1;
+  optional Notification notification = 2;
+  //optional TYPE NAME = 3;
+  optional BackgroundDownloadView backgroundDownload = 4;
+  optional BillingItemListView billingItemList = 5;
+  optional CommentListView commentList = 6;
+  optional HomeView home = 7;
+  optional MangaViewerView mangaViewer = 8;
+  optional NovelViewerView novelViewer = 9;
+  optional PointHistoryView pointHistory = 10;
+  optional TitleDetailView titleDetail = 11;
+  optional TitleListView titleList = 12;
+  optional ProfileView profile = 13;
+  optional DeviceView device = 14;
+  optional RankingView ranking = 15;
+  optional AllChaptersListView allChaptersList = 16;
+  optional FeaturedTitleListView featuredTitleList = 17;
+  optional SearchView search = 18;
+  optional BridgeTransIdView bridgeTransId = 19;
+  optional QuestionnaireView questionnaire = 20;
+  optional MyPageView myPage = 21;
+  optional CommentPostView commentPost = 22;
+  optional WebMangaViewerView webMangaViewer = 23;
+}
