@@ -510,6 +510,14 @@ export default class Connector {
      * } );
      */
 
+    async fetchPROTO(request, protoTypes, rootType) {
+        let Root = (await protobuf.load(protoTypes)).lookupType(rootType);
+        let response = await fetch(request);
+        let data = await response.arrayBuffer();
+        data = Root.decode(new Uint8Array(data));
+        return Root.toObject(data);
+    }
+
     /**
      *
      */
