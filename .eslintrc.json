@@ -9,6 +9,7 @@
         "eslint:recommended"
     ],
     "globals": {
+        "protobuf":"readonly",
         "CryptoJS":"readonly",
         "JSZip":"readonly",
         "OAuth":"readonly",
