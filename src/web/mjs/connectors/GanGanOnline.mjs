@@ -8,23 +8,6 @@ export default class GanGanOnline extends Publus {
         super.label = 'ガンガンONLINE (Gangan Online)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.ganganonline.com';
-
-        this.customerScriptPart = `
-            if(document.querySelector('script[src*="GanGanOnline_WebViewer"]')) {
-                let chapterID = new URL(window.location).searchParams.get('chapterId');
-                let response = await fetch('https://web-ggo.tokyo-cdn.com/web_manga_data?chapter_id=' + chapterID, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/octet-stream'
-                    }
-                });
-                let data = await response.arrayBuffer();
-                let pageList = parcelRequire.cache.KC6V.exports.Proto.Response.decode(new Uint8Array(data)).success.webMangaViewer.pages;
-                pageList = pageList.filter(page => page.image && !page.image.imageUrl.includes('extra_manga_page'));
-                pageList = pageList.map(page => Object.assign(page.image/*.linkImage*/, { mode: page.image.encryptionKey ? 'xor' : 'raw' }));
-                return resolve(pageList);
-            }
-        `;
     }
 
     async _getMangas() {
@@ -52,8 +35,8 @@ export default class GanGanOnline extends Publus {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url));
-        let response = await fetch(request, this.requestOptions);
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let response = await fetch(request);
         let data = await response.text();
         let dom = this.createDOM(data);
         let chapterLatest = dom.querySelector('div.gn_detail_story_list dd ul');
@@ -72,5 +55,29 @@ export default class GanGanOnline extends Publus {
             });
         chapterList.push(chapterLatest);
         return chapterList;
+    }
+
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        let chapterID = uri.searchParams.get('chapterId');
+        if(uri.hostname === 'viewer.ganganonline.com' && chapterID) {
+            let request = new Request('https://web-ggo.tokyo-cdn.com/web_manga_data?chapter_id=' + chapterID, {
+                method: 'POST',
+                body: uri.searchParams.toString(),
+                headers: {
+                    'Content-Type': 'application/octet-stream'
+                }
+            });
+            let data = await this.fetchPROTO(request, '/mjs/connectors/GanGanOnline.proto', 'GanGanOnline.Response');
+            return data.success.webMangaViewer.pages
+                .filter(page => !(page.image || page.linkImage).imageUrl.includes('extra_manga_page'))
+                .map(page => {
+                    let image = page.image || page.linkImage;
+                    image = Object.assign(image, { mode: image.encryptionKey ? 'xor' : 'raw' });
+                    return image.encryptionKey ? this.createConnectorURI(image) : image.imageUrl;
+                });
+        } else {
+            return super._getPages(chapter);
+        }
     }
 }
