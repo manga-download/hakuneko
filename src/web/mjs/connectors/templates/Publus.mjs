@@ -19,7 +19,6 @@ export default class Publus extends Connector {
                 value: 5000
             }
         };
-        this.customerScriptPart = ``;
     }
 
     async _getPages(chapter) {
@@ -44,7 +43,6 @@ export default class Publus extends Connector {
                             });
                             return resolve(pageList);
                         }
-                        ${this.customerScriptPart}
                         throw new Error('Unsupported image viewer!');
                     } catch (error) {
                         reject(error);
