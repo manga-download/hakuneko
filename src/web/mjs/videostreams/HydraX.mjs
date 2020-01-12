@@ -31,10 +31,11 @@ export default class HydraX {
         return streamMap.pop().data;
     }
 
-    async _getPacketURL(redirectLink) {
+    async _getPacketURL(redirectLink, retryCount) {
+        retryCount = retryCount || 0;
         let uri = new URL(redirectLink);
         uri.pathname = uri.pathname.replace('/redirect/', '/html/') + '.html';
-        uri.searchParams.set('domain', uri.hostname);
+        uri.searchParams.set('domain', this._uri.hostname);
         let request = new Request(uri, {
             method: 'GET',
             mode: 'cors',
@@ -44,6 +45,11 @@ export default class HydraX {
             })
         });
         let response = await fetch(request);
+        if(response.status === 403 && retryCount < 10) {
+            let delay = parseInt(1000 * (retryCount + Math.random()));
+            await new Promise(resolve => setTimeout(resolve, delay));
+            return this._getPacketURL(redirectLink, retryCount + 1);
+        }
         if(response.status !== 200) {
             throw new Error('Failed to get redirect URL for stream packet!');
         }
