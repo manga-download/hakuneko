@@ -130,6 +130,7 @@ export default class NineAnime extends Connector {
     _getChapterList( manga, callback ) {
         let script = `
             new Promise( resolve => {
+                localStorage.setItem('player_autoplay', 0);
                 setTimeout( () => {
                     let result = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
                     .map( server => {
