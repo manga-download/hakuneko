@@ -8,6 +8,9 @@ export default class GanGanOnline extends Publus {
         super.label = 'ガンガンONLINE (Gangan Online)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.ganganonline.com';
+        this.apiURL = 'https://web-ggo.tokyo-cdn.com';
+        this.protoTypes = '/mjs/connectors/GanGanOnline.proto';
+        this.rootType = 'GanGanOnline.Response';
     }
 
     async _getMangas() {
@@ -61,14 +64,14 @@ export default class GanGanOnline extends Publus {
         let uri = new URL(chapter.id, this.url);
         let chapterID = uri.searchParams.get('chapterId');
         if(uri.hostname === 'viewer.ganganonline.com' && chapterID) {
-            let request = new Request('https://web-ggo.tokyo-cdn.com/web_manga_data?chapter_id=' + chapterID, {
+            let request = new Request(new URL('/web_manga_data?chapter_id=' + chapterID, this.apiURL), {
                 method: 'POST',
                 body: uri.searchParams.toString(),
                 headers: {
                     'Content-Type': 'application/octet-stream'
                 }
             });
-            let data = await this.fetchPROTO(request, '/mjs/connectors/GanGanOnline.proto', 'GanGanOnline.Response');
+            let data = await this.fetchPROTO(request, this.protoTypes, this.rootType);
             return data.success.webMangaViewer.pages
                 .filter(page => !(page.image || page.linkImage).imageUrl.includes('extra_manga_page'))
                 .map(page => {
