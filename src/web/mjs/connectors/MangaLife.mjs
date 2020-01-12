@@ -57,16 +57,16 @@ export default class MangaLife extends Connector {
         let request = new Request(new URL('/manga/' + manga.id, this.url), this.requestOptions);
         return Engine.Request.fetchUI(request, script);
         /*
-        let request = new Request(new URL('/rss/' + manga.id + '.xml', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'channel item');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('link').textContent.trim(), this.url),
-                title: element.querySelector('title').textContent.replace(manga.title, '').trim(),
-                language: ''
-            };
-        });
-        */
+         *let request = new Request(new URL('/rss/' + manga.id + '.xml', this.url), this.requestOptions);
+         *let data = await this.fetchDOM(request, 'channel item');
+         *return data.map(element => {
+         *    return {
+         *        id: this.getRootRelativeOrAbsoluteLink(element.querySelector('link').textContent.trim(), this.url),
+         *        title: element.querySelector('title').textContent.replace(manga.title, '').trim(),
+         *        language: ''
+         *    };
+         *});
+         */
     }
 
     async _getPages(chapter) {
