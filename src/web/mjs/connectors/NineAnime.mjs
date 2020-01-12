@@ -11,7 +11,8 @@ export default class NineAnime extends Connector {
         super.label = '9ANIME';
         this.tags = [ 'anime', 'english' ];
         this.url = 'https://9anime.to';
-        this.requestOptions.headers.set( 'x-requested-with', 'XMLHttpRequest' );
+        this.requestOptions.headers.set('x-requested-with', 'XMLHttpRequest');
+        this.requestOptions.headers.set('x-cookie', 'player_autoplay=0');
 
         this.config = {
             resolution:  {

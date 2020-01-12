@@ -106,7 +106,7 @@ export default class KissAnime extends Connector {
     }
 
     async _getEpisodeHydraX(link, resolution) {
-        let hydrax = new HydraX(link, link.split('#slug=')[1]);
+        let hydrax = new HydraX(link, link.split('#slug=')[1], 'f94dc63ead6c84b0c7d4ed5e36b1ed18');
         let playlist = await hydrax.getPlaylist(parseInt(resolution));
         return {
             hash: 'id,language,resolution',

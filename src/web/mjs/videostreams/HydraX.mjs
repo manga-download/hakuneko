@@ -1,10 +1,14 @@
 // See also: https://github.com/billythekids/plugin.video.bimozie/blob/master/resources/lib/utils/hosts/hydrax.py
 export default class HydraX {
-
-    // https://playhydrax.com/?v=HUId0tN4U
-    constructor(url, slug) {
+    /*
+     * view-source:https://playhydrax.com/?v=HUId0tN4U
+     * view-source:https://replay.watch/hydrax.html?vc=1#slug=P867lRn1s
+     * view-source:https://hydrax.net/watch?v=REWojk-ld&autostart=true
+     */
+    constructor(url, slug, key) {
         this._uri = new URL(url);
         this._slug = slug || this._uri.searchParams.get('v');
+        this._key = key;
         this._N = {
             protocol: this._uri.protocol
         };
@@ -77,16 +81,40 @@ export default class HydraX {
         return playlist;
     }
 
-    async getPlaylist(resolution) {
+    async _getPlaylistGuest() {
+        let form = new URLSearchParams();
+        form.append('slug', this._slug);
         let request = new Request('https://multi.idocdn.com/guest', {
             method: 'POST',
-            body: 'slug=' + this._slug,
+            body: form.toString(),
             headers: new Headers({
-                'content-type': 'application/x-www-form-urlencoded'
+                'content-type': 'application/x-www-form-urlencoded',
+                'x-referer': this._uri.href
             })
         });
         let response = await fetch(request);
-        let data = await response.json();
+        return response.json();
+    }
+
+    async _getPlaylistVip() {
+        let form = new URLSearchParams();
+        form.append('key', this._key);
+        form.append('type', 'slug');
+        form.append('value', this._slug);
+        let request = new Request('https://multi.idocdn.com/vip', {
+            method: 'POST',
+            body: form.toString(),
+            headers: new Headers({
+                'content-type': 'application/x-www-form-urlencoded',
+                'x-referer': this._uri.href
+            })
+        });
+        let response = await fetch(request);
+        return response.json();
+    }
+
+    async getPlaylist(resolution) {
+        let data = this._key ? await this._getPlaylistVip() : await this._getPlaylistGuest();
         if(data.msg) {
             throw new Error(data.msg);
         }
