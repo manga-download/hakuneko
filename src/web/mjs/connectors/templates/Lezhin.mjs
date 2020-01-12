@@ -134,17 +134,17 @@ export default class Lezhin extends Connector {
     async _getChapters(manga) {
         await this._initializeAccount();
         /*
-        let purchased = [];
-        let subscription = false;
-        if(this.accessToken) {
-            let uri = new URL(`${this.apiURL}/users/${this.userID}/contents/${mangaiD}`);
-            let request = new Request(uri, this.requestOptions);
-            request.headers.set('authorization', 'Bearer ' + this.accessToken);
-            let data = await this.fetchJSON(request);
-            purchased = data.data.purchased;
-            subscription = data.data.subscribed;
-        }
-        */
+         *let purchased = [];
+         *let subscription = false;
+         *if(this.accessToken) {
+         *    let uri = new URL(`${this.apiURL}/users/${this.userID}/contents/${mangaiD}`);
+         *    let request = new Request(uri, this.requestOptions);
+         *    request.headers.set('authorization', 'Bearer ' + this.accessToken);
+         *    let data = await this.fetchJSON(request);
+         *    purchased = data.data.purchased;
+         *    subscription = data.data.subscribed;
+         *}
+         */
         let script = `
             new Promise((resolve, reject) => {
                 // wait until episodes have been updated with purchase info ...

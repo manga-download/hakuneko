@@ -17,8 +17,10 @@ export default class GanGanOnline extends Publus {
         let mangaList = [];
         for(let page of [
             { path: '/contents/', queryLink: 'div#comicList ul li a.gn_link_cList', queryTitle: 'span.gn_cList_title' }
-            // archive contains comics + news => need to filter news
-            //{ path: '/archive/', queryLink: 'div#gn_archive_newestList div.gn_archive_margin a.gn_link_archivelist', queryTitle: 'span.gn_top_whatslist_ttl' }
+            /*
+             *  archive contains comics + news => need to filter news
+             * { path: '/archive/', queryLink: 'div#gn_archive_newestList div.gn_archive_margin a.gn_link_archivelist', queryTitle: 'span.gn_top_whatslist_ttl' }
+             */
         ]) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);

@@ -49,24 +49,24 @@ export default class SpeedBinb extends Connector {
          */
         let promise;
         switch( true ) {
-        case payload.endsWith( 'ptimg.json' ):
-            promise = this._process_v016061( payload );
-            break;
-        case payload.includes( 'sbcGetImg' ):
-            promise = this._process_v016130( payload );
-            break;
-        case payload.includes( 'M_L.jpg' ):
-            promise = this._process_v016130( payload );
-            break;
-        case payload.includes( 'M_H.jpg' ):
-            promise = this._process_v016130( payload );
-            break;
-        case payload.includes( '/img/' ):
-            promise = this._process_v016130( payload );
-            break;
-        default:
-            promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
-            break;
+            case payload.endsWith( 'ptimg.json' ):
+                promise = this._process_v016061( payload );
+                break;
+            case payload.includes( 'sbcGetImg' ):
+                promise = this._process_v016130( payload );
+                break;
+            case payload.includes( 'M_L.jpg' ):
+                promise = this._process_v016130( payload );
+                break;
+            case payload.includes( 'M_H.jpg' ):
+                promise = this._process_v016130( payload );
+                break;
+            case payload.includes( '/img/' ):
+                promise = this._process_v016130( payload );
+                break;
+            default:
+                promise = Promise.reject( 'Unsupported version of SpeedBinb reader!' );
+                break;
         }
         return promise.then( data => this._blobToBuffer( data ) )
             .then( data => {
