@@ -1,0 +1,341 @@
+// Type definitions from MangaPlus for protocol buffer
+// Based on: https://mangaplus.shueisha.co.jp/js/app.a3091b24.js
+
+package MangaPlus;
+syntax = "proto3";
+
+message AdNetworkList {
+  repeated AdNetwork adNetworks = 1;
+}
+
+message AdNetwork {
+
+  message Facebook {
+    optional string placementID = 1;
+  }
+
+  message Admob {
+    optional string unitID = 1;
+  }
+
+  message Mopub {
+    optional string unitID = 1;
+  }
+
+  message Adsense {
+    optional string unitID = 1;
+  }
+
+  message Applovin {
+    optional string unitID = 1;
+  }
+
+  optional Facebook facebook = 1;
+  optional Admob admob = 2;
+  optional Mopub mopub = 3;
+  optional Adsense adsense = 4;
+  optional Applovin applovin = 5;
+}
+
+message Banner {
+  optional string imageUrl = 1;
+  optional TransitionAction action = 2;
+  optional uint32 id = 3;
+}
+
+message Chapter {
+  optional uint32 titleId = 1;
+  optional uint32 chapterId = 2;
+  optional string name = 3;
+  optional string subTitle = 4;
+  optional string thumbnailUrl = 5;
+  optional uint32 startTimeStamp = 6;
+  optional uint32 endTimeStamp = 7;
+  optional bool alreadyViewed = 8;
+  optional bool isVerticalOnly = 9;
+}
+
+message Comment {
+  optional uint32 id = 1;
+  optional uint32 index = 2;
+  optional string userName = 3;
+  optional string iconUrl = 4;
+  //optional TYPE NAME = 5;
+  optional bool isMyComment = 6;
+  optional bool alreadyLiked = 7;
+  //optional TYPE NAME = 8;
+  optional uint32 numberOfLikes = 9;
+  optional string body = 10;
+  optional uint32 created = 11;
+}
+
+message CommentIcon {
+  optional uint32 id = 1;
+  optional string imageUrl = 2;
+}
+
+message Feedback {
+  optional uint32 timeStamp = 1;
+  optional string body = 2;
+  optional int32 responseType = 3;
+}
+
+message Page {
+
+  message MangaPage {
+    optional string imageUrl = 1;
+    optional uint32 width = 2;
+    optional uint32 height = 3;
+    optional int32 type = 4;
+    optional string encryptionKey = 5;
+  }
+
+  message BannerList {
+    optional string bannerTitle = 1;
+    repeated Banner banners = 2;
+  }
+  
+  message LastPage {
+    optional Chapter currentChapter = 1;
+    optional Chapter nextChapter = 2;
+    repeated Comment topComments = 3;
+    optional bool isSubscribed = 4;
+    optional uint32 nextTimeStamp = 5;
+    optional int32 chapterType = 6;
+    optional AdNetworkList advertisement = 7;
+    optional Popup movieReward = 8;
+  }
+  
+  optional MangaPage mangaPage = 1;
+  optional BannerList bannerList = 2;
+  optional LastPage lastPage = 3;
+  optional AdNetworkList advertisement = 4;
+}
+
+message Popup {
+
+  message Button {
+    optional string text = 1;
+    optional TransitionAction action = 2;
+  }
+
+  message OSDefault {
+    optional string subject = 1;
+    optional string body = 2;
+    optional Button okButton = 3;
+    optional Button neutralButton = 4;
+    optional Button cancelButton = 5;
+  }
+
+  message AppDefault {
+    optional string subject = 1;
+    optional string body = 2;
+    optional TransitionAction action = 3;
+    optional string imageUrl = 4;
+  }
+
+  optional OSDefault osDefault = 1;
+  optional AppDefault appDefault = 2;
+  optional MovieReward movieReward = 3;
+}
+
+message MovieReward {
+  optional string imageUrl = 1;
+  optional AdNetworkList advertisement = 2;
+}
+
+message ServiceAnnouncement {
+  optional string title = 1;
+  optional string body = 2;
+  optional int32 date = 3;
+}
+
+message Sns {
+  optional string body = 1;
+  optional string url = 2;
+}
+
+message Title {
+  optional uint32 titleId = 1;
+  optional string name = 2;
+  optional string author = 3;
+  optional string portraitImageUrl = 4;
+  optional string landscapeImageUrl = 5;
+  optional uint32 viewCount = 6;
+  optional int32 language = 7;
+}
+
+message TitleList {
+  optional string listName = 1;
+  repeated Title featuredTitles = 2;
+}
+
+message TransitionAction {
+  optional int32 method = 1;
+  optional string url = 2;
+}
+
+message UpdatedTitle {
+  optional Title title = 1;
+  optional uint32 chapterId = 2;
+  optional string chapterName = 3;
+  optional string chapterSubTitle = 4;
+  optional bool isLatest = 5;
+  optional bool isVerticalOnly = 6;
+}
+
+message UpdatedTitleGroup {
+  optional string groupName = 1;
+  repeated UpdatedTitle titles = 2;
+}
+
+message AllTitlesView {
+  repeated Title titles = 1;
+}
+
+message CommentListView {
+  repeated Comment comments = 1;
+  optional bool ifSetUserName = 2;
+}
+
+message FeaturedTitlesView {
+
+  message Contents {
+    optional Banner banner = 1;
+    optional TitleList titleList = 2;
+  }
+
+  optional Banner mainBanner = 1;
+  optional Banner subBanner_1 = 2;
+  optional Banner subBanner_2 = 3;
+  repeated Contents contents = 4;
+}
+
+message FeedbackView {
+  repeated Feedback feedbackList = 1;
+}
+
+message HomeView {
+  repeated Banner topBanners = 1;
+  repeated UpdatedTitleGroup groups = 2;
+  //optional TYPE NAME = 3;
+  //optional TYPE NAME = 4;
+  //optional TYPE NAME = 5;
+  //optional TYPE NAME = 6;
+  //optional TYPE NAME = 7;
+  //optional TYPE NAME = 8;
+  optional Popup popup = 9;
+}
+
+message InitialView {
+  optional bool gdprAgreementRequired = 1;
+  optional uint32 englishTitlesCount = 2;
+  optional uint32 spanishTitlesCount = 3;
+}
+
+message MangaViewer {
+  repeated Page pages = 1;
+  optional uint32 chapterId = 2;
+  repeated Chapter chapters = 3;
+  optional Sns sns = 4;
+  optional string titleName = 5;
+  optional string chapterName = 6;
+  optional uint32 numberOfComments = 7;
+  optional bool isVerticalOnly = 8;
+  optional uint32 titleId = 9;
+  optional bool startFromRight = 10;
+}
+
+message ProfileSettingsView {
+  repeated CommentIcon iconList = 1;
+  optional string userName = 2;
+  optional CommentIcon myIcon = 3;
+}
+
+message RegistrationData {
+  optional string deviceSecret = 1;
+}
+
+message ServiceAnnouncementsView {
+  repeated ServiceAnnouncement serviceAnnouncements = 1;
+}
+
+message SettingsView {
+  optional CommentIcon myIcon = 1;
+  optional string userName = 2;
+  optional bool noticeOfNewsAndEvents = 3;
+  optional bool noticeOfUpdatesOfSubscribedTitles = 4;
+  optional uint32 englishTitlesCount = 5;
+  optional uint32 spanishTitlesCount = 6;
+}
+
+message SubscribedTitlesView {
+  repeated Title titles = 1;
+}
+
+message TitleDetailView {
+  optional Title title = 1;
+  optional string titleImageUrl = 2;
+  optional string overview = 3;
+  optional string backgroundImageUrl = 4;
+  optional uint32 nextTimeStamp = 5;
+  optional int32 updateTiming = 6;
+  optional string viewingPeriodDescription = 7;
+  optional string nonAppearanceInfo = 8;
+  repeated Chapter firstChapterList = 9;
+  repeated Chapter lastChapterList = 10;
+  repeated Banner banners = 11;
+  repeated Title recommendedTitleList = 12;
+  optional Sns sns = 13;
+  optional bool isSimulReleased = 14;
+  optional bool isSubscribed = 15;
+  optional int32 rating = 16;
+  optional bool chaptersDescending = 17;
+  optional uint32 numberOfViews = 18;
+}
+
+message TitleRankingView {
+  repeated Title titles = 1;
+}
+
+message UpdateProfileResultView {
+  optional int32 result = 1;
+}
+
+message ErrorResult {
+  optional int32 action = 1;
+  optional Popup.OSDefault englishPopup = 2;
+  optional Popup.OSDefault spanishPopup = 3;
+  optional string debugInfo = 4;
+}
+
+message Response {
+  optional SuccessResult success = 1;
+  optional ErrorResult error = 2;
+}
+
+message SuccessResult {
+  optional bool isFeaturedUpdated = 1;
+  optional RegistrationData registerationData = 2;
+  optional HomeView homeView = 3;
+  optional FeaturedTitlesView featuredTitlesView = 4;
+  optional AllTitlesView allTitlesView = 5;
+  optional TitleRankingView titleRankingView = 6;
+  optional SubscribedTitlesView subscribedTitlesView = 7;
+  optional TitleDetailView titleDetailView = 8;
+  optional CommentListView commentListView = 9;
+  optional MangaViewer mangaViewer = 10;
+  optional WebHomeView webHomeView = 11;
+  optional SettingsView settingsView = 12;
+  optional ProfileSettingsView profileSettingsView = 13;
+  optional UpdateProfileResultView updateProfileResultView = 14;
+  optional ServiceAnnouncementsView serviceAnnouncementsView = 15;
+  optional InitialView initialView = 16;
+  optional FeedbackView feedbackView = 17;
+}
+
+message WebHomeView {
+  repeated Banner topBanners = 1;
+  repeated UpdatedTitleGroup groups = 2;
+  repeated Title ranking = 3;
+}
