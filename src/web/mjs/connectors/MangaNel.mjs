@@ -37,11 +37,16 @@ export default class MangaNel extends Connector {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.trim()
             };
-        }).filter(manga => manga.id.startsWith('/'));
+        });
     }
 
     async _getChapters(manga) {
-        let request = new Request(this.url + manga.id, this.requestOptions);
+        let uri = new URL(manga.id, this.url);
+        if(uri.origin !== this.url) {
+            alert('This manga is hot-linked to a different provider!\nPlease check the following website/connector:\n\n' + uri.origin);
+            return [];
+        }
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             this.cfMailDecrypt(element);
@@ -50,11 +55,16 @@ export default class MangaNel extends Connector {
                 title: element.text.replace(manga.title, '').trim(),
                 language: ''
             };
-        }).filter(chapter => chapter.id.startsWith('/'));
+        });
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let uri = new URL(chapter.id, this.url);
+        if(uri.origin !== this.url) {
+            alert('This chapter is hot-linked to a different provider!\nPlease check the following website/connector:\n\n' + uri.origin);
+            return [];
+        }
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.getAbsolutePath(element.dataset['src'] || element, request.url));
     }
