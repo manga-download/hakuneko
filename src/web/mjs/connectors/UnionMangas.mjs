@@ -10,9 +10,6 @@ export default class UnionMangas extends Connector {
         this.url = 'https://unionleitor.top';
     }
 
-    /**
-     *
-     */
     _getMangaListFromPages( mangaPageLinks, index ) {
         if( index === undefined ) {
             index = 0;
@@ -36,9 +33,6 @@ export default class UnionMangas extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         this.fetchDOM( this.url + '/mangas/visualizacoes', 'nav ul.pagination li:last-of-type a' )
             .then( data => {
@@ -55,11 +49,10 @@ export default class UnionMangas extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div.row.lancamento-linha div:first-of-type a:first-of-type' )
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        this.fetchDOM(request, 'div.row.lancamento-linha div:first-of-type a:first-of-type' )
             .then( data => {
                 let chapterList = data.map( element => {
                     this.cfMailDecrypt( element );
@@ -77,11 +70,10 @@ export default class UnionMangas extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
-        this.fetchDOM( this.url + chapter.id, 'source[pag]' )
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        this.fetchDOM(request, 'source[pag]')
             .then( data => {
                 let pageList = data.map( element => {
                     let uri = new URL( element.src );
