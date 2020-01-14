@@ -1,24 +1,15 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class MangaHost extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangahost';
         super.label = 'MangaHost';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://mangahosted.com';
+        this.url = 'https://mangahost2.com';
     }
 
-    /**
-     *
-     */
     _getMangaListFromPages( mangaPageLinks, index ) {
         if( index === undefined ) {
             index = 0;
@@ -41,9 +32,6 @@ export default class MangaHost extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         this.fetchDOM( this.url + '/mangas', 'div.paginador div.wp-pagenavi a.last' )
             .then( data => {
@@ -60,9 +48,6 @@ export default class MangaHost extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         this.fetchDOM( this.url + manga.id, 'ul.list_chapters li a[data-original-title]' )
             .then( data => {
@@ -81,9 +66,6 @@ export default class MangaHost extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         this.fetchRegex(request, /<img\s+id='img_\d+'\s+src='(.*?)'/g)
