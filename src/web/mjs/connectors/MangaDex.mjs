@@ -8,7 +8,7 @@ export default class MangaDex extends Connector {
         super.id = 'mangadex';
         super.label = 'MangaDex';
         this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
-        this.url = 'https://mangadex.cc';
+        this.url = 'https://mangadex.org';
         this.requestOptions.headers.set( 'x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2' );
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
