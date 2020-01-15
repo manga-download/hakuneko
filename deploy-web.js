@@ -3,11 +3,6 @@ const fs = require('fs-extra');
 const exec = require('child_process').exec;
 const config = require('./deploy-web.config');
 
-/**
- * NOTE: same function as in build-web => merge
- * @param {string} command
- * @param {bool} silent
- */
 function execute(command, silent) {
     if(!silent) {
         console.log('>', command);
@@ -39,20 +34,12 @@ function validateEnvironment() {
     }
 }
 
-/**
- * NOTE: same function as in build-web => merge
- * @param {string} identifier
- */
 async function gitStashPush(identifier) {
     identifier = identifier || 'HTDOCS#' + Date.now().toString(16).toUpperCase();
     await execute(`git stash push -u -m '${identifier}'`);
     return identifier;
 }
 
-/**
- * NOTE: same function as in build-web => merge
- * @param {string} identifier
- */
 async function gitStashPop(identifier) {
     let out = await execute(`git stash list`);
     if(out.includes(identifier)) {
@@ -60,10 +47,6 @@ async function gitStashPop(identifier) {
     }
 }
 
-/**
- * currently limited to unix systems only => TODO: use node modules instead of cmd tools
- * @param {string} archive
- */
 async function sslPack(archive, meta) {
     let key = path.resolve(config.key);
     let cwd = process.cwd();
@@ -76,9 +59,6 @@ async function sslPack(archive, meta) {
     process.chdir(cwd);
 }
 
-/**
- *
- */
 async function gitCommit() {
     let user = process.env.GITHUB_ACTOR;
     let mail = user + '@users.noreply.github.com';
@@ -88,9 +68,6 @@ async function gitCommit() {
     await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${config.branch}`);
 }
 
-/**
- *
- */
 async function main() {
     validateEnvironment();
     let meta = 'latest';
@@ -102,7 +79,7 @@ async function main() {
     await fs.move(path.resolve(config.build, archive), path.resolve(config.directory, archive));
     let stashID = await gitStashPush();
     await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
-    await execute(`git rm -r ${config.deploy} || true`);
+    await execute(`git rm -r ${config.directory} || true`);
     await gitStashPop(stashID);
     await gitCommit();
 }
