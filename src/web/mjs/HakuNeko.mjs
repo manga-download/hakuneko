@@ -11,6 +11,7 @@ import DownloadManager from './engine/DownloadManager.mjs';
 import Request from './engine/Request.mjs';
 import Settings from './engine/Settings.mjs';
 import Storage from './engine/Storage.mjs';
+import Version from './VersionInfo.mjs';
 
 export default class HakuNeko {
 
@@ -18,6 +19,7 @@ export default class HakuNeko {
         // set global first, beause some of the engine classes access them during instantiation
         this._initializeGlobals(context);
 
+        this._version = Version;
         this._enums = Enums;
 
         this._blacklist = new Blacklist();
@@ -83,5 +85,9 @@ export default class HakuNeko {
 
     get Storage() {
         return this._storage;
+    }
+
+    get Version() {
+        return this._version;
     }
 }
