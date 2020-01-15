@@ -83,8 +83,8 @@ async function gitCommit() {
     let user = process.env.GITHUB_ACTOR;
     let mail = user + '@users.noreply.github.com';
     let auth = Buffer.from('x-access-token:' + process.env.GITHUB_TOKEN).toString('base64');
-    await execute(`git add ${config.deploy}/*`);
-    await execute(`git -c user.name="${user}" -c user.email="${mail}" commit -m 'Deployed Release: ${config.deploy}'`);
+    await execute(`git add ${config.directory}/*`);
+    await execute(`git -c user.name="${user}" -c user.email="${mail}" commit -m 'Deployed Release: ${config.directory}'`);
     await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${config.branch}`);
 }
 
@@ -96,10 +96,10 @@ async function main() {
     let meta = 'latest';
     let archive = Date.now().toString(36).toUpperCase() + '.zip';
     await sslPack(archive, meta);
-    await fs.remove(config.deploy);
-    await fs.mkdir(config.deploy);
-    await fs.move(path.resolve(config.build, meta), path.resolve(config.deploy, meta));
-    await fs.move(path.resolve(config.build, archive), path.resolve(config.deploy, archive));
+    await fs.remove(config.directory);
+    await fs.mkdir(config.directory);
+    await fs.move(path.resolve(config.build, meta), path.resolve(config.directory, meta));
+    await fs.move(path.resolve(config.build, archive), path.resolve(config.directory, archive));
     let stashID = await gitStashPush();
     await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
     await execute(`git rm -r ${config.deploy} || true`);

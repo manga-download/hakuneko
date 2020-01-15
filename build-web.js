@@ -8,11 +8,6 @@ const config = require('./build-web.config');
 config.source = config.source || 'src';
 config.target = config.target || 'build';
 
-/**
- * 
- * @param {string} command 
- * @param {bool} silent 
- */
 function execute(command, silent) {
     if(!silent) {
         console.log('>', command);
@@ -32,31 +27,12 @@ function execute(command, silent) {
     });
 }
 
-/**
- * 
- */
-async function gitHead() {
-    let rev = (await execute(`git log -1 --format="%H"`)).trim();
-    return {
-        revision: rev,
-        version: rev.slice(0, 6)
-    }
-}
-
-/**
- * 
- * @param {string} identifier 
- */
 async function gitStashPush(identifier) {
     identifier = identifier || 'DEPLOY#' + Date.now().toString(16).toUpperCase();
     await execute(`git stash push -u -m '${identifier}'`);
     return identifier;
 }
 
-/**
- * 
- * @param {string} identifier 
- */
 async function gitStashPop(identifier) {
     let out = await execute(`git stash list`);
     if(out.includes(identifier)) {
@@ -64,11 +40,6 @@ async function gitStashPop(identifier) {
     }
 }
 
-/**
- * 
- * @param {NodeJS.ReadableStream} streamReader 
- * @param {NodeJS.WritableStream} streamWriter 
- */
 function pipe(streamReader, streamWriter) {
     return new Promise((resolve, reject) => {
         let stream = streamReader.pipe(streamWriter);
@@ -77,9 +48,6 @@ function pipe(streamReader, streamWriter) {
     });
 }
 
-/**
- * 
- */
 async function polymerBuild(settings) {
     let target = path.resolve(config.target);
     let cwd = process.cwd();
@@ -95,40 +63,32 @@ async function polymerBuild(settings) {
     process.chdir(cwd);
 }
 
-/**
- * 
- * @param {string} revision 
- * @param {string} version 
- */
-async function createVersion(file, revision, version) {
+async function createVersionInfo(file) {
+    let branch = (await execute(`git rev-parse --abbrev-ref HEAD`)).trim();
+    let revision = (await execute(`git rev-parse HEAD`)).trim();
     let content = [
-        `<script>`,
-        `    var revision = {`,
-        `        id: '${version}',`,
-        `        url: 'https://github.com/manga-download/hakuneko/commits/${revision}'`,
-        `    };`,
-        `</script>`
+        `export default {`,
+        `    branch: {`,
+        `        label: '${branch}',`,
+        `        link: 'https://github.com/manga-download/hakuneko/commits/${branch}',`,
+        `    },`,
+        `    revision: {`,
+        `        label: '${revision.slice(0, 6)}',`,
+        `        link: 'https://github.com/manga-download/hakuneko/commits/${revision}',`,
+        `    }`,
+        `};`
     ].join('\n');
     await fs.writeFile(file, content);
 }
 
-/**
- * 
- */
 async function main() {
-    let head = await gitHead();
     let stashID = await gitStashPush();
     await fs.remove(config.target);
     await polymerBuild(config.polymer);
-    // overwrite the polymer minified/obfuscated js files with the original minified/obfuscated js files (e.g. prevent breaking hls.light.min.js when minified by polymer)
-    //cp -f ./js/*.min.js $DIR/js/
-    // polymer will break files that are already obfuscated, so use the original obfuscated files => otherwise leads to blank/white screen + out-of-memory error in electron
-    //cp -f ./lib/hakuneko/engine/base/connectors/mangago.html $DIR/lib/hakuneko/engine/base/connectors/mangago.html
-    //cp -f ./lib/hakuneko/engine/base/connectors/tencentcomic.html $DIR/lib/hakuneko/engine/base/connectors/tencentcomic.html
-    await createVersion(path.join(config.target, config.version), head.revision, head.version);
+    await createVersionInfo(path.join(config.target, config.version));
     await gitStashPop(stashID);
 }
 
 // exit application as soon as any uncaught exception is thrown
-process.on('unhandledRejection', error => { throw error });
+process.on('unhandledRejection', error => { throw error; });
 main();

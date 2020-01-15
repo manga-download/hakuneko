@@ -1,4 +1,3 @@
-<link rel="import" href="../version.html">
 <link rel="import" href="../../polymer/polymer-element.html">
 <link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
@@ -127,7 +126,17 @@
                 <div class="info">
                     <div>A simple and easy Manga Downloader&hellip;</div>
                     <div class="credits">
-                        <div>&copy; [[ year ]] <a href="https://github.com/manga-download/hakuneko" target="_blank">HakuNeko</a> rev.<a href$="[[ revision.url ]]" target="_blank">[[ revision.id ]]</a><hr></div>
+                        <div>
+                            &copy; [[ year ]]
+                            <a href="https://github.com/manga-download/hakuneko" target="_blank">
+                                HakuNeko
+                            </a>
+                            |
+                            <a href$="[[ version.revision.link ]]" target="_blank">
+                                [[ version.branch.label ]]@[[ version.revision.label ]]
+                            </a>
+                            <hr>
+                        </div>
                         <div><a href="https://github.com/ronny1982" target="_blank">Ronny Wegener</a> (Application)</div>
                         <div><a href="https://sourceforge.net/u/medmig/profile/" target="_blank">Neogeek</a> (Connectors)</div>
                         <div><a href="http://hakuneko3kune.deviantart.com/" target="_blank">HakuNeko3Kune</a> (Artwork)</div>
@@ -136,7 +145,7 @@
                         <i class="fas fa-fw fa-book button" on-click="openWindow" title="Read User Documentation (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki"></i>
                         <i class="fas fa-fw fa-exclamation-circle button" on-click="openWindow" title="Show Troubleshooting (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki/Troubleshooting"></i>
                         <i class="fas fa-fw fa-comment button" on-click="openWindow" title="Support Channel (Discord)" data-href="https://discord.gg/FdgZ7Mr"></i>
-                        <i class="fas fa-fw fa-bug button" on-click="openWindow" title="Report Problem (GitHub Issues)" data-href="https://docs.google.com/forms/d/e/1FAIpQLSfHUn92wqncQUKbJAqY-NUYdshOoyyRYGcxHjGGUaqYuyBqCw/viewform?hl=en&usp=pp_url&entry.535298315=HakuNeko+User"></i>
+                        <i class="fas fa-fw fa-bug button" on-click="openWindow" title="Report Problem (GitHub Issues)" data-href$="https://docs.google.com/forms/d/e/1FAIpQLSfHUn92wqncQUKbJAqY-NUYdshOoyyRYGcxHjGGUaqYuyBqCw/viewform?usp=pp_url&entry.535298315=HakuNeko+User&entry.1990156964=[[ version.branch.label ]]@[[ version.revision.label ]]"></i>
                         <i class="fas fa-fw fa-network-wired button" on-click="openWindow" title="IP Geolocation Lookup" data-href="https://ipinfo.io/json"></i>
                     </div>
                 </div>
@@ -192,7 +201,7 @@
             ready() {
                 super.ready();
                 this.year = (new Date()).getFullYear();
-                this.revision = revision;
+                this.version = Engine.Version;
                 this.popupVisibility = false;
                 this.settingCategories = Engine.Settings.getCategorizedSettings();
             }
