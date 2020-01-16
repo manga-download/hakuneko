@@ -25,14 +25,13 @@ export default class CrunchyManga extends Crunchyroll {
 
     async _getChapters(manga) {
         await this._login();
-        if(!this._subscriptions.includes('manga')) {
-            throw new Error('A premium subscription is required to download chapters with HakuNeko!');
-        }
         let uri = this._createURI(this.apiURL, '/chapters');
         uri.searchParams.set('series_id', manga.id);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.chapters.reverse().map(chapter => {
+        return data.chapters.reverse().filter(chapter => {
+            return this._subscriptions.includes('manga') || chapter.viewable;
+        }).map(chapter => {
             // chapter.volume_number
             let title = chapter.locale ? chapter.locale[this.config.locale.value] || chapter.locale.enUS || '' : '';
             title = title ? ' - ' + title.name : '';
