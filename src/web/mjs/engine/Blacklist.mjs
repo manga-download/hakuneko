@@ -40,7 +40,7 @@ export default class Blacklist {
             '*://*.cpmstar.com/*',
             '*://*.criteo.net/*',
             '*://*.defpush.com/*',
-            '*://*.discordapp.com/*',
+            //'*://*.discordapp.com/*',
             '*://*.doubleclick.net/*',
             '*://*.dpypzvjarj.com/*',
             '*://*.dtscout.com/*',
