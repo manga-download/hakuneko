@@ -64,7 +64,12 @@ async function polymerBuild(settings) {
 }
 
 async function createVersionInfo(file) {
-    let branch = (await execute(`git branch | grep '*' | cut -d' ' -f2`)).trim();
+    let branch = undefined;
+    // GitHub actions checkout the commit in a detached HEAD state => try to get branch from GitHub environment variable
+    if(process.env.GITHUB_REF) {
+        process.env.GITHUB_REF.split('/').pop();
+    }
+    branch = branch || (await execute(`git rev-parse --abbrev-ref HEAD`)).trim();
     let revision = (await execute(`git rev-parse HEAD`)).trim();
     let content = [
         `export default {`,
