@@ -64,7 +64,7 @@ async function polymerBuild(settings) {
 }
 
 async function createVersionInfo(file) {
-    let branch = (await execute(`git rev-parse --abbrev-ref HEAD`)).trim();
+    let branch = (await execute(`git branch | grep '*' | cut -d' ' -f2`)).trim();
     let revision = (await execute(`git rev-parse HEAD`)).trim();
     let content = [
         `export default {`,
