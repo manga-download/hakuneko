@@ -1,18 +1,13 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class GManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'gmanga';
         super.label = 'GManga';
-        this.tags = [ 'manga', 'arabic' ];
+        this.tags = [ 'manga', 'webtoon', 'arabic' ];
         this.url = 'https://gmanga.me';
 
         this.mangaSearch = {
@@ -29,109 +24,78 @@ export default class GManga extends Connector {
         };
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( page ) {
-        page = page || 1;
-        this._setMangaRequestOptions( page );
-        let request = new Request( this.url + '/api/mangas/search', this.requestOptions );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'script[data-component-name="HomeApp"]');
+        data = JSON.parse(data[0].textContent);
+        let id = data.mangaDataAction.mangaData.id;
+        let title = data.mangaDataAction.mangaData.title; // data.mangaDataAction.mangaData.arabic_title
+        return new Manga(this, id, title);
+    }
+
+    async _getMangas() {
+        let mangaList = [];
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        this._setMangaRequestOptions(page);
+        let request = new Request(new URL('/api/mangas/search', this.url), this.requestOptions);
         this._clearRequestOptions();
-        return this.fetchJSON( request )
-            .then( data => {
-                data = data[ 'iv' ] ? this._haqiqa( data.data ) : data;
-                if( !data.mangas || !data.mangas.length ) {
-                    return Promise.resolve( [] );
-                }
-                let mangaList = data.mangas.map( manga => {
-                    return {
-                        id: manga.id,
-                        title: manga.title
-                    };
-                } );
-                return this._getMangaListFromPages( page + 1 )
-                    .then( mangas => mangas.concat( mangaList ) );
-            } );
+        let data = await this.fetchJSON(request);
+        data = data['iv'] ? this._haqiqa(data.data) : data;
+        data = data.mangas || [];
+        return data.map( manga => {
+            return {
+                id: manga.id,
+                title: manga.title
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this._getMangaListFromPages()
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL(`/api/mangas/${manga.id}/releases`, this.url), this.requestOptions);
+        let data = await this.fetchJSON(request);
+        data = data['iv'] ? this._haqiqa(data.data) : data;
+        data = data['isCompact'] ? this._unpack(data) : data;
+        return data.releases.map(chapter => {
+            let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
+            title += chapter.title ? ' - ' + chapter.title : '' ;
+            title += chapter.team_name ? ' [' + chapter.team_name + ']' : '' ;
+            return {
+                id: manga.id + '/chapter/' + chapter.chapter + '/' + chapter.team_name,
+                title: title,
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        fetch( this.url + '/api/mangas/' + manga.id, this.requestOptions )
-            .then( response => response.json() )
-            .then( data => {
-                data = data[ 'iv' ] ? this._haqiqa( data.data ) : data;
-                data = data[ 'isCompact' ] ? this._unpack( data ) : data;
-                let chapterList = data.mangaReleases.map( chapter => {
-                    let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
-                    title += chapter.title ? ' - ' + chapter.title : '' ;
-                    title += chapter.team_name ? ' [' + chapter.team_name + ']' : '' ;
-                    return {
-                        id: manga.id + '/chapter/' + chapter.chapter + '/' + chapter.team_name,
-                        title: title,
-                        language: 'ae'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL('/mangas/' + chapter.id, this.url), this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.text();
+        return data.match(/"hq_pages"\s*:\s*"(.*?)"\s*,/)[1].split('\\n').map(page => {
+            // TODO: Create protocol link and get keys ad-hoc per request, because of limited validity (lease time)
+            let uri = new URL(page.replace('\\r', '').trim(), 'https://media.gmanga.me/uploads/releases/');
+            uri.searchParams.set('ak', parseInt(Date.now() / 1000 + 120 - 5).toString('36'));
+            return uri.href;
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        fetch( this.url + '/mangas/' + chapter.id, this.requestOptions )
-            .then( response => response.text() )
-            .then( data => {
-                let pageList = data.match( /"hq_pages"\s*:\s*"(.*?)"\s*,/ )[1].split( '\\n' ).map( page => {
-                    // TODO: Create protocol link and get keys ad-hoc per request, because of limited validity (lease time)
-                    let uri = new URL( page.replace( '\\r', '' ).trim(), 'https://media.gmanga.me/uploads/releases/' );
-                    uri.searchParams.set( 'ak', parseInt( Date.now() / 1000 + 120 - 5 ).toString( '36' ) );
-                    return uri.href;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _setMangaRequestOptions( page ) {
+    _setMangaRequestOptions(page) {
         this.mangaSearch.page = page;
         this.requestOptions.method = 'POST';
-        this.requestOptions.headers.set( 'content-type', 'application/json' );
-        this.requestOptions.body = JSON.stringify( this.mangaSearch );
+        this.requestOptions.headers.set('content-type', 'application/json');
+        this.requestOptions.body = JSON.stringify(this.mangaSearch);
     }
 
-    /**
-     *
-     */
     _clearRequestOptions() {
         delete this.requestOptions.body;
-        this.requestOptions.headers.delete( 'content-type' );
+        this.requestOptions.headers.delete('content-type');
         this.requestOptions.method = 'GET';
         this.mangaSearch.page = 0;
     }
