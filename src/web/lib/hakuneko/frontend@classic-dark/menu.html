@@ -67,14 +67,21 @@
                 border: var(--menu-control-border);
             }
             .info {
+                flex: 1;
                 margin-left: 0.5em;
             }
             .credits {
                 background-color: var(--menu-credits-background-color);
                 padding: 0.5em;
                 border: var(--menu-control-border);
-                margin-top: 0.5em;
                 margin-bottom: 0.5em;
+            }
+            .people {
+                width: 100%;
+            }
+            .people td {
+                vertical-align: top;
+                padding-right: 0.5em;
             }
             .settings {
                 flex: 1;
@@ -124,29 +131,40 @@
                     <img src="./img/logo_m.png"/>
                 </div>
                 <div class="info">
-                    <div>A simple and easy Manga Downloader&hellip;</div>
                     <div class="credits">
                         <div>
                             &copy; [[ year ]]
-                            <a href="https://github.com/manga-download/hakuneko" target="_blank">
+                            <i class="fas button" on-click="openWindow" title="https://git.io/hakuneko" data-href="https://git.io/hakuneko">
                                 HakuNeko
-                            </a>
+                            </i>
                             |
-                            <a href$="[[ version.revision.link ]]" target="_blank">
+                            <i class="fas button" on-click="openWindow" title="Revision History" data-href$="[[ version.revision.link ]]">
                                 [[ version.branch.label ]]@[[ version.revision.label ]]
-                            </a>
+                            </i>
                             <hr>
                         </div>
-                        <div><a href="https://github.com/ronny1982" target="_blank">Ronny Wegener</a> (Application)</div>
-                        <div><a href="https://sourceforge.net/u/medmig/profile/" target="_blank">Neogeek</a> (Connectors)</div>
-                        <div><a href="http://hakuneko3kune.deviantart.com/" target="_blank">HakuNeko3Kune</a> (Artwork)</div>
+                        <table class="people" cellpadding="2" cellspacing="0">
+                            <tr>
+                                <td width="1">Development:</td>
+                                <td>
+                                    <i class="fas button" on-click="openWindow" data-href="https://github.com/orgs/manga-download/people">Maintainers</i><br>
+                                    <i class="fas button" on-click="openWindow" data-href="https://github.com/manga-download/hakuneko/graphs/contributors">Contributors</i>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="1">Artwork:</td>
+                                <td>
+                                    <i class="fas button" on-click="openWindow" data-href="https://www.deviantart.com/hakuneko3kune">HakuNeko3Kune</i>
+                                </td>
+                            </tr>
+                        </table>
                     </div>
                     <div>
-                        <i class="fas fa-fw fa-book button" on-click="openWindow" title="Read User Documentation (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki"></i>
-                        <i class="fas fa-fw fa-exclamation-circle button" on-click="openWindow" title="Show Troubleshooting (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki/Troubleshooting"></i>
-                        <i class="fas fa-fw fa-comment button" on-click="openWindow" title="Support Channel (Discord)" data-href="https://discord.gg/FdgZ7Mr"></i>
-                        <i class="fas fa-fw fa-bug button" on-click="openWindow" title="Report Problem (GitHub Issues)" data-href$="https://docs.google.com/forms/d/e/1FAIpQLSfHUn92wqncQUKbJAqY-NUYdshOoyyRYGcxHjGGUaqYuyBqCw/viewform?usp=pp_url&entry.535298315=HakuNeko+User&entry.1990156964=[[ version.branch.label ]]@[[ version.revision.label ]]"></i>
-                        <i class="fas fa-fw fa-network-wired button" on-click="openWindow" title="IP Geolocation Lookup" data-href="https://ipinfo.io/json"></i>
+                        <i class="fas fa-fw fa-2x fa-book button" on-click="openWindow" title="Read User Documentation (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki"></i>
+                        <i class="fas fa-fw fa-2x fa-exclamation-circle button" on-click="openWindow" title="Show Troubleshooting (GitHub Wiki)" data-href="https://github.com/manga-download/hakuneko/wiki/Troubleshooting"></i>
+                        <i class="fas fa-fw fa-2x fa-bug button" on-click="openWindow" title="Report Problem (GitHub Issues)" data-href$="https://docs.google.com/forms/d/e/1FAIpQLSfHUn92wqncQUKbJAqY-NUYdshOoyyRYGcxHjGGUaqYuyBqCw/viewform?usp=pp_url&entry.535298315=HakuNeko+User&entry.1990156964=[[ version.branch.label ]]@[[ version.revision.label ]]"></i>
+                        <i class="fab fa-fw fa-2x fa-discord fa-flip-horizontal button" on-click="openWindow" title="Support Channel (Discord)" data-href="https://discordapp.com/invite/A5d3NDf"></i>
+                        <i class="fas fa-fw fa-2x fa-street-view button" on-click="openWindow" title="IP Geolocation Lookup" data-href="https://ipinfo.io/json"></i>
                     </div>
                 </div>
             </div>
