@@ -21,13 +21,14 @@ jobs:
           #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
           sudo /usr/bin/Xvfb 99 -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
           disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
-      - uses: actions/checkout@v1
+      - name: Checkout ${{ github.repository }} @ ${{ github.ref }}
+        uses: actions/checkout@v2
         with:
           fetch-depth: 1
       - name: Install NodeJS
         uses: actions/setup-node@v1
         with:
-          node-version: 10.x
+          node-version: 12.x
       - name: Install NPM Packages
         run: npm install
       - name: Lint
