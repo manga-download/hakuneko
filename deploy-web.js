@@ -53,7 +53,7 @@ async function sslPack(archive, meta) {
     if(config.build) {
         process.chdir(config.build);
     }
-    await execute(`zip -r ${archive} .`);
+    await execute(`zip -r ${archive} . > /dev/null`);
     let signature = await execute(`openssl dgst -sha256 -hex -sign ${key} -passin ${config.passphrase} ${archive} | cut -d' ' -f2`);
     await fs.writeFile(meta, `${archive}?signature=${signature}`);
     process.chdir(cwd);
@@ -78,6 +78,7 @@ async function main() {
     await fs.move(path.resolve(config.build, meta), path.resolve(config.directory, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.directory, archive));
     let stashID = await gitStashPush();
+    await execute(`git branch`);
     await execute(`git checkout ${config.branch} || git checkout -b ${config.branch}`);
     await execute(`git rm -r ${config.directory} || true`);
     await gitStashPop(stashID);
