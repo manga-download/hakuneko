@@ -76,12 +76,16 @@ export default class GManga extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL('/mangas/' + chapter.id, this.url), this.requestOptions);
-        let response = await fetch(request);
-        let data = await response.text();
-        return data.match(/"hq_pages"\s*:\s*"(.*?)"\s*,/)[1].split('\\n').map(page => {
-            // TODO: Create protocol link and get keys ad-hoc per request, because of limited validity (lease time)
-            let uri = new URL(page.replace('\\r', '').trim(), 'https://media.gmanga.me/uploads/releases/');
-            uri.searchParams.set('ak', parseInt(Date.now() / 1000 + 120 - 5).toString('36'));
+        let data = await this.fetchDOM(request, 'script[data-component-name="HomeApp"]');
+        data = JSON.parse(data[0].textContent);
+        let key = data.globals.mediaKey;
+        let url = (data.globals.wla.configs.http_media_server || data.globals.wla.configs.media_server) + '/uploads/releases/';
+        data = data.readerDataAction.readerData.release;
+        let images = data.hq_pages.length > 0 ? data.hq_pages : data.mq_pages.length > 0 ? data.mq_pages : data.lq_pages;
+        return images.map(image => {
+            let uri = new URL(url, request.url);
+            uri.pathname += image;
+            uri.searchParams.set('ak', key);
             return uri.href;
         });
     }
