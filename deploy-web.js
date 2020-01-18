@@ -62,8 +62,7 @@ async function sslPack(archive, meta) {
 async function gitCommit() {
     let user = process.env.GITHUB_ACTOR;
     let mail = user + '@users.noreply.github.com';
-    let token = process.env.HAKUNEKO_TOKEN || process.env.GITHUB_TOKEN;
-    let auth = Buffer.from('x-access-token:' + token).toString('base64');
+    let auth = Buffer.from('x-access-token:' + process.env.GITHUB_TOKEN).toString('base64');
     await execute(`git add ${config.directory}/*`);
     await execute(`git -c user.name="${user}" -c user.email="${mail}" commit -m 'Deployed Release: ${config.directory}'`);
     await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${config.branch}`);
@@ -73,7 +72,7 @@ async function gitCommit() {
     // - https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869
     // - https://github.com/peaceiris/actions-gh-pages/issues/9
     let uri = `https://api.github.com/repos/manga-download/hakuneko/pages/builds`;
-    await execute(`curl -L -X POST -H "Content-Type: application/json" -H "Authorization: TOKEN ${process.env.HAKUNEKO_TOKEN}" ${uri}`)
+    await execute(`curl -L -X POST -H "Content-Type: application/json" -H "Authorization: TOKEN ${process.env.GITHUB_TOKEN}" ${uri}`)
 }
 
 async function main() {
