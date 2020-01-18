@@ -67,6 +67,13 @@ async function gitCommit() {
     await execute(`git add ${config.directory}/*`);
     await execute(`git -c user.name="${user}" -c user.email="${mail}" commit -m 'Deployed Release: ${config.directory}'`);
     await execute(`git -c http.extraheader="AUTHORIZATION: Basic ${auth}" push origin HEAD:${config.branch}`);
+    // NOTE: Workaround to trigger page build (which is not done for public repositories by the commit above)
+    // https://developer.github.com/v3/repos/pages/#request-a-page-build
+    // See:
+    // - https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869
+    // - https://github.com/peaceiris/actions-gh-pages/issues/9
+    let uri = `https://api.github.com/repos/manga-download/hakuneko/pages/build`;
+    await execute(`curl -L -X POST -H "Content-Type: application/json" -H "Authorization: token ${process.env.GITHUB_TOKEN}" ${uri}`)
 }
 
 async function main() {
