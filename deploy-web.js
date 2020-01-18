@@ -53,7 +53,7 @@ async function sslPack(archive, meta) {
     if(config.build) {
         process.chdir(config.build);
     }
-    await execute(`zip -r ${archive} .`);
+    await execute(`zip -r ${archive} . > /dev/null`);
     let signature = await execute(`openssl dgst -sha256 -hex -sign ${key} -passin ${config.passphrase} ${archive} | cut -d' ' -f2`);
     await fs.writeFile(meta, `${archive}?signature=${signature}`);
     process.chdir(cwd);
