@@ -78,6 +78,7 @@ async function main() {
     await fs.move(path.resolve(config.build, meta), path.resolve(config.directory, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.directory, archive));
     let stashID = await gitStashPush();
+    await execute(`git remote -v`);
     await execute(`git branch`);
     await execute(`git checkout --track origin/${config.branch}`);
     await execute(`git rm -r ${config.directory} || true`);
