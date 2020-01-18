@@ -80,8 +80,8 @@ async function main() {
     let stashID = await gitStashPush();
     await execute(`git remote -v`);
     await execute(`git branch`);
-    await execute(`git fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin/${config.branch}`);
-    await execute(`git checkout --track origin/${config.branch}`);
+    await execute(`git fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 ${config.branch}`);
+    await execute(`git checkout --track ${config.branch}`);
     // /usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
     await execute(`git rm -r ${config.directory} || true`);
     await gitStashPop(stashID);
