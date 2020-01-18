@@ -94,7 +94,7 @@ module.exports = class ElectronBootstrap {
                     buffer = Buffer.from(JSON.stringify(await fs.readdir(endpoint)));
                 }
                 if(stats.isFile()) {
-                    mime = endpoint.endsWith('.mjs') ? 'text/javascript' : '';
+                    mime = endpoint.endsWith('.mjs') ? 'text/javascript' : undefined;
                     buffer = await fs.readFile(endpoint);
                 }
                 callback({
