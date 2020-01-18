@@ -1,7 +1,7 @@
 export default {
     branch: {
-        label: 'master',
-        link: 'https://github.com/manga-download/hakuneko/commits/master',
+        label: '6.1.7',
+        link: 'https://github.com/manga-download/hakuneko/commits/6.1.7',
     },
     revision: {
         label: 'HEAD',
