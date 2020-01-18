@@ -78,11 +78,12 @@ async function main() {
     await fs.move(path.resolve(config.build, meta), path.resolve(config.directory, meta));
     await fs.move(path.resolve(config.build, archive), path.resolve(config.directory, archive));
     let stashID = await gitStashPush();
+    await execute(`git fetch origin ${config.branch}`); // await execute(`git -c protocol.version=2 fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 origin +gh-pages:refs/remotes/origin/gh-pages`);
+    await execute(`git checkout ${config.branch}`); // await execute(`git checkout --progress --force -B gh-pages refs/remotes/origin/gh-pages`);
+    await execute(`cat .git/config`); // DEBUG
+    await execute(`git branch`); // DEBUG
     await execute(`cat .git/config`);
     await execute(`git branch`);
-    //await execute(`git fetch --no-tags --prune --progress --no-recurse-submodules --depth=1 ${config.branch}`);
-    await execute(`git checkout --track ${config.branch}`);
-    // /usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
     await execute(`git rm -r ${config.directory} || true`);
     await gitStashPop(stashID);
     await gitCommit();
