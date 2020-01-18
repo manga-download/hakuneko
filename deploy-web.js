@@ -73,7 +73,7 @@ async function gitCommit() {
     // - https://github.community/t5/GitHub-Actions/Github-action-not-triggering-gh-pages-upon-push/td-p/26869
     // - https://github.com/peaceiris/actions-gh-pages/issues/9
     let uri = `https://api.github.com/repos/manga-download/hakuneko/pages/build`;
-    await execute(`curl -L -X POST -H "Content-Type: application/json" -H "Authorization: token ${process.env.GITHUB_TOKEN}" ${uri}`)
+    await execute(`curl -L -X POST -H "Content-Type: application/json" -H "Authorization: TOKEN ${process.env.HAKUNEKO_TOKEN}" ${uri}`)
 }
 
 async function main() {
