@@ -209,10 +209,10 @@ describe('UpdateServerManager', function () {
         it('should throw error when URL is invalid', async () => {
             let testee = fixture.createTestee();
             try {
-                await testee.getUpdateArchive({link: 'null'});
+                await testee.getUpdateArchive({link: 'foobar'});
                 assert.fail('Expected error not thrown!');
             } catch(error) {
-                assert.equal(error.message, 'Unable to determine the domain name');
+                assert.equal(error.message, 'Invalid URL: foobar');
             }
         });
 
