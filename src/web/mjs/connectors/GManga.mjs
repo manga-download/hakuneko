@@ -78,16 +78,35 @@ export default class GManga extends Connector {
         let request = new Request(new URL('/mangas/' + chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'script[data-component-name="HomeApp"]');
         data = JSON.parse(data[0].textContent);
-        let key = data.globals.mediaKey;
         let url = (data.globals.wla.configs.http_media_server || data.globals.wla.configs.media_server) + '/uploads/releases/';
         data = data.readerDataAction.readerData.release;
-        let images = data.hq_pages.length > 0 ? data.hq_pages : data.mq_pages.length > 0 ? data.mq_pages : data.lq_pages;
+        let images = [];
+        if(data.pages && data.pages.length > 0) {
+            images = data.pages.map(page => '/hq/' + page);
+        } else {
+            images = data.webp_pages.map(page => '/hq_webp/' + page);
+        }
         return images.map(image => {
             let uri = new URL(url, request.url);
-            uri.pathname += image;
-            uri.searchParams.set('ak', key);
-            return uri.href;
+            uri.pathname += data.storage_key + image;
+            return this.createConnectorURI(uri.href);
         });
+    }
+
+    async _handleConnectorURI(payload) {
+        /*
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
+        let uri = new URL(payload, this.url);
+        let lease = (parseInt(Date.now() / 1000) + 120).toString(36);
+        uri.searchParams.set('ak', lease);
+        let data = await super._handleConnectorURI(uri.href);
+        if(data.mimeType === 'text/html') {
+            return super._handleConnectorURI(uri.href.replace('/hq', '/mq'));
+        } else {
+            return data;
+        }
     }
 
     _setMangaRequestOptions(page) {
