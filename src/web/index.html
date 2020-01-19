@@ -24,7 +24,7 @@
         }
 
         #notification {
-            display: none;
+            display: block;
             position: absolute;
             top: 0;
             left: 0;
@@ -46,10 +46,9 @@
         }
 
         #notification > #close {
-            position: absolute;
-            margin-top: -2px;
-            right: 1em;
+            font-weight: bold;
             cursor: pointer;
+            opacity: 0.25;
         }
     </style>
     <script>
@@ -61,13 +60,11 @@
 </head>
 <body>
     <div id="notification">
-        A new <strong>HakuNeko Desktop Client</strong> is available for download on
-        <a href="https://github.com/manga-download/hakuneko/releases" target="_blank">GitHub</a>
-        <!--
-        or
-        <a href="https://sourceforge.net/projects/hakuneko/files/" target="_blank">SourceForge</a>
-        -->
-        <span id="close" onclick="closeNotification()" title="Hide notification">✖</span><!-- ❌&times; -->
+        A new <strong>HakuNeko Desktop Client</strong> is available on GitHub.
+        Please download and install the latest version from 
+        <a href="https://github.com/manga-download/hakuneko/releases/latest" target="_blank">git.io/hakuneko</a>.
+        This client will no longer be supported.
+        <span id="close" onclick="closeNotification()" title="Hide notification">[close]</span>
     </div>
     <hakuneko-app></hakuneko-app>
 </body>
