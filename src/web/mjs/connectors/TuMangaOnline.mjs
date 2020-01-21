@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class TuMangaOnline extends Connector {
 
@@ -14,6 +15,14 @@ export default class TuMangaOnline extends Connector {
     async _initializeConnector() {
         await super._initializeConnector();
         await this.wait(2500);
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'body script[type="application/ld+json"]');
+        let id = uri.pathname + uri.search;
+        let title = JSON.parse(data[0].textContent).headline;
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
