@@ -128,6 +128,8 @@ module.exports = class ElectronBootstrap {
                         role: 'toggleDevTools',
                         accelerator: 'F12'
                     },
+                    { type: 'separator' },
+                    { role: 'quit' }
                 ]
             },
             {
