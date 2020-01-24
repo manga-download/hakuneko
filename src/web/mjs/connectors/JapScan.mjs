@@ -97,85 +97,59 @@ export default class JapScan extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let uri = new URL( payload.imageURL );
-        let file = payload.imageFile;
+    async _handleConnectorURI( payload ) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        return fetch( uri.href, this.requestOptions )
-            .then( response => response.text() )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let img = dom.querySelector( 'div#image' );
-                if( !img || !img.dataset['src'] ) {
-                    throw new Error( 'No element with id #image found in page, or dataset.src is missing!' );
-                }
-                let link = new URL( img.dataset.src, uri.origin );
-                if( file ) {
-                    link.pathname = link.pathname.split( '/' ).slice( 0, -1 ).join( '/' ) + '/' + file;
-                }
-                /*
-                 * +++ NOT SCRAMBLED +++
-                 *   <script src="/js/iYFbYi.js">
-                 *   <script src="/js/iYFbYi_Fee_gb_NbY.js">
-                 * +++ SCRAMBLED +++
-                 *   <script src="/js/iYFbYi_UibMqYb.js">
-                 *   <script src="/js/iYFbYi_Fee_gb_NbY_UibMqYb.js">
-                 */
-                if( data.indexOf( '_UibMqYb.js' ) > -1 ) {
-                    return this._getImageDescrambled( link.href );
-                } else {
-                    return this._getImageRaw( link.href );
-                }
-            } )
-            .then( data => {
-                this._applyRealMime( data );
-                return Promise.resolve( data );
-            } );
+        let imageLink = payload.imageFile;
+        let uri = new URL(payload.imageURL);
+        let request = new Request(uri, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.text();
+        if(!imageLink) {
+            let dom = this.createDOM(data);
+            let img = dom.querySelector('div#image');
+            if(!img || !img.dataset['src']) {
+                throw new Error( 'No element with id #image found in page, or dataset.src is missing!' );
+            }
+            imageLink = new URL(img.dataset.src, uri.origin).href;
+        }
+        /*
+         * +++ NOT SCRAMBLED +++
+         *   <script src="/js/iYFbYi.js">
+         *   <script src="/js/iYFbYi_Fee_gb_NbY.js">
+         * +++ SCRAMBLED +++
+         *   <script src="/js/iYFbYi_UibMqYb.js">
+         *   <script src="/js/iYFbYi_Fee_gb_NbY_UibMqYb.js">
+         */
+        if(data.indexOf('_UibMqYb.js' ) > -1) {
+            return this._getImageDescrambled(imageLink);
+        } else {
+            return super._handleConnectorURI(imageLink);
+        }
     }
 
-    /**
-     *
-     */
-    _getImageRaw( url ) {
-        return fetch( url, this.requestOptions )
-            .then( response => response.blob() )
-            .then( data => {
-                return this._blobToBuffer( data );
-            } );
+    async _getImageDescrambled(url) {
+        let request = new Request(url, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.blob();
+        let bitmap = await createImageBitmap(data);
+        // TODO: find better detection to determine which descramble algorithm to use
+        if(url.startsWith(this.urlCDN + 'cr_images')) {
+            data = await this._descrambleCR(bitmap);
+        } else if(url.startsWith(this.urlCDN + 'clel')) {
+            data = this._descrambleCLEL(bitmap);
+        } else if(url.startsWith(this.urlCDN + 'lel')) {
+            data = this._descrambleCLEL(bitmap);
+        } else {
+            throw new Error(`The image descrambling for '${url}' is not yet supported!`);
+        }
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 
-    /**
-     *
-     */
-    _getImageDescrambled( url ) {
-        return fetch( url, this.requestOptions )
-            .then( response => response.blob() )
-            .then( data => createImageBitmap( data ) )
-            .then( bitmap => {
-                // TODO: find better detection to determine which descramble algorithm to use
-                if( url.startsWith( this.urlCDN + 'cr_images' ) ) {
-                    return this._descrambleCR( bitmap );
-                }
-                if( url.startsWith( this.urlCDN + 'clel' ) ) {
-                    return this._descrambleCLEL( bitmap );
-                }
-                if( url.startsWith( this.urlCDN + 'lel' ) ) {
-                    return this._descrambleCLEL( bitmap );
-                }
-                throw new Error( `The image descrambling for '${url}' is not yet supported!` );
-            } )
-            .then( data => this._blobToBuffer( data ) );
-    }
-
-    /**
-     *
-     */
     _descrambleCR( bitmap ) {
         return new Promise( resolve => {
             let width = bitmap.width;
@@ -210,9 +184,6 @@ export default class JapScan extends Connector {
         } );
     }
 
-    /**
-     *
-     */
     _descrambleCLEL( bitmap ) {
         return new Promise( resolve => {
             let tileWidth = 100;
@@ -242,9 +213,6 @@ export default class JapScan extends Connector {
         } );
     }
 
-    /**
-     *
-     */
     _getTilePosition( tile, tileCount, tileSize ) {
         return tile % 2 == 0 && tileCount - 2 == tile ? (tile - 1) * tileSize + tileSize : tileCount - 1 == tile ? (tile - 1) * tileSize + tileSize : tile % 2 != 0 ? (tile - 1) * tileSize : (tile + 1) * tileSize;
     }
