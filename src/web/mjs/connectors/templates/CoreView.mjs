@@ -115,8 +115,10 @@ export default class CoreView extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id + '.json', this.url), this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.readableProduct.pageStructure.single.filter(page => page.type === 'main').map(page => {
-            if(['usagi', 'baku'].includes(page.choJuGiga)) {
+        let encryption = data.readableProduct.pageStructure.choJuGiga;
+        let pages = data.readableProduct.pageStructure.pages || data.readableProduct.pageStructure.single/* backward compatibility */;
+        return pages.filter(page => page.type === 'main').map(page => {
+            if(['usagi', 'baku'].some(mode => mode === encryption || page.choJuGiga === encryption/* backward compatibility */)) {
                 return this.createConnectorURI(page.src);
             } else {
                 return this.getAbsolutePath(page.src, request.url);
