@@ -46,21 +46,17 @@ export default class CoreView extends Connector {
         });
     }
 
-    /**
-     *
-     */
-    _insertEndpoint( uri, domElement ) {
-        let request = new Request( uri, this.requestOptions );
-        return fetch( request )
-            .then( response => response.json() )
-            .then( data => {
-                let content = data.html;
-                content = content.replace( /<img/g, '<source');
-                content = content.replace( /<\/img/g, '</source');
-                domElement.innerHTML = content;
-                return Promise.resolve();
-            } )
-            .catch( () => Promise.resolve() );
+    async _insertEndpoint(uri, element) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        try {
+            let content = data.html;
+            content = content.replace(/<img/g, '<source');
+            content = content.replace(/<\/img/g, '</source');
+            element.innerHTML = content;
+        } catch(_) {
+            return Promise.resolve();
+        }
     }
 
     /**
@@ -115,8 +111,11 @@ export default class CoreView extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id + '.json', this.url), this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.readableProduct.pageStructure.single.filter(page => page.type === 'main').map(page => {
-            if(['usagi', 'baku'].includes(page.choJuGiga)) {
+        if(!data.readableProduct.isPublic && !data.readableProduct.hasPurchased) {
+            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
+        }
+        return data.readableProduct.pageStructure.pages.filter(page => page.type === 'main').map(page => {
+            if(['usagi', 'baku'].some(encryption => data.readableProduct.pageStructure.choJuGiga === encryption)) {
                 return this.createConnectorURI(page.src);
             } else {
                 return this.getAbsolutePath(page.src, request.url);
@@ -124,72 +123,56 @@ export default class CoreView extends Connector {
         });
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        return fetch( request )
-            .then( response => response.blob() )
-            .then( data => {
-            //if( true ) {
-                return this._descrambleImage( data );
-            /*
-             *} else {
-             *    return Promise.resolve( data );
-             *}
-             */
-            } )
-            .then( data => this._blobToBuffer( data ) );
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._descrambleImage(data);
+        return this._blobToBuffer(data);
     }
 
     /**
-     **************************
+     ***************************
      *** COREVIEW CODE BEGIN ***
-     *************************
+     ***************************
      */
 
-    /**
-     *
-     */
-    _descrambleImage( blob ) {
-        return createImageBitmap( blob )
-            .then( bitmap => {
-                return new Promise( resolve => {
-                    let canvas = document.createElement( 'canvas' );
-                    canvas.width = bitmap.width;
-                    canvas.height = bitmap.height;
-                    var ctx = canvas.getContext( '2d' );
+    async _descrambleImage(blob) {
+        let bitmap = await createImageBitmap(blob);
+        return new Promise(resolve => {
+            let canvas = document.createElement('canvas');
+            canvas.width = bitmap.width;
+            canvas.height = bitmap.height;
+            var ctx = canvas.getContext('2d');
 
-                    let width = canvas.width;
-                    let height = canvas.height;
-                    let DIVIDE_NUM = 4;
-                    let MULTIPLE = 8;
-                    let cell_width = Math.floor(width / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE;
-                    let cell_height = Math.floor(height / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE;
-                    //view.drawImage(0, 0, width, height, 0, 0);
-                    ctx.drawImage( bitmap, 0, 0, width, height, 0, 0, width, height );
-                    for (let e = 0; e < DIVIDE_NUM * DIVIDE_NUM; e++) {
-                        let t = Math.floor(e / DIVIDE_NUM) * cell_height;
-                        let n = e % DIVIDE_NUM * cell_width;
-                        let r = Math.floor(e / DIVIDE_NUM);
-                        let i = e % DIVIDE_NUM * DIVIDE_NUM + r;
-                        let o = i % DIVIDE_NUM * cell_width;
-                        let s = Math.floor(i / DIVIDE_NUM) * cell_height;
-                        //view.drawImage(n, t, cell_width, cell_height, o, s);
-                        ctx.drawImage( bitmap, n, t, cell_width, cell_height, o, s, cell_width, cell_height );
-                    }
+            let width = canvas.width;
+            let height = canvas.height;
+            let DIVIDE_NUM = 4;
+            let MULTIPLE = 8;
+            let cell_width = Math.floor(width / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE;
+            let cell_height = Math.floor(height / (DIVIDE_NUM * MULTIPLE)) * MULTIPLE;
+            //view.drawImage(0, 0, width, height, 0, 0);
+            ctx.drawImage(bitmap, 0, 0, width, height, 0, 0, width, height);
+            for (let e = 0; e < DIVIDE_NUM * DIVIDE_NUM; e++) {
+                let t = Math.floor(e / DIVIDE_NUM) * cell_height;
+                let n = e % DIVIDE_NUM * cell_width;
+                let r = Math.floor(e / DIVIDE_NUM);
+                let i = e % DIVIDE_NUM * DIVIDE_NUM + r;
+                let o = i % DIVIDE_NUM * cell_width;
+                let s = Math.floor(i / DIVIDE_NUM) * cell_height;
+                //view.drawImage(n, t, cell_width, cell_height, o, s);
+                ctx.drawImage(bitmap, n, t, cell_width, cell_height, o, s, cell_width, cell_height);
+            }
 
-                    canvas.toBlob( data => {
-                        resolve( data );
-                    }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100 );
-                } );
-            } );
+            canvas.toBlob(data => {
+                resolve(data);
+            }, Engine.Settings.recompressionFormat.value, parseFloat( Engine.Settings.recompressionQuality.value )/100);
+        });
     }
 
     /**
-     ************************
+     *************************
      *** COREVIEW CODE END ***
-     ***********************
+     *************************
      */
 }
