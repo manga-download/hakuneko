@@ -127,7 +127,7 @@ module.exports = class ElectronBootstrap {
                     {
                         role: 'toggleDevTools',
                         accelerator: 'F12'
-                    },
+                    }
                 ]
             },
             {
@@ -154,6 +154,12 @@ module.exports = class ElectronBootstrap {
                 ]
             }
         ];
+
+        if(process.platform === 'darwin') {
+            menu[0].submenu.push({ type: 'separator' });
+            menu[0].submenu.push({ role: 'quit' });
+        }
+
         electron.Menu.setApplicationMenu(electron.Menu.buildFromTemplate(menu));
     }
 
