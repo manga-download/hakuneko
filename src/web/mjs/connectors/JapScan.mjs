@@ -97,7 +97,7 @@ export default class JapScan extends Connector {
             } );
     }
 
-    async _handleConnectorURI( payload ) {
+    async _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
@@ -115,36 +115,46 @@ export default class JapScan extends Connector {
             }
             imageLink = new URL(img.dataset.src, uri.origin).href;
         }
+
         /*
          * +++ NOT SCRAMBLED +++
          *   <script src="/js/iYFbYi.js">
          *   <script src="/js/iYFbYi_Fee_gb_NbY.js">
+         *   <script src="/ujs/cplopc_6.ud.js"></script>
          * +++ SCRAMBLED +++
          *   <script src="/js/iYFbYi_UibMqYb.js">
          *   <script src="/js/iYFbYi_Fee_gb_NbY_UibMqYb.js">
+         *   <script src="/ujs/mzvyzm_zixmtkozy_6.en.js"></script>
+         *   <script src="/ujs/shofje-zi.cyd.zi.js"></script> => CryptoJS
          */
-        if(data.indexOf('_UibMqYb.js' ) > -1) {
-            return this._getImageDescrambled(imageLink);
-        } else {
-            return super._handleConnectorURI(imageLink);
+
+        // sample: https://www.japscan.co/lecture-en-ligne/black-clover-quartet-knights/22/
+        if(/mzvyzm_zixmtkozy[^"]+\.js/.test(data)) {
+            return this._getImageDescrambled(imageLink, this._descrambleCLEL);
         }
+
+        // TODO: this descrambling is old and probably no longer used ...
+        if(data.includes('_UibMqYb.js' )) {
+            if(imageLink.startsWith(this.urlCDN + 'cr_images')) {
+                return this._getImageDescrambled(imageLink, this._descrambleCR);
+            } else if(imageLink.startsWith(this.urlCDN + 'clel')) {
+                return this._getImageDescrambled(imageLink, this._descrambleCLEL);
+            } else if(imageLink.startsWith(this.urlCDN + 'lel')) {
+                return this._getImageDescrambled(imageLink, this._descrambleCLEL);
+            } else {
+                throw new Error(`The image descrambling for '${imageLink}' is not yet supported!`);
+            }
+        }
+
+        return super._handleConnectorURI(imageLink);
     }
 
-    async _getImageDescrambled(url) {
+    async _getImageDescrambled(url, descrambler) {
         let request = new Request(url, this.requestOptions);
         let response = await fetch(request);
         let data = await response.blob();
         let bitmap = await createImageBitmap(data);
-        // TODO: find better detection to determine which descramble algorithm to use
-        if(url.startsWith(this.urlCDN + 'cr_images')) {
-            data = await this._descrambleCR(bitmap);
-        } else if(url.startsWith(this.urlCDN + 'clel')) {
-            data = this._descrambleCLEL(bitmap);
-        } else if(url.startsWith(this.urlCDN + 'lel')) {
-            data = this._descrambleCLEL(bitmap);
-        } else {
-            throw new Error(`The image descrambling for '${url}' is not yet supported!`);
-        }
+        data = await descrambler.call(this, bitmap);
         data = await this._blobToBuffer(data);
         this._applyRealMime(data);
         return data;
