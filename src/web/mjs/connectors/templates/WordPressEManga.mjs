@@ -16,39 +16,27 @@ export default class WordPressEManga extends Connector {
         this.queryPages = 'div#readerarea source[src]:not([src=""])';
     }
 
-    async _getMangaList(callback) {
-        try {
-            let request = new Request(this.url + this.path, this.requestOptions);
-            let data = await this.fetchDOM(request, this.queryMangas);
-            let mangaList = data.map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: element.text.trim()
-                };
-            });
-            callback(null, mangaList);
-        } catch(error) {
-            console.error(error, this);
-            callback(error, undefined);
-        }
+    async _getMangas() {
+        let request = new Request(new URL(this.path, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangas);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    async _getChapterList(manga, callback) {
-        try {
-            let request = new Request(this.url + manga.id, this.requestOptions);
-            let data = await this.fetchDOM(request, this.queryChapters);
-            let chapterList = data.map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: element.text.replace(manga.title, '').trim(),
-                    language: ''
-                };
-            });
-            callback(null, chapterList);
-        } catch(error) {
-            console.error(error, manga);
-            callback(error, undefined);
-        }
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.replace(manga.title, '').trim(),
+                language: ''
+            };
+        });
     }
 
     async _getPages(chapter) {
