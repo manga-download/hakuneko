@@ -4,36 +4,19 @@ import Cookie from './Cookie.mjs';
 export default class Request {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Blacklist, Enums
-    constructor(settings) {
+    constructor(ipc, settings) {
         let electron = require( 'electron' );
         this.electronRemote = electron.remote;
-        this.protocol = this.electronRemote.require( 'electron' ).protocol;
         this.browser = this.electronRemote.BrowserWindow;
         this.userAgent = UserAgent.random();
 
         this.electronRemote.app.on( 'login', this._loginHandler );
+        ipc.listen('on-before-send-headers', this.onBeforeSendHeadersHandler.bind(this));
+        ipc.listen('on-headers-received', this.onHeadersReceivedHandler.bind(this));
+
         this._settings = settings;
         this._settings.addEventListener('loaded', this._onSettingsChanged.bind(this));
         this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
-    }
-
-    /**
-     *
-     */
-    registerProtocol( scheme, callback ) {
-        /*
-         * register callback for electron process (when callback becomes unavailable by e.g. reloading page,
-         * the previous registered handler must be removed)
-         */
-        this.protocol.isProtocolHandled( scheme, error => {
-            if( error ) {
-                this.protocol.unregisterProtocol( scheme, () => {
-                    this.protocol.registerBufferProtocol( scheme, callback );
-                } );
-            } else {
-                this.protocol.registerBufferProtocol( scheme, callback );
-            }
-        } );
     }
 
     /**
@@ -219,15 +202,8 @@ export default class Request {
 
     /**
      * Provide headers for the electron main process that shall be modified before every BrowserWindow request is send.
-     * DO NOT RENAME THIS METHOD!
      */
-    onBeforeSendHeadersHandler( details ) {
-        try {
-            details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
-        } catch( error ) {
-            console.log( error, details );
-            return undefined;
-        }
+    async onBeforeSendHeadersHandler( details ) {
         let uri = new URL( details.url );
 
         // Remove accidently added headers from opened developer console
@@ -288,15 +264,8 @@ export default class Request {
 
     /**
      * Provide headers for the electron main process that shall be modified before every BrowserWindow response is received.
-     * DO NOT RENAME THIS METHOD!
      */
-    onHeadersReceivedHandler( details ) {
-        try {
-            details = JSON.parse( Buffer.from( details, 'base64' ).toString( 'utf8' ) );
-        } catch( error ) {
-            console.error( error, details );
-            return undefined;
-        }
+    async onHeadersReceivedHandler( details ) {
         let uri = new URL( details.url );
 
         /*

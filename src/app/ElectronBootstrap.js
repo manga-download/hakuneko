@@ -61,6 +61,7 @@ module.exports = class ElectronBootstrap {
             electron.app.on('ready', () => {
                 this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'tray', process.platform === 'win32' ? 'logo.ico' : 'logo.png'));
                 this._registerCacheProtocol();
+                this._registerConnectorProtocol();
                 this._createWindow();
                 resolve();
             });
@@ -103,6 +104,16 @@ module.exports = class ElectronBootstrap {
                 });
             } catch(error) {
                 callback(error);
+            }
+        });
+    }
+
+    _registerConnectorProtocol() {
+        electron.protocol.registerBufferProtocol(this._configuration.connectorProtocol, async (request, callback) => {
+            try {
+                callback(await this._ipcSend('on-connector-protocol-handler', request));
+            } catch(error) {
+                callback(undefined);
             }
         });
     }
@@ -336,31 +347,36 @@ module.exports = class ElectronBootstrap {
         }
     }
 
-    /**
-     *
-     */
+    async _ipcSend(channel, payload) {
+        /*
+         * inject javascript: looks stupid, but is a working solution to call a function which returns data
+         * directly within the render process (without dealing with ipcRenderer)
+         */
+        return new Promise(resolve => {
+            /*
+             * prevent from injecting javascript into the webpage while the webcontent is not yet ready
+             * => required for loading initial page over http protocol (e.g. local hosted test page)
+             */
+            if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
+                let responseChannelID = '' + Date.now() + Math.random();
+                this._window.webContents.send(channel, responseChannelID, payload);
+                // TODO: set timeout and remove listener in case no answer is received ...
+                electron.ipcMain.once(responseChannelID, (event, data) => resolve(data));
+            } else {
+                throw new Error(`Cannot call remote channel "${channel}" while web-application is not yet ready!`);
+            }
+        });
+    }
+
     _setupBeforeSendHeaders() {
         // inject headers before a request is made (call the handler in the webapp to do the dirty work)
         electron.session.defaultSession.webRequest.onBeforeSendHeaders(urlFilterAll, async (details, callback) => {
             try {
-                /*
-                 * prevent from injecting javascript into the webpage while the webcontent is not yet ready
-                 * => required for loading initial page over http protocol (e.g. local hosted test page)
-                 */
-                if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
-                    /*
-                     * inject javascript: looks stupid, but is a working solution to call a function which returns data
-                     * directly within the render process (without dealing with ipcRenderer)
-                     */
-                    let payload = Buffer.from(JSON.stringify(details)).toString('base64');
-                    let result = await this._window.webContents.executeJavaScript(`HakuNeko.Request.onBeforeSendHeadersHandler('${payload}');`);
-                    callback({
-                        cancel: false,
-                        requestHeaders: result.requestHeaders
-                    });
-                } else {
-                    throw new Error('Cannot inject javascript while web-application is not yet ready!');
-                }
+                let result = await this._ipcSend('on-before-send-headers', details);
+                callback({
+                    cancel: false,
+                    requestHeaders: result.requestHeaders
+                });
             } catch(error) {
                 this._logger.warn(error);
                 callback({
@@ -371,27 +387,15 @@ module.exports = class ElectronBootstrap {
         });
     }
 
-    /**
-     *
-     */
     _setupHeadersReceived() {
         electron.session.defaultSession.webRequest.onHeadersReceived(urlFilterAll, async (details, callback) => {
             try {
-                if(this._window && this._window.webContents && !this._window.webContents.isLoading()) {
-                    /*
-                     * inject javascript: looks stupid, but is a working solution to call a function which returns data
-                     * directly within the render process (without dealing with ipcRenderer)
-                     */
-                    let payload = Buffer.from(JSON.stringify(details)).toString('base64');
-                    let result = await this._window.webContents.executeJavaScript(`HakuNeko.Request.onHeadersReceivedHandler('${payload}');`);
-                    callback({
-                        cancel: false,
-                        responseHeaders: result.responseHeaders
-                        // statusLine
-                    });
-                } else {
-                    throw new Error('Cannot inject javascript while web-application is not yet ready!');
-                }
+                let result = await this._ipcSend('on-headers-received', details);
+                callback({
+                    cancel: false,
+                    responseHeaders: result.responseHeaders
+                    // statusLine
+                });
             } catch(error) {
                 this._logger.warn(error);
                 callback({
