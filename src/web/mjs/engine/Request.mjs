@@ -17,15 +17,23 @@ export default class Request {
         this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
-    registerProtocol(scheme, callback) {
+    /**
+     *
+     */
+    registerProtocol( scheme, callback ) {
         /*
          * register callback for electron process (when callback becomes unavailable by e.g. reloading page,
          * the previous registered handler must be removed)
          */
-        if(this.protocol.isProtocolRegistered(scheme)) {
-            this.protocol.unregisterProtocol(scheme);
-        }
-        this.protocol.registerBufferProtocol(scheme, callback);
+        this.protocol.isProtocolHandled( scheme, error => {
+            if( error ) {
+                this.protocol.unregisterProtocol( scheme, () => {
+                    this.protocol.registerBufferProtocol( scheme, callback );
+                } );
+            } else {
+                this.protocol.registerBufferProtocol( scheme, callback );
+            }
+        } );
     }
 
     /**
