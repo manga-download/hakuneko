@@ -18,7 +18,7 @@ jest.mock('electron', () => {
                     default: return undefined;
                 }
             }),
-            getName: jest.fn(() => 'HakuNeko')
+            name: 'HakuNeko'
         }
     };
 });
@@ -121,7 +121,6 @@ var suite = function() {
         it('should have default after initialization', () => {
             let testee = new Configuration(undefined);
             expect(testee.applicationCacheDirectory).toEqual(path.resolve(process.env.HOME, 'AppData', 'Local', 'HakuNeko', 'cache'));
-            expect(electron.app.getName).toHaveBeenCalledTimes(1);
             expect(electron.app.getPath).toHaveBeenCalledTimes(3);
             expect(electron.app.getPath).toHaveBeenCalledWith('exe');
             expect(electron.app.getPath).toHaveBeenCalledWith('appData');
@@ -141,7 +140,6 @@ var suite = function() {
         it('should have default after initialization', () => {
             let testee = new Configuration(undefined);
             expect(testee.applicationUserDataDirectory).toEqual(path.resolve(process.env.HOME, 'AppData', 'Roaming', 'HakuNeko'));
-            expect(electron.app.getName).toHaveBeenCalledTimes(1);
             expect(electron.app.getPath).toHaveBeenCalledTimes(3);
             expect(electron.app.getPath).toHaveBeenCalledWith('exe');
             expect(electron.app.getPath).toHaveBeenCalledWith('appData');
@@ -161,7 +159,6 @@ var suite = function() {
         it('should have default after initialization', () => {
             let testee = new Configuration(undefined);
             expect(testee.applicationUserPluginsDirectory).toEqual(path.resolve(process.env.HOME, 'AppData', 'Roaming', 'HakuNeko', 'hakuneko.plugins'));
-            expect(electron.app.getName).toHaveBeenCalledTimes(1);
             expect(electron.app.getPath).toHaveBeenCalledTimes(3);
             expect(electron.app.getPath).toHaveBeenCalledWith('exe');
             expect(electron.app.getPath).toHaveBeenCalledWith('appData');

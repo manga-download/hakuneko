@@ -23,7 +23,7 @@ jest.mock('electron', () => {
                     default: return undefined;
                 }
             }),
-            getName: jest.fn(() => 'HakuNeko')
+            name: 'HakuNeko'
         }
     };
 });
