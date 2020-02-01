@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class JapScan extends Connector {
 
@@ -11,171 +12,194 @@ export default class JapScan extends Connector {
         this.urlCDN = 'https://c.japscan.co/';
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#main div.card h1');
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
+    }
+
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(new URL('/mangas/1', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.card ul.pagination li:last-of-type a');
+        let pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.card div p.p-1 a', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-
-        this.fetchDOM( this.url + '/mangas/1', 'div.card ul.pagination li:last-of-type a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/mangas/' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let request = new Request(new URL('/mangas/' + page, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.card div p.p-1 a', 5);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div.card div#chapters_list div.chapters_list a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).replace( 'Scan', '' ).replace( 'VF', '' ).trim(),
-                        language: 'french'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.card div#chapters_list div.chapters_list a');
+        return data.map(element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.replace(manga.title, '').replace('Scan', '').replace('VF', '').trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'div.container select#pages option' )
-            .then( data => {
-                let pageLinks = data.map( element => this.createConnectorURI( {
-                    imageURL: this.getAbsolutePath( element.value, request.url ),
-                    imageFile: element.dataset['img'] ? element.dataset.img : null
-                } ) );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.container select#pages option');
+        return data.map(element => this.createConnectorURI({
+            imageURL: this.getAbsolutePath(element.value, request.url),
+            imageFile: element.dataset['img'] ? element.dataset.img : null
+        }));
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let uri = new URL( payload.imageURL );
-        let file = payload.imageFile;
+    async _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        return fetch( uri.href, this.requestOptions )
-            .then( response => response.text() )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let img = dom.querySelector( 'div#image' );
-                if( !img || !img.dataset['src'] ) {
-                    throw new Error( 'No element with id #image found in page, or dataset.src is missing!' );
-                }
-                let link = new URL( img.dataset.src, uri.origin );
-                if( file ) {
-                    link.pathname = link.pathname.split( '/' ).slice( 0, -1 ).join( '/' ) + '/' + file;
-                }
-                /*
-                 * +++ NOT SCRAMBLED +++
-                 *   <script src="/js/iYFbYi.js">
-                 *   <script src="/js/iYFbYi_Fee_gb_NbY.js">
-                 * +++ SCRAMBLED +++
-                 *   <script src="/js/iYFbYi_UibMqYb.js">
-                 *   <script src="/js/iYFbYi_Fee_gb_NbY_UibMqYb.js">
-                 */
-                if( data.indexOf( '_UibMqYb.js' ) > -1 ) {
-                    return this._getImageDescrambled( link.href );
-                } else {
-                    return this._getImageRaw( link.href );
-                }
-            } )
-            .then( data => {
-                this._applyRealMime( data );
-                return Promise.resolve( data );
-            } );
+        // prevent 503 error for too many requests by random delay
+        await this.wait(parseInt(Math.random() * 5000));
+        let imageLink = payload.imageFile;
+        let uri = new URL(payload.imageURL);
+        let request = new Request(uri, this.requestOptions);
+        let dom = await this.fetchDOM(request, '', 10);
+
+        if(!imageLink) {
+            let img = dom.querySelector('div#image');
+            if(!img || !img.dataset['src']) {
+                throw new Error( 'No element with id #image found in page, or dataset.src is missing!' );
+            }
+            imageLink = new URL(img.dataset.src, uri.origin).href;
+        }
+
+        if(dom.querySelector('script[src*="mzvyzm_zixmtkozy"]')) {
+            return this._getImageDescrambled(imageLink, this._descrambleDynamic, this._extractDescramblePattern(dom, imageLink));
+        }
+
+        // TODO: this descrambling is old and probably no longer used ...
+        if(dom.querySelector('script[src*="_UibMqYb"]')) {
+            if(imageLink.startsWith(this.urlCDN + 'cr_images')) {
+                return this._getImageDescrambled(imageLink, this._descrambleCR, null);
+            } else if(imageLink.startsWith(this.urlCDN + 'clel')) {
+                return this._getImageDescrambled(imageLink, this._descrambleCLEL, null);
+            } else if(imageLink.startsWith(this.urlCDN + 'lel')) {
+                return this._getImageDescrambled(imageLink, this._descrambleCLEL, null);
+            } else {
+                throw new Error(`The image descrambling for '${imageLink}' is not yet supported!`);
+            }
+        }
+
+        return super._handleConnectorURI(imageLink);
     }
 
-    /**
-     *
-     */
-    _getImageRaw( url ) {
-        return fetch( url, this.requestOptions )
-            .then( response => response.blob() )
-            .then( data => {
-                return this._blobToBuffer( data );
-            } );
+    _extractDescramblePattern(dom, imageLink) {
+        let rot13 = function (char) {
+            return String.fromCharCode(('Z' >= char ? 90 : 122) >= (char = char.charCodeAt(0) + 13) ? char : char - 26);
+        };
+
+        let comments = [];
+        (function getDescrambleComments(element, comments) {
+            if(element.nodeType === window.Node.COMMENT_NODE) {
+                let match = element.nodeValue.match(/^\s*\((.+)\)\s*$/);
+                if(match && match[1]) {
+                    comments.push(match[1]);
+                }
+            }
+            if(element.childNodes) {
+                element.childNodes.forEach(node => getDescrambleComments(node, comments));
+            }
+        })(dom, comments);
+
+        let descrambleComment = comments.pop()
+            .replace(/[a-zA-Z]/g, rot13)
+            .replace(/@/g, '+')
+            .replace(/\$/g, '/')
+            .replace(/\u00a7/g, '=');
+
+        let encrypted = CryptoJS.enc.Base64.parse(descrambleComment.substring(45).substring(0, descrambleComment.length - 128 - 32 - 13)).toString(CryptoJS.enc.Utf8);
+
+        let key = CryptoJS.MD5(imageLink).toString().split('').reverse().join('')
+            .replace(/[a-zA-Z]/g, rot13);
+        key = CryptoJS.MD5(key).toString();
+        key = CryptoJS.SHA1(key).toString();
+        key = CryptoJS.PBKDF2(key, CryptoJS.enc.Hex.parse(descrambleComment.substring(descrambleComment.length - 128, descrambleComment.length)), {
+            'hasher': CryptoJS.algo.SHA512,
+            'keySize': 8,
+            'iterations': 999
+        });
+
+        let decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv: CryptoJS.enc.Hex.parse(descrambleComment.substring(0, 32)) })
+            .toString(CryptoJS.enc.Utf8)
+            .replace(/[a-z]/g, char => 'abcdefghijklmnopqrstuvwxyz'['zyxwvutsrqponmlkjihgfedcba'.indexOf(char)])
+            .replace(/[A-Z]/g, char => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'['ZYXWVUTSRQPONMLKJIHGFEDCBA'.indexOf(char)])
+            .replace(/~/g, '{')
+            .replace(/\^/g, '}')
+            .replace(/m/g, '"')
+            .replace(/k/g, ':')
+            .replace(/l/g, ',')
+            .replace(/[a-z]/g, char => '0123456789'['jdegcifbah'.indexOf(char)] || char)
+            .replace(/[0-9]/g, char => '0123456789'['7938205146'.indexOf(char)] || char);
+
+        return JSON.parse(decrypted);
     }
 
-    /**
-     *
-     */
-    _getImageDescrambled( url ) {
-        return fetch( url, this.requestOptions )
-            .then( response => response.blob() )
-            .then( data => createImageBitmap( data ) )
-            .then( bitmap => {
-                // TODO: find better detection to determine which descramble algorithm to use
-                if( url.startsWith( this.urlCDN + 'cr_images' ) ) {
-                    return this._descrambleCR( bitmap );
-                }
-                if( url.startsWith( this.urlCDN + 'clel' ) ) {
-                    return this._descrambleCLEL( bitmap );
-                }
-                if( url.startsWith( this.urlCDN + 'lel' ) ) {
-                    return this._descrambleCLEL( bitmap );
-                }
-                throw new Error( `The image descrambling for '${url}' is not yet supported!` );
-            } )
-            .then( data => this._blobToBuffer( data ) );
+    async _getImageDescrambled(url, descrambler, context) {
+        let request = new Request(url, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.blob();
+        let bitmap = await createImageBitmap(data);
+        data = await descrambler.call(this, bitmap, context);
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 
-    /**
-     *
-     */
+    async _descrambleDynamic(bitmap, pattern) {
+        return new Promise(resolve => {
+            let canvas = document.createElement('canvas');
+            canvas.width = bitmap.width;
+            canvas.height = bitmap.height;
+            var ctx = canvas.getContext('2d');
+
+            for(let key in pattern) {
+                let blockWidth = 100;
+                let blockHeight = 100;
+                let modX = Math.ceil(bitmap.width / blockWidth);
+                let modY = modX;
+
+                let source = parseInt(pattern[key]);
+                source = (source - 843) / 7;
+                let sourceX = source % modX * blockWidth;
+                let sourceY = Math.floor(source / modY) * blockHeight;
+
+                let target = parseInt(key);
+                target = (target - 642) / 5;
+                let targetX = target % modX * blockWidth;
+                let targetY = Math.floor(target / modY) * blockHeight;
+
+                ctx.drawImage(bitmap, sourceX, sourceY, blockWidth, blockHeight, targetX, targetY, blockWidth, blockHeight);
+            }
+
+            canvas.toBlob(data => {
+                resolve(data);
+            }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value )/100);
+        });
+    }
+
+    // [OBSOLETE] This descrambling pattern is probably no longer used
     _descrambleCR( bitmap ) {
         return new Promise( resolve => {
             let width = bitmap.width;
@@ -210,9 +234,7 @@ export default class JapScan extends Connector {
         } );
     }
 
-    /**
-     *
-     */
+    // [OBSOLETE] This descrambling pattern is probably no longer used
     _descrambleCLEL( bitmap ) {
         return new Promise( resolve => {
             let tileWidth = 100;
@@ -242,9 +264,6 @@ export default class JapScan extends Connector {
         } );
     }
 
-    /**
-     *
-     */
     _getTilePosition( tile, tileCount, tileSize ) {
         return tile % 2 == 0 && tileCount - 2 == tile ? (tile - 1) * tileSize + tileSize : tileCount - 1 == tile ? (tile - 1) * tileSize + tileSize : tile % 2 != 0 ? (tile - 1) * tileSize : (tile + 1) * tileSize;
     }

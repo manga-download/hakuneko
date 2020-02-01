@@ -429,14 +429,14 @@ export default class Connector {
         return fetch( request )
             .then( response => {
                 if( response.status >= 500 && retries > 0 ) {
-                    return this.wait( 5000 )
+                    return this.wait( 2500 )
                         .then( () => this.fetchDOM( request, selector, retries - 1 ) );
                 }
                 if( response.status === 200 ) {
                     return response.text()
                         .then( data => {
                             let dom = this.createDOM( data );
-                            return Promise.resolve( [...dom.querySelectorAll( selector )] );
+                            return Promise.resolve( !selector ? dom : [...dom.querySelectorAll( selector )] );
                         } );
                 }
                 throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
@@ -635,41 +635,38 @@ export default class Connector {
      * Return a promise that resolves with a mime typed buffer on succes,
      * or a promise that rejects with an error.
      */
-    _handleConnectorURI( payload ) {
-        try {
-            //console.log( `Connector '${this.id}' has not implemented protocol handling. Using fallback implementation (fetch blob with default request options)!` );
-            let request = new Request( payload, this.requestOptions );
-            /*
-             * TODO: only perform requests when from download manager
-             * or when from browser for preview and selected chapter matches
-             */
-            return fetch( request )
-                .then( response => response.blob() )
-                .then( data => this._blobToBuffer( data ) );
-        } catch( error ) {
-            return Promise.reject( error );
-        }
+    async _handleConnectorURI(payload) {
+        /*
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
+        let request = new Request(payload, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 
     /**
      * Protected helper function to convert a Blob to a MimeTypedBuffer
      * https://github.com/electron/electron/blob/master/docs/api/protocol.md#protocolregisterbufferprotocolscheme-handler-completion
      */
-    _blobToBuffer( blob ) {
-        return new Promise( ( resolve, reject ) => {
+    async _blobToBuffer(blob) {
+        return new Promise((resolve, reject) => {
             let reader = new FileReader();
             reader.onload = event => {
-                resolve( {
+                resolve({
                     mimeType: blob.type,
                     // NOTE: Uint8Array() seems slightly better than Buffer.from(), but both are blazing fast
-                    data: Buffer.from( event.target.result ) // new Uint8Array( event.target.result )
-                } );
+                    data: Buffer.from(event.target.result) // new Uint8Array( event.target.result )
+                });
             };
             reader.onerror = event => {
-                reject( event.target.error );
+                reject(event.target.error);
             };
-            reader.readAsArrayBuffer( blob );
-        } );
+            reader.readAsArrayBuffer(blob);
+        });
     }
 
     /**

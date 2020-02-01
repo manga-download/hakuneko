@@ -40,17 +40,4 @@ export default class MangaSee extends Connector {
         let data = await this.fetchDOM(request, 'div.fullchapimage source');
         return data.map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
     }
-
-    async _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        let response = await fetch(request);
-        let data = await response.blob();
-        data = await this._blobToBuffer(data);
-        super._applyRealMime(data);
-        return data;
-    }
 }
