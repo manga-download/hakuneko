@@ -8,7 +8,6 @@ module.exports = class ConfigurationWindows extends Configuration {
         super(configuration);
         let options = configuration || {};
         let applicationLocalDirectory = path.normalize(path.join(electron.app.getPath('appData'), '..', 'Local', electron.app.name));
-        console.log(applicationLocalDirectory);
         this._applicationCacheDirectory = options['applicationCacheDirectory'] || path.join(applicationLocalDirectory, 'cache'); // => ~\AppData\Local\hakuneko-desktop\cache
         this._applicationUserDataDirectory = options['applicationUserDataDirectory'] || electron.app.getPath('userData');
     }
