@@ -1,7 +1,7 @@
 export default class Connectors {
 
-    constructor(request) {
-        request.registerProtocol( 'connector', this._protocolHandler.bind( this ) );
+    constructor(ipc) {
+        ipc.listen('on-connector-protocol-handler', this._onConnectorProtocolHandler.bind(this));
         this._list = [];
     }
 
@@ -57,13 +57,13 @@ export default class Connectors {
         }
     }
     
-    _protocolHandler( request, callback ) {
-        let uri = new URL( request.url );
-        this._list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
-        .then( buffer => callback( buffer ) )
-        .catch( error => {
-            //console.error( error, payload );
-            callback( undefined );
-        } );
+    async _onConnectorProtocolHandler(request) {
+        try {
+            let uri = new URL(request.url);
+            return this._list.find(connector => connector.id === uri.hostname).handleConnectorURI(uri);
+        } catch(error) {
+            console.error(error);
+            return undefined;
+        }
     }
 }
