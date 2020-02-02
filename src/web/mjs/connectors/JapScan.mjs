@@ -71,10 +71,9 @@ export default class JapScan extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.container select#pages option');
-        return data.map((element, index) => this.createConnectorURI({
+        return data.map(element => this.createConnectorURI({
             imageURL: this.getAbsolutePath(element.value, request.url),
-            imageFile: element.dataset['img'] ? element.dataset.img : null,
-            index: index
+            imageFile: element.dataset['img'] ? element.dataset.img : null
         }));
     }
 
@@ -83,12 +82,10 @@ export default class JapScan extends Connector {
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        // prevent 503 error for too many requests by random delay
-        await this.wait(payload.index * this.config.throttle.value);
         let imageLink = payload.imageFile;
         let uri = new URL(payload.imageURL);
         let request = new Request(uri, this.requestOptions);
-        let dom = await this.fetchDOM(request, '', 10);
+        let dom = await this.fetchDOM(request, '', 3);
 
         if(!imageLink) {
             let img = dom.querySelector('div#image');
