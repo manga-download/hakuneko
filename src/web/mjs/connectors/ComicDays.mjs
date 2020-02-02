@@ -12,11 +12,9 @@ export default class ComicDays extends CoreView {
         this.path = [ '/oneshot', '/newcomer', '/daysneo' ];
         this.queryManga = 'div.yomikiri-container ul.yomikiri-items > li.yomikiri-item-box > a.yomikiri-link';
         this.queryMangaTitle = 'div.yomikiri-link-title h4';
-
-        this.queryChaptersSkip = 'div.series-episode-list-price';
     }
 
-    async _getFoo(path, queryLink, queryTitle) {
+    async _getMangaList(path, queryLink, queryTitle) {
         let request = new Request(this.url + path, this.requestOptions);
         let data = await this.fetchDOM(request, queryLink);
         return data.map(element => {
@@ -28,8 +26,8 @@ export default class ComicDays extends CoreView {
     }
 
     async _getMangas() {
-        let series = await this._getFoo('/series', 'section.daily ul.daily-series > li.daily-series-item a.link', 'source');
-        let magazines = await this._getFoo('/magazine', 'a.barayomi-magazine-list-link-latest', 'source.barayomi-magazine-series-image');
+        let series = await this._getMangaList('/series', 'section.daily ul.daily-series > li.daily-series-item a.link', 'source');
+        let magazines = await this._getMangaList('/magazine', 'a.barayomi-magazine-list-link-latest', 'source.barayomi-magazine-series-image');
         let mangas = await super._getMangas();
         let mangaList = [...series, ...magazines, ...mangas];
         // remove mangas with same title but different ID
