@@ -71,11 +71,11 @@ export default class CoreView extends Connector {
                 let promises = [];
 
                 let readList = dom.querySelector( this.queryChaptersReadableList );
-                if( readList && readList.dataset['latestListEndpoint'] ) {
+                if( readList && readList.dataset['latestListEndpoint'] && readList.querySelector('.js-latest-readable-product-list')) {
                     let promise = this._insertEndpoint( readList.dataset.latestListEndpoint, dom.querySelector( this.queryChaptersLatestContainer ) );
                     promises.push( promise );
                 }
-                if( readList && readList.dataset['firstListEndpoint'] ) {
+                if( readList && readList.dataset['firstListEndpoint'] && readList.querySelector('.js-first-readable-product-list')) {
                     let promise = this._insertEndpoint( readList.dataset.firstListEndpoint, dom.querySelector( this.queryChaptersFirstContainer ) );
                     promises.push( promise );
                 }
