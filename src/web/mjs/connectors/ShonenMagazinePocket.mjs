@@ -12,7 +12,5 @@ export default class ShonenMagazinePocket extends CoreView {
         this.path = [ '/series' ];
         this.queryManga = 'div.series-items ul.daily-series > li.daily-series-item > a';
         this.queryMangaTitle = 'h4.daily-series-title';
-
-        this.queryChaptersSkip = 'div.series-episode-list-price';
     }
 }
