@@ -279,10 +279,9 @@ export default class NineAnime extends Connector {
     _getEpisodeMyCloud( link/*, resolution*/ ) {
         let request = new Request( link, this.requestOptions );
         request.headers.set( 'x-referer', this.url );
-        return fetch( request )
-            .then( response => response.text() )
+        return this.fetchRegex(request, /mediaSources\s*=\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/g)
             .then( data => {
-                let playlist = data.match( /sources\s*:\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/ )[1];
+                let playlist = data.pop();
                 let request = new Request( playlist, this.requestOptions );
                 request.headers.set( 'x-referer', link );
                 return fetch( request )
