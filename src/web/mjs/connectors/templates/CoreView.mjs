@@ -59,53 +59,39 @@ export default class CoreView extends Connector {
         }
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
+    async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        fetch(request)
-            .then( response => response.text() )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let promises = [];
+        let data = await this.fetchDOM(request, this.queryChaptersReadableList)
 
-                let readList = dom.querySelector( this.queryChaptersReadableList );
-                if( readList && readList.dataset['latestListEndpoint'] && readList.querySelector('.js-latest-readable-product-list')) {
-                    let promise = this._insertEndpoint( readList.dataset.latestListEndpoint, dom.querySelector( this.queryChaptersLatestContainer ) );
-                    promises.push( promise );
-                }
-                if( readList && readList.dataset['firstListEndpoint'] && readList.querySelector('.js-first-readable-product-list')) {
-                    let promise = this._insertEndpoint( readList.dataset.firstListEndpoint, dom.querySelector( this.queryChaptersFirstContainer ) );
-                    promises.push( promise );
-                }
+        let promises = [];
 
-                let readMore = dom.querySelector( this.queryChaptersMoreContainer + ' ' + this.queryChaptersMoreButton );
-                if( readMore && readMore.dataset['readMoreEndpoint'] ) {
-                    let promise = this._insertEndpoint( readMore.dataset.readMoreEndpoint, dom.querySelector( this.queryChaptersMoreContainer ) );
-                    promises.push( promise );
-                }
+        let readList = data[0];
+        if(readList && readList.dataset['latestListEndpoint'] && readList.querySelector(this.queryChaptersLatestContainer)) {
+            let promise = this._insertEndpoint(readList.dataset.latestListEndpoint, readList.querySelector(this.queryChaptersLatestContainer));
+            promises.push(promise);
+        }
+        if(readList && readList.dataset['firstListEndpoint'] && readList.querySelector('.js-first-readable-product-list')) {
+            let promise = this._insertEndpoint(readList.dataset.firstListEndpoint, readList.querySelector(this.queryChaptersFirstContainer));
+            promises.push(promise);
+        }
 
-                return Promise.all( promises )
-                    .then( () => Promise.resolve( dom ) );
-            } )
-            .then( dom => [...dom.querySelectorAll( this.queryChapters )] )
-            .then( data => {
-                let chapterList = data.filter( element => !element.parentElement.querySelector( this.queryChaptersSkip ) )
-                    .map( element => {
-                        let parent = element.closest( this.queryChapterTitle );
-                        return {
-                            id: parent ? this.getRelativeLink( parent ) : manga.id,
-                            title: element.textContent.replace( manga.title, '' ).trim() || manga.title,
-                            language: ''
-                        };
-                    } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+        let readMore = readList.querySelector(this.queryChaptersMoreContainer + ' ' + this.queryChaptersMoreButton);
+        if(readMore && readMore.dataset['readMoreEndpoint']) {
+            let promise = this._insertEndpoint(readMore.dataset.readMoreEndpoint, readList.querySelector(this.queryChaptersMoreContainer));
+            promises.push(promise);
+        }
+
+        await Promise.all(promises);
+        return [...readList.querySelectorAll(this.queryChapters)]
+            .filter(element => !element.parentElement.querySelector(this.queryChaptersSkip))
+            .map(element => {
+                let parent = element.closest(this.queryChapterTitle);
+                return {
+                    id: parent ? this.getRelativeLink(parent) : manga.id,
+                    title: element.textContent.replace(manga.title, '').trim() || manga.title,
+                    language: ''
+                };
+            });
     }
 
     async _getPages(chapter) {
