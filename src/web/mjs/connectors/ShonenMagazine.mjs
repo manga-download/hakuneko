@@ -12,7 +12,5 @@ export default class ShonenMagazine extends CoreView {
         this.path = [ '/series/smaga', '/series/bmaga', '/series/others' ];
         this.queryManga = 'article.serial-series-contents ul.serial-series-list > li.serial-series-item > a';
         this.queryMangaTitle = 'h4.series-title';
-
-        this.queryChaptersSkip = 'div.series-episode-list-price';
     }
 }

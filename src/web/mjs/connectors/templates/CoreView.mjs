@@ -13,15 +13,8 @@ export default class CoreView extends Connector {
         this.queryManga = 'article.series-list-wrapper ul.series-list > li.series-list-item > a';
         this.queryMangaTitle = 'h2.series-list-title';
 
-        this.queryChaptersReadableList = 'div.js-readable-product-list';
-        this.queryChaptersLatestContainer = 'div.js-latest-readable-product-list';
-        this.queryChaptersFirstContainer = 'div.js-first-readable-product-list';
-        this.queryChaptersMoreContainer = 'section.read-more-container';
-        this.queryChaptersMoreButton = 'button[data-read-more-endpoint]';
-
-        this.queryChapters = 'ul.series-episode-list > li.episode:not(.private) h4.series-episode-list-title';
-        this.queryChaptersSkip = '_';
-        this.queryChapterTitle = 'a.series-episode-list-container';
+        this.queryChaptersAtomFeed = 'head link[type*="atom+xml"]';
+        this.queryChapters = 'feed entry';
 
         this.queryPages = 'source.page-image[data-src]';
     }
@@ -59,53 +52,19 @@ export default class CoreView extends Connector {
         }
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
+    async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        fetch(request)
-            .then( response => response.text() )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let promises = [];
-
-                let readList = dom.querySelector( this.queryChaptersReadableList );
-                if( readList && readList.dataset['latestListEndpoint'] ) {
-                    let promise = this._insertEndpoint( readList.dataset.latestListEndpoint, dom.querySelector( this.queryChaptersLatestContainer ) );
-                    promises.push( promise );
-                }
-                if( readList && readList.dataset['firstListEndpoint'] ) {
-                    let promise = this._insertEndpoint( readList.dataset.firstListEndpoint, dom.querySelector( this.queryChaptersFirstContainer ) );
-                    promises.push( promise );
-                }
-
-                let readMore = dom.querySelector( this.queryChaptersMoreContainer + ' ' + this.queryChaptersMoreButton );
-                if( readMore && readMore.dataset['readMoreEndpoint'] ) {
-                    let promise = this._insertEndpoint( readMore.dataset.readMoreEndpoint, dom.querySelector( this.queryChaptersMoreContainer ) );
-                    promises.push( promise );
-                }
-
-                return Promise.all( promises )
-                    .then( () => Promise.resolve( dom ) );
-            } )
-            .then( dom => [...dom.querySelectorAll( this.queryChapters )] )
-            .then( data => {
-                let chapterList = data.filter( element => !element.parentElement.querySelector( this.queryChaptersSkip ) )
-                    .map( element => {
-                        let parent = element.closest( this.queryChapterTitle );
-                        return {
-                            id: parent ? this.getRelativeLink( parent ) : manga.id,
-                            title: element.textContent.replace( manga.title, '' ).trim() || manga.title,
-                            language: ''
-                        };
-                    } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+        let data = await this.fetchDOM(request, this.queryChaptersAtomFeed);
+        let uri = new URL(data[0].href, this.url);
+        uri.searchParams.set('free_only', 0); // 0: include non-free, 1: exclude non-free
+        data = await this.fetchDOM(new Request(uri, this.requestOptions), this.queryChapters);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('link'), this.url),
+                title: element.querySelector('title').textContent.replace(manga.title, '').trim() || manga.title,
+                language: ''
+            };
+        });
     }
 
     async _getPages(chapter) {
