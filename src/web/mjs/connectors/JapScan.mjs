@@ -10,6 +10,18 @@ export default class JapScan extends Connector {
         this.tags = [ 'manga', 'french' ];
         this.url = 'https://www.japscan.co';
         this.urlCDN = 'https://c.japscan.co/';
+
+        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe image download may fail for to many consecuitive requests.',
+                input: 'numeric',
+                min: 1000,
+                max: 7500,
+                value: 1000
+            }
+        };
     }
 
     async _getMangaFromURI(uri) {
@@ -70,12 +82,10 @@ export default class JapScan extends Connector {
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        // prevent 503 error for too many requests by random delay
-        await this.wait(parseInt(Math.random() * 5000));
         let imageLink = payload.imageFile;
         let uri = new URL(payload.imageURL);
         let request = new Request(uri, this.requestOptions);
-        let dom = await this.fetchDOM(request, '', 10);
+        let dom = await this.fetchDOM(request, '', 3);
 
         if(!imageLink) {
             let img = dom.querySelector('div#image');
