@@ -4,12 +4,9 @@ export default class Lezhin extends Connector {
 
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = undefined;
         super.label = undefined;
         this.tags = [];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = undefined;
         this.apiURL = 'https://www.lezhin.com/api/v2'; // https://api.lezhin.com/v2
         this.cdnURL = 'https://cdn.lezhin.com';
@@ -36,6 +33,7 @@ export default class Lezhin extends Connector {
      *
      */
     _initializeAccount() {
+        // TODO: check if logged in: https://www.lezhin.com/internal/isLogin
         return Promise.resolve()
             .then( () => {
                 if( this.userID || !this.config.username.value || !this.config.password.value ) {
@@ -216,8 +214,16 @@ export default class Lezhin extends Connector {
                 let pageList = [... new Array( pages ).keys()].map( page => {
                     let uri = new URL( [this.cdnURL, 'v2/comics', comicID, 'episodes', episodeID, 'contents', path + 's', page + 1].join( '/' ) );
                     uri.searchParams.set( 'access_token', this.accessToken );
-                    //uri.searchParams.set( 'purchased', false );
-                    uri.searchParams.set('q', 40); // 40 => width 1080, 30 => width 720
+                    uri.searchParams.set('purchased', this._isPurchasedOrSubscribed(comicID, episodeID));
+                    /*
+                     * q  | Free  | Purchased
+                     * ----------------------
+                     * 10 |  480w |  640w
+                     * 20 |  640w |  720w
+                     * 30 |  720w | 1080w
+                     * 40 | 1080w | 1280w
+                     */
+                    uri.searchParams.set('q', 40);
                     //uri.searchParams.set( 'updated', 1539846001617 /* Date.now() */ );
                     return uri.href;
                 } );
@@ -227,5 +233,9 @@ export default class Lezhin extends Connector {
                 console.error( error, chapter );
                 callback( error, undefined );
             } );
+    }
+
+    _isPurchasedOrSubscribed(comicID, episodeID) {
+        return comicID === episodeID;
     }
 }
