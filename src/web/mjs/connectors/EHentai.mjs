@@ -12,6 +12,7 @@ export default class EHentai extends Connector {
         this.links = {
             login: 'https://forums.e-hentai.org/index.php?act=Login&CODE=00'
         };
+        this.requestOptions.headers.set('x-cookie', 'nw=1');
     }
 
     async _getMangaFromURI(uri) {
