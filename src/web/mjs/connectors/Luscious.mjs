@@ -7,15 +7,15 @@ export default class Luscious extends Connector {
         super();
         super.id = 'luscious';
         super.label = 'Luscious';
-        this.tags = [ 'hentai', 'english' ];
+        this.tags = [ 'hentai', 'multilingual' ];
         this.url = 'https://www.luscious.net';
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul#single_album_details li.album_cover h2');
+        let data = await this.fetchDOM(request, 'head title');
         let id = uri.pathname;
-        let title = data[0].textContent.trim();
+        let title = data[0].textContent.split('|')[0].trim() + ` [${data[0].lang}]`;
         return new Manga(this, id, title);
     }
 
