@@ -2,7 +2,7 @@
   "name": "hakuneko-dev",
   "version": "1.0.0",
   "description": "HakuNeko",
-  "author": "Ronny Wegener <wegener.ronny@gmail.com>",
+  "author": "The HakuNeko Development Team <https://github.com/orgs/manga-download/people>",
   "license": "Unlicense",
   "main": "src/app/main.js",
   "repository": {
