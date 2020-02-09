@@ -74,7 +74,8 @@ export default class CoreView extends Connector {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
         return data.readableProduct.pageStructure.pages.filter(page => page.type === 'main').map(page => {
-            if(['usagi', 'baku'].some(encryption => data.readableProduct.pageStructure.choJuGiga === encryption)) {
+            // NOTE: 'usagi' is not scrambled
+            if(data.readableProduct.pageStructure.choJuGiga === 'baku') {
                 return this.createConnectorURI(page.src);
             } else {
                 return this.getAbsolutePath(page.src, request.url);
