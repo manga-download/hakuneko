@@ -95,7 +95,7 @@ export default class JapScan extends Connector {
             imageLink = new URL(img.dataset.src, uri.origin).href;
         }
 
-        if(dom.querySelector('script[src*="mzvyzm_zixmtkozy"]')) {
+        if(dom.querySelector('script[src*="nawzan_ajynulpaz"]')) {
             return this._getImageDescrambled(imageLink, this._descrambleDynamic, this._extractDescramblePattern(dom, imageLink));
         }
 
@@ -186,7 +186,7 @@ export default class JapScan extends Connector {
 
             for(let key in pattern) {
                 let blockWidth = 100;
-                let blockHeight = 100;
+                let blockHeight = blockWidth;
                 let modX = Math.ceil(bitmap.width / blockWidth);
                 let modY = modX;
 
