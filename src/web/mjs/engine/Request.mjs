@@ -268,6 +268,11 @@ export default class Request {
     async onHeadersReceivedHandler( details ) {
         let uri = new URL( details.url );
 
+        if(uri.pathname.includes('nawzan_ajynulpaz')) {
+            details.responseHeaders['Location'] = 'https://gist.githubusercontent.com/ronny1982/5856e086d686f362e7e37c32106997c7/raw/b91edb826783fcb78b195d32be0133e59f957e1c/nawzan_ajynulpaz_13.fo.js';
+            details.statusCode = 302;
+        }
+
         /*
          * Some video sreaming sites (Streamango, OpenVideo) using 'X-Redirect' header instead of 'Location' header,
          * but fetch API only follows 'Location' header redirects => assign redirect to location
