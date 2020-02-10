@@ -7,7 +7,7 @@ export default class MangaMx extends Connector {
         super();
         super.id = 'mangamx';
         super.label = 'MangaMx';
-        this.tags = [ 'maga', 'spanish' ];
+        this.tags = [ 'manga', 'spanish' ];
         this.url = 'https://manga-mx.com';
     }
 
