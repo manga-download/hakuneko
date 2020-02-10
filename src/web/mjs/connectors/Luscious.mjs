@@ -7,7 +7,7 @@ export default class Luscious extends Connector {
         super();
         super.id = 'luscious';
         super.label = 'Luscious';
-        this.tags = [ 'hentai', 'multilingual' ];
+        this.tags = [ 'hentai', 'multi-lingual' ];
         this.url = 'https://www.luscious.net';
     }
 
