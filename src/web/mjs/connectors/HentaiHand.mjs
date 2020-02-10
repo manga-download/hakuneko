@@ -7,7 +7,7 @@ export default class HentaiHand extends Connector {
         super();
         super.id = 'hentaihand';
         super.label = 'HentaiHand';
-        this.tags = [ 'hentai', 'multilingual' ];
+        this.tags = [ 'hentai', 'multi-lingual' ];
         this.url = 'https://hentaihand.com';
     }
 
