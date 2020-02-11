@@ -19,9 +19,9 @@ export default class TuMangaOnline extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'body script[type="application/ld+json"]');
+        let data = await this.fetchDOM(request, 'h2.element-subtitle');
         let id = uri.pathname + uri.search;
-        let title = JSON.parse(data[0].textContent).headline;
+        let title = data[0].textContent;
         return new Manga(this, id, title);
     }
 
