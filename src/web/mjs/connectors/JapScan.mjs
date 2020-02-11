@@ -153,8 +153,6 @@ export default class JapScan extends Connector {
 
         let decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv: CryptoJS.enc.Hex.parse(descrambleComment.substring(0, 32)) })
             .toString(CryptoJS.enc.Utf8)
-            .replace(/[a-z]/g, char => 'abcdefghijklmnopqrstuvwxyz'['zyxwvutsrqponmlkjihgfedcba'.indexOf(char)])
-            .replace(/[A-Z]/g, char => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'['ZYXWVUTSRQPONMLKJIHGFEDCBA'.indexOf(char)])
             .replace(/~/g, '{')
             .replace(/\^/g, '}')
             .replace(/m/g, '"')
