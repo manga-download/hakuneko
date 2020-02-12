@@ -469,6 +469,9 @@ export default class Connector {
     }
 
     async fetchRegex(request, regex) {
+        if(!('' + regex).endsWith('/g')) {
+            throw new Error('The provided RegExp must contain the global "g" modifier!');
+        }
         let response = await fetch(request);
         let data = await response.text();
         let result = [];
