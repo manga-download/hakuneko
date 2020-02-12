@@ -95,7 +95,7 @@ export default class JapScan extends Connector {
             imageLink = new URL(img.dataset.src, uri.origin).href;
         }
 
-        if(dom.querySelector('script[src*="mzvyzm_zixmtkozy"]')) {
+        if(dom.querySelector('script[src*="nawzan_ajynulpaz"]')) {
             return this._getImageDescrambled(imageLink, this._descrambleDynamic, this._extractDescramblePattern(dom, imageLink));
         }
 
@@ -153,8 +153,6 @@ export default class JapScan extends Connector {
 
         let decrypted = CryptoJS.AES.decrypt(encrypted, key, { iv: CryptoJS.enc.Hex.parse(descrambleComment.substring(0, 32)) })
             .toString(CryptoJS.enc.Utf8)
-            .replace(/[a-z]/g, char => 'abcdefghijklmnopqrstuvwxyz'['zyxwvutsrqponmlkjihgfedcba'.indexOf(char)])
-            .replace(/[A-Z]/g, char => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'['ZYXWVUTSRQPONMLKJIHGFEDCBA'.indexOf(char)])
             .replace(/~/g, '{')
             .replace(/\^/g, '}')
             .replace(/m/g, '"')
@@ -186,17 +184,17 @@ export default class JapScan extends Connector {
 
             for(let key in pattern) {
                 let blockWidth = 100;
-                let blockHeight = 100;
+                let blockHeight = blockWidth;
                 let modX = Math.ceil(bitmap.width / blockWidth);
                 let modY = modX;
 
                 let source = parseInt(pattern[key]);
-                source = (source - 843) / 7;
+                source = (source - 620) / 7;
                 let sourceX = source % modX * blockWidth;
                 let sourceY = Math.floor(source / modY) * blockHeight;
 
                 let target = parseInt(key);
-                target = (target - 462) / 5;
+                target = (target - 525) / 5;
                 let targetX = target % modX * blockWidth;
                 let targetY = Math.floor(target / modY) * blockHeight;
 
