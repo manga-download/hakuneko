@@ -189,12 +189,12 @@ export default class JapScan extends Connector {
                 let modY = modX;
 
                 let source = parseInt(pattern[key]);
-                source = (source - 843) / 7;
+                source = (source - 620) / 7;
                 let sourceX = source % modX * blockWidth;
                 let sourceY = Math.floor(source / modY) * blockHeight;
 
                 let target = parseInt(key);
-                target = (target - 462) / 5;
+                target = (target - 525) / 5;
                 let targetX = target % modX * blockWidth;
                 let targetY = Math.floor(target / modY) * blockHeight;
 
