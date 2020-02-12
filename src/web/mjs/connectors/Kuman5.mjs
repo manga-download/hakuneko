@@ -1,115 +1,58 @@
-import Connector from "../engine/Connector.mjs";
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class Kuman5 extends Connector {
-    /**
-     *
-     */
     constructor() {
         super();
-        super.id = "kuman5";
-        super.label = "酷漫屋 （Kuman5）";
-        this.tags = ["manga", "chinese"];
-        this.url = "http://www.kuman5.com/";
+        super.id = 'kuman5';
+        super.label = '酷漫屋 (Kuman5)';
+        this.tags = [ 'manga', 'chinese' ];
+        this.url = 'http://www.kuman5.com';
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages(mangaPageLinks, index) {
-        if (index === undefined) {
-            index = 0;
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'section.banner_detail div.info h1');
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
+    }
+
+    async _getMangas() {
+        let mangaList = [];
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
-        return this.wait(0)
-            .then(() => this.fetchDOM(mangaPageLinks[index], "ul.mh-list li div.mh-item-detali h2.title a", 5))
-            .then(data => {
-                let mangaList = data.map(element => {
-                    return {
-                        id: this.getRelativeLink(element),
-                        title: element.text.trim()
-                    };
-                });
-                if (index < mangaPageLinks.length - 1) {
-                    return this._getMangaListFromPages(mangaPageLinks, index + 1).then(mangas => mangas.concat(mangaList));
-                } else {
-                    return Promise.resolve(mangaList);
-                }
-            });
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList(callback) {
-        this.fetchDOM(this.url + "/rank/1-10.html", "div.page-pagination ul li a.active")
-            .then(data => {
-                let pageCount = parseInt(data[0].text.trim());
-                let pageLinks = [...new Array(pageCount).keys()].map(page => this.url + "/rank/1-" + (page + 1) + ".html");
-                return this._getMangaListFromPages(pageLinks);
-            })
-            .then(data => {
-                callback(null, data);
-            })
-            .catch(error => {
-                console.error(error, this);
-                callback(error, undefined);
-            });
+    async _getMangasFromPage(page) {
+        let request = new Request(new URL(`/sort/1-${page}.html`, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.mh-list li div.mh-item-detali h2.title a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList(manga, callback) {
-        this.fetchDOM(this.url + "mulu/" + manga.id + "1-1.html", "div#chapterlistload ul#detail-list-select-1 li a")
-            .then(data => {
-                let chapterList = data.map(element => {
-                    return {
-                        id: this.getRelativeLink(element),
-                        title: element.childNodes[0].nodeValue.trim(),
-                        language: "zh"
-                    };
-                });
-                callback(null, chapterList);
-            })
-            .catch(error => {
-                console.error(error, manga);
-                callback(error, undefined);
-            });
+    async _getChapters(manga) {
+        let request = new Request(new URL(`/mulu${manga.id}1-1.html`, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#chapterlistload ul#detail-list-select-1 li a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.childNodes[0].nodeValue.trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList(manga, chapter, callback) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-        fetch(request)
-            .then(response => response.text())
-            .then(data => {
-                let uri = new URL(this.url + "/action/play/read");
-                uri.searchParams.set("did", data.match(/var\s+did\s*=\s*(\d+)\s*;/)[1]);
-                uri.searchParams.set("sid", data.match(/var\s+sid\s*=\s*(\d+)\s*;/)[1]);
-                let pageCount = parseInt(data.match(/var\s+pcount\s*=\s*(\d+)\s*;/)[1]);
-                let pageLinks = [...new Array(pageCount).keys()].map(page => {
-                    uri.searchParams.set("iid", page + 1);
-                    uri.searchParams.set("tmp", Math.random());
-                    return this.createConnectorURI(uri.href);
-                });
-                callback(null, pageLinks);
-            })
-            .catch(error => {
-                console.error(error, chapter);
-                callback(error, undefined);
-            });
-    }
-
-    /**
-     *
-     */
-    _handleConnectorURI(payload) {
-        let request = new Request(payload, this.requestOptions);
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        return this.fetchJSON(request).then(data => super._handleConnectorURI(this.getAbsolutePath(data.Code, request.url)));
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchRegex(request, /km5_img_url\s*=\s*['"]([^'"]+)['"]/);
+        return JSON.parse(atob(data[0])).map(page => page.split('|')[1]);
     }
 }
