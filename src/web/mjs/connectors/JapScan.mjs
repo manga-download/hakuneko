@@ -182,19 +182,23 @@ export default class JapScan extends Connector {
             canvas.height = bitmap.height;
             var ctx = canvas.getContext('2d');
 
-            for(let key in pattern) {
-                let blockWidth = 100;
-                let blockHeight = blockWidth;
-                let modX = Math.ceil(bitmap.width / blockWidth);
-                let modY = modX;
+            let blockWidth = 100;
+            let blockHeight = blockWidth;
+            let modX = Math.ceil(bitmap.width / blockWidth);
+            let modY = modX;
+            let sourceOffset = Math.min(...Object.values(pattern).map(value => parseInt(value)));
+            let targetOffset = Math.min(...Object.keys(pattern).map(key => parseInt(key)));
+            let sourceDivider = 7;
+            let targetDivider = 5;
 
+            for(let key in pattern) {
                 let source = parseInt(pattern[key]);
-                source = (source - 620) / 7;
+                source = (source - sourceOffset) / sourceDivider;
                 let sourceX = source % modX * blockWidth;
                 let sourceY = Math.floor(source / modY) * blockHeight;
 
                 let target = parseInt(key);
-                target = (target - 525) / 5;
+                target = (target - targetOffset) / targetDivider;
                 let targetX = target % modX * blockWidth;
                 let targetY = Math.floor(target / modY) * blockHeight;
 
