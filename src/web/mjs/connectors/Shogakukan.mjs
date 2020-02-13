@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
+//import Manga from '../engine/Manga.mjs';
 
 export default class Shogakukan extends Connector {
 
@@ -11,7 +11,7 @@ export default class Shogakukan extends Connector {
         this.url = 'https://www.shogakukan.co.jp';
     }
 
-    async _getMangaFromURI(uri) {
+    async _getMangaFromURI(/*uri*/) {
         /*
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'head title');
@@ -46,7 +46,7 @@ export default class Shogakukan extends Connector {
         });
     }
 
-    async _getChapters(manga) {
+    async _getChapters(/*manga*/) {
         /*
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'table.table tbody tr td:first-of-type a');
@@ -60,7 +60,7 @@ export default class Shogakukan extends Connector {
         */
     }
 
-    async _getPages(chapter) {
+    async _getPages(/*chapter*/) {
         /*
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div#reader div.chapter-content source.chapter-img');
