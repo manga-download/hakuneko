@@ -80,30 +80,23 @@ export default class Request {
      *
      */
     get _cfCheckScript() {
-        // ensure variables in this script does not appear in the page or other injected script
-        let uVar = [
-            '_c13367', // 'code',
-            '_d8fd50', // 'message',
-            '_cb5e10', // 'error',
-            '_e9a23c', // 'meta',
-            '_d9904d', // 'cf',
-            '_b4a884', // 'result',
-        ];
         return `
-            let ${uVar[0]} = document.querySelector( '.cf-error-code' );
-            ${uVar[0]} = ( ${uVar[0]} ? ${uVar[0]}.innerText : null );
-            let ${uVar[1]} = document.querySelector( 'h2[data-translate]' );
-            ${uVar[1]} = ( ${uVar[1]} && ${uVar[1]}.nextElementSibling ? ${uVar[1]}.nextElementSibling.innerText : null );
-            let ${uVar[2]} = ( ${uVar[0]} ? 'CF Error ' + ${uVar[0]} + ' => ' + ${uVar[1]} : null );
-
-            let ${uVar[3]} = document.querySelector( 'meta[http-equiv="refresh"][content*="="]' );
-            let ${uVar[4]} = document.querySelector( 'form#challenge-form' );
-
-            let ${uVar[5]} = {
-                error: ${uVar[0]},
-                redirect: ( ${uVar[3]} || ${uVar[4]} )
-            };
-            ${uVar[5]};
+            new Promise(resolve => {
+                let code = document.querySelector('.cf-error-code');
+                code = (code ? code.innerText : null);
+                let message = document.querySelector('h2[data-translate]');
+                message = (message && message.nextElementSibling ? message.nextElementSibling.innerText : null);
+                let error = (code ? 'CF Error ' + code + ' => ' + message : null);
+    
+                let meta = document.querySelector('meta[http-equiv="refresh"][content*="="]');
+                let cf = document.querySelector('form#challenge-form');
+    
+                let result = {
+                    error: code,
+                    redirect: (meta || cf)
+                };
+                resolve(result);
+            });
         `;
     }
 
@@ -131,9 +124,9 @@ export default class Request {
 
     /**
      * If timeout [ms] is given, the window will be kept open until timout, otherwise
-     * it will be closed after injecting the script (or after 30 seconds in case an error occured)
+     * it will be closed after injecting the script (or after 60 seconds in case an error occured)
      */
-    fetchUI( request, injectionScript, timeout ) {
+    async fetchUI( request, injectionScript, timeout ) {
         timeout = timeout || 60000;
         return new Promise( ( resolve, reject ) => {
             let win = new this.browser( {
