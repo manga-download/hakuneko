@@ -39,8 +39,8 @@ export default class ScanTrad extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.main_img div.sc-lel source');
+        let data = await this.fetchDOM(request, 'div.main_img div.sc-lel > source');
         return data.map(element => this.getAbsolutePath(element.dataset.src || element, this.url))
-            .filter(link => !link.includes('8b9fe6b2827ee50f3d43c54d6489fe31e71bd268'));
+            .filter(link => !link.includes('8b9fe6b2827ee50f3d43c54d6489fe31e71bd268') && !link.includes('scantrad.jpg') && !link.includes('myutaku.png'));
     }
 }
