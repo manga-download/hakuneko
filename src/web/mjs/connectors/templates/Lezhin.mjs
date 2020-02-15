@@ -4,12 +4,9 @@ export default class Lezhin extends Connector {
 
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = undefined;
         super.label = undefined;
         this.tags = [];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = undefined;
         this.apiURL = 'https://www.lezhin.com/api/v2'; // https://api.lezhin.com/v2
         this.cdnURL = 'https://cdn.lezhin.com';
@@ -36,6 +33,7 @@ export default class Lezhin extends Connector {
      *
      */
     _initializeAccount() {
+        // TODO: check if logged in: https://www.lezhin.com/internal/isLogin
         return Promise.resolve()
             .then( () => {
                 if( this.userID || !this.config.username.value || !this.config.password.value ) {
@@ -181,51 +179,57 @@ export default class Lezhin extends Connector {
         return Engine.Request.fetchUI(request, script);
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        this._initializeAccount()
-        //.then( () => fetch( [this.url, 'comic', manga.id, chapter.id].join( '/' ), this.requestOptions ) )
-            .then( () => {
-                let uri = new URL( this.apiURL + '/inventory_groups/comic_viewer' );
-                uri.searchParams.set( 'type', 'comic_episode' );
-                uri.searchParams.set( 'alias', manga.id );
-                uri.searchParams.set( 'name', chapter.id );
-                /*
-                 *uri.searchParams.set( 'platform', 'web' );
-                 *uri.searchParams.set( 'store', 'web' );
-                 */
-                return fetch( uri.href, this.requestOptions );
-            } )
-            .then( response => response.json() )
-            .then( data => {
-                let comicID = data.data.extra.comic.id;
-                let episodeID = data.data.extra.episode.id;
-                /*
-                 *let top = data.data.extra.episode.topInfo !== undefined;
-                 *let bottom = data.data.extra.episode.bottomInfo !== undefined;
-                 *let pageType = data.data.extra.episode.display.type; // 'g'
-                 */
-                let pages = 0;
-                let path = '';
-                if( data.data.extra.episode.scroll ) {
-                    pages = data.data.extra.episode.scroll;
-                    path = 'scroll';
-                }
-                let pageList = [... new Array( pages ).keys()].map( page => {
-                    let uri = new URL( [this.cdnURL, 'v2/comics', comicID, 'episodes', episodeID, 'contents', path + 's', page + 1].join( '/' ) );
-                    uri.searchParams.set( 'access_token', this.accessToken );
-                    //uri.searchParams.set( 'purchased', false );
-                    uri.searchParams.set('q', 40); // 40 => width 1080, 30 => width 720
-                    //uri.searchParams.set( 'updated', 1539846001617 /* Date.now() */ );
-                    return uri.href;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        await this._initializeAccount();
+        let uri = new URL(this.apiURL + '/inventory_groups/comic_viewer');
+        uri.searchParams.set('type', 'comic_episode');
+        uri.searchParams.set('alias', chapter.manga.id);
+        uri.searchParams.set('name', chapter.id);
+        /*
+         *uri.searchParams.set('platform', 'web');
+         *uri.searchParams.set('store', 'web');
+         */
+        let data = await this.fetchJSON(uri.href, this.requestOptions);
+        let comicID = data.data.extra.comic.id;
+        let episodeID = data.data.extra.episode.id;
+        let isPremium = await this._isPurchasedOrSubscribed(comicID, episodeID);
+        /*
+         *let top = data.data.extra.episode.topInfo !== undefined;
+         *let bottom = data.data.extra.episode.bottomInfo !== undefined;
+         *let pageType = data.data.extra.episode.display.type; // 'g'
+         */
+        let pages = 0;
+        let path = '';
+        if(data.data.extra.episode.scroll) {
+            pages = data.data.extra.episode.scroll;
+            path = 'scroll';
+        }
+        return [... new Array(pages).keys()].map(page => {
+            let uri = new URL([this.cdnURL, 'v2/comics', comicID, 'episodes', episodeID, 'contents', path + 's', page + 1].join('/'));
+            uri.searchParams.set('access_token', this.accessToken);
+            uri.searchParams.set('purchased', isPremium);
+            /*
+             * q  | Free  | Purchased
+             * ----------------------
+             * 10 |  480w |  640w
+             * 20 |  640w |  720w
+             * 30 |  720w | 1080w
+             * 40 | 1080w | 1280w
+             */
+            uri.searchParams.set('q', 40);
+            //uri.searchParams.set( 'updated', 1539846001617 /* Date.now() */ );
+            return uri.href;
+        });
+    }
+
+    async _isPurchasedOrSubscribed(comicID, episodeID) {
+        if(this.accessToken) {
+            let uri = new URL(`${this.apiURL}/users/${this.userID}/contents/${comicID}`);
+            let request = new Request(uri, this.requestOptions);
+            request.headers.set('authorization', 'Bearer ' + this.accessToken);
+            let data = await this.fetchJSON(request);
+            return data.data.subscribed || data.data.purchased.includes(episodeID);
+        }
+        return false;
     }
 }
