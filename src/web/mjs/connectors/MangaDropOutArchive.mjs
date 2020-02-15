@@ -19,88 +19,46 @@ export default class MangaDropOutArchive extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this.fetchDOM( request, 'div.card div.card-body', 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element.querySelector( 'a.btn' ), request.url ),
-                        title: element.querySelector( ' h4.card-title b' ).textContent.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(new URL('/collection', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.pagination li.page-item:nth-last-of-type(2) a.page-link');
+        let pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/collection', this.requestOptions );
-        this.fetchDOM( request, 'ul.pagination li.page-item:nth-last-of-type(2) a.page-link' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/collection?page=' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let request = new Request(new URL('/collection?page=' + page, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.card div.card-body');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a.btn'), request.url),
+                title: element.querySelector('h4.card-title b').textContent.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'ul.list-group li.list-group-item a.cap' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.childNodes[0].textContent.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.list-group li.list-group-item a.cap');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.childNodes[0].textContent.replace(manga.title, '').trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'div#tidakakanselamanya a' )
-            .then( data => {
-                request = new Request( this.getAbsolutePath( data[0], request.url ), this.requestOptions );
-                return this.fetchDOM( request, 'div.text-center source.lazy' );
-            } )
-            .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#tidakakanselamanya a');
+        request = new Request(this.getAbsolutePath(data[0], request.url), this.requestOptions);
+        data = await this.fetchDOM(request, 'div.text-center source.lazy');
+        return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
