@@ -57,7 +57,7 @@ export default class SinMH extends Connector {
                 if(button) {
                     button.click();
                 }
-                chapterList = [...document.querySelectorAll('${this.queryChapters}')].map(element => {
+                let chapterList = [...document.querySelectorAll('${this.queryChapters}')].map(element => {
                     return {
                         id: new URL(element.href, window.location).pathname,
                         title: element.text.trim(),
