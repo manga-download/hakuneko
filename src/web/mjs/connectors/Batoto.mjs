@@ -5,7 +5,7 @@ export default class Batoto extends AnyACG {
     constructor() {
         super();
         super.id = 'batoto';
-        super.label = 'Batoto (by MangaWindow)';
+        super.label = 'Batoto (by AnyACG)';
         this.tags = [ 'manga', 'multi-lingual' ];
         this.url = 'https://bato.to';
 
