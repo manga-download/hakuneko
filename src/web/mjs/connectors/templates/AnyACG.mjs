@@ -11,7 +11,9 @@ export default class AnyACG extends Connector {
         this.url = undefined;
 
         this.path = '/?page=';
-        this.queryMangaTitle = 'div#content div.rm h1[itemprop="name"]';
+        this.queryMangaTitle = 'div#content div.rm';
+        this.queryMangaTitleText = 'h1[itemprop="name"]';
+        this.queryMangaTitleFlag = undefined;
         this.queryMangaPages = 'div.pagination ul.pagination li:nth-last-child(2) a';
         this.queryMangas = 'div.mng div.title h3';
         this.queryMangaLink = 'a.series';
@@ -20,11 +22,16 @@ export default class AnyACG extends Connector {
         this.queryPages = 'div#readerarea p#arraydata';
     }
 
+    _getLanguage(element, queryFlag) {
+        let language = queryFlag ? element.querySelector(queryFlag) : undefined;
+        return language ? ' (' + language.className.match(/flag_([_a-z]+)/)[1].replace(/_/g, '-') + ')' : '';
+    }
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
         let id = uri.pathname + uri.search;
-        let title = data[0].textContent.trim();
+        let title = data[0].querySelector(this.queryMangaTitleText).textContent.trim() + this._getLanguage(data[0], this.queryMangaTitleFlag);
         return new Manga(this, id, title);
     }
 
@@ -33,7 +40,6 @@ export default class AnyACG extends Connector {
         let request = new Request(new URL(this.path, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaPages);
         let pageCount = parseInt(data[0].text.trim());
-        pageCount = 5;
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -45,13 +51,11 @@ export default class AnyACG extends Connector {
         let request = new Request(new URL(this.path + page, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map( element => {
-            let language = element.querySelector(this.queryMangaFlag);
-            language = language ? ' (' + language.className.match(/flag_([_a-z]*)/)[1].replace(/_/g, '-') + ')' : '';
             let a = element.querySelector(this.queryMangaLink);
             this.cfMailDecrypt(a);
             return {
                 id: this.getRootRelativeOrAbsoluteLink(a, request.url),
-                title: a.text.trim() + language
+                title: a.text.trim() + this._getLanguage(element, this.queryMangaFlag)
             };
         });
     }
