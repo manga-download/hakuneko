@@ -4,15 +4,11 @@ export default class FoolSlide extends Connector {
 
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = undefined;
         super.label = undefined;
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = undefined;
+
         this.path = '/directory/';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
 
         this.defaultPageCount = 1; // pages when no link was found
         this.queryMangasPageCount = 'div.prevnext div.next a:first-of-type';
@@ -93,37 +89,22 @@ export default class FoolSlide extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        fetch( request )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let pages = undefined;
-                let pagesRAW = data.match( /pages\s*=\s*(\[.*?\])\s*;/ );
-                if( pagesRAW instanceof Array ) {
-                    pages = pagesRAW[1];
-                }
-                let pagesB64 = data.match( /pages\s*=\s*JSON.parse\s*\(\s*atob\s*\("(.*?)"\s*\)\s*\)\s*;/ );
-                if( pagesB64 instanceof Array ) {
-                    pages = atob( pagesB64[1] );
-                }
-                if( !pages ) {
-                    throw new Error( `Failed to extract page list!` );
-                }
-                let pageList = JSON.parse( pages ).map( p => this.getAbsolutePath( p.url, request.url ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.text();
+        let pages = undefined;
+        let pagesRAW = data.match(/pages\s*=\s*(\[.*?\])\s*;/);
+        if(pagesRAW instanceof Array) {
+            pages = pagesRAW[1];
+        }
+        let pagesB64 = data.match(/pages\s*=\s*JSON.parse\s*\(\s*atob\s*\("(.*?)"\s*\)\s*\)\s*;/);
+        if( pagesB64 instanceof Array ) {
+            pages = atob(pagesB64[1]);
+        }
+        if(!pages) {
+            throw new Error(`Failed to extract page list!`);
+        }
+        return JSON.parse(pages).map(page => this.getAbsolutePath(page.url, request.url));
     }
 }
