@@ -35,9 +35,15 @@ export default class Hitomi extends Connector {
 
     async _getPages(chapter) {
         let script = `
-            new Promise(resolve =>{
-                let images = galleryinfo.map(info => url_from_url_from_hash(galleryid, info));
-                resolve(images);
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        let images = galleryinfo.files.map(info => url_from_url_from_hash(galleryinfo.id, info));
+                        resolve(images);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 1000);
             });
         `;
         let request = new Request(`${this.url}/reader/${chapter.id}.html`, this.requestOptions);
