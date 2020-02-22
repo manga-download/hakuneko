@@ -12,7 +12,7 @@ export default class MangaKu extends Connector {
 
     async _getMangas() {
         let request = new Request(new URL('/daftar-komik-bahasa-indonesia/', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#data div.npx ul li a');
+        let data = await this.fetchDOM(request, 'div#data div.npx ul li a.tooltip');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
