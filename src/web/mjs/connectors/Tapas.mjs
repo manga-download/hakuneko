@@ -50,7 +50,7 @@ export default class Tapas extends Connector {
 
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchRegex(request, /episodeList\s*:\s*(\[.*?\])/g);
+        let data = await this.fetchRegex(request, /episodeList\s*:\s*(\[\s*\{.*?\}\s*\])/g);
         return JSON.parse(data[0])
             //.filter(chapter => !chapter.locked)
             .map(chapter => {
