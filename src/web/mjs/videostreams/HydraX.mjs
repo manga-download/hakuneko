@@ -125,7 +125,7 @@ export default class HydraX {
             throw new Error(data.msg);
         }
         let stream = this._getStream(data, resolution);
-        let playlist = this.fa(stream, data.servers);
+        let playlist = this.fa(stream, { redirect: data.servers } );
         playlist = this._setupEncryptionKey(stream, playlist);
         playlist = await this._replaceRedirectLinks(playlist);
         playlist = await this._optimizePlaylist(playlist);
