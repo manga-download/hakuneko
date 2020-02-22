@@ -146,11 +146,12 @@ export default class NetEaseComic extends Connector {
         ];
         // create a view for the buffer
         let decrypted = new Uint8Array(buffer, 9);
-        console.log('Encrypted:', decrypted);
+        //console.log('Encrypted:', new Uint8Array(buffer, 9));
         for(let index in decrypted) {
             decrypted[index] ^= key[index % key.length];
         }
-        console.log('Decrypted:', decrypted);
+        console.log('Decrypted (Head):', new Uint8Array(buffer, 9, 64));
+        console.log('Decrypted (Tail):', new Uint8Array(buffer, buffer.byteLength - 48));
         return buffer;
 
         /*
