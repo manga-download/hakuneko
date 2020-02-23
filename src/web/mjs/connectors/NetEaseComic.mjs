@@ -103,7 +103,7 @@ export default class NetEaseComic extends Connector {
 
         uri = new URL(data.data.path, data.data.host);
         let images = await this._getImageIndex(uri);
-        images = images.map(image => image + '@1100w.jpg');
+        //images = images.map(image => image + '@1100w.jpg');
 
         uri = new URL('/twirp/comic.v1.Comic/ImageToken', this.url);
         uri.searchParams.set('device', 'pc');
