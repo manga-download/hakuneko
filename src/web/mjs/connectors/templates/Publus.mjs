@@ -65,10 +65,12 @@ export default class Publus extends Connector {
             }
             case 'xor': {
                 let data = await response.arrayBuffer();
-                return {
-                    mimeType: 'image/png', // response.headers.get('content-type'),
+                data = {
+                    mimeType: response.headers.get('content-type'),
                     data: await this._decryptXOR(data, payload.encryptionKey)
                 };
+                this._applyRealMime(data);
+                return data;
             }
             default: {
                 let data = await response.blob();
@@ -92,7 +94,6 @@ export default class Publus extends Connector {
             }
             return s;
         } else {
-            // "image/png"
             return encrypted;
         }
     }
