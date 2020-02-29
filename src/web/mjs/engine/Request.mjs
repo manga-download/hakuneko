@@ -109,7 +109,7 @@ export default class Request {
      * If timeout [ms] is given, the window will be kept open until timout, otherwise
      * it will be closed after injecting the script (or after 60 seconds in case an error occured)
      */
-    async fetchUI( request, injectionScript, timeout ) {
+    async fetchUI( request, injectionScript, timeout, images ) {
         timeout = timeout || 60000;
         return new Promise( ( resolve, reject ) => {
             let win = new this.browser( {
@@ -117,7 +117,7 @@ export default class Request {
                 webPreferences: {
                     nodeIntegration: false,
                     webSecurity: true,
-                    images: false
+                    images: !!images
                 }
             } );
             //win.webContents.openDevTools();
