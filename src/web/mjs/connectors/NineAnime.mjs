@@ -161,6 +161,7 @@ export default class NineAnime extends Connector {
         let script = `
             new Promise((resolve, reject) => {
                 localStorage.setItem('player_autoplay', 0);
+                document.querySelector('a[href*="' + window.location.pathname + '"]').click();
                 setTimeout(() => {
                     try {
                         let uri = new URL($('#player iframe').attr('src'));
