@@ -116,7 +116,7 @@ export default class Request {
                 show: false,
                 webPreferences: {
                     nodeIntegration: false,
-                    webSecurity: true,
+                    webSecurity: false,
                     images: !!images
                 }
             } );
