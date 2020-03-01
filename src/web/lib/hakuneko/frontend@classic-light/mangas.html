@@ -311,9 +311,9 @@
                 this.set('nbContentUpdating',0);
                 this.set('enableCheckNewContent',false);
                 //Disable refresh for 1 minute to prevent hammering
-                setTimeout(function(){
-                    this.set('enableCheckNewContent',true);
-                },60000);
+                setTimeout(function(context){
+                    context.set('enableCheckNewContent',true);
+                },60000,this);
             }
 
             /**
