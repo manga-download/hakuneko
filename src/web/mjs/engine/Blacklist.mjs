@@ -6,9 +6,10 @@ export default class Blacklist {
     constructor() {
         this.patterns = [
             '*://*.2mdnsys.com/*',
+            '*://*.24vunvrv.com/*',
             '*://*.33across.com/*',
             '*://*.360yield.com/*',
-            '*://*.accounts.google.com/*',
+            //'*://*.accounts.google.com/*',
             '*://*.addthis.com/*',
             '*://*.addthisedge.com/*',
             '*://*.adf.ly/*',
@@ -21,7 +22,9 @@ export default class Blacklist {
             '*://*.adtrue.com/*',
             '*://*.advertising.com/*',
             '*://*.ambient-platform.com/*',
+            '*://*.amung.us/*',
             '*://*.apis.google.com/*',
+            '*://*.adxnexus.com/*',
             '*://*.bebi.com/*',
             '*://*.bidgear.com/*',
             '*://*.bidswitch.net/*',
@@ -33,6 +36,7 @@ export default class Blacklist {
             //'*://*.cloudfront.net/*',
             '*://*.cnzz.com/*',
             '*://*.cobalten.com/*',
+            '*://*.connect.facebook.net/*',
             '*://*.connectad.io/*',
             '*://*.consensu.org/*',
             '*://*.contextweb.com/*',
@@ -40,6 +44,7 @@ export default class Blacklist {
             '*://*.cpmstar.com/*',
             '*://*.criteo.net/*',
             '*://*.defpush.com/*',
+            '*://*.digitru.st/*',
             //'*://*.discordapp.com/*',
             '*://*.doubleclick.net/*',
             '*://*.dpypzvjarj.com/*',
@@ -47,10 +52,11 @@ export default class Blacklist {
             '*://*.elasticad.net/*',
             '*://*.eventronbesed.info/*',
             '*://*.exosrv.com/*',
-            '*://*.facebook.com/*',
-            '*://*.facebook.net/*',
-            '*://*.fbcdn.net/*',
+            //'*://*.facebook.com/*',
+            //'*://*.facebook.net/*',
+            //'*://*.fbcdn.net/*',
             '*://*.fingahvf.top/*',
+            '*://*.fqtag.com/*',
             '*://*.fundingchoices.google.com/*',
             '*://*.genieessp.com/*',
             '*://*.google-analytics.com/*',
@@ -76,7 +82,10 @@ export default class Blacklist {
             '*://*.nakamasweb.com/*',
             '*://*.onclasrv.com/*',
             '*://*.onesignal.com/*',
+            '*://*.outbrain.com/*',
+            '*://*.outbrainimg.com/*',
             '*://*.popcash.net/*',
+            '*://*.popmonetizer.net/*',
             '*://*.propellerads.com/*',
             '*://*.propellerclick.com/*',
             '*://*.pubmatic.com/*',
@@ -84,6 +93,7 @@ export default class Blacklist {
             '*://*.pubpress.net/*',
             '*://*.pvclouds.com/*',
             '*://*.revcontent.com/*',
+            '*://*.revrtb.net/*',
             '*://*.runative-syndicate.com/*',
             '*://*.sascdn.com/*',
             '*://*.scorecardresearch.com/*',
@@ -100,13 +110,11 @@ export default class Blacklist {
             '*://*.w55c.net/*',
             '*://*.yieldbird.com/*',
             '*://*.yimg.com/*',
+            '*://*.zeusadx.com/*',
             '*://*.zryydi.com/*',
         ];
     }
 
-    /**
-     *
-     */
     addPattern( pattern ) {
         if( !this.patterns.includes( pattern ) ) {
             this.patterns.push( pattern );
