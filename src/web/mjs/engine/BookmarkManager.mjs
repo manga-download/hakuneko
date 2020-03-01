@@ -1,4 +1,5 @@
 import Bookmark from './Bookmark.mjs';
+import Manga from './Manga.mjs';
 
 const events = {
     added: 'added',
@@ -210,5 +211,23 @@ export default class BookmarkManager extends EventTarget {
      */
     compareBookmarks( a, b ) {
         return a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 ;
+    }
+
+    /**
+     * Check newer content within bookmarks
+     */
+    async checkNewContent()
+    {
+        const checkManga = async function checkManga(bookmark){
+            //Retrieve connector
+            let mangaconnector = Engine.Connectors.find( connector => {
+                return connector.id === bookmark.key.connector ;
+            } );
+            //Prepare manga
+            let manga = new Manga(mangaconnector,bookmark.key.manga,bookmark.title.manga);
+            await manga.checkNewContent();
+        };
+        //Check all bookmarks for new content
+        await Promise.all(this.bookmarks.map(checkManga));
     }
 }

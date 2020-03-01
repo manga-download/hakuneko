@@ -27,6 +27,7 @@ export default class Manga extends EventTarget {
         this.status = status;
         this.chapterCache = [];
         this.existingChapters = [];
+        this.hasNewContent=false;
 
         if( !this.status ) {
             this.updateStatus();
@@ -127,7 +128,7 @@ export default class Manga extends EventTarget {
     /**
      *
      */
-    _getUpdatedChaptersFromWebsite() {
+    async _getUpdatedChaptersFromWebsite() {
         return this.connector.initialize()
             .then( () => {
                 return new Promise( ( resolve, reject ) => {
@@ -209,5 +210,22 @@ export default class Manga extends EventTarget {
         let count = prefix && prefix.length > 0 ? prefix[0].length : 0 ;
         count = Math.min( digits, count );
         return '0'.repeat( digits - count ) + text;
+    }
+
+    /**
+     * Check newer content within bookmarks
+     */
+    async checkNewContent()
+    {
+        await this._getUpdatedChaptersFromWebsite();
+        this.hasNewContent = false;
+        await this.getChapters( ( error, chapters ) => {
+            //Is the first chapter on the top of the list marked ? If not, we have new content !
+            if( ! Engine.ChaptermarkManager.isChapterMarked(chapters[0],Engine.ChaptermarkManager.getChaptermark(this))){
+                this.hasNewContent = true;
+            }
+            document.dispatchEvent( new CustomEvent( EventListener.onMangaCheckedContent, { detail: this} ) );
+        });
+
     }
 }

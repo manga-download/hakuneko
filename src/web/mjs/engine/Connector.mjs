@@ -16,6 +16,7 @@ export default class Connector {
          */
         this.isLocked = false;
         this.initialized = false;
+        this.initializing = undefined;
         //
         this.isUpdating = false;
         //
@@ -64,7 +65,11 @@ export default class Connector {
     async initialize() {
         try {
             if(!this.initialized) {
-                await this._initializeConnector();
+                if(!this.initializing)
+                {
+                    this.initializing = this._initializeConnector();
+                }
+                await this.initializing;
                 this.initialized = true;
             }
         } catch(error) {

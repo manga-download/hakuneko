@@ -68,6 +68,9 @@
             .focus {
                 background-color: var(--manga-list-selected) !important;
             }
+            .newcontent {
+                color: var(--manga-list-newcontent);
+            }
             .button {
                 cursor: pointer;
             }
@@ -82,6 +85,7 @@
             }
             .footer {
                 flex: 0;
+                display: flex;
             }
         </style>
         <div class="header separator">
@@ -143,6 +147,10 @@
         -->
         <div class="footer">
             <hakuneko-status id="status" message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"></hakuneko-status>
+            &nbsp;<i class$="fas [[ getContentUpdateClass(nbContentUpdating,enableCheckNewContent) ]] button" title="Check new content" on-click="onCheckNewContent"></i>
+            <template is="dom-if" if="[[ isUpdatingContent(nbContentUpdating) ]]">                        
+                   ([[ nbContentUpdating ]])
+            </template>
         </div>
     </template>
 
@@ -189,7 +197,10 @@
                 this.mangaList = this['mangaList'];
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
+                document.addEventListener( EventListener.onMangaCheckedContent, this.onMangaCheckedContent.bind( this ) );
                 Engine.BookmarkManager.addEventListener( 'changed', this.onBookmarksChanged.bind( this ) );
+                this.set( 'nbContentUpdating', 0 );
+                this.set('enableCheckNewContent',true);
             }
 
             /**
@@ -240,6 +251,29 @@
                 this.notifyPath( 'selectedConnector.isUpdating' );
             }
 
+
+            /**
+             * Event trigger when manga checked for new content
+             */
+             onMangaCheckedContent( e ) {
+                //Find manga in list
+                let index = this.mangaList.findIndex( ( manga ) => {
+                    // mangas may be different objects (synchronizing connector list) but still be equivalent
+                    // => comparing ids instead of comparing the objects directly
+                    return ( manga.id === e.detail.id );
+                });    
+                if( index > -1 ) {
+                    this.mangaList[index].hasNewContent=e.detail.hasNewContent;
+                    this.notifyPath( 'mangaList.' + index +'.hasNewContent');
+                }
+                //Don't update if already zero
+                if (this.get('nbContentUpdating')!==0)
+                {
+                    this.set('nbContentUpdating',this.get('nbContentUpdating')-1);
+                }
+            }
+
+
             /**
              *
              */
@@ -263,10 +297,40 @@
             }
 
             /**
+            * Event listener attached to the refresh button
+            * Checks for new content to read by refreshing the bookmarks, updating the web source and checking the chapters bookmarks
+            */
+            async onCheckNewContent() {
+                if(! this.get('enableCheckNewContent'))
+                {
+                    alert('Please wait 60s before checking again.');
+                    return;
+                }
+                this.set('nbContentUpdating',Engine.BookmarkManager.bookmarks.length); 
+                await Engine.BookmarkManager.checkNewContent();
+                this.set('nbContentUpdating',0);
+                this.set('enableCheckNewContent',false);
+                //Disable refresh for 1 minute to prevent hammering
+                setTimeout(function(){
+                    this.set('enableCheckNewContent',true);
+                },60000);
+            }
+
+            /**
              *
              */
-            getMangaClass( selectedManga, id ) {
-                return ( !selectedManga || selectedManga.id !== id ? '' : 'focus' );
+            getMangaClass( selectedManga, manga ) {
+                if (!selectedManga) {
+                    if(manga.hasNewContent)  { return 'newcontent'}
+                    else { return '' }
+                }
+                else
+                {
+                    if(manga.hasNewContent && selectedManga.id == manga.id)  { return 'newcontent focus'}
+                    else if(manga.hasNewContent)  { return 'newcontent'}
+                    else if (selectedManga.id == manga.id) { return 'focus' }
+                    else { return '' }
+                }
             }
 
             /**
@@ -274,6 +338,27 @@
              */
             getRefreshClass( isUpdating ) {
                 return ( isUpdating ? 'fa-pulse disabled' : '' );
+            }
+
+            /**
+             *
+             */
+             getContentUpdateClass ( nbContentUpdating, enableCheckNewContent ) {
+                if(! enableCheckNewContent)
+                {
+                    return 'fa-sync disabled';
+                }
+                else
+                {
+                    return (nbContentUpdating===0 ? 'fa-sync' : 'fa-pulse fa-sync disabled' );
+                }
+            }
+
+            /**
+             *
+             */
+            isUpdatingContent( nbContentUpdating ) {
+                return (nbContentUpdating!==0);
             }
 
             /**

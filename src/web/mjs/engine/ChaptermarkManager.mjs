@@ -135,6 +135,7 @@ export default class ChaptermarkManager extends EventTarget {
             //this.dispatchEvent( new CustomEvent( this.eventAdded, { detail: chaptermark } ) );
         }
         this._syncChaptermarks();
+        chapter.manga.checkNewContent();
     }
 
     /**
