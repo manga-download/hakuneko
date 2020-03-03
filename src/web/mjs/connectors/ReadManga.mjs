@@ -94,25 +94,9 @@ export default class ReadManga extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        fetch( this.url + chapter.id + '?mtr=1', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let pages = data.match( /init\s*\(\s*(\[\[.*?\]\])/ )[1];
-                let pageList = JSON.parse( pages.replace( /'/g, '"' ) ).map( p => p[1] + p[2] );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id + '?mtr=1', this.url), this.requestOptions);
+        let data = await this.fetchRegex(request, /init\s*\(\s*(\[\s*\[.*?\]\s*\])/g);
+        return JSON.parse(data[0].replace(/'/g, '"')).map(page => page[0] + page[2]);
     }
 }
