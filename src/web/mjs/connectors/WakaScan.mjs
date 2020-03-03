@@ -7,6 +7,6 @@ export default class WakaScan extends WordPressMadara {
         super.id = 'wakascan';
         super.label = 'WAKASCAN';
         this.tags = [ 'manga', 'french' ];
-        this.url = 'http://wakascan.com';
+        this.url = 'https://wakascan.com';
     }
 }
