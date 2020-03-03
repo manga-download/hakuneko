@@ -1,19 +1,13 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class ReadManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'readmanga';
         super.label = 'ReadManga';
         this.tags = [ 'manga', 'russian' ];
-        this.url = 'http://readmanga.me';
+        this.url = 'https://readmanga.me';
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             throttle: {
@@ -29,96 +23,50 @@ export default class ReadManga extends Connector {
         this.preferSubtitleAsMangaTitle = true;
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(new URL('/list', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'span.pagination a:nth-last-child(2)');
+        let pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            await this.wait(this.config.throttle.value);
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
-        return this.wait( this.config.throttle.value )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.tile div.desc', 5 ) )
-            .then( data => {
-                // TODO: use english titles instead of russian titles?
-                let mangaList = data.map( element => {
-                    let a = element.querySelector( 'h3 a' );
-                    let h4 = element.querySelector( 'h4' );
-                    return {
-                        id: this.getRelativeLink( a ),
-                        title:  this.preferSubtitleAsMangaTitle && h4 ? h4.title : a.title
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/list', 'span.pagination a:nth-last-child(2)' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/list?offset=' + page * 70 );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let request = new Request(new URL('/list?offset=' + page * 70, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.tile div.desc');
+        return data.map( element => {
+            let a = element.querySelector('h3 a');
+            let h4 = element.querySelector('h4');
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(a, this.url),
+                title:  this.preferSubtitleAsMangaTitle && h4 ? h4.title : a.title
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div#mangaBox' )
-            .then( data => {
-                let content = data[0];
-                let mangaTitle = content.querySelector( 'h1.names span.name' ).innerText.trim();
-                let chapterList = [...content.querySelectorAll( 'div.chapters-link table tr td a' ) ];
-                chapterList = chapterList.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( /\s{1,}/g, ' ' ).replace( mangaTitle, '' ).trim(),
-                        language: 'ru'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#mangaBox' );
+        let content = data[0];
+        let mangaTitle = content.querySelector('h1.names span.name').innerText.trim();
+        let chapterList = [...content.querySelectorAll('div.chapters-link table tr td a')];
+        return chapterList.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.replace(/\s{1,}/g, ' ').replace(mangaTitle, '').trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        fetch( this.url + chapter.id + '?mtr=1', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let pages = data.match( /init\s*\(\s*(\[\[.*?\]\])/ )[1];
-                let pageList = JSON.parse( pages.replace( /'/g, '"' ) ).map( p => p[1] + p[2] );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id + '?mtr=1', this.url), this.requestOptions);
+        let data = await this.fetchRegex(request, /init\s*\(\s*(\[\s*\[.*?\]\s*\])/g);
+        return JSON.parse(data[0].replace(/'/g, '"')).map(page => page[0] + page[2]);
     }
 }
