@@ -7,7 +7,7 @@ export default class MintManga extends ReadManga {
         super.id = 'mintmanga';
         super.label = 'MintManga';
         this.tags = [ 'manga', 'webtoon', 'russian' ];
-        this.url = 'http://mintmanga.live';
+        this.url = 'https://mintmanga.com';
 
         this.preferSubtitleAsMangaTitle = true;
     }
