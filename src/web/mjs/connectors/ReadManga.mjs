@@ -1,19 +1,13 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class ReadManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'readmanga';
         super.label = 'ReadManga';
         this.tags = [ 'manga', 'russian' ];
-        this.url = 'http://readmanga.me';
+        this.url = 'https://readmanga.me';
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             throttle: {
