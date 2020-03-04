@@ -7,7 +7,7 @@ export default class DoujinDesu extends BloggerManga {
         super.id = 'doujindesu';
         super.label = 'DoujinDesu';
         this.tags = ['hentai', 'indonesian'];
-        this.url = 'https://www.doujindesu.ch';
+        this.url = 'https://www.doujindesu.cc';
         this.urlBlog = 'https://doujindesu.blogspot.com';
 
         this.path = '';
