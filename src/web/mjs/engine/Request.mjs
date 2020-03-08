@@ -105,7 +105,7 @@ export default class Request {
      * so it is required to convert the request to supported options.
      */
     _extractRequestOptions(request) {
-        /*let referer = request.headers.get( 'x-referer' );*/
+        let referer = request.headers.get('x-referer');
         let cookie = request.headers.get('x-cookie');
         let headers = [];
         if(cookie) {
@@ -114,11 +114,11 @@ export default class Request {
         headers = headers.join( '\n' );
         return {
             /*
-             *httpReferrer: referer ? referer : undefined,
              *userAgent: undefined,
              *postData: undefined,
              */
-            extraHeaders: headers ? headers : undefined,
+            httpReferrer: referer ? referer : undefined,
+            extraHeaders: headers ? headers : undefined
         };
     }
 
