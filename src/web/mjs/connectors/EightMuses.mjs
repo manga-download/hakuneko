@@ -6,11 +6,9 @@ export default class EightMuses extends Connector {
     constructor() {
         super();
         super.id = '8muses';
-        super.label = '8muses';
+        super.label = '8 MUSES';
         this.tags = [ 'hentai', 'porn', 'english' ];
         this.url = 'https://www.8muses.com';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
     }
 
     async _getMangaFromURI(uri) {
@@ -21,45 +19,24 @@ export default class EightMuses extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
+    async _getMangas() {
         let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
-        callback( new Error( msg ), undefined );
+        throw new Error(msg);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div#top-menu div.top-menu-breadcrumb ol li a' )
-            .then( data => {
-                let chapterList = [ {
-                    id: manga.id,
-                    title: data.slice(2).map( element => element.text.trim() ).join( ' → ' ),
-                    language: ''
-                } ];
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#top-menu div.top-menu-breadcrumb ol li a');
+        return [ {
+            id: manga.id,
+            title: data.slice(2).map(element => element.text.trim()).join(' → '),
+            language: ''
+        } ];
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div.gallery div.image source.lazyload' )
-            .then( data => {
-                let pageList = data.map( element => this.url + element.dataset[ 'src' ].replace( '/th/', '/fl/' ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.gallery div.image source.lazyload');
+        return data.map(element => this.url + element.dataset['src'].replace('/th/', '/fl/'));
     }
 }
