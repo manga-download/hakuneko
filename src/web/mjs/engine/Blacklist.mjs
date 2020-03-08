@@ -85,6 +85,7 @@ export default class Blacklist {
             '*://*.onesignal.com/*',
             '*://*.outbrain.com/*',
             '*://*.outbrainimg.com/*',
+            '*://*.passeura.com/*',
             '*://*.popcash.net/*',
             '*://*.popmonetizer.net/*',
             '*://*.propellerads.com/*',
