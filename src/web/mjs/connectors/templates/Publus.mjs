@@ -30,14 +30,14 @@ export default class Publus extends Connector {
                     try {
                         if(this.NFBR) {
                             let pageList = Object.keys(NFBR.a6G.a6L.cache.data_).map(key => {
-                                let url = NFBR.a6G.a6L.cache.get(key).getUrl();
-                                let file = url.match(/item.*\\d+/)[0];
+                                let uri = new URL(NFBR.a6G.a6L.cache.get(key).getUrl(), window.location);
+                                let file = uri.pathname.match(/(item|text).*\\d+/)[0];
                                 for (let d = v = 0; d < file.length; d++) {
                                     v += file.charCodeAt(d);
                                 }
                                 return {
                                     mode: 'puzzle',
-                                    imageUrl: new URL(url, window.location).href,
+                                    imageUrl: uri.href,
                                     encryptionKey: v % NFBR.a0X.a3h + 1
                                 };
                             });
