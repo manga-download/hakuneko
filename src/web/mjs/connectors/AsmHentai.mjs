@@ -7,7 +7,7 @@ export default class AsmHentai extends Connector {
         super();
         super.id = 'asmhentai';
         super.label = 'AsmHentai';
-        this.tags = ['hentai', 'multi-lingual'];
+        this.tags = [ 'hentai', 'multi-lingual' ];
         this.url = 'https://asmhentai.com';
     }
 
@@ -21,30 +21,18 @@ export default class AsmHentai extends Connector {
         return new Manga(this, id, title);
     }
 
-    async _getMangaList(callback) {
+    async _getMangas() {
         let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
-        callback( new Error( msg ), undefined );
+        throw new Error(msg);
     }
 
-    async _getChapterList(manga, callback) {
-        try {
-            let chapterList = [ Object.assign({ language: '' }, manga) ];
-            callback(null, chapterList);
-        } catch(error) {
-            console.error(error, manga);
-            callback(error, undefined);
-        }
+    async _getChapters(manga) {
+        return [ { ...manga, language: '' } ];
     }
 
-    async _getPageList(manga, chapter, callback) {
-        try {
-            let request = new Request(this.url + chapter.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.gallery source.lazy');
-            let pageList = data.map(element => this.getAbsolutePath(element.dataset.src.replace('t.jpg', '.jpg'), request.url));
-            callback(null, pageList);
-        } catch(error) {
-            console.error(error, chapter);
-            callback(error, undefined);
-        }
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.gallery source.lazy');
+        return data.map(element => this.getAbsolutePath(element.dataset.src.replace('t.jpg', '.jpg'), request.url));
     }
 }
