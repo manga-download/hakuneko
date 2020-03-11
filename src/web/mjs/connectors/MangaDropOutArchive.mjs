@@ -56,9 +56,9 @@ export default class MangaDropOutArchive extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#tidakakanselamanya a');
-        request = new Request(this.getAbsolutePath(data[0], request.url), this.requestOptions);
-        data = await this.fetchDOM(request, 'div.text-center source.lazy');
+        //let data = await this.fetchDOM(request, 'div#tidakakanselamanya a');
+        //request = new Request(this.getAbsolutePath(data[0], request.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.text-center source.lazy');
         return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
