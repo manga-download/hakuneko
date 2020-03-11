@@ -120,7 +120,7 @@
                     <i class="fas fa-times-circle fa-2x button" title="Close (ESC)" on-click="hideViewer"></i>
                 </div>
                 <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
-                    <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%; margin: [[ imagePadding ]]em;"></div>
+                    <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%; margin: [[ imagePadding ]]em;" onerror="imgError(this)"></div>
                 </template>
             </template>
             <template is="dom-if" if="[[ videoViewMode(media,selectedMedia) ]]" on-dom-change="onVideoElementChanged">
@@ -137,6 +137,22 @@
     </template>
 
     <script>
+        /**
+         * Handle image load errors
+         */
+         function imgError(image) {
+            if (!image.hasOwnProperty('retryCount')){
+            image.retryCount = 0;
+            }
+
+            if (image.retryCount < 3){
+            setTimeout(function (){
+                image.src += '?' + +new Date;
+                image.retryCount += 1;
+            }, 1000);
+            }
+        }
+
         /** @polymerElement */
         class HakunekoPages extends Polymer.Element {
             /**
