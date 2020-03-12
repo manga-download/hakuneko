@@ -1,13 +1,7 @@
 import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
 
-/**
- *
- */
 export default class ScanFR extends MangaReaderCMS {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'scanfr';
@@ -15,7 +9,7 @@ export default class ScanFR extends MangaReaderCMS {
         this.tags = [ 'manga', 'french' ];
         this.url = 'https://www.scan-fr.co';
 
-        this.queryChapters = 'ul.chapterszz li h5.chapter-title-rtlrr';
+        this.queryChapters = 'ul.chapters888 li h5.chapter-title-rtlrr';
         this.language = 'fr';
     }
 }
