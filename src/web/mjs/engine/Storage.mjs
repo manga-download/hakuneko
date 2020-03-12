@@ -644,16 +644,17 @@ export default class Storage {
         } );
     }
 
-    /**
-     *
-     */
-    saveVideoChunkTemp( content ) {
+    async saveTempFile(name, data) {
         try{
-            let file = this.path.join( this.temp, this.sanatizePath( content.name ) );
-            return this._writeFile( file, content.data );
-        } catch( error ) {
-            return Promise.reject( error );
+            let file = this.path.join(this.temp, this.sanatizePath(name));
+            return this._writeFile(file, data);
+        } catch(error) {
+            return Promise.reject(error);
         }
+    }
+
+    async saveVideoChunkTemp(content) {
+        return this.saveTempFile(content.name, content.data);
     }
 
     /**

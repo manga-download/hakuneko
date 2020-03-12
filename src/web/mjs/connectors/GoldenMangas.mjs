@@ -1,24 +1,13 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class GoldenMangas extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'goldenmangas';
         super.label = 'GoldenMangas';
         this.tags = [ 'manga', 'portuguese' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
-        this.url = 'https://goldenmangas.site';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
+        this.url = 'https://goldenmanga.top';
     }
 
     /**
