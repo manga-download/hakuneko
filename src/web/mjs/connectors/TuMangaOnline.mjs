@@ -8,7 +8,7 @@ export default class TuMangaOnline extends Connector {
         super.id = 'tumangaonline';
         super.label = 'TuMangaOnline';
         this.tags = [ 'manga', 'spanish' ];
-        this.url = 'https://tmofans.com';
+        this.url = 'https://lectortmo.com';
         this.requestOptions.headers.set('x-referer', this.url);
     }
 
