@@ -220,8 +220,17 @@ export default class Manga extends EventTarget {
         await this._getUpdatedChaptersFromWebsite();
         this.hasNewContent = false;
         await this.getChapters( ( error, chapters ) => {
-            //Is the first chapter on the top of the list marked ? If not, we have new content !
-            if( ! Engine.ChaptermarkManager.isChapterMarked(chapters[0],Engine.ChaptermarkManager.getChaptermark(this))){
+            // Look for the current chapter language, but should'nt it be stored within the bookmark already ?
+            let bookmark = Engine.ChaptermarkManager.getChaptermark(this);
+            bookmark.language = chapters.find( chapter => {
+                return chapter.id === bookmark.chapterID ;
+            } ).language;
+            // Look for the first chapter with the same language as the bookmark
+            let targetchapter = chapters.find( chapter => {
+                return chapter.language === bookmark.language ;
+            } );
+            //Is the first chapter with same language the same as the chapter marked ? If not, we have new content !
+            if( ! Engine.ChaptermarkManager.isChapterMarked(targetchapter,bookmark)){
                 this.hasNewContent = true;
             }
             document.dispatchEvent( new CustomEvent( EventListener.onMangaCheckedContent, { detail: this} ) );
