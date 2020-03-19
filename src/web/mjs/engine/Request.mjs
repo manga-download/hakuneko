@@ -122,6 +122,80 @@ export default class Request {
         };
     }
 
+    async fetchJapscan(request, preloadScript, runtimeScript, action, preferences, timeout) {
+        timeout = timeout || 60000;
+        preferences = preferences || {};
+        let preloadScriptFile = undefined;
+        if(preloadScript) {
+            preloadScriptFile = await Engine.Storage.saveTempFile(Math.random().toString(36), preloadScript);
+        }
+        let win = new this.browser({
+            show: false,
+            webPreferences: {
+                preload: preloadScriptFile,
+                nodeIntegration: preferences.nodeIntegration || false,
+                webSecurity: preferences.webSecurity || false,
+                images: preferences.images || false
+            }
+        });
+        //win.webContents.openDevTools();
+
+        win.webContents.session.webRequest.onBeforeRequest((details, callback) => {
+            if(details.webContentsId === win.webContents.id) {
+                preferences.onBeforeRequest(details, callback);
+            } else {
+                callback({ cancel: false });
+            }
+        });
+
+        return new Promise((resolve, reject) => {
+            let preventCallback = false;
+
+            let abortAction = setTimeout(() => {
+                this._fetchUICleanup(win, abortAction);
+                if(!preventCallback) {
+                    reject(new Error(`Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout/1000)} seconds!`));
+                }
+            }, timeout );
+
+            win.webContents.on('dom-ready', () => win.webContents.executeJavaScript(this._domPreparationScript));
+
+            win.webContents.on('did-fail-load', (event, errCode, errMessage, uri, isMain) => {
+                // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
+                if(!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
+                    this._fetchUICleanup(win, abortAction);
+                    reject(new Error(errMessage + ' ' + uri));
+                }
+            });
+
+            win.webContents.on('did-finish-load', async () => {
+                try {
+                    let cfResult = await win.webContents.executeJavaScript(this._cfCheckScript);
+                    if(!cfResult.redirect) {
+                        if(cfResult.error) {
+                            throw new Error(cfResult.error);
+                        } else {
+                            let jsResult = await win.webContents.executeJavaScript(runtimeScript);
+                            let actionResult = await action(jsResult);
+                            preventCallback = true; // no other event shall resolve/reject this promise anymore
+                            this._fetchUICleanup( win, abortAction );
+                            resolve(actionResult);
+                        }
+                    } else {
+                        // neither reject nor resolve the promise (wait for next callback after getting redirected)
+                        console.warn(`Solving CloudFlare challenge for "${request.url}" ...`, cfResult);
+                    }
+                } catch(error) {
+                    preventCallback = true; // no other event shall resolve/reject this promise anymore
+                    this._fetchUICleanup( win, abortAction );
+                    reject(error);
+                }
+            });
+
+            win.loadURL(request.url, this._extractRequestOptions(request));
+        });
+    }
+
     async fetchBrowser(request, preloadScript, runtimeScript, preferences, timeout) {
         timeout = timeout || 60000;
         preferences = preferences || {};
@@ -273,6 +347,8 @@ export default class Request {
         }
         abortAction = null;
         if( browserWindow ) {
+            // unsubscribe events from session
+            browserWindow.webContents.session.webRequest.onBeforeRequest(null);
             browserWindow.close();
         }
         browserWindow = null;
