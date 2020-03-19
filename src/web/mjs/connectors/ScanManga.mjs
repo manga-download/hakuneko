@@ -21,7 +21,9 @@ export default class ScanManga extends Connector {
 
     async _getMangas() {
         let request = new Request(new URL('/scanlation/scan.data.json', this.url), this.requestOptions);
-        request.headers.set('X-Requested-With', 'XMLHttpRequest');
+        request.headers.set('x-cookie', '_ga=GA1.2.137581646.' + parseInt(Date.now()/1000)); // google analytics cookie
+        //request.headers.set('x-referer', this.url + '/scanlation/liste_series.html');
+        request.headers.set('x-requested-with', 'XMLHttpRequest');
         let data = await this.fetchJSON(request);
         let mangaList = [];
         for(let title in data) {
