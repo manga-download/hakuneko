@@ -58,21 +58,17 @@ export default class ComicFire extends SpeedBinb {
         };
         if(chapter.id.includes("SWF")){ //legacy format; older chapters may use this
             ch.id = "http://tachiyomi.yomeru-hj.net/comic/" + ch.id.substr(17).replace("_SWF_Window.html","");
-            let request = new XMLHttpRequest();
-            request.onreadystatechange = function() {
-                if(this.readyState == 4 && this.status == 200) {
-                    let xmlDOM = request.responseXML;
-                    let pageList = [];
-                    let n = parseInt(xmlDOM.getElementsByTagName("total")[0].textContent);
-                    for (let i = 1; i <= n; i++){ 
-                        pageList.push(ch.id + "books/images/3.5/" + i + ".jpg");
-                    }
-                    callback(undefined, pageList);
+            let request = new Request(ch.id + 'books/db/book.xml', this.requestOptions);
+            this.fetchDOM(request, 'total:first-of-type').then((element)=>{
+                let total = parseInt(element[0].textContent);
+                let pageList = [];
+                for(let i = 1; i <= total; i++){
+                    pageList.push(ch.id + "books/images/3.5/" + i + ".jpg");
                 }
-            };
-            request.open("GET", ch.id + 'books/db/book.xml', true);
-            request.send();
+                callback(undefined, pageList);
+            });
         }else{ //speedbinb
+            this.baseURL = ch.id;
             super._getPageList( manga, ch, callback );
         }
     }

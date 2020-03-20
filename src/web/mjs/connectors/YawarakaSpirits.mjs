@@ -12,7 +12,7 @@ export default class YawarakaSpirits extends Connector {
 
         this.path = [ '/series', '/completion' ];
         this.queryManga = 'article.work section.work__inner ul li a';
-        this.queryOldManga = 'article.oldwork section.oldwork__inner ul li a'
+        this.queryOldManga = 'article.oldwork section.oldwork__inner ul li a';
         this.queryMangaTitle = 'dl dt strong';
 
         this.queryChapters = 'section.page__read div.page__read__inner ul.inner__content li a';
