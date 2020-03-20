@@ -20,7 +20,11 @@ export default class SpeedBinb extends Connector {
                 data = data[0];
                 if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )
                 {
-                    return this._getPageList_v016113( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
+                    if( !chapter.id.includes("?") ){ //if page doesn't contain a q-string
+                        return this._getPageList_v016113( chapter.id + '?cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
+                    }else{
+                        return this._getPageList_v016113( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
+                    }
                 }
                 if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
                     return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
@@ -160,7 +164,11 @@ export default class SpeedBinb extends Connector {
     _getPageList_v016130( chapterID, apiURL ) {
         let cid = new URL( chapterID, this.url ).searchParams.get( 'cid' );
         let sharingKey = this._tt( cid );
-        let uri = new URL( apiURL, this.url );
+        let uri;
+        if ( this.url.includes("hobbyjapan") ) 
+            uri = new URL( apiURL, chapterID.substr(0, chapterID.indexOf('?')) + '/' ); //hj uses chapterID instead of this.url
+        else 
+            uri = new URL( apiURL, this.url );
         uri.searchParams.set( 'cid', cid );
         uri.searchParams.set( 'dmytime', Date.now() );
         uri.searchParams.set( 'k', sharingKey );
@@ -168,14 +176,14 @@ export default class SpeedBinb extends Connector {
         return fetch( request )
             .then( response => response.json() )
             .then( data => {
-                return this._getPageLinks_v016130( data.items[0], sharingKey );
+                return this._getPageLinks_v016130( data.items[0], sharingKey, chapterID );
             } );
     }
 
     /**
      *
      */
-    _getPageLinks_v016130( configuration, sharingKey ) {
+    _getPageLinks_v016130( configuration, sharingKey, chapterID ) {
         let cid = configuration['ContentID'];
         /*
          *let stbl = this._pt( cid, sharingKey, configuration.stbl );
@@ -185,6 +193,8 @@ export default class SpeedBinb extends Connector {
         configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
 
         if( configuration['ServerType'] === 0 ) {
+            if( this.url.includes("hobbyjapan") )  //hj's ContentsServer is a relative path
+                configuration["ContentsServer"] = chapterID.substr(0, chapterID.indexOf('?')) + '/' + configuration["ContentsServer"];
             return this._getPageLinksSBC_v016130( configuration );
         }
         if( configuration['ServerType'] === 1 ) {
