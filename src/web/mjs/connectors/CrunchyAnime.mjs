@@ -1,6 +1,7 @@
 import Crunchyroll from './templates/Crunchyroll.mjs';
 
 // See: https://github.com/CloudMax94/crunchyroll-api/wiki/Api
+// See: https://github.com/streamlink/streamlink/blob/master/src/streamlink/plugins/crunchyroll.py
 export default class CrunchyAnime extends Crunchyroll {
 
     constructor() {
