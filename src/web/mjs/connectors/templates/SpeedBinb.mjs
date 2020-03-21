@@ -14,13 +14,16 @@ export default class SpeedBinb extends Connector {
      *
      */
     _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.getAbsolutePath( chapter.id, this.url ), this.requestOptions );
+        this.baseURL = this.baseURL || this.url;
+        let request = new Request( this.getAbsolutePath( chapter.id, this.baseURL ), this.requestOptions );
         this.fetchDOM( request, 'div#content.pages' )
             .then( data => {
                 data = data[0];
                 if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )
                 {
-                    return this._getPageList_v016113( chapter.id + '&cid=' + data.dataset['ptbinbCid'], data.dataset.ptbinb );
+                    let uri = new URL(chapter.id, this.baseURL);
+                    uri.searchParams.set('cid', data.dataset['ptbinbCid']);
+                    return this._getPageList_v016113(uri.pathname + uri.search, data.dataset.ptbinb);
                 }
                 if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
                     return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
@@ -158,9 +161,10 @@ export default class SpeedBinb extends Connector {
      *
      */
     _getPageList_v016130( chapterID, apiURL ) {
-        let cid = new URL( chapterID, this.url ).searchParams.get( 'cid' );
+        let cid = new URL( chapterID, this.baseURL ).searchParams.get( 'cid' );
         let sharingKey = this._tt( cid );
-        let uri = new URL( apiURL, this.url );
+        let uri;
+        uri = new URL( apiURL, this.baseURL + '/' );
         uri.searchParams.set( 'cid', cid );
         uri.searchParams.set( 'dmytime', Date.now() );
         uri.searchParams.set( 'k', sharingKey );
@@ -197,7 +201,7 @@ export default class SpeedBinb extends Connector {
     }
 
     _getPageLinksSBC_v016130( configuration ) {
-        let uri = new URL( configuration['ContentsServer'] + '/sbcGetCntnt.php' );
+        let uri = new URL( configuration['ContentsServer'] + '/sbcGetCntnt.php', this.baseURL + '/' );
         uri.searchParams.set( 'cid', configuration['ContentID'] );
         uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
         uri.searchParams.set( 'p', configuration['p'] );
