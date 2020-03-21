@@ -59,14 +59,19 @@ export default class ComicFire extends SpeedBinb {
         if(chapter.id.includes("SWF")){ //legacy format; older chapters may use this
             ch.id = "http://tachiyomi.yomeru-hj.net/comic/" + ch.id.substr(17).replace("_SWF_Window.html","");
             let request = new Request(ch.id + 'books/db/book.xml', this.requestOptions);
-            this.fetchDOM(request, 'total:first-of-type').then((element)=>{
-                let total = parseInt(element[0].textContent);
-                let pageList = [];
-                for(let i = 1; i <= total; i++){
-                    pageList.push(ch.id + "books/images/3.5/" + i + ".jpg");
-                }
-                callback(undefined, pageList);
-            });
+            this.fetchDOM(request, 'total:first-of-type')
+                .then((element) => {
+                    let total = parseInt(element[0].textContent);
+                    let pageList = [];
+                    for(let i = 1; i <= total; i++){
+                        pageList.push(ch.id + "books/images/3.5/" + i + ".jpg");
+                    }
+                    callback(undefined, pageList);
+                })
+                .catch(error => {
+                    console.error(error, chapter);
+                    callback(error, undefined);
+                });
         }else{ //speedbinb
             this.baseURL = ch.id;
             super._getPageList( manga, ch, callback );
