@@ -76,7 +76,7 @@ export default class Crunchyroll extends Connector {
             },
             crunchyroid: {
                 type: 'com.crunchyroll.crunchyroid',
-                token: 'Scwg9PRRZ19iVwD'
+                token: 'WveH9VkPLrXvuNm' // 'Scwg9PRRZ19iVwD'
             },
             android: {
                 type: 'com.crunchyroll.manga.android',
@@ -173,9 +173,14 @@ export default class Crunchyroll extends Connector {
         if(isCredentialsUpdated || !isLoggedIn) {
             await this._startSession();
             let uri = this._createURI(this.api, '/login.0.json');
-            uri.searchParams.set('account', this._credentials.username);
-            uri.searchParams.set('password', this._credentials.password);
-            let request = new Request(uri, this.requestOptions);
+            let form = new URLSearchParams(uri.search);
+            form.set('account', this._credentials.username);
+            form.set('password', this._credentials.password);
+            let request = new Request(uri, {
+                method: 'POST',
+                body: form.toString()
+            });
+            request.headers.set('Content-Type', 'application/x-www-form-urlencoded');
             let data = await this.fetchJSON(request);
             if(data.error) {
                 throw new Error(data.message);
