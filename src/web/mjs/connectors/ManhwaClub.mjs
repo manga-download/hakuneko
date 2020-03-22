@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class ManhwaClub extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'manhwaclub';

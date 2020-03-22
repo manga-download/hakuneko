@@ -1,13 +1,8 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
+// Affiliates: Manga MangaZukiSite
 export default class MangaZukiOnline extends WordPressMadara {
 
-    /**
-     * Affiliates: Manga MangaZukiSite
-     */
     constructor() {
         super();
         super.id = 'mangazuki-online';
