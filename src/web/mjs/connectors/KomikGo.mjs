@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class KomikGo extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'komikgo';

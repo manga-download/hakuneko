@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class TsubakiNoScan extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'tsubakinoscan';

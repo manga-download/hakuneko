@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class ZManga extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'zmanga';
