@@ -108,8 +108,8 @@
             <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
                 <div id="buttons" tabindex="0" onblur="this.focus()" on-keydown="onKeyDown">
                     <span class="title">[[ selectedChapter.title ]]</span>
-                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down (PageDown)" on-click="requestChapterDown"></i>
-                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up (PageUp)" on-click="requestChapterUp"></i>
+                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down (ArrowLeft)" on-click="requestChapterDown"></i>
+                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up (ArrowRight)" on-click="requestChapterUp"></i>
                     &nbsp;
                     <i class="fas fa-compress fa-2x button" title="Decrease spacing between images (CTRL ➖)" on-click="decreaseImagePadding"></i>
                     <i class="fas fa-expand fa-2x button" title="Increase spacing between images (CTRL ➕)" on-click="increaseImagePadding"></i>
@@ -203,14 +203,14 @@
                 switch( true ) {
                     case event.key === 'ArrowUp' && !event.ctrlKey:
                         this.$.container.scrollBy({ 
-                            top: -window.innerHeight,
+                            top: -window.innerHeight*0.95,
                             left: 0, 
                             behavior: 'smooth' 
                         });
                         break;
                     case event.key === 'ArrowDown' && !event.ctrlKey:
                         this.$.container.scrollBy({ 
-                            top: window.innerHeight,
+                            top: window.innerHeight*0.95,
                             left: 0, 
                             behavior: 'smooth' 
                         });
