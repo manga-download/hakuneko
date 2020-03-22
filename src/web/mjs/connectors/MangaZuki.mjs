@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class MangaZuki extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangazuki';

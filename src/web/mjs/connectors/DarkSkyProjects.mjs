@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class DarkSkyProjects extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'darkskyprojects';

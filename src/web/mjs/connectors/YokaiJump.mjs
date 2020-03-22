@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class YokaiJump extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'yokaijump';
