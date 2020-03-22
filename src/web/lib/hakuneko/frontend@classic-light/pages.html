@@ -202,15 +202,29 @@
             onKeyDown( event ) {
                 switch( true ) {
                     case event.key === 'ArrowUp' && !event.ctrlKey:
-                        this.$.container.scrollTop -= 64;
+                        this.$.container.scrollBy({ 
+                            top: -window.innerHeight,
+                            left: 0, 
+                            behavior: 'smooth' 
+                        });
                         break;
                     case event.key === 'ArrowDown' && !event.ctrlKey:
-                        this.$.container.scrollTop += 64;
+                        this.$.container.scrollBy({ 
+                            top: window.innerHeight,
+                            left: 0, 
+                            behavior: 'smooth' 
+                        });
                         break;
                     case event.key === 'PageUp' && !event.ctrlKey:
-                        this.requestChapterUp( event );
+                        this.$.container.scrollTop -= 64;
                         break;
                     case event.key === 'PageDown' && !event.ctrlKey:
+                        this.$.container.scrollTop += 64;
+                        break;
+                    case event.key === 'ArrowRight' && !event.ctrlKey:
+                        this.requestChapterUp( event );
+                        break;
+                    case event.key === 'ArrowLeft' && !event.ctrlKey:
                         this.requestChapterDown( event );
                         break;
                     case event.key === '+' && !event.ctrlKey:
