@@ -1,13 +1,7 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
 export default class MangaSY extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangasy';

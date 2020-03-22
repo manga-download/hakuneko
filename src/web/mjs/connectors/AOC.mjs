@@ -2,9 +2,6 @@ import WordPressMadara from './templates/WordPressMadara.mjs';
 
 export default class AOC extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'aoc';
