@@ -132,6 +132,7 @@ export default class Request {
         let win = new this.browser({
             show: false,
             webPreferences: {
+                //partition: 'japscan',
                 preload: preloadScriptFile,
                 nodeIntegration: preferences.nodeIntegration || false,
                 webSecurity: preferences.webSecurity || false,
@@ -140,13 +141,15 @@ export default class Request {
         });
         //win.webContents.openDevTools();
 
-        win.webContents.session.webRequest.onBeforeRequest((details, callback) => {
-            if(details.webContentsId === win.webContents.id) {
-                preferences.onBeforeRequest(details, callback);
-            } else {
-                callback({ cancel: false });
-            }
-        });
+        if(preferences.onBeforeRequest) {
+            win.webContents.session.webRequest.onBeforeRequest((details, callback) => {
+                if(details.webContentsId === win.webContents.id) {
+                    preferences.onBeforeRequest(details, callback);
+                } else {
+                    callback({ cancel: false });
+                }
+            });
+        }
 
         return new Promise((resolve, reject) => {
             let preventCallback = false;
@@ -176,7 +179,8 @@ export default class Request {
                             throw new Error(cfResult.error);
                         } else {
                             let jsResult = await win.webContents.executeJavaScript(runtimeScript);
-                            let actionResult = await action(jsResult);
+                            win.webContents.debugger.attach('1.3');
+                            let actionResult = await action(jsResult, win.webContents);
                             preventCallback = true; // no other event shall resolve/reject this promise anymore
                             this._fetchUICleanup( win, abortAction );
                             resolve(actionResult);
@@ -347,6 +351,9 @@ export default class Request {
         }
         abortAction = null;
         if( browserWindow ) {
+            if(browserWindow.webContents.debugger.isAttached()) {
+                browserWindow.webContents.debugger.detach();
+            }
             // unsubscribe events from session
             browserWindow.webContents.session.webRequest.onBeforeRequest(null);
             browserWindow.close();
