@@ -37,7 +37,7 @@ export default class Storage {
         this.fileURISubstitutions = {
             rgx: /['#?;]/g,
             map: {
-                '\'': '%27',
+                ''': '%27',
                 '#': '%23',
                 '?': '%3F',
                 ';': '%3B'
@@ -328,7 +328,7 @@ export default class Storage {
             .then( data => {
                 let name = this.path.join( this.temp, this.path.basename( file ) );
                 // attach timestamp to force reload of already existing, but overwritten temp files
-                let page = encodeURI( 'file://' + name.replace(/\\/g, '/') + '?ts=' + Date.now() );
+                let page = encodeURI( 'file://' + name.replace(/\/g, '/') + '?ts=' + Date.now() );
                 return new Promise( ( resolve, reject ) => {
                     this.fs.writeFile( name, data, error => {
                         if( error ) {
@@ -350,7 +350,7 @@ export default class Storage {
         return this._openZipArchive( ebook )
             .then( archive => {
                 let promises = Object.keys( archive.files ).filter( file => {
-                    return /^OEBPS[/\\]img[/\\][^/\\]+$/.test( file );
+                    return /^OEBPS[/\]img[/\][^/\]+$/.test( file );
                 } ).map( file => {
                     return this._extractZipEntry( archive, file );
                 } );
@@ -379,7 +379,7 @@ export default class Storage {
         return this._openZipArchive( cbz )
             .then( archive => {
                 let promises = Object.keys( archive.files ).filter( file => {
-                    return /^[^/\\]+$/.test( file );
+                    return /^[^/\]+$/.test( file );
                 } ).map( file => {
                     return this._extractZipEntry( archive, file );
                 } );
@@ -415,7 +415,7 @@ export default class Storage {
      *
      */
     _makeValidFileURL( directory, file ) {
-        return encodeURI( 'file://' + this.path.join( directory, file ).replace( /\\/g, '/' ) )
+        return encodeURI( 'file://' + this.path.join( directory, file ).replace( /\/g, '/' ) )
         // some special cases are not covered with encodeURI and needs to be replaced manually
             .replace( this.fileURISubstitutions.rgx, m => this.fileURISubstitutions.map[m] );
     }
@@ -792,23 +792,23 @@ export default class Storage {
     /**
      * Create a path without forbidden characters.
      * Based on HakuNeko legacy for backward compatibility to detect existing mangas/chapters.
-     * LINUX: wxT("/\r\n\t");
-     * WINDOWS: wxT("\\/:*?\"<>|\r\n\t");
+     * LINUX: wxT("/rnt");
+     * WINDOWS: wxT("\/:*?"<>|rnt");
      */
     sanitizePath ( path ) {
         if( this.platform.indexOf( 'win' ) === 0 ) {
             // TODO: max. 260 characters per path
-            path = path.replace( /[\\/:*?"<>|\r\n\t]/g, '' );
-            return path.replace( /\.+$/g, '' ).trim(); // remove trailing dots and whitespaces
+            path = path.replace( /[\/:*?"<>|rnt]/g, '' );
+            return path.replace( /.+$/g, '' ).trim(); // remove trailing dots and whitespaces
         }
         if( this.platform.indexOf( 'linux' ) === 0 ) {
-            path = path.replace( /[/\s.]+$/g, '' ); // remove trailing dots and whitespaces
-            return path.replace( /[/\r\n\t]/g, '' );
+            path = path.replace( /[/s.]+$/g, '' ); // remove trailing dots and whitespaces
+            return path.replace( /[/rnt]/g, '' );
         }
         if( this.platform.indexOf( 'darwin' ) === 0 ) {
             // TODO: max. 32 chars per part
-            path = path.replace( /[/\s.]+$/g, '' ); // remove trailing dots and whitespaces
-            return path.replace( /[/:\r\n\t]/g, '' );
+            path = path.replace( /[/s.]+$/g, '' ); // remove trailing dots and whitespaces
+            return path.replace( /[/:rnt]/g, '' );
         }
         return path;
     }
