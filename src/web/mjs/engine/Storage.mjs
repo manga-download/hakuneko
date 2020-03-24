@@ -802,12 +802,12 @@ export default class Storage {
             return path.replace( /\.+$/g, '' ).trim(); // remove trailing dots and whitespaces
         }
         if( this.platform.indexOf( 'linux' ) === 0 ) {
-            path = path.replace( /[/\s\.]+$/g, '' ); // remove trailing dots and whitespaces
+            path = path.replace( /[/\s.]+$/g, '' ); // remove trailing dots and whitespaces
             return path.replace( /[/\r\n\t]/g, '' );
         }
         if( this.platform.indexOf( 'darwin' ) === 0 ) {
             // TODO: max. 32 chars per part
-            path = path.replace( /[/\s\.]+$/g, '' ); // remove trailing dots and whitespaces
+            path = path.replace( /[/\s.]+$/g, '' ); // remove trailing dots and whitespaces
             return path.replace( /[/:\r\n\t]/g, '' );
         }
         return path;
