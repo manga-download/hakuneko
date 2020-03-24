@@ -20,7 +20,7 @@ export default class Chapter extends EventTarget {
         this.manga = manga;
         this.id = id;
         this.title = title;
-        this.file = status === statusDefinitions.offline ? this._getRawFileName( title ) : this._getSanatizedFileName( title ) ;
+        this.file = status === statusDefinitions.offline ? this._getRawFileName( title ) : this._getSanitizedFileName( title ) ;
         this.language = language;
         this.status = status;
         this.pageProcess = false;
@@ -56,8 +56,8 @@ export default class Chapter extends EventTarget {
     /**
      *
      */
-    _getSanatizedFileName( title ) {
-        let name = Engine.Storage.sanatizePath( title );
+    _getSanitizedFileName( title ) {
+        let name = Engine.Storage.sanitizePath( title );
         let extension = Engine.Settings.chapterFormat.value !== extensions.img ? Engine.Settings.chapterFormat.value : '';
         return {
             name: name,
