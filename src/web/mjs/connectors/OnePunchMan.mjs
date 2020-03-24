@@ -14,19 +14,19 @@ export default class OnePunchMan extends Connector {
     async _getMangas() {
         return [
             {
-                id: 'onepunchman',
+                id: this.url,
                 title: this.label
             }
         ];
     }
 
-    async _getChapters() {
-        let request = new Request(this.url, this.requestOptions);
+    async _getChapters(manga) {
+        let request = new Request(manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, '#Chapters_List a');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.split(", ")[1],
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.split(', ')[1],
                 language: 'en'
             };
         });
@@ -38,9 +38,7 @@ export default class OnePunchMan extends Connector {
         return data.map(element => this.getAbsolutePath(element, request.url));
     }
 
-    async _getMangaFromURI(uri) {
-        let id = this.getRootRelativeOrAbsoluteLink(uri.href, this.url);
-        let title = this.label;
-        return new Manga(this, id, title);
+    async _getMangaFromURI() {
+        return new Manga(this, this.url, this.label);
     }
 }
