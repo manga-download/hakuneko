@@ -803,7 +803,7 @@ export default class Storage {
         }
         if( this.platform.indexOf( 'linux' ) === 0 ) {
             if(path.substring(path.length-1,path.length)==".") { //check if last character is a period
-               path = path.substring(0,path.length-1); //remove it
+                path = path.substring(0,path.length-1); //remove it
             }
             return path.replace( /[/\r\n\t]/g, '' );
         }
