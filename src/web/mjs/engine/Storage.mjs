@@ -802,6 +802,9 @@ export default class Storage {
             return path.replace( /\.+$/g, '' ).trim(); // remove trailing dots and whitespaces
         }
         if( this.platform.indexOf( 'linux' ) === 0 ) {
+            if(path.substring(path.length-1,path.length)==".") { //check if last character is a period
+               path = path.substring(0,path.length-1); //remove it
+            }
             return path.replace( /[/\r\n\t]/g, '' );
         }
         if( this.platform.indexOf( 'darwin' ) === 0 ) {
