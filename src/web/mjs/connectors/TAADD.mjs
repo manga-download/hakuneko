@@ -1,13 +1,8 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class TAADD extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'taadd';
@@ -15,108 +10,74 @@ export default class TAADD extends Connector {
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://www.taadd.com';
 
-        //this.queryMangasPageCount = '';
-        this.pageCount = 950;
+        this.bypassAdultWarning = true;
+        this.queryMangaTitle = 'meta[property="og:title"]';
         this.queryMangas = 'div.clistChr ul li div.intro h2 a';
         this.queryChapters = 'div.chapter_list table tr td:first-of-type a';
-        this.queryPages = 'select#page option';
+        this.queryPages = 'select#page';
         this.queryImages = 'source#comicpic';
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangaTitle);
+        let id = uri.pathname;
+        let title = (data[0].content || data[0].textContent).replace(/(^\s*[Мм]анга|[Mm]anga\s*$)/, '').trim();
+        return new Manga(this, id, title);
+    }
+
+    async _getMangas() {
+        let mangaList = [];
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], this.queryMangas, 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.title.trim() || element.text.trim()
-                    };
-                } );
-                if( mangaList.length > 0 && index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        return Promise.resolve( this.pageCount )
-            .then( pageCount => {
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/search/?completed_series=either&page=' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let uri = new URL('/search/', this.url);
+        uri.searchParams.set('completed_series', 'either');
+        uri.searchParams.set('page', page);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangas);
+        return data.map(element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.title.trim() || element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let uri = new URL( this.url + manga.id );
-        if( this.id === 'taadd' || this.id === 'tenmanga' || this.id.startsWith( 'ninemanga' ) ) {
-            uri.searchParams.append( 'warning', '1' );
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        if(this.bypassAdultWarning) {
+            uri.searchParams.set('warning', '1');
             // fix query parameter typo for ninemanga
-            uri.searchParams.append( 'waring', '1' );
+            uri.searchParams.set('waring', '1');
         }
-        this.fetchDOM( uri.href, this.queryChapters )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).replace( /\s*new$/, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
+        return data.map(element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.replace(manga.title, '').replace(/\s*new$/, '').trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, this.queryPages )
-            .then( data => {
-                let pageList = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.value, request.url ) ) );
-                callback( null, [...new Set( pageList )] );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryPages);
+        return [...data[0].querySelectorAll('option')].map(option => this.createConnectorURI(this.getAbsolutePath(option.value, request.url)));
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        return this.fetchDOM( request, this.queryImages )
-            .then( data => super._handleConnectorURI( data[0].src ) );
+    async _handleConnectorURI(payload) {
+        let request = new Request(new URL(payload, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryImages);
+        return super._handleConnectorURI(this.getAbsolutePath(data[0].src, request.url));
     }
 }
