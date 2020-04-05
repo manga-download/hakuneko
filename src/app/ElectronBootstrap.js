@@ -258,7 +258,8 @@ module.exports = class ElectronBootstrap {
                 experimentalFeatures: true,
                 nodeIntegration: true,
                 webSecurity: false // required to open local images in browser
-            }
+            },
+            frame: false
         });
 
         this._setupBeforeSendHeaders();
