@@ -279,7 +279,7 @@
                 this.favoriteList = [];
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors );
-                this.set( 'favoriteList', Engine.Favorites );
+                this.set( 'favoriteList', Engine.Storage.downloadedConnectors );
                 this.tags = this.getAvailableTags();
                 this.selectedTags = [];
             }

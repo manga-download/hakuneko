@@ -3,6 +3,7 @@ export default class Connectors {
     constructor(ipc) {
         ipc.listen('on-connector-protocol-handler', this._onConnectorProtocolHandler.bind(this));
         this._list = [];
+        this._favList = [];
     }
 
     async _loadPlugins(uri) {
@@ -24,14 +25,20 @@ export default class Connectors {
         ];
         let userPlugins = await this._loadPlugins('hakuneko://plugins/');
         let internalPlugins = await this._loadPlugins('hakuneko://cache/mjs/connectors/');
+        let favoritePlugins = Storage.downloadedConnectors;
 
         await this.register(systemPlugins);
         await this.register(userPlugins);
         await this.register(internalPlugins);
+        await this.register(favoritePlugins);
     }
 
     get list() {
         return this._list;
+    }
+
+    get favoriteList() {
+        return this._favList;
     }
 
     async register(files) {

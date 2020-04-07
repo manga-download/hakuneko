@@ -73,7 +73,7 @@ export default class HakuNeko {
     }
 
     get Favorites() {
-        return this._favorites.list;
+        return this._connectors.favoriteList;
     }
 
     get DownloadManager() {

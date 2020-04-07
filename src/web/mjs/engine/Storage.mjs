@@ -30,6 +30,7 @@ export default class Storage {
         this.fs = require( 'fs' );
         this.path = require( 'path' );
         this.config = this.path.join( electron.remote.app.getPath( 'userData' ), 'hakuneko.' );
+        this.root = electron.remote.app.getPath( 'userData');
         this.temp = this.path.join( require( 'os' ).tmpdir(), 'hakuneko' );
         this._createDirectoryChain( this.temp );
 
@@ -910,5 +911,21 @@ export default class Storage {
                 }
             } );
         } );
+    }
+
+    get downloadedConnectors() {
+        //since this is a async function, isn't hakuneko startup waiting for this to be ran first?
+        //seems like performance drain
+        let rootDirectoryEntries = this._readDirectoryEntries(this.root);
+        let arrayFiltered = [];
+        rootDirectoryEntries.then(function(arrayRaw){
+            arrayRaw = arrayRaw.filter(plugin => plugin.startsWith('hakuneko.mangas.'));
+            arrayRaw.forEach(file => {
+                arrayFiltered.push(file.substr(file.indexOf('.', 15)+1));
+            });
+            return arrayFiltered;
+        })
+
+
     }
 }
