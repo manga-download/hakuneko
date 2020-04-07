@@ -212,6 +212,34 @@
                         </template>
                     </div>
                 </div>
+                <div class="connectors">
+                    <div class="separator">
+                        <i class="fas fa-times button clear" title="Reset all filters" on-click="clearFilters"></i>
+                        <label>Favorites</label>
+                    </div>
+                    <div class="scroll">
+                        <template is="dom-repeat" items="[[ favoriteList ]]" filter="[[ filterConnectors(connectorPattern, selectedTags) ]]">
+                            <div class$="card [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
+                                <img class="icon" src$="[[ item.icon ]]" onerror="this.src='/img/connectors/default';" />
+                                <div class="description">
+                                    <div class="heading">
+                                        <div class="title">[[ item.label ]]</div>
+                                        <div class="control">
+                                            <i class$="fas fa-sign-in-alt link [[ getLoginClass(item.links) ]]" title="Click to open the login page" on-click="openLogin"></i>
+                                            <i class$="fas fa-coffee link [[ getDonationClass(item.links) ]]" title="Click to open the donation page" on-click="openDonation"></i>
+                                            <i class="fas fa-external-link-square-alt link active" title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha" on-click="openWebsite"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <template is="dom-repeat" items="[[ item.tags ]]">
+                                            <span class="tag">[[ item ]]</span>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
             </div>
         </div>
     </template>
@@ -248,14 +276,16 @@
                 this.popupVisibility = false;
                 // list of all available connectors
                 this.connectorList = [];
+                this.favoriteList = [];
                 // load connectors
                 this.set( 'connectorList', Engine.Connectors );
+                this.set( 'favoriteList', Engine.Favorites );
                 this.tags = this.getAvailableTags();
                 this.selectedTags = [];
             }
 
             /**
-             * 
+             *
              */
             getAvailableTags() {
                 let tags = this.connectorList.reduce( ( accumulator, connector ) => {
@@ -322,7 +352,7 @@
                 evt.cancelBubble = true;
                 evt.stopPropagation();
             }
-            
+
             /**
              *
              */
@@ -330,7 +360,7 @@
                 let item = evt.model.item;
                 this._openLink(evt, item.url);
             }
-            
+
             /**
              *
              */
@@ -338,7 +368,7 @@
                 let links = evt.model.item.links;
                 this._openLink(evt, links ? links.login : undefined);
             }
-            
+
             /**
              *
              */
@@ -348,7 +378,7 @@
             }
 
             /**
-             * 
+             *
              */
             toggleTag( event ) {
                 event.model.item.selected = !event.model.item.selected;
@@ -402,7 +432,7 @@
             }
 
             /**
-             * 
+             *
              */
             clearFilters() {
                 this.tags.forEach( tag => tag.selected = false);
