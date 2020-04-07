@@ -7,7 +7,6 @@ import BookmarkImporter from './engine/BookmarkImporter.mjs';
 import BookmarkManager from './engine/BookmarkManager.mjs';
 import ChaptermarkManager from './engine/ChaptermarkManager.mjs';
 import Connectors from './engine/Connectors.mjs';
-import Favorites from './engine/Favorites.mjs';
 import DownloadManager from './engine/DownloadManager.mjs';
 //import HistoryWorker from './engine/HistoryWorker.mjs'
 import Request from './engine/Request.mjs';
@@ -23,14 +22,12 @@ export default class HakuNeko {
 
         this._version = Version;
         this._enums = Enums;
-
         let ipc = new InterProcessCommunication();
         this._blacklist = new Blacklist();
         this._downloadManager = new DownloadManager();
         this._settings = new Settings();
         this._request = new Request(ipc, this._settings);
         this._connectors = new Connectors(ipc);
-        this._favorites = new Favorites(ipc);
         this._storage = new Storage();
         this._bookmarkManager = new BookmarkManager(this._settings, new BookmarkImporter());
         this._chaptermarkManager = new ChaptermarkManager(this._settings);
@@ -53,7 +50,6 @@ export default class HakuNeko {
 
     async initialize() {
         await this._connectors.initialize();
-        await this._favorites.initialize();
     }
 
     get Blacklist() {
@@ -73,7 +69,7 @@ export default class HakuNeko {
     }
 
     get Favorites() {
-        return this._connectors.favoriteList;
+        return this._connectors.favlist;
     }
 
     get DownloadManager() {

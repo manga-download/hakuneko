@@ -918,14 +918,12 @@ export default class Storage {
         //seems like performance drain
         let rootDirectoryEntries = this._readDirectoryEntries(this.root);
         let arrayFiltered = [];
-        rootDirectoryEntries.then(function(arrayRaw){
+        rootDirectoryEntries.then(function(arrayRaw) {
             arrayRaw = arrayRaw.filter(plugin => plugin.startsWith('hakuneko.mangas.'));
             arrayRaw.forEach(file => {
-                arrayFiltered.push(file.substr(file.indexOf('.', 15)+1));
+                arrayFiltered.push('hakuneko://cache/mjs/connectors/' + file.substr(file.indexOf('.', 15)+1) + '.mjs');
             });
-            return arrayFiltered;
-        })
-
-
+        });
+        return arrayFiltered;
     }
 }

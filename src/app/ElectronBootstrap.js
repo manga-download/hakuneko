@@ -30,8 +30,7 @@ module.exports = class ElectronBootstrap {
         ];
         this._directoryMap = {
             'cache': this._configuration.applicationCacheDirectory,
-            'plugins': this._configuration.applicationUserPluginsDirectory,
-            'root': this._configuration.applicationUserDataDirectory
+            'plugins': this._configuration.applicationUserPluginsDirectory
         };
         this._appIcon;
         this._minimizeToTray = false; // only supported when tray is shown
