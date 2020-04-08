@@ -10,6 +10,7 @@ export default class MangaKakalot extends MangaNel {
         this.url = 'https://mangakakalot.com';
 
         this.path = '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=';
+        this.queryMangaTitle = 'div.manga-info-top ul.manga-info-text h1';
         this.queryMangasPageCount = 'div.group_page a.page_last:last-of-type';
         this.queryMangas = 'div.truyen-list h3 a';
         this.queryChapters = 'div.chapter-list div.row span a';
