@@ -9,7 +9,6 @@ export default class MangaLib extends Connector {
         super.label = 'MangaLib';
         this.tags = [ 'manga', 'webtoon', 'russian' ];
         this.url = 'https://mangalib.me';
-        this.imgCDN = 'https://img2.mangalib.me'; // img1 (main), img2 (secondary/CDN)
     }
 
     async _getMangaFromURI(uri) {
@@ -89,6 +88,12 @@ export default class MangaLib extends Connector {
      *
      */
     _getPageList( manga, chapter, callback ) {
+        let script = `
+            new Promise(resolve => {
+                let server = window.__info.servers[window.__info.img.server];
+                resolve(new URL(window.__info.img.url, server).href);
+            });
+        `;
         let pageList = [];
         let request = new Request( this.url + chapter.id, this.requestOptions );
         this.fetchDOM( request, 'span.pp' )
@@ -96,10 +101,10 @@ export default class MangaLib extends Connector {
                 data = [...data[0].childNodes].find( node => node.nodeType === Node.COMMENT_NODE );
                 data = JSON.parse( decodeURIComponent( escape( atob( data.textContent ) ) ) );
                 pageList = data.map( page => page.u );
-                return Engine.Request.fetchUI( request, `window.__info.imgUrl` );
+                return Engine.Request.fetchUI( request, script );
             } )
             .then( data => {
-                pageList = pageList.map( page => this.getAbsolutePath( data + page, this.imgCDN ) );
+                pageList = pageList.map( page => data + page );
                 callback( null, pageList );
             } )
             .catch( error => {
