@@ -33,27 +33,16 @@ export default class TakeShobo extends SpeedBinb {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let uri = this.url + manga.id;
-        this.fetchDOM( uri, 'section.episode div.box_episode div.box_episode_text' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    let anchor = element.querySelector( 'a' );
-                    let title = element.querySelector( 'div.episode_title' );
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( anchor, uri ),
-                        title: title.innerText.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'section.episode div.box_episode div.box_episode_text a:first-of-type');
+        return data.map(element => {
+            let title = element.parentElement.querySelector('div.episode_title');
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: title.innerText.replace(manga.title, '').trim(),
+                language: ''
+            };
+        });
     }
 }
