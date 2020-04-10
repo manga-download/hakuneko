@@ -60,26 +60,18 @@ export default class PixivComics extends Connector {
     }
 
     async _getPages(chapter) {
-        let script = `
-            new Promise((resolve, reject) => {
-                let uri = new URL(document.querySelector('meta[name="viewer-api-url"]').content, window.location);
-                $.ajax({
-                    url: uri.href,
-                    success: data => {
-                        try {
-                            resolve(data.data.contents.shift().pages);
-                        } catch(error) {
-                            reject(error);
-                        }
-                    },
-                    error: (xhr, status, error) => reject(new Error(error))
-                });
-            });
-        `;
-        let request = new Request(new URL('/viewer/stories/' + chapter.id, this.url));
-        console.log(request.url);
-        let data = await Engine.Request.fetchUI(request, script);
-        return data.reduce((accumulator, page) => {
+        let request = new Request(new URL('/viewer/stories/' + chapter.id, this.url), this.requestOptions);
+        request.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
+        let data = await this.fetchDOM(request, 'head');
+        let token = data[0].querySelector('meta[name="csrf-token"]').content;
+        let url = data[0].querySelector('meta[name="viewer-api-url"]').content;
+        let requestAPI = new Request(new URL(url, request.url));
+        //requestAPI.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
+        requestAPI.headers.set('x-csrf-token', token);
+        requestAPI.headers.set('x-referer', request.url);
+        requestAPI.headers.set('x-requested-with', 'XMLHttpRequest');
+        data = await this.fetchJSON(requestAPI);
+        return data.data.contents.shift().pages.reduce((accumulator, page) => {
             page.right && accumulator.push(page.right.data.url);
             page.left && accumulator.push(page.left.data.url);
             return accumulator;
