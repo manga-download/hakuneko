@@ -8,7 +8,7 @@ export default class Toonkor extends Connector {
         super.id = 'toonkor';
         super.label = 'Toonkor';
         this.tags = [ 'webtoon', 'korean' ];
-        this.url = 'https://toonkor.yoga';
+        this.url = 'https://tkor.vip';
     }
 
     async _getMangaFromURI(uri) {
