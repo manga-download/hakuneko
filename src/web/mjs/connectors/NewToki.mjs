@@ -8,7 +8,7 @@ export default class NewToki extends Connector {
         super.id = 'newtoki';
         super.label = 'NewToki';
         this.tags = [ 'manga', 'webtoon', 'korean' ];
-        this.url = 'https://newtoki38.com';
+        this.url = 'https://newtoki58.com';
         /*
          * this.urlComic = 'https://newtoki38.net';
          * this.urlWebtoon = 'https://newtoki38.com';
