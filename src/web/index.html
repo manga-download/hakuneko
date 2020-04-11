@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
     <meta charset="utf-8">
     <title>HakuNeko</title>
     <link rel="icon" href="./img/logo.png">
@@ -89,6 +89,25 @@
 
         main();
     </script>
+    <script>
+        this.win=require('electron').remote.getCurrentWindow();
+
+        function minimizeWindow(){
+            this.win.minimize();
+        }
+
+        function maximizeWindow(){
+            if (! this.win.isMaximized()) {
+                this.win.maximize();
+            } else {
+                this.win.unmaximize();
+            }
+        }
+
+        function closeWindow(){
+            this.win.close();
+        }
+    </script>
     <style>
         html, body {
             margin: 0;
@@ -126,9 +145,24 @@
             right: 1em;
             cursor: pointer;
         }
+
+        #default_menubar {
+            text-align : right;
+            -webkit-app-region: drag;
+        }
+
+        #default_menubar > span {
+            -webkit-app-region: no-drag;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <div id="default_menubar">
+        <span id="win_minimize" onclick="minimizeWindow()" title="Minimize Window">🗕</span>
+        <span id="win_maximize" onclick="maximizeWindow()" title="Maximize Window">🗖</span>
+        <span id="win_close" onclick="closeWindow()" title="Close Window">🗙</span>
+    </div>
     <div id="notification">
         A new <strong>HakuNeko Desktop Client</strong> is available for download on
         <a href="https://github.com/manga-download/hakuneko/releases" target="_blank">GitHub</a>

@@ -130,9 +130,9 @@
         <i class="fas fa-fw fa-bars fa-2x item button" title="Toggle menu" on-click="togglePopup"></i>
         <span class="title">HakuNeko</span>
         <span class="right">
-        <i class="far fa-fw fa-window-minimize item button" title="Minize HakuNeko" on-click="minimizeWindow"></i>
-        <i class="far fa-fw fa-window-maximize item button" title="Maximize HakuNeko" on-click="maximizeWindow"></i>
-        <i class="far fa-fw fa-2x fa-window-close item button" title="Close HakuNeko" on-click="closeWindow"></i>
+        <i class="far fa-fw fa-window-minimize item button" title="Minize HakuNeko" onclick="minimizeWindow()"></i>
+        <i class="far fa-fw fa-window-maximize item button" title="Maximize HakuNeko" onclick="maximizeWindow()"></i>
+        <i class="far fa-fw fa-2x fa-window-close item button" title="Close HakuNeko" onclick="closeWindow()"></i>
         </span>
         <div class$="popup [[ getPopupClass(popupVisibility) ]]">
             <div class="separator">
@@ -237,7 +237,6 @@
                 this.version = Engine.Version;
                 this.popupVisibility = false;
                 this.settingCategories = Engine.Settings.getCategorizedSettings();
-                this.win=require('electron').remote.getCurrentWindow();
             }
 
             getPopupClass(visibility) {
@@ -311,21 +310,6 @@
                 }
             }
 
-            minimizeWindow(event){
-                this.win.minimize();
-            }
-
-            maximizeWindow(event){
-                if (!this.win.isMaximized()) {
-                    this.win.maximize();
-                } else {
-                    this.win.unmaximize();
-                }
-            }
-
-            closeWindow (event){
-                this.win.close();
-            }
         }
         window.customElements.define(HakunekoMenu.is, HakunekoMenu);
     </script>
