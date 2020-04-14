@@ -94,7 +94,7 @@ export default class ComicWalker extends Connector {
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        let passphrase = payload.split('/')[6];
+        let passphrase = payload.split('/').find(part => /^[\da-f]{16}/.test(part));
         if(passphrase) {
             let request = new Request(payload, this.requestOptions);
             let response = await fetch(request);
