@@ -53,9 +53,22 @@ export default class WordPressMadara extends Connector {
     }
 
     async _getChapters(manga) {
-        let uri = new URL( manga.id, this.url );
+        let uri = new URL(manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryChapters);
+        let dom = (await this.fetchDOM(request, 'body'))[0];
+        let data = dom.querySelectorAll(this.queryChapters);
+        let placeholder = dom.querySelector('#manga-chapters-holder[data-id]');
+        if(placeholder) {
+            let uri = new URL('/wp-admin/admin-ajax.php', this.url);
+            let request = new Request(uri, {
+                method: 'POST',
+                body: 'action=manga_get_chapters&manga=' + placeholder.dataset.id,
+                headers: {
+                    'content-type': 'application/x-www-form-urlencoded'
+                }
+            });
+            data = await this.fetchDOM(request, this.queryChapters);
+        }
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
