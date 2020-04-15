@@ -56,7 +56,7 @@ export default class WordPressMadara extends Connector {
         let uri = new URL(manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
         let dom = (await this.fetchDOM(request, 'body'))[0];
-        let data = dom.querySelectorAll(this.queryChapters);
+        let data = [...dom.querySelectorAll(this.queryChapters)];
         let placeholder = dom.querySelector('#manga-chapters-holder[data-id]');
         if(placeholder) {
             let uri = new URL('/wp-admin/admin-ajax.php', this.url);
