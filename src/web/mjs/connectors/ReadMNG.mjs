@@ -71,6 +71,13 @@ export default class ReadMNG extends Connector {
             } );
     }
 
+    /*
+    * Used to check if the img is not an ad
+    */
+    checkMangaImage(img) {
+        return img.classList.contains('img-responsive');
+    }
+
     /**
      *
      */
@@ -78,6 +85,7 @@ export default class ReadMNG extends Connector {
         let request = new Request( this.url + chapter.id + '/all-pages', this.requestOptions );
         this.fetchDOM( request, 'div.page_chapter source' )
             .then( data => {
+                data = data.filter(this.checkMangaImage);
                 let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
                 callback( null, pageLinks );
             } )
