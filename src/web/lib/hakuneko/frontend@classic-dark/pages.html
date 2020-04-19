@@ -202,18 +202,10 @@
             onKeyDown( event ) {
                 switch( true ) {
                     case event.code === 'ArrowUp' && !event.ctrlKey:
-                        this.$.container.scrollBy({ 
-                            top: -64,
-                            left: 0, 
-                            behavior: 'smooth' 
-                        });
+                        scrollSmoothly(this.$.container, -64);
                         break;
                     case event.code === 'ArrowDown' && !event.ctrlKey:
-                        this.$.container.scrollBy({ 
-                            top: 64,
-                            left: 0, 
-                            behavior: 'smooth' 
-                        });
+                        scrollSmoothly(this.$.container, 64);
                         break;
                     case event.code === 'PageUp' && !event.ctrlKey:
                         this.$.container.scrollBy({ 
@@ -235,16 +227,16 @@
                     case event.code === 'ArrowLeft' && !event.ctrlKey:
                         this.requestChapterDown( event );
                         break;
-                    case event.code === 'Equal' && !event.ctrlKey:
+                    case event.key === '+' && !event.ctrlKey:
                         this.zoomIn( event );
                         break;
-                    case event.code === 'Minus' && !event.ctrlKey:
+                    case event.key === '-' && !event.ctrlKey:
                         this.zoomOut( event );
                         break;
-                    case event.code === 'Equal' && event.ctrlKey:
+                    case event.key === '+' && event.ctrlKey:
                         this.increaseImagePadding( event );
                         break;
-                    case event.code === 'Minus' && event.ctrlKey:
+                    case event.key === '-' && event.ctrlKey:
                         this.decreaseImagePadding( event );
                         break;
                     case event.code === 'Escape' && !event.ctrlKey:
@@ -526,6 +518,27 @@
             }
         }
         window.customElements.define( HakunekoPages.is, HakunekoPages );
+        
+        function scrollSmoothly(element, distance) {
+            const speed = Math.abs(Math.floor(distance / 10)),
+                end = Math.abs(distance % speed);
+            function doTinyScroll(){
+                if (Math.abs(distance) == end) return;
+                else if (distance > 0) {
+                    element.scrollBy({
+                        top: speed
+                    });
+                    distance -= speed;
+                } else {
+                    element.scrollBy({
+                        top: -speed
+                    });
+                    distance += speed;
+                }
+                window.requestAnimationFrame(doTinyScroll);
+            }
+            window.requestAnimationFrame(doTinyScroll);
+        }
     </script>
 
 </dom-module>
