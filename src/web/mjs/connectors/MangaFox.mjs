@@ -138,6 +138,7 @@ export default class MangaFox extends Connector {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         Engine.Request.fetchUI( request, this.script )
             .then( pageList => {
+                pageList.pop();
                 callback( null, pageList );
             } )
             .catch( error => {
