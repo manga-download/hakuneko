@@ -103,7 +103,7 @@ export default class KissManga extends Connector {
         }, this.pageLoadDelay );
         let script = `
                 new Promise(resolve => {
-                    resolve(lstImages);
+                    resolve(this.lstIA || this.lstImages);
                 });
             `;
         let request = new Request( this.url + chapter.id, this.requestOptions );
