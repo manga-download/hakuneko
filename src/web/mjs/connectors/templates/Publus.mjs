@@ -30,7 +30,7 @@ export default class Publus extends Connector {
                     try {
                         if(this.NFBR) {
                             let configuration = await (await fetch(NFBR.GlobalConfig.SERVER_DOMAIN + NFBR.GlobalConfig.WEBAPI_CONTENT_CHECK + window.location.search)).json();
-                            let packURI = new URL(configuration.url + NFBR.a5n.a5N + '_pack.json');
+                            let packURI = new URL(configuration.url + NFBR.a5n.a5N + '_pack.json', window.location.origin);
                             packURI.search = '?' + new URLSearchParams(configuration.auth_info || {}).toString();
                             let pack = await (await fetch(packURI)).json();
                             let pageList = Object.keys(pack).filter(key => key.includes('xhtml')).sort().map(key => {
