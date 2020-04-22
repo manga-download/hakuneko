@@ -13,79 +13,52 @@ export default class FlatManga extends Connector {
         this.language = 'jp';
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/manga-list.html?listType=allABC', 'span[data-toggle="mangapop"] a' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let uri = new URL('/manga-list.html?listType=allABC', this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'span[data-toggle="mangapop"] a');
+        return data.map( element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        fetch( this.url + manga.id, this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive chapter list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                let language = dom.querySelector( 'ul.manga-info h1 span.flag-icon' );
-                language = language ? language.className.match( /flag-icon-([a-zA-Z]+)/ )[1] : this.language ;
-                let chapterList = [...dom.querySelectorAll( this.queryChapters )].map( element => {
-                    let title = element.text.replace( manga.title, '' );
-                    let mangaTitle = manga.title.replace( /\s*-\s*RAW$/, '' );
-                    title = title.replace( mangaTitle.toUpperCase(), '' );
-                    title = title.replace( mangaTitle, '' );
-                    title = title.replace( /^\s*-\s*/, '' );
-                    title = title.replace( /-\s*-\s*Read\s*Online\s*$/, '' );
-                    title = title.trim();
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: title,
-                        language: language
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let response = await fetch(request);
+        if(response.status !== 200) {
+            throw new Error(`Failed to receive chapter list (status: ${response.status}) - ${response.statusText}`);
+        }
+        let data = await response.text();
+        let dom = this.createDOM(data);
+        let language = dom.querySelector('ul.manga-info h1 span.flag-icon');
+        language = language ? language.className.match(/flag-icon-([a-zA-Z]+)/)[1] : this.language;
+        return [...dom.querySelectorAll(this.queryChapters)].map(element => {
+            let title = element.text.replace(manga.title, '');
+            let mangaTitle = manga.title.replace(/\s*-\s*RAW$/, '');
+            title = title.replace(mangaTitle.toUpperCase(), '');
+            title = title.replace(mangaTitle, '');
+            title = title.replace(/^\s*-\s*/, '');
+            title = title.replace(/-\s*-\s*Read\s*Online\s*$/, '');
+            title = title.trim();
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: title,
+                language: language
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'source.chapter-img' )
-            .then( data => {
-                let pageLinks = data
-                    .map(element => this.getAbsolutePath(element.dataset.src || element, request.url))
-                    .filter(url => !url.includes('3282f6a4b7_o') && !url.includes('donate'))
-                    .map(url => this.createConnectorURI(url));
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'source.chapter-img');
+        return data
+            .map(element => this.getAbsolutePath(element.dataset.src || element, request.url))
+            .filter(url => !url.includes('3282f6a4b7_o') && !url.includes('donate'))
+            .map(url => this.createConnectorURI(url));
     }
 }
