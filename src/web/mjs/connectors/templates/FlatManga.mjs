@@ -49,7 +49,7 @@ export default class FlatManga extends Connector {
                 title: title,
                 language: language
             };
-        } );
+        });
     }
 
     async _getPages(chapter) {
