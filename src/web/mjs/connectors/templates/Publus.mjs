@@ -30,9 +30,12 @@ export default class Publus extends Connector {
                     try {
                         if(this.NFBR) {
                             let configuration = await (await fetch(NFBR.GlobalConfig.SERVER_DOMAIN + NFBR.GlobalConfig.WEBAPI_CONTENT_CHECK + window.location.search)).json();
-                            let pack = await (await fetch(configuration.url + NFBR.a5n.a5N + '_pack.json')).json();
+                            let packURI = new URL(configuration.url + NFBR.a5n.a5N + '_pack.json');
+                            packURI.search = '?' + new URLSearchParams(configuration.auth_info || {}).toString();
+                            let pack = await (await fetch(packURI)).json();
                             let pageList = Object.keys(pack).filter(key => key.includes('xhtml')).sort().map(key => {
                                 let uri = new URL(configuration.url + key + '/0.jpeg', window.location.origin);
+                                uri.search = packURI.search;
                                 let file = uri.pathname.match(/(item|text).*[0-9]+/)[0];
                                 for (let d = v = 0; d < file.length; d++) {
                                     v += file.charCodeAt(d);
