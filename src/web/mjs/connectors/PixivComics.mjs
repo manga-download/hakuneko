@@ -61,7 +61,7 @@ export default class PixivComics extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL('/viewer/stories/' + chapter.id, this.url), this.requestOptions);
-        request.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
+        request.headers.set('x-referer', this.url + '/works/' + chapter.manga.id);
         let data = await this.fetchDOM(request, 'head');
         let token = data[0].querySelector('meta[name="csrf-token"]').content;
         let url = data[0].querySelector('meta[name="viewer-api-url"]').content;
@@ -76,6 +76,32 @@ export default class PixivComics extends Connector {
             page.left && accumulator.push(page.left.data.url);
             return accumulator;
         }, []).map(image => this.createConnectorURI(image));
+
+        /*
+        let uri = new URL('/viewer/stories/' + chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        request.headers.set('x-referer', this.url + '/works/' + chapter.manga.id);
+        let script = `
+            new Promise(async resolve => {
+                let token = document.querySelector('meta[name="csrf-token"]').content;
+                let url = document.querySelector('meta[name="viewer-api-url"]').content;
+                let requestAPI = new Request(new URL(url, window.location.href));
+                //requestAPI.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
+                requestAPI.headers.set('x-csrf-token', token);
+                requestAPI.headers.set('x-referer', window.location.href);
+                requestAPI.headers.set('x-requested-with', 'XMLHttpRequest');
+                let response = await fetch(requestAPI);
+                let data = await response.json();
+                resolve(data.data.contents.shift().pages.reduce((accumulator, page) => {
+                    page.right && accumulator.push(page.right.data.url);
+                    page.left && accumulator.push(page.left.data.url);
+                    return accumulator;
+                }, []));
+            });
+        `;
+        let data = await Engine.Request.fetchUI(request, script);
+        return data.map(image => this.createConnectorURI(image));
+        */
     }
 
     async _handleConnectorURI(payload) {
