@@ -34,7 +34,7 @@ export default class MangaCross extends Connector {
         let request = new Request(new URL('/api/comics/' + manga.id + '.json', this.url), this.requestOptions);
         let data = await this.fetchJSON(request);
         // Is there a way to access the "private" chapters ? Logging in didn't change anything...
-        return data.episodes.filter(episode => episode.status == 'public').map(episode => {
+        return data.comic.episodes.filter(episode => episode.status == 'public').map(episode => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(episode.page_url, this.url),
                 title: episode.volume.trim(),
