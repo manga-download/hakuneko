@@ -8,7 +8,7 @@ export default class PixivComics extends Connector {
         this.id = 'pixivcomics';
         this.label = 'pixivコミック';
         this.tags = [ 'manga', 'japanese' ];
-        this.url = 'https://comic.pixiv.net/';
+        this.url = 'https://comic.pixiv.net';
         this.apiURL = 'https://comic.pixiv.net/api/app';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-requested-with', this.url);
@@ -62,46 +62,44 @@ export default class PixivComics extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL('/viewer/stories/' + chapter.id, this.url), this.requestOptions);
         request.headers.set('x-referer', this.url + '/works/' + chapter.manga.id);
+        request.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
         let data = await this.fetchDOM(request, 'head');
-        let token = data[0].querySelector('meta[name="csrf-token"]').content;
-        let url = data[0].querySelector('meta[name="viewer-api-url"]').content;
-        let requestAPI = new Request(new URL(url, request.url));
-        //requestAPI.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
-        requestAPI.headers.set('x-csrf-token', token);
-        requestAPI.headers.set('x-referer', request.url);
-        requestAPI.headers.set('x-requested-with', 'XMLHttpRequest');
-        data = await this.fetchJSON(requestAPI);
+        let csrf = data[0].querySelector('meta[name="csrf-token"]').content;
+        let tokenURL = data[0].querySelector('meta[name="token-api-url"]').content;
+        let viewerURL = data[0].querySelector('meta[name="viewer-api-url"]').content;
+        if(!viewerURL && tokenURL) {
+            let tokenRequest = new Request(new URL(tokenURL, request.url), {
+                method: 'POST',
+                mode: 'cors',
+                redirect: 'follow',
+                credentials: 'same-origin', // 'include',
+                headers: {
+                    'x-csrf-token': csrf,
+                    'x-origin': this.url,
+                    'x-referer': request.url,
+                    'x-requested-with': 'XMLHttpRequest',
+                    'x-cookie': 'open_work_page=yes; is_browser=yes'
+                }
+            });
+            let tokenData = await this.fetchJSON(tokenRequest);
+            viewerURL = `${this.url}/api/v1/viewer/stories/${tokenData.data.token}/${chapter.id}.json`;
+        }
+        let viewerRequest = new Request(new URL(viewerURL, request.url), {
+            method: 'GET',
+            headers: {
+                'x-csrf-token': csrf,
+                'x-origin': this.url,
+                'x-referer': request.url,
+                'x-requested-with': 'XMLHttpRequest',
+                'x-cookie': 'open_work_page=yes; is_browser=yes'
+            }
+        });
+        data = await this.fetchJSON(viewerRequest);
         return data.data.contents.shift().pages.reduce((accumulator, page) => {
             page.right && accumulator.push(page.right.data.url);
             page.left && accumulator.push(page.left.data.url);
             return accumulator;
         }, []).map(image => this.createConnectorURI(image));
-
-        /*
-        let uri = new URL('/viewer/stories/' + chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        request.headers.set('x-referer', this.url + '/works/' + chapter.manga.id);
-        let script = `
-            new Promise(async resolve => {
-                let token = document.querySelector('meta[name="csrf-token"]').content;
-                let url = document.querySelector('meta[name="viewer-api-url"]').content;
-                let requestAPI = new Request(new URL(url, window.location.href));
-                //requestAPI.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
-                requestAPI.headers.set('x-csrf-token', token);
-                requestAPI.headers.set('x-referer', window.location.href);
-                requestAPI.headers.set('x-requested-with', 'XMLHttpRequest');
-                let response = await fetch(requestAPI);
-                let data = await response.json();
-                resolve(data.data.contents.shift().pages.reduce((accumulator, page) => {
-                    page.right && accumulator.push(page.right.data.url);
-                    page.left && accumulator.push(page.left.data.url);
-                    return accumulator;
-                }, []));
-            });
-        `;
-        let data = await Engine.Request.fetchUI(request, script);
-        return data.map(image => this.createConnectorURI(image));
-        */
     }
 
     async _handleConnectorURI(payload) {
