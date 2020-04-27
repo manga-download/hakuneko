@@ -43,7 +43,7 @@ export default class NicoNicoSeiga extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(this.url + this.mangaListPage, this.requestOptions);
+        let request = new Request(new URL(this.mangaListPage, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.querySeriesCount);
         let totalPages = Math.ceil(data[0].dataset.count/10);
         let mangaList = [];
@@ -57,7 +57,7 @@ export default class NicoNicoSeiga extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(this.url + manga.id, this.requestOptions);
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             return {
@@ -68,7 +68,7 @@ export default class NicoNicoSeiga extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.pageTemplateURL + element.dataset.imageId).sort();
     }
