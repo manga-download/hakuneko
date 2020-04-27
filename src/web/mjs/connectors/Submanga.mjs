@@ -7,7 +7,7 @@ export default class Submanga extends Connector {
         super.id = 'submanga';
         super.label = 'Submanga';
         this.tags = [ 'manga', 'webtoon', 'spanish' ];
-        this.url = 'https://submanga.li';
+        this.url = 'https://submangas.net';
     }
 
     /**
