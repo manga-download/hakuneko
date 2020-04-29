@@ -798,17 +798,16 @@ export default class Storage {
     sanatizePath ( path ) {
         if( this.platform.indexOf( 'win' ) === 0 ) {
             // TODO: max. 260 characters per path
-            path = path.replace( /[\\/:*?"<>|\r\n\t]/g, '' );
-            return path.replace( /\.+$/g, '' ).trim(); // remove trailing dots and whitespaces
+            path = path.replace(/[\\/:*?"<>|\r\n\t]/g, '');
         }
         if( this.platform.indexOf( 'linux' ) === 0 ) {
-            return path.replace( /[/\r\n\t]/g, '' );
+            path = path.replace(/[/\r\n\t]/g, '');
         }
         if( this.platform.indexOf( 'darwin' ) === 0 ) {
             // TODO: max. 32 chars per part
-            return path.replace( /[/:\r\n\t]/g, '' );
+            path = path.replace(/[/:\r\n\t]/g, '');
         }
-        return path;
+        return path.replace(/[.\s]+$/g, '').trim();
     }
 
     /**

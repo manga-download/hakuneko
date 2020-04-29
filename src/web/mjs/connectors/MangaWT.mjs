@@ -1,6 +1,6 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class MangaWT extends MangaReaderCMS {
+export default class MangaWT extends WordPressMadara {
 
     constructor() {
         super();

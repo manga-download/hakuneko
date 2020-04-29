@@ -5,16 +5,13 @@ export default class KissManga extends Connector {
 
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'kissmanga';
         super.label = 'KissManga';
         this.tags = [ 'manga', 'english' ];
         super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://kissmanga.com';
         this.pageLoadDelay = 5000;
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
+        this.requestOptions.headers.set('x-cookie', 'vns_readType1=0');
     }
 
     async _getMangaFromURI(uri) {
@@ -102,10 +99,12 @@ export default class KissManga extends Connector {
             this.unlock( key );
         }, this.pageLoadDelay );
         let script = `
-                new Promise(resolve => {
-                    resolve(lstImages);
-                });
-            `;
+            new Promise(resolve => {
+                // cookie: vns_readType1=0 => one page (lstImages)
+                // cookie: vns_readType1=1 => all pages (lstOLA)
+                resolve(this.lstImages || this.lstOLA);
+            });
+        `;
         let request = new Request( this.url + chapter.id, this.requestOptions );
         Engine.Request.fetchUI( request, script )
             .then( data => {

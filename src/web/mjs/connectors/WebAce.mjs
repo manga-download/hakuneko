@@ -45,7 +45,7 @@ export default class WebAce extends Connector {
     async _getChapters(manga) {
         let uri = new URL(manga.id + (manga.id.endsWith('episode/') ? '' : 'episode/'), this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#read ul.table-view li.media a.navigate-right');
+        let data = await this.fetchDOM(request, 'div#read ul.table-view li.media:not(.yudo) a.navigate-right');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),

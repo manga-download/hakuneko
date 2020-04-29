@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class MangaNel extends Connector {
 
@@ -10,10 +11,19 @@ export default class MangaNel extends Connector {
         this.url = 'https://manganelo.com';
 
         this.path = '/genre-all/';
+        this.queryMangaTitle = 'div.container-main div.panel-story-info div.story-info-right h1';
         this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
         this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
         this.queryChapters = 'ul.row-content-chapter li a.chapter-name';
         this.queryPages = 'div.container-chapter-reader source';
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangaTitle);
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {

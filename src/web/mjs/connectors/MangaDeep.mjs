@@ -1,13 +1,7 @@
-import WordPressLightPro from './templates/WordPressLightPro.mjs';
+import TAADD from './TAADD.mjs';
 
-/**
- *
- */
-export default class MangaDeep extends WordPressLightPro {
+export default class MangaDeep extends TAADD {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangadeep';
@@ -15,7 +9,11 @@ export default class MangaDeep extends WordPressLightPro {
         this.tags = [ 'manga', 'english' ];
         this.url = 'http://www.mangadeep.com';
 
-        this.queryMangas = 'div.mng_lst div.nde div.det a';
-        this.queryPages = 'div.wpm_pag div a source.manga-page';
+        //this.bypassAdultWarning = true;
+        this.queryMangaTitle = 'div.container_book div.book-info h1';
+        this.queryMangas = 'ul#list_container li dd.book-list > a:first-of-type';
+        this.queryChapters = 'ul.chapter-box li div.chapter-name.short a';
+        this.queryPages = 'select.sl-page';
+        this.queryImages = 'div.pic_box source.manga_pic';
     }
 }

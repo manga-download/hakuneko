@@ -76,7 +76,7 @@ export default class ReadMNG extends Connector {
      */
     _getPageList( manga, chapter, callback ) {
         let request = new Request( this.url + chapter.id + '/all-pages', this.requestOptions );
-        this.fetchDOM( request, 'div.page_chapter source' )
+        this.fetchDOM( request, 'div.page_chapter source[class*="img-responsive"]' )
             .then( data => {
                 let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
                 callback( null, pageLinks );

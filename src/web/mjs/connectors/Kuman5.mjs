@@ -52,7 +52,7 @@ export default class Kuman5 extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchRegex(request, /km5_img_url\s*=\s*['"]([^'"]+)['"]/);
+        let data = await this.fetchRegex(request, /km5_img_url\s*=\s*['"]([^'"]+)['"]/g);
         return JSON.parse(atob(data[0])).map(page => page.split('|')[1]);
     }
 }

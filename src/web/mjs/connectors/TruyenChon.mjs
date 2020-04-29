@@ -2,8 +2,10 @@ import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
 /*
+ * Theme: WordPressComic?
  * Same as NetTruyen
  * Same as MangaNT
+ * Same as ManhuaPlus
  */
 export default class TruyenChon extends Connector {
 
@@ -19,7 +21,7 @@ export default class TruyenChon extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'meta[property="og:title"]');
         let id = uri.pathname + uri.search;
-        let title = data[0].content.trim();
+        let title = data[0].content.replace(new RegExp('-? ' + this.label, 'i'), '').trim();
         return new Manga(this, id, title);
     }
 
@@ -27,7 +29,7 @@ export default class TruyenChon extends Connector {
         let mangaList = [];
         let request = new Request(this.url + '/?page=', this.requestOptions);
         let data = await this.fetchDOM(request, 'div.pagination-outter ul.pagination li:last-of-type a');
-        let pageCount = parseInt(data[0].href.match(/\d+$/)[0]);
+        let pageCount = parseInt(data[0] ? data[0].href.match(/\d+$/)[0] : 1);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);

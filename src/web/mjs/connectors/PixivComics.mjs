@@ -8,7 +8,7 @@ export default class PixivComics extends Connector {
         this.id = 'pixivcomics';
         this.label = 'pixivコミック';
         this.tags = [ 'manga', 'japanese' ];
-        this.url = 'https://comic.pixiv.net/';
+        this.url = 'https://comic.pixiv.net';
         this.apiURL = 'https://comic.pixiv.net/api/app';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-requested-with', this.url);
@@ -60,26 +60,42 @@ export default class PixivComics extends Connector {
     }
 
     async _getPages(chapter) {
-        let script = `
-            new Promise((resolve, reject) => {
-                let uri = new URL(document.querySelector('meta[name="viewer-api-url"]').content, window.location);
-                $.ajax({
-                    url: uri.href,
-                    success: data => {
-                        try {
-                            resolve(data.data.contents.shift().pages);
-                        } catch(error) {
-                            reject(error);
-                        }
-                    },
-                    error: (xhr, status, error) => reject(new Error(error))
-                });
+        let request = new Request(new URL('/viewer/stories/' + chapter.id, this.url), this.requestOptions);
+        request.headers.set('x-referer', this.url + '/works/' + chapter.manga.id);
+        request.headers.set('x-cookie', 'open_work_page=yes; is_browser=yes');
+        let data = await this.fetchDOM(request, 'head');
+        let csrf = data[0].querySelector('meta[name="csrf-token"]').content;
+        let tokenURL = data[0].querySelector('meta[name="token-api-url"]').content;
+        let viewerURL = data[0].querySelector('meta[name="viewer-api-url"]').content;
+        if(!viewerURL && tokenURL) {
+            let tokenRequest = new Request(new URL(tokenURL, request.url), {
+                method: 'POST',
+                mode: 'cors',
+                redirect: 'follow',
+                credentials: 'same-origin', // 'include',
+                headers: {
+                    'x-csrf-token': csrf,
+                    'x-origin': this.url,
+                    'x-referer': request.url,
+                    'x-requested-with': 'XMLHttpRequest',
+                    'x-cookie': 'open_work_page=yes; is_browser=yes'
+                }
             });
-        `;
-        let request = new Request(new URL('/viewer/stories/' + chapter.id, this.url));
-        console.log(request.url);
-        let data = await Engine.Request.fetchUI(request, script);
-        return data.reduce((accumulator, page) => {
+            let tokenData = await this.fetchJSON(tokenRequest);
+            viewerURL = `${this.url}/api/v1/viewer/stories/${tokenData.data.token}/${chapter.id}.json`;
+        }
+        let viewerRequest = new Request(new URL(viewerURL, request.url), {
+            method: 'GET',
+            headers: {
+                'x-csrf-token': csrf,
+                'x-origin': this.url,
+                'x-referer': request.url,
+                'x-requested-with': 'XMLHttpRequest',
+                'x-cookie': 'open_work_page=yes; is_browser=yes'
+            }
+        });
+        data = await this.fetchJSON(viewerRequest);
+        return data.data.contents.shift().pages.reduce((accumulator, page) => {
             page.right && accumulator.push(page.right.data.url);
             page.left && accumulator.push(page.left.data.url);
             return accumulator;

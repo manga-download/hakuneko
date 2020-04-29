@@ -1,13 +1,7 @@
 import TakeShobo from './templates/TakeShobo.mjs';
 
-/**
- *
- */
 export default class GammaPlus extends TakeShobo {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'gammaplus';

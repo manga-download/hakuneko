@@ -62,35 +62,34 @@ export default class FoolSlide extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.requestOptions.method = 'POST';
-        this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
-        this.requestOptions.body = 'adult=true';
-        return this.fetchDOM( this.url + manga.id, this.queryChapters )
-            .then( data => {
-                this.requestOptions.method = 'GET';
-                this.requestOptions.headers.delete( 'content-type' );
-                this.requestOptions.body = undefined;
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim(),
-                        language: this.language
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, {
+            method: 'POST',
+            body: 'adult=true',
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded'
+            }
+        });
+        let data = await this.fetchDOM(request, this.queryChapters);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim(),
+                language: this.language
+            };
+        });
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, {
+            method: 'POST',
+            body: 'adult=true',
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded'
+            }
+        });
         let response = await fetch(request);
         let data = await response.text();
         let pages = undefined;

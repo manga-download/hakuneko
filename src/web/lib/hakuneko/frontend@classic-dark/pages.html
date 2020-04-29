@@ -201,30 +201,30 @@
              */
             onKeyDown( event ) {
                 switch( true ) {
-                    case event.key === 'ArrowUp' && !event.ctrlKey:
+                    case event.code === 'ArrowUp' && !event.ctrlKey:
+                        scrollSmoothly(this.$.container, -64);
+                        break;
+                    case event.code === 'ArrowDown' && !event.ctrlKey:
+                        scrollSmoothly(this.$.container, 64);
+                        break;
+                    case event.code === 'PageUp' && !event.ctrlKey:
                         this.$.container.scrollBy({ 
                             top: -window.innerHeight*0.95,
                             left: 0, 
                             behavior: 'smooth' 
                         });
                         break;
-                    case event.key === 'ArrowDown' && !event.ctrlKey:
+                    case event.code === 'PageDown' && !event.ctrlKey:
                         this.$.container.scrollBy({ 
                             top: window.innerHeight*0.95,
                             left: 0, 
                             behavior: 'smooth' 
                         });
                         break;
-                    case event.key === 'PageUp' && !event.ctrlKey:
-                        this.$.container.scrollTop -= 64;
-                        break;
-                    case event.key === 'PageDown' && !event.ctrlKey:
-                        this.$.container.scrollTop += 64;
-                        break;
-                    case event.key === 'ArrowRight' && !event.ctrlKey:
+                    case event.code === 'ArrowRight' && !event.ctrlKey:
                         this.requestChapterUp( event );
                         break;
-                    case event.key === 'ArrowLeft' && !event.ctrlKey:
+                    case event.code === 'ArrowLeft' && !event.ctrlKey:
                         this.requestChapterDown( event );
                         break;
                     case event.key === '+' && !event.ctrlKey:
@@ -239,7 +239,7 @@
                     case event.key === '-' && event.ctrlKey:
                         this.decreaseImagePadding( event );
                         break;
-                    case event.key === 'Escape' && !event.ctrlKey:
+                    case event.code === 'Escape' && !event.ctrlKey:
                         this.hideViewer( event );
                         break;
                     default:
@@ -518,6 +518,27 @@
             }
         }
         window.customElements.define( HakunekoPages.is, HakunekoPages );
+        
+        function scrollSmoothly(element, distance) {
+            const speed = Math.abs(Math.floor(distance / 10)),
+                end = Math.abs(distance % speed);
+            function doTinyScroll(){
+                if (Math.abs(distance) == end) return;
+                else if (distance > 0) {
+                    element.scrollBy({
+                        top: speed
+                    });
+                    distance -= speed;
+                } else {
+                    element.scrollBy({
+                        top: -speed
+                    });
+                    distance += speed;
+                }
+                window.requestAnimationFrame(doTinyScroll);
+            }
+            window.requestAnimationFrame(doTinyScroll);
+        }
     </script>
 
 </dom-module>
