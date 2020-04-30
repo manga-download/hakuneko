@@ -7,7 +7,7 @@ export default class MangaJar extends Connector {
         super();
         super.id = 'mangajar';
         super.label = 'MangaJar';
-        this.tags = [ 'manga', 'english', 'scanlation' ];
+        this.tags = [ 'manga', 'english', 'scanlation' , 'webtoon' ];
         this.url = 'https://mangajar.com';
     }
 
@@ -45,7 +45,6 @@ export default class MangaJar extends Connector {
 
         return data.map(element => {
             return {
-                manga: manga,
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), request.url),
                 title: element.querySelector('span.chapter-title').textContent.trim(),
                 language: ''
