@@ -174,7 +174,7 @@ describe("HakuNeko Engine", () => {
                     chapterID: '/read-manga/black_clover/bt/314637/Ch1/',
                     chapterTitle: 'Ch.1  : The Boy\'s Vow',
                     pageCount: 51,
-                    pageMatcher: /^http:\/\/iweb\d.mangapicgallery.com\/r\/newpiclink\/black_clover\/1\/[a-z0-9]{32}\.(?:png|jpg|jpeg)$/
+                    pageMatcher: /^(http|https):\/\/iweb\d.mangapicgallery.com\/r\/newpiclink\/black_clover\/1\/[a-z0-9]{32}\.(?:png|jpg|jpeg)$/
                 });
             });
         });
