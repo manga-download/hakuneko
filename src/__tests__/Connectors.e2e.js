@@ -174,7 +174,7 @@ describe("HakuNeko Engine", () => {
                     chapterID: '/read-manga/black_clover/bt/314637/Ch1/',
                     chapterTitle: 'Ch.1  : The Boy\'s Vow',
                     pageCount: 51,
-                    pageMatcher: /^(http|https):\/\/iweb\d.mangapicgallery.com\/r\/newpiclink\/black_clover\/1\/[a-z0-9]{32}\.(?:png|jpg|jpeg)$/
+                    pageMatcher: /^https?:\/\/iweb\d+\.mangapicgallery.com\/r\/newpiclink\/black_clover\/1\/[a-z0-9]{32}\.(?:png|jpg|jpeg)$/
                 });
             });
         });
@@ -205,9 +205,9 @@ describe("HakuNeko Engine", () => {
                     chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
                 }, {
                     connectorClass: 'ReadM',
-                    mangaID: 'https://readm.org/manga/9465',
+                    mangaID: '/manga/9465',
                     mangaTitle: 'D.N. Angel',
-                    chapterID: 'https://readm.org/manga/9465/1/all-pages',
+                    chapterID: '/manga/9465/1/all-pages',
                     chapterTitle: 'Chapter 1',
                     pageCount: 58,
                     pageMatcher: /^https:\/\/readm\.org\/uploads\/chapter_files\/9465\/0\/p_\d{5}\.jpg$/
