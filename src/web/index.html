@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+<head> 
     <meta charset="utf-8">
     <title>HakuNeko</title>
     <link rel="icon" href="./img/logo.png">
@@ -89,6 +89,25 @@
 
         main();
     </script>
+    <script>
+        this.win=require('electron').remote.getCurrentWindow();
+
+        function minimizeWindow(){
+            this.win.minimize();
+        }
+
+        function maximizeWindow(){
+            if (! this.win.isMaximized()) {
+                this.win.maximize();
+            } else {
+                this.win.unmaximize();
+            }
+        }
+
+        function closeWindow(){
+            this.win.close();
+        }
+    </script>
     <style>
         html, body {
             margin: 0;
@@ -126,9 +145,25 @@
             right: 1em;
             cursor: pointer;
         }
+
+        #default_menubar {
+            text-align : right;
+            -webkit-app-region: drag;
+        }
+
+        #default_menubar > span {
+            -webkit-app-region: no-drag;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
+    <div id="default_menubar">
+        <!-- Using UTF8 as base64 PNG 🗕🗖🗙 because of MacOS -->
+        <span id="win_minimize" onclick="minimizeWindow()" title="Minimize Window"><img alt="minimize" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABcSURBVEhLYxgFo2AUjIJRMApGATGAEUpjgKioqP+vXr2C8vADMTExhmXLluE0CytQUVH5D6SIwlC1WAETlKYZwOmtCRMmNPz48QPKww84ODgYCgoKGqBcegIGBgA9XBrRMdUaKQAAAABJRU5ErkJggg==" /></span>
+        <span id="win_maximize" onclick="maximizeWindow()" title="Maximize Window"><img alt="maximize" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACESURBVEhL7ZZRCsAgCIZtDx2i57p0V4teO0QvLsGxxgYSw8HADyQR9McwySEiaLLxqYYJiKgLAE3RYTFGGqlXRjXmmuodXN5BSgm99xBC4MgarTXovUMpxXFo9DS1Q+3lnId7xlaMcj+/IhMQMQERExC5CdRa2VvnMXfeGxrr+u+/CoAdAOyl6foWTQEAAAAASUVORK5CYII=" /></span>
+        <span id="win_close" onclick="closeWindow()" title="Close Window"><img alt="close" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFLSURBVEhL7ZUxqoQwEIazDxa8g6CFlZ2ghSAiHsA9guWWHkC8hY0LImLjBTyB3kO8SdZZNC+J0aTZbgc+zPwZ5wd14g1jjL4Zf9v1a/EzkMbhJb9eLzzPM7IsCz2fz9smX8YwDHiaJqTrOsqyjL0HDGjiOAbHD3merxK7z9N1HdY07VPved4qsftMAjweD2IgM2nbljQHgiBYZbaGSXYcxyE3nZk0TcM0N03zUAMchJ0rk6qq8P1+J3tnzQGhuCMyKctSuTkgFGl4ExpZc0Ao8ohMVJoDSoOWpum2+o8kSbaVJESuNPwLpVGZE6G4U9c109wwDGzbNslVTIQiwA8R/cxd1yW6zEQo0uPPN9/xfZ/sX5kchL7vlSYUgKOBNimKYpXZGiYB6MNO5VMMw5DUiw670890bY6WZZEe1+M43qIo2rJj/H76kkDoDZkbCAEJwDteAAAAAElFTkSuQmCC" /></span>
+    </div>
     <div id="notification">
         A new <strong>HakuNeko Desktop Client</strong> is available for download on
         <a href="https://github.com/manga-download/hakuneko/releases" target="_blank">GitHub</a>

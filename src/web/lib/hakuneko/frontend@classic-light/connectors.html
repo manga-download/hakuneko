@@ -309,7 +309,7 @@
              */
             _openLink(evt, link) {
                 if(link) {
-                    let popup = window.open(link, evt.model.label, 'nodeIntegration=no');
+                    let popup = window.open(link, evt.model.label, 'frame=true,nodeIntegration=no');
                     // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
                     let watchdog = setInterval(() => {
                         if(popup.closed) {

@@ -15,7 +15,7 @@
     "@hakuneko/kindlegen-binaries": "latest",
     "@logtrine/logtrine": "latest",
     "asar": "latest",
-    "electron": "8.1.0",
+    "electron": "8.2.3",
     "eslint": "latest",
     "fs-extra": "latest",
     "innosetup-compiler": "latest",
