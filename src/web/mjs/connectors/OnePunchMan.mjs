@@ -25,7 +25,7 @@ export default class OnePunchMan extends Connector {
 
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                id: this.getAbsolutePath(element, this.url),
                 title: element.text.split(', ')[1],
                 language: 'en'
             };
