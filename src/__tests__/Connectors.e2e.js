@@ -196,5 +196,23 @@ describe("HakuNeko Engine", () => {
                 });
             });
         });
+
+        describe('ReadM', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'readm',
+                    mangaURL: 'https://readm.org/manga/9465',
+                    chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'ReadM',
+                    mangaID: 'https://readm.org/manga/9465',
+                    mangaTitle: 'D.N. Angel',
+                    chapterID: 'https://readm.org/manga/9465/1/all-pages',
+                    chapterTitle: 'Chapter 1',
+                    pageCount: 58,
+                    pageMatcher: /^https:\/\/readm\.org\/uploads\/chapter_files\/9465\/0\/p_\d{5}\.jpg$/
+                });
+            });
+        });
     });
 });
