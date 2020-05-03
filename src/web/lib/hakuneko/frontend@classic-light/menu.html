@@ -270,7 +270,7 @@
              * otherwise the window cannot be closed anymore (electron does not show the confirmation).
              */
             openWindow(event) {
-                let popup = window.open(event.target.dataset.href, '', 'nodeIntegration=no');
+                let popup = window.open(event.target.dataset.href, '', 'frame=true,nodeIntegration=no');
                 // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
                 let watchdog = setInterval(() => {
                     if(popup.closed) {
