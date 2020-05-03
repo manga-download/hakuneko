@@ -20,7 +20,7 @@ export default class OnePunchMan extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(manga.id, this.requestOptions);
+        let request = new Request(new URL(manga.id), this.requestOptions);
         let data = await this.fetchDOM(request, '#Chapters_List a');
 
         return data.map(element => {
@@ -33,7 +33,7 @@ export default class OnePunchMan extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(chapter.id, this.requestOptions);
+        let request = new Request(new URL(chapter.id), this.requestOptions);
         let data = await this.fetchDOM(request, '.entry-content a');
 
         return data.map(element => this.getAbsolutePath(element, request.url));
