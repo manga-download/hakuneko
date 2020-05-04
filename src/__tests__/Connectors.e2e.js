@@ -209,7 +209,7 @@ describe("HakuNeko Engine", () => {
                     mangaTitle: 'D.N. Angel',
                     chapterID: '/manga/9465/1/all-pages',
                     chapterTitle: 'Chapter 1',
-                    pageCount: 58,
+                    pageCount: 59,
                     pageMatcher: /^https:\/\/readm\.org\/uploads\/chapter_files\/9465\/0\/p_\d{5}\.jpg$/
                 });
             });
