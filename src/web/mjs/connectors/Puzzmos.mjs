@@ -1,6 +1,6 @@
 import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
 
-export default class Biamam extends MangaReaderCMS {
+export default class Puzzmos extends MangaReaderCMS {
     constructor() {
         super();
         super.id = 'puzzmos';
