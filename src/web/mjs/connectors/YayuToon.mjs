@@ -1,13 +1,13 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class YayuToon extends MangaReaderCMS {
+export default class AdonisFansub extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'yayutoon';
         super.label = 'YAYUTOON';
         this.tags = [ 'webtoon', 'turkish' ];
-        this.url = 'http://www.yayutoon.com';
+        this.url = 'https://yayutoon.fun';
 
         this.language = 'tr';
     }
