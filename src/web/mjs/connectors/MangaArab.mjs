@@ -7,7 +7,7 @@ export default class MangaArab extends Connector {
         super.id = 'mangaarab';
         super.label = 'مانجا العرب (Manga Al-arab)';
         this.tags = ['manga', 'arabic'];
-        this.url = 'https://mangaae.com';
+        this.url = 'https://mngaar.com';
     }
 
     _getMangaListFromPages(mangaPageLinks, index) {
