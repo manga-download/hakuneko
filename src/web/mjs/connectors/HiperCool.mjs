@@ -8,7 +8,7 @@ export default class HiperCool extends Connector {
         super.id = 'hipercool';
         super.label = 'Hiper Cool';
         this.tags = [ 'manga', 'portugese', 'hentai' ];
-        this.url = 'https://hiper.cool/';
+        this.url = 'https://hiper.cool';
     }
 
     async _getMangas() {
@@ -18,7 +18,6 @@ export default class HiperCool extends Connector {
         let request, data;
 
         let mangas = [];
-        let uniq = new Set();
 
         while ( morePages ) {
             try {
@@ -27,15 +26,12 @@ export default class HiperCool extends Connector {
                 page++;
 
                 for (let manga of data) {
-                    if ( !uniq.has(manga.querySelector('a.news-thumb').pathname) ) {
-                        uniq.add(manga.querySelector('a.news-thumb').pathname);
-                        mangas.push(
-                            {
-                                id: manga.querySelector('a.news-thumb').pathname,
-                                title: manga.querySelector('div.title').innerText.trim().replace(/\s+\d{2}(?: Final)?$/, '')
-                            }
-                        );
-                    }
+                    mangas.push(
+                        {
+                            id: manga.querySelector('a.news-thumb').pathname,
+                            title: manga.querySelector('div.title').innerText.trim().replace(/\s+\d{2}(?: Final)?$/, '')
+                        }
+                    );
                 }
             } catch(error) {
                 morePages = false;
@@ -52,7 +48,7 @@ export default class HiperCool extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: "Chapter "+element.pathname.split('/').slice(-1)[0],
+                title: "Chapter "+element.pathname.split('/').pop(),
                 language: 'pt'
             };
         });
@@ -67,7 +63,7 @@ export default class HiperCool extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(new URL(uri.href), this.requestOptions);
         let data = await this.fetchDOM(request, '.title-bar span');
-        return new Manga(this, this.getRootRelativeOrAbsoluteLink(uri, this.url), data[0].textContent);
+        return new Manga(this, uri.pathname, data[0].textContent);
     }
 
 }
