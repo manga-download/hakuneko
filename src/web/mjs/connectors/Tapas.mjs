@@ -32,14 +32,15 @@ export default class Tapas extends Connector {
     async _getMangasFromPage(page) {
         let uri = new URL('/comics', this.url);
         uri.searchParams.set('b', 'ALL');
+        uri.searchParams.set('g', 0);
         uri.searchParams.set('pageNumber', page);
         //uri.searchParams.set('pageSize', 20);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.section__body ul.content__list li.list__item a.item__title');
+        let data = await this.fetchDOM(request, 'div.section__body ul.content__list li.list__item a.thumb');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim()
+                id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
+                title: element.querySelector('source').attributes.getNamedItem('alt').value.trim()
             };
         });
     }

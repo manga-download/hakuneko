@@ -174,7 +174,7 @@ describe("HakuNeko Engine", () => {
                     chapterID: '/read-manga/black_clover/bt/314637/Ch1/',
                     chapterTitle: 'Ch.1  : The Boy\'s Vow',
                     pageCount: 51,
-                    pageMatcher: /^http:\/\/iweb\d.mangapicgallery.com\/r\/newpiclink\/black_clover\/1\/[a-z0-9]{32}\.(?:png|jpg|jpeg)$/
+                    pageMatcher: /^https?:\/\/iweb\d+\.mangapicgallery.com\/r\/newpiclink\/black_clover\/1\/[a-z0-9]{32}\.(?:png|jpg|jpeg)$/
                 });
             });
         });
@@ -193,6 +193,24 @@ describe("HakuNeko Engine", () => {
                     chapterTitle: '#1 Artık Dahi Değil',
                     pageCount: 20,
                     pageMatcher: /^https:\/\/www\.epikmanga.com\/upload\/manga\/battle-through-the-heavens\/1\/\d+.jpg$/
+                });
+            });
+        });
+
+        describe('ReadM', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'readm',
+                    mangaURL: 'https://readm.org/manga/9465',
+                    chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'ReadM',
+                    mangaID: '/manga/9465',
+                    mangaTitle: 'D.N. Angel',
+                    chapterID: '/manga/9465/1/all-pages',
+                    chapterTitle: 'Chapter 1',
+                    pageCount: 59,
+                    pageMatcher: /^https:\/\/readm\.org\/uploads\/chapter_files\/9465\/0\/p_\d{5}\.jpg$/
                 });
             });
         });
