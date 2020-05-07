@@ -82,7 +82,7 @@ export default class MangaNel extends Connector {
         }));
     }
 
-    _handleConnectorURI(payload) {
+    async _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
