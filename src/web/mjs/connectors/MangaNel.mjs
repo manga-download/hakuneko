@@ -9,6 +9,7 @@ export default class MangaNel extends Connector {
         super.label = 'MangaNelo';
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manganelo.com';
+        this.requestOptions.headers.set('x-referer', this.url);
 
         this.path = '/genre-all/';
         this.queryMangaTitle = 'div.container-main div.panel-story-info div.story-info-right h1';
@@ -76,6 +77,20 @@ export default class MangaNel extends Connector {
         }
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element, request.url));
+        return data.map(element => this.createConnectorURI({
+            url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
+            referer: request.url
+        }));
+    }
+
+    _handleConnectorURI(payload) {
+        /*
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
+        this.requestOptions.headers.set('x-referer', payload.referer);
+        let promise = super._handleConnectorURI(payload.url);
+        this.requestOptions.headers.delete('x-referer');
+        return promise;
     }
 }
