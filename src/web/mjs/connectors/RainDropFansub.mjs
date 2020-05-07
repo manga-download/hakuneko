@@ -1,6 +1,6 @@
 import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
 
-export default class RawMangaUpdate extends MangaReaderCMS {
+export default class RainDropFansub extends MangaReaderCMS {
 
     constructor() {
         super();
