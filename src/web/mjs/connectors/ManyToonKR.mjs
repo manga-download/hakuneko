@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class ManyToon extends WordPressMadara {
+export default class ManyToonKR extends WordPressMadara {
 
     constructor() {
         super();
