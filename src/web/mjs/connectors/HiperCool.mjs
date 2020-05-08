@@ -57,7 +57,7 @@ export default class HiperCool extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.pages source');
-        return data.map(element => this.getRootRelativeOrAbsoluteLink(element, request.url));
+        return data.map(element => this.getAbsolutePath(element, request.url));
     }
 
     async _getMangaFromURI(uri) {
