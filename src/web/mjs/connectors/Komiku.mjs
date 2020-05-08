@@ -13,7 +13,7 @@ export default class Komiku extends WordPressEManga {
 
         this.queryMangas = 'div#a-z ol li.ranking1 h4';
         this.queryChapters = 'table.chapter tbody tr td.judulseries a';
-        this.queryPages = 'div#Baca source[src]:not([src=""])';
+        this.queryPages = 'div#Baca_Komik source[src]:not([src=""])';
     }
 
     async _getMangas() {
