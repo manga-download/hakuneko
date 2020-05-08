@@ -6,7 +6,7 @@ export default class WebtoonXYZ extends WordPressMadara {
         super();
         super.id = 'webtoonxyz';
         super.label = 'WebtoonXYZ';
-        this.tags = [ 'webtoon', 'engish' ];
+        this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://www.webtoon.xyz';
     }
 }
