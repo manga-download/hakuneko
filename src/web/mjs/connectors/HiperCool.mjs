@@ -7,7 +7,7 @@ export default class HiperCool extends Connector {
         super();
         super.id = 'hipercool';
         super.label = 'Hiper Cool';
-        this.tags = [ 'manga', 'portugese', 'hentai' ];
+        this.tags = [ 'manga', 'portuguese', 'hentai' ];
         this.url = 'https://hiper.cool';
     }
 
