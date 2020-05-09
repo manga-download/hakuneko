@@ -29,7 +29,7 @@ export default class HiperCool extends Connector {
                     mangas.push(
                         {
                             id: manga.querySelector('a.news-thumb').pathname,
-                            title: manga.querySelector('div.title').innerText.trim().replace(/\s+\d{2}(?: Final)?$/, '')
+                            title: manga.querySelector('div.title').innerText.trim().replace(/\s+\d{2}(?: Final)?$/, '').trim()
                         }
                     );
                 }
