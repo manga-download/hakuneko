@@ -1,6 +1,5 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-
 export default class Atikrost extends WordPressMadara {
     constructor() {
         super();

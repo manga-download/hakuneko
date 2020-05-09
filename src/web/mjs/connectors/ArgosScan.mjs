@@ -1,6 +1,5 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-
 export default class ArgosScan extends WordPressMadara {
     constructor() {
         super();
