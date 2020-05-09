@@ -45,34 +45,24 @@ export default class OnePunchMan extends Connector {
             });
     }
 
-    async _getPageList(manga, chapter, callback) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        resolve(new XMLSerializer().serializeToString(document));
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 3000);
-            });
-        `;
+    async _getPages(chapter) {
+        let aid = chapter.id.match(/(?:aid=)(\d+)/)[1];
+        let iid = chapter.id.match(/(?:iid=)(\d+)/)[1];
+        let path = '/' + chapter.id.match(/\/(.+)\//)[1] + '/';
 
-        Engine.Request.fetchUI( request, script )
-            .then( data => {
-                let pages = [];
-                data = this.createDOM(data).querySelectorAll('div.image_item source');
+        let request = new Request(
+            new URL(
+                path + aid + '/' + iid + '/metadata.json?_=' + Math.round(new Date().getTime()),
+                this.url
+            ),
+            this.requestOptions
+        );
+        let data = await this.fetchJSON(request);
 
-                for (let image of data) {
-                    pages.push(this.getAbsolutePath(image.getAttribute('data-original'), this.url));
-                }
-                callback(null, pages );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            });
+        return data.imageItemList.map(page => {
+            return this.getAbsolutePath(path+ + aid + '/' + iid + '/' + page.fileName, this.url);
+        });
+
     }
 
     async _getMangaFromURI() {
