@@ -50,7 +50,7 @@ export default class OnePunchMan extends Connector {
         let data = await this.fetchJSON(request);
 
         return data.imageItemList.map(page => {
-            return this.getAbsolutePath(pathname+ + aid + '/' + iid + '/' + page.fileName, this.url);
+            return this.getAbsolutePath(pathname + aid + '/' + iid + '/' + page.fileName, this.url);
         });
 
     }
