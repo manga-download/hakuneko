@@ -24,6 +24,7 @@ export default class NewToki extends Connector {
         uri.searchParams.set('rd', Math.random());
         let request = new Request(uri, this.requestOptions);
         this.url = await Engine.Request.fetchUI(request, 'new Promise(resolve => resolve(window.location.origin))');
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
@@ -37,10 +38,12 @@ export default class NewToki extends Connector {
     async _getMangas() {
         let mangaList = [];
         for(let path of this.path) {
-            let request = new Request(this.url + path, this.requestOptions);
+            let uri = new URL(path, this.url);
+            let request = new Request(uri, this.requestOptions);
             let data = await this.fetchDOM(request, 'section.board-list ul.pagination li:last-of-type a');
             let pageCount = parseInt(data[0].href.match(/\d+$/)[0]);
             for(let page = 1; page <= pageCount; page++) {
+                await this.wait(5000);
                 let mangas = await this._getMangasFromPage(path, page);
                 mangaList.push(...mangas);
             }
@@ -49,7 +52,9 @@ export default class NewToki extends Connector {
     }
 
     async _getMangasFromPage(path, page) {
-        let request = new Request(this.url + path + '/p' + page, this.requestOptions);
+        let uri = new URL(path + '/p' + page, this.url);
+        let request = new Request(uri, this.requestOptions);
+        request.headers.set('x-referer', new URL(path, this.url).href);
         let data = await this.fetchDOM(request, 'section.board-list div.list-container ul.list div.list-item div.in-lable a');
         return data.map(element => {
             return {
