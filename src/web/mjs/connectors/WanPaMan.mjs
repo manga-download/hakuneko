@@ -20,39 +20,29 @@ export default class OnePunchMan extends Connector {
         ];
     }
 
-    async _getChapterList(manga, callback) {
+    async _getChapters(manga) {
         let request = new Request(new URL(manga.id), this.requestOptions);
-
-        Engine.Request.fetchUI( request, 'new XMLSerializer().serializeToString(document);' )
-            .then( data => {
-                let chapters = [];
-                data = this.createDOM(data).querySelectorAll('body a');
-                for (let link of data) {
-                    if ( link.pathname.includes('imageviewer') ) {
-                        chapters.push(
-                            {
-                                id: this.getRootRelativeOrAbsoluteLink(link.href.replace('hakuneko://cache/', '/'), this.url),
-                                title: link.text
-                            }
-                        );
-                    }
-                }
-                callback(null, chapters.reverse());
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
+        let script = `new Promise(resolve => {
+            let chapters = [...document.querySelectorAll('body a[href*="imageviewer"]')].map(link => {
+                return {
+                    id: link.href,
+                    title: link.text.trim()
+                };
             });
+            resolve(chapters.reverse());
+        });`;
+
+        return Engine.Request.fetchUI( request, script );
     }
 
     async _getPages(chapter) {
         let aid = chapter.id.match(/(?:aid=)(\d+)/)[1];
         let iid = chapter.id.match(/(?:iid=)(\d+)/)[1];
-        let path = '/' + chapter.id.match(/\/(.+)\//)[1] + '/';
+        let pathname = '/' + chapter.id.match(/\/(.+)\//)[1] + '/';
 
         let request = new Request(
             new URL(
-                path + aid + '/' + iid + '/metadata.json?_=' + Math.round(new Date().getTime()),
+                pathname + aid + '/' + iid + '/metadata.json?_=' + Math.round(new Date().getTime()),
                 this.url
             ),
             this.requestOptions
@@ -60,7 +50,7 @@ export default class OnePunchMan extends Connector {
         let data = await this.fetchJSON(request);
 
         return data.imageItemList.map(page => {
-            return this.getAbsolutePath(path+ + aid + '/' + iid + '/' + page.fileName, this.url);
+            return this.getAbsolutePath(pathname+ + aid + '/' + iid + '/' + page.fileName, this.url);
         });
 
     }
