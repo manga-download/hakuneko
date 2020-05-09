@@ -26,15 +26,9 @@ export default class LineWebtoon extends Connector {
         return new Manga(this, id, title);
     }
 
-    async _getMangaList( callback ) {
-        try {
-            let request = new Request(`http://cdn.hakuneko.download/${this.id}/mangas.json`, this.requestOptions);
-            let data = await this.fetchJSON(request);
-            callback(null, data);
-        } catch(error) {
-            console.error(error, this);
-            callback(error, undefined);
-        }
+    async _getMangas() {
+        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
     async _getChapterListPage(uri) {

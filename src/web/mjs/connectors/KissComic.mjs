@@ -1,50 +1,21 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class KissComic extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'kisscomic';
         super.label = 'KissComic (ReadComicOnline)';
         this.tags = [ 'comic', 'english' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
         this.url = 'https://readcomiconline.to';
         this.pageLoadDelay = 5000;
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
     }
 
-    /**
-     * Parameters mangalist and page should never be used by external calls.
-     */
-    _getMangaList( callback ) {
-        fetch( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.json();
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         this.fetchDOM( this.url + manga.id, 'div.episodeList table.listing tr td:first-of-type a, div.section ul.list li a' )
             .then( data => {
@@ -63,9 +34,6 @@ export default class KissComic extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         if( this.isLocked ) {
             console.warn( `[WARN: ${this.label}, too many requests]` );
