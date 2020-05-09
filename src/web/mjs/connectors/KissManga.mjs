@@ -22,29 +22,11 @@ export default class KissManga extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     * Parameters mangalist and page should never be used by external calls.
-     */
-    _getMangaList( callback ) {
-        fetch( 'http://cdn.hakuneko.download/' + this.id + '/mangas.json', this.requestOptions )
-            .then( response => {
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive manga list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.json();
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         fetch( this.url + manga.id, this.requestOptions )
             .then( response => {
@@ -85,9 +67,6 @@ export default class KissManga extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         if( this.isLocked ) {
             console.warn( `[WARN: ${this.label}, too many requests]` );
