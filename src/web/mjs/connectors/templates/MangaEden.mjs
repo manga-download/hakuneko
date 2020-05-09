@@ -10,9 +10,6 @@ export default class MangaEden extends Connector {
         this.url = undefined;
     }
 
-    /**
-     *
-     */
     _getMangaListFromPages( mangaPageLinks, index ) {
         if( index === undefined ) {
             index = 0;
@@ -35,9 +32,6 @@ export default class MangaEden extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         this.fetchDOM( this.url + this.urlMangas, 'div.pagination a:nth-last-child(2)' )
             .then( data => {
@@ -54,9 +48,6 @@ export default class MangaEden extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         this.fetchDOM( this.url + manga.id, 'table tr td a.chapterLink' )
             .then( data => {
@@ -75,9 +66,6 @@ export default class MangaEden extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         fetch( request )
@@ -96,18 +84,14 @@ export default class MangaEden extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let uri = new URL( payload );
-        if( uri.hostname === 'cdn.mangaeden.com' ) {
-            this.requestOptions.headers.set( 'x-host', uri.hostname );
-            uri.hostname = '188.165.13.96';
-            uri.protocol = 'http';
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        let response = await fetch(request);
+        if(response.status === 503) {
+            await this.wait(Math.random() * 5000);
+            return this._handleConnectorURI(payload);
+        } else {
+            return this._blobToBuffer(await response.blob());
         }
-        let promise = super._handleConnectorURI( uri.href );
-        this.requestOptions.headers.delete( 'x-host' );
-        return promise;
     }
 }

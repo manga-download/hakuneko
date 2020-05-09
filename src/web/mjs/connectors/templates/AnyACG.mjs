@@ -24,7 +24,8 @@ export default class AnyACG extends Connector {
 
     _getLanguage(element, queryFlag) {
         let language = queryFlag ? element.querySelector(queryFlag) : undefined;
-        return language ? ' (' + language.className.match(/flag_([_a-z]+)/)[1].replace(/_/g, '-') + ')' : '';
+        let code = language ? language.className.match(/flag_([_a-z]+)/) : undefined;
+        return code && code.length > 1 ? ' (' + code[1].replace(/_/g, '-') + ')' : '';
     }
 
     async _getMangaFromURI(uri) {
