@@ -6,7 +6,7 @@ export default class ManyToon extends WordPressMadara {
         super();
         super.id = 'manytoon';
         super.label = 'ManyToon';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = [ 'webtoon', 'hentai', 'english' ];
         this.url = 'https://manytoon.me'; // Miror?: https://manytoon.com
     }
 }
