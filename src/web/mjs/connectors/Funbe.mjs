@@ -17,7 +17,7 @@ export default class Funbe extends Connector {
         return data.map(link => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(link.href, this.url).replace('hakuneko://cache/', '/'),
-                title: link.getAttribute('alt').trim()
+                title: link.alt.trim()
             };
         });
     }
@@ -27,8 +27,8 @@ export default class Funbe extends Connector {
         let data = await this.fetchDOM(request, 'table.web_list td.content__title');
         return data.map(link => {
             return {
-                id: link.getAttribute('data-role'),
-                title: link.getAttribute('alt').trim()
+                id: link.dataset.role,
+                title: link.alt.trim()
             };
         });
     }
@@ -37,7 +37,7 @@ export default class Funbe extends Connector {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let script = `new Promise(resolve => {
             let pages = [...document.querySelectorAll('div#toon_img img')].map(image => {
-                return new URL(image.getAttribute('src'), document.baseURI).href;
+                return image.src;
             });
             resolve(pages);
         });`;
