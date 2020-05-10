@@ -36,21 +36,18 @@ export default class OnePunchMan extends Connector {
     }
 
     async _getPages(chapter) {
-        let aid = chapter.id.match(/(?:aid=)(\d+)/)[1];
-        let iid = chapter.id.match(/(?:iid=)(\d+)/)[1];
-        let pathname = '/' + chapter.id.match(/\/(.+)\//)[1] + '/';
-
-        let request = new Request(
-            new URL(
-                pathname + aid + '/' + iid + '/metadata.json?_=' + Math.round(new Date().getTime()),
-                this.url
-            ),
-            this.requestOptions
-        );
+        let uri = new URL(chapter.id, this.url)
+        let rest = [uri.pathname+uri.searchParams.get('aid')];
+        rest.push(uri.searchParams.get('iid'));
+        rest.push( 'metadata.json?_=' + Math.round( Date.now() ) );
+        
+        let request = new Request( new URL(rest.join('/'), this.url), this.requestOptions );
         let data = await this.fetchJSON(request);
 
         return data.imageItemList.map(page => {
-            return this.getAbsolutePath(pathname + aid + '/' + iid + '/' + page.fileName, this.url);
+            rest.pop();
+            rest.push(page.fileName);
+            return this.getAbsolutePath(rest.join('/'), this.url);
         });
 
     }
