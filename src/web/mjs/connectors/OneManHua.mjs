@@ -6,9 +6,9 @@ export default class OneManHua extends Connector {
     constructor() {
         super();
         super.id = 'onemanhua';
-        super.label = 'ONE漫画';
+        super.label = 'Oh漫画';
         this.tags = [ 'webtoon', 'chinese' ];
-        this.url = 'https://www.onemanhua.com';
+        this.url = 'https://www.ohmanhua.com';
     }
 
     async _getMangaFromURI(uri) {
