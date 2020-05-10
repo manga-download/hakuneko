@@ -36,11 +36,11 @@ export default class OnePunchMan extends Connector {
     }
 
     async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url)
+        let uri = new URL(chapter.id, this.url);
         let rest = [uri.pathname+uri.searchParams.get('aid')];
         rest.push(uri.searchParams.get('iid'));
-        rest.push( 'metadata.json?_=' + Math.round( Date.now() ) );
-        
+        rest.push( 'metadata.json?_=' + Date.now() );
+
         let request = new Request( new URL(rest.join('/'), this.url), this.requestOptions );
         let data = await this.fetchJSON(request);
 
