@@ -33,7 +33,7 @@ export default class Kuimh extends Connector {
         let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);;
+            mangaList.push(...mangas);
         }
         return mangaList;
     }
