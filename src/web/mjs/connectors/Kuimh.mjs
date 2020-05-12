@@ -13,13 +13,14 @@ export default class Kuimh extends Connector {
         this.pathMatch = 'page=(\\d+)';
         this.queryMangasPageCount = 'div.page-pagination div.pagination li:nth-last-child(2) a';
         this.queryMangas = 'ul.mh-list li div.mh-item-detali h2.title a';
+        this.queryMangasURL = 'section.banner_detail div.info h1';
         this.queryChapter = 'div#chapterlistload ul#detail-list-select li a';
         this.queryPages = 'div.comiclist div.comicpage source';
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.banner_detail div.info h1');
+        let data = await this.fetchDOM(request, this.queryMangasURL);
         let id = uri.pathname + uri.search;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
