@@ -50,7 +50,7 @@ export default class Kuimh extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(this.url + manga.id), this.requestOptions);
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapter);
         return data.map(element => {
             return {
