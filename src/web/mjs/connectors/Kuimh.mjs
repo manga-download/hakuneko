@@ -63,9 +63,6 @@ export default class Kuimh extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => {
-            let src = this.getAbsolutePath(element.dataset.echo || element, request.url);
-            return src;
-        });
+        return data.map(element => this.getAbsolutePath(element.dataset.echo || element, request.url));
     }
 }
