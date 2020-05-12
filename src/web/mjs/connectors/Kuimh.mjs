@@ -54,8 +54,7 @@ export default class Kuimh extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.childNodes[0].nodeValue.trim(),
-                language: ''
+                title: element.childNodes[0].nodeValue.trim()
             };
         });
     }
@@ -64,9 +63,6 @@ export default class Kuimh extends Connector {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
-            if(src.startsWith('//')) {
-                src = new URL(this.url).protocol + src;
-            }
             let src = this.getAbsolutePath(element.dataset.echo || element, request.url);
             return src;
         });
