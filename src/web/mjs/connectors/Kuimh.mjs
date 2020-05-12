@@ -9,9 +9,11 @@ export default class Kuimh extends Connector {
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://www.kuimh.com';
 
-        this.path = '/booklist?page=1/';
+        this.path = '/booklist?page=';
         this.pathMatch = 'page=(\\d+)';
         this.queryMangasPageCount = 'div.page-pagination div.pagination li:nth-last-child(2) a';
+        this.queryMangas = 'ul.mh-list li div.mh-item-detali h2.title a';
+        this.queryChapter = 'div#chapterlistload ul#detail-list-select li a';
         this.queryPages = 'div.comiclist div.comicpage source';
     }
 
@@ -25,9 +27,9 @@ export default class Kuimh extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url + this.path, this.requestOptions);
+        let request = new Request(new URL(this.path, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        let pageCount = parseInt(new RegExp(this.pathMatch).exec(data[0].href)[1]);
+        let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);;
@@ -36,8 +38,8 @@ export default class Kuimh extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(`/booklist?page=${page}`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul.mh-list li div.mh-item-detali h2.title a');
+        let request = new Request(new URL(this.path + page, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -48,7 +50,7 @@ export default class Kuimh extends Connector {
 
     async _getChapters(manga) {
         let request = new Request(new URL(this.url + manga.id), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#chapterlistload ul#detail-list-select li a');
+        let data = await this.fetchDOM(request, this.queryChapter);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -62,10 +64,10 @@ export default class Kuimh extends Connector {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
-            let src = (element.dataset['echo'] || element.src).trim();
             if(src.startsWith('//')) {
                 src = new URL(this.url).protocol + src;
             }
+            let src = this.getAbsolutePath(element.dataset.echo || element, request.url);
             return src;
         });
     }
