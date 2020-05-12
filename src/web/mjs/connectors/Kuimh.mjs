@@ -47,8 +47,6 @@ export default class Kuimh extends Connector {
     }
 
     async _getChapters(manga) {
-        console.log(manga);
-        console.log(manga.id);
         let request = new Request(new URL(this.url + manga.id), this.requestOptions);
         let data = await this.fetchDOM(request, 'div#chapterlistload ul#detail-list-select li a');
         return data.map(element => {
@@ -63,7 +61,6 @@ export default class Kuimh extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        console.log(data);
         return data.map(element => {
             let src = (element.dataset['echo'] || element.src).trim();
             if(src.startsWith('//')) {
