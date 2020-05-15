@@ -19,6 +19,30 @@ export default class MHXK extends Connector {
             name: '',
             platform: 'pc'
         };
+
+        this.config = {
+            format: {
+                label: 'Image Format',
+                description: 'In general JPEG is considered premium, however in some mangas JPEG might still work.',
+                input: 'select',
+                options: [
+                    { value: 'webp', name: 'WEBP' },
+                    { value: 'jpg', name: 'JPEG (Premium Only)' }
+                ],
+                value: 'webp'
+            },
+            quality: {
+                label: 'Image Quality',
+                description: 'High quality seems to be restricted, probably for premium only.',
+                input: 'select',
+                options: [
+                    { value: 'low', name: 'Low' },
+                    { value: 'middle', name: 'Medium' },
+                    { value: 'high', name: 'High (Premium Only)' }
+                ],
+                value: 'middle'
+            }
+        };
     }
 
     async _getMangaFromURI(uri) {
@@ -78,7 +102,7 @@ export default class MHXK extends Connector {
         for(let index = data.start_num; index <= data.end_num; index++) {
             let page = new URL(data.rule.replace('$$', index), request.url);
             page.hostname = this.subdomain + data.chapter_domain;
-            page.pathname += `-${this.product.name}.middle.jpg`; // low | middle | high (high seems premium only)
+            page.pathname += `-${this.product.name}.${this.config.quality.value}.${this.config.format.value}`;
             pages.push(page.href);
         }
         return pages;
