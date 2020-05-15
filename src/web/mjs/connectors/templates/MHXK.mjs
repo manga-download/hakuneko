@@ -48,7 +48,7 @@ export default class MHXK extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
-        let id = data[0].dataset.comicId;
+        let id = data[0].dataset.comicId || data[0].dataset.comic_id;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
