@@ -12,6 +12,7 @@ export default class MHXK extends Connector {
         this.apiURL = 'https://cms-webapi.321mh.com';
         this.subdomain = 'mhpic.';
 
+        this.queryMangaTitle = 'h1#detail-title';
         // customer specific information for API requests
         this.product = {
             id: 0,
@@ -23,8 +24,8 @@ export default class MHXK extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
-        let id = uri.pathname + uri.search;
-        let title = data[0].content.trim();
+        let id = data[0].dataset.comicId;
+        let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
