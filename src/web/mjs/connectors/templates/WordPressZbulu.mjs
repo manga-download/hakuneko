@@ -11,7 +11,7 @@ export default class WordPressZbulu extends Connector {
         this.url = undefined;
         this.path = '/manga-list/';
         this.pathMangas = this.path + 'page-%PAGE%/';
-        this.pathChapters = '/page-%PAGE%/';
+        this.pathChapters = 'page-%PAGE%/';
 
         this.queryManga = 'div.comic-info div.info h1.name';
         this.queryMangasPageCount = 'div.pagination-container div.pagination a.next:last-of-type';
