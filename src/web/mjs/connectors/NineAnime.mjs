@@ -272,20 +272,18 @@ export default class NineAnime extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getEpisodeMp4upload( link/*, resolution*/ ) {
+    async _getEpisodeMp4upload(link/*, resolution*/) {
         let script = `
-                new Promise( resolve => {
-                    resolve( document.querySelector('div#vid video#vid_html5_api').src );
-                } );
-            `;
-        let request = new Request( link, this.requestOptions );
-        return Engine.Request.fetchUI( request, script )
-            .then( stream => {
-                return Promise.resolve( { video: stream, subtitles: [] } );
-            } );
+            new Promise(resolve => {
+                resolve(document.querySelector('div.plyr video source').src);
+            });
+        `;
+        let request = new Request(link, this.requestOptions);
+        let stream = await Engine.Request.fetchUI(request, script);
+        return {
+            video: stream,
+            subtitles: []
+        };
     }
 
     /**
