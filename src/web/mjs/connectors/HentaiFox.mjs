@@ -9,6 +9,7 @@ export default class HentaiFox extends Connector {
         super.label = 'HentaiFox';
         this.tags = [ 'hentai', 'english' ];
         this.url = 'https://hentaifox.com';
+        this.cdn = 'https://i.hentaifox.com';
     }
 
     async _getMangaFromURI(uri) {
@@ -52,7 +53,12 @@ export default class HentaiFox extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.gallery_thumb div.g_thumb a source');
-        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element, request.url).replace('t.', '.'));
+        let data = await this.fetchDOM(request, 'div.display_gallery input[id*="load_"]');
+        let directory = data.find(element => element.id === 'load_dir').value;
+        let identifier = data.find(element => element.id === 'load_id').value;
+        let pages = parseInt(data.find(element => element.id === 'load_pages').value);
+        return [...Array(pages - 1).keys()].map(key => {
+            return [ this.cdn, directory, identifier, key + 1 + '.jpg' ].join('/');
+        });
     }
 }
