@@ -99,10 +99,10 @@ export default class KissAnime extends Connector {
 
     async _getEpisodeHydraX(link, resolution) {
         let hydrax = new HydraX(link, link.split('#slug=')[1]);
-        let playlist = await hydrax.getPlaylist(parseInt(resolution));
+        let stream = await hydrax.getPlaylist(parseInt(resolution));
         return {
-            hash: 'id,language,resolution',
-            mirrors: [ playlist ],
+            video: stream,
+            referer: link,
             subtitles: []
         };
     }
