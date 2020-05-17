@@ -1,6 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 import PrettyFast from '../videostreams/PrettyFast.mjs';
+import Streamtape from '../videostreams/Streamtape.mjs';
 import MyCloud from '../videostreams/MyCloud.mjs';
 import HydraX from '../videostreams/HydraX.mjs';
 
@@ -160,26 +161,26 @@ export default class NineAnime extends Connector {
 
     async _getPages(chapter) {
         let script = `
-            new Promise(async (resolve, reject) => {
-                localStorage.setItem('player_autoplay', 0);
-                function hash(text) {
-                    return text.split('').reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) + index, 0);
+        new Promise(async (resolve, reject) => {
+            localStorage.setItem('player_autoplay', 0);
+            function hash(text) {
+                return text.split('').reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) + index, 0);
+            }
+            let uri = new URL('/ajax/episode/info', window.location.origin);
+            uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
+            uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
+            uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
+            uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0')); // 695 + (5 * 48)
+            uri.searchParams.set('ts', $('html').data().ts);
+            let response = await fetch(uri.href, {
+                headers: {
+                    // required to prevent IP ban
+                    'X-Requested-With': 'XMLHttpRequest'
                 }
-                let uri = new URL('/ajax/episode/info', window.location.origin);
-                uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
-                uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
-                uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
-                uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0')); // 695 + (5 * 48)
-                uri.searchParams.set('ts', $('html').data().ts);
-                let response = await fetch(uri.href, {
-                    headers: {
-                        // required to prevent IP ban
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                });
-                let data = await response.json();
-                resolve(data.target);
             });
+            let data = await response.json();
+            resolve(data.target);
+        });
         `;
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         await this._checkCaptcha(request);
@@ -200,6 +201,8 @@ export default class NineAnime extends Connector {
                 return this._getEpisodeMp4upload(data, this.config.resolution.value);
             case data.includes('streamango'):
                 return this._getEpisodeStreamango(data, this.config.resolution.value);
+            case data.includes('streamtape'):
+                return this._getEpisodeStreamtape(data, this.config.resolution.value);
             default:
                 throw new Error('Support for video stream from mirror "' + data + '" not implemented!');
         }
@@ -259,7 +262,7 @@ export default class NineAnime extends Connector {
     }
 
     async _getEpisodeMyCloud(link, referer, resolution) {
-        let mycloud = new MyCloud(link, referer, this.fetchRegex);
+        let mycloud = new MyCloud(link, referer, this.fetchRegex.bind(this));
         let playlist = await mycloud.getPlaylist(parseInt(resolution));
         return {
             hash: 'id,language,resolution',
@@ -296,5 +299,14 @@ export default class NineAnime extends Connector {
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );
+    }
+
+    async _getEpisodeStreamtape(link/*, resolution*/) {
+        let streamtape = new Streamtape(link, this.fetchDOM.bind(this));
+        let stream = await streamtape.getStream();
+        return {
+            video: stream,
+            subtitles: []
+        };
     }
 }
