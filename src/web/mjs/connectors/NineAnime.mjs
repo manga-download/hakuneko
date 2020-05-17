@@ -1,6 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 import PrettyFast from '../videostreams/PrettyFast.mjs';
+import MyCloud from '../videostreams/MyCloud.mjs';
 import HydraX from '../videostreams/HydraX.mjs';
 
 export default class NineAnime extends Connector {
@@ -167,8 +168,8 @@ export default class NineAnime extends Connector {
                 let uri = new URL('/ajax/episode/info', window.location.origin);
                 uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
                 uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
-                uri.searchParams.set('mcloud', window.mcloudKey);
-                uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0'));
+                uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
+                uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0')); // 695 + (5 * 48)
                 uri.searchParams.set('ts', $('html').data().ts);
                 let response = await fetch(uri.href, {
                     headers: {
@@ -257,25 +258,12 @@ export default class NineAnime extends Connector {
             } );
     }
 
-    async _getEpisodeMyCloud(link, referer/*, resolution*/) {
-        let request = new Request(link, this.requestOptions);
-        request.headers.delete('x-cookie');
-        request.headers.delete('x-requested-with');
-        request.headers.set('x-sec-fetch-dest', 'iframe');
-        request.headers.set('x-sec-fetch-mode', 'navigate');
-        request.headers.set('x-referer', referer);
-        let data = await this.fetchRegex(request, /mediaSources\s*=\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/g);
-        let playlist = data.pop();
-        request = new Request(playlist, this.requestOptions);
-        request.headers.set('x-referer', link);
-        let response = await fetch(request);
-        let streamlist = await response.text();
-        let stream = streamlist.match(/^.*?\d+\.m3u8$/gm)[0].trim();
-        // stream => hls/480/480.m3u8 || hls/720/720.m3u8 || ...
-        stream = playlist.replace(/[^/]+$/, stream);
+    async _getEpisodeMyCloud(link, referer, resolution) {
+        let mycloud = new MyCloud(link, referer, this.fetchRegex);
+        let playlist = await mycloud.getPlaylist(parseInt(resolution));
         return {
             hash: 'id,language,resolution',
-            mirrors: [ stream ],
+            mirrors: [ playlist ],
             subtitles: []
         };
     }
