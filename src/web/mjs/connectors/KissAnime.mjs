@@ -20,6 +20,7 @@ export default class KissAnime extends Connector {
                 input: 'select',
                 options: [
                     { value: '', name: 'Mirror\'s Default' },
+                    { value: '360', name: '360p' },
                     { value: '480', name: '480p' },
                     { value: '720', name: '720p' },
                     { value: '1080', name: '1080p' }
