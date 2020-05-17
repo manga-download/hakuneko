@@ -24,6 +24,21 @@ export default class HydraX {
         return streamMap.pop().data;
     }
 
+    async _getSources(host) {
+        let uri = new URL(this._uri.protocol + '//' + host);
+        let request = new Request(uri, {
+            method: 'POST',
+            body: 'slug=' + this._slug,
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+                'x-referer': this._uri.href
+            }
+        });
+        let response = await fetch(request);
+        let data = await response.json();
+        return data.sources;
+    }
+
     async _getPlaylistGuest() {
         let uri = new URL('https://ping.idocdn.com/');
         let request = new Request(uri, {
@@ -36,9 +51,10 @@ export default class HydraX {
         });
         let response = await fetch(request);
         let data = await response.json();
-        return (data.sources || [ 'sd' ]).reduce((accumulator, source) => {
+        let sources = data.sources || await this._getSources(data.url);
+        return sources.reduce((accumulator, source) => {
             accumulator[source] = [
-                'https://',
+                this._uri.protocol + '//',
                 source === 'hd' ? 'www' : '',
                 this._slug.toLowerCase(),
                 '.',
