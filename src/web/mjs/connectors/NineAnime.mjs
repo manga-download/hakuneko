@@ -1,6 +1,8 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 import PrettyFast from '../videostreams/PrettyFast.mjs';
+import Streamtape from '../videostreams/Streamtape.mjs';
+import MyCloud from '../videostreams/MyCloud.mjs';
 import HydraX from '../videostreams/HydraX.mjs';
 
 export default class NineAnime extends Connector {
@@ -159,19 +161,26 @@ export default class NineAnime extends Connector {
 
     async _getPages(chapter) {
         let script = `
-            new Promise((resolve, reject) => {
-                localStorage.setItem('player_autoplay', 0);
-                document.querySelector('a[href*="' + window.location.pathname + '"]').click();
-                setTimeout(() => {
-                    try {
-                        let uri = new URL($('#player iframe').attr('src'));
-                        uri.searchParams.delete('autostart');
-                        resolve(uri.href);
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 2500);
+        new Promise(async (resolve, reject) => {
+            localStorage.setItem('player_autoplay', 0);
+            function hash(text) {
+                return text.split('').reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) + index, 0);
+            }
+            let uri = new URL('/ajax/episode/info', window.location.origin);
+            uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
+            uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
+            uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
+            uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0')); // 695 + (5 * 48)
+            uri.searchParams.set('ts', $('html').data().ts);
+            let response = await fetch(uri.href, {
+                headers: {
+                    // required to prevent IP ban
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
             });
+            let data = await response.json();
+            resolve(data.target);
+        });
         `;
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         await this._checkCaptcha(request);
@@ -179,7 +188,7 @@ export default class NineAnime extends Connector {
         await this.wait(500);
         switch(true) {
             case data.includes('prettyfast'):
-                return this._getEpisodePrettyFast(data, new URL(chapter.id, this.url).href, this.config.resolution.value);
+                return this._getEpisodePrettyFast(data, request.url, this.config.resolution.value);
             case data.includes('hydrax'):
                 return this._getEpisodeHydraX(data, this.config.resolution.value);
             case data.includes('rapidvid'):
@@ -187,11 +196,13 @@ export default class NineAnime extends Connector {
             case data.includes('openload'):
                 return this._getEpisodeOpenLoad(data, this.config.resolution.value);
             case data.includes('mcloud'):
-                return this._getEpisodeMyCloud(data, this.config.resolution.value);
+                return this._getEpisodeMyCloud(data, request.url, this.config.resolution.value);
             case data.includes('mp4upload'):
                 return this._getEpisodeMp4upload(data, this.config.resolution.value);
             case data.includes('streamango'):
                 return this._getEpisodeStreamango(data, this.config.resolution.value);
+            case data.includes('streamtape'):
+                return this._getEpisodeStreamtape(data, this.config.resolution.value);
             default:
                 throw new Error('Support for video stream from mirror "' + data + '" not implemented!');
         }
@@ -250,42 +261,28 @@ export default class NineAnime extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getEpisodeMyCloud( link/*, resolution*/ ) {
-        let request = new Request( link, this.requestOptions );
-        request.headers.set( 'x-referer', this.url );
-        return this.fetchRegex(request, /mediaSources\s*=\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/g)
-            .then( data => {
-                let playlist = data.pop();
-                let request = new Request( playlist, this.requestOptions );
-                request.headers.set( 'x-referer', link );
-                return fetch( request )
-                    .then( response => response.text() )
-                    .then( streamlist => {
-                        let stream = streamlist.match( /^.*?\d+\.m3u8$/gm )[0].trim();
-                        // stream => hls/480/480.m3u8 || hls/720/720.m3u8 || ...
-                        stream = playlist.replace( /[^/]+$/, stream );
-                        return Promise.resolve( { hash: 'id,language,resolution', mirrors: [ stream ], subtitles: [] } );
-                    } );
-            } );
+    async _getEpisodeMyCloud(link, referer, resolution) {
+        let mycloud = new MyCloud(link, referer, this.fetchRegex.bind(this));
+        let playlist = await mycloud.getPlaylist(parseInt(resolution));
+        return {
+            hash: 'id,language,resolution',
+            mirrors: [ playlist ],
+            subtitles: []
+        };
     }
 
-    /**
-     *
-     */
-    _getEpisodeMp4upload( link/*, resolution*/ ) {
+    async _getEpisodeMp4upload(link/*, resolution*/) {
         let script = `
-                new Promise( resolve => {
-                    resolve( document.querySelector('div#vid video#vid_html5_api').src );
-                } );
-            `;
-        let request = new Request( link, this.requestOptions );
-        return Engine.Request.fetchUI( request, script )
-            .then( stream => {
-                return Promise.resolve( { video: stream, subtitles: [] } );
-            } );
+            new Promise(resolve => {
+                resolve(document.querySelector('div.plyr video source').src);
+            });
+        `;
+        let request = new Request(link, this.requestOptions);
+        let stream = await Engine.Request.fetchUI(request, script);
+        return {
+            video: stream,
+            subtitles: []
+        };
     }
 
     /**
@@ -302,5 +299,14 @@ export default class NineAnime extends Connector {
             .then( stream => {
                 return Promise.resolve( { video: stream, subtitles: [] } );
             } );
+    }
+
+    async _getEpisodeStreamtape(link/*, resolution*/) {
+        let streamtape = new Streamtape(link, this.fetchDOM.bind(this));
+        let stream = await streamtape.getStream();
+        return {
+            video: stream,
+            subtitles: []
+        };
     }
 }

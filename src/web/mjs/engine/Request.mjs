@@ -427,6 +427,18 @@ export default class Request {
         }
         delete details.requestHeaders['x-cookie'];
 
+        //
+        if(details.requestHeaders['x-sec-fetch-dest']) {
+            details.requestHeaders['Sec-Fetch-Dest'] = details.requestHeaders['x-sec-fetch-dest'];
+        }
+        delete details.requestHeaders['x-sec-fetch-dest'];
+
+        //
+        if(details.requestHeaders['x-sec-fetch-mode']) {
+            details.requestHeaders['Sec-Fetch-Mode'] = details.requestHeaders['x-sec-fetch-mode'];
+        }
+        delete details.requestHeaders['x-sec-fetch-mode'];
+
         return details;
     }
 

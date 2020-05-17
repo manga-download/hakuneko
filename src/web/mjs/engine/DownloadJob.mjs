@@ -294,7 +294,7 @@ export default class DownloadJob extends EventTarget {
         let basename = Date.now(); // episode.video.split( '/' ).pop();
         this.requestOptions['method'] = 'HEAD';
         let request = new Request( episode.video, this.requestOptions );
-        request.headers.set( 'x-referer', episode.video );
+        request.headers.set( 'x-referer', episode.referer || episode.video );
         this.requestOptions['method'] = 'GET';
         fetch( request )
             .then( response => {
@@ -323,7 +323,7 @@ export default class DownloadJob extends EventTarget {
                         .then( () => {
                             let request = new Request( episode.video, this.requestOptions );
                             request.headers.set( 'Range', 'bytes=' + chunks[index] );
-                            request.headers.set( 'x-referer', episode.video );
+                            request.headers.set( 'x-referer', episode.referer || episode.video );
                             return fetch( request );
                         } )
                         .then( response => {
