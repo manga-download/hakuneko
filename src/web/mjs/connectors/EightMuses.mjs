@@ -8,7 +8,7 @@ export default class EightMuses extends Connector {
         super.id = '8muses';
         super.label = '8 MUSES';
         this.tags = [ 'hentai', 'porn', 'english' ];
-        this.url = 'https://www.8muses.com';
+        this.url = 'https://comics.8muses.com';
     }
 
     async _getMangaFromURI(uri) {
