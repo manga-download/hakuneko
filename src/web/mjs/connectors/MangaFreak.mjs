@@ -1,99 +1,82 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MangaFreak extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangafreak';
         super.label = 'MangaFreak';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://w10.mangafreak.net';
+        this.url = 'https://www.mangafreak.net';
+
+        this._initializeConnector();
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this.fetchDOM( request, 'div.list_main div.list_item_info h3 a', 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _initializeConnector() {
+        /*
+         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+         * => append random search parameter to avoid caching
+         */
+        let uri = new URL(this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri, this.requestOptions);
+        await Engine.Request.fetchUI(request, '');
+        let response = await fetch(request);
+        this.url = new URL(response.url).origin;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/Mangalist/All', this.requestOptions );
-        this.fetchDOM( request, 'div.list_main div.pagination a.last_p' )
-            .then( data => {
-                let pageCount = parseInt( data[0].href.match( /\d+$/ )[0].trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + '/' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.manga_series_info div.manga_series_data h5');
+        let id = uri.pathname;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'div.manga_series_list table tbody tr td:first-of-type a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        let uri = new URL('/Mangalist/All', this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.list_main div.pagination a.last_p');
+        let pageCount = parseInt(data[0].href.match(/\d+$/)[0]);
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'div.read_image div.mySlides source' )
-            .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let uri = new URL('/Mangalist/All/' + page, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.list_main div.list_item_info h3 a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
+    }
+
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.manga_series_list table tbody tr td:first-of-type a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.replace(manga.title, '').trim(),
+                language: ''
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.read_image div.mySlides source');
+        return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
