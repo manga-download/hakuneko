@@ -8,8 +8,9 @@ export default class MangaHay extends WordPressZbulu {
         super.label = 'Bulu Manga';
         this.tags = [ 'manga', 'webtoon', 'vietnamese' ];
         this.url = 'https://mangahay.net';
+
         this.path = '/danh-sach-truyen';
-        this.pathMangas = this.path + '/page/%PAGE%';
+        this.pathMangas = '/page/%PAGE%';
         this.pathChapters = '/page/%PAGE%';
     }
 }

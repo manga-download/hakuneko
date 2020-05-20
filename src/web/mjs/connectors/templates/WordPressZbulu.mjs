@@ -10,7 +10,7 @@ export default class WordPressZbulu extends Connector {
         this.tags = [];
         this.url = undefined;
         this.path = '/manga-list/';
-        this.pathMangas = this.path + 'page-%PAGE%/';
+        this.pathMangas = '/page-%PAGE%/';
         this.pathChapters = '/page-%PAGE%/';
 
         this.queryManga = 'div.comic-info div.info h1.name';
@@ -33,7 +33,7 @@ export default class WordPressZbulu extends Connector {
         let mangaList = [];
         let request = new Request(this.url + this.path, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        let pageCount = parseInt(data[0].href.match(/(\d+)$/)[1]);
+        let pageCount = parseInt(data[0].href.match(/(\d+)\/?$/)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -42,7 +42,9 @@ export default class WordPressZbulu extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(this.url + this.pathMangas.replace('%PAGE%', page), this.requestOptions);
+        let uri = new URL(this.path + this.pathMangas.replace('%PAGE%', page), this.url);
+        uri.pathname = uri.pathname.replace(/\/+/g, '/');
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
@@ -65,7 +67,9 @@ export default class WordPressZbulu extends Connector {
     }
 
     async _getChaptersFromPage(manga, page) {
-        let request = new Request(this.url + manga.id + this.pathChapters.replace('%PAGE%', page), this.requestOptions);
+        let uri = new URL(manga.id + this.pathChapters.replace('%PAGE%', page), this.url);
+        uri.pathname = uri.pathname.replace(/\/+/g, '/');
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             return {
@@ -77,7 +81,8 @@ export default class WordPressZbulu extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.getAbsolutePath(element, request.url));
     }

@@ -20,7 +20,8 @@ export default class MangaCross extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/api/comics.json', this.url), this.requestOptions);
+        let uri = new URL('/api/comics.json', this.url);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         return data.comics.map(comic => {
             return {
@@ -31,7 +32,8 @@ export default class MangaCross extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL('/api/comics/' + manga.id + '.json', this.url), this.requestOptions);
+        let uri = new URL('/api/comics/' + manga.id + '.json', this.url);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         // Is there a way to access the "private" chapters ? Logging in didn't change anything...
         return data.comic.episodes.filter(episode => episode.status == 'public').map(episode => {
@@ -44,8 +46,9 @@ export default class MangaCross extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id + '/viewer.json', this.url), this.requestOptions);
+        let uri = new URL(chapter.id + '/viewer.json', this.url);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.episode_pages.map(page => this.getAbsolutePath(page.image.pc_url, this.url));
+        return data.episode_pages.map(page => this.createConnectorURI(this.getAbsolutePath(page.image.pc_url, this.url)));
     }
 }
