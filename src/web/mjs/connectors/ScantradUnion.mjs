@@ -8,6 +8,7 @@ export default class ScantradUnion extends Connector {
         super.label = 'Scantrad Union';
         this.tags = [ 'manga', 'webtoon', 'french' ];
         this.url = 'https://scantrad-union.com';
+        this.language = 'fr';
     }
 
     async _getMangas() {
@@ -44,11 +45,11 @@ export default class ScantradUnion extends Connector {
         return data.map(element => {
             let number = element.querySelector('span.chapter-number').innerText.trim();
             let title = element.querySelector('span.chapter-name').innerText.trim();
+            title.length ? title = ' - ' + title : title;
             element = element.querySelector('div.buttons a.btnlel:not([onclick])');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: number + ' - ' + title,
-                language: ''
+                title: number + title,
             };
         });
     }
@@ -74,10 +75,6 @@ export default class ScantradUnion extends Connector {
     }
 
     _handleConnectorURI( payload ) {
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
         this.requestOptions.headers.set('x-referer', payload.referer);
         let promise = super._handleConnectorURI(payload.url);
         this.requestOptions.headers.delete('x-referer');
