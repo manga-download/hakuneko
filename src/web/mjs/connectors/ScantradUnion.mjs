@@ -11,14 +11,31 @@ export default class ScantradUnion extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(this.url + '/projets', this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.page-single div.accordionItem div.accordionItemContent > a');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.querySelector('h2.index-top3-title').innerText.trim()
-            };
-        });
+        let request = new Request(this.url + '/manga/', this.requestOptions);
+        let pages = await this.fetchDOM(request, 'main div.pagination li:nth-last-child(2) > a');
+        pages = pages[0].pathname.match(/[\w\W]+\/(\d+)\/$/)[1];
+
+        let data;
+        let mangas = [];
+        for (let page = 0; page <= pages; page++) {
+            request = new Request(this.url + '/manga/page/' + page + '/');
+            data = await this.fetchDOM(request, 'main article div.entry-post > h2 > a');
+            mangas.push( ...data.map(element => {
+                let title;
+                if (element.text.trim().startsWith('[Partenaire] ')) {
+                    title = element.text.trim().slice(13);
+                } else {
+                    title = element.text.trim();
+                }
+
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
+                    title: title
+                };
+            }));
+        }
+
+        return mangas;
     }
 
     async _getChapters(manga) {
