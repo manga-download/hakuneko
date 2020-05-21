@@ -23,16 +23,9 @@ export default class ScantradUnion extends Connector {
             request = new Request(this.url + '/manga/page/' + page + '/');
             data = await this.fetchDOM(request, 'main article div.entry-post > h2 > a');
             mangas.push( ...data.map(element => {
-                let title;
-                if (element.text.trim().startsWith('[Partenaire] ')) {
-                    title = element.text.trim().slice(13);
-                } else {
-                    title = element.text.trim();
-                }
-
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
-                    title: title
+                    title: this.cleanTitle(element.text)
                 };
             }));
         }
@@ -78,13 +71,14 @@ export default class ScantradUnion extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(new URL(uri.href), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.projet-description > h2');
+        return new Manga(this, uri.pathname, this.cleanTitle(data[0].textContent));
+    }
 
-        if (data[0].textContent.trim().startsWith('[Partenaire] ')) {
-            data[0].textContent = data[0].textContent.trim().slice(13);
+    cleanTitle(title) {
+        if (title.trim().startsWith('[Partenaire] ')) {
+            return title.trim().slice(13);
         } else {
-            data[0].textContent = data[0].textContent.trim();
+            return title.trim();
         }
-
-        return new Manga(this, uri.pathname, data[0].textContent);
     }
 }
