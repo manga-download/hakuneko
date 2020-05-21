@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ScantradUnion extends Connector {
 
@@ -74,10 +75,16 @@ export default class ScantradUnion extends Connector {
         }));
     }
 
-    _handleConnectorURI( payload ) {
-        this.requestOptions.headers.set('x-referer', payload.referer);
-        let promise = super._handleConnectorURI(payload.url);
-        this.requestOptions.headers.delete('x-referer');
-        return promise;
+    async _getMangaFromURI(uri) {
+        let request = new Request(new URL(uri.href), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.projet-description > h2');
+
+        if (data[0].textContent.trim().startsWith('[Partenaire] ')) {
+            data[0].textContent = data[0].textContent.trim().slice(13);
+        } else {
+            data[0].textContent = data[0].textContent.trim();
+        }
+
+        return new Manga(this, uri.pathname, data[0].textContent);
     }
 }
