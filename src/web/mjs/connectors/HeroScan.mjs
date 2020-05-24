@@ -6,7 +6,7 @@ export default class HeroScan extends FlatManga {
         super();
         super.id = 'heroscan';
         super.label = 'HeroScan';
-        this.tags = [ 'webstoon', 'english' ];
+        this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://heroscan.com';
         this.requestOptions.headers.set( 'x-referer', this.url );
 
