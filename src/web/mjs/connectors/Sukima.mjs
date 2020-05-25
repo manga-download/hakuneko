@@ -59,4 +59,28 @@ export default class Sukima extends Connector {
         return mangas;
     }
 
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), {
+            method: 'POST',
+            body: '{}',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+            }
+        });
+
+        let chapters = [];
+        let books = await this.fetchJSON(request);
+        for (const book of books.contents) {
+            for (const chapter of book.stories) {
+                chapters.push(
+                    {
+                        id: '/bv/t/' + chapter.title_code + '/v/' + chapter.volume + '/s/' + chapter.story + '/p/0',
+                        title: chapter.volume.toString().padStart(3, '0') + '-' + chapter.story.toString().padStart(3, '0') + ' - ' + chapter.info.text.trim()
+                    }
+                );
+            }
+        }
+        return chapters;
+    }
+
 }
