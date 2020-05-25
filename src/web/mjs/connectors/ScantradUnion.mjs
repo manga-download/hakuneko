@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ScantradUnion extends Connector {
 
@@ -8,17 +9,28 @@ export default class ScantradUnion extends Connector {
         super.label = 'Scantrad Union';
         this.tags = [ 'manga', 'webtoon', 'french' ];
         this.url = 'https://scantrad-union.com';
+        this.language = 'fr';
     }
 
     async _getMangas() {
-        let request = new Request(this.url + '/projets', this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.page-single div.accordionItem div.accordionItemContent > a');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.querySelector('h2.index-top3-title').innerText.trim()
-            };
-        });
+        let request = new Request(this.url + '/manga/', this.requestOptions);
+        let pages = await this.fetchDOM(request, 'main div.pagination li:nth-last-child(2) > a');
+        pages = Number(pages[0].pathname.match(/[\w\W]+\/(\d+)\/$/)[1]);
+
+        let data;
+        let mangas = [];
+        for (let page = 0; page <= pages; page++) {
+            request = new Request(this.url + '/manga/page/' + page + '/');
+            data = await this.fetchDOM(request, 'main article div.entry-post > h2 > a');
+            mangas.push( ...data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
+                    title: element.text.trim().replace(/^(\[Partenaire\])/,"")
+                };
+            }));
+        }
+
+        return mangas;
     }
 
     async _getChapters(manga) {
@@ -27,11 +39,11 @@ export default class ScantradUnion extends Connector {
         return data.map(element => {
             let number = element.querySelector('span.chapter-number').innerText.trim();
             let title = element.querySelector('span.chapter-name').innerText.trim();
+            title = title.length ? ' - ' + title : title;
             element = element.querySelector('div.buttons a.btnlel:not([onclick])');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: number + ' - ' + title,
-                language: ''
+                title: number + title,
             };
         });
     }
@@ -56,14 +68,9 @@ export default class ScantradUnion extends Connector {
         }));
     }
 
-    _handleConnectorURI( payload ) {
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        this.requestOptions.headers.set('x-referer', payload.referer);
-        let promise = super._handleConnectorURI(payload.url);
-        this.requestOptions.headers.delete('x-referer');
-        return promise;
+    async _getMangaFromURI(uri) {
+        let request = new Request(new URL(uri.href), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.projet-description > h2');
+        return new Manga(this, uri.pathname, data[0].textContent.trim().replace(/^(\[Partenaire\])/,""));
     }
 }
