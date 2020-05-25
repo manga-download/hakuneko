@@ -60,6 +60,11 @@
                 display: flex;
                 margin: 0.5em;
             }
+            .contact {
+                display: flex;
+                margin: 0.5em;
+                
+            }
             .logo {
                 flex: 0;
             }
@@ -142,6 +147,13 @@
                 <div class="logo">
                     <img src="./img/logo_m.png"/>
                 </div>
+                <div class="contact">
+                    <div >
+                        <img src="http://icons.iconarchive.com/icons/papirus-team/papirus-apps/48/discord-icon.png"/>
+                       
+                            <a mat-raised-button href="https://discord.gg/A5d3NDf" color="primary">Contact</a>
+                          
+                    </div>
                 <div class="info">
                     <div class="credits">
                         <div>
@@ -270,7 +282,7 @@
              * otherwise the window cannot be closed anymore (electron does not show the confirmation).
              */
             openWindow(event) {
-                let popup = window.open(event.target.dataset.href, '', 'frame=true,nodeIntegration=no');
+                let popup = window.open(event.target.dataset.href, '', 'nodeIntegration=no');
                 // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
                 let watchdog = setInterval(() => {
                     if(popup.closed) {
