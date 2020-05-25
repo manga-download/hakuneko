@@ -15,7 +15,7 @@ export default class ScantradUnion extends Connector {
     async _getMangas() {
         let request = new Request(this.url + '/manga/', this.requestOptions);
         let pages = await this.fetchDOM(request, 'main div.pagination li:nth-last-child(2) > a');
-        pages = pages[0].pathname.match(/[\w\W]+\/(\d+)\/$/)[1];
+        pages = Number(pages[0].pathname.match(/[\w\W]+\/(\d+)\/$/)[1]);
 
         let data;
         let mangas = [];
@@ -25,7 +25,7 @@ export default class ScantradUnion extends Connector {
             mangas.push( ...data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
-                    title: this.cleanTitle(element.text)
+                    title: element.text.trim().replace(/^(\[Partenaire\])/,"")
                 };
             }));
         }
@@ -39,7 +39,7 @@ export default class ScantradUnion extends Connector {
         return data.map(element => {
             let number = element.querySelector('span.chapter-number').innerText.trim();
             let title = element.querySelector('span.chapter-name').innerText.trim();
-            title.length ? title = ' - ' + title : title;
+            title = title.length ? ' - ' + title : title;
             element = element.querySelector('div.buttons a.btnlel:not([onclick])');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
@@ -71,14 +71,6 @@ export default class ScantradUnion extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(new URL(uri.href), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.projet-description > h2');
-        return new Manga(this, uri.pathname, this.cleanTitle(data[0].textContent));
-    }
-
-    cleanTitle(title) {
-        if (title.trim().startsWith('[Partenaire] ')) {
-            return title.trim().slice(13);
-        } else {
-            return title.trim();
-        }
+        return new Manga(this, uri.pathname, data[0].textContent.trim().replace(/^(\[Partenaire\])/,""));
     }
 }
