@@ -56,7 +56,7 @@ export default class ShueishaMangaPlus extends Publus {
     async _getPages(chapter) {
         let uri = new URL('/api/manga_viewer', this.apiURL);
         uri.searchParams.set('chapter_id', chapter.id);
-        uri.searchParams.set('img_quality', 'high');
+        uri.searchParams.set('img_quality', 'super_high');
         uri.searchParams.set('split', 'yes');
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchPROTO(request, this.protoTypes, this.rootType);
