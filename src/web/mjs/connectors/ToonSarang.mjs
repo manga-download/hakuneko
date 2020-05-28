@@ -15,17 +15,6 @@ export default class ToonSarang extends GnuBoard5BootstrapBasic2 {
                 resolve([...document.querySelectorAll('div#bo_v_con img')].map(img => img.src));
             });
         `;
-
-        this._initializeConnector();
-    }
-
-    async _initializeConnector() {
-        // TODO: get URL from twitter?
-        let uri = new URL(this.url);
-        uri.searchParams.set('ts', Date.now());
-        uri.searchParams.set('rd', Math.random());
-        let request = new Request(uri.href, this.requestOptions);
-        return Engine.Request.fetchUI(request, '');
     }
 
     async _getChapters(manga) {
