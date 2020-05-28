@@ -62,10 +62,7 @@ export default class ScantradUnion extends Connector {
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await Engine.Request.fetchUI(request, script);
-        return data.map(link => this.createConnectorURI({
-            url: encodeURI(link),
-            referer: request.url
-        }));
+        return data;
     }
 
     async _getMangaFromURI(uri) {
