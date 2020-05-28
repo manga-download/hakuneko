@@ -12,7 +12,7 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
 
         this.path = [ '/웹툰/연재?fil=제목', '/웹툰/완결?fil=제목' ];
         this.queryManga = 'meta[property="og:title"]';
-        this.queryMangas = 'div#wt_list .section-item div.section-item-title a#title';
+        this.queryMangas = 'div#wt_list .section-item div.section-item-title > a';
         this.queryChapters = 'div#bo_list table.web_list tbody tr td.content__title';
         this.scriptPages = `
             new Promise(resolve => {
@@ -32,9 +32,9 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
     async _getMangasFromPage(page) {
         let request = new Request(new URL(page, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
-        return data.map( element => {
+        return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
             };
         });
@@ -54,7 +54,7 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.dataset.role, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element.dataset.role, this.url),
                 title: element.textContent.replace(manga.title, '').trim(),
                 language: ''
             };
