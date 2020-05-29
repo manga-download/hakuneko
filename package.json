@@ -30,7 +30,7 @@
   "scripts": {
     "postinstall": "cd src/app && npm install",
     "start": "npm run start:dev",
-    "start:dev": "electron . --update-url=DISABLED --cache-directory=./src/web",
+    "start:dev": "electron . --update-url=DISABLED --cache-directory=./src/web --disable-http-cache",
     "start:build": "npm run build:web && electron . --update-url=DISABLED --cache-directory=./build/latest",
     "lint": "npm run lint:app && npm run lint:web",
     "lint:app": "eslint ./src/app --ignore-path .gitignore",
