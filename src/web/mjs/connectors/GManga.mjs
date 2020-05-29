@@ -100,7 +100,7 @@ export default class GManga extends Connector {
          */
         let uri = new URL(payload, this.url);
         let lease = (parseInt(Date.now() / 1000) + 120).toString(36);
-        uri.searchParams.set('ak', lease);
+        uri.searchParams.set('ak2', lease);
         let data = await super._handleConnectorURI(uri.href);
         if(data.mimeType === 'text/html') {
             return super._handleConnectorURI(uri.href.replace('/hq', '/mq'));
