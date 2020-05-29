@@ -166,9 +166,9 @@ export default class Sukima extends Connector {
 
     throttle_download(ms) {
         return new Promise((resolve) => {
-          setTimeout(resolve, ms);
+            setTimeout(resolve, ms);
         });
-      }
+    }
 
     async _getMangaFromURI(uri) {
         let title_code = uri.href.split('/');
@@ -177,7 +177,7 @@ export default class Sukima extends Connector {
         }
         title_code = title_code.slice(-1);
         let id = '/api/book/v1/title/'+title_code+'/';
-        
+
         let request = new Request(new URL(id, this.url), {
             method: 'POST',
             body: '{}',
