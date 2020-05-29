@@ -159,6 +159,9 @@ export default class Lezhin extends Connector {
                             if(chapter.freedAt && chapter.freedAt < Date.now()) {
                                 return true;
                             }
+                            if(chapter.prefree && chapter.prefree.closeTimer && chapter.prefree.closeTimer.expiredAt > Date.now()) {
+                                return true;
+                            }
                             return false;
                         })
                         .map(chapter => {
