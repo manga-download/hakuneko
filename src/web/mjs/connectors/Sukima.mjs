@@ -11,6 +11,7 @@ export default class Sukima extends Connector {
         this.url = 'https://www.sukima.me';
         this.language = 'japanese';
         this.requestOptions.headers.set( 'x-referer', this.url );
+        this.lock = false;
     }
 
     async _getMangas() {
@@ -83,4 +84,91 @@ export default class Sukima extends Connector {
         return chapters;
     }
 
+    async _getPages(manga) {
+        let script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    let shuffle_data = [];
+                    for (page = 0; page < PAGES_INFO.length; page++) {
+                        shuffle_data.push(
+                            {
+                                id: PAGES_INFO[page].page_url,
+                                blocklen: BLOCKLEN,
+                                shuffle_map: JSON.parse(PAGES_INFO[page].shuffle_map)
+                            }
+                        )
+                    }
+                    resolve(shuffle_data);
+                }, 2500);
+            });
+        `;
+        let request = new Request(new URL(manga.id, this.url));
+        let data = await Engine.Request.fetchUI(request, script);
+
+        return data.map(page => {
+            return this.createConnectorURI(
+                {
+                    id: page.id,
+                    blocklen: page.blocklen,
+                    shuffle_map: page.shuffle_map,
+                }
+            );
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        while (this.lock) {
+            await this.throttle_download( Math.floor(Math.random() * (2000 - 1000)) + 1000);
+        }
+        this.lock = true;
+
+        let request = new Request(new URL(payload.id), this.requestOptions);
+        let response = await fetch(request);
+        let blob = await response.blob();
+        let bitmap = await createImageBitmap(blob);
+
+        let canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d');
+
+        let xSplitCount = Math.floor(bitmap.width / payload.blocklen);
+        let ySplitCount = Math.floor(bitmap.height / payload.blocklen);
+        let count = 0;
+        ctx.drawImage(bitmap, 0, ySplitCount * payload.blocklen + 1, bitmap.width, bitmap.height - ySplitCount * payload.blocklen, 0, ySplitCount * payload.blocklen, bitmap.width, bitmap.height - ySplitCount * payload.blocklen);
+
+        for (let i = 0; i < xSplitCount; i++) {
+            for (let j = 0; j < ySplitCount; j++) {
+                let _x = payload.shuffle_map[count][0];
+                let _y = payload.shuffle_map[count][1];
+                let w = payload.blocklen;
+                let h = payload.blocklen;
+                let x = i * payload.blocklen;
+                let y = j * payload.blocklen;
+                let _w = payload.blocklen;
+                let _h = payload.blocklen;
+                ctx.drawImage(bitmap, x, y, w, h, _x, _y, _w, _h);
+                count += 1;
+            }
+        }
+
+        let data = await this._canvasToBlob(canvas);
+
+        this.lock = false;
+        return this._blobToBuffer(data);
+    }
+
+    async _canvasToBlob(canvas) {
+        return new Promise(resolve => {
+            canvas.toBlob(data => {
+                resolve(data);
+            }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value)/100);
+        });
+    }
+
+    throttle_download(ms) {
+        return new Promise((resolve) => {
+          setTimeout(resolve, ms);
+        });
+      }
 }
