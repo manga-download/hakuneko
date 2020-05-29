@@ -8,7 +8,7 @@ export default class HanaScan extends FlatManga {
         super.label = 'HanaScan';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://hanascan.com';
-        this.requestOptions.headers.set( 'x-referer', this.url );
+        this.requestOptions.headers.set('x-referer', this.url + '/read-');
 
         this.queryChapters = 'div#tab-chapper div#list-chapters span.title a.chapter';
     }
