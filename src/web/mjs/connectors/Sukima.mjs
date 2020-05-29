@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-// import Manga from '../engine/Manga.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class Sukima extends Connector {
 
@@ -28,7 +28,6 @@ export default class Sukima extends Connector {
         let pages;
         let mangas = [];
         for (const category of categorys.rows) {
-            console.log('Process category:', category.more_btn.text.replace('無料の','').replace('ー漫画をもっと見る',''));
             if (category.more_btn.link.startsWith('/book/search/')) {
                 uri = new URL(category.more_btn.link, this.url);
                 pages = 1;
@@ -43,7 +42,6 @@ export default class Sukima extends Connector {
 
                     let pageContent = await this.fetchJSON(request);
                     pages = pageContent.max_page;
-                    console.log('Page', page+'/'+pages);
 
                     for (const manga of pageContent.items) {
                         mangas.push(
@@ -171,4 +169,23 @@ export default class Sukima extends Connector {
           setTimeout(resolve, ms);
         });
       }
+
+    async _getMangaFromURI(uri) {
+        let title_code = uri.href.split('/');
+        while( title_code[title_code.length-1] == '') {
+            title_code.pop();
+        }
+        title_code = title_code.slice(-1);
+        let id = '/api/book/v1/title/'+title_code+'/';
+        
+        let request = new Request(new URL(id, this.url), {
+            method: 'POST',
+            body: '{}',
+            headers: {
+                'Content-Type': 'application/json;charset=utf-8',
+            }
+        });
+        let data = await this.fetchJSON(request);
+        return new Manga(this, this.getRootRelativeOrAbsoluteLink(id, this.url), data.title);
+    }
 }
