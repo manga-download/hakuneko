@@ -34,8 +34,16 @@ export default class MangaCruzers extends Connector {
         if(data.length === 0) {
             data.push(uri.href);
         }
-        // TODO: prevent duplicates ...
-        // TODO: explode when ends with e.g. 'season-3'
+        data = [...new Set(data)].reduce((accumulator, page) => {
+            let seasons = page.match(/season-(\d+)$/);
+            if(seasons) {
+                let count = parseInt(seasons[1]);
+                seasons = [...new Array(count).keys()].map(p => page.replace(/season-(\d+)$/ ,`season-${p+1}`));
+                return [ ...accumulator, ...seasons.reverse() ];
+            } else {
+                return [ ...accumulator, page ];
+            }
+        }, []);
         for(let page of data) {
             let chapters = await this._getChaptersFromPage(manga, page);
             chapterList.push(...chapters);
@@ -66,7 +74,7 @@ export default class MangaCruzers extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.js-pages-container > div > source, source.pages__img');
+        let data = await this.fetchDOM(request, 'source.js-page, source.pages__img');
         return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
