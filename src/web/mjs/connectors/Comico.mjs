@@ -1,28 +1,79 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class Comico extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'comico';
-        super.label = 'Comico';
-        this.tags = [];
-        this.url = 'http://www.comico.jp';
+        super.label = 'Comico (コミコ)';
+        this.tags = [ 'webtoon', 'japanese' ];
+        this.url = 'https://www.comico.jp';
     }
 
-    _getMangaList( callback ) {
-        callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+    async _fetchPOST(path, parameters) {
+        let uri = new URL(path, this.url);
+        let request = new Request(uri, {
+            method: 'POST',
+            body: new URLSearchParams(parameters).toString(),
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded'
+            }
+        });
+        let response = await fetch(request);
+        return response.json();
     }
-    _getChapterList( manga, callback ) {
-        callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'h1.article-hero09__ttl');
+        let id = uri.searchParams.get('titleNo');
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
-    _getPageList( manga, chapter, callback ) {
-        callback( new Error( 'Please report this broken website on HakuNeko\'s GitHub project page.' ), undefined );
+
+    async _getMangas() {
+        let mangaList = [];
+        const categories = [ 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'finish', null /* magic key for challenge endpoint */ ];
+        for(let category of categories) {
+            for(let page = 1, run = true; run; page++) {
+                let mangas = await this._getMangasFromPage(category, page);
+                mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            }
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(day, page) {
+        let endpoint = day ? '/official' : '/challenge';
+        let data = await this._fetchPOST(endpoint + '/updateList.nhn', { day, page });
+        return !data.result ? [] : data.result.list.map(manga => {
+            return {
+                id: new URL(manga.title_url, this.url).searchParams.get('titleNo'),
+                title: manga.title_name
+            };
+        });
+    }
+
+    async _getChapters(manga) {
+        let data = await this._fetchPOST('/api/getArticleList.nhn', { titleNo: manga.id });
+        return data.result.list
+            .filter(chapter => chapter.isPurchased || chapter.freeFlg === 'Y')
+            .map(chapter => {
+                return {
+                    id: chapter.articleNo,
+                    title: chapter.subtitle,
+                    language: ''
+                };
+            });
+    }
+
+    async _getPages(chapter) {
+        let uri = new URL('/detail.nhn', this.url);
+        uri.searchParams.set('titleNo', chapter.manga.id);
+        uri.searchParams.set('articleNo', chapter.id);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.comic-image source.comic-image__image');
+        return data.map(image => this.getAbsolutePath(image, request.url));
     }
 }
