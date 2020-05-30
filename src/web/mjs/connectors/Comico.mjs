@@ -9,6 +9,11 @@ export default class Comico extends Connector {
         super.label = 'Comico (コミコ)';
         this.tags = [ 'webtoon', 'japanese' ];
         this.url = 'https://www.comico.jp';
+
+        this.categories = [
+            'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'finish',
+            null // magic key for challenge endpoint
+        ];
     }
 
     _getTitleNumber(href) {
@@ -39,8 +44,7 @@ export default class Comico extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        const categories = [ 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'finish', null /* magic key for challenge endpoint */ ];
-        for(let category of categories) {
+        for(let category of this.categories) {
             for(let page = 1, run = true; run; page++) {
                 let mangas = await this._getMangasFromPage(category, page);
                 mangas.length > 0 ? mangaList.push(...mangas) : run = false;
