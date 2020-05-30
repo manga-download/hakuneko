@@ -11,6 +11,11 @@ export default class Comico extends Connector {
         this.url = 'https://www.comico.jp';
     }
 
+    _getTitleNumber(href) {
+        let uri = new URL(href, this.url);
+        return uri.searchParams.get('titleNo');
+    }
+
     async _fetchPOST(path, parameters) {
         let uri = new URL(path, this.url);
         let request = new Request(uri, {
@@ -27,7 +32,7 @@ export default class Comico extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'h1.article-hero09__ttl');
-        let id = uri.searchParams.get('titleNo');
+        let id = this._getTitleNumber(uri.href);
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -49,7 +54,7 @@ export default class Comico extends Connector {
         let data = await this._fetchPOST(endpoint + '/updateList.nhn', { day, page });
         return !data.result ? [] : data.result.list.map(manga => {
             return {
-                id: new URL(manga.title_url, this.url).searchParams.get('titleNo'),
+                id: this._getTitleNumber(manga.title_url),
                 title: manga.title_name
             };
         });
