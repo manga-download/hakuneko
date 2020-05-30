@@ -9,7 +9,6 @@ export default class Sukima extends Connector {
         super.label = 'Sukima';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.sukima.me';
-        this.language = 'japanese';
         this.requestOptions.headers.set( 'x-referer', this.url );
         this.lock = false;
     }
@@ -34,7 +33,14 @@ export default class Sukima extends Connector {
                 for (let page = 1; page <= pages; page++) {
                     request = new Request(new URL('/api/v1/search/', this.url), {
                         method: 'POST',
-                        body: '{"free":["1","2"],"page":'+page+',"sort_by":"0","tag":["'+uri.searchParams.get('tag')+'"]}',
+                        body: JSON.stringify(
+                            {
+                                'free': [1, 2],
+                                'page': page,
+                                'sort_by': 0,
+                                'tag': [uri.searchParams.get('tag')]
+                            }
+                        ),
                         headers: {
                             'Content-Type': 'application/json;charset=utf-8',
                         }
@@ -46,7 +52,7 @@ export default class Sukima extends Connector {
                     for (const manga of pageContent.items) {
                         mangas.push(
                             {
-                                id: '/api/book/v1/title/'+manga.title_code+'/',
+                                id: manga.title_code,
                                 title: manga.title_name
                             }
                         );
@@ -59,7 +65,7 @@ export default class Sukima extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), {
+        let request = new Request(new URL('/api/book/v1/title/'+manga.id+'/', this.url), {
             method: 'POST',
             body: '{}',
             headers: {
@@ -87,7 +93,7 @@ export default class Sukima extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                     let shuffle_data = [];
-                    for (page = 0; page < PAGES_INFO.length; page++) {
+                    for (let page = 0; page < PAGES_INFO.length; page++) {
                         shuffle_data.push(
                             {
                                 id: PAGES_INFO[page].page_url,
@@ -103,20 +109,18 @@ export default class Sukima extends Connector {
         let request = new Request(new URL(manga.id, this.url));
         let data = await Engine.Request.fetchUI(request, script);
 
-        return data.map(page => {
-            return this.createConnectorURI(
-                {
-                    id: page.id,
-                    blocklen: page.blocklen,
-                    shuffle_map: page.shuffle_map,
-                }
-            );
-        });
+        return data.map(page => this.createConnectorURI(
+            {
+                id: page.id,
+                blocklen: page.blocklen,
+                shuffle_map: page.shuffle_map,
+            }
+        ));
     }
 
     async _handleConnectorURI(payload) {
         while (this.lock) {
-            await this.throttle_download( Math.floor(Math.random() * (2000 - 1000)) + 1000);
+            await this.wait(Math.floor(Math.random() * (2000 - 1000)) + 1000);
         }
         this.lock = true;
 
@@ -135,17 +139,13 @@ export default class Sukima extends Connector {
         let count = 0;
         ctx.drawImage(bitmap, 0, ySplitCount * payload.blocklen + 1, bitmap.width, bitmap.height - ySplitCount * payload.blocklen, 0, ySplitCount * payload.blocklen, bitmap.width, bitmap.height - ySplitCount * payload.blocklen);
 
-        for (let i = 0; i < xSplitCount; i++) {
-            for (let j = 0; j < ySplitCount; j++) {
-                let _x = payload.shuffle_map[count][0];
-                let _y = payload.shuffle_map[count][1];
-                let w = payload.blocklen;
-                let h = payload.blocklen;
-                let x = i * payload.blocklen;
-                let y = j * payload.blocklen;
-                let _w = payload.blocklen;
-                let _h = payload.blocklen;
-                ctx.drawImage(bitmap, x, y, w, h, _x, _y, _w, _h);
+        for (let col = 0; col < xSplitCount; col++) {
+            for (let row = 0; row < ySplitCount; row++) {
+                let dx = payload.shuffle_map[count][0];
+                let dy = payload.shuffle_map[count][1];
+                let sx = col * payload.blocklen;
+                let sy = row * payload.blocklen;
+                ctx.drawImage(bitmap, sx, sy, payload.blocklen, payload.blocklen, dx, dy, payload.blocklen, payload.blocklen);
                 count += 1;
             }
         }
@@ -164,21 +164,10 @@ export default class Sukima extends Connector {
         });
     }
 
-    throttle_download(ms) {
-        return new Promise((resolve) => {
-            setTimeout(resolve, ms);
-        });
-    }
-
     async _getMangaFromURI(uri) {
-        let title_code = uri.href.split('/');
-        while( title_code[title_code.length-1] == '') {
-            title_code.pop();
-        }
-        title_code = title_code.slice(-1);
-        let id = '/api/book/v1/title/'+title_code+'/';
+        let id = uri.pathname.match(/\/(\w+)\/?$/)[1];
 
-        let request = new Request(new URL(id, this.url), {
+        let request = new Request(new URL('/api/book/v1/title/'+id+'/', this.url), {
             method: 'POST',
             body: '{}',
             headers: {
@@ -186,6 +175,6 @@ export default class Sukima extends Connector {
             }
         });
         let data = await this.fetchJSON(request);
-        return new Manga(this, this.getRootRelativeOrAbsoluteLink(id, this.url), data.title);
+        return new Manga(this, id, data.title);
     }
 }
