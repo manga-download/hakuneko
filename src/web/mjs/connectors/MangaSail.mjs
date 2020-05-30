@@ -94,19 +94,14 @@ export default class MangaSail extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        this.fetchDOM( this.url + chapter.id + '?page=all', 'div#images a source' )
-            .then( data => {
-                let pageLinks = data.map( element => element.src );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let script = `
+            new Promise(resolve => resolve(Drupal.settings.showmanga.paths));
+        `;
+        let uri = new URL(chapter.id, this.url);
+        uri.searchParams.set('page', 'all');
+        let request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 
     /**
