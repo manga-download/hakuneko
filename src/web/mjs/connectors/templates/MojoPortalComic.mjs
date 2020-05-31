@@ -10,8 +10,23 @@ export default class MojoPortalComic extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
+    }
 
-        this.refererPatterns = [ 'forumnt.com' ];
+    _getImageURL(chapterURL, imageURL) {
+        /* Known Image Hosting Domains
+            forumnt.com
+            imageinstant.com
+            boxtruyen.net
+            netsnippet.com
+            mangasy.com
+            googleusercontent.com
+            blogspot.com
+            mangapark.net
+        */
+        if(imageURL.includes('mangapark.net')) {
+            return imageURL;
+        }
+        return this.createConnectorURI({ url: imageURL, referer: chapterURL });
     }
 
     async _getMangaFromURI(uri) {
@@ -62,7 +77,7 @@ export default class MojoPortalComic extends Connector {
         let data = await this.fetchDOM(request, 'div.reading div.page-chapter source');
         return data.map(element => {
             let url = this.getAbsolutePath(element.dataset.original || element, request.url); // element.dataset.cdn
-            return this.refererPatterns.some(pattern => url.includes(pattern)) ? this.createConnectorURI({ url: url, referer: request.url }) : url;
+            return this._getImageURL(request.url, url);
         });
     }
 

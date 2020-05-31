@@ -16,7 +16,7 @@ export default class ManhuaPlus extends MojoPortalComic {
         return data.map(element => {
             element = this.createDOM(element.innerText).querySelector('source');
             let url = this.getAbsolutePath(element.dataset.fullUrl || element.dataset.src || element, request.url);
-            return this.refererPatterns.some(pattern => url.includes(pattern)) ? this.createConnectorURI({ url: url, referer: request.url }) : url;
+            return this._getImageURL(request.url, url);
         });
     }
 }
