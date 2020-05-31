@@ -104,7 +104,6 @@ export default class Sukima extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        console.log(payload);
         let request = new Request(new URL(payload.id), this.requestOptions);
         request.headers.set('x-referer', this.getRootRelativeOrAbsoluteLink(payload.referer, this.url));
         let response = await fetch(request);
