@@ -1,6 +1,6 @@
-import TruyenChon from './TruyenChon.mjs';
+import MojoPortalComic from './templates/MojoPortalComic.mjs';
 
-export default class ManhuaPlus extends TruyenChon {
+export default class ManhuaPlus extends MojoPortalComic {
 
     constructor() {
         super();
@@ -15,8 +15,8 @@ export default class ManhuaPlus extends TruyenChon {
         let data = await this.fetchDOM(request, 'ul.blocks-gallery-grid li.blocks-gallery-item figure noscript');
         return data.map(element => {
             element = this.createDOM(element.innerText).querySelector('source');
-            let uri = this.getAbsolutePath(element.dataset.fullUrl || element.dataset.src || element, request.url);
-            return uri.includes('proxy.') ? this.createConnectorURI( { url: uri, referer: request.url } ) : uri;
+            let url = this.getAbsolutePath(element.dataset.fullUrl || element.dataset.src || element, request.url);
+            return this.refererPatterns.some(pattern => url.includes(pattern)) ? this.createConnectorURI({ url: url, referer: request.url }) : url;
         });
     }
 }
