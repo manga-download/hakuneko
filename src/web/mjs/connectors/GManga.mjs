@@ -99,8 +99,9 @@ export default class GManga extends Connector {
          * or when from browser for preview and selected chapter matches
          */
         let uri = new URL(payload, this.url);
+        // See: https://gmanga.me/assets/javascripts/main_v38.js
         let lease = (parseInt(Date.now() / 1000) + 120).toString(36);
-        uri.searchParams.set('ak2', lease);
+        uri.searchParams.set('ak3', lease);
         let data = await super._handleConnectorURI(uri.href);
         if(data.mimeType === 'text/html') {
             return super._handleConnectorURI(uri.href.replace('/hq', '/mq'));
