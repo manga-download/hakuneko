@@ -50,26 +50,26 @@ export default class Tapas extends Connector {
 
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'meta[name="twitter:app:url:iphone"]');
-        const series_id = data[0].content.match(/((?:\/series\/)\d+)/)[0];
+        const series_id = data[0].content.match(/\/series\/\d+/)[0];
 
         let has_next = true;
-        const time = Math.round(new Date().getTime());
+        const time = Date.now();
         let page = 1;
         while (has_next) {
             request = new Request(new URL(series_id+'/episodes?page='+page+'&sort=OLDEST&init_load=0&since='+time+'&large=true&last_access=0&', this.url), this.requestOptions);
             request.headers.set('x-referer', this.getRootRelativeOrAbsoluteLink(manga.id, this.url));
             let response = await this.fetchJSON(request, this.requestOptions);
             has_next = response.data.pagination.has_next;
-            chapterList.push(...await this._getChaptersFromPage(response.data.body));
+            chapterList.push(...await this._getChaptersFromHtml(response.data.body));
             page++;
         }
 
         return chapterList;
     }
 
-    async _getChaptersFromPage(payload) {
-        let data = this.createDOM(payload).querySelectorAll('li.episode-list__item  > a');
-        data = Array.prototype.slice.call(data);
+    async _getChaptersFromHtml(payload) {
+        let data = [...this.createDOM(payload).querySelectorAll('li.episode-list__item  > a')];
+
         return data
             .filter(element => !element.querySelector('i.sp-ico-episode-lock, i.sp-ico-schedule-white'))
             .map(element => {
