@@ -1,6 +1,6 @@
-import TruyenChon from './TruyenChon.mjs';
+import MojoPortalComic from './templates/MojoPortalComic.mjs';
 
-export default class NetTruyen extends TruyenChon {
+export default class NetTruyen extends MojoPortalComic {
 
     constructor() {
         super();
