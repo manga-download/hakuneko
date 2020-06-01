@@ -47,24 +47,34 @@ export default class Tapas extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
+
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.paging a.paging__button--num');
-        let pageCount = data.length === 0 ? 1 : parseInt(data.pop().href.match(/pageNumber=(\d+)/)[1]);
-        for(let page = 1; page <= pageCount; page++) {
-            let chapters = await this._getChaptersFromPage(manga, page);
-            chapterList.push(...chapters);
+        let data = await this.fetchDOM(request, 'meta[name="twitter:app:url:iphone"]');
+        const series_id = data[0].content.match(/\/series\/\d+/)[0];
+
+        let has_next = true;
+        const time = Date.now();
+        let page = 1;
+        while (has_next) {
+            request = new Request(new URL(series_id+'/episodes?page='+page+'&sort=OLDEST&init_load=0&since='+time+'&large=true&last_access=0&', this.url), this.requestOptions);
+            request.headers.set('x-referer', this.getRootRelativeOrAbsoluteLink(manga.id, this.url));
+            let response = await this.fetchJSON(request, this.requestOptions);
+            has_next = response.data.pagination.has_next;
+            chapterList.push(...await this._getChaptersFromHtml(response.data.body));
+            page++;
         }
+
         return chapterList;
     }
 
-    async _getChaptersFromPage(manga, page) {
-        let request = new Request(new URL(`${manga.id}?pageNumber=${page}`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'li.content__item  > a');
+    async _getChaptersFromHtml(payload) {
+        let data = [...this.createDOM(payload).querySelectorAll('li.episode-list__item  > a')];
+
         return data
             .filter(element => !element.querySelector('i.sp-ico-episode-lock, i.sp-ico-schedule-white'))
             .map(element => {
-                let scene = element.querySelector('div.item__info span.info__scene').textContent.trim();
-                let title = element.querySelector('div.item__info div.info__title').textContent.trim();
+                let scene = element.querySelector('div.info p.scene').textContent.trim();
+                let title = element.querySelector('p.title span.title__body').textContent.trim();
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                     title: scene + ' - ' + title,
@@ -75,7 +85,7 @@ export default class Tapas extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.viewer__main source.content__img');
+        let data = await this.fetchDOM(request, 'div.viewer > article > source.content__img');
         return data.map(image => this.getAbsolutePath(image.dataset.src, request.url));
     }
 }
