@@ -85,7 +85,7 @@ export default class WordPressMadara extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.createConnectorURI({
-            url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
+            url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url),
             referer: request.url
         }));
     }
