@@ -26,6 +26,9 @@ export default class MojoPortalComic extends Connector {
         if(imageURL.includes('mangapark.net')) {
             return imageURL;
         }
+        if(imageURL.includes('mangasy.com')) {
+            return this.createConnectorURI({ url: imageURL, referer: 'https://www.mangasy.com/' });
+        }
         return this.createConnectorURI({ url: imageURL, referer: chapterURL });
     }
 
@@ -86,6 +89,8 @@ export default class MojoPortalComic extends Connector {
         request.headers.set('x-referer', payload.referer);
         const response = await fetch(request);
         const data = await response.blob();
+        // TODO: If download fails try without referer, or via image proxy ?
+        // `https://images.weserv.nl/?url=${encodeURIComponent(payload.url)}`
         return this._blobToBuffer(data);
     }
 }
