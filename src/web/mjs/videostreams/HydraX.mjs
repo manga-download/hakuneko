@@ -39,6 +39,13 @@ export default class HydraX {
         return data.sources;
     }
 
+    _decodeURL(url) {
+        if (url && !/^[a-zA-Z0-9][a-zA-Z0-9-]{1,61}[a-zA-Z0-9](?:\.[a-zA-Z]{2,})+$/.test(url)) {
+            return atob(url.slice(-1) + url.slice(0, -1));
+        }
+        return url;
+    }
+
     async _getPlaylistGuest() {
         let uri = new URL('https://ping.idocdn.com/');
         let request = new Request(uri, {
@@ -51,6 +58,7 @@ export default class HydraX {
         });
         let response = await fetch(request);
         let data = await response.json();
+        data.url = this._decodeURL(data.url);
         let sources = data.sources || await this._getSources(data.url);
         return sources.reduce((accumulator, source) => {
             accumulator[source] = [
