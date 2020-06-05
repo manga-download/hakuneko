@@ -16,17 +16,13 @@ export default class CopyToon extends GnuBoard5BootstrapBasic2 {
             });
         `;
 
-        this._initializeConnector();
+        this._initializeURL();
     }
 
-    async _initializeConnector() {
-        let uri = new URL(this.url);
-        uri.searchParams.set('ts', Date.now());
-        uri.searchParams.set('rd', Math.random());
-        let request = new Request(uri.href, this.requestOptions);
-        await Engine.Request.fetchUI(request, '');
-        let response = await fetch(request);
+    async _initializeURL() {
+        let response = await fetch(this.url);
         this.url = new URL(response.url).origin;
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
     async _getChapters(manga) {
