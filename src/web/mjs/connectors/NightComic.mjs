@@ -7,6 +7,6 @@ export default class NightComic extends WordPressMadara {
         super.id = 'nightcomic';
         super.label = 'NIGHT COMIC';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'http://nightcomic.com';
+        this.url = 'https://nightcomic.com';
     }
 }
