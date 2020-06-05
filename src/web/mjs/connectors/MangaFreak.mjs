@@ -8,23 +8,17 @@ export default class MangaFreak extends Connector {
         super.id = 'mangafreak';
         super.label = 'MangaFreak';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://www.mangafreak.net';
+        this.url = 'https://mangafreak.net';
 
-        this._initializeConnector();
+        this._initializeURL();
     }
 
-    async _initializeConnector() {
-        /*
-         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
-         * => append random search parameter to avoid caching
-         */
-        let uri = new URL(this.url);
-        uri.searchParams.set('ts', Date.now());
-        uri.searchParams.set('rd', Math.random());
-        let request = new Request(uri, this.requestOptions);
-        await Engine.Request.fetchUI(request, '');
-        let response = await fetch(request);
-        this.url = new URL(response.url).origin;
+    async _initializeURL() {
+        this.url = await Engine.Request.fetchUI(new Request(this.url), `window.location.origin`);
+        // 503 error... CloudFlare JS challenge
+        //let response = await fetch(this.url);
+        //this.url = new URL(response.url).origin;
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
     async _getMangaFromURI(uri) {
