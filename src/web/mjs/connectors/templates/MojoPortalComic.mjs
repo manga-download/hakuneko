@@ -26,6 +26,9 @@ export default class MojoPortalComic extends Connector {
         if(imageURL.includes('mangapark.net')) {
             return imageURL;
         }
+        if(imageURL.includes('mangasy.com')) {
+            return this.createConnectorURI({ url: imageURL, referer: 'https://www.mangasy.com/' });
+        }
         return this.createConnectorURI({ url: imageURL, referer: chapterURL });
     }
 
@@ -84,8 +87,27 @@ export default class MojoPortalComic extends Connector {
     async _handleConnectorURI(payload) {
         let request = new Request(payload.url, this.requestOptions);
         request.headers.set('x-referer', payload.referer);
-        const response = await fetch(request);
-        const data = await response.blob();
+        let response = await fetch(request);
+        if(!response.ok) {
+            response = await fetch(this._getGoogleImageProxyRequest(payload.url));
+        }
+        if(!response.ok) {
+            response = await fetch(this._getWeservImageProxyRequest(payload.url));
+        }
+        let data = await response.blob();
         return this._blobToBuffer(data);
+    }
+
+    _getGoogleImageProxyRequest(url) {
+        let uri = new URL('https://images2-focus-opensocial.googleusercontent.com/gadgets/proxy');
+        uri.searchParams.set('container', 'focus');
+        uri.searchParams.set('url', url);
+        return new Request(uri, this.requestOptions);
+    }
+
+    _getWeservImageProxyRequest(url) {
+        let uri = new URL('https://images.weserv.nl');
+        uri.searchParams.set('url', url);
+        return new Request(uri, this.requestOptions);
     }
 }
