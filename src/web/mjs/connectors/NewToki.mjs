@@ -11,20 +11,14 @@ export default class NewToki extends Connector {
         this.url = 'https://newtoki.com'; // https://newtoki.net
         this.path = [ '/webtoon', '/comic' ];
 
-        this._initializeConnector();
+        this._initializeURL();
     }
 
-    async _initializeConnector() {
-        /*
-         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
-         * => append random search parameter to avoid caching
-         */
-        let uri = new URL(this.url);
-        uri.searchParams.set('ts', Date.now());
-        uri.searchParams.set('rd', Math.random());
-        let request = new Request(uri, this.requestOptions);
-        this.url = await Engine.Request.fetchUI(request, 'new Promise(resolve => resolve(window.location.origin))');
+    async _initializeURL() {
+        let response = await fetch(this.url);
+        this.url = new URL(response.url).origin;
         this.requestOptions.headers.set('x-referer', this.url);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
     async _getMangaFromURI(uri) {
