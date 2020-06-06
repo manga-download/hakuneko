@@ -75,11 +75,6 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
         this._twitter = new TwitterAPI();
     }
 
-    async _initializeTwitterURL(userID) {
-        this.url = await this._twitter.getProfileURL(userID) || this.url;
-        console.log(`Assigned URL '${this.url}' to ${this.label}`);
-    }
-
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryManga);
