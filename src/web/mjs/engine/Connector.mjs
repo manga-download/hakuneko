@@ -38,6 +38,10 @@ export default class Connector {
         this.requestOptions.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
     }
 
+    get urlPattern() {
+        return new RegExp(this.url);
+    }
+
     /**
      *
      */
