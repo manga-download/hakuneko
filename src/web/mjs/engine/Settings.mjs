@@ -166,7 +166,6 @@ export default class Settings extends EventTarget {
                 'More info: https://git.io/hakuneko-proxy'
             ].join( '\n' ),
             input: types.text,
-            options: [],
             value: ''
         };
 
@@ -181,6 +180,23 @@ export default class Settings extends EventTarget {
                 '  username:password'
             ].join( '\n' ),
             input: types.password,
+            value: ''
+        };
+
+        this.hCaptchaAccessibilityUUID = {
+            label: 'hCaptcha UUID',
+            description: [
+                'Provide your accessibility UUID for hCaptcha (CloudFlare protection).',
+                'Therefore CloudFlare may only show a click box instead of an image challenge.',
+                'Signup for accessibility by registering an email on https://cutt.ly/hcaptcha-signup',
+                'Copy the UUID part from the verification link in the received confirmation mail.',
+                '',
+                'Example:',
+                '  68e89cc3-4c2d-4539-b80b-49ba4bec76c4',
+                '',
+                'More info: https://www.hcaptcha.com/accessibility'
+            ].join( '\n' ),
+            input: types.text,
             value: ''
         };
 

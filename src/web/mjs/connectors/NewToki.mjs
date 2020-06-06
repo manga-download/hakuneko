@@ -8,10 +8,12 @@ export default class NewToki extends Connector {
         super.id = 'newtoki';
         super.label = 'NewToki';
         this.tags = [ 'manga', 'webtoon', 'korean' ];
-        this.url = 'https://newtoki.com'; // https://newtoki.net
+        this.url = 'https://newtoki.com';
         this.path = [ '/webtoon', '/comic' ];
+    }
 
-        this._initializeConnector();
+    canHandleURI(uri) {
+        return /https?:\/\/newtoki\d*.com/.test(uri.origin);
     }
 
     async _initializeConnector() {
@@ -22,9 +24,10 @@ export default class NewToki extends Connector {
         let uri = new URL(this.url);
         uri.searchParams.set('ts', Date.now());
         uri.searchParams.set('rd', Math.random());
-        let request = new Request(uri, this.requestOptions);
-        this.url = await Engine.Request.fetchUI(request, 'new Promise(resolve => resolve(window.location.origin))');
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         this.requestOptions.headers.set('x-referer', this.url);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
     async _getMangaFromURI(uri) {

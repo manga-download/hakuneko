@@ -48,7 +48,7 @@ export default class ClipboardConnector {
         let promises = !text ? [] : text.split(/\r?\n/).map(async line => {
             try {
                 let uri = new URL(line);
-                let connectors = Engine.Connectors.filter(connector => connector.url === uri.origin);
+                let connectors = Engine.Connectors.filter(connector => connector.canHandleURI && connector.canHandleURI(uri));
                 if(!connectors.length) {
                     connectors = Engine.Connectors.filter(connector => connector.url && connector.url.includes(uri.hostname));
                 }

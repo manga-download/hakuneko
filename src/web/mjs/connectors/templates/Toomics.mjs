@@ -19,11 +19,20 @@ export default class Toomics extends Connector {
         this.queryPages = '#viewer-img source';
     }
 
-    /**
-     *
-     */
     get icon() {
         return '/img/connectors/toomics';
+    }
+
+    async _initializeConnector() {
+        /*
+         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+         * => append random search parameter to avoid caching
+         */
+        let uri = new URL('/index/set_display/?display=A', this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri.href, this.requestOptions);
+        return Engine.Request.fetchUI(request, '');
     }
 
     async _getMangaFromURI(uri) {
