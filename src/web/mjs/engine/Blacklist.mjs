@@ -104,7 +104,6 @@ export default class Blacklist {
             '*://*.sitemaji.com/*',
             '*://*.taboola.com/*',
             '*://*.tradeadexchange.com/*',
-            '*://*.twitter.com/*',
             '*://*.tynt.com/*',
             '*://*.vdo.ai/*',
             '*://*.veruta.com/*',
