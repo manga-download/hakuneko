@@ -26,12 +26,19 @@ export default class Request {
             let script = `
                 new Promise(resolve => {
                     document.querySelector('button[title*="cookie"]').click();
-                    setTimeout(() => resolve(), 2500);
+                    setTimeout(() => resolve(document.cookie), 2500);
                 });
             `;
             let uri = new URL('https://accounts.hcaptcha.com/verify_email/' + settings.hCaptchaAccessibilityUUID.value);
             let request = new window.Request(uri);
-            await this.fetchUI(request, script, 30000);
+            let data = await this.fetchUI(request, script, 30000);
+            if(data.includes('hc_accessibility=')) {
+                console.log('Initialization of hCaptcha accessibility signup succeeded.', data);
+            } else {
+                // Maybe quota of cookie requests exceeded
+                // Maybe account suspension because of suspicious behavior/abuse
+                console.warn('Initialization of hCaptcha accessibility signup failed!', data);
+            }
         }
     }
 
