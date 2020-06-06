@@ -10,8 +10,8 @@ export default class HolyManga extends WordPressZbulu {
         this.url = 'http://holymanga.net';
     }
 
-    get urlPattern() {
-        return /https?:\/\/w+\d*.holymanga.net/;
+    canHandleURI(uri) {
+        return /https?:\/\/w+\d*.holymanga.net/.test(uri.origin);
     }
 
     async _initializeConnector() {
