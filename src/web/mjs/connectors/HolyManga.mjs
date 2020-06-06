@@ -7,9 +7,11 @@ export default class HolyManga extends WordPressZbulu {
         super.id = 'holymanga';
         super.label = 'Holy Manga';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'http://www.holymanga.net';
+        this.url = 'http://holymanga.net';
+    }
 
-        this._initializeConnector();
+    canHandleURI(uri) {
+        return /https?:\/\/w+\d*.holymanga.net/.test(uri.origin);
     }
 
     async _initializeConnector() {
@@ -20,9 +22,8 @@ export default class HolyManga extends WordPressZbulu {
         let uri = new URL(this.url);
         uri.searchParams.set('ts', Date.now());
         uri.searchParams.set('rd', Math.random());
-        let request = new Request(uri, this.requestOptions);
-        await Engine.Request.fetchUI(request, '');
-        let response = await fetch(request);
-        this.url = new URL(response.url).origin;
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 }
