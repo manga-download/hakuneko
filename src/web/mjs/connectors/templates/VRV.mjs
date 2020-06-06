@@ -4,7 +4,6 @@ export default class VRV extends Connector {
 
     constructor() {
         super();
-        this.url = 'https://vrv.co';
         this.api = {
             base: 'https://api.vrv.co',
             core: 'https://api.vrv.co/core',
