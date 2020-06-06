@@ -1,24 +1,15 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class Team1x1 extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'team1x1';
         super.label = 'Team X';
         this.tags = [ 'webtoon', 'arabic' ];
-        this.url = 'https://team1x1.com';
+        this.url = 'https://team1x11.com';
     }
 
-    /**
-     *
-     */
     _getMangaListFromPages( mangaPageLinks, index ) {
         index = index || 0;
         let request = new Request( mangaPageLinks[ index ], this.requestOptions );
@@ -39,9 +30,6 @@ export default class Team1x1 extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         let request = new Request( this.url + '/manga/', this.requestOptions );
         this.fetchDOM( request, 'div.pagination div.wp-pagenavi > a.page:last-of-type' )
@@ -59,9 +47,6 @@ export default class Team1x1 extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         let request = new Request( this.url + manga.id, this.requestOptions );
         this.fetchDOM( request, 'div.single-manga-chapter div.container div.row div.col-md-12 a' )
@@ -83,9 +68,6 @@ export default class Team1x1 extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         let script = `new Promise( resolve => resolve( PushManga.pages.original.map( p => p.page + '?token=' + p.token ) ) );`;
         let request = new Request( this.url + chapter.id, this.requestOptions );
