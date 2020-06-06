@@ -19,15 +19,41 @@ export default class Request {
         this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
-    /**
-     * See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
-     */
-    _onSettingsChanged( event ) {
-        let proxy = {};
-        if( event.detail.proxyRules.value ) {
-            proxy['proxyRules'] = event.detail.proxyRules.value;
+    async _initializeHCaptchaUUID(settings) {
+        let hcCookies = await this.electronRemote.session.defaultSession.cookies.get({ name: 'hc_accessibility' });
+        let isCookieAvailable = hcCookies.some(cookie => cookie.expirationDate > Date.now()/1000 + 1800);
+        if(settings.hCaptchaAccessibilityUUID.value && !isCookieAvailable) {
+            let script = `
+                new Promise(resolve => {
+                    document.querySelector('button[title*="cookie"]').click();
+                    setTimeout(() => resolve(document.cookie), 2500);
+                });
+            `;
+            let uri = new URL('https://accounts.hcaptcha.com/verify_email/' + settings.hCaptchaAccessibilityUUID.value);
+            let request = new window.Request(uri);
+            let data = await this.fetchUI(request, script, 30000);
+            if(data.includes('hc_accessibility=')) {
+                console.log('Initialization of hCaptcha accessibility signup succeeded.', data);
+            } else {
+                // Maybe quota of cookie requests exceeded
+                // Maybe account suspension because of suspicious behavior/abuse
+                console.warn('Initialization of hCaptcha accessibility signup failed!', data);
+            }
         }
-        this.electronRemote.session.defaultSession.setProxy( proxy, () => {} );
+    }
+
+    _initializeProxy(settings) {
+        // See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
+        let proxy = {};
+        if(settings.proxyRules.value) {
+            proxy['proxyRules'] = settings.proxyRules.value;
+        }
+        this.electronRemote.session.defaultSession.setProxy(proxy, () => {});
+    }
+
+    _onSettingsChanged(event) {
+        this._initializeProxy(event.detail);
+        this._initializeHCaptchaUUID(event.detail);
     }
 
     /**
@@ -59,28 +85,67 @@ export default class Request {
         `;
     }
 
-    /**
-     *
-     */
-    get _cfCheckScript() {
+    get _scrapingCheckScript() {
         return `
-            new Promise(resolve => {
-                let code = document.querySelector('.cf-error-code');
-                code = (code ? code.innerText : null);
-                let message = document.querySelector('h2[data-translate]');
-                message = (message && message.nextElementSibling ? message.nextElementSibling.innerText : null);
-                let error = (code ? 'CF Error ' + code + ' => ' + message : null);
-    
-                let meta = document.querySelector('meta[http-equiv="refresh"][content*="="]');
-                let cf = document.querySelector('form#challenge-form');
-    
-                let result = {
-                    error: code,
-                    redirect: (meta || cf)
-                };
-                resolve(result);
+            new Promise((resolve, reject) => {
+
+                function handleError(message) {
+                    reject(new Error(message));
+                }
+
+                function handleNoRedirect() {
+                    resolve(undefined);
+                }
+
+                function handleAutomaticRedirect() {
+                    resolve('automatic');
+                }
+
+                function handleUserInteractionRequired() {
+                    resolve('interactive');
+                }
+
+                // Common Checks
+                if(document.querySelector('meta[http-equiv="refresh"][content*="="]')) {
+                    return handleAutomaticRedirect();
+                }
+
+                // CloudFlare Checks
+                let cfCode = document.querySelector('.cf-error-code');
+                if(cfCode) {
+                    return handleError('CloudFlare Error ' + cfCode.innerText);
+                }
+                if(document.querySelector('form#challenge-form[action*="_jschl_"]')) { // __cf_chl_jschl_tk__
+                    return handleAutomaticRedirect();
+                }
+                if(document.querySelector('form#challenge-form[action*="_captcha_"]')) { // __cf_chl_captcha_tk__
+                    return handleUserInteractionRequired();
+                }
+
+                // DDoS Guard Checks
+                if(document.querySelector('div#link-ddg a[href*="ddos-guard"]')) { // Sample => https://manga-tr.com
+                    return handleAutomaticRedirect();
+                }
+
+                // Default
+                handleNoRedirect();
             });
         `;
+    }
+
+    async _checkScrapingRedirection(win) {
+        let scrapeRedirect = await win.webContents.executeJavaScript(this._scrapingCheckScript);
+        if(scrapeRedirect === 'automatic') {
+            return true;
+        }
+        if(scrapeRedirect === 'interactive') {
+            win.setSize(1280, 720);
+            win.center();
+            win.show();
+            win.focus();
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -156,25 +221,18 @@ export default class Request {
 
             win.webContents.on('did-finish-load', async () => {
                 try {
-                    let cfResult = await win.webContents.executeJavaScript(this._cfCheckScript);
-                    if(!cfResult.redirect) {
-                        if(cfResult.error) {
-                            throw new Error(cfResult.error);
-                        } else {
-                            let jsResult = await win.webContents.executeJavaScript(runtimeScript);
-                            win.webContents.debugger.attach('1.3');
-                            let actionResult = await action(jsResult, win.webContents);
-                            preventCallback = true; // no other event shall resolve/reject this promise anymore
-                            this._fetchUICleanup( win, abortAction );
-                            resolve(actionResult);
-                        }
-                    } else {
-                        // neither reject nor resolve the promise (wait for next callback after getting redirected)
-                        console.warn(`Solving CloudFlare challenge for "${request.url}" ...`, cfResult);
+                    if(await this._checkScrapingRedirection(win)) {
+                        return;
                     }
-                } catch(error) {
+                    let jsResult = await win.webContents.executeJavaScript(runtimeScript);
+                    win.webContents.debugger.attach('1.3');
+                    let actionResult = await action(jsResult, win.webContents);
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
                     this._fetchUICleanup( win, abortAction );
+                    resolve(actionResult);
+                } catch(error) {
+                    preventCallback = true; // no other event shall resolve/reject this promise anymore
+                    this._fetchUICleanup(win, abortAction);
                     reject(error);
                 }
             });
@@ -226,23 +284,16 @@ export default class Request {
 
             win.webContents.on('did-finish-load', async () => {
                 try {
-                    let cfResult = await win.webContents.executeJavaScript(this._cfCheckScript);
-                    if(!cfResult.redirect) {
-                        if(cfResult.error) {
-                            throw new Error(cfResult.error);
-                        } else {
-                            let jsResult = await win.webContents.executeJavaScript(runtimeScript);
-                            preventCallback = true; // no other event shall resolve/reject this promise anymore
-                            this._fetchUICleanup( win, abortAction );
-                            resolve(jsResult);
-                        }
-                    } else {
-                        // neither reject nor resolve the promise (wait for next callback after getting redirected)
-                        console.warn(`Solving CloudFlare challenge for "${request.url}" ...`, cfResult);
+                    if(await this._checkScrapingRedirection(win)) {
+                        return;
                     }
-                } catch(error) {
+                    let jsResult = await win.webContents.executeJavaScript(runtimeScript);
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
                     this._fetchUICleanup( win, abortAction );
+                    resolve(jsResult);
+                } catch(error) {
+                    preventCallback = true; // no other event shall resolve/reject this promise anymore
+                    this._fetchUICleanup(win, abortAction);
                     reject(error);
                 }
             });
@@ -283,43 +334,31 @@ export default class Request {
                 }
             }, timeout );
 
-            win.webContents.on( 'dom-ready', () => {
-                win.webContents.executeJavaScript( this._domPreparationScript );
-            } );
+            win.webContents.on('dom-ready', () => win.webContents.executeJavaScript(this._domPreparationScript));
 
-            win.webContents.on( 'did-finish-load', () => {
-                win.webContents.executeJavaScript( this._cfCheckScript )
-                    .then( cfResult => {
-                        if( !cfResult.redirect ) {
-                            if( cfResult.error ) {
-                                throw new Error( cfResult.error );
-                            } else {
-                                return win.webContents.executeJavaScript( injectionScript )
-                                    .then( jsResult => {
-                                        preventCallback = true; // no other event shall resolve/reject this promise anymore
-                                        this._fetchUICleanup( win, abortAction );
-                                        resolve( jsResult );
-                                    } );
-                            }
-                        } else {
-                        // neither reject nor resolve the promise (wait for next callback after getting redirected)
-                            console.warn( `Solving CloudFlare challenge for "${request.url}" ...`, cfResult );
-                        }
-                    } )
-                    .catch( error => {
-                        preventCallback = true; // no other event shall resolve/reject this promise anymore
-                        this._fetchUICleanup( win, abortAction );
-                        reject( error );
-                    } );
-            } );
-
-            win.webContents.on( 'did-fail-load', ( event, errCode, errMessage, uri, isMain ) => {
-                // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
-                if( !preventCallback && errCode && errCode !== -3 && ( isMain || uri === request.url ) ) {
-                    this._fetchUICleanup( win, abortAction );
-                    reject( new Error( errMessage + ' ' + uri ) );
+            win.webContents.on('did-finish-load', async () => {
+                try {
+                    if(await this._checkScrapingRedirection(win)) {
+                        return;
+                    }
+                    let jsResult = await win.webContents.executeJavaScript(injectionScript);
+                    preventCallback = true; // no other event shall resolve/reject this promise anymore
+                    this._fetchUICleanup(win, abortAction);
+                    resolve(jsResult);
+                } catch(error) {
+                    preventCallback = true; // no other event shall resolve/reject this promise anymore
+                    this._fetchUICleanup(win, abortAction);
+                    reject(error);
                 }
-            } );
+            });
+
+            win.webContents.on('did-fail-load', (event, errCode, errMessage, uri, isMain) => {
+                // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
+                if(!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
+                    this._fetchUICleanup( win, abortAction );
+                    reject(new Error(errMessage + ' ' + uri));
+                }
+            });
 
             win.loadURL( request.url, this._extractRequestOptions( request ) );
         } );

@@ -8,9 +8,11 @@ export default class MangaFreak extends Connector {
         super.id = 'mangafreak';
         super.label = 'MangaFreak';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://www.mangafreak.net';
+        this.url = 'https://mangafreak.net';
+    }
 
-        this._initializeConnector();
+    canHandleURI(uri) {
+        return /https?:\/\/w+\d*.mangafreak.net/.test(uri.origin);
     }
 
     async _initializeConnector() {
@@ -21,10 +23,9 @@ export default class MangaFreak extends Connector {
         let uri = new URL(this.url);
         uri.searchParams.set('ts', Date.now());
         uri.searchParams.set('rd', Math.random());
-        let request = new Request(uri, this.requestOptions);
-        await Engine.Request.fetchUI(request, '');
-        let response = await fetch(request);
-        this.url = new URL(response.url).origin;
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
     async _getMangaFromURI(uri) {
