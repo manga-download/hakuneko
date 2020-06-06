@@ -107,7 +107,7 @@ export default class Request {
         `;
     }
 
-    async _checkScrapingRedirection(win, ) {
+    async _checkScrapingRedirection(win) {
         let scrapeRedirect = await win.webContents.executeJavaScript(this._scrapingCheckScript);
         if(scrapeRedirect === 'automatic') {
             return true;
