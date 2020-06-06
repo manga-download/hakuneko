@@ -19,15 +19,34 @@ export default class Request {
         this._settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
-    /**
-     * See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
-     */
-    _onSettingsChanged( event ) {
-        let proxy = {};
-        if( event.detail.proxyRules.value ) {
-            proxy['proxyRules'] = event.detail.proxyRules.value;
+    async _initializeHCaptchaUUID(settings) {
+        let hcCookies = await this.electronRemote.session.defaultSession.cookies.get({ name: 'hc_accessibility' });
+        let isCookieAvailable = hcCookies.some(cookie => cookie.expirationDate > Date.now()/1000 + 1800);
+        if(settings.hCaptchaAccessibilityUUID.value && !isCookieAvailable) {
+            let script = `
+                new Promise(resolve => {
+                    document.querySelector('button[title*="cookie"]').click();
+                    setTimeout(() => resolve(), 2500);
+                });
+            `;
+            let uri = new URL('https://accounts.hcaptcha.com/verify_email/' + settings.hCaptchaAccessibilityUUID.value);
+            let request = new window.Request(uri);
+            await this.fetchUI(request, script, 30000);
         }
-        this.electronRemote.session.defaultSession.setProxy( proxy, () => {} );
+    }
+
+    _initializeProxy(settings) {
+        // See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
+        let proxy = {};
+        if(settings.proxyRules.value) {
+            proxy['proxyRules'] = settings.proxyRules.value;
+        }
+        this.electronRemote.session.defaultSession.setProxy(proxy, () => {});
+    }
+
+    _onSettingsChanged(event) {
+        this._initializeProxy(event.detail);
+        this._initializeHCaptchaUUID(event.detail);
     }
 
     /**
