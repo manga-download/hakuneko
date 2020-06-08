@@ -24,12 +24,12 @@ export default class MangaDex extends Connector {
                 input: 'select',
                 options: [
                     { value: '', name: 'Random Mirror (unofficial)' },
-                    //{ value: 'https://p4088kp71810c.2hpwmb24rv6f4.mangadex.network:443', name: 'db.mangadex.org (FR)' },
-                    { value: 'https://s2.mangadex.org:443', name: 's2.mangadex.org (US)' },
-                    { value: 'https://s3.mangadex.org:443', name: 's3.mangadex.org (DE)' },
-                    { value: 'https://s5.mangadex.org:443', name: 's5.mangadex.org (US)' }
+                    //{ value: 'https://p4088kp71810c.2hpwmb24rv6f4.mangadex.network', name: 'db.mangadex.org (FR)' },
+                    { value: 'https://s2.mangadex.org', name: 's2.mangadex.org (US)' },
+                    { value: 'https://s3.mangadex.org', name: 's3.mangadex.org (DE)' },
+                    { value: 'https://s5.mangadex.org', name: 's5.mangadex.org (US)' }
                 ],
-                value: 'https://s2.mangadex.org:443'
+                value: 'https://s2.mangadex.org'
             },
             throttle: {
                 label: 'Throttle Requests [ms]',
