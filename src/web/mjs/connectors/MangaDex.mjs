@@ -12,11 +12,30 @@ export default class MangaDex extends Connector {
         this.requestOptions.headers.set( 'x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2' );
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
+            node: {
+                label: 'Image Server',
+                description: [
+                    'Select the MD@Home mirror from which the images should be downloaded.',
+                    'You can either get a random unofficial mirror (hosted by an unknown user),',
+                    'or choose one of the official mirrors (hosted by MangaDex staff).',
+                    '',
+                    'There is a risk that unofficial mirrors may log your data / provide malicious images.'
+                ].join('\n'),
+                input: 'select',
+                options: [
+                    { value: '', name: 'Random Mirror (unofficial)' },
+                    //{ value: 'https://p4088kp71810c.2hpwmb24rv6f4.mangadex.network:443', name: 'db.mangadex.org (FR)' },
+                    { value: 'https://s2.mangadex.org:443', name: 's2.mangadex.org (US)' },
+                    { value: 'https://s3.mangadex.org:443', name: 's3.mangadex.org (DE)' },
+                    { value: 'https://s5.mangadex.org:443', name: 's5.mangadex.org (US)' }
+                ],
+                value: 'https://s2.mangadex.org:443'
+            },
             throttle: {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecuitive requests.',
                 input: 'numeric',
-                min: 500,
+                min: 0,
                 max: 5000,
                 value: 2500
             }
@@ -91,8 +110,17 @@ export default class MangaDex extends Connector {
          * '/api/?server=null&type=chapter&id=778765'
          */
         let data = await this._requestAPI(new URL('/api/chapter/' + chapter.id, this.url), 'page');
-        let baseURL = (data.server.startsWith('/') ? this.url : '') + data.server + data.hash + '/';
-        return data.page_array.map( page => baseURL + page );
+        let baseURL = this._getNode(data.server) + data.hash + '/';
+        return data.page_array.map(page => baseURL + page);
+    }
+
+    _getNode(server) {
+        let uri = new URL(server, this.url);
+        // images that are still hosted on mangadex.org are not yet available in MD@Home infrastructure
+        if(uri.origin === this.url || !this.config.node.value) {
+            return uri.href;
+        }
+        return new URL(uri.pathname, this.config.node.value).href;
     }
 
     async _requestAPI(url, label) {
