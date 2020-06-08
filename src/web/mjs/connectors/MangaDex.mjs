@@ -35,7 +35,7 @@ export default class MangaDex extends Connector {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecuitive requests.',
                 input: 'numeric',
-                min: 0,
+                min: 500,
                 max: 5000,
                 value: 2500
             }
