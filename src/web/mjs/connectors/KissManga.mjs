@@ -81,7 +81,11 @@ export default class KissManga extends Connector {
             new Promise(resolve => {
                 // cookie: vns_readType1=0 => one page (lstImages)
                 // cookie: vns_readType1=1 => all pages (lstOLA)
-                resolve(this.lstImages || this.lstOLA);
+                if(this.lstOLA && this.lstOLA.length > 0) {
+                    resolve(this.lstOLA);
+                } else {
+                    resolve(this.lstImages);
+                }
             });
         `;
         let request = new Request( this.url + chapter.id, this.requestOptions );
