@@ -289,7 +289,7 @@ export default class SpeedBinb extends Connector {
         uri.pathname += uri.pathname.endsWith('/') ? '' : '/';
         uri.pathname += 'content';
         uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
-        return fetch( new Request( uri.href+'&u1=10001', this.requestOptions ) )
+        return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.json() )
             .then( data => {
                 let dom = this.createDOM( data.ttx );
