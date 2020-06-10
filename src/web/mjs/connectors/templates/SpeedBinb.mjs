@@ -26,6 +26,7 @@ export default class SpeedBinb extends Connector {
                     return this._getPageList_v016113(uri.pathname + uri.search, data.dataset.ptbinb);
                 }
                 if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
+                    // compatible with v016201
                     return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
                 }
                 let imageConfigurtions = data.querySelectorAll( 'div[data-ptimg$="ptimg.json"]' );
@@ -158,7 +159,7 @@ export default class SpeedBinb extends Connector {
      */
 
     /**
-     *
+     *  compatible with v016201
      */
     _getPageList_v016130( chapterID, apiURL ) {
         let cid = new URL( chapterID, this.baseURL ).searchParams.get( 'cid' );
@@ -177,7 +178,7 @@ export default class SpeedBinb extends Connector {
     }
 
     /**
-     *
+     * compatible with v016201
      */
     _getPageLinks_v016130( configuration, sharingKey ) {
         let cid = configuration['ContentID'];
@@ -187,6 +188,7 @@ export default class SpeedBinb extends Connector {
          */
         configuration.ctbl = this._pt( cid, sharingKey, configuration.ctbl );
         configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
+        typeof(configuration.ServerType === 'string') && (configuration.ServerType = parseInt(configuration.ServerType));
 
         if( configuration['ServerType'] === 0 ) {
             return this._getPageLinksSBC_v016130( configuration );
@@ -220,9 +222,13 @@ export default class SpeedBinb extends Connector {
             } );
     }
 
+    /*
+    * NOT YET compatible with v016201
+    */
     _getPageLinksContent_v016130( configuration ) {
         let uri = new URL( configuration['ContentsServer'] );
-        uri.pathname += '/content';
+        uri.pathname += uri.pathname.endsWith('/') ? '' : '/';
+        uri.pathname += 'content';
         uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
         return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.json() )
