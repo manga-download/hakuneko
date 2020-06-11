@@ -15,7 +15,7 @@ export default class SpeedBinb extends Connector {
      */
     _getPageList( manga, chapter, callback ) {
         this.baseURL = this.baseURL || this.url;
-        const url = new URL(this.getAbsolutePath( chapter.id, this.baseURL ));
+        const url = new URL(chapter.id, this.baseURL);
         let request = new Request( url, this.requestOptions );
         this.fetchDOM( request, 'div#content.pages' )
             .then( data => {
@@ -171,7 +171,7 @@ export default class SpeedBinb extends Connector {
         const cid = configuration['ContentID'];
         configuration.ctbl = this._pt( cid, sharingKey, configuration.ctbl );
         configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
-        typeof(configuration.ServerType === 'string') && (configuration.ServerType = parseInt(configuration.ServerType));
+        configuration.ServerType = parseInt(configuration.ServerType);
 
         if( configuration['ServerType'] === 2 ) {
             return this._getPageLinksContent_v016201( configuration , u);
@@ -247,7 +247,7 @@ export default class SpeedBinb extends Connector {
          */
         configuration.ctbl = this._pt( cid, sharingKey, configuration.ctbl );
         configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
-        typeof(configuration.ServerType === 'string') && (configuration.ServerType = parseInt(configuration.ServerType));
+        configuration.ServerType = parseInt(configuration.ServerType);
 
         if( configuration['ServerType'] === 0 ) {
             return this._getPageLinksSBC_v016130( configuration );

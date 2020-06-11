@@ -13,27 +13,27 @@ export default class YoungJump extends SpeedBinb {
     async _getMangas() {
         return [
             {
-                id: 'free_uj',
+                id: 'free_uj/',
                 title: 'ウルトラジャンプ - ultra jump'
             },
             {
-                id: 'free_yj',
+                id: 'free_yj/',
                 title: 'ヤングジャンプ - young jump'
             }
         ];
     }
 
     async _getChapters(manga) {
-        const request = new Request(new URL(manga.id+'/', this.url), this.requestOptions);
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request);
 
         let chapters = [];
         for (const year of data.querySelectorAll('section.sp-w')) {
-            const mangas = year.querySelectorAll('a.p-my__list-link');
-            chapters.push(...Array.from(mangas).map(element => {
+            const mangas = [...year.querySelectorAll('a.p-my__list-link')];
+            chapters.push(...mangas.map(element => {
                 return {
                     id: this.getAbsolutePath(element.href, this.url),
-                    title: year.querySelector('h3').innerHTML.trim() +' - ' + element.innerHTML.match(/<h4>(.+)<\/h4>/)[1].trim()
+                    title: year.querySelector('h3').innerText.trim() +' - ' + element.querySelector('h4').innerText.trim()
                 };
             }));
         }
