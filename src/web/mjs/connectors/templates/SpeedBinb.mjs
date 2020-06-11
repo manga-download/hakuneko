@@ -15,7 +15,8 @@ export default class SpeedBinb extends Connector {
      */
     _getPageList( manga, chapter, callback ) {
         this.baseURL = this.baseURL || this.url;
-        let request = new Request( this.getAbsolutePath( chapter.id, this.baseURL ), this.requestOptions );
+        const url = new URL(chapter.id, this.baseURL);
+        let request = new Request( url, this.requestOptions );
         this.fetchDOM( request, 'div#content.pages' )
             .then( data => {
                 data = data[0];
@@ -24,6 +25,9 @@ export default class SpeedBinb extends Connector {
                     let uri = new URL(chapter.id, this.baseURL);
                     uri.searchParams.set('cid', data.dataset['ptbinbCid']);
                     return this._getPageList_v016113(uri.pathname + uri.search, data.dataset.ptbinb);
+                }
+                if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) && url.searchParams.get('u1') ) {
+                    return this._getPageList_v016201( chapter.id, data.dataset.ptbinb );
                 }
                 if( data.dataset['ptbinb'] && data.dataset.ptbinb.includes( 'bibGetCntntInfo' ) ) {
                     return this._getPageList_v016130( chapter.id, data.dataset.ptbinb );
@@ -140,6 +144,62 @@ export default class SpeedBinb extends Connector {
 
     /**
      *************************
+     *** SpeedBinb v01.6201 ***
+     * ** YoungJump         ***
+     *************************
+     */
+
+    _getPageList_v016201( chapterID, apiURL ) {
+        const cid = new URL( chapterID, this.baseURL ).searchParams.get( 'cid' );
+        const u = new URL( chapterID, this.baseURL ).searchParams.get( 'u1' );
+        const sharingKey = this._tt( cid );
+        let uri;
+        uri = new URL( apiURL, this.baseURL + '/' );
+        uri.searchParams.set( 'cid', cid );
+        uri.searchParams.set( 'dmytime', Date.now() );
+        uri.searchParams.set( 'k', sharingKey );
+        uri.searchParams.set( 'u1', u );
+        const request = new Request( uri.href, this.requestOptions );
+        return fetch( request )
+            .then( response => response.json() )
+            .then( data => {
+                return this._getPageLinks_v016201( data.items[0], sharingKey, u);
+            } );
+    }
+
+    _getPageLinks_v016201( configuration, sharingKey, u ) {
+        const cid = configuration['ContentID'];
+        configuration.ctbl = this._pt( cid, sharingKey, configuration.ctbl );
+        configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
+        configuration.ServerType = parseInt(configuration.ServerType);
+
+        if( configuration['ServerType'] === 2 ) {
+            return this._getPageLinksContent_v016201( configuration , u);
+        }
+        return Promise.reject( new Error( 'Content server type not supported!' ) );
+    }
+
+    _getPageLinksContent_v016201( configuration, u ) {
+        let uri = new URL( configuration['ContentsServer'] );
+        uri.pathname += uri.pathname.endsWith('/') ? '' : '/';
+        uri.pathname += 'content';
+        uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
+        uri.searchParams.set( 'u1', u );
+        return fetch( new Request( uri.href, this.requestOptions ) )
+            .then( response => response.json() )
+            .then( data => {
+                const dom = this.createDOM( data.ttx );
+                const pageLinks = [...dom.querySelectorAll( 't-case:first-of-type t-img' )].map( img => {
+                    const src = img.getAttribute( 'src' );
+                    uri.hash = btoa( JSON.stringify( this._lt_001( src, configuration.ctbl, configuration.ptbl ) ) );
+                    return this.createConnectorURI( uri.href.replace( '/content', '/img/' + src ) );
+                } );
+                return Promise.resolve( pageLinks );
+            } );
+    }
+
+    /**
+     *************************
      *** SpeedBinb v01.6113 ***
      * ** Ohtabooks          ***
      *************************
@@ -187,6 +247,7 @@ export default class SpeedBinb extends Connector {
          */
         configuration.ctbl = this._pt( cid, sharingKey, configuration.ctbl );
         configuration.ptbl = this._pt( cid, sharingKey, configuration.ptbl );
+        configuration.ServerType = parseInt(configuration.ServerType);
 
         if( configuration['ServerType'] === 0 ) {
             return this._getPageLinksSBC_v016130( configuration );
@@ -220,9 +281,13 @@ export default class SpeedBinb extends Connector {
             } );
     }
 
+    /*
+    *
+    */
     _getPageLinksContent_v016130( configuration ) {
         let uri = new URL( configuration['ContentsServer'] );
-        uri.pathname += '/content';
+        uri.pathname += uri.pathname.endsWith('/') ? '' : '/';
+        uri.pathname += 'content';
         uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
         return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.json() )
