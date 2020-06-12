@@ -10,6 +10,21 @@ export default class VizShonenJump extends Connector {
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://www.viz.com/shonenjump';
         this.requestOptions.headers.set( 'x-referer', this.url );
+        this.config = {
+            /* Since the website requires us to fetch the image data a few seconds after the API call
+            *  we need to ensure we can download the data fast enough.
+            *  Also the website itself only loads a maximum of 4 pages at a time to ensure that.
+            */
+            concurrent: {
+                label: 'Concurrent downloads',
+                description: 'The maximum number of concurrent downloads.',
+                input: 'numeric',
+                min: 1,
+                max: 12,
+                value: 5
+            }
+        };
+        this.concurrent = 0;
     }
 
     async _getMangas() {
@@ -58,20 +73,13 @@ export default class VizShonenJump extends Connector {
                             var aj_images = [];
                             for (var page_count = 0; page_count <= pages; page_count++) 
                                 if (!(page_count < 0 || page_count > pages) && "undefined" == typeof pageImages["page" + page_count]) {
-                                    var aj_req = $.ajax({
+                                    var aj_req = {
                                         url: pageUrl + "&manga_id=" + manga_id + "&page=" + page_count,
                                         dataType: "text"
-                                    });
+                                    };
                                     aj_images.push(aj_req)
-                                } $.when.apply($, aj_images).done(function() {
-                                for (page_count = 0; page_count < aj_images.length; page_count++) {
-                                    var page_array = /\\/([0-9]+)\\.jpg/.exec(aj_images[page_count].responseText);
-                                    page_array && (pageList["page" + page_array[1]] = aj_images[page_count].responseText)
-                                }
-                                setTimeout(() => {
-                                    resolve(Object.values(pageList));
-                                }, 2000);
-                            })
+                                } 
+                                resolve(Object.values(aj_images));
                         }
 
                         window.loadPages();
@@ -87,75 +95,94 @@ export default class VizShonenJump extends Connector {
 
         return data.map(page => this.createConnectorURI(
             {
-                id: page,
+                id: page.url,
                 referer: chapter.id
             }
         ));
     }
 
     async _handleConnectorURI(payload) {
-        let request = new Request(new URL(payload.id), this.requestOptions);
-        request.headers.set('x-referer', this.getRootRelativeOrAbsoluteLink(payload.referer, this.url));
-        request.headers.set('crossOrigin', 'Anonymous');
-        request.headers.set('Origin', new URL(this.url).origin);
+        while (this.concurrent >= this.config.concurrent.value) {
+            await this.throttle_connections( Math.floor(Math.random() * (2000 - 1000)) + 1000);
+        }
+        this.concurrent += 1;
 
-        const response = await fetch(request);
-        const blob = await response.blob();
-        const bitmap = await createImageBitmap(blob);
-        const exif = EXIF.readFromBinaryFile(await blob.arrayBuffer());
+        try {
+            // API request
+            let request = new Request(new URL(payload.id, new URL(this.url).origin ), this.requestOptions);
+            request.headers.set('x-referer', new URL(payload.referer, new URL(this.url).origin));
+            request.headers.set('Accept', 'text/plain, */*; q=0.01');
+            let response = await fetch(request);
+            const img_url = await response.text();
 
-        let canvas = document.createElement('canvas');
-        canvas.width = exif.ImageWidth;
-        canvas.height = exif.ImageHeight;
-        let ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, exif.ImageWidth, exif.ImageHeight);
+            // Image request
+            request = new Request(new URL(img_url), this.requestOptions);
+            request.headers.set('x-referer', new URL(payload.referer, new URL(this.url).origin));
+            request.headers.set('crossOrigin', 'Anonymous');
+            request.headers.set('Origin', new URL(this.url).origin);
 
-        const x_split = Math.floor(exif.ImageWidth / 10);
-        const y_split = Math.floor(exif.ImageHeight / 15);
-        const shuffle_map = exif.ImageUniqueID.split(":");
+            response = await fetch(request);
+            const blob = await response.blob();
+            const bitmap = await createImageBitmap(blob);
+            const exif = EXIF.readFromBinaryFile(await blob.arrayBuffer());
 
-        // Draw border pieces
-        ctx.drawImage(
-            bitmap,
-            0, 0,
-            exif.ImageWidth, y_split,
-            0, 0,
-            exif.ImageWidth, y_split
-        );
-        ctx.drawImage(
-            bitmap,
-            0, y_split + 10,
-            x_split, exif.ImageHeight - 2 * y_split,
-            0, y_split, x_split,
-            exif.ImageHeight - 2 * y_split
-        );
-        ctx.drawImage(
-            bitmap, 0, 14 * (y_split + 10),
-            exif.ImageWidth, bitmap.height - 14 * (y_split + 10),
-            0, 14 * y_split,
-            exif.ImageWidth, bitmap.height - 14 * (y_split + 10)
-        );
-        ctx.drawImage(
-            bitmap,
-            9 * (x_split + 10), y_split + 10,
-            x_split + (exif.ImageWidth - 10 * x_split), exif.ImageHeight - 2 * y_split,
-            9 * x_split, y_split,
-            x_split + (exif.ImageWidth - 10 * x_split), exif.ImageHeight - 2 * y_split
-        );
+            let canvas = document.createElement('canvas');
+            canvas.width = exif.ImageWidth;
+            canvas.height = exif.ImageHeight;
+            let ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, exif.ImageWidth, exif.ImageHeight);
 
-        // Draw inside pieces
-        for (let piece = 0; piece < shuffle_map.length; piece++) {
-            shuffle_map[piece] = parseInt(shuffle_map[piece], 16);
+            const x_split = Math.floor(exif.ImageWidth / 10);
+            const y_split = Math.floor(exif.ImageHeight / 15);
+            const shuffle_map = exif.ImageUniqueID.split(":");
+
+            // Draw border pieces
             ctx.drawImage(
                 bitmap,
-                Math.floor((piece % 8 + 1) * (x_split + 10)), Math.floor((Math.floor(piece / 8) + 1) * (y_split + 10)), // sx, sy
-                Math.floor(x_split), Math.floor(y_split), // sWidth, sHeight
-                Math.floor((shuffle_map[piece] % 8 + 1) * x_split), Math.floor((Math.floor(shuffle_map[piece] / 8) + 1) * y_split), // dx, dy
-                Math.floor(x_split), Math.floor(y_split)); // dWidth, dHeight
-        }
+                0, 0,
+                exif.ImageWidth, y_split,
+                0, 0,
+                exif.ImageWidth, y_split
+            );
+            ctx.drawImage(
+                bitmap,
+                0, y_split + 10,
+                x_split, exif.ImageHeight - 2 * y_split,
+                0, y_split, x_split,
+                exif.ImageHeight - 2 * y_split
+            );
+            ctx.drawImage(
+                bitmap, 0, 14 * (y_split + 10),
+                exif.ImageWidth, bitmap.height - 14 * (y_split + 10),
+                0, 14 * y_split,
+                exif.ImageWidth, bitmap.height - 14 * (y_split + 10)
+            );
+            ctx.drawImage(
+                bitmap,
+                9 * (x_split + 10), y_split + 10,
+                x_split + (exif.ImageWidth - 10 * x_split), exif.ImageHeight - 2 * y_split,
+                9 * x_split, y_split,
+                x_split + (exif.ImageWidth - 10 * x_split), exif.ImageHeight - 2 * y_split
+            );
 
-        let data = await this._canvasToBlob(canvas);
-        return this._blobToBuffer(data);
+            // Draw inside pieces
+            for (let piece = 0; piece < shuffle_map.length; piece++) {
+                shuffle_map[piece] = parseInt(shuffle_map[piece], 16);
+                ctx.drawImage(
+                    bitmap,
+                    Math.floor((piece % 8 + 1) * (x_split + 10)), Math.floor((Math.floor(piece / 8) + 1) * (y_split + 10)), // sx, sy
+                    Math.floor(x_split), Math.floor(y_split), // sWidth, sHeight
+                    Math.floor((shuffle_map[piece] % 8 + 1) * x_split), Math.floor((Math.floor(shuffle_map[piece] / 8) + 1) * y_split), // dx, dy
+                    Math.floor(x_split), Math.floor(y_split)); // dWidth, dHeight
+            }
+
+            let data = await this._canvasToBlob(canvas);
+            this.concurrent -= 1;
+            return this._blobToBuffer(data);
+        } catch (error) {
+            this.concurrent -= 1;
+            throw new Error('Failed to retrieve image data. Please report at https://github.com/manga-download/hakuneko/issues');
+        }
     }
 
     async _canvasToBlob(canvas) {
