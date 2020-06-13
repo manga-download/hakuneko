@@ -64,7 +64,6 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getPages(chapter) {
-        chapter.id = chapter.id.replace('hakuneko://cache/shonenjump', this.url);
         let script = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
