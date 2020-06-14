@@ -227,6 +227,12 @@
                     case event.code === 'ArrowLeft' && !event.ctrlKey:
                         this.requestChapterDown( event );
                         break;
+                    case event.key === '*' && !event.ctrlKey:
+                        this.imageWidth = 100;
+                        break;
+                    case event.key === '/' && !event.ctrlKey:
+                        this.imageWidth = 75;
+                        break;
                     case event.key === '+' && !event.ctrlKey:
                         this.zoomIn( event );
                         break;
@@ -241,6 +247,9 @@
                         break;
                     case event.code === 'Escape' && !event.ctrlKey:
                         this.hideViewer( event );
+                        break;
+                    case event.code === 'Space' && !event.ctrlKey:
+                        this.scrollMagic(window.innerHeight*0.80);
                         break;
                     default:
                         break;
@@ -515,6 +524,42 @@
                     // adjust new offsetY depending on height changed ratio of container after scaling images
                     this.$.container.scrollTop = previousOffset * this.$.container.scrollHeight / previousHeight;
                 //}.bind( this ), 0 );
+            }
+
+            /**
+             * Dynamically change the scrolling to stop at the end of images or skip to the start of the next image
+             * Usefull for manga reading but ugly with webtoons
+             */
+             scrollMagic(defaultDistance) {
+                let images = this.$.container.getElementsByClassName('image');
+                // Find current image within view
+                let currentScrollImages = Array.prototype.filter.call(images, function(image){
+                    let rect = image.getBoundingClientRect();
+                    return (rect.top <= window.innerHeight && rect.bottom >=0);
+                });
+
+                // If multiple images filtered, get the first one. If none scroll to the top image
+                let currentScrollImage = currentScrollImages[0] || images[0];
+
+                // Do we stay on current image ?
+                if (window.innerHeight +1 < currentScrollImage.getBoundingClientRect().bottom ) {
+                    // Scroll default or scroll to bottomo of current image
+                    this.$.container.scrollBy({ 
+                        top: Math.min(defaultDistance,currentScrollImage.getBoundingClientRect().bottom-window.innerHeight),
+                        left: 0, 
+                        behavior: 'smooth' 
+                    });
+                } else {
+                    // Find next image
+                    let nextScrollImage = currentScrollImage.nextElementSibling;
+                    if (nextScrollImage)
+                    {
+                        // Scroll to it
+                        nextScrollImage.scrollIntoView({ 
+                            behavior: 'smooth' 
+                        });
+                    }
+                }
             }
         }
         window.customElements.define( HakunekoPages.is, HakunekoPages );
