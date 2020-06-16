@@ -531,9 +531,9 @@
              * Usefull for manga reading but ugly with webtoons
              */
             scrollMagic(defaultDistance) {
-                let images = this.$.container.getElementsByClassName('image');
+                let images = this.$.container.querySelectorAll('.image');
                 // Find current image within view
-                let currentScrollImages = Array.prototype.filter.call(images, function(image){
+                let currentScrollImages = [...images].filter(image => {
                     let rect = image.getBoundingClientRect();
                     return (rect.top <= window.innerHeight && rect.bottom >=0);
                 });
@@ -543,7 +543,7 @@
 
                 // Do we stay on current image ?
                 if (window.innerHeight +1 < currentScrollImage.getBoundingClientRect().bottom ) {
-                    // Scroll default or scroll to bottomo of current image
+                    // Scroll default or scroll to bottom of current image
                     this.$.container.scrollBy({ 
                         top: Math.min(defaultDistance,currentScrollImage.getBoundingClientRect().bottom-window.innerHeight),
                         left: 0, 
