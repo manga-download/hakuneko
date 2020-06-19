@@ -70,6 +70,65 @@ export default class NicoNicoSeiga extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.pageTemplateURL + element.dataset.imageId).sort();
+        return data.sort((a, b) => {
+            return a.dataset.imageId - b.dataset.imageId;
+        }).map(element => {
+            return this.createConnectorURI({
+                original: element.dataset.original,
+                id: element.dataset.imageId
+            });
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        try {
+            // first try to get high quality image (await promise, otherwise try/catch won't work)
+            let data = await super._handleConnectorURI(this.pageTemplateURL + payload.id);
+            if(data.mimeType.startsWith('image/')) {
+                return data;
+            }
+            throw new Error('Failed to get high quality image => downloading low quality image!');
+        } catch(error) {
+            // get low quality DRM image as fallback
+            let uri = new URL(payload.original);
+            let request = new Request(uri, this.requestOptions);
+            let response = await fetch(request);
+            let encrypted = new Uint8Array(await response.arrayBuffer());
+            let key = this._getKeyFromUrl(payload.original);
+            let decrypted = this._decrypt(encrypted, key);
+            return {
+                mimeType: this._getDataType(decrypted),
+                data: decrypted
+            };
+        }
+    }
+
+    /*********************************
+     *** CODE FROM SEIGA.NICOVIDEO ***
+     ********************************/
+
+    _getKeyFromUrl(e) {
+        var t = e.match("/image/([a-z0-9_]+)/");
+        if (null === t)
+            return "";
+        var n = t[1].split("_")
+            , r = n[0];
+        return r;
+    }
+
+    _decrypt(e, t) {
+        var n, r = [], i = 8;
+        for (n = 0; n < i; n++)
+            r.push(parseInt(t.substr(2 * n, 2), 16));
+        for (n = 0; n < e.length; n++)
+            e[n] = e[n] ^ r[n % i];
+        return e;
+    }
+
+    _getDataType(e) {
+        var t = null
+            , n = e.length;
+        return 255 === e[0] && 216 === e[1] && 255 === e[n - 2] && 217 === e[n - 1] ? t = "jpg" : 137 === e[0] && 80 === e[1] && 78 === e[2] && 71 === e[3] ? t = "png" : 71 === e[0] && 73 === e[1] && 70 === e[2] && 56 === e[3] && (t = "gif"),
+        t;
     }
 }
