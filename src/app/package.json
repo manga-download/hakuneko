@@ -11,7 +11,6 @@
   "main": "main.js",
   "dependencies": {
     "@logtrine/logtrine": "latest",
-    "exif-js": "^2.3.0",
     "fs-extra": "latest",
     "jszip": "latest"
   }

@@ -1,5 +1,4 @@
 import Connector from '../engine/Connector.mjs';
-const EXIF = require('exif-js');
 
 export default class VizShonenJump extends Connector {
 
