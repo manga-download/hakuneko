@@ -31,22 +31,26 @@ class TwitterAPI {
     }
 
     async getProfileURL(userID) {
-        let data = await this._getProfileData(userID);
+        try {
+            let data = await this._getProfileData(userID);
 
-        // find references in user info
-        let userRef = data.globalObjects.users[userID].entities.url;
-        if(userRef && userRef.urls.length) {
-            return new URL(userRef.urls[0].expanded_url).origin;
-        }
-
-        // find references in user tweets
-        let tweets = Object.keys(data.globalObjects.tweets)
-            .map(key => data.globalObjects.tweets[key])
-            .sort((a, b) => a.id_str < b.id_str ? 1 : -1);
-        for(let tweet of tweets) {
-            if(tweet.entities.urls && tweet.entities.urls.length) {
-                return new URL(tweet.entities.urls[0].expanded_url).origin;
+            // find references in user info
+            let userRef = data.globalObjects.users[userID].entities.url;
+            if(userRef && userRef.urls.length) {
+                return new URL(userRef.urls[0].expanded_url).origin;
             }
+
+            // find references in user tweets
+            let tweets = Object.keys(data.globalObjects.tweets)
+                .map(key => data.globalObjects.tweets[key])
+                .sort((a, b) => a.id_str < b.id_str ? 1 : -1);
+            for(let tweet of tweets) {
+                if(tweet.entities.urls && tweet.entities.urls.length) {
+                    return new URL(tweet.entities.urls[0].expanded_url).origin;
+                }
+            }
+        } catch(error) {
+            console.warn('Failed to retrieve data from Twitter API!', error);
         }
 
         return undefined;
