@@ -7,7 +7,7 @@ export default class Funbe extends GnuBoard5BootstrapBasic2 {
         super.id = 'funbe';
         super.label = 'Funbe';
         this.tags = [ 'webtoon', 'hentai', 'korean' ];
-        this.url = 'https://funbe.page';
+        this.url = 'https://funbe.shop';
     }
 
     canHandleURI(uri) {
