@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import Connector from '../engine/Connector.mjs';
 
-export default class MangaShip extends WordPressMadara {
+export default class MangaShip extends Connector {
 
     constructor() {
         super();
@@ -20,24 +20,52 @@ export default class MangaShip extends WordPressMadara {
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL('/Tr/Search', this.url);
-        uri.searchParams.set('tur', 'Manga');
+        let uri = new URL('/Tr/Mangalar', this.url);
         uri.searchParams.set('page', page);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangas);
+        let data = await this.fetchDOM(request, 'div.mangaList div.movie-item-title a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.title.trim()
+                title: element.text.trim()
+            };
+        });
+    }
+
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri , this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.plylist-single-content > a:first-of-type');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.title.replace(manga.title, '').trim(),
+                language: ''
             };
         });
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id.replace('/Oku/', '/MangaOkuListe/'), this.requestOptions);
+        let uri = new URL(chapter.id.replace('/Oku/', '/MangaOku/'), this.url);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.reading-content source');
-        return data
-            .map(element => this.getAbsolutePath(element, request.url))
-            .filter(link => !link.endsWith('999.jpg'));
+        return data.map(element => {
+            if(element.src.startsWith('data:')) {
+                const data = element.src.split(',')[1];
+                return this._mapDataUriType(data) + data;
+            } else {
+                return this.getAbsolutePath(element, request.url);
+            }
+        });
+    }
+
+    _mapDataUriType(signature) {
+        if(signature.startsWith('/9j/4AA')) {
+            return 'data:image/jpeg;base64,';
+        }
+        if(signature.startsWith('iVBORw0')) {
+            return 'data:image/png;base64,';
+        }
+        return 'data:application/octet-stream;base64,';
     }
 }
