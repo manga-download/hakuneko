@@ -107,7 +107,6 @@ export default class VizShonenJump extends Connector {
             response = await fetch(request);
             const blob = await response.blob();
             const bitmap = await createImageBitmap(blob);
-            // eslint-disable-next-line
             const exif = EXIF.readFromBinaryFile(await blob.arrayBuffer());
 
             let canvas = document.createElement('canvas');
