@@ -11,20 +11,15 @@ export default class VizShonenJump extends Connector {
         this.url = 'https://www.viz.com';
         this.requestOptions.headers.set( 'x-referer', this.url );
         this.config = {
-            /* Since the website requires us to fetch the image data a few seconds after the API call
-            *  we need to ensure we can download the data fast enough.
-            *  Also the website itself only loads a maximum of 4 pages at a time to ensure that.
-            */
-            concurrent: {
-                label: 'Concurrent downloads',
-                description: 'The maximum number of concurrent downloads.',
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecuitive requests.',
                 input: 'numeric',
-                min: 1,
-                max: 20,
-                value: 5
+                min: 500,
+                max: 30000,
+                value: 500
             }
         };
-        this.concurrent = 0;
     }
 
     async _getMangas() {
@@ -32,7 +27,7 @@ export default class VizShonenJump extends Connector {
         let data = await this.fetchDOM(request);
 
         if ( !data.innerText.includes('Latest free chapters') ) {
-            alert(this.label + ': This website is geolocked. It can only be accessed from the USA.');
+            alert('This website is geolocked. It can only be accessed from the USA.\nYou may use MANGA Plus instead.', this.label, 'info');
             return;
         }
 
@@ -51,7 +46,7 @@ export default class VizShonenJump extends Connector {
         let data = await this.fetchDOM(request);
 
         if ( data.innerText.includes('MANGA Plus by SHUEISHA') ) {
-            alert(this.label + ': This website is geolocked. It can only be accessed from the USA.\nYou may use MANGA Plus instead.');
+            alert('This website is geolocked. It can only be accessed from the USA.\nYou may use MANGA Plus instead.', this.label, 'info');
             return;
         }
 
@@ -95,11 +90,6 @@ export default class VizShonenJump extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        while (this.concurrent >= this.config.concurrent.value) {
-            await this.wait( Math.floor(Math.random() * (2000 - 1000)) + 1000);
-        }
-        this.concurrent += 1;
-
         try {
             // API request
             let request = new Request( new URL(payload.id, this.url), this.requestOptions);
@@ -174,8 +164,6 @@ export default class VizShonenJump extends Connector {
             return this._blobToBuffer(data);
         } catch (error) {
             throw new Error('Failed to retrieve image data. Please report at https://github.com/manga-download/hakuneko/issues');
-        } finally {
-            this.concurrent -= 1;
         }
     }
 
