@@ -38,13 +38,6 @@ export default class VizShonenJump extends Connector {
 
         data = [...data.querySelectorAll('div.o_sort_container div > a')];
 
-        console.log(data.map(manga => {
-            return {
-                id: manga.pathname,
-                title: manga.querySelector(':nth-child(2)').innerText.trim()
-            };
-        }));
-
         return data.map(manga => {
             return {
                 id: manga.pathname,
@@ -66,7 +59,7 @@ export default class VizShonenJump extends Connector {
         data = data.filter(chapter => chapter.innerText.includes('FREE'));
 
         return data.map(chapter => {
-            let format = chapter.querySelector('.disp-id')
+            let format = chapter.querySelector('.disp-id');
             if( format ) {
                 return {
                     id: chapter.href,
@@ -74,7 +67,7 @@ export default class VizShonenJump extends Connector {
                 };
             }
 
-            format = chapter.href.match(/chapter-(\d+)\//)
+            format = chapter.href.match(/chapter-(\d+)\//);
             if(format.length > 1) {
                 return {
                     id: chapter.href,
@@ -87,8 +80,6 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getPages(chapter) {
-        console.log('remove replace below');
-        chapter.id = chapter.id.replace('hakuneko://cache', this.url);
         const request = new Request(new URL(chapter.id, this.url));
         const data = await this.fetchRegex(request, /var\s+pages\s*=\s*(\d+)/g);
         const pageCount = parseInt(data[0]);
@@ -126,6 +117,7 @@ export default class VizShonenJump extends Connector {
             response = await fetch(request);
             const blob = await response.blob();
             const bitmap = await createImageBitmap(blob);
+            // eslint-disable-next-line
             const exif = EXIF.readFromBinaryFile(await blob.arrayBuffer());
 
             let canvas = document.createElement('canvas');
@@ -196,7 +188,7 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(uri, this.requestOptions);;
+        const request = new Request(uri, this.requestOptions);
         let data;
 
         if (uri.href.match(/\/chapters\//)) {
@@ -207,9 +199,6 @@ export default class VizShonenJump extends Connector {
         }
 
         const title = data[0].innerText.trim();
-        console.log('remove replace below');
-        uri.href = uri.href.replace('hakuneko://cache', this.url);
-
         return new Manga(this, uri, title);
     }
 }
