@@ -37,7 +37,7 @@ export default class BlogTruyen extends Connector {
         uri.searchParams.set('orderBy', 1); // order by title
         uri.searchParams.set('p', page);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.list p span.tiptip a');
+        let data = await this.fetchDOM(request, 'div.list p span.tiptip a', 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
