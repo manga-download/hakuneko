@@ -195,7 +195,6 @@ export default class Lezhin extends Connector {
         let data = await this.fetchJSON(uri.href, this.requestOptions);
         let comicID = data.data.extra.comic.id;
         let episodeID = data.data.extra.episode.id;
-        let isPremium = await this._isPurchasedOrSubscribed(comicID, episodeID);
         /*
          *let top = data.data.extra.episode.topInfo !== undefined;
          *let bottom = data.data.extra.episode.bottomInfo !== undefined;
@@ -210,7 +209,6 @@ export default class Lezhin extends Connector {
         return [... new Array(pages).keys()].map(page => {
             let uri = new URL([this.cdnURL, 'v2/comics', comicID, 'episodes', episodeID, 'contents', path + 's', page + 1].join('/'));
             uri.searchParams.set('access_token', this.accessToken);
-            uri.searchParams.set('purchased', isPremium);
             /*
              * q  | Free  | Purchased
              * ----------------------
@@ -223,16 +221,5 @@ export default class Lezhin extends Connector {
             //uri.searchParams.set( 'updated', 1539846001617 /* Date.now() */ );
             return uri.href;
         });
-    }
-
-    async _isPurchasedOrSubscribed(comicID, episodeID) {
-        if(this.accessToken) {
-            let uri = new URL(`${this.apiURL}/users/${this.userID}/contents/${comicID}`);
-            let request = new Request(uri, this.requestOptions);
-            request.headers.set('authorization', 'Bearer ' + this.accessToken);
-            let data = await this.fetchJSON(request);
-            return data.data.subscribed || data.data.purchased.includes(episodeID);
-        }
-        return false;
     }
 }
