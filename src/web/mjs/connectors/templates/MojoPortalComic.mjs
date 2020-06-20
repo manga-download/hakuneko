@@ -54,7 +54,7 @@ export default class MojoPortalComic extends Connector {
 
     async _getMangasFromPage(page) {
         let request = new Request(this.url + '/?page=' + page, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.ModuleContent div.items div.item figcaption a.jtip');
+        let data = await this.fetchDOM(request, 'div.ModuleContent div.items div.item figcaption a.jtip', 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
