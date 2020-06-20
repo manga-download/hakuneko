@@ -13,7 +13,7 @@ export default class VizShonenJump extends Connector {
         this.config = {
             throttle: {
                 label: 'Throttle Requests [ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecuitive requests.',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nImage links may expire too fast and therefore downloads may fail.',
                 input: 'numeric',
                 min: 500,
                 max: 30000,
@@ -81,7 +81,7 @@ export default class VizShonenJump extends Connector {
         const chapterID = chapter.id.match(/chapter\/(\d+)/)[1];
 
         return Array(pageCount+1).fill().map((_, index) => {
-            let page = new URL('https://www.viz.com/manga/get_manga_url');
+            let page = new URL('/manga/get_manga_url', this.url);
             page.searchParams.set('device_id', 3);
             page.searchParams.set('manga_id', chapterID);
             page.searchParams.set('page', index);
