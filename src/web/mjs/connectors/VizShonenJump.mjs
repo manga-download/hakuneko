@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class VizShonenJump extends Connector {
 
@@ -7,7 +8,7 @@ export default class VizShonenJump extends Connector {
         super.id = 'vizshonenjump';
         super.label = 'Viz - Shonen Jump';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://www.viz.com/shonenjump';
+        this.url = 'https://www.viz.com';
         this.requestOptions.headers.set( 'x-referer', this.url );
         this.config = {
             /* Since the website requires us to fetch the image data a few seconds after the API call
@@ -19,7 +20,7 @@ export default class VizShonenJump extends Connector {
                 description: 'The maximum number of concurrent downloads.',
                 input: 'numeric',
                 min: 1,
-                max: 12,
+                max: 20,
                 value: 5
             }
         };
@@ -27,8 +28,22 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getMangas() {
-        const request = new Request(new URL(this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.o_sort_container div > a');
+        const request = new Request(new URL('/shonenjump', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request);
+
+        if ( !data.innerText.includes('Latest free chapters') ) {
+            alert(this.label + ': This website is geolocked. It can only be accessed from the USA.');
+            return;
+        }
+
+        data = [...data.querySelectorAll('div.o_sort_container div > a')];
+
+        console.log(data.map(manga => {
+            return {
+                id: manga.pathname,
+                title: manga.querySelector(':nth-child(2)').innerText.trim()
+            };
+        }));
 
         return data.map(manga => {
             return {
@@ -40,74 +55,63 @@ export default class VizShonenJump extends Connector {
 
     async _getChapters(manga) {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'a.o_chapter-container');
+        let data = await this.fetchDOM(request);
+
+        if ( data.innerText.includes('MANGA Plus by SHUEISHA') ) {
+            alert(this.label + ': This website is geolocked. It can only be accessed from the USA.\nYou may use MANGA Plus instead.');
+            return;
+        }
+
+        data = [...data.querySelectorAll('a.o_chapter-container')];
         data = data.filter(chapter => chapter.innerText.includes('FREE'));
 
         return data.map(chapter => {
-            try {
+            let format = chapter.querySelector('.disp-id')
+            if( format ) {
                 return {
                     id: chapter.href,
-                    title: chapter.querySelector('.disp-id').innerText.trim()
+                    title: format.innerText.trim()
                 };
-            } catch(error) {
-                try {
-                    return {
-                        id: chapter.href,
-                        title: 'Ch. ' + chapter.href.match(/chapter-(\d+)\//)[1]
-                    };
-                } catch(error) {
-                    throw new Error('Unknown chapter format. Please report at https://github.com/manga-download/hakuneko/issues');
-                }
             }
+
+            format = chapter.href.match(/chapter-(\d+)\//)
+            if(format.length > 1) {
+                return {
+                    id: chapter.href,
+                    title: 'Ch. ' + format[1]
+                };
+            }
+
+            throw new Error('Unknown chapter format. Please report at https://github.com/manga-download/hakuneko/issues');
         });
     }
 
     async _getPages(chapter) {
-        let script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        window.loadPages = function loadPages() {
-                            var aj_images = [];
-                            for (var page_count = 0; page_count <= pages; page_count++) 
-                                if (!(page_count < 0 || page_count > pages) && "undefined" == typeof pageImages["page" + page_count]) {
-                                    var aj_req = {
-                                        url: pageUrl + "&manga_id=" + manga_id + "&page=" + page_count,
-                                        dataType: "text"
-                                    };
-                                    aj_images.push(aj_req)
-                                } 
-                                resolve(Object.values(aj_images));
-                        }
+        console.log('remove replace below');
+        chapter.id = chapter.id.replace('hakuneko://cache', this.url);
+        const request = new Request(new URL(chapter.id, this.url));
+        const data = await this.fetchRegex(request, /var\s+pages\s*=\s*(\d+)/g);
+        const pageCount = parseInt(data[0]);
+        const chapterID = chapter.id.match(/chapter\/(\d+)/)[1];
 
-                        window.loadPages();
-
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 2000);
-            });
-        `;
-        let request = new Request(new URL(chapter.id, this.url));
-        let data = await Engine.Request.fetchUI(request, script, 60000, false);
-
-        return data.map(page => this.createConnectorURI(
-            {
-                id: page.url,
-                referer: chapter.id
-            }
-        ));
+        return Array(pageCount+1).fill().map((_, index) => {
+            let page = new URL('https://www.viz.com/manga/get_manga_url');
+            page.searchParams.set('device_id', 3);
+            page.searchParams.set('manga_id', chapterID);
+            page.searchParams.set('page', index);
+            return this.createConnectorURI({ id: page.href, referer: chapter.id });
+        });
     }
 
     async _handleConnectorURI(payload) {
         while (this.concurrent >= this.config.concurrent.value) {
-            await this.throttle_connections( Math.floor(Math.random() * (2000 - 1000)) + 1000);
+            await this.wait( Math.floor(Math.random() * (2000 - 1000)) + 1000);
         }
         this.concurrent += 1;
 
         try {
             // API request
-            let request = new Request(new URL(payload.id, new URL(this.url).origin ), this.requestOptions);
+            let request = new Request( new URL(payload.id, this.url), this.requestOptions);
             request.headers.set('x-referer', new URL(payload.referer, new URL(this.url).origin));
             request.headers.set('Accept', 'text/plain, */*; q=0.01');
             let response = await fetch(request);
@@ -175,11 +179,11 @@ export default class VizShonenJump extends Connector {
             }
 
             let data = await this._canvasToBlob(canvas);
-            this.concurrent -= 1;
             return this._blobToBuffer(data);
         } catch (error) {
-            this.concurrent -= 1;
             throw new Error('Failed to retrieve image data. Please report at https://github.com/manga-download/hakuneko/issues');
+        } finally {
+            this.concurrent -= 1;
         }
     }
 
@@ -191,9 +195,21 @@ export default class VizShonenJump extends Connector {
         });
     }
 
-    throttle_connections(ms) {
-        return new Promise((resolve) => {
-            setTimeout(resolve, ms);
-        });
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);;
+        let data;
+
+        if (uri.href.match(/\/chapters\//)) {
+            data = await this.fetchDOM(request, 'section#series-intro h2');
+        } else {
+            data = await this.fetchDOM(request, 'div#product_row h3.section_title a');
+            uri.href = data[0].href;
+        }
+
+        const title = data[0].innerText.trim();
+        console.log('remove replace below');
+        uri.href = uri.href.replace('hakuneko://cache', this.url);
+
+        return new Manga(this, uri, title);
     }
 }
