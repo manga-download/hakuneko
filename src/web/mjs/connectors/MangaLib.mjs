@@ -62,54 +62,27 @@ export default class MangaLib extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'div.chapters-list div.chapter-item div.chapter-item__name a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'ru'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.chapters-list div.chapter-item div.chapter-item__name a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.replace(manga.title, '').trim(),
+                language: 'ru'
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
+    async _getPages(chapter) {
         let script = `
             new Promise(resolve => {
-                let server = window.__info.servers[window.__info.img.server];
-                resolve(new URL(window.__info.img.url, server).href);
+                resolve(window.__pg.map(page => window.__info.servers.main + window.__info.img.url + page.u));
             });
         `;
-        let pageList = [];
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'span.pp' )
-            .then( data => {
-                data = [...data[0].childNodes].find( node => node.nodeType === Node.COMMENT_NODE );
-                data = JSON.parse( decodeURIComponent( escape( atob( data.textContent ) ) ) );
-                pageList = data.map( page => page.u );
-                return Engine.Request.fetchUI( request, script );
-            } )
-            .then( data => {
-                pageList = pageList.map( page => data + page );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }
