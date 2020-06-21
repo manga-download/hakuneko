@@ -111,7 +111,7 @@ export default class Chapter extends EventTarget {
                         this.pageCache = [];
                         if( !error ) {
                             // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
-                            this.pageCache = pages.map(page => page.replace(/\/i\d+\.wp\.com/, ''));
+                            this.pageCache = Array.isArray(pages) ? pages.map(page => page.replace(/\/i\d+\.wp\.com/, '')) : pages;
                         }
                         callback( error, this.pageCache );
                     } );

@@ -18,7 +18,8 @@
         "Engine": "readonly",
         "EventListener": "readonly",
         "Connector": "readonly",
-        "ClipboardConnector": "readonly"
+        "ClipboardConnector": "readonly",
+        "EXIF": "readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2018,

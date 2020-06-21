@@ -7,7 +7,7 @@ export default class MangaKid extends WordPressEManga {
         super.id = 'mangakid';
         super.label = 'MangaKid';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://mangakid.me';
+        this.url = 'https://mangakid.club';
         this.path = '/manga-lists/';
     }
 }

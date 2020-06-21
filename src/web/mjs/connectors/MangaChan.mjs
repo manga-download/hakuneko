@@ -18,7 +18,7 @@ export default class MangaChan extends Connector {
         this.path = '/catalog';
         this.queryMangas = 'div#content div.content_row div.manga_row1 h2 a.title_link';
         this.queryChapters = 'table.table_cha tr td div.manga2 a';
-        this.queryPages = /['"]fullimg['"]\s*:\s*\[\s*(".*?")\s*,?\s*\]/;
+        this.queryPages = /['"]fullimg['"]\s*:\s*(\[(?:\s*['"]http[^'"]*['"]\s*,?\s*)*\])/;
     }
 
     /**
@@ -94,7 +94,7 @@ export default class MangaChan extends Connector {
         fetch( request )
             .then( response => response.text() )
             .then( data => {
-                let pageList = JSON.parse( '[' + data.match( this.queryPages )[1] + ']' )
+                let pageList = JSON.parse(data.match(this.queryPages)[1].replace(/'/g, '"'))
                 // temporary fix image CDN for old domain which are no longer available
                     .map( link => link.replace( /img\d+\.manga-chan\.me/, 'manga-chan.me' ) );
                 callback( null, pageList );
