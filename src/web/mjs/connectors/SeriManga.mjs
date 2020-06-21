@@ -16,7 +16,7 @@ export default class SeriManga extends Connector {
         let data = await this.fetchDOM(request, 'div.seri-img div.name');
         let id = uri.pathname + uri.search;
         let title = data[0].textContent.trim();
-        return Promise.resolve(new Manga(this, id, title));
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
