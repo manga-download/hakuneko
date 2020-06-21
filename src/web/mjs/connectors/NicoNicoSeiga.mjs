@@ -95,11 +95,12 @@ export default class NicoNicoSeiga extends Connector {
             let response = await fetch(request);
             let encrypted = new Uint8Array(await response.arrayBuffer());
             let key = this._getKeyFromUrl(payload.original);
-            let decrypted = this._decrypt(encrypted, key);
-            return {
-                mimeType: this._getDataType(decrypted),
-                data: decrypted
+            let buffer = {
+                mimeType: 'application/octet-stream',
+                data: this._decrypt(encrypted, key)
             };
+            this._applyRealMime(buffer);
+            return buffer;
         }
     }
 
@@ -123,12 +124,5 @@ export default class NicoNicoSeiga extends Connector {
         for (n = 0; n < e.length; n++)
             e[n] = e[n] ^ r[n % i];
         return e;
-    }
-
-    _getDataType(e) {
-        var t = null
-            , n = e.length;
-        return 255 === e[0] && 216 === e[1] && 255 === e[n - 2] && 217 === e[n - 1] ? t = "jpg" : 137 === e[0] && 80 === e[1] && 78 === e[2] && 71 === e[3] ? t = "png" : 71 === e[0] && 73 === e[1] && 70 === e[2] && 56 === e[3] && (t = "gif"),
-        t;
     }
 }
