@@ -374,13 +374,9 @@
                 if( evt.keyCode !== 13 || this.$.mangaPattern.disabled /*this.isMangaFilterButtonDisabled*/ ) {
                     return;
                 }
-                if( !this.mangaPattern ) {
-                    this.set( 'connectorList', Engine.Connectors );
-                    return;
-                }
 
                 this.$.mangaPattern.disabled = true;
-                let promises = this.connectorList.map( connector => {
+                let promises = Engine.Connectors.map( connector => {
                     if( typeof connector.findMatchingManga === 'function' ) {
                         return connector.findMatchingManga( this.mangaPattern )
                         .then( result => result ? Promise.resolve( connector ) : Promise.resolve( undefined ) );
