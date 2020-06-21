@@ -54,10 +54,11 @@ export default class VizShonenJump extends Connector {
         data = data.filter(chapter => chapter.innerText.includes('FREE'));
 
         return data.map(chapter => {
+            let id = this.getRootRelativeOrAbsoluteLink(chapter, this.url);
             let format = chapter.querySelector('.disp-id');
             if( format ) {
                 return {
-                    id: chapter.href,
+                    id: id,
                     title: format.innerText.trim()
                 };
             }
@@ -65,7 +66,7 @@ export default class VizShonenJump extends Connector {
             format = chapter.href.match(/chapter-(\d+)\//);
             if(format.length > 1) {
                 return {
-                    id: chapter.href,
+                    id: id,
                     title: 'Ch. ' + format[1]
                 };
             }
