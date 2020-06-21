@@ -7,7 +7,7 @@ export default class Toonkor extends GnuBoard5BootstrapBasic2 {
         super.id = 'toonkor';
         super.label = 'Toonkor';
         this.tags = [ 'webtoon', 'korean' ];
-        this.url = 'https://tkor.one';
+        this.url = 'https://tkor.fit';
     }
 
     canHandleURI(uri) {
