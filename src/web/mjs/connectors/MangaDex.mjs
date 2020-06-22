@@ -120,7 +120,7 @@ export default class MangaDex extends Connector {
         if(uri.origin === this.url || !this.config.node.value) {
             return uri.href;
         }
-        return new URL(uri.pathname, this.config.node.value).href;
+        return new URL('/data/', this.config.node.value).href;
     }
 
     async _requestAPI(url, label) {
