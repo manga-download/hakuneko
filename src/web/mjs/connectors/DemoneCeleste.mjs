@@ -8,7 +8,6 @@ export default class DemoneCeleste extends Connector {
         super.label = 'Demone Celeste';
         this.tags = [ 'manga', 'italian' ];
         this.url = 'https://www.demoneceleste.it';
-        this.language = 'it';
     }
 
     async _getMangas() {
@@ -55,6 +54,6 @@ export default class DemoneCeleste extends Connector {
             }
         });
         const data = await fetch(request);
-        return await data.text();
+        return data.text();
     }
 }
