@@ -89,15 +89,15 @@ export default class VizShonenJump extends Connector {
                     };
                 }
 
-                format = chapter.dataset.targetUrl.match(/chapter-(\d+)\//);
-                if(format.length > 1) {
+                format = chapter.dataset.targetUrl.match(/chapter-([-_0-9]+)\//);
+                if(format && format.length > 1) {
                     return {
                         id: id,
-                        title: 'Ch. ' + format[1]
+                        title: 'Ch. ' + format[1].replace(/[-_]/g, '.')
                     };
                 }
 
-                throw new Error('Unknown chapter format. Please report at https://github.com/manga-download/hakuneko/issues');
+                throw new Error(`Unknown chapter format for ${id}. Please report at https://github.com/manga-download/hakuneko/issues`);
             });
     }
 
