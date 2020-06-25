@@ -45,7 +45,21 @@ export default class SeriManga extends Connector {
     }
 
     async _getChapters(manga) {
+        let chapterList = [];
         let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.pagination li.page-item:nth-last-of-type(2) a.page-link');
+        let pageCount = data.length ? parseInt(data[0].href.match(/page=(\d+)/)[1]) : 1;
+        for(let page = 1; page <= pageCount; page++) {
+            let chapters = await this._getChaptersFromPage(manga, page);
+            chapterList.push(...chapters);
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(manga, page) {
+        let uri = new URL(manga.id, this.url);
+        uri.searchParams.set('page', page);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.seri-page-list ul.spl-list li.spl-list-item > a');
         return data.map(element => {

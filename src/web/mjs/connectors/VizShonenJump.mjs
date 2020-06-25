@@ -22,6 +22,18 @@ export default class VizShonenJump extends Connector {
         };
     }
 
+    async _getUserInfo() {
+        let uri = new URL('/account/refresh_login_links', this.url);
+        let request = new Request(uri, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.text();
+        return {
+            isLoggedIn: /user_id\s*=\s*[1-9]\d*/.test(data),
+            isAdult: /adult\s*=\s*true/.test(data),
+            isMember: /is_wsj_subscriber\s*=\s*true/.test(data)
+        };
+    }
+
     async _getMangas() {
         const request = new Request(new URL('/shonenjump', this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
@@ -42,6 +54,7 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getChapters(manga) {
+        let auth = await this._getUserInfo();
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
 
@@ -50,29 +63,42 @@ export default class VizShonenJump extends Connector {
             return;
         }
 
-        data = [...data.querySelectorAll('a.o_chapter-container')];
-        data = data.filter(chapter => chapter.innerText.includes('FREE'));
+        return [...data.querySelectorAll('div > a.o_chapter-container[data-target-url], tr.o_chapter td.ch-num-list-spacing a.o_chapter-container[data-target-url]')]
+            .filter(element => {
+                // login required (e.g. age verification) => javascript:void('login to read');
+                if(/(?=javascript:)(?=.*login)/i.test(element.href)) {
+                    return auth.isLoggedIn && auth.isAdult;
+                }
+                // subscription required => javascript:void('join to read');
+                if(/(?=javascript:)(?=.*join)/i.test(element.href)) {
+                    return auth.isMember;
+                }
+                // free
+                return true;
+            })
+            .map(chapter => {
+                if(chapter.dataset.targetUrl.includes('javascript:')) {
+                    chapter.dataset.targetUrl = chapter.dataset.targetUrl.match(/['"](\/shonenjump[^']+)['"]/)[1];
+                }
+                let id = this.getRootRelativeOrAbsoluteLink(chapter.dataset.targetUrl, this.url);
+                let format = chapter.querySelector('.disp-id');
+                if( format ) {
+                    return {
+                        id: id,
+                        title: format.innerText.trim()
+                    };
+                }
 
-        return data.map(chapter => {
-            let id = this.getRootRelativeOrAbsoluteLink(chapter, this.url);
-            let format = chapter.querySelector('.disp-id');
-            if( format ) {
-                return {
-                    id: id,
-                    title: format.innerText.trim()
-                };
-            }
+                format = chapter.dataset.targetUrl.match(/chapter-([-_0-9]+)\//);
+                if(format && format.length > 1) {
+                    return {
+                        id: id,
+                        title: 'Ch. ' + format[1].replace(/[-_]/g, '.')
+                    };
+                }
 
-            format = chapter.href.match(/chapter-(\d+)\//);
-            if(format.length > 1) {
-                return {
-                    id: id,
-                    title: 'Ch. ' + format[1]
-                };
-            }
-
-            throw new Error('Unknown chapter format. Please report at https://github.com/manga-download/hakuneko/issues');
-        });
+                throw new Error(`Unknown chapter format for ${id}. Please report at https://github.com/manga-download/hakuneko/issues`);
+            });
     }
 
     async _getPages(chapter) {
