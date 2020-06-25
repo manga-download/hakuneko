@@ -127,6 +127,11 @@ export default class Request {
                     return handleAutomaticRedirect();
                 }
 
+                // AreYouHuman Checks
+                if(document.querySelector('form[action*="AreYouHuman"]')) {
+                    return handleUserInteractionRequired();
+                }
+
                 // Default
                 handleNoRedirect();
             });
