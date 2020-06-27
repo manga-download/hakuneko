@@ -1,6 +1,6 @@
-import MHXK from './templates/MHXK.mjs';
+import ZYMK from './templates/ZYMK.mjs';
 
-export default class ManHua1359 extends MHXK {
+export default class ManHua1359 extends ZYMK {
 
     constructor() {
         super();
@@ -8,12 +8,5 @@ export default class ManHua1359 extends MHXK {
         super.label = '1359漫画网 (1359 ManhuaWeb)';
         this.tags = [ 'webtoon', 'chinese' ];
         this.url = 'https://1359mh.com';
-
-        this.queryMangaTitle = 'div.title-warper h1.title';
-        this.product = {
-            id: 0,
-            name: '',
-            platform: 'pc'
-        };
     }
 }
