@@ -1,6 +1,6 @@
-import MHXK from './templates/MHXK.mjs';
+import ZYMK from './templates/ZYMK.mjs';
 
-export default class ManHua517 extends MHXK {
+export default class ManHua517 extends ZYMK {
 
     constructor() {
         super();
@@ -8,12 +8,5 @@ export default class ManHua517 extends MHXK {
         super.label = '517漫画网 (517 ManhuaWeb)';
         this.tags = [ 'webtoon', 'chinese' ];
         this.url = 'http://www.517mh.net';
-
-        this.queryMangaTitle = 'div.title-warper h1.title';
-        this.product = {
-            id: 0,
-            name: '',
-            platform: 'pc'
-        };
     }
 }
