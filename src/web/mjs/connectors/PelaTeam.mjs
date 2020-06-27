@@ -39,9 +39,17 @@ export default class PelaTeam extends Connector {
     }
 
     async _getPages(chapter) {
-
+        const script = `
+            new Promise((resolve, reject) => {
+                try {
+                    resolve(imageArray);
+                } catch(error) {
+                    reject(error);
+                }
+            });
+        `;
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, 'imageArray');
+        const data = await Engine.Request.fetchUI(request, script);
 
         return data.map(element => {
             return new URL('/Computer/' + encodeURI(element), this.url).href;
