@@ -535,7 +535,7 @@
                 // Find current image within view
                 let currentScrollImages = [...images].filter(image => {
                     let rect = image.getBoundingClientRect();
-                    return (rect.top <= window.innerHeight && rect.bottom >=0);
+                    return (rect.top <= window.innerHeight && rect.bottom >1);
                 });
 
                 // If multiple images filtered, get the first one. If none scroll to the top image
@@ -552,8 +552,7 @@
                 } else {
                     // Find next image
                     let nextScrollImage = currentScrollImage.nextElementSibling;
-                    if (nextScrollImage)
-                    {
+                    if (nextScrollImage) {
                         // Scroll to it
                         nextScrollImage.scrollIntoView({ 
                             behavior: 'smooth' 
