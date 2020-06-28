@@ -237,6 +237,18 @@ export default class Settings extends EventTarget {
             input: types.text,
             value: ''
         };
+
+        this.discordPresence = {
+            label: 'Discord Presence',
+            description: [
+                'Provides what you are currently reading as discord activity',
+                'information to all your frein',
+                'added',
+                ''
+            ].join( '\n' ),
+            input: types.checkbox,
+            value: false
+        };
     }
 
     *[Symbol.iterator]() {

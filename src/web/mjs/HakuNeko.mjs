@@ -13,6 +13,7 @@ import Request from './engine/Request.mjs';
 import Settings from './engine/Settings.mjs';
 import Storage from './engine/Storage.mjs';
 import Version from './VersionInfo.mjs';
+import DiscordPresence from './engine/DiscordPresence.mjs';
 
 export default class HakuNeko {
 
@@ -32,6 +33,7 @@ export default class HakuNeko {
         this._storage = new Storage();
         this._bookmarkManager = new BookmarkManager(this._settings, new BookmarkImporter());
         this._chaptermarkManager = new ChaptermarkManager(this._settings);
+        this._discordPresence = new DiscordPresence(this._settings);
     }
 
     /**
