@@ -9,8 +9,8 @@ export default class DiscordPresence {
         this.IpcBytes = 0; // keep track of IPC connection
 
         this._settings = settings; // Engine.Settings
-        this.enabled = settings.discordPresence.value;
-        this.enabledHentai = settings.discordPresenceHentai.value;
+        this.enabled = false;
+        this.enabledHentai = false;
         this.hentai = false; // Is current item hentai?
 
         this._settings.addEventListener('loaded', this._onSettingsChanged.bind(this));
@@ -35,8 +35,23 @@ export default class DiscordPresence {
     }
 
     _onSettingsChanged() {
-        this.enabled = this._settings.discordPresence.value;
-        this.enabledHentai  = this._settings.discordPresenceHentai.value;
+        switch (this._settings.discordPresence.value) {
+            case 'none':
+                this.enabled = false;
+                this.enabledHentai = false;
+                break;
+            case 'nohentai':
+                this.enabled = true;
+                this.enabledHentai = false;
+                break;
+            case 'hentai':
+                this.enabled = true;
+                this.enabledHentai = true;
+                break;
+            default:
+                this.enabled = false;
+                this.enabledHentai = false;
+        }
 
         if (this.enabled) {
             this.statusNew = true;
@@ -92,23 +107,24 @@ export default class DiscordPresence {
     }
 
     async updateStatus() {
-        if (this.enabled && this.statusNew && this.rpc) {
-            this.IpcBytes = this.rpc.transport.socket.bytesWritten;
-            if( !this.hentai || (this.hentai && this.enabledHentai)) {
-                console.log('Update: ', this.status);
-                this.rpc.setActivity(this.status);
-            } else {
-                this.IpcBytes -= 1; // Otherwise IPC will be considered dead
+        if(this.rpc) {
+            if (this.enabled && this.statusNew) {
+                this.IpcBytes = this.rpc.transport.socket.bytesWritten;
+                if( !this.hentai || (this.hentai && this.enabledHentai)) {
+                    this.rpc.setActivity(this.status);
+                } else {
+                    this.IpcBytes -= 1; // Otherwise IPC will be considered dead
+                }
             }
-        }
 
-        // Test if IPC is still active
-        if ( this.rpc.transport.socket.bytesWritten > this.IpcBytes) {
-            this.IpcBytes = this.rpc.transport.socket.bytesWritten;
-            this.statusNew = false;
-        } else if (this.rpc.transport.socket.bytesWritten == this.IpcBytes && this.statusNew) {
-            console.warn('WARNING: DiscordPresence - Lost connection to Discord.');
-            this.stopDiscordPresence();
+            // Test if IPC is still active
+            if ( this.rpc.transport.socket.bytesWritten > this.IpcBytes) {
+                this.IpcBytes = this.rpc.transport.socket.bytesWritten;
+                this.statusNew = false;
+            } else if (this.rpc.transport.socket.bytesWritten == this.IpcBytes && this.statusNew) {
+                console.warn('WARNING: DiscordPresence - Lost connection to Discord.');
+                this.stopDiscordPresence();
+            }
         }
     }
 

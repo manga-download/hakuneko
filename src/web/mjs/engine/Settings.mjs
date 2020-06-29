@@ -245,19 +245,13 @@ export default class Settings extends EventTarget {
                 'information to the public.',
                 ''
             ].join( '\n' ),
-            input: types.checkbox,
-            value: false
-        };
-
-        this.discordPresenceHentai = {
-            label: 'Discord Presence Hentai',
-            description: [
-                'Also displays hentai content as discord activity',
-                'information to the public.',
-                ''
-            ].join( '\n' ),
-            input: types.checkbox,
-            value: false
+            input: types.select,
+            options: [
+                { value: 'none', name: 'No presence' },
+                { value: 'nohentai', name: 'All, but NO hentai' },
+                { value: 'hentai', name: 'All INCLUDING hentai' }
+            ],
+            value: 'none'
         };
     }
 
