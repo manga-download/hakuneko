@@ -153,7 +153,7 @@ export default class DiscordPresence {
                     this.updateStatus();
                 }, 15200);
             });
-            let connect = await this.rpc.login({ clientId: discordPresenceId })
+            this.rpc.login({ clientId: discordPresenceId })
             .catch (error => {
                 if (error.message == 'Could not connect') {
                     console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
