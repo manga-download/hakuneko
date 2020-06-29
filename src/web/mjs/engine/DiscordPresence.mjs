@@ -113,12 +113,12 @@ export default class DiscordPresence {
                 if( !this.hentai || (this.hentai && this.enabledHentai)) {
                     this.rpc.setActivity(this.status);
                 } else {
-                    this.IpcBytes -= 1; // Otherwise IPC will be considered dead
+                    this.statusNew = false;
                 }
             }
 
             // Test if IPC is still active
-            if ( this.rpc.transport.socket.bytesWritten > this.IpcBytes) {
+            if ( this.statusNew && this.rpc.transport.socket.bytesWritten > this.IpcBytes) {
                 this.IpcBytes = this.rpc.transport.socket.bytesWritten;
                 this.statusNew = false;
             } else if (this.rpc.transport.socket.bytesWritten == this.IpcBytes && this.statusNew) {
