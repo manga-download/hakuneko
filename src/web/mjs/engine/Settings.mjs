@@ -242,8 +242,18 @@ export default class Settings extends EventTarget {
             label: 'Discord Presence',
             description: [
                 'Provides what you are currently reading as discord activity',
-                'information to all your frein',
-                'added',
+                'information to the public.',
+                ''
+            ].join( '\n' ),
+            input: types.checkbox,
+            value: false
+        };
+
+        this.discordPresenceHentai = {
+            label: 'Discord Presence Hentai',
+            description: [
+                'Also displays hentai content as discord activity',
+                'information to the public.',
                 ''
             ].join( '\n' ),
             input: types.checkbox,
