@@ -46,46 +46,46 @@ export default class DiscordPresence {
         }
     }
 
-    _onSelectConnector(e) {
+    _onSelectConnector(event) {
         // Hentai check
-        if(e.detail.tags.includes('hentai') || e.detail.tags.includes('porn')) {
+        if(event.detail.tags.map(t => t.toLowerCase()).includes('hentai') || event.detail.tags.map(t => t.toLowerCase()).includes('porn')) {
             this.hentai = true;
         } else {
             this.hentai = false;
         }
 
-        this.status['details'] = 'Browsing ' + e.detail.label;
+        this.status['details'] = 'Browsing ' + event.detail.label;
         if (this.status.state) delete this.status.state;
         this.status.startTimestamp = + new Date();
         this.statusNew = true;
         if (this.enabled && !this.rpc) this.startDiscordPresence();
     }
 
-    _onSelectManga(e) {
+    _onSelectManga(event) {
         // Hentai check
-        if(e.detail.connector.tags.includes('hentai') || e.detail.connector.tags.includes('porn')) {
+        if(event.detail.tags.map(t => t.toLowerCase()).includes('hentai') || event.detail.tags.map(t => t.toLowerCase()).includes('porn')) {
             this.hentai = true;
         } else {
             this.hentai = false;
         }
 
-        this.status['details'] = 'Browsing ' + e.detail.connector.label;
-        this.status['state'] = 'Looking at ' + e.detail.title;
+        this.status['details'] = 'Browsing ' + event.detail.connector.label;
+        this.status['state'] = 'Looking at ' + event.detail.title;
         this.status.startTimestamp = + new Date();
         this.statusNew = true;
         if (this.enabled && !this.rpc) this.startDiscordPresence();
     }
 
-    _onSelectChapter(e) {
+    _onSelectChapter(event) {
         // Hentai check
-        if(e.detail.manga.connector.tags.includes('hentai') || e.detail.manga.connector.tags.includes('porn')) {
+        if(event.detail.tags.map(t => t.toLowerCase()).includes('hentai') || event.detail.tags.map(t => t.toLowerCase()).includes('porn')) {
             this.hentai = true;
         } else {
             this.hentai = false;
         }
 
-        this.status['details'] = 'Reading ' + e.detail.manga.title;
-        this.status['state'] = e.detail.title;
+        this.status['details'] = 'Viewing ' + event.detail.manga.title;
+        this.status['state'] = event.detail.title;
         this.status.startTimestamp = + new Date();
         this.statusNew = true;
         if (this.enabled && !this.rpc) this.startDiscordPresence();
@@ -95,7 +95,7 @@ export default class DiscordPresence {
         if(this.rpc) {
             if (this.enabled && this.statusNew) {
                 this.IpcBytes = this.rpc.transport.socket.bytesWritten;
-                if( !this.hentai || (this.hentai && this.enabledHentai)) {
+                if( !this.hentai || this.hentai && this.enabledHentai) {
                     this.rpc.setActivity(this.status);
                 } else {
                     this.statusNew = false;
@@ -123,24 +123,23 @@ export default class DiscordPresence {
     }
 
     async startDiscordPresence() {
-        if (!this.rpc) {
-            this.rpc = new DiscordRPC.Client({ transport: 'ipc' });
-            this.rpc.on('ready', () => {
-                this.status.startTimestamp = + new Date();
-                
-                // some delay for Discord to be receptive
-                setTimeout( () => {
-                    this.updateStatus();
-                }, 2000);
+        this.rpc = this.rpc || new DiscordRPC.Client({ transport: 'ipc' });
+        this.rpc.on('ready', () => {
+            this.status.startTimestamp = + new Date();
 
-                // activity can only be set every 15 seconds
-                setInterval(() => {
-                    this.updateStatus();
-                }, 15200);
-            });
-            this.rpc.login({ clientId: discordPresenceId })
+            // some delay for Discord to be receptive
+            setTimeout( () => {
+                this.updateStatus();
+            }, 2000);
+
+            // activity can only be set every 15 seconds
+            setInterval(() => {
+                this.updateStatus();
+            }, 15200);
+        });
+
+        this.rpc.login({ clientId: discordPresenceId })
             .catch (error => {
-                console.log(error);
                 if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
                     console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
                 } else {
@@ -148,6 +147,5 @@ export default class DiscordPresence {
                 }
                 this.rpc = null;
             });
-        }
     }
 }
