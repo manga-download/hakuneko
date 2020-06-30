@@ -23,12 +23,9 @@ export default class DiscordPresence {
         };
         this.statusNew = true;
 
-        // EvetnListener for:
-        // Connector selected
+        // EventListener
         document.addEventListener( EventListener.onSelectConnector, this._onSelectConnector.bind(this) );
-        // Manga selected
         document.addEventListener( EventListener.onSelectManga, this._onSelectManga.bind(this) );
-        // get chapter pages (Reader/Downloader)
         document.addEventListener( EventListener.onSelectChapter, this._onSelectChapter.bind(this) );
 
         this.startDiscordPresence();
@@ -47,13 +44,7 @@ export default class DiscordPresence {
     }
 
     _onSelectConnector(event) {
-        // Hentai check
-        if(event.detail.tags.map(t => t.toLowerCase()).includes('hentai') || event.detail.tags.map(t => t.toLowerCase()).includes('porn')) {
-            this.hentai = true;
-        } else {
-            this.hentai = false;
-        }
-
+        this.isThisHentai(event.detail.tags);
         this.status['details'] = 'Browsing ' + event.detail.label;
         if (this.status.state) delete this.status.state;
         this.status.startTimestamp = + new Date();
@@ -62,13 +53,7 @@ export default class DiscordPresence {
     }
 
     _onSelectManga(event) {
-        // Hentai check
-        if(event.detail.tags.map(t => t.toLowerCase()).includes('hentai') || event.detail.tags.map(t => t.toLowerCase()).includes('porn')) {
-            this.hentai = true;
-        } else {
-            this.hentai = false;
-        }
-
+        this.isThisHentai(event.detail.tags);
         this.status['details'] = 'Browsing ' + event.detail.connector.label;
         this.status['state'] = 'Looking at ' + event.detail.title;
         this.status.startTimestamp = + new Date();
@@ -77,18 +62,22 @@ export default class DiscordPresence {
     }
 
     _onSelectChapter(event) {
-        // Hentai check
-        if(event.detail.tags.map(t => t.toLowerCase()).includes('hentai') || event.detail.tags.map(t => t.toLowerCase()).includes('porn')) {
-            this.hentai = true;
-        } else {
-            this.hentai = false;
-        }
-
+        this.isThisHentai(event.detail.tags);
         this.status['details'] = 'Viewing ' + event.detail.manga.title;
         this.status['state'] = event.detail.title;
         this.status.startTimestamp = + new Date();
         this.statusNew = true;
         if (this.enabled && !this.rpc) this.startDiscordPresence();
+    }
+
+    isThisHentai(tags) {
+        // Hentai check
+        tags = tags.map(t => t.toLowerCase());
+        if(tags.includes('hentai') || tags.includes('porn')) {
+            this.hentai = true;
+        } else {
+            this.hentai = false;
+        }
     }
 
     async updateStatus() {
