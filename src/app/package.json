@@ -12,6 +12,7 @@
   "dependencies": {
     "@logtrine/logtrine": "latest",
     "fs-extra": "latest",
-    "jszip": "latest"
+    "jszip": "latest",
+    "discord-rpc": "^3.1.1"
   }
 }

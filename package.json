@@ -45,8 +45,5 @@
     "test:app": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/app",
     "test:web": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/web",
     "test:e2e": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/__tests__"
-  },
-  "dependencies": {
-    "discord-rpc": "^3.1.1"
   }
 }
