@@ -253,7 +253,7 @@
              */
             onMangaClicked( e ) {
                 this.set( 'selectedManga', e.model.item );
-                document.dispatchEvent(new CustomEvent(EventListener.onMangaClicked, { detail: e.model.item }));
+                document.dispatchEvent(new CustomEvent(EventListener.onSelectManga, { detail: e.model.item }));
             }
 
             /**

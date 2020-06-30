@@ -27,31 +27,16 @@ export default class DiscordPresence {
         // Connector selected
         document.addEventListener( EventListener.onSelectConnector, this._onSelectConnector.bind(this) );
         // Manga selected
-        document.addEventListener( EventListener.onMangaClicked, this._onMangaClicked.bind(this) );
+        document.addEventListener( EventListener.onSelectManga, this._onSelectManga.bind(this) );
         // get chapter pages (Reader/Downloader)
-        document.addEventListener( EventListener.onChapterGetPages, this._onChapterGetPages.bind(this) );
+        document.addEventListener( EventListener.onSelectChapter, this._onSelectChapter.bind(this) );
 
         this.startDiscordPresence();
     }
 
     _onSettingsChanged() {
-        switch (this._settings.discordPresence.value) {
-            case 'none':
-                this.enabled = false;
-                this.enabledHentai = false;
-                break;
-            case 'nohentai':
-                this.enabled = true;
-                this.enabledHentai = false;
-                break;
-            case 'hentai':
-                this.enabled = true;
-                this.enabledHentai = true;
-                break;
-            default:
-                this.enabled = false;
-                this.enabledHentai = false;
-        }
+        this.enabled = this._settings.discordPresence.value !== 'none';
+        this.enabledHentai = this._settings.discordPresence.value === 'hentai';
 
         if (this.enabled) {
             this.statusNew = true;
@@ -76,7 +61,7 @@ export default class DiscordPresence {
         if (this.enabled && !this.rpc) this.startDiscordPresence();
     }
 
-    _onMangaClicked(e) {
+    _onSelectManga(e) {
         // Hentai check
         if(e.detail.connector.tags.includes('hentai') || e.detail.connector.tags.includes('porn')) {
             this.hentai = true;
@@ -91,7 +76,7 @@ export default class DiscordPresence {
         if (this.enabled && !this.rpc) this.startDiscordPresence();
     }
 
-    _onChapterGetPages(e) {
+    _onSelectChapter(e) {
         // Hentai check
         if(e.detail.manga.connector.tags.includes('hentai') || e.detail.manga.connector.tags.includes('porn')) {
             this.hentai = true;
@@ -155,7 +140,8 @@ export default class DiscordPresence {
             });
             this.rpc.login({ clientId: discordPresenceId })
             .catch (error => {
-                if (error.message == 'Could not connect') {
+                console.log(error);
+                if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
                     console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
                 } else {
                     throw new Error(error);

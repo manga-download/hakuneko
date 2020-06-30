@@ -89,7 +89,7 @@ export default class Chapter extends EventTarget {
      * and a reference to the page list (undefined on error).
      */
     getPages( callback ) {
-        document.dispatchEvent(new CustomEvent(EventListener.onChapterGetPages, { detail: this }));
+        document.dispatchEvent(new CustomEvent(EventListener.onSelectChapter, { detail: this }));
         if( this.status === statusDefinitions.offline || this.status === statusDefinitions.completed ) {
             Engine.Storage.loadChapterPages( this )
                 .then( pages => {
