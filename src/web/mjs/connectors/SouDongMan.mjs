@@ -10,6 +10,7 @@ export default class SouDongMan extends MHXK {
         this.url = 'https://www.soudongman.com';
 
         this.queryMangaTitle = 'div.title-warper h1.title';
+        // extracted from: https://resource.mhxk.com/soudongman_pc/static/js/chunk/vendor.23b7d6.js
         this.product = {
             id: 9,
             name: 'soudm',
