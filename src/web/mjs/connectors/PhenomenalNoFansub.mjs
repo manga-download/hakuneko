@@ -7,6 +7,6 @@ export default class PhenomenalNoFansub extends WordPressMadara {
         super.id = 'phenomenalnofansub';
         super.label = 'Phenomenal No Fansub';
         this.tags = [ 'webtoon', 'spanish' ];
-        this.url = 'https://www.phenomenalnofansub.site';
+        this.url = 'https://phenomenalnofansub.com';
     }
 }

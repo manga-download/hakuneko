@@ -1,6 +1,7 @@
 import Connector from '../../engine/Connector.mjs';
 import Manga from '../../engine/Manga.mjs';
 
+// almost exactly the same as ZYMK, but as cloud service
 export default class MHXK extends Connector {
 
     constructor() {
@@ -23,7 +24,7 @@ export default class MHXK extends Connector {
         this.config = {
             format: {
                 label: 'Image Format',
-                description: 'In general JPEG is considered premium, however in some mangas JPEG might still work.',
+                description: 'In general JPEG is considered for premium users, however in some mangas JPEG might still work.',
                 input: 'select',
                 options: [
                     { value: 'webp', name: 'WEBP' },
