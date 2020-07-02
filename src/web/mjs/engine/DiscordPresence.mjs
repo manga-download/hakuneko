@@ -6,6 +6,7 @@ export default class DiscordPresence {
 
     constructor(settings) {
         this.rpc = null;
+        this.updater = null;
         this.IpcBytes = 0; // keep track of IPC connection
 
         this._settings = settings; // Engine.Settings
@@ -53,7 +54,7 @@ export default class DiscordPresence {
     }
 
     _onSelectManga(event) {
-        this.isThisHentai(event.detail.tags);
+        this.isThisHentai(event.detail.connector.tags);
         this.status['details'] = 'Browsing ' + event.detail.connector.label;
         this.status['state'] = 'Looking at ' + event.detail.title;
         this.status.startTimestamp = + new Date();
@@ -62,7 +63,7 @@ export default class DiscordPresence {
     }
 
     _onSelectChapter(event) {
-        this.isThisHentai(event.detail.tags);
+        this.isThisHentai(event.detail.manga.connector.tags);
         this.status['details'] = 'Viewing ' + event.detail.manga.title;
         this.status['state'] = event.detail.title;
         this.status.startTimestamp = + new Date();
@@ -104,6 +105,7 @@ export default class DiscordPresence {
 
     stopDiscordPresence() {
         this.statusNew = false;
+        clearInterval(this.updater);
         if (this.rpc) {
             this.rpc.clearActivity();
             this.rpc.destroy();
@@ -122,7 +124,7 @@ export default class DiscordPresence {
             }, 2000);
 
             // activity can only be set every 15 seconds
-            setInterval(() => {
+            this.updater = setInterval(() => {
                 this.updateStatus();
             }, 15200);
         });
