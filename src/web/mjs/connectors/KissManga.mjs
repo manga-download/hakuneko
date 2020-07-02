@@ -25,7 +25,7 @@ export default class KissManga extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url + '/MangaList?page=', this.requestOptions);
+        let request = new Request(this.url + '/MangaList', this.requestOptions);
         let data = await this.fetchDOM(request, 'div.pagination ul.pager li:last-of-type a');
         let pageCount = parseInt(data[0].getAttribute('page'));
         for(let page = 1; page <= pageCount; page++) {
