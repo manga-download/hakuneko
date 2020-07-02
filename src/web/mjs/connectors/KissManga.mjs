@@ -10,6 +10,7 @@ export default class KissManga extends Connector {
         this.tags = [ 'manga', 'english' ];
         super.isLocked = false;
         this.url = 'https://kissmanga.com';
+        this.listLoadDelay = 2750;
         this.pageLoadDelay = 5000;
         this.requestOptions.headers.set('x-cookie', 'vns_readType1=0');
     }
@@ -23,8 +24,27 @@ export default class KissManga extends Connector {
     }
 
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        let mangaList = [];
+        let request = new Request(this.url + '/MangaList', this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.pagination ul.pager li:last-of-type a');
+        let pageCount = parseInt(data[0].getAttribute('page'));
+        for(let page = 1; page <= pageCount; page++) {
+            await this.wait(this.listLoadDelay);
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        let request = new Request(this.url + '/MangaList?page=' + page, this.requestOptions);
+        let data = await this.fetchDOM(request, 'table.listing tbody tr td:first-of-type a', 3);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url).replace(/\s+/g, ''),
+                title: element.text.trim()
+            };
+        });
     }
 
     _getChapterList( manga, callback ) {
