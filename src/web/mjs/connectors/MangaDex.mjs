@@ -27,7 +27,8 @@ export default class MangaDex extends Connector {
                     //{ value: 'https://p4088kp71810c.2hpwmb24rv6f4.mangadex.network', name: 'db.mangadex.org (FR)' },
                     { value: 'https://s2.mangadex.org', name: 's2.mangadex.org (US)' },
                     { value: 'https://s3.mangadex.org', name: 's3.mangadex.org (DE)' },
-                    { value: 'https://s5.mangadex.org', name: 's5.mangadex.org (US)' }
+                    { value: 'https://s5.mangadex.org', name: 's5.mangadex.org (US)' },
+                    { value: 'http://mangadex.hakuneko.download', name: 'CloudFlare CDN' }
                 ],
                 value: 'https://s2.mangadex.org'
             },
