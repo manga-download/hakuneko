@@ -1,14 +1,13 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-// Very similar visual to MangaSee (older viewer)
 export default class MangaLife extends Connector {
 
     constructor() {
         super();
         super.id = 'mangalife';
         super.label = 'MangaLife';
-        this.tags = [ 'manga', 'english' ];
+        this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manga4life.com';
     }
 
