@@ -301,6 +301,7 @@
              */
             selectConnector( evt ) {
                 this.set( 'selectedConnector', evt.model.item );
+                document.dispatchEvent(new CustomEvent(EventListener.onSelectConnector, { detail: evt.model.item }));
                 this.closePopup();
             }
 

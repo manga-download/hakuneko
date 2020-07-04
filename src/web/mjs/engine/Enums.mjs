@@ -7,6 +7,9 @@ export default class Enums {
         return {
             onMangaStatusChanged:     'onMangaStatusChanged', // ...
             onChapterStatusChanged:   'onChapterStatusChanged', // ...
+            onSelectChapter:          'onSelectChapter',
+            onSelectConnector:        'onSelectConnector',
+            onSelectManga:            'onSelectManga'
         };
     }
 }
