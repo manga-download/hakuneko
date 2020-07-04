@@ -9,7 +9,8 @@ export default class MangaDex extends Connector {
         super.label = 'MangaDex';
         this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
         this.url = 'https://mangadex.org';
-        this.requestOptions.headers.set( 'x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2' );
+        this.requestOptions.headers.set('x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2');
+        this.requestOptions.headers.set('x-referer', 'https://mangadex.org');
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             node: {
@@ -112,7 +113,7 @@ export default class MangaDex extends Connector {
          */
         let data = await this._requestAPI(new URL('/api/chapter/' + chapter.id, this.url), 'page');
         let baseURL = this._getNode(data.server) + data.hash + '/';
-        return data.page_array.map(page => baseURL + page);
+        return data.page_array.map(page => this.createConnectorURI(baseURL + page));
     }
 
     _getNode(server) {
