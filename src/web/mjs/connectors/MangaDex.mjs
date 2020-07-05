@@ -9,7 +9,8 @@ export default class MangaDex extends Connector {
         super.label = 'MangaDex';
         this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
         this.url = 'https://mangadex.org';
-        this.requestOptions.headers.set( 'x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2' );
+        this.requestOptions.headers.set('x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2');
+        this.requestOptions.headers.set('x-referer', this.url);
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             node: {
@@ -27,7 +28,8 @@ export default class MangaDex extends Connector {
                     //{ value: 'https://p4088kp71810c.2hpwmb24rv6f4.mangadex.network', name: 'db.mangadex.org (FR)' },
                     { value: 'https://s2.mangadex.org', name: 's2.mangadex.org (US)' },
                     { value: 'https://s3.mangadex.org', name: 's3.mangadex.org (DE)' },
-                    { value: 'https://s5.mangadex.org', name: 's5.mangadex.org (US)' }
+                    { value: 'https://s5.mangadex.org', name: 's5.mangadex.org (US)' },
+                    { value: 'http://mangadex.hakuneko.download', name: 'CloudFlare CDN' }
                 ],
                 value: 'https://s2.mangadex.org'
             },
@@ -111,7 +113,7 @@ export default class MangaDex extends Connector {
          */
         let data = await this._requestAPI(new URL('/api/chapter/' + chapter.id, this.url), 'page');
         let baseURL = this._getNode(data.server) + data.hash + '/';
-        return data.page_array.map(page => baseURL + page);
+        return data.page_array.map(page => this.createConnectorURI(baseURL + page));
     }
 
     _getNode(server) {
