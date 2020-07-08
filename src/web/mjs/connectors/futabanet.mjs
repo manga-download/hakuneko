@@ -19,10 +19,9 @@ export default class futabanet extends SpeedBinb {
         return new Manga(this, id, title);
     }
     
-    _getMangaList( callback ) {
-        // https://futabanet.jp/list/monster/works?page=1 
-        let msg = 'Manga list feature is not yet implemented for this website, please copy and paste the links containing the chapters directly from your browser into HakuNeko.';
-        callback( new Error( msg ), undefined );
+    async _getMangas() {
+        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
 
