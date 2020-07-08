@@ -18,12 +18,12 @@ export default class futabanet extends SpeedBinb {
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
-    
+
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        //https://futabanet.jp/list/monster/works?page=1
+        let msg = 'Manga list is not yet implimented for this website, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
-
 
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
