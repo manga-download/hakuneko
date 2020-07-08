@@ -15,6 +15,7 @@
     "@hakuneko/kindlegen-binaries": "latest",
     "@logtrine/logtrine": "latest",
     "asar": "latest",
+    "discord-rpc": "latest",
     "electron": "8.3.4",
     "eslint": "latest",
     "fs-extra": "latest",
