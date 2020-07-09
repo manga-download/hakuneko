@@ -20,18 +20,17 @@ export default class MaviManga extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(this.url + '/manga-listesi/', this.requestOptions);
-        let pages = await this.fetchDOM(request, 'div.navigation li:nth-last-child > a');
-        pages = Number(pages[0].pathname.match(/[\w\W]+\/(\d+)\/$/)[1]);
+        let request = new URL('/manga-listesi/', this.url);
+        let pages = await this.fetchDOM(request, 'div.navigation li:nth-last-child(1) > a');
+        pages = Number(pages[0].pathname.match(/\/(\d+)\/$/)[1]);
 
-        let data;
         let mangas = [];
         for (let page = 0; page <= pages; page++) {
-            request = new Request(this.url + '/manga-listesi/sayfa/' + page + '/');
-            data = await this.fetchDOM(request, 'ul.manga-list li a');
+            request = new URL('/manga-listesi/sayfa/' + page, this.url);
+            let data = await this.fetchDOM(request, 'ul.manga-list li a');
             mangas.push( ...data.map(element => {
                 return {
-                    id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
+                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                     title: element.text.trim()
                 };
             }));
@@ -41,7 +40,7 @@ export default class MaviManga extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(this.url + manga.id, this.requestOptions);
+        let request = new URL(manga.id, this.url);
         let data = await this.fetchDOM(request, 'div.mangaep-list tbody tr td:first-of-type a');
         return data.map(element => {
             return {
@@ -53,9 +52,8 @@ export default class MaviManga extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let request = new URL(chapter.id, this.url);
         let data = await this.fetchDOM(request, 'div.viewer-cnt div#all source.img-responsive');
-        console.log(data);
         return data.map(element => this.getAbsolutePath(element.dataset.src, this.url));
     }
 }
