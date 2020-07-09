@@ -20,9 +20,23 @@ export default class futabanet extends SpeedBinb {
     }
 
     async _getMangas() {
-        //https://futabanet.jp/list/monster/works?page=1
-        let msg = 'Manga list is not yet implimented for this website, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        let request = new Request(this.url + '/list/monster/works', this.requestOptions);
+        let pages = await this.fetchDOM(request, 'li.m-pager__last a');
+        pages = Number( new URL(pages[0].href).searchParams.get('page') );
+
+        let data;
+        let mangas = [];
+        for (let page = 0; page <= pages; page++) {
+            request = new Request(this.url + '/list/monster/works' + '?' + 'page' + '=' + page);
+            data = await this.fetchDOM(request, 'div.m-result-list__item a');
+            mangas.push( ...data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element.href, this.url + '/list/monster/work/'),
+                    title: element.querySelector('.m-result-list__title').textContent.trim()
+                };
+            }));
+        }
+        return mangas;
     }
 
     async _getChapters(manga) {
