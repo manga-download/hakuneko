@@ -31,7 +31,7 @@ export default class futabanet extends SpeedBinb {
             data = await this.fetchDOM(request, 'div.m-result-list__item a');
             mangas.push( ...data.map(element => {
                 return {
-                    id: this.getRootRelativeOrAbsoluteLink(element.href, this.url + '/list/monster/work/'),
+                    id: this.getRootRelativeOrAbsoluteLink('/list/monster' + element.href, this.url),
                     title: element.querySelector('.m-result-list__title').textContent.trim()
                 };
             }));
