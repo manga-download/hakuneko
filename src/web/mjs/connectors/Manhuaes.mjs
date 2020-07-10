@@ -7,7 +7,7 @@ export default class ManhuaES extends Connector {
         super();
         super.id = 'manhuaes';
         super.label = 'Manhua ES';
-        this.tags = [ 'manga', 'English' ]; //should I add 'Webtoon' tag as well?
+        this.tags = [ 'manga', 'english' ];
         this.url = 'https://manhuaes.com';
     }
 
@@ -21,8 +21,8 @@ export default class ManhuaES extends Connector {
 
     async _getMangas() {
         let request = new Request(new URL('/category-comics/manga/', this.url), this.requestOptions);
-        let pages = await this.fetchDOM(request, 'ul.pagination li:nth-last-child(1) > a');
-        pages = Number(pages[0].pathname.match(/\/(\d+)\/$/)[1]);
+        let pages = await this.fetchDOM(request, 'ul.pagination li:nth-last-child(2) > a');
+        pages = Number(pages[0].text);
 
         let mangas = [];
         for (let page = 0; page <= pages; page++) {
