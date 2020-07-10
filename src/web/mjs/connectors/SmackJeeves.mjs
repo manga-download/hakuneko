@@ -1,130 +1,99 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class SmackJeeves extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'smackjeeves';
         super.label = 'Smack Jeeves';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'http://www.smackjeeves.com';
+        this.url = 'https://www.smackjeeves.com';
+        this.he = require('he');
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        return this.fetchDOM( mangaPageLinks[ index ], 'div.comic-container a.card', 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
+    async _getCategories( url) {
+        const script = `
+            new Promise((resolve, reject) => {
+                try {
+                    resolve(cmnData);
+                } catch(error) {
+                    reject(error);
+                }
+            });
+        `;
+        const request = new Request(new URL(url), this.requestOptions);
+        const data = await Engine.Request.fetchUI(request, script);
+
+        return data.navigation.items;
+    }
+
+    async _getMangas() {
+        const categories = await this._getCategories( new URL('/discover?type=genre', this.url));
+
+        let manga_list = [];
+        for (const category of categories) {
+            let url = new URL('/api/getTitleListByGenreDiscover', this.url);
+            url.searchParams.set('genre', category.val);
+            url.searchParams.set('order', 'newarriva');
+
+            let pages = 1;
+            for (let page = 1; page <= pages; page++) {
+                url.searchParams.set('page', page);
+                const data = await this._fetchPOST(url);
+                pages = data.result.totalPageCnt;
+
+                manga_list.push(...data.result.list.map(element => {
                     return {
-                        id: this.getRelativeLink( element ),
-                        title: element.querySelector( 'div.title' ).textContent.trim()
+                        id: this.getRootRelativeOrAbsoluteLink(element.titleUrl, this.url),
+                        title: this.he.decode( element.title ).trim()
                     };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
+                }));
+            }
+        }
+
+        return manga_list;
+    }
+
+    async _getChapters(manga) {
+        const url = new URL('/api'+manga.id, this.url);
+        const data = await this._fetchPOST(url);
+
+        return data.result.list.map(element => {
+            return {
+                id: element.articleUrl,
+                title: this.he.decode( element.articleTitle ).trim()
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                try {
+                    resolve(cmnData.comicData);
+                } catch(error) {
+                    reject(error);
                 }
-            } );
+            });
+        `;
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const data = await Engine.Request.fetchUI(request, script);
+
+        return data.map(element => {
+            return element.url;
+        });
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let path = '/search.php?last_update=6&sort_by=4';
-        this.fetchDOM( this.url + path, 'div.comic-nav div#browse-page-select select option' )
-            .then( data => {
-                let pageLinks = data.map( option => this.url + path + '&start=' + option.value );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let comicURL;
-        this.fetchDOM( this.url + manga.id, 'div.middle div.title div.buttons a.button:last-of-type' )
-            .then( data => {
-                comicURL = data[0].href;
-                this.requestOptions.headers.set( 'x-cookie', '_sj_view_m=' + Math.floor( Date.now() / 1000 ) );
-                return this.fetchDOM( comicURL, 'select.jumpbox' );
-            } )
-            .then( data => {
-                if( !data.length ) {
-                    throw new Error( 'Page template not supported, no chapter/page selection box found!' );
-                }
-                let chapterList = [...data[0].querySelectorAll( '.jumpbox_chapter' )];
-                if( !chapterList.length ) {
-                    chapterList = [
-                        {
-                            id: comicURL,
-                            title: manga.title,
-                            language: 'en'
-                        }
-                    ];
-                } else {
-                    chapterList = chapterList.map( element => {
-                        return {
-                            id:  new URL( element.value || comicURL, comicURL ).href,
-                            title: element.label.trim() || element.textContent.trim(),
-                            language: 'en'
-                        };
-                    } );
-
-                }
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'select.jumpbox option.jumpbox_page' )
-            .then( data => {
-                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element.value, request.url ) ) );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        return this.fetchDOM( request, 'source#comic_image' )
-            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
+    async _fetchPOST( uri) {
+        const request = new Request(new URL(uri.pathname, this.url), {
+            method: 'POST',
+            body: uri.searchParams.toString(),
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+                // 'x-referer': this.url
+            }
+        });
+        const data = await fetch(request);
+        return data.json();
     }
 }
