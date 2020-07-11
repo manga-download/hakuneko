@@ -28,8 +28,6 @@ export default class DiscordPresence {
         document.addEventListener( EventListener.onSelectConnector, this._onSelectConnector.bind(this) );
         document.addEventListener( EventListener.onSelectManga, this._onSelectManga.bind(this) );
         document.addEventListener( EventListener.onSelectChapter, this._onSelectChapter.bind(this) );
-
-        this.startDiscordPresence();
     }
 
     _onSettingsChanged() {
@@ -114,7 +112,10 @@ export default class DiscordPresence {
     }
 
     async startDiscordPresence() {
-        this.rpc = this.rpc || new DiscordRPC.Client({ transport: 'ipc' });
+        if(this.rpc) {
+            return; // already running ...
+        }
+        this.rpc = new DiscordRPC.Client({ transport: 'ipc' });
         this.rpc.on('ready', () => {
             this.status.startTimestamp = + new Date();
 
