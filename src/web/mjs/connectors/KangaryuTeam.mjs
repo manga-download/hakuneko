@@ -1,5 +1,4 @@
 import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
 
 export default class KangaryuTeam extends Connector {
 
@@ -17,7 +16,7 @@ export default class KangaryuTeam extends Connector {
 
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.firstChild.href, this.url),
+                id: this.getRootRelativeOrAbsoluteLink(element.firstChild, this.url),
                 title: element.textContent.trim()
             };
         });
@@ -29,7 +28,7 @@ export default class KangaryuTeam extends Connector {
 
         return [...data].map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.title.trim()
             };
         });
@@ -37,17 +36,12 @@ export default class KangaryuTeam extends Connector {
 
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await fetch(request);
-        data = await data.text();
-        data = data.match(/^\s*(?:var|let|const)\s+pages(.*)$/m)[0];
-        data = data.matchAll(/"url":"(.*?)",/g);
+        let data = await this.fetchRegex(request, /^\s*(?:var|let|const)\s+pages(.*)$/gm);
+        data = data[0].matchAll(/"url":"(.*?)",/g);
 
         return [...data].map(element => {
             return element[1].replace('\\/', '/');
         });
-    }
-
-    async _getMangaFromURI(uri) {
     }
 
     async _fetchPOST(uri, body, selector) {
@@ -59,7 +53,7 @@ export default class KangaryuTeam extends Connector {
             }
         });
         let data = await fetch(request);
-        data = this.createDOM(await data.text())
+        data = this.createDOM(await data.text());
         return data.querySelectorAll(selector);
     }
 }
