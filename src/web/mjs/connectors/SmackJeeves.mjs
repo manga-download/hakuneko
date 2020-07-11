@@ -41,12 +41,12 @@ export default class SmackJeeves extends Connector {
                 const data = await this._fetchPOST(new URL('/api/getTitleListByGenreDiscover', this.url), form);
                 pages = data.result.totalPageCnt;
 
-                manga_list.push(...data.result.list.map(element => {
+                manga_list.push(...data.result.list.map(item => {
                     // decode html entities
                     let title = document.createElement('div');
-                    title.innerHTML = element.title
+                    title.innerHTML = item.title
                     return {
-                        id: this.getRootRelativeOrAbsoluteLink(element.titleUrl, this.url),
+                        id: this.getRootRelativeOrAbsoluteLink(item.titleUrl, this.url),
                         title: title.textContent.trim()
                     };
                 }));
@@ -61,12 +61,12 @@ export default class SmackJeeves extends Connector {
         const url = new URL('/api'+manga.id, this.url);
         const data = await this._fetchPOST(url);
 
-        return data.result.list.map(element => {
+        return data.result.list.map(item => {
             // decode html entities
             let title = document.createElement('div');
-            title.innerHTML = element.articleTitle
+            title.innerHTML = item.articleTitle
             return {
-                id: element.articleUrl,
+                id: item.articleUrl,
                 title: title.textContent.trim()
             };
         });
@@ -75,8 +75,8 @@ export default class SmackJeeves extends Connector {
     async _getPages(chapter) {
         const script = `
             new Promise(resolve => resolve(
-                cmnData.comicData.map(element => {
-                    return element.url;
+                cmnData.comicData.map(page => {
+                    return page.url;
                 })
             ));
         `;
