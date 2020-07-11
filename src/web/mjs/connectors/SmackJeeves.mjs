@@ -11,11 +11,7 @@ export default class SmackJeeves extends Connector {
     }
 
     async _getCategories( url) {
-        const script = `
-        new Promise(resolve => resolve(
-            return cmnData;
-        ));
-        `;
+        const script = `new Promise(resolve => resolve(cmnData));`;
         const request = new Request(new URL(url), this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script);
 
