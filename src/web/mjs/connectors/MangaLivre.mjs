@@ -15,23 +15,21 @@ export default class MangaLivre extends Connector {
         let page = 1;
         let morePages = true;
 
-        let request, data;
         let mangas = [];
 
         while ( morePages ) {
             try {
-                request = new Request(new URL('/series/index/nome/todos?page=' + page, this.url), this.requestOptions);
-                data = await this.fetchDOM(request, 'div.seriesList ul.seriesList li > a.link-block');
-                page++;
+                let request = new Request(new URL('/series/index/nome/todos?page=' + page++, this.url), this.requestOptions);
+                let data = await this.fetchDOM(request, 'div.seriesList ul.seriesList li > a.link-block');
 
-                for (const manga of data) {
-                    mangas.push(
-                        {
-                            id: manga.pathname.match(/\d+$/)[0],
-                            title: manga.title.match(/^Ler\s(.*)\sOnline$/) ? manga.title.match(/^Ler\s(.*)\sOnline$/)[1].trim() : manga.title
-                        }
-                    );
-                }
+                mangas.push(...data.map(manga => {
+                    let title = manga.title.match(/^Ler\s(.*)\sOnline$/);
+                    return {
+                        id: manga.pathname.match(/\d+$/)[0],
+                        title: title ? title[1].trim() : manga.title
+                    };
+                }));
+
             } catch(error) {
                 morePages = false;
             }
@@ -60,18 +58,15 @@ export default class MangaLivre extends Connector {
                 }
             });
             data = await this.fetchJSON(request);
-            page++;
-            url.searchParams.set('page', page);
+            url.searchParams.set('page', page++);
 
             if ( data.chapters) {
-                for (const chapter of data.chapters) {
-                    chapters.push(
-                        {
-                            id:  this.getRootRelativeOrAbsoluteLink( chapter.releases[Object.keys(chapter.releases)[0]].link, this.url),
-                            title: chapter.chapter_name ? chapter.number.padStart(3, '0')+' - '+chapter.chapter_name: chapter.number.padStart(3, '0')
-                        }
-                    );
-                }
+                chapters.push(...data.chapters.map(chapter => {
+                    return {
+                        id:  this.getRootRelativeOrAbsoluteLink( chapter.releases[Object.keys(chapter.releases)[0]].link, this.url),
+                        title: chapter.chapter_name ? chapter.number.padStart(3, '0')+' - '+chapter.chapter_name: chapter.number.padStart(3, '0')
+                    };
+                }));
             } else {
                 morePages = false;
             }
