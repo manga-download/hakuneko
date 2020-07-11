@@ -40,7 +40,7 @@ export default class futabanet extends SpeedBinb {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let request = new Request(new URL(manga.id.replace('hakuneko://cache',''), this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'section.detail-sec.detail-ex div.detail-ex__btn-item a');
         return data.map(element => {
             let title = element.querySelector('span');
