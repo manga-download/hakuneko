@@ -23,7 +23,7 @@ export default class SmackJeeves extends Connector {
         const request = new Request(new URL(url), this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script);
 
-        return data.navigation.items;
+        return data.navigation.items.map(item => item.val);
     }
 
     async _getMangas() {
@@ -31,14 +31,14 @@ export default class SmackJeeves extends Connector {
 
         let manga_list = [];
         for (const category of categories) {
-            let url = new URL('/api/getTitleListByGenreDiscover', this.url);
-            url.searchParams.set('genre', category.val);
-            url.searchParams.set('order', 'newarriva');
+            let form = new URLSearchParams();
+            form.set('genre', category);
+            form.set('order', 'newarriva');
 
             let pages = 1;
             for (let page = 1; page <= pages; page++) {
-                url.searchParams.set('page', page);
-                const data = await this._fetchPOST(url);
+                form.set('page', page);
+                const data = await this._fetchPOST(new URL('/api/getTitleListByGenreDiscover', this.url), form);
                 pages = data.result.totalPageCnt;
 
                 manga_list.push(...data.result.list.map(element => {
@@ -50,6 +50,7 @@ export default class SmackJeeves extends Connector {
                         title: title.textContent.trim()
                     };
                 }));
+                debugger;
             }
         }
 
@@ -63,7 +64,7 @@ export default class SmackJeeves extends Connector {
         return data.result.list.map(element => {
             // decode html entities
             let title = document.createElement('div');
-            title.innerHTML = element.title
+            title.innerHTML = element.articleTitle
             return {
                 id: element.articleUrl,
                 title: title.textContent.trim()
@@ -73,26 +74,20 @@ export default class SmackJeeves extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise((resolve, reject) => {
-                try {
-                    resolve(cmnData.comicData);
-                } catch(error) {
-                    reject(error);
-                }
-            });
+            new Promise(resolve => resolve(
+                cmnData.comicData.map(element => {
+                    return element.url;
+                })
+            ));
         `;
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, script);
-
-        return data.map(element => {
-            return element.url;
-        });
+        return await Engine.Request.fetchUI(request, script);
     }
 
-    async _fetchPOST( uri) {
-        const request = new Request(new URL(uri.pathname, this.url), {
+    async _fetchPOST( uri, form) {
+        const request = new Request(new URL(uri, this.url), {
             method: 'POST',
-            body: uri.searchParams.toString(),
+            body: form.toString(),
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
