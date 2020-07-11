@@ -40,13 +40,12 @@ export default class SmackJeeves extends Connector {
                 manga_list.push(...data.result.list.map(item => {
                     // decode html entities
                     let title = document.createElement('div');
-                    title.innerHTML = item.title
+                    title.innerHTML = item.title;
                     return {
                         id: this.getRootRelativeOrAbsoluteLink(item.titleUrl, this.url),
                         title: title.textContent.trim()
                     };
                 }));
-                debugger;
             }
         }
 
@@ -60,7 +59,7 @@ export default class SmackJeeves extends Connector {
         return data.result.list.map(item => {
             // decode html entities
             let title = document.createElement('div');
-            title.innerHTML = item.articleTitle
+            title.innerHTML = item.articleTitle;
             return {
                 id: item.articleUrl,
                 title: title.textContent.trim()
