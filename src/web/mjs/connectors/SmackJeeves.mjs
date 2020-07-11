@@ -8,7 +8,6 @@ export default class SmackJeeves extends Connector {
         super.label = 'Smack Jeeves';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://www.smackjeeves.com';
-        this.he = require('he');
     }
 
     async _getCategories( url) {
@@ -43,9 +42,12 @@ export default class SmackJeeves extends Connector {
                 pages = data.result.totalPageCnt;
 
                 manga_list.push(...data.result.list.map(element => {
+                    // decode html entities
+                    let title = document.createElement('div');
+                    title.innerHTML = element.title
                     return {
                         id: this.getRootRelativeOrAbsoluteLink(element.titleUrl, this.url),
-                        title: this.he.decode( element.title ).trim()
+                        title: title.textContent.trim()
                     };
                 }));
             }
@@ -59,9 +61,12 @@ export default class SmackJeeves extends Connector {
         const data = await this._fetchPOST(url);
 
         return data.result.list.map(element => {
+            // decode html entities
+            let title = document.createElement('div');
+            title.innerHTML = element.title
             return {
                 id: element.articleUrl,
-                title: this.he.decode( element.articleTitle ).trim()
+                title: title.textContent.trim()
             };
         });
     }
@@ -90,7 +95,6 @@ export default class SmackJeeves extends Connector {
             body: uri.searchParams.toString(),
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
-                // 'x-referer': this.url
             }
         });
         const data = await fetch(request);
