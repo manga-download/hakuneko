@@ -46,8 +46,7 @@ export default class futabanet extends SpeedBinb {
             let title = element.querySelector('span:not(.new)');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.innerText.replace(manga.title, '').trim(),
-                language: ''
+                title: title.innerText.replace(/\(\d+.\d+(.*)\)$/, '').trim(),
             };
         });
     }
