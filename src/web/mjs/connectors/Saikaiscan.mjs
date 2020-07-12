@@ -15,7 +15,7 @@ export default class SaikaiScan extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div#project-content h2');
         let id = uri.pathname;
-        let title = data[0].textContent;
+        let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
@@ -37,7 +37,6 @@ export default class SaikaiScan extends Connector {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.textContent.trim(),
-                language: ''
             };
         });
     }
