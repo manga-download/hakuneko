@@ -20,14 +20,14 @@ export default class futabanet extends SpeedBinb {
     }
 
     async _getMangas() {
-        let request = new Request(this.url + '/list/monster/works', this.requestOptions);
+        let request = new Request(this.url + '/list/monster/serial', this.requestOptions);
         let pages = await this.fetchDOM(request, 'li.m-pager__last a');
         pages = Number( new URL(pages[0].href).searchParams.get('page') );
 
         let data;
         let mangas = [];
         for (let page = 0; page <= pages; page++) {
-            request = new Request(this.url + '/list/monster/works' + '?' + 'page' + '=' + page);
+            request = new Request(this.url + '/list/monster/serial' + '?' + 'page' + '=' + page);
             data = await this.fetchDOM(request, 'div.m-result-list__item a');
             mangas.push( ...data.map(element => {
                 return {
@@ -40,10 +40,10 @@ export default class futabanet extends SpeedBinb {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id.replace('hakuneko://cache',''), this.url), this.requestOptions);
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'section.detail-sec.detail-ex div.detail-ex__btn-item a');
         return data.map(element => {
-            let title = element.querySelector('span');
+            let title = element.querySelector('span:not(.new)');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: title.innerText.replace(manga.title, '').trim(),
