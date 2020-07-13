@@ -20,20 +20,33 @@ export default class futabanet extends SpeedBinb {
     }
 
     async _getMangas() {
-        //https://futabanet.jp/list/monster/works?page=1
-        let msg = 'Manga list is not yet implimented for this website, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        let request = new Request(new URL('/list/monster/serial', this.url), this.requestOptions);
+        let pages = await this.fetchDOM(request, 'li.m-pager__last a');
+        pages = Number( new URL(pages[0].href).searchParams.get('page') );
+
+        let data;
+        let mangas = [];
+        for (let page = 0; page <= pages; page++) {
+            request = new Request(this.url + '/list/monster/serial?page=' + page);
+            data = await this.fetchDOM(request, 'div.m-result-list__item a');
+            mangas.push( ...data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink('/list/monster' + element.href, this.url),
+                    title: element.querySelector('.m-result-list__title').textContent.trim()
+                };
+            }));
+        }
+        return mangas;
     }
 
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'section.detail-sec.detail-ex div.detail-ex__btn-item a');
         return data.map(element => {
-            let title = element.querySelector('span');
+            let title = element.querySelector('span:not(.new)');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.innerText.replace(manga.title, '').trim(),
-                language: ''
+                title: title.innerText.replace(/\(\d+\.\d+(.*)\)$/, '').trim(),
             };
         });
     }
