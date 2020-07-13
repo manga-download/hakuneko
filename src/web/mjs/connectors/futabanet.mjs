@@ -20,14 +20,14 @@ export default class futabanet extends SpeedBinb {
     }
 
     async _getMangas() {
-        let request = new Request(this.url + '/list/monster/serial', this.requestOptions);
+        let request = new Request(new URL('/list/monster/serial', this.url), this.requestOptions);
         let pages = await this.fetchDOM(request, 'li.m-pager__last a');
         pages = Number( new URL(pages[0].href).searchParams.get('page') );
 
         let data;
         let mangas = [];
         for (let page = 0; page <= pages; page++) {
-            request = new Request(this.url + '/list/monster/serial' + '?' + 'page' + '=' + page);
+            request = new Request(this.url + '/list/monster/serial?page=' + page);
             data = await this.fetchDOM(request, 'div.m-result-list__item a');
             mangas.push( ...data.map(element => {
                 return {
