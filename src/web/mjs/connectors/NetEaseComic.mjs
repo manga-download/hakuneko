@@ -18,6 +18,7 @@ export default class NetEaseComic extends Connector {
                 comic_id: parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
@@ -50,6 +51,7 @@ export default class NetEaseComic extends Connector {
                 page_num: page
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
@@ -72,6 +74,7 @@ export default class NetEaseComic extends Connector {
                 comic_id: manga.id
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
@@ -96,6 +99,7 @@ export default class NetEaseComic extends Connector {
                 ep_id: chapter.id
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
@@ -114,6 +118,7 @@ export default class NetEaseComic extends Connector {
                 urls: JSON.stringify(images)
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
