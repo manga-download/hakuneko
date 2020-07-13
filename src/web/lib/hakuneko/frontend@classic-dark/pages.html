@@ -538,11 +538,11 @@
                 if(images[images.length-1].getBoundingClientRect().bottom-window.innerHeight < 0)
                 {
                     // Should we go to next chapter because we previouysly reached the end of page ?
-                    if (this.autoNextChapter) { this.requestChapterUp(); return; };
+                    if (this.autoNextChapter) { return this.requestChapterUp(); };
                     // Prepare for next chapter
                     this.autoNextChapter = true;
                     // Todo: Find a way to popup that you have to press spacebar again within 4s
-                    setInterval(function(){ this.autoNextChapter=false; }, 4000);
+                    setTimeout(function(){ this.autoNextChapter=false; }, 4000);
                     return;
                 }
                 // Lets stay on current page
