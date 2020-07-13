@@ -1,37 +1,37 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-export default class JapanRead extends Connector {
+export default class ManhuaES extends Connector {
 
     constructor() {
         super();
-        super.id = 'japanread';
-        super.label = 'Japanread';
-        this.tags = [ 'manga', 'webtoon', 'french' ];
-        this.url = 'https://www.japanread.cc';
+        super.id = 'manhuaes';
+        super.label = 'Manhua ES';
+        this.tags = [ 'manga', 'english' ];
+        this.url = 'https://manhuaes.com';
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'h1.card-header');
+        let data = await this.fetchDOM(request, 'h1.title-detail');
         let id = uri.pathname;
-        let title = data[0].textContent.trim();
+        let title = data[0].textContent;
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/manga-list', this.url), this.requestOptions);
-        let pages = await this.fetchDOM(request, 'ul.pagination li.page-item:nth-last-child(2) > a');
+        let request = new Request(new URL('/category-comics/manga/', this.url), this.requestOptions);
+        let pages = await this.fetchDOM(request, 'ul.pagination li:nth-last-child(2) > a');
         pages = Number(pages[0].text);
 
         let mangas = [];
         for (let page = 0; page <= pages; page++) {
-            request = new Request(new URL('/manga-list?page=' + page, this.url), this.requestOptions);
-            let data = await this.fetchDOM(request, 'a.text-truncate', 5);
+            request = new Request(new URL('/category-comics/manga/page/' + page, this.url), this.requestOptions);
+            let data = await this.fetchDOM(request, 'div.overlay a.head');
             mangas.push( ...data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.innerText.trim()
+                    title: element.text.trim()
                 };
             }));
         }
@@ -41,19 +41,19 @@ export default class JapanRead extends Connector {
 
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'a.text-truncate');
+        let data = await this.fetchDOM(request, 'div.list-chapter li.row a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.textContent.trim(),
+                language: ''
             };
         });
     }
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let id = await this.fetchDOM(request, 'head meta[data-chapter-id]');
-        let data = await this.fetchJSON(this.url + '/api/?type=chapter&id=' + id[0].dataset.chapterId);
-        return data.page_array.map( page => this.getAbsolutePath( data.baseImagesUrl + '/' + page, request.url ) );
+        let data = await this.fetchDOM(request, 'div.reading-detail source.alignnone');
+        return data.map(element => this.getAbsolutePath(element.dataset.src, this.url));
     }
 }

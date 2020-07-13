@@ -7,7 +7,7 @@ export default class ReadManga extends Connector {
         super.id = 'readmanga';
         super.label = 'ReadManga';
         this.tags = [ 'manga', 'russian' ];
-        this.url = 'https://readmanga.me';
+        this.url = 'https://readmanga.live';
 
         this.config = {
             throttle: {

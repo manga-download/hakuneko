@@ -29,55 +29,40 @@ export default class Lezhin extends Connector {
         };
     }
 
-    /**
-     *
-     */
-    _initializeAccount() {
-        // TODO: check if logged in: https://www.lezhin.com/internal/isLogin
-        return Promise.resolve()
-            .then( () => {
-                if( this.userID || !this.config.username.value || !this.config.password.value ) {
-                    return Promise.resolve();
-                } else {
-                    let form = new URLSearchParams();
-                    // TODO: remove own credentials
-                    form.append( 'username', this.config.username.value );
-                    form.append( 'password', this.config.password.value );
-                    form.append( 'redirect', new URL( this.url ).pathname + '/account' );
-                    this.requestOptions.method = 'POST';
-                    this.requestOptions.body = form.toString();
-                    this.requestOptions.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
-                    let promise = fetch( this.url + '/login/submit', this.requestOptions )
-                        .then( response => response.text() )
-                        .then( data => {
-                            let cdn = data.match( /cdnUrl\s*:\s*['"]([^'"]+)['"]/ );
-                            let user = data.match( /userId\s*:\s*['"](\d+)['"]/ );
-                            let token = data.match( /token\s*:\s*['"]([^'"]+)['"]/ );
-                            this.cdnURL = cdn ? cdn[1] : this.cdnURL;
-                            this.userID = user ? user[1] : undefined;
-                            this.accessToken = token ? token[1] : this.accessToken;
-                            return Promise.resolve();
-                        } )
-                        .then( () => {
-                            if( this.userID ) {
-                                return fetch( this.url + '/adultkind?path=&sw=all', this.requestOptions );
-                            } else {
-                                return Promise.resolve();
-                            }
-                        } );
-                    this.requestOptions.headers.delete( 'content-type' );
-                    delete this.requestOptions.body;
-                    this.requestOptions.method = 'GET';
-                    return promise;
-                }
-            } )
-            .then( () => {
-            /*
-             * force user locale user setting to be the same as locale from the currently used website ...
-             * => prevent a warning webpage that would appear otherwise when loading chapters / pages
-             */
-                return fetch( this.url + '/locale/' + this.locale, this.requestOptions );
-            } );
+    async _initializeAccount() {
+        if(this.userID || !this.config.username.value || !this.config.password.value) {
+            return;
+        }
+        let script = `
+            new Promise((resolve, reject) => {
+                let form = $('form#login-form');
+                form.find('input#login-email').val('${this.config.username.value}');
+                form.find('input#login-password').val('${this.config.password.value}');
+                $.ajax({
+                    type: 'POST',
+                    url: form.prop('action'),
+                    data: form.serialize(),
+                    success: resolve,
+                    error: reject
+                });
+            });
+        `;
+        let request = new Request(new URL(this.url + '/login'), this.requestOptions);
+        await Engine.Request.fetchUI(request, script);
+        let response = await fetch(new Request(new URL(this.url + '/account'), this.requestOptions));
+        let data = await response.text();
+        let cdn = data.match(/cdnUrl\s*:\s*['"]([^'"]+)['"]/);
+        let user = data.match(/userId\s*:\s*['"](\d+)['"]/);
+        let token = data.match(/token\s*:\s*['"]([^'"]+)['"]/);
+        this.cdnURL = cdn ? cdn[1] : this.cdnURL;
+        this.userID = user ? user[1] : undefined;
+        this.accessToken = token ? token[1] : this.accessToken;
+        if(this.userID) {
+            await fetch(this.url + '/adultkind?path=&sw=all', this.requestOptions);
+        }
+        // force user locale user setting to be the same as locale from the currently used website ...
+        // => prevent a warning webpage that would appear otherwise when loading chapters / pages
+        return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
     }
 
     /**
