@@ -30,6 +30,7 @@ export default class Mangafest extends Connector {
                         title: manga.title.trim()
                     };
                 }));
+
             } else {
                 morePages = false;
             }
@@ -58,7 +59,7 @@ export default class Mangafest extends Connector {
         for( const link of page_links) {
             let request = new Request(new URL(link, this.url), this.requestOptions);
             let data = await this.fetchDOM(request, 'div.pic_box source.manga_pic');
-            pages.push(data[0].src);
+            pages.push( this.getRootRelativeOrAbsoluteLink( data[0].src, this.url) );
         }
 
         return pages;
