@@ -194,6 +194,7 @@
                 this.hls = undefined;
                 this.ass = undefined;
                 this.videoResizeObserver = new ResizeObserver( this.onVideoResized.bind( this ) );
+                this.autoNextChapter = false;
             }
 
             /**
@@ -455,6 +456,7 @@
              * fire event to request the next chapter
              */
             requestChapterUp( event ) {
+                this.autoNextChapter=false;
                 window.dispatchEvent( new CustomEvent( 'chapterUp', { detail: this.selectedChapter } ) );
             }
 
@@ -532,35 +534,55 @@
              */
              scrollMagic(defaultDistance) {
                 let images = this.$.container.querySelectorAll('.image');
+                // Are we at the end of the page
+                if(images[images.length-1].getBoundingClientRect().bottom-window.innerHeight < 0)
+                {
+                    // Should we go to next chapter because we previouysly reached the end of page ?
+                    if (this.autoNextChapter) { return this.requestChapterUp(); };
+                    // Prepare for next chapter
+                    this.autoNextChapter = true;
+                    // Todo: Find a way to popup that you have to press spacebar again within 4s
+                    setTimeout(function(){ this.autoNextChapter=false; }, 4000);
+                    return;
+                }
+                // Lets stay on current page
                 // Find current image within view
-                let currentScrollImages = [...images].filter(image => {
+                let targetScrollImages = [...images].filter(image => {
                     let rect = image.getBoundingClientRect();
                     return (rect.top <= window.innerHeight && rect.bottom >1);
                 });
 
-                // If multiple images filtered, get the first one. If none scroll to the top image
-                let currentScrollImage = currentScrollImages[0] || images[0];
+                // If multiple images filtered, get the last one. If none scroll use the top image
+                let targetScrollImage = targetScrollImages[targetScrollImages.length-1] || images[0];
 
-                // Do we stay on current image ?
-                if (window.innerHeight +1 < currentScrollImage.getBoundingClientRect().bottom ) {
-                    // Scroll default or scroll to bottom of current image
+                // Is the target image top within view ? then scroll to the top of it
+                if (targetScrollImage.getBoundingClientRect().top > 1 ) {
+                    // Scroll to it
+                    targetScrollImage.scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
+                }
+                // Do we stay within target ? (bottom is further than current view)
+                else if (window.innerHeight +1 < targetScrollImage.getBoundingClientRect().bottom ){
                     this.$.container.scrollBy({ 
-                        top: Math.min(defaultDistance,currentScrollImage.getBoundingClientRect().bottom-window.innerHeight),
+                        top: Math.min(defaultDistance,targetScrollImage.getBoundingClientRect().bottom-window.innerHeight),
                         left: 0, 
                         behavior: 'smooth' 
                     });
-                } else {
+                }
+                // We have to try to get to next image
+                else {
                     // Find next image
-                    let nextScrollImage = currentScrollImage.nextElementSibling;
-                    if (nextScrollImage) {
-                        // Scroll to it
-                        nextScrollImage.scrollIntoView({ 
-                            behavior: 'smooth' 
-                        });
-                    }
+                    let nextScrollImage = targetScrollImage.nextElementSibling;
+                    // Scroll to it
+                    nextScrollImage.scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
                 }
             }
+
         }
+
         window.customElements.define( HakunekoPages.is, HakunekoPages );
         
         function scrollSmoothly(element, distance) {
