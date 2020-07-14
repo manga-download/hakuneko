@@ -8,6 +8,7 @@ export default class DiscordPresence {
         this.rpc = null;
         this.updater = null;
         this.IpcBytes = 0; // keep track of IPC connection
+        this.lastUpdate = 0; // timestamp of last IPC message
 
         this._settings = settings; // Engine.Settings
         this.enabled = false;
@@ -28,11 +29,10 @@ export default class DiscordPresence {
         document.addEventListener( EventListener.onSelectConnector, this._onSelectConnector.bind(this) );
         document.addEventListener( EventListener.onSelectManga, this._onSelectManga.bind(this) );
         document.addEventListener( EventListener.onSelectChapter, this._onSelectChapter.bind(this) );
-
-        this.startDiscordPresence();
     }
 
     _onSettingsChanged() {
+        console.log('SETTINGS');
         this.enabled = this._settings.discordPresence.value !== 'none';
         this.enabledHentai = this._settings.discordPresence.value === 'hentai';
 
@@ -82,11 +82,16 @@ export default class DiscordPresence {
     }
 
     async updateStatus() {
-        if(this.rpc) {
+        console.log('UPDATE');
+        if(this.rpc && +new Date()-this.lastUpdate >= 15 ) {
+            console.log('DO');
+            console.log(this.rpc);
             if (this.enabled && this.statusNew) {
+                console.log('enabled&new:'+this.rpc.transport.socket.bytesWritten);
                 this.IpcBytes = this.rpc.transport.socket.bytesWritten;
                 if( !this.hentai || this.hentai && this.enabledHentai) {
                     this.rpc.setActivity(this.status);
+                    this.lastUpdate = +new Date();
                 } else {
                     this.statusNew = false;
                 }
@@ -100,10 +105,15 @@ export default class DiscordPresence {
                 console.warn('WARNING: DiscordPresence - Lost connection to Discord.');
                 this.stopDiscordPresence();
             }
+        } else {
+            console.log('update called, but 15s did not pass');
+            console.log(this.lastUpdate);
+            console.log(+new Date());
         }
     }
 
     stopDiscordPresence() {
+        console.log('STOP');
         this.statusNew = false;
         clearInterval(this.updater);
         if (this.rpc) {
@@ -114,7 +124,12 @@ export default class DiscordPresence {
     }
 
     async startDiscordPresence() {
-        this.rpc = this.rpc || new DiscordRPC.Client({ transport: 'ipc' });
+        console.log('START');
+        if(this.rpc) {
+            console.log('already running');
+            return; // already running ...
+        }
+        this.rpc = new DiscordRPC.Client({ transport: 'ipc' });
         this.rpc.on('ready', () => {
             this.status.startTimestamp = + new Date();
 
@@ -126,17 +141,37 @@ export default class DiscordPresence {
             // activity can only be set every 15 seconds
             this.updater = setInterval(() => {
                 this.updateStatus();
-            }, 15200);
+            }, 15000);
         });
 
         this.rpc.login({ clientId: discordPresenceId })
             .catch (error => {
-                if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
+                console.log(error);
+                if (error == undefined ) {
+                    console.warn('WARNING: DiscordPresence - Foreign IPC connection was closed)');
+                    this.restartDiscordPresence();
+                } else if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
                     console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
+                } else if (error.message.toUpperCase() == 'RPC_CONNECTION_TIMEOUT') {
+                    console.warn('WARNING: DiscordPresence - IPC connection timeout (Is Discord still running?)');
+                    this.restartDiscordPresence();
                 } else {
                     throw new Error(error);
                 }
                 this.rpc = null;
             });
+    }
+
+    async restartDiscordPresence() {
+        console.log('RESTART');
+        await this.stopDiscordPresence();
+        await this.wait(15000);
+        this.startDiscordPresence();
+    }
+
+    wait( time ) {
+        return new Promise( resolve => {
+            setTimeout( resolve, time );
+        } );
     }
 }
