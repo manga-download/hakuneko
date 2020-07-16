@@ -15,7 +15,7 @@ export default class MangaHost extends Connector {
             index = 0;
         }
         return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div#page div.thumbnail h3 a', 5 ) )
+            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'a.manga-block-title-link', 5 ) )
             .then( data => {
                 let mangaList = data.map( element => {
                     return {
@@ -49,12 +49,12 @@ export default class MangaHost extends Connector {
     }
 
     _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'ul.list_chapters li a[data-original-title]' )
+        this.fetchDOM( this.url + manga.id, 'div.chapters div.card.pop div.pop-title span' )
             .then( data => {
                 let chapterList = data.map( element => {
                     return {
-                        id: [manga.id, element.id].join('/'),
-                        title: element.dataset.originalTitle.replace( manga.title, '' ).replace( /\s+-\s*$/, '' ).trim(),
+                        id: [manga.id, element.textContent].join('/'),
+                        title: element.textContent,
                         language: 'pt'
                     };
                 } );
