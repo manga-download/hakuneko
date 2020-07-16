@@ -25,11 +25,11 @@ export default class MangaDex extends Connector {
                 input: 'select',
                 options: [
                     { value: '', name: 'Random Mirror (unofficial)' },
-                    //{ value: 'https://p4088kp71810c.2hpwmb24rv6f4.mangadex.network', name: 'db.mangadex.org (FR)' },
                     { value: 'https://s2.mangadex.org', name: 's2.mangadex.org (US)' },
                     { value: 'https://s3.mangadex.org', name: 's3.mangadex.org (DE)' },
                     { value: 'https://s5.mangadex.org', name: 's5.mangadex.org (US)' },
-                    { value: 'http://mangadex.hakuneko.download', name: 'CloudFlare CDN' }
+                    { value: 'https://s2.mangadex.cf', name: 's2.mangadex.cf (CloudFlare CDN)' },
+                    { value: 'https://s5.mangadex.cf', name: 's5.mangadex.cf (CloudFlare CDN)' }
                 ],
                 value: 'https://s2.mangadex.org'
             },
@@ -121,6 +121,10 @@ export default class MangaDex extends Connector {
         // images that are still hosted on mangadex.org are not yet available in MD@Home infrastructure
         if(uri.origin === this.url || !this.config.node.value) {
             return uri.href;
+        }
+        // Use new CloudFlare CDN domain instead of old CloudFlare CDN domain
+        if(this.config.node.value.includes('hakuneko.download')) {
+            this.config.node.value = 'https://s2.mangadex.cf';
         }
         return new URL('/data/', this.config.node.value).href;
     }
