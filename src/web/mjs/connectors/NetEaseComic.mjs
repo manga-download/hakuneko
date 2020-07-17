@@ -6,8 +6,7 @@ export default class NetEaseComic extends Connector {
     constructor() {
         super();
         super.id = 'neteasecomic';
-        // TODO: rename website?
-        super.label = '网易漫画 (NetEase Comic)';
+        super.label = '哔哩哔哩 漫画 (bilibili Comics)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
     }
