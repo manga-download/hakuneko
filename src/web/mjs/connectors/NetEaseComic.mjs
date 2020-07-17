@@ -79,9 +79,7 @@ export default class NetEaseComic extends Connector {
             }
         });
         let data = await this.fetchJSON(request);
-        // TODO: Show locked entries, only show available chapters based on user login?
-        // entry.is_in_free || !entry.is_locked
-        return data.data.ep_list.map(entry => {
+        return data.data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
             return {
                 id: entry.id,
                 title: entry.short_title + ' - ' + entry.title,
@@ -105,8 +103,6 @@ export default class NetEaseComic extends Connector {
             }
         });
         let data = await this.fetchJSON(request);
-
-        // TODO: When !data.data.path || !data.data.host the chapter is probably locked ...
 
         uri = new URL(data.data.path, data.data.host);
         let images = await this._getImageIndex(uri);
