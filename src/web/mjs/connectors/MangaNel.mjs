@@ -18,10 +18,18 @@ export default class MangaNel extends Connector {
         this.queryPages = 'div.container-chapter-reader source';
     }
 
+    get tld() {
+        return new URL(this.url).hostname.split('.').slice(-2).join('.');
+    }
+
+    canHandleURI(uri) {
+        return uri.hostname.endsWith(this.tld);
+    }
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
-        let id = uri.pathname + uri.search;
+        let id = this.getRootRelativeOrAbsoluteLink(uri, this.url);
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -44,7 +52,7 @@ export default class MangaNel extends Connector {
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
             };
         });
@@ -52,7 +60,7 @@ export default class MangaNel extends Connector {
 
     async _getChapters(manga) {
         let uri = new URL(manga.id, this.url);
-        if(uri.origin !== this.url) {
+        if(!uri.hostname.endsWith(this.tld)) {
             alert('This manga is hot-linked to a different provider!\nPlease check the following website/connector:\n\n' + uri.origin);
             return [];
         }
@@ -61,7 +69,7 @@ export default class MangaNel extends Connector {
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.replace(manga.title, '').trim(),
                 language: ''
             };
@@ -70,14 +78,14 @@ export default class MangaNel extends Connector {
 
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
-        if(uri.origin !== this.url) {
+        if(!uri.hostname.endsWith(this.tld)) {
             alert('This chapter is hot-linked to a different provider!\nPlease check the following website/connector:\n\n' + uri.origin);
             return [];
         }
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.createConnectorURI({
-            url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
+            url: this.getAbsolutePath(element.dataset['src'] || element, this.url),
             referer: request.url
         }));
     }
