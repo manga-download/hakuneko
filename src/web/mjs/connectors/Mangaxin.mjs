@@ -10,7 +10,7 @@ export default class MangaXin extends WordPressEManga {
      */
     constructor() {
         super();
-        super.id = 'mangaxin';
+        super.id = 'mangaceng';
         super.label = 'Mangaxin';
         this.tags = [ 'hentai', 'indonesian' ];
         this.url = 'https://mangaxin.com';
