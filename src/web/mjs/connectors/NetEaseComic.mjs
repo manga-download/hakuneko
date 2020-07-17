@@ -6,6 +6,7 @@ export default class NetEaseComic extends Connector {
     constructor() {
         super();
         super.id = 'neteasecomic';
+        // TODO: rename website?
         super.label = '网易漫画 (NetEase Comic)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
@@ -79,6 +80,7 @@ export default class NetEaseComic extends Connector {
             }
         });
         let data = await this.fetchJSON(request);
+        // TODO: Show locked entries, only show available chapters based on user login?
         // entry.is_in_free || !entry.is_locked
         return data.data.ep_list.map(entry => {
             return {
@@ -104,6 +106,8 @@ export default class NetEaseComic extends Connector {
             }
         });
         let data = await this.fetchJSON(request);
+
+        // TODO: When !data.data.path || !data.data.host the chapter is probably locked ...
 
         uri = new URL(data.data.path, data.data.host);
         let images = await this._getImageIndex(uri);
