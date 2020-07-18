@@ -15,32 +15,17 @@ export default class MangaNel extends Connector {
         this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
         this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
 
-        this.profiles = {
-            'manganelo.': {
-                queryChapters: 'ul.row-content-chapter li a.chapter-name',
-                queryPages: 'div.container-chapter-reader source'
-            },
-            'mangabat.': {
-                queryChapters: 'ul.row-content-chapter li a.chapter-name',
-                queryPages: 'div.container-chapter-reader source'
-            },
-            'mangairo.': {
-                queryChapters: 'div.chapter_list ul li a',
-                queryPages: 'div.chapter-content div.panel-read-story source'
-            },
-            'mangakakalot.': {
-                queryChapters: 'div.chapter-list div.row span a',
-                queryPages: 'div#vungdoc source, div.vung-doc source, div.vung_doc source'
-            },
-            'mangakakalots.': {
-                queryChapters: 'div.chapter-list div.row span a',
-                queryPages: 'div#vungdoc source, div.vung-doc source, div.vung_doc source'
-            }
-        };
-    }
+        this._queryChapters = [
+            'ul.row-content-chapter li a.chapter-name', // manganelo, mangabat
+            'div.chapter_list ul li a', // mangairo
+            'div.chapter-list div.row span a' // mangakakalot(s)
+        ].join(', ');
 
-    _getProfile(uri) {
-        return Object.entries(this.profiles).find(kvp => uri.hostname.includes(kvp[0]))[1];
+        this._queryPages = [
+            'div.container-chapter-reader source', // manganelo, mangabat
+            'div.chapter-content div.panel-read-story source', // mangairo
+            'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s)
+        ].join(', ');
     }
 
     canHandleURI(uri) {
@@ -84,7 +69,7 @@ export default class MangaNel extends Connector {
     async _getChapters(manga) {
         let uri = new URL(manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this._getProfile(uri).queryChapters);
+        let data = await this.fetchDOM(request, this._queryChapters);
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
@@ -99,7 +84,7 @@ export default class MangaNel extends Connector {
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this._getProfile(uri).queryPages);
+        let data = await this.fetchDOM(request, this._queryPages);
         return data.map(element => this.createConnectorURI({
             url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
             referer: request.url
