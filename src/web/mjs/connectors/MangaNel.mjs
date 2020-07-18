@@ -14,8 +14,38 @@ export default class MangaNel extends Connector {
         this.queryMangaTitle = 'div.container-main div.panel-story-info div.story-info-right h1';
         this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
         this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
-        this.queryChapters = 'ul.row-content-chapter li a.chapter-name';
-        this.queryPages = 'div.container-chapter-reader source';
+
+        this.profiles = {
+            'manganelo.': {
+                queryChapters: 'ul.row-content-chapter li a.chapter-name',
+                queryPages: 'div.container-chapter-reader source'
+            },
+            'mangabat.': {
+                queryChapters: 'ul.row-content-chapter li a.chapter-name',
+                queryPages: 'div.container-chapter-reader source'
+            },
+            'mangairo.': {
+                queryChapters: 'div.chapter_list ul li a',
+                queryPages: 'div.chapter-content div.panel-read-story source'
+            },
+            'mangakakalot.': {
+                queryChapters: 'div.chapter-list div.row span a',
+                queryPages: 'div#vungdoc source, div.vung-doc source, div.vung_doc source'
+            },
+            'mangakakalots.': {
+                queryChapters: 'div.chapter-list div.row span a',
+                queryPages: 'div#vungdoc source, div.vung-doc source, div.vung_doc source'
+            }
+        };
+    }
+
+    _getProfile(uri) {
+        return Object.entries(this.profiles).find(kvp => uri.hostname.includes(kvp[0]))[1];
+    }
+
+    canHandleURI(uri) {
+        // Test: https://regex101.com/r/aPR3zy/2/tests
+        return /^(m\.|chap\.)?manganelo.com$/.test(uri.hostname);
     }
 
     async _getMangaFromURI(uri) {
@@ -44,7 +74,8 @@ export default class MangaNel extends Connector {
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                // get absolute links to support cross referencing between MangaNel affiliates
+                id: this.getAbsolutePath(element, request.url),
                 title: element.text.trim()
             };
         });
@@ -52,16 +83,13 @@ export default class MangaNel extends Connector {
 
     async _getChapters(manga) {
         let uri = new URL(manga.id, this.url);
-        if(uri.origin !== this.url) {
-            alert('This manga is hot-linked to a different provider!\nPlease check the following website/connector:\n\n' + uri.origin);
-            return [];
-        }
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryChapters);
+        let data = await this.fetchDOM(request, this._getProfile(uri).queryChapters);
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                // get absolute links to support cross referencing between MangaNel affiliates
+                id: this.getAbsolutePath(element, request.url),
                 title: element.text.replace(manga.title, '').trim(),
                 language: ''
             };
@@ -70,12 +98,8 @@ export default class MangaNel extends Connector {
 
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
-        if(uri.origin !== this.url) {
-            alert('This chapter is hot-linked to a different provider!\nPlease check the following website/connector:\n\n' + uri.origin);
-            return [];
-        }
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryPages);
+        let data = await this.fetchDOM(request, this._getProfile(uri).queryPages);
         return data.map(element => this.createConnectorURI({
             url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
             referer: request.url
