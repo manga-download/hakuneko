@@ -43,7 +43,8 @@ export default class MangaNel extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url + this.path + '1', this.requestOptions);
+        let uri = new URL(this.path + '1', this.url);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
         let pageCount = parseInt(data[0].href.match(/\d+$/));
         for(let page = 1; page <= pageCount; page++) {
@@ -54,7 +55,8 @@ export default class MangaNel extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(this.url + this.path + page, this.requestOptions);
+        let uri = new URL(this.path + page, this.url);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             this.cfMailDecrypt(element);
