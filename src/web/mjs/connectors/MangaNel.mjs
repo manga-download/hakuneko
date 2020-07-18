@@ -36,7 +36,7 @@ export default class MangaNel extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
-        let id = uri.pathname + uri.search;
+        let id = uri.href;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -59,7 +59,7 @@ export default class MangaNel extends Connector {
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                // get absolute links to support cross referencing between MangaNel affiliates
+                // get absolute links to support cross referencing between MangaNel affiliates and sub-domains
                 id: this.getAbsolutePath(element, request.url),
                 title: element.text.trim()
             };
@@ -73,7 +73,7 @@ export default class MangaNel extends Connector {
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                // get absolute links to support cross referencing between MangaNel affiliates
+                // get absolute links to support cross referencing between MangaNel affiliates and sub-domains
                 id: this.getAbsolutePath(element, request.url),
                 title: element.text.replace(manga.title, '').trim(),
                 language: ''
