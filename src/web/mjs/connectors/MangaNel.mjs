@@ -8,7 +8,7 @@ export default class MangaNel extends Connector {
         super.id = 'manganel';
         super.label = 'MangaNelo';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://manganelo.com';
+        this.url = 'https://m.manganelo.com';
 
         this.path = '/genre-all/';
         this.queryMangaTitle = 'div.container-main div.panel-story-info div.story-info-right h1';
