@@ -12,7 +12,7 @@ export default class GoComics extends Connector {
         this.config = {
             throttle: {
                 label: 'Throttle Requests [ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecutive requests.',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for too many consecutive requests.',
                 input: 'numeric',
                 min: 0,
                 max: 5000,
