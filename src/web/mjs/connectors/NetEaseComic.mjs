@@ -6,7 +6,7 @@ export default class NetEaseComic extends Connector {
     constructor() {
         super();
         super.id = 'neteasecomic';
-        super.label = '网易漫画 (NetEase Comic)';
+        super.label = '哔哩哔哩 漫画 (bilibili Comics)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
     }
@@ -18,6 +18,7 @@ export default class NetEaseComic extends Connector {
                 comic_id: parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
@@ -50,6 +51,7 @@ export default class NetEaseComic extends Connector {
                 page_num: page
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
@@ -72,12 +74,12 @@ export default class NetEaseComic extends Connector {
                 comic_id: manga.id
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
         let data = await this.fetchJSON(request);
-        // entry.is_in_free || !entry.is_locked
-        return data.data.ep_list.map(entry => {
+        return data.data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
             return {
                 id: entry.id,
                 title: entry.short_title + ' - ' + entry.title,
@@ -96,6 +98,7 @@ export default class NetEaseComic extends Connector {
                 ep_id: chapter.id
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
@@ -114,6 +117,7 @@ export default class NetEaseComic extends Connector {
                 urls: JSON.stringify(images)
             }),
             headers: {
+                'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
