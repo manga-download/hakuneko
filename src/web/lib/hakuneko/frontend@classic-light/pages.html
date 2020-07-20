@@ -535,7 +535,7 @@
              scrollMagic(defaultDistance) {
                 let images = this.$.container.querySelectorAll('.image');
                 // Are we at the end of the page
-                if(images[images.length-1].getBoundingClientRect().bottom-window.innerHeight < 0)
+                if(images[images.length-1].getBoundingClientRect().bottom-window.innerHeight < 1)
                 {
                     // Should we go to next chapter because we previouysly reached the end of page ?
                     if (this.autoNextChapter) { return this.requestChapterUp(); };
