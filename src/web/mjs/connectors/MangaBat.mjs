@@ -11,5 +11,11 @@ export default class MangaBat extends MangaNel {
 
         this.path = '/manga-list-all/';
         this.queryMangas = 'div.panel-list-story div.list-story-item h3 a.item-title';
+        // NOTE: a corresponding entry for chapter/page queries must be defined in the base class (required for cross-domain-support)
+    }
+
+    canHandleURI(uri) {
+        // Test: https://regex101.com/r/GlzAw2/1/tests
+        return /^(m\.|read\.)?mangabat.com$/.test(uri.hostname);
     }
 }
