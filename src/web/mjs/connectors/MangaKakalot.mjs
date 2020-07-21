@@ -17,7 +17,7 @@ export default class MangaKakalot extends MangaNel {
     }
 
     canHandleURI(uri) {
-        // Verification: https://regex101.com/r/...
-        return /^mangakakalot.com$/.test(uri.hostname);
+        // Verification: https://regex101.com/r/6hWLdv/2/tests
+        return /^mangakakalot\.com$/.test(uri.hostname);
     }
 }

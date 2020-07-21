@@ -17,7 +17,7 @@ export default class MangaIro extends MangaNel {
     }
 
     canHandleURI(uri) {
-        // Verification: https://regex101.com/r/...
-        return /^(m\.|chap\.)?mangairo.com$/.test(uri.hostname);
+        // Verification: https://regex101.com/r/pZFHj3/2/tests
+        return /^(m\.|chap\.)?mangairo\.com$/.test(uri.hostname);
     }
 }

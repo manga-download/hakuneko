@@ -29,8 +29,8 @@ export default class MangaNel extends Connector {
     }
 
     canHandleURI(uri) {
-        // Test: https://regex101.com/r/aPR3zy/2/tests
-        return /^(m\.|chap\.)?manganelo.com$/.test(uri.hostname);
+        // Test: https://regex101.com/r/aPR3zy/3/tests
+        return /^(m\.|chap\.)?manganelo\.com$/.test(uri.hostname);
     }
 
     async _getMangaFromURI(uri) {

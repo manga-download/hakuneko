@@ -15,7 +15,7 @@ export default class MangaBat extends MangaNel {
     }
 
     canHandleURI(uri) {
-        // Test: https://regex101.com/r/GlzAw2/1/tests
-        return /^(m\.|read\.)?mangabat.com$/.test(uri.hostname);
+        // Test: https://regex101.com/r/GlzAw2/2/tests
+        return /^(m\.|read\.)?mangabat\.com$/.test(uri.hostname);
     }
 }
