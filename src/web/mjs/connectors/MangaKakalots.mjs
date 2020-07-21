@@ -13,7 +13,11 @@ export default class MangaKakalots extends MangaNel {
         this.queryMangaTitle = 'div.manga-info-top ul.manga-info-text h1';
         this.queryMangasPageCount = 'div.group_page a.page_last:last-of-type';
         this.queryMangas = 'div.truyen-list h3 a';
-        this.queryChapters = 'div.chapter-list div.row span a';
-        this.queryPages = 'div#vungdoc source, div.vung-doc source, div.vung_doc source';
+        // NOTE: a corresponding entry for chapter/page queries must be defined in the base class (required for cross-domain-support)
+    }
+
+    canHandleURI(uri) {
+        // Verification: https://regex101.com/r/...
+        return /^mangakakalots.com$/.test(uri.hostname);
     }
 }
