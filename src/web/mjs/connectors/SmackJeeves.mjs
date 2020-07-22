@@ -50,12 +50,12 @@ export default class SmackJeeves extends Connector {
 
     async _getChapters(manga) {
         const url = new URL('/api'+manga.id, this.url);
-        const data = await this._fetchPOST(url);
+        const data = await this._fetchPOST(url, url.searchParams);
 
         return data.result.list.map(item => {
             // decode html entities
             let title = document.createElement('div');
-            title.innerHTML = item.articleTitle;
+            title.innerHTML = item.articleNo + ' - ' + item.articleTitle;
             return {
                 id: item.articleUrl,
                 title: title.textContent.trim()
