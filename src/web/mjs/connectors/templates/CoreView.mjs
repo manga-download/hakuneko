@@ -17,6 +17,7 @@ export default class CoreView extends Connector {
         this.queryChapters = 'feed entry';
 
         this.queryPages = 'source.page-image[data-src]';
+        this.queryEpisodeJSON = '#episode-json';
     }
 
     async _getMangas() {
@@ -68,8 +69,9 @@ export default class CoreView extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id + '.json', this.url), this.requestOptions);
-        let data = await this.fetchJSON(request);
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let dataElement = await this.fetchDOM(request, this.queryEpisodeJSON);
+        let data = JSON.parse(dataElement[0].dataset.value);
         if(!data.readableProduct.isPublic && !data.readableProduct.hasPurchased) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
