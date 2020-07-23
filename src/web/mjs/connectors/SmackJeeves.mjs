@@ -55,7 +55,7 @@ export default class SmackJeeves extends Connector {
         return data.result.list.map(item => {
             // decode html entities
             let title = document.createElement('div');
-            title.innerHTML = item.articleNo + ' - ' + item.articleTitle;
+            title.innerHTML = `#${item.articleNo} - ${item.articleTitle}`;
             return {
                 id: item.articleUrl,
                 title: title.textContent.trim()
@@ -65,11 +65,7 @@ export default class SmackJeeves extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise(resolve => resolve(
-                cmnData.comicData.map(page => {
-                    return page.url;
-                })
-            ));
+            new Promise(resolve => resolve(cmnData.comicData.map(page => page.url || page)));
         `;
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         return await Engine.Request.fetchUI(request, script);
