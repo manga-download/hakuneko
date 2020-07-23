@@ -85,6 +85,7 @@ export default class Blacklist {
             '*://*.onesignal.com/*',
             '*://*.outbrain.com/*',
             '*://*.outbrainimg.com/*',
+            '*://*.overkirliaan.com/*',
             '*://*.passeura.com/*',
             '*://*.popcash.net/*',
             '*://*.popmonetizer.net/*',
@@ -112,6 +113,7 @@ export default class Blacklist {
             '*://*.w55c.net/*',
             '*://*.yieldbird.com/*',
             '*://*.yimg.com/*',
+            '*://*.your-notice.com/*',
             '*://*.zeusadx.com/*',
             '*://*.zryydi.com/*',
         ];
