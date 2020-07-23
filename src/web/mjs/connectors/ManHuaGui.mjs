@@ -16,8 +16,8 @@ export default class ManHuaGui extends SinMH {
         this.queryChapters = 'div.chapter-list ul li a';
         this.config = {
             throttle: {
-                label: 'Chapter Throttle Requests [ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading Chapters.\nThe website may ban your IP for to many consecuitive requests.',
+                label: 'Page Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading Pages.\nThe website may ban your IP for to many consecuitive requests.',
                 input: 'numeric',
                 min: 500,
                 max: 10000,
@@ -36,7 +36,7 @@ export default class ManHuaGui extends SinMH {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url + this.path, this.requestOptions);
+        let request = new Request(new URL(this.path, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
         let pageCount = parseInt(new RegExp(this.pathMatch).exec(data[0].href)[1]);
         for(let page = 1; page <= pageCount; page++) {
