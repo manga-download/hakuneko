@@ -11,11 +11,11 @@ export default class SmackJeeves extends Connector {
     }
 
     async _getCategories( url) {
-        const script = `new Promise(resolve => resolve(cmnData));`;
+        const script = `
+            new Promise(resolve => resolve(cmnData.navigation.items.map(item => item.val)));
+        `;
         const request = new Request(new URL(url), this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, script);
-
-        return data.navigation.items.map(item => item.val);
+        return Engine.Request.fetchUI(request, script);
     }
 
     async _getMangas() {
