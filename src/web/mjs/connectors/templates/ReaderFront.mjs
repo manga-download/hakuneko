@@ -49,10 +49,10 @@ export default class ReaderFront extends Connector {
         let payload = {
             operationName: 'Works',
             variables: {
-                language: this.languageMap[this.language]
+                languages: [ this.languageMap[this.language] ]
             },
-            query: `query Works($language: Int) {
-                        works(language: $language, orderBy: "ASC", sortBy: "stub", first: 250, offset: 0, showHidden: true) {
+            query: `query Works($languages: [Int]) {
+                        works(languages: $languages, orderBy: "ASC", sortBy: "stub", first: 250, offset: 0, showHidden: true) {
                             id
                             stub
                             name
