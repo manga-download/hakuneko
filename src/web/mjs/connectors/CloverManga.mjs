@@ -6,7 +6,7 @@ export default class CloverManga extends WordPressMadara {
         super.id = 'clovermanga';
         super.label = 'Clover Manga';
         this.tags = [ 'manga', 'high-quality', 'turkish' ];
-        this.url = 'https://clovermanga.com';
+        this.url = 'https://clover-manga.com';
         this.language = 'tr';
         this.requestOptions.headers.set( 'x-referer', this.url );
     }
