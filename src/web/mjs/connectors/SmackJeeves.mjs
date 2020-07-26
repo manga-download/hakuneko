@@ -11,11 +11,11 @@ export default class SmackJeeves extends Connector {
     }
 
     async _getCategories( url) {
-        const script = `new Promise(resolve => resolve(cmnData));`;
+        const script = `
+            new Promise(resolve => resolve(cmnData.navigation.items.map(item => item.val)));
+        `;
         const request = new Request(new URL(url), this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, script);
-
-        return data.navigation.items.map(item => item.val);
+        return Engine.Request.fetchUI(request, script);
     }
 
     async _getMangas() {
@@ -50,12 +50,12 @@ export default class SmackJeeves extends Connector {
 
     async _getChapters(manga) {
         const url = new URL('/api'+manga.id, this.url);
-        const data = await this._fetchPOST(url);
+        const data = await this._fetchPOST(url, url.searchParams);
 
         return data.result.list.map(item => {
             // decode html entities
             let title = document.createElement('div');
-            title.innerHTML = item.articleTitle;
+            title.innerHTML = `#${item.articleNo} - ${item.articleTitle}`;
             return {
                 id: item.articleUrl,
                 title: title.textContent.trim()
@@ -65,11 +65,7 @@ export default class SmackJeeves extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise(resolve => resolve(
-                cmnData.comicData.map(page => {
-                    return page.url;
-                })
-            ));
+            new Promise(resolve => resolve(cmnData.comicData.map(page => page.url || page)));
         `;
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         return await Engine.Request.fetchUI(request, script);
