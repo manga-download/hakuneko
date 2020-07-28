@@ -13,7 +13,7 @@
         "CryptoJS":"readonly",
         "JSZip":"readonly",
         "OAuth":"readonly",
-        "jsPDF":"readonly",
+        "PDFDocument":"readonly",
         "HakuNeko": "readonly",
         "Engine": "readonly",
         "EventListener": "readonly",
