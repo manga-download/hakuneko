@@ -1,13 +1,7 @@
 import ReaderFront from './templates/ReaderFront.mjs';
 
-/**
- *
- */
 export default class RavensScansEN extends ReaderFront {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'ravensscans-en';
