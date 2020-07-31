@@ -13,9 +13,6 @@ export default class WebNovel extends Connector {
         this.token = '';
     }
 
-    /**
-     *
-     */
     async _initializeConnector() {
         let uri = new URL( this.url );
         uri.searchParams.set( 'ts', Date.now() );
@@ -33,9 +30,6 @@ export default class WebNovel extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
     _getMangaListFromPages( page ) {
         page = page || 1;
         let uri = new URL( '/apiajax/comic/listAjax', this.url );
@@ -59,9 +53,6 @@ export default class WebNovel extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         this._getMangaListFromPages()
             .then( data => callback( null, data ) )
@@ -71,9 +62,6 @@ export default class WebNovel extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getChapterList( manga, callback ) {
         let uri = new URL( '/apiajax/comic/getChapterList', this.url );
         uri.searchParams.set( 'comicId', manga.id );
@@ -96,11 +84,9 @@ export default class WebNovel extends Connector {
             } );
     }
 
-    /**
-     *
-     */
     _getPageList( manga, chapter, callback ) {
         let uri = new URL( '/apiajax/comic/getContent', this.url );
+        uri.searchParams.set('width', 1920);
         uri.searchParams.set( 'comicId', manga.id );
         uri.searchParams.set( 'chapterId', chapter.id );
         uri.searchParams.set( '_csrfToken', this.token );
