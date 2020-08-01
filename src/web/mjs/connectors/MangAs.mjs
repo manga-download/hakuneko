@@ -17,8 +17,8 @@ export default class MangAs extends MangaReaderCMS {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a.chapter_link'), this.url),
-                title: element.textContent.replace('→', '').replace(/\s*:\s*$/, '').replace(manga.title, '').trim(),
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('em a'), this.url),
+                title: element.textContent.replace(/[→⟶⟷]/g, '').replace(manga.title, '').trim(),
                 language: this.language
             };
         });

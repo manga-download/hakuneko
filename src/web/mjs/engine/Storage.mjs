@@ -33,7 +33,7 @@ export default class Storage {
         this.temp = this.path.join( require( 'os' ).tmpdir(), 'hakuneko' );
         this._createDirectoryChain( this.temp );
 
-        this.pdfTargetHeight = 160; // [mm]
+        this.pdfTargetHeight = 1600;
         this.fileURISubstitutions = {
             rgx: /['#?;]/g,
             map: {
@@ -502,33 +502,13 @@ export default class Storage {
      * Create and save pages to the given portable document file.
      * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
      */
-    _saveChapterPagesPDF( pdf, pageData ) {
-        let doc = new jsPDF();
-        doc.deletePage( 1 );
-        return this._addImagesToPDF( doc, pageData )
-            .then( () => {
-                let data = new Uint8Array( doc.output( 'arraybuffer' ) );
-                return this._writeFile( pdf, data );
-            } );
-    }
-
-    /**
-     * Add all images as PDF pages to the given document.
-     */
-    _addImagesToPDF( pdfDocument, pageData, pageIndex ) {
-        if( typeof pageIndex !== 'number' ) {
-            pageIndex = 0;
+    async _saveChapterPagesPDF(pdf, pageData) {
+        var doc = new PDFDocument({ autoFirstPage: false });
+        doc.pipe(this.fs.createWriteStream(pdf));
+        for(let page of pageData) {
+            await this._addImageToPDF(doc, page);
         }
-        if( pageIndex < 0 ) {
-            return Promise.reject( new Error( 'PDF page index out of range: ' + pageIndex ) );
-        }
-        if( pageIndex >= pageData.length ) {
-            return Promise.resolve();
-        }
-        return this._addImageToPDF( pdfDocument, pageData[pageIndex] )
-            .then( () => {
-                return this._addImagesToPDF( pdfDocument, pageData, pageIndex+1 );
-            } );
+        doc.end();
     }
 
     /**
@@ -555,11 +535,11 @@ export default class Storage {
         } else {
             blob = page.data;
         }
+
         let bytes = await this._blobToBytes(blob);
         let pdfTargetWidth = this.pdfTargetHeight * bitmap.width / bitmap.height;
-        pdfDocument.addPage(pdfTargetWidth, this.pdfTargetHeight);
-        // use page.name as image alias, to prevent image repeat bug: https://github.com/MrRio/jsPDF/issues/998
-        pdfDocument.addImage(bytes, pdfImgType, 0, 0, pdfTargetWidth, this.pdfTargetHeight, page.name);
+        pdfDocument.addPage({ size: [ pdfTargetWidth, this.pdfTargetHeight ] });
+        pdfDocument.image(bytes.buffer, 0, 0, { width: pdfTargetWidth, height: this.pdfTargetHeight });
     }
 
     /**
