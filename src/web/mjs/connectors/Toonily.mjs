@@ -6,7 +6,7 @@ export default class Toonily extends WordPressMadara {
         super();
         super.id = 'toonily';
         super.label = 'Toonily';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = [ 'webtoon', 'hentai', 'english' ];
         this.url = 'https://toonily.com';
     }
 }

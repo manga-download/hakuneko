@@ -44,11 +44,12 @@ export default class MangaReaderCMS extends Connector {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
-            let src = (element.dataset['src'] || element.src).trim();
-            if(src.startsWith('//')) {
-                src = new URL(this.url).protocol + src;
+            try {
+                return decodeURIComponent(atob(element.dataset['src'].split('://').pop()));
+            } catch(error) {
+                let src = (element.dataset['src'] || element.src).trim();
+                return new URL(src, request.url).href;
             }
-            return src;
         });
     }
 }
