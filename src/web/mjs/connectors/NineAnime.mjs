@@ -161,30 +161,36 @@ export default class NineAnime extends Connector {
 
     async _getPages(chapter) {
         let script = `
-        new Promise(async (resolve, reject) => {
-            localStorage.setItem('player_autoplay', 0);
-            function hash(text) {
-                return text.split('').reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) + index, 0);
-            }
-            let uri = new URL('/ajax/episode/info', window.location.origin);
-            uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
-            uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
-            uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
-            uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0')); // 695 + (5 * 48)
-            uri.searchParams.set('ts', $('html').data().ts);
-            let response = await fetch(uri.href, {
-                headers: {
-                    // required to prevent IP ban
-                    'X-Requested-With': 'XMLHttpRequest'
+            new Promise((resolve, reject) => {
+                localStorage.setItem('player_autoplay', 0);
+                function hash(text) {
+                    return text.split('').reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) + index, 0);
                 }
+                setTimeout(async () => {
+                    try {
+                        let uri = new URL('/ajax/episode/info', window.location.origin);
+                        uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
+                        uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
+                        uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
+                        uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0')); // 695 + (5 * 48)
+                        uri.searchParams.set('ts', $('html').data().ts);
+                        let response = await fetch(uri.href, {
+                            headers: {
+                                // required to prevent IP ban
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        let data = await response.json();
+                        resolve(data.target);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
             });
-            let data = await response.json();
-            resolve(data.target);
-        });
         `;
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         await this._checkCaptcha(request);
-        let data = await Engine.Request.fetchUI(request, script);
+        let data = await Engine.Request.fetchUI(request, script, 15000);
         await this.wait(500);
         switch(true) {
             case data.includes('prettyfast'):
