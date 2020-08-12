@@ -8,7 +8,12 @@ export default class RavensScansES extends ReaderFront {
         super.label = 'RavensScans (Spanish)';
         this.tags = [ 'manga', 'high-quality', 'spanish', 'scanlation' ];
         this.url = 'https://ravens-scans.com';
-        this.baseURL = 'https://api.ravens-scans.com';
+        this.cdn = 'https://img-cdn1.ravens-scans.com';
+        this.apiURL = 'https://api.ravens-scans.com';
         this.language = 'es';
+    }
+
+    canHandleURI(uri) {
+        return uri.origin === this.url && uri.pathname.includes('/es/');
     }
 }

@@ -8,7 +8,8 @@ export default class ReaderFront extends Connector {
         super.id = undefined;
         super.label = undefined;
         this.url = undefined;
-        this.baseURL = undefined;
+        this.cdn = undefined;
+        this.apiURL = undefined;
 
         this.language = '';
         this.languageMap = {
@@ -21,11 +22,11 @@ export default class ReaderFront extends Connector {
     /**
      *
      */
-    _getJsonResponse( payload/*, type*/ ) {
+    _getJsonResponse( gql/*, type*/ ) {
         this.requestOptions.method = 'POST';
-        this.requestOptions.body = JSON.stringify( payload );
+        this.requestOptions.body = JSON.stringify( gql );
         this.requestOptions.headers.set( 'content-type', 'application/json' );
-        let promise = fetch( this.baseURL, this.requestOptions )
+        let promise = fetch( this.apiURL, this.requestOptions )
             .then( response => response.json() )
             .then( data => {
                 if( data[ 'errors' ] ) {
@@ -46,7 +47,7 @@ export default class ReaderFront extends Connector {
      *
      */
     _getMangaList( callback ) {
-        let payload = {
+        let gql = {
             operationName: 'Works',
             variables: {
                 languages: [ this.languageMap[this.language] ]
@@ -59,7 +60,7 @@ export default class ReaderFront extends Connector {
                         }
                     }`
         };
-        this._getJsonResponse( payload, 'mangas' )
+        this._getJsonResponse( gql, 'mangas' )
             .then( data => {
                 let mangaList = data.works.map( manga => {
                     return {
@@ -79,7 +80,7 @@ export default class ReaderFront extends Connector {
      *
      */
     _getChapterList( manga, callback ) {
-        let payload = {
+        let gql = {
             operationName: 'Work',
             variables: {
                 language: this.languageMap[this.language],
@@ -99,7 +100,7 @@ export default class ReaderFront extends Connector {
                         }
                     }`
         };
-        this._getJsonResponse( payload, 'chapters' )
+        this._getJsonResponse( gql, 'chapters' )
             .then( data => {
                 let chapterList = data.work.chapters.map( chapter => {
                 // .padStart( 4, '0' )
@@ -126,7 +127,7 @@ export default class ReaderFront extends Connector {
          * pagesByChapter
          * chapterById
          */
-        let payload = {
+        let gql = {
             operationName: 'ChapterById',
             variables: {
                 id: chapter.id
@@ -144,11 +145,11 @@ export default class ReaderFront extends Connector {
                         }
                     }`
         };
-        this._getJsonResponse( payload, 'pages' )
+        this._getJsonResponse( gql, 'pages' )
             .then( data => {
                 let chapter = data.chapterById;
                 let pageList = chapter.pages.map( page => {
-                    let uri = new URL( ['/works', chapter.work.uniqid, chapter.uniqid, page.filename].join( '/' ), this.baseURL );
+                    let uri = new URL( ['/works', chapter.work.uniqid, chapter.uniqid, page.filename].join( '/' ), this.cdn );
                     return uri.href;
                 /*
                  *let hash = 1; // 0 ~ 2
