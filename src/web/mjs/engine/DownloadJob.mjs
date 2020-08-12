@@ -26,7 +26,7 @@ export default class DownloadJob extends EventTarget {
         };
         this.requestOptions = chapter.manga.connector.requestOptions || {};
         // TODO: initialize requestOptions.headers = new Headers() if not set
-        this.chunkSize = 1048576; // 1 MB
+        this.chunkSize = 8388608; // 8 MB
         this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50 ;
         this.status = undefined;
         this.progress = 0;
@@ -287,9 +287,8 @@ export default class DownloadJob extends EventTarget {
             } );
     }
 
-    /**
-     *
-     */
+    // TODO: read from the stream directly to the file instead of processing chunks
+    // => https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream | response.body.pipe(...)
     _downloadVideoStream( episode, directory, callback ) {
         let basename = Date.now(); // episode.video.split( '/' ).pop();
         this.requestOptions['method'] = 'HEAD';
