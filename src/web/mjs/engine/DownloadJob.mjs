@@ -161,7 +161,11 @@ export default class DownloadJob extends EventTarget {
         };
         let playlistURL = undefined;
         let promises = episode.mirrors.map( mirror => {
-            return fetch( mirror, this.requestOptions )
+            let request = new Request(mirror, this.requestOptions);
+            if(episode.referer) {
+                request.headers.set('x-referer', episode.referer);
+            }
+            return fetch(request)
                 .then( response => {
                     if( response.status !== 200 ) {
                         throw new Error( 'Playlist "' + mirror + '" returned status: ' + response.status + ' - ' + response.statusText );
@@ -212,7 +216,11 @@ export default class DownloadJob extends EventTarget {
                 let promises = packets.map( ( packet, index ) => {
                     return this._wait( index * this.throttle )
                         .then( () => {
-                            return fetch( packet.source, this.requestOptions );
+                            let request = new Request(packet.source, this.requestOptions);
+                            if(episode.referer) {
+                                request.headers.set('x-referer', episode.referer);
+                            }
+                            return fetch(request);
                         } )
                         .then( response => {
                             if( response.status !== 200 ) {
@@ -242,7 +250,11 @@ export default class DownloadJob extends EventTarget {
                     }
                     return this._wait( index * 50 )
                         .then( () => {
-                            return fetch( subtitle.url, this.requestOptions );
+                            let request = new Request(subtitle.url, this.requestOptions);
+                            if(episode.referer) {
+                                request.headers.set('x-referer', episode.referer);
+                            }
+                            return fetch(request);
                         } )
                         .then( response => {
                             if( response.status !== 200 ) {
