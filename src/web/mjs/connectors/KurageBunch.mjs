@@ -9,7 +9,7 @@ export default class KurageBunch extends CoreView {
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://kuragebunch.com';
 
-        this.path = [ '/series/kuragebunch' ];
+        this.path = [ '/series/kuragebunch', '/series/comicbunch', '/series/bbunch', '/series/ututu', '/series/oneshot' ];
         this.queryManga = 'ul.page-series-list li.page-series-list-item div.series-data a.series-data-container';
         this.queryMangaTitle = 'h4';
     }
