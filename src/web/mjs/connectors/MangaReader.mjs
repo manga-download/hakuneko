@@ -38,7 +38,7 @@ export default class MangaReader extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.closest('td').textContent.replace(manga.title, '').trim(),
+                title: element.closest('td').textContent.replace(manga.title, '').replace(/:+\s*$/, '').trim(),
                 language: ''
             };
         });
