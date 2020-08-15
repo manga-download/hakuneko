@@ -256,6 +256,13 @@ export default class Connector {
         }
     }
 
+    adLinkDecrypt(element) {
+        let uri = new URL(element.href);
+        if(uri.hostname === 'nofil.net' && element.pathname.includes('safeme')) {
+            element.href = uri.searchParams.get('url');
+        }
+    }
+
     /**
      * Helper function to decrypt the protected email within the given DOM element.
      */

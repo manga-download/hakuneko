@@ -31,6 +31,7 @@ export default class WordPressEManga extends Connector {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
+            this.adLinkDecrypt(element);
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.replace(manga.title, '').trim(),

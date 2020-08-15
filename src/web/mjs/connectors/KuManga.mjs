@@ -9,120 +9,106 @@ export default class KuManga extends Connector {
         super.label = 'KuManga';
         this.tags = [ 'manga', 'spanish' ];
         this.url = 'https://www.kumanga.com';
-        this.requestOptions.headers.set( 'x-referer', this.url );
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.title_container div.h1_container h1', 5);
+        let data = await this.fetchDOM(request, 'meta[property="og:title"]');
         let id = uri.pathname.match(/^\/manga\/\d+/)[0];
-        let title = data[0].innerText.trim();
+        let title = data[0].content.trim();
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( page ) {
-        page = page || 1;
-        let perPage = 75;
-        this.requestOptions.method = 'POST';
-        let request = new Request( this.url + '/backend/ajax/searchengine.php', this.requestOptions );
-        request.headers.set( 'content-type', 'application/x-www-form-urlencoded' );
+    async _getMangas() {
+        let script = `
+            new Promise(resolve => {
+                function btoaReverse(content) {
+                    return btoa(content).split('').reverse().join('');
+                }
+                let fuckedKuMangaAgain = document.querySelector('#searchinput').getAttribute('dt');
+                let tokenIdentifier = btoaReverse(fuckedKuMangaAgain).replace(/=/g, 'k');
+                let tokenAttribute = btoaReverse(btoaReverse(fuckedKuMangaAgain)).replace(/=/g, 'k').toLowerCase();
+                resolve(document.getElementById(tokenIdentifier).getAttribute(tokenAttribute));
+            });
+        `;
+        let mangaList = [];
+        let uri = new URL('/mangalist', this.url);
+        let request = new Request(uri, this.requestOptions);
+        let token = await Engine.Request.fetchUI(request, script);
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(token, page);
+            mangas.length > 1 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(token, page) {
+        let uri = new URL('/backend/ajax/searchengine.php', this.url);
         let form = new URLSearchParams();
-        form.append( 'contentType', 'manga' );
-        form.append( 'retrieveCategories', false );
-        form.append( 'retrieveAuthors', false );
-        form.append( 'perPage', perPage );
-        form.append( 'page', page );
-        request.body = form.toString();
-        // NOTE: fetch( request ) => does not post content from body
-        return fetch( request.url, request )
-            .then( response => response.json() )
-            .then( data => {
-                let mangaList = data.contents.map( entry => {
-                    return {
-                        id: ['/manga', entry.id/*, entry.slug*/].join( '/' ),
-                        title: entry.name.trim()
-                    };
-                } );
-                if( mangaList.length === perPage ) {
-                    return this._getMangaListFromPages( page + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        form.append('token', token);
+        form.append('contentType', 'manga');
+        form.append('retrieveCategories', false);
+        form.append('retrieveAuthors', false);
+        form.append('perPage', 75);
+        form.append('page', page);
+        let request = new Request(uri, {
+            method: 'POST',
+            body: form.toString(),
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        });
+        let data = await this.fetchJSON(request);
+        return data.contents.map(entry => {
+            return {
+                id: ['/manga', entry.id/*, entry.slug*/].join('/'),
+                title: entry.name.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this._getMangaListFromPages()
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let chapterList = [];
+        for(let page = 1, run = true; run; page++) {
+            let chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        }
+        return chapterList;
     }
 
-    /**
-     *
-     */
-    _getChapterListFromPages( manga, page ) {
-        page = page || 1;
+    async _getChaptersFromPage(manga, page) {
         let request = new Request( this.url + manga.id + '/p/' + page, this.requestOptions );
-        return this.fetchDOM( request, 'table.table tr td h4.title > a', 5 )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, this.url ).replace( '/c/', '/leer/' ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                if( chapterList.length > 0 ) {
-                    return this._getChapterListFromPages( manga, page + 1 )
-                        .then( chapters => chapterList.concat( chapters ) );
-                } else {
-                    return Promise.resolve( chapterList );
-                }
-            } );
+        let data = await this.fetchDOM(request, 'table.table tr td h4.title > a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url).replace('/c/', '/leer/'),
+                title: element.text.replace(manga.title, '').trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this._getChapterListFromPages( manga )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        this.requestOptions.method = 'GET';
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        fetch( request )
-            .then( response => response.text() )
-            .then( data => {
-                let pageList = JSON.parse( data.match( /pUrl\s*=\s*(\[.*\])\s*;/ )[1] )
-                    .map( page => this.createConnectorURI( this.getAbsolutePath( page.imgURL, request.url ) ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let script = `
+            new Promise(resolve => {
+                resolve(pUrl.map(page => page.imgURL));
+            });
+        `;
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await Engine.Request.fetchUI(request, script);
+        let promises = data.map(async link => {
+            let redirector = new URL(link, this.url);
+            if(redirector.pathname.endsWith('/img.php')) {
+                let controller = new AbortController();
+                let response = await fetch(new Request(redirector, { signal: controller.signal, ...this.requestOptions }));
+                controller.abort();
+                return response.url;
+            } else {
+                return redirector.href;
+            }
+        });
+        return Promise.all(promises);
     }
 }
