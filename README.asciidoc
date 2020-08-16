@@ -14,6 +14,8 @@ endif::[]
 
 ---
 
+🏡 Website : https://hakuneko.download
+
 === Download
 
 image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total?label=HakuNeko%20%28Stable%29&logo=github[link=https://github.com/manga-download/hakuneko/releases/latest, title="Download the latest stable release of HakuNeko", window="_blank"]

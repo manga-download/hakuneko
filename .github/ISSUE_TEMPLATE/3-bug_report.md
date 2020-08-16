@@ -1,13 +1,13 @@
 ---
-name: Bug report
-about: Create a report to help us improve
+name: 🐞 Bug report
+about: Create a report to help us improve (issues not related to a connector)
 title: "[Bug]"
 labels: Bug
 assignees: ''
 
 ---
 
-**Did you read [the troubleshooting guide](https://github.com/manga-download/hakuneko/wiki/Troubleshooting)**
+**Did you read [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/)**
 Yes/No
 
 **Describe the bug**

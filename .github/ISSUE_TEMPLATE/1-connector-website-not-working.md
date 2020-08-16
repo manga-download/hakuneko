@@ -1,5 +1,5 @@
 ---
-name: Connector/Website not working
+name: ❗ Connector/Website not working
 about: Notify that a connector is not working
 title: "[NameOfConnector] Connector not working"
 labels: Website Change
@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-**Did you read [the troubleshooting guide](https://github.com/manga-download/hakuneko/wiki/Troubleshooting)**
+**Did you read [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/)**
 Yes/No
 
 **Is the website of the connector working properly / are you able to see the manga within your browser**

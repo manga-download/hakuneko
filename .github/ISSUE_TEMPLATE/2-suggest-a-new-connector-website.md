@@ -1,5 +1,5 @@
 ---
-name: Suggest a new Connector/Website
+name: ✍ Suggest a new Connector/Website
 about: Want a new website to be added in hakuneko ?
 title: "[Site Request] thewebsitename"
 labels: Website Suggestion
