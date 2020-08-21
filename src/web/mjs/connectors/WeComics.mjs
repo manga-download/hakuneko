@@ -1,13 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 
-/**
- *
- */
 export default class WeComics extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'wecomics';
@@ -16,93 +10,57 @@ export default class WeComics extends Connector {
         this.url = 'https://m.wecomics.com';
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( page ) {
-        page = page || 1;
-        let request = new Request( this.url + '/comic/getIndexList/page/' + page, this.requestOptions );
-        return this.fetchJSON( request )
-            .then( data => {
-                let mangaList = data.data.comic_list.map( manga => {
-                    return {
-                        id: manga.comic_id,
-                        title: manga.title.trim()
-                    };
-                } );
-                if( mangaList.length > 0 ) {
-                    return this._getMangaListFromPages( page + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this._getMangaListFromPages()
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let uri = new URL('/h5/home/getWaterFallComicList/page/' + page, this.url);
+        let request = new Request(uri, this.requestOptions );
+        let data = await this.fetchJSON(request);
+        return data.data.data_list.map(manga => {
+            return {
+                id: manga.comic_id,
+                title: manga.title.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + '/comic/getChapterList/id/' + manga.id, this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                let chapterList = data.data.chapter_list.map( chapter => {
-                    return {
-                        id: chapter.chapter_id,
-                        title: chapter.title.trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let uri = new URL('/h5/comic/detail/id/' + manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        // TODO: filter non-purchased chapters?
+        return data.data.chapter_list.map(chapter => {
+            return {
+                id: chapter.chapter_id,
+                title: chapter.title.trim(),
+                language: ''
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( `${this.url}/comic/getPictureList/id/${manga.id}/cid/${chapter.id}`, this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                let pageList = WeComics_Vendor.getPictureList( data.data.chapter.data );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        let uri = new URL(`/h5/comic/getPictureList/id/${chapter.manga.id}/cid/${chapter.id}`, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        return WeComics_Vendor.getPictureList(data.data.chapter.data);
     }
 }
 
-/**
- *
- */
 class WeComics_Vendor {
 
-    static getPictureList( encrypted ) {
+    static getPictureList(encrypted) {
         let buff = encrypted.substr(0, 8);
         let buff_data = encrypted.substr(8);
         let rawChapStr = this.decryptFromBase64(buff_data, buff);
         let rawChapObj = JSON.parse(rawChapStr);
-        return rawChapObj.picture_list.map( picture => rawChapObj.cdn_base_url + picture.picture_url );
+        return rawChapObj.picture_list.map(picture => rawChapObj.cdn_base_url + picture.picture_url);
     }
 
     static decryptFromBase64(e, n) {
@@ -291,5 +249,4 @@ class WeComics_Vendor {
             n.join("");
         }(t, e);
     }
-
 }
