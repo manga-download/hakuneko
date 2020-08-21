@@ -22,29 +22,13 @@ export default class ManHuaGui extends SinMH {
                 min: 500,
                 max: 10000,
                 value: 2500
-            },
-            delaylist: {
-                label: 'Delay Manga List Requsts[ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests while loading MangaList.\nThe website may ban your IP for to many consecuitive requests.',
-                input: 'numeric',
-                min: 500,
-                max: 10000,
-                value: 4500
             }
         };
     }
 
     async _getMangas() {
-        let mangaList = [];
-        let request = new Request(new URL(this.path, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        let pageCount = parseInt(new RegExp(this.pathMatch).exec(data[0].href)[1]);
-        for(let page = 1; page <= pageCount; page++) {
-            await this.wait(this.config.delaylist.value);
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
-        }
-        return mangaList;
+        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
     async _getChapters(manga) {
