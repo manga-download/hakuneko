@@ -32,6 +32,23 @@ export default class NineAnime extends Connector {
         };
     }
 
+    canHandleURI(uri) {
+        return /https?:\/\/(w+\d*.)?9anime.to/.test(uri.origin);
+    }
+
+    async _initializeConnector() {
+        /*
+         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+         * => append random search parameter to avoid caching
+         */
+        let uri = new URL(this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
+    }
+
     async _checkCaptcha(request) {
         let response = await fetch(request);
         let body = await response.text();
@@ -68,7 +85,7 @@ export default class NineAnime extends Connector {
         let dom = this.createDOM(data);
         let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
         let metaTitle = dom.querySelector('div.head h2[data-jtitle].title'); // 'meta[property="og:title"]'
-        let id = this.getRootRelativeOrAbsoluteLink(metaURL, request.url);
+        let id = this.getRootRelativeOrAbsoluteLink(metaURL, this.url);
         let title = metaTitle.dataset.jtitle.trim();
         return new Manga(this, id, title);
     }
