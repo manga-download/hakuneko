@@ -35,6 +35,7 @@ export default class WeComics extends Connector {
         let uri = new URL('/h5/comic/detail/id/' + manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
+        // TODO: filter non-purchased chapters?
         return data.data.chapter_list.map(chapter => {
             return {
                 id: chapter.chapter_id,
