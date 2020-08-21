@@ -16,15 +16,14 @@ export default class MangaFox extends Connector {
         this.scriptSource = 'chapterfun.ashx';
     }
 
-    /**
-     *
-     */
     get script() {
         return `
             new Promise(resolve => {
                 if(isbarchpater) {
+                    // webtoon (all images on a single page)
                     resolve(newImgs.map(image => new URL(image, window.location.href).href));
                 } else {
+                    // manga (one image per page)
                     let promises = [...(new Array(imagecount)).keys()].map(p => {
                         return Promise.resolve()
                         .then(() => {
@@ -57,130 +56,72 @@ export default class MangaFox extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangas() {
+        let mangaList = [];
+        let request = new Request(new URL('/directory/', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.pager-list div.pager-list-left a:nth-last-child(2)');
+        let pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.manga-list-1 ul li p.manga-list-1-item-title a', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.title.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/directory/', 'div.pager-list div.pager-list-left a:nth-last-child(2)' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/directory/' + ( page + 1 ) + '.htm' );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        let uri = new URL(`/directory/${page}.htm`, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.manga-list-1 ul li p.manga-list-1-item-title a', 3);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.title.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        return this.fetchDOM( this.url + manga.id, 'div#chapterlist ul li a' )
-            .then( data => {
-                // TODO: license element check ... (e.g. ???)
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.querySelector( 'p.title3' ).innerText.replace( manga.title, '' ).trim(),
-                        language: 'english'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        let data = await this.fetchDOM(uri, 'div#chapterlist ul li a');
+        // TODO: license element check ... (e.g. ???)
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('p.title3').innerText.replace(manga.title, '').trim(),
+                language: 'english'
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        this._getPageListDesktop( manga, chapter, callback );
-        //this._getPageListMobile( manga, chapter, callback );
+    async _getPages(chapter) {
+        return this._getPagesDesktop(chapter);
+        //return this._getPageListMobile(chapter);
     }
 
-    /**
-     *
-     */
-    _getPageListDesktop( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        Engine.Request.fetchUI( request, this.script )
-            .then( pageList => {
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPagesDesktop(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, this.script);
     }
 
-    /**
-     *
-     */
-    _getPageListMobile( manga, chapter, callback ) {
-        let uri = new URL( this.url + chapter.id );
+    async _getPageListMobile(chapter) {
+        let uri = new URL(chapter.id, this.url);
         uri.hostname = 'm.' + uri.hostname;
-        uri.pathname = uri.pathname.replace( '/manga/', '/roll_manga/' );
-        fetch( uri.href, this.requestOptions )
-            .then( response => {
-                // FIXME: very dangerous, might end up in endless recursion !!!
-                if( response.status === 503 || response.status === 504 ) {
-                    setTimeout( () => {
-                        this._getPageList( manga, chapter, callback );
-                    }, this.pageLoadDelay );
-                    return;
-                }
-                if( response.status !== 200 ) {
-                    throw new Error( `Failed to receive page list (status: ${response.status}) - ${response.statusText}` );
-                }
-                return response.text();
-            } )
-            .then( data => {
-                let dom = this.createDOM( data );
-                if( dom.querySelector( 'span.fwb' ) && data.indexOf( 'licensed' ) > -1 ) {
-                    throw new Error( 'The manga is licensed and not available in your country!' );
-                }
-                let pageList = [...dom.querySelectorAll( 'div#viewer source' )];
-                pageList = pageList.map( element => {
-                    return element.dataset.original;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+        uri.pathname = uri.pathname.replace('/manga/', '/roll_manga/');
+        let response = await fetch(uri.href, this.requestOptions);
+        // FIXME: very dangerous, might end up in endless recursion !!!
+        if(response.status === 503 || response.status === 504) {
+            await this.wait(this.pageLoadDelay);
+            return this._getPageListMobile(chapter);
+        }
+        if(response.status !== 200) {
+            throw new Error(`Failed to receive page list (status: ${response.status}) - ${response.statusText}`);
+        }
+        let data = await response.text();
+        let dom = this.createDOM(data);
+        if(dom.querySelector('span.fwb') && data.indexOf('licensed') > -1) {
+            throw new Error('The manga is licensed and not available in your country!');
+        }
+        return [...dom.querySelectorAll('div#viewer source')].map(element => element.dataset.original);
     }
 }
