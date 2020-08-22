@@ -109,7 +109,7 @@ export default class MangaFox extends Connector {
             img.onload = function() {
                 resolve(img);
             };
-            img.src = pages[pages.length-1];
+            img.src = pages.slice(-1);
         });
         //Check if the last image seems to be the usual ad
         if(lastImage.naturalHeight===563 && lastImage.naturalWidth===1000) {
