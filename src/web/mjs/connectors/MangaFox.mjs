@@ -102,7 +102,7 @@ export default class MangaFox extends Connector {
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
 
-        var pages = await Engine.Request.fetchUI(request, this.script);
+        let pages = await Engine.Request.fetchUI(request, this.script);
         //Get Meta informations from last Image
         let lastImage = await new Promise(resolve => {
             const img = new Image();
@@ -112,7 +112,7 @@ export default class MangaFox extends Connector {
             img.src = pages[pages.length-1];
         });
         //Check if the last image seems to be the usual ad
-        if(lastImage.naturalHeight==563 && lastImage.naturalWidth==1000) {
+        if(lastImage.naturalHeight===563 && lastImage.naturalWidth===1000) {
             pages.pop();
         }
         return pages;
