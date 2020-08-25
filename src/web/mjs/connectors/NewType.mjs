@@ -77,6 +77,10 @@ export default class NewType extends Connector {
         let data = await this.fetchDOM(request, 'div#viewerContainer');
         let link = this.getAbsolutePath(data[0].dataset.url, request.url);
         data = await this.fetchJSON(new Request(link, this.requestOptions));
-        return data.map(image => this.getAbsolutePath(image, request.url));
+        return data.map(image => {
+		if (image.includes("/h1200"))
+			image = image.substr(0, image.indexOf("/h1200"));
+		return this.getAbsolutePath(image, request.url);	
+	});
     }
 }
