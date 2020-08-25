@@ -11,12 +11,13 @@ export default class COMICMeDu extends Connector {
         this.url = 'http://comic-medu.com';
 
         this.path = [ '/wk' ];
-        this.queryMangaListCount = 'article div#conMain div.conDoc ul.pagination li.on';
+        this.queryMangaListCount = 'article div#conMain div.conDoc ul.pagination li';
         this.queryManga = 'article div#conMain div.conDoc div#listB div.listM';
         this.queryMangaLink = 'a';
         this.queryMangaTitle = 'h3.listTtl';
 
         this.queryChapters = 'article div#conMain div.conDoc ul.episode li a';
+	this.queryShortChapter = 'article div#conMain div.conDoc div.btDetail a.btDetailR';
 
         this.queryPages = 'article div.swiper-container div.swiper-wrapper div.swiper-slide source[class*="storyImg"]';
     }
@@ -42,7 +43,7 @@ export default class COMICMeDu extends Connector {
         let uri = new URL(this.url + this.path[0]);
         let request = new Request(uri, this.requestOptions);
         let seriesPages = await this.fetchDOM(request, this.queryMangaListCount);
-        let totalPages = seriesPages.length + 1;
+        let totalPages = seriesPages.length;
         let mangas = await this.fetchDOM(request, this.queryManga);
         let mangaList = await this._mapMangas(mangas);
         for(let page = 2; page <= totalPages; page++) {
@@ -58,6 +59,10 @@ export default class COMICMeDu extends Connector {
         let uri = new URL(this.url + manga.id);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
+	if(data.length == 0) { // series is a short story; only one chapter
+		data = await this.fetchDOM(request, this.queryShortChapter);
+		data[0].textContent = manga.title;
+	}
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
