@@ -7,15 +7,15 @@ export default class MyCloud {
     }
 
     async getPlaylist(resolution) {
-        let request = new Request(this._uri, {
+        let request = new Request(this._uri.href.replace('/embed/', '/info/'), {
             headers: {
-                'x-sec-fetch-dest': 'iframe',
-                'x-sec-fetch-mode': 'navigate',
-                'x-referer': this._referer
+                'x-referer': this._uri.href,
+                'x-requested-with': 'XMLHttpRequest'
             }
         });
-        let data = await this._fetchRegex(request, /mediaSources\s*=\s*\[\s*\{\s*"file"\s*:\s*"(.*?)"/g);
-        let playlist = data.pop();
+        let response = await fetch(request);
+        let data = await response.json();
+        let playlist = data.media.sources.pop().file;
         request = new Request(playlist);
         request.headers.set('x-referer', this._uri.href);
         let streams = await this._fetchRegex(request, /^(.*?\d+\.m3u8)$/gm);
