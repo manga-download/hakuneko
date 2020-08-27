@@ -189,8 +189,8 @@ export default class NineAnime extends Connector {
                         uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
                         uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
                         uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
-                        uri.searchParams.set('_', hash('f2dl6d4e') + 5 * hash('0')); // 695 + (5 * 48)
                         uri.searchParams.set('ts', $('html').data().ts);
+                        uri.searchParams.set('_', 936); // hash('f2dl6d4e') + 5 * hash('0') => 695 + (5 * 48)
                         let response = await fetch(uri.href, {
                             headers: {
                                 // required to prevent IP ban
