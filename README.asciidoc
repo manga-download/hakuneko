@@ -16,7 +16,7 @@ endif::[]
 
 🏡 Website : https://hakuneko.download
 
-image:https://hakuneko.download/assets/images/discord-small.png[link=https://discord.gg/A5d3NDf, title="Joins us on discord", window="_blank"] Discord : https://discord.gg/A5d3NDf
+image:https://hakuneko.download/assets/images/discord-small.png[link=https://discord.gg/A5d3NDf, title="Join us on discord", window="_blank"] Discord : https://discord.gg/A5d3NDf
 
 === Download
 
