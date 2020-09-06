@@ -6,6 +6,7 @@
 <link rel="import" href="pages.html">
 <link rel="import" href="jobs.html">
 <link rel="import" href="quotes.html">
+<link rel="import" href="start.html">
 
 <dom-module id="hakuneko-app">
 
@@ -45,6 +46,14 @@
                 border-bottom: var(--app-control-border);
                 min-height: 0; /* fix for firefox to limit flexbox height to fit in parent */
             }
+
+            .content {
+                width: 100%;
+                height: 100%;
+                flex: 100;
+                z-index: 0;
+                overflow-x: hidden;
+            }
             hakuneko-menu {
                 flex: 0;
                 -webkit-app-region: drag;
@@ -57,7 +66,11 @@
                 z-index: 0;
                 overflow-x: hidden;
             }
-
+            hakuneko-start {
+                flex: 100;
+                z-index: 0;
+                overflow-x: hidden;
+            }
             #loader {
                 position: fixed;
                 color: var(--app-loading-screen-color);
@@ -110,7 +123,10 @@
             </div>
             <hakuneko-jobs></hakuneko-jobs>
         </div>
-        <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled) ]]" selected-chapter="[[ chapter ]]" selected-media="{{ selectedMediaIndex }}"></hakuneko-pages>
+        <div class="content">
+            <hakuneko-start style$="[[ getStartPanelStyle(readerEnabled,chapter) ]]"></hakuneko-start>
+            <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled,chapter) ]]" selected-chapter="[[ chapter ]]" selected-media="{{ selectedMediaIndex }}"></hakuneko-pages>
+        </div>
     </template>
 
     <script>
@@ -158,8 +174,15 @@
             /**
              *
              */
-            getPagePanelStyle(readerEnabled) {
-                return ( readerEnabled ? '' : 'display: none;' );
+            getPagePanelStyle(readerEnabled,chapter) {
+                return ( !readerEnabled || chapter==undefined ? 'display: none;' : '' );
+            }
+
+            /**
+             *
+             */
+             getStartPanelStyle(readerEnabled,chapter) {
+                return ( !readerEnabled || chapter!==undefined ? 'display: none;' : '' );
             }
 
             /**
