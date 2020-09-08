@@ -12,10 +12,16 @@ export default class ZYMK extends Connector {
         this.url = undefined;
 
         this.path = '/sort/';
+        this.pathSuffix = '.html';
         this.queryMangaTitle = 'div.title-warper h1.title';
         this.queryMangasPageCount = 'div.pagemain a.mylast';
         this.queryMangas = 'ul.comic-list h3.title a';
         this.queryChapters = 'ul.chapter-list li.item a';
+        this.queryPage = `
+            new Promise(resolve => {
+                resolve(new Array(__cr.totalPage).fill().map((_, index) => new URL(__cr.getPicUrl(index + 1), window.location.origin).href));
+            });
+        `;
 
         this.config = {
             format: {
@@ -54,10 +60,10 @@ export default class ZYMK extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let uri = new URL(this.path + '1.html', this.url);
+        let uri = new URL(this.path + '1' + this.pathSuffix, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        let pageCount = parseInt(data[0].href.match(/(\d+)\.html$/)[1]);
+        let pageCount = parseInt((data[0].href.match(/(\d+)\.html$/) || data.pop().text.match(/(\d+)/))[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -66,7 +72,7 @@ export default class ZYMK extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL(this.path + page + '.html', this.url);
+        let uri = new URL(this.path + page + this.pathSuffix, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas, 3);
         return data.map(element => {
@@ -91,14 +97,9 @@ export default class ZYMK extends Connector {
     }
 
     async _getPages(chapter) {
-        let script = `
-            new Promise(resolve => {
-                resolve(new Array(__cr.totalPage).fill().map((_, index) => new URL(__cr.getPicUrl(index + 1), window.location.origin).href));
-            });
-        `;
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await Engine.Request.fetchUI(request, script, 60000, false);
+        let data = await Engine.Request.fetchUI(request, this.queryPage, 60000, false);
         return data.map(image => {
             let parts = image.split('.');
             let format = parts.pop();
