@@ -16,6 +16,9 @@ export default class Toomics extends Connector {
         this.queryMangas = 'div.section_ongoing div.list_wrap ul li > div.visual > a';
         this.queryMangaTitle = 'div.main_text h4.title';
         this.queryChapters = '.ep-body .list-ep li:not(.chk_ep) a';
+        this.queryChapterNumber = 'div.cell-id, div.cell-num';
+        this.queryChapterFilterInclude = 'div.cell-title';
+        this.queryChapterFilterExclude = 'div.thumb span.lock';
         this.queryPages = '#viewer-img source';
     }
 
@@ -60,7 +63,7 @@ export default class Toomics extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data
-            .filter(element => element.querySelector('div.cell-title') && !element.querySelector('div.thumb span.lock'))
+            .filter(element => element.querySelector(this.queryChapterMustInclude) && !element.querySelector(this.queryChapterMustExclude))
             .map(element => {
                 let action = element.getAttribute('onclick');
                 if(action.includes('location.href=')) {
@@ -68,7 +71,7 @@ export default class Toomics extends Connector {
                 } else {
                     element.href = action.match(/popup\s*\(\s*'[^']+'\s*,\s*'[^']*'\s*,\s*'([^']+)'/)[1];
                 }
-                let chapter = element.querySelector('div.cell-id, div.cell-num').innerText.trim();
+                let chapter = element.querySelector(this.queryChapterNumber).innerText.trim();
                 //let title = element.querySelector('div.cell-title').innerText.replace(manga.title, '').trim();
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, this.baseURL),
