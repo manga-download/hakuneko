@@ -63,13 +63,15 @@ export default class Toomics extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data
-            .filter(element => element.querySelector(this.queryChapterMustInclude) && !element.querySelector(this.queryChapterMustExclude))
+            .filter(element => element.querySelector(this.queryChapterFilterInclude) && !element.querySelector(this.queryChapterFilterExclude))
             .map(element => {
                 let action = element.getAttribute('onclick');
-                if(action.includes('location.href=')) {
-                    element.href = action.match(/href='([^']+)'/)[1];
-                } else {
-                    element.href = action.match(/popup\s*\(\s*'[^']+'\s*,\s*'[^']*'\s*,\s*'([^']+)'/)[1];
+                if(action) {
+                    if(action.includes('location.href=')) {
+                        element.href = action.match(/href='([^']+)'/)[1];
+                    } else {
+                        element.href = action.match(/popup\s*\(\s*'[^']+'\s*,\s*'[^']*'\s*,\s*'([^']+)'/)[1];
+                    }
                 }
                 let chapter = element.querySelector(this.queryChapterNumber).innerText.trim();
                 //let title = element.querySelector('div.cell-title').innerText.replace(manga.title, '').trim();
@@ -85,7 +87,7 @@ export default class Toomics extends Connector {
         let uri = new URL(chapter.id, this.baseURL);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.createConnectorURI(this.getAbsolutePath(element.dataset['src'] || element.dataset['original'], this.baseURL)));
+        return data.map(element => this.createConnectorURI(this.getAbsolutePath(element.dataset['src'] || element.dataset['original'] || element, this.baseURL)));
     }
 
     async _handleConnectorURI(payload) {
