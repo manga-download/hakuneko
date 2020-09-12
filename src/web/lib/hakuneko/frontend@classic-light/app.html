@@ -125,7 +125,7 @@
             </div>
             <hakuneko-jobs></hakuneko-jobs>
         </div>
-        <div class="content">
+        <div style$="[[ getContentPanelStyle(readerEnabled) ]]" class="content">
             <hakuneko-start style$="[[ getStartPanelStyle(readerEnabled,chapter) ]]"></hakuneko-start>
             <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled,chapter) ]]" selected-chapter="[[ chapter ]]" selected-media="{{ selectedMediaIndex }}"></hakuneko-pages>
         </div>
@@ -171,6 +171,13 @@
              */
             getChapterListStyle(readerEnabled) {
                 return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+            }
+
+            /**
+             *
+             */
+             getContentPanelStyle(readerEnabled) {
+                return ( readerEnabled ? '' : 'display: none;' );
             }
 
             /**
