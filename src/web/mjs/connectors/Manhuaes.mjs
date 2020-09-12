@@ -1,6 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
+// NOTE: Similar to MojoPortalComic template ...
 export default class ManhuaES extends Connector {
 
     constructor() {

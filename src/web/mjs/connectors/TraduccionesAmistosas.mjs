@@ -7,6 +7,6 @@ export default class TraduccionesAmistosas extends WordPressMadara {
         super.id = 'traduccionesamistosas';
         super.label = 'Traducciones Amistosas';
         this.tags = [ 'webtoon', 'spanish' ];
-        this.url = 'https://scantraduccionesamistosas.xyz';
+        this.url = 'https://nartag.com';
     }
 }

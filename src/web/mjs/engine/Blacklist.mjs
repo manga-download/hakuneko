@@ -71,6 +71,7 @@ export default class Blacklist {
             '*://*.histats.com/*',
             '*://*.hotjar.com/*',
             '*://*.ie8eamus.com/*',
+            '*://*.imonomy.com/*',
             '*://*.inter1ads.com/*',
             '*://*.jeconotinhi.info/*',
             '*://*.juicyads.com/*',
