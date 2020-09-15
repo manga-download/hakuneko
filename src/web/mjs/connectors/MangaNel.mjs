@@ -18,13 +18,13 @@ export default class MangaNel extends Connector {
         this._queryChapters = [
             'ul.row-content-chapter li a.chapter-name', // manganelo, mangabat
             'div.chapter_list ul li a', // mangairo
-            'div.chapter-list div.row span a' // mangakakalot(s), kissmangawebsite
+            'div.chapter-list div.row span a' // mangakakalot(s), kissmangawebsite, manganeloinfo
         ].join(', ');
 
         this._queryPages = [
             'div.container-chapter-reader source', // manganelo, mangabat
             'div.chapter-content div.panel-read-story source', // mangairo
-            'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s), kissmangawebsite
+            'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s), kissmangawebsite, manganeloinfo
         ].join(', ');
     }
 
