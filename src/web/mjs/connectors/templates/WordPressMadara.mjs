@@ -27,6 +27,7 @@ export default class WordPressMadara extends Connector {
         this.requestOptions.body = form.toString();
         let request = new Request(this.url + '/wp-admin/admin-ajax.php', this.requestOptions);
         request.headers.set('content-type', 'application/x-www-form-urlencoded');
+        request.headers.set('x-referer', this.url);
         this.requestOptions.method = 'GET';
         delete this.requestOptions.body;
         return request;
@@ -64,7 +65,8 @@ export default class WordPressMadara extends Connector {
                 method: 'POST',
                 body: 'action=manga_get_chapters&manga=' + placeholder.dataset.id,
                 headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'x-referer': this.url
                 }
             });
             data = await this.fetchDOM(request, this.queryChapters);
