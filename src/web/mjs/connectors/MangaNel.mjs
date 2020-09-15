@@ -11,6 +11,8 @@ export default class MangaNel extends Connector {
         this.url = 'https://manganelo.com';
 
         this.path = '/genre-all/';
+        this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
+        this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
         this.queryMangaTitle = 'div.container-main div.panel-story-info div.story-info-right h1';
         this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
         this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
@@ -18,13 +20,13 @@ export default class MangaNel extends Connector {
         this._queryChapters = [
             'ul.row-content-chapter li a.chapter-name', // manganelo, mangabat
             'div.chapter_list ul li a', // mangairo
-            'div.chapter-list div.row span a' // mangakakalot(s)
+            'div.chapter-list div.row span a' // mangakakalot(s), kissmangawebsite, manganeloinfo
         ].join(', ');
 
         this._queryPages = [
             'div.container-chapter-reader source', // manganelo, mangabat
             'div.chapter-content div.panel-read-story source', // mangairo
-            'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s)
+            'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s), kissmangawebsite, manganeloinfo
         ].join(', ');
     }
 
@@ -37,7 +39,7 @@ export default class MangaNel extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
         let id = uri.href;
-        let title = data[0].textContent.trim();
+        let title = data[0].textContent.replace(this.mangaTitleFilter, '').trim();
         return new Manga(this, id, title);
     }
 
@@ -63,7 +65,7 @@ export default class MangaNel extends Connector {
             return {
                 // get absolute links to support cross referencing between MangaNel affiliates and sub-domains
                 id: this.getAbsolutePath(element, request.url),
-                title: element.text.trim()
+                title: element.text.replace(this.mangaTitleFilter, '').trim()
             };
         });
     }
@@ -77,7 +79,7 @@ export default class MangaNel extends Connector {
             return {
                 // get absolute links to support cross referencing between MangaNel affiliates and sub-domains
                 id: this.getAbsolutePath(element, request.url),
-                title: element.text.replace(manga.title, '').trim(),
+                title: element.text.replace(manga.title, '').replace(this.chapterTitleFilter, '').trim(),
                 language: ''
             };
         });
