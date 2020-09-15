@@ -79,7 +79,7 @@ export default class MojoPortalComic extends Connector {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.reading div.page-chapter source');
         return data.map(element => {
-            let url = this.getAbsolutePath(element.dataset.original || element, request.url); // element.dataset.cdn
+            let url = this.getAbsolutePath(element.dataset.original || element.dataset.src || element, request.url); // element.dataset.cdn
             return this._getImageURL(request.url, url);
         });
     }
