@@ -64,7 +64,8 @@ export default class WordPressMadara extends Connector {
                 method: 'POST',
                 body: 'action=manga_get_chapters&manga=' + placeholder.dataset.id,
                 headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
+                    'content-type': 'application/x-www-form-urlencoded',
+                    'x-referer': this.url
                 }
             });
             data = await this.fetchDOM(request, this.queryChapters);
