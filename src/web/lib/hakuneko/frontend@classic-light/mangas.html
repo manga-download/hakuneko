@@ -126,7 +126,15 @@
                 <li class="notification">
                     Manga list is loading or empty<br>
                     Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
-                    button to update list
+                    button to update list<br/>
+                    <br/>
+                    <i class="fas fa-info-circle"></i> Some connectors are slows<br/>
+                    and may take more than 10mins<br/>
+                    If the icon is still spinning,<br/>
+                    it's still working<br/>
+                    <br/>
+                    To check the activity press F12<br/>
+                    and go to the network tab
                 </li>
             </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
