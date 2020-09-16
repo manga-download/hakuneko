@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class AsuraScans extends WordPressMadara {
+export default class AsuraScans extends WordPressMangastream {
 
     constructor() {
         super();
