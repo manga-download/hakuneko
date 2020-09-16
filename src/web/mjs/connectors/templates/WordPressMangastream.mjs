@@ -8,24 +8,18 @@ export default class WordPressMangastream extends Connector {
         super();
         super.id = undefined;
         super.label = undefined;
+        this.tags = [];
         this.url = undefined;
+        this.path = '/list/';
 
-        this.mangaDirectory = '/manga/';
-        this.queryMangas = 'div#content div.postbody div.listupd div.bs div.bsx a';
-        this.queryChapters = 'div#content div.postbody article ul li span.lchx a';
-        this.queryPages = 'div#content div.postarea article div#readerarea source';
-        this.querMangaTitleFromURI = 'div#content div.postbody article div.infox h1';
+        this.queryMangas = 'div#content div.soralist ul li a.series';
+        this.queryChapters = 'div.cl ul li span.leftoff a';
+        this.queryPages = 'div#readerarea source[src]:not([src=""])';
+        this.querMangaTitleFromURI = 'div#content div.postbody article h1';
     }
 
-    _createMangaRequest(page) {
-        let uri = new URL(this.mangaDirectory, this.url);
-        uri.searchParams.set('page', page);
-        let request = new Request(uri, this.requestOptions);
-        return request;
-    }
-
-    async _getMangasFromPage(page) {
-        let request = this._createMangaRequest(page);
+    async _getMangas() {
+        let request = new Request(new URL(this.path, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
@@ -35,34 +29,24 @@ export default class WordPressMangastream extends Connector {
         });
     }
 
-    async _getMangas() {
-        let mangaList = [];
-
-        for(let page = 1, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
-        }
-
-        return mangaList;
-    }
-
     async _getChapters(manga) {
-        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryChapters);
-
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
+            this.adLinkDecrypt(element);
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim()
+                title: element.text.replace(manga.title, '').trim(),
+                language: ''
             };
         });
     }
 
     async _getPages(chapter) {
-        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryPages);
-
-        return data.map(element => this.getAbsolutePath(element, request.url));
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element.dataset['src'] || element, request.url))
+            .filter(link => !link.includes('histats.com'));
     }
 
     async _getMangaFromURI(uri) {
