@@ -1,9 +1,9 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressWordPressMangastreamEManga.mjs';
 
 /**
  *
  */
-export default class KomikIndoWeb extends WordPressEManga {
+export default class KomikIndoWeb extends WordPressMangastream {
 
     /**
      *
