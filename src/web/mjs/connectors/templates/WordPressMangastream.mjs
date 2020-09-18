@@ -24,7 +24,7 @@ export default class WordPressMangastream extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.title.trim()
+                title: element.title ? element.title.trim() : element.text.trim()
             };
         });
     }
