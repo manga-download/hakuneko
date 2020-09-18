@@ -1,7 +1,8 @@
 import Connector from '../../engine/Connector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
-// TODO: rename theme to 'MangaStream': https://themesia.com/mangastream-wordpress-theme/
-export default class WordPressEManga extends Connector {
+// Theme: https://themesia.com/mangastream-wordpress-theme/
+export default class WordPressMangastream extends Connector {
 
     constructor() {
         super();
@@ -14,6 +15,7 @@ export default class WordPressEManga extends Connector {
         this.queryMangas = 'div#content div.soralist ul li a.series';
         this.queryChapters = 'div.cl ul li span.leftoff a';
         this.queryPages = 'div#readerarea source[src]:not([src=""])';
+        this.querMangaTitleFromURI = 'div#content div.postbody article h1';
     }
 
     async _getMangas() {
@@ -22,7 +24,7 @@ export default class WordPressEManga extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim()
+                title: element.title ? element.title.trim() : element.text.trim()
             };
         });
     }
@@ -45,5 +47,13 @@ export default class WordPressEManga extends Connector {
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element.dataset['src'] || element, request.url))
             .filter(link => !link.includes('histats.com'));
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(new URL(uri), this.requestOptions);
+        const data = await this.fetchDOM(request, this.querMangaTitleFromURI);
+        const title = data[0].textContent.trim();
+
+        return new Manga(this, uri, title);
     }
 }
