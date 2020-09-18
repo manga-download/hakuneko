@@ -1,4 +1,5 @@
 import Connector from '../../engine/Connector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
 export default class WordPressMadara extends Connector {
 
@@ -11,6 +12,7 @@ export default class WordPressMadara extends Connector {
         this.queryMangas = 'div.post-title h3 a, div.post-title h5 a';
         this.queryChapters = 'li.wp-manga-chapter > a';
         this.queryPages = 'div.page-break source';
+        this.queryTitleForURI = 'head meta[property="og:title"]';
     }
 
     _createMangaRequest(page) {
@@ -101,5 +103,13 @@ export default class WordPressMadara extends Connector {
         let promise = super._handleConnectorURI(payload.url);
         this.requestOptions.headers.delete('x-referer');
         return promise;
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(new URL(uri), this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryTitleForURI);
+        const title = [...data].pop().content;
+
+        return new Manga(this, uri, title);
     }
 }
