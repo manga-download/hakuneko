@@ -18,6 +18,7 @@ export default class MangaReaderCMS extends Connector {
 
     async _getMangas() {
         let request = new Request(new URL(this.path + 'changeMangaList?type=text', this.url), this.requestOptions);
+        request.headers.set('X-Requested-With', 'XMLHttpRequest');
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
