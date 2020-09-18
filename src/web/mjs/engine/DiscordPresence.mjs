@@ -124,7 +124,7 @@ export default class DiscordPresence {
                 this.updateStatus();
             }, 2000);
 
-            // activity can only be set every 15 seconds
+            // activity can only be set every 15 seconds (API limit)
             this.updater = setInterval(() => {
                 this.updateStatus();
             }, 15200);
@@ -132,12 +132,34 @@ export default class DiscordPresence {
 
         this.rpc.login({ clientId: discordPresenceId })
             .catch (error => {
-                if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
-                    console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
-                } else {
-                    throw new Error(error);
+                if (typeof error !== 'undefined') { // discord-rpc error handling
+                    if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
+                        console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
+                    } else if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'RPC_CONNECTION_TIMEOUT') {
+                        console.warn('WARNING: DiscordPresence - RPC connection timed out.');
+                        // Cleanup
+                        this.stopDiscordPresence();
+
+                        // Waiting delay for Discord API to allow new connection
+                        setTimeout( () => {
+                            // Re-evaluate if enabled
+                            this._onSettingsChanged();
+                        }, 120000);
+                    } else {
+                        throw new Error(error);
+                    }
+
+                } else { // Javascript error handling
+                    console.warn('WARNING: DiscordPresence - Connection was closed unexpectedly.');
+                    // Cleanup
+                    this.stopDiscordPresence();
+
+                    // Waiting delay for Discord API to allow new connection
+                    setTimeout( () => {
+                        // Re-evaluate if still enabled
+                        this._onSettingsChanged();
+                    }, 15200);
                 }
-                this.rpc = null;
             });
     }
 }
