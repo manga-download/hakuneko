@@ -1,4 +1,4 @@
-import WordPressMangastream from './templates/WordWordPressMangastreamPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
 export default class DoujinDesu extends WordPressMangastream {
 

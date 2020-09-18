@@ -1,4 +1,4 @@
-import WordPressMangastream from './templates/WordPressWordPressMangastreamEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
 /**
  *
