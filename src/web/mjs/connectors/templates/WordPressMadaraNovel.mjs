@@ -1,5 +1,4 @@
 import WordPressMadara from './WordPressMadara.mjs';
-import Manga from '../../engine/Manga.mjs';
 
 export default class WordPressMadaraNovel extends WordPressMadara {
 
@@ -7,7 +6,6 @@ export default class WordPressMadaraNovel extends WordPressMadara {
         super();
 
         this.novelContentQuery = 'div.reading-content div[class^="text-"';
-        this.novelTitleFromURI = 'div.post-title h3';
         this.novelObstaclesQuery = '_';
         this.novelFormat = 'image/png';
         this.novelWidth = '56em'; // parseInt(1200 / window.devicePixelRatio) + 'px';
@@ -43,13 +41,5 @@ export default class WordPressMadaraNovel extends WordPressMadara {
             });
         `;
         return [ await Engine.Request.fetchUI(request, script) ];
-    }
-
-    async _getMangaFromURI(uri) {
-        const request = new Request(new URL(uri), this.requestOptions);
-        const data = await this.fetchDOM(request, this.novelTitleFromURI);
-        const title = data[0].textContent.trim();
-
-        return new Manga(this, uri, title);
     }
 }
