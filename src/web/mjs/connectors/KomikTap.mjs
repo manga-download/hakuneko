@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class KomikTap extends WordPressEManga {
+export default class KomikTap extends WordPressMangastream {
 
     constructor() {
         super();

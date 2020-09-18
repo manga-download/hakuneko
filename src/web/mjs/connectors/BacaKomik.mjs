@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class BacaKomik extends WordPressEManga {
+export default class BacaKomik extends WordPressMangastream {
 
     constructor() {
         super();
