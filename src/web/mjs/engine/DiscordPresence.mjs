@@ -63,7 +63,7 @@ export default class DiscordPresence {
     _onSelectChapter(event) {
         this.isThisHentai(event.detail.manga.connector.tags);
         this.status['details'] = 'Viewing ' + event.detail.manga.title;
-        this.status['state'] = event.detail.title;
+        this.status['state'] = event.detail.title.length > 1 ? event.detail.title : event.detail.title + ' '; // State min. length is 2 char
         this.status.startTimestamp = + new Date();
         this.statusNew = true;
         if (this.enabled && !this.rpc) this.startDiscordPresence();
