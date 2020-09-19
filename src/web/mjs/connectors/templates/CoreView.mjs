@@ -39,9 +39,9 @@ export default class CoreView extends Connector {
         let data = await this.fetchDOM(request, this.queryManga);
         return data.map(element => {
             return {
-                id: this.queryMangaURI ?
-                    this.getRootRelativeOrAbsoluteLink(element.querySelector(this.queryMangaURI), request.url) :
-                    this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(
+                    this.queryMangaURI ? element.querySelector(this.queryMangaURI) : element,
+                    request.url),
                 title: element.querySelector(this.queryMangaTitle).textContent.trim()
             };
         });
