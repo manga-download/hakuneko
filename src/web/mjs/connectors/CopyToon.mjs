@@ -7,7 +7,7 @@ export default class CopyToon extends GnuBoard5BootstrapBasic2 {
         super.id = 'copytoon';
         super.label = 'CopyToon';
         this.tags = [ 'webtoon', 'korean' ];
-        this.url = 'https://copytoon88.com';
+        this.url = 'https://copytoon104.com';
 
         this.path = [ '/웹툰', '/포토툰' ];
         this.scriptPages = `
