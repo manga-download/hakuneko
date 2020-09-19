@@ -9,8 +9,13 @@ export default class CoreView extends Connector {
         this.tags = [];
         this.url = undefined;
 
+        // The URL pathes to parse
         this.path = [ '/series', '/series/oneshot', '/series/finished' ];
+        // The query to select *all* required data for *one* manga
         this.queryManga = 'article.series-list-wrapper ul.series-list > li.series-list-item > a';
+        // Optional query to pinpoint the URI inside of this.queryManga . Most sites don't need this
+        this.queryMangaURI = undefined;
+        // The query to retrieve the single manga title from inside of this.queryManga
         this.queryMangaTitle = 'h2.series-list-title';
 
         this.queryChaptersAtomFeed = 'head link[type*="atom+xml"]';
@@ -34,7 +39,9 @@ export default class CoreView extends Connector {
         let data = await this.fetchDOM(request, this.queryManga);
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(
+                    this.queryMangaURI ? element.querySelector(this.queryMangaURI) : element,
+                    request.url),
                 title: element.querySelector(this.queryMangaTitle).textContent.trim()
             };
         });
