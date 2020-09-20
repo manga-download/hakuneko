@@ -13,9 +13,10 @@
                 padding: 1em;
                 background-color: var(--page-control-background-color);
                 background-image: var(--page-background-image);
+                overflow-y: scroll;
                 background-size: cover;
-                background-attachment: scroll;
-                user-select: none;
+                background-repeat: no-repeat;
+                background-position: left top;
                 font-size: 1.25em;
                 
             }
@@ -26,6 +27,9 @@
                 display: none;
             }
             h1 {
+                font-size:1.5em;
+                margin-top:0;
+                margin-bottom:0;
                 vertical-align:center;
             }
             h3 {
@@ -44,7 +48,7 @@
             }
         </style>
         <div id="container">
-           <h3>Welcome to HakuNeko</h3>
+           <h1>Welcome to HakuNeko</h1>
            <div>
                 <p class="border">
                     <img class="logo" src="./img/logo_s.png"  align="left"/>
@@ -70,7 +74,7 @@
                     👉 See the documentation for details
                 </div>
                 <h3>Ready to go 🚀</h3>
-                <div class="border">You can now download, view, bookmark your favorite mangas 📚</div>
+                <div class="border">Download, view, bookmark your favorite mangas 📚</div>
             </div>
         </div>
     </template>

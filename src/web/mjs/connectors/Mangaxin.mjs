@@ -1,9 +1,9 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
 /**
  *
  */
-export default class MangaXin extends WordPressEManga {
+export default class MangaXin extends WordPressMangastream {
 
     /**
      *

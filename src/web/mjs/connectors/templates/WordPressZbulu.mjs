@@ -13,6 +13,8 @@ export default class WordPressZbulu extends Connector {
         this.pathMangas = '/page-%PAGE%/';
         this.pathChapters = '/page-%PAGE%/';
 
+        this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
+        this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
         this.queryManga = 'div.comic-info div.info h1.name';
         this.queryMangasPageCount = 'div.pagination-container div.pagination a.next:last-of-type';
         this.queryMangas = 'div.comics-grid div.entry div.content h3.name a';
@@ -25,7 +27,7 @@ export default class WordPressZbulu extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryManga);
         let id = uri.pathname;
-        let title = data[0].textContent.trim();
+        let title = data[0].textContent.replace(this.mangaTitleFilter, '').trim();
         return new Manga(this, id, title);
     }
 
@@ -49,7 +51,7 @@ export default class WordPressZbulu extends Connector {
         return data.map(element => {
             return {
                 id: new URL(element.href, request.url).pathname,
-                title: element.text.trim()
+                title: element.text.replace(this.mangaTitleFilter, '').trim()
             };
         });
     }
@@ -74,7 +76,7 @@ export default class WordPressZbulu extends Connector {
         return data.map(element => {
             return {
                 id: new URL(element.href, request.url).pathname,
-                title: element.text.replace(manga.title, '').trim(),
+                title: element.text.replace(manga.title, '').replace(this.chapterTitleFilter, '').trim(),
                 language: 'en'
             };
         });

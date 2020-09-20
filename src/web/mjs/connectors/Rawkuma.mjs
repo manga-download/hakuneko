@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class Rawkuma extends WordPressEManga {
+export default class Rawkuma extends WordPressMangastream {
 
     constructor() {
         super();

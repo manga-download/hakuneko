@@ -1,7 +1,7 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-// Customized version of WordPressEManga
-export default class Komiku extends WordPressEManga {
+// Customized version of WordPressMangastream
+export default class Komiku extends WordPressMangastream {
 
     constructor() {
         super();

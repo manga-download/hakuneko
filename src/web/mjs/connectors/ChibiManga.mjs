@@ -7,6 +7,6 @@ export default class ChibiManga extends WordPressMadara {
         super.id = 'chibimanga';
         super.label = 'ChibiManga';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-        this.url = 'http://www.cmreader.info';
+        this.url = 'https://www.cmreader.info';
     }
 }

@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class MangaKid extends WordPressEManga {
+export default class MangaKid extends WordPressMangastream {
 
     constructor() {
         super();

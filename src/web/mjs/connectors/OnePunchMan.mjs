@@ -7,7 +7,7 @@ export default class OnePunchMan extends Connector {
         super.id = 'onepunchman';
         super.label = 'One-Punch Man';
         this.tags = [ 'manga', 'english', 'high-quality' ];
-        this.url = 'https://www.one-punchman.com';
+        this.url = 'https://onepunch-man.com';
     }
 
     async _getMangas() {
@@ -34,7 +34,7 @@ export default class OnePunchMan extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id), this.requestOptions);
-        let data = await this.fetchDOM(request, '.entry-content a');
+        let data = await this.fetchDOM(request, '.entry-content source');
 
         return data.map(element => this.getAbsolutePath(element, request.url));
     }

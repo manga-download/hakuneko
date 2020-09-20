@@ -188,10 +188,10 @@
                         <template is="dom-repeat" items="[[ item.settings ]]">
                             <tr>
                                 <td width="1">
-                                    <label title="[[ item.description ]]">[[ item.label ]]</label>
+                                    <label title="[[ item.description ]]"><i class="fas fa-fw fa-info-circle"></i> [[ item.label ]] </label>
                                 </td>
                                 <td>
-                                    <hakuneko-input item="{{ item }}"></hakuneko-input>
+                                    <hakuneko-input item="{{ item }}"></hakuneko-input> 
                                 </td>
                             </tr>
                         </template>
