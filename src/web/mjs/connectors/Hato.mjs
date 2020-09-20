@@ -7,7 +7,7 @@ export default class Hato extends FlatManga {
         super.id = 'hato';
         super.label = 'HATO';
         this.tags = [ 'manga', 'raw', 'japanese' ];
-        this.url = 'https://mangahato.com';
+        this.url = 'https://kisslove.net';
         this.requestOptions.headers.set( 'x-referer', this.url );
     }
 }
