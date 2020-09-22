@@ -1,0 +1,676 @@
+<link rel="import" href="../../polymer/polymer-element.html" />
+<link rel="import" href="../../polymer/lib/elements/dom-if.html" />
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html" />
+<link rel="import" href="theme.html" />
+
+<dom-module id="hakuneko-connectors">
+  <template>
+    <style include="theme"></style>
+    <style>
+      :host {
+        /*background-color: var(--menu-control-background-color);*/
+        flex: 1;
+      }
+      .popup {
+        flex-direction: column;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background-color: var(--base);
+        padding: 0em;
+        margin: 2rem 0 0 0;
+        z-index: 1;
+      }
+      .show {
+        display: flex;
+      }
+      .hide {
+        display: none;
+      }
+      .button {
+        cursor: pointer;
+      }
+      .link {
+        margin-left: 0.5rem;
+      }
+      .active {
+        cursor: pointer;
+      }
+      .disabled {
+        cursor: not-allowed;
+        opacity: 0.25;
+      }
+      .clear {
+        color: var(--connector-button-clear-color);
+      }
+      .controls {
+        flex: 0;
+        display: flex;
+        width: 100%;
+        height: 2rem;
+        align-items: center;
+        color: var(--accent);
+        background: linear-gradient(
+            180deg,
+            var(--base) calc(100% - 1px),
+            transparent calc(100% - 1px)
+          ),
+          linear-gradient(90deg, var(--accent) 50%, transparent), var(--base);
+      }
+
+      .controls__title {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+        margin-right: 12.5rem;
+        text-transform: uppercase;
+      }
+
+      .controls__icon {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .controls__icon:hover {
+        background: #ffffff15;
+      }
+
+      .content {
+        flex: 1;
+        display: flex;
+        flex-direction: row;
+        overflow-y: hidden; /* Fixes overflow scrolling issue in flexbox, because inherited value is 'visible' */
+      }
+      .filters {
+        display: flex;
+        flex-direction: column;
+        max-height: 100%;
+        padding: 1rem;
+        margin: 1rem;
+        width: 17.5rem;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--accent);
+        overflow: hidden;
+      }
+
+      .filters__group {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 0.5rem;
+        overflow: hidden;
+        border-radius: var(--border-radius);
+        border: 1px solid var(--accent);
+      }
+
+      .filters__group:last-child {
+        margin-bottom: 0;
+        flex: 1;
+      }
+
+      .filters__group_title,
+      .filters__group_input {
+        display: flex;
+        color: var(--text);
+      }
+
+      .filters__group_title {
+        justify-content: space-between;
+        padding: 0 0.25rem;
+        background: var(--accent);
+      }
+
+      .filters__group_title--icon {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 2rem;
+        height: 2rem;
+      }
+
+      .filters__group_title--label {
+        display: flex;
+        height: 100%;
+        align-items: center;
+        margin-right: 0.5rem;
+      }
+
+      .filters__group_input {
+        height: 2.5rem;
+        flex: 1;
+        background: var(--base);
+      }
+
+      .filters__group_input input {
+        flex: 1;
+        border-radius: 0.25rem;
+        border: 0;
+      }
+
+      .filters__group_tags {
+        display: flex;
+        flex-flow: row wrap;
+        justify-content: space-between;
+        overflow-y: auto;
+        background: linear-gradient(#0007, #000d),
+          linear-gradient(var(--accent), var(--accent));
+        background-size: cover;
+        border-radius: 0 0 var(--border-radius) var(--border-radius);
+        padding: 0.25rem;
+      }
+
+      .filters__group_tags--tag {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: calc((100% - 0.5rem) / 2);
+        height: 1.5rem;
+        margin: 0.125rem;
+        font-size: 0.65rem;
+        color: var(--text);
+        background: linear-gradient(#0006, #0006),
+          linear-gradient(var(--accent), var(--accent));
+        border: 1px solid var(--accent);
+        border-radius: 0.125rem;
+      }
+      .filters__group_tags--tag:hover {
+        background: linear-gradient(#0003, #0003),
+          linear-gradient(var(--accent), var(--accent));
+      }
+
+      .filters__group_tags--tag.tagSelected {
+        background: linear-gradient(var(--accent), var(--accent));
+        color: var(--text);
+      }
+
+      .connectors {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-flow: row wrap;
+        align-content: flex-start;
+        margin: 1rem;
+        margin-left: 0;
+        border: 1px solid var(--accent);
+        padding: 0.5rem;
+        border-radius: var(--border-radius);
+      }
+
+      .pattern {
+        flex: 0;
+        width: 100%;
+        min-width: 16em;
+      }
+      .scroll {
+        flex: 1;
+        overflow-y: scroll;
+      }
+
+      .card {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        height: 6rem;
+        margin: 0.5rem;
+        background: var(--base);
+        border: 1px solid var(--accent);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        cursor: pointer;
+      }
+
+      @media screen and (min-width: 56rem) {
+        .card {
+          width: calc(50% - 1rem);
+        }
+      }
+
+      @media screen and (min-width: 80rem) {
+        .card {
+          width: calc(33.333333% - 1rem);
+        }
+      }
+
+      .card__icon {
+        width: 6rem;
+        height: 6rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1.5rem;
+        border-right: 1px solid var(--accent);
+        background: linear-gradient(#00000066, #00000066),
+          linear-gradient(var(--accent), var(--accent));
+      }
+      .card__info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .card__info_title {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        margin-left: 0.5rem;
+        color: var(--text);
+      }
+      .card__info_tags {
+        flex: 1;
+        display: flex;
+        flex-flow: row wrap;
+        font-size: 0.75rem;
+        font-weight: 300;
+        justify-content: flex-end;
+        align-content: center;
+      }
+      .card__info_tags--tag {
+        color: var(--accent);
+        margin-right: 0.25rem;
+        text-transform: uppercase;
+        font-size: 0.65rem;
+        height: 1rem;
+        font-weight: 900;
+      }
+      .card__info_tags--tag:last-child {
+        margin-right: 0;
+      }
+      .card__actions {
+        display: flex;
+        flex-direction: column;
+      }
+      .card__actions_action {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 2rem;
+        height: 2rem;
+        background: var(--accent);
+        color: var(--text);
+      }
+
+      .cardSelected {
+        background: linear-gradient(#00000099, #00000999),
+          linear-gradient(var(--accent), var(--accent)) !important;
+      }
+    </style>
+    <input
+      type="text"
+      class="button"
+      on-click="showPopup"
+      value$="[[ selectedConnector.label ]]"
+      readonly
+    />
+    <div class$="popup [[ getPopupClass(popupVisibility) ]]">
+      <div class="controls" title="Click to cancel the website selection">
+        <i
+          class="controls__icon mdi mdi-18px mdi-close-box button"
+          on-click="closePopup"
+        ></i>
+        <div class="controls__title">connectors</div>
+      </div>
+      <div class="content">
+        <div class="filters">
+          <div class="filters__group clear button">
+            <div class="filters__group_title" on-click="clearFilters">
+              <i
+                class="filters__group_title--icon mdi mdi-18px mdi-filter-variant-remove button"
+              ></i>
+              <div class="filters__group_title--label">CLEAR FILTERS</div>
+            </div>
+          </div>
+          <div class="filters__group">
+            <div class="filters__group_title">
+              <i class="filters__group_title--icon mdi mdi-24px mdi-web"></i>
+              <div class="filters__group_title--label">WEBSITE</div>
+            </div>
+            <div class="filters__group_input">
+              <input
+                id="connectorPattern"
+                class="pattern"
+                type="text"
+                value="{{ connectorPattern::input }}"
+                title="Show only websites with a name that matches the entered pattern (case-insensitive)"
+              />
+            </div>
+          </div>
+          <div class="filters__group">
+            <div class="filters__group_title">
+              <i
+                class="filters__group_title--icon mdi mdi-24px mdi-book-open-blank-variant"
+              ></i>
+              <div class="filters__group_title--label">MANGA</div>
+            </div>
+            <div class="filters__group_input">
+              <input
+                id="mangaPattern"
+                class="pattern"
+                type="text"
+                value="{{ mangaPattern::input }}"
+                on-keyup="filterConnectorsByManga"
+                title="Show only websites with a manga that matches the entered pattern (case-insensitive)&#10;Searches only in local synchronized manga lists&#10;Press ENTER to perform the search"
+              />
+            </div>
+          </div>
+          <div class="filters__group group__tags">
+            <div
+              class="filters__group_title"
+              title="Show only websites containing the selected tags"
+            >
+              <i
+                class="filters__group_title--icon mdi mdi-24px mdi-tag-multiple"
+              ></i>
+              <div class="filters__group_title--label">TAGS</div>
+            </div>
+            <div class="filters__group_tags">
+              <template is="dom-repeat" items="[[ tags ]]">
+                <span
+                  class$="filters__group_tags--tag button [[ getTagClass(selectedTags, item) ]]"
+                  on-click="toggleTag"
+                  >[[ item.tag ]]</span
+                >
+              </template>
+            </div>
+          </div>
+        </div>
+        <div class="connectors">
+          <template
+            is="dom-repeat"
+            items="[[ connectorList ]]"
+            filter="[[ filterConnectors(connectorPattern, selectedTags) ]]"
+          >
+            <div
+              class$="card [[ getConnectorClass(selectedConnector, item) ]]"
+              title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]"
+              on-click="selectConnector"
+            >
+              <img
+                class="card__icon"
+                src$="[[ item.icon ]]"
+                onerror="this.src='/img/connectors/default';"
+              />
+              <div class="card__info">
+                <div class="card__info_title">[[ item.label ]]</div>
+                <div class="card__info_tags">
+                  <template is="dom-repeat" items="[[ item.tags ]]">
+                    <div class="card__info_tags--tag">[[ item ]]</div>
+                  </template>
+                </div>
+              </div>
+              <div class="card__actions">
+                <i
+                  class$="card__actions_action mdi mdi-24px mdi-login-variant link [[ getLoginClass(item.links) ]]"
+                  title="Click to open the login page"
+                  on-click="openLogin"
+                ></i>
+                <i
+                  class$="card__actions_action mdi mdi-24px mdi-account-cash link [[ getDonationClass(item.links) ]]"
+                  title="Click to open the donation page"
+                  on-click="openDonation"
+                ></i>
+                <i
+                  class="card__actions_action mdi mdi-24px mdi-application-export link active"
+                  title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha"
+                  on-click="openWebsite"
+                ></i>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    /** @polymerElement */
+    class HakunekoConnectors extends Polymer.Element {
+      /**
+       *
+       */
+      static get is() {
+        return "hakuneko-connectors";
+      }
+
+      /**
+       *
+       */
+      static get properties() {
+        return {
+          selectedConnector: {
+            type: Object,
+            value: Engine.Connectors[0],
+            notify: true, // enable upward data flow,
+            //readOnly: true // prevent downward data flow
+          },
+        };
+      }
+
+      /**
+       *
+       */
+      ready() {
+        super.ready();
+        this.popupVisibility = false;
+        // list of all available connectors
+        this.connectorList = [];
+        // load connectors
+        this.set("connectorList", Engine.Connectors);
+        this.tags = this.getAvailableTags();
+        this.selectedTags = [];
+      }
+
+      /**
+       *
+       */
+      getAvailableTags() {
+        let tags = this.connectorList.reduce((accumulator, connector) => {
+          let newTags = connector.tags.filter((t) => !accumulator.includes(t));
+          return accumulator.concat(newTags);
+        }, []);
+        // SET removes duplicates
+        return [...new Set(tags)].sort().map((t) => {
+          return {
+            tag: t,
+            selected: false,
+          };
+        });
+      }
+
+      /**
+       *
+       */
+      getPopupClass(visibility) {
+        return visibility ? "show" : "hide";
+      }
+
+      /**
+       *
+       */
+      showPopup() {
+        //this.clearFilters();
+        this.set("popupVisibility", true);
+        //this.set( 'connectorPattern', '' );
+        this.$.connectorPattern.select();
+        this.$.connectorPattern.focus();
+      }
+
+      /**
+       *
+       */
+      closePopup() {
+        this.set("popupVisibility", false);
+      }
+
+      /**
+       *
+       */
+      selectConnector(evt) {
+        this.set("selectedConnector", evt.model.item);
+        document.dispatchEvent(
+          new CustomEvent(EventListener.onSelectConnector, {
+            detail: evt.model.item,
+          })
+        );
+        this.closePopup();
+      }
+
+      /**
+       *
+       */
+      _openLink(evt, link) {
+        if (link) {
+          let popup = window.open(
+            link,
+            evt.model.label,
+            "frame=true,nodeIntegration=no"
+          );
+          // disable onbeforeunload periodically (in case of navigation) to prevent blocking window close
+          let watchdog = setInterval(() => {
+            if (popup.closed) {
+              clearInterval(watchdog);
+            } else {
+              popup.eval(`window.onbeforeunload = evt => undefined;`);
+            }
+          }, 500);
+        }
+        evt.cancelBubble = true;
+        evt.stopPropagation();
+      }
+
+      /**
+       *
+       */
+      openWebsite(evt) {
+        let item = evt.model.item;
+        this._openLink(evt, item.url);
+      }
+
+      /**
+       *
+       */
+      openLogin(evt) {
+        let links = evt.model.item.links;
+        this._openLink(evt, links ? links.login : undefined);
+      }
+
+      /**
+       *
+       */
+      openDonation(evt) {
+        let links = evt.model.item.links;
+        this._openLink(evt, links ? links.donation : undefined);
+      }
+
+      /**
+       *
+       */
+      toggleTag(event) {
+        event.model.item.selected = !event.model.item.selected;
+        this.set(
+          "selectedTags",
+          this.tags.filter((tag) => tag.selected)
+        );
+      }
+
+      /**
+       *
+       */
+      filterConnectors(pattern, tags) {
+        let p = (pattern || "").toLowerCase();
+        return (connector) => {
+          let patternMatch =
+            !pattern ||
+            (connector.id + connector.label + connector.url)
+              .toLowerCase()
+              .includes(p);
+          let tagsMatch =
+            tags.filter((t) => !connector.tags.includes(t.tag)).length < 1;
+          return patternMatch && tagsMatch;
+        };
+      }
+
+      /**
+       *
+       */
+      filterConnectorsByManga(evt) {
+        if (
+          evt.keyCode !== 13 ||
+          this.$.mangaPattern.disabled /*this.isMangaFilterButtonDisabled*/
+        ) {
+          return;
+        }
+
+        this.$.mangaPattern.disabled = true;
+        let promises = Engine.Connectors.map((connector) => {
+          if (typeof connector.findMatchingManga === "function") {
+            return connector
+              .findMatchingManga(this.mangaPattern)
+              .then((result) =>
+                result ? Promise.resolve(connector) : Promise.resolve(undefined)
+              );
+          } else {
+            return Promise.resolve(undefined);
+          }
+        });
+
+        Promise.all(promises)
+          .then((values) => {
+            this.$.mangaPattern.disabled = false;
+            this.$.mangaPattern.focus();
+            this.set(
+              "connectorList",
+              values.filter((c) => !!c)
+            );
+          })
+          .catch((error) => {
+            this.$.mangaPattern.disabled = false;
+            console.error(error);
+          });
+      }
+
+      /**
+       *
+       */
+      clearFilters() {
+        this.tags.forEach((tag) => (tag.selected = false));
+        this.set("connectorList", Engine.Connectors);
+        this.set("mangaPattern", "");
+        this.set("connectorPattern", "");
+        this.set("selectedTags", []);
+      }
+
+      /**
+       *
+       */
+      getConnectorClass(selectedConnector, connector) {
+        return selectedConnector === connector ? "cardSelected" : "";
+      }
+
+      /**
+       *
+       */
+      getTagClass(selectedTags, tag) {
+        return selectedTags.includes(tag) ? "tagSelected" : "";
+      }
+
+      /**
+       *
+       */
+      getLoginClass(links) {
+        return links && links.login ? "active" : "disabled";
+      }
+
+      /**
+       *
+       */
+      getDonationClass(links) {
+        return links && links.donation ? "active" : "disabled";
+      }
+    }
+    window.customElements.define(HakunekoConnectors.is, HakunekoConnectors);
+  </script>
+</dom-module>

@@ -1,0 +1,381 @@
+<link rel="import" href="../../polymer/polymer-element.html" />
+<link rel="import" href="theme.html" />
+
+<dom-module id="hakuneko-jobs">
+  <template>
+    <style include="theme"></style>
+    <style>
+      :host {
+        width: 100%;
+      }
+
+      .bar {
+        display: flex;
+        flex-direction: row;
+        padding: 0.25em;
+        background: var(--accent);
+        color: var(--text);
+        border-radius: var(--border-radius);
+      }
+      .expander {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .status {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-right: 0.5rem;
+      }
+      .button {
+        cursor: pointer;
+      }
+      .buttonQueued {
+        color: var(--job-list-button-queued-color);
+      }
+      .buttonDownloading {
+        color: var(--job-list-button-downloading-color);
+      }
+      .buttonCompleted {
+        color: var(--job-list-button-completed-color);
+      }
+      .buttonFailed {
+        color: var(--job-list-button-failed-color);
+      }
+      .list {
+        height: 8em;
+        background-color: var(--base);
+        overflow-y: auto;
+      }
+
+      .list__download {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .list__download_item {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        border: 1px solid var(--accent);
+        padding-right: 0.5rem;
+        margin: 0.25rem;
+        border-radius: var(--border-radius);
+        margin-bottom: 0;
+      }
+
+      .list__download_item:last-child {
+        margin: 0.25rem !important;
+      }
+
+      .list__download_item--icon {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .list__download_item--connector,
+      .list__download_item--manga,
+      .list__download_item--chapter {
+        display: flex;
+        align-items: center;
+        flex: 1;
+        height: 100%;
+        margin-right: 0.5rem;
+        font-size: 0.65rem;
+        font-weight: 300;
+        color: var(--text);
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+
+      .list__download_item--progress {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        width: 5rem;
+        height: 1rem;
+        border-radius: var(--border-radius);
+        color: var(--text);
+        font-size: 0.5rem;
+      }
+
+      .cell {
+        padding-left: 0.25em;
+        padding-right: 0.25em;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+      .progress {
+        width: 4em;
+      }
+      .show {
+        display: block;
+      }
+
+      .list.show {
+        border: 1px solid var(--accent);
+        border-radius: var(--border-radius) var(--border-radius) 0 0 !important;
+      }
+      .list.show + .bar {
+        border-radius: 0 0 var(--border-radius) var(--border-radius) !important;
+      }
+      .hide {
+        display: none;
+      }
+    </style>
+    <div class$="list [[ getListClass(popupVisibility) ]]">
+      <div class="list__download">
+        <template
+          is="dom-repeat"
+          items="[[ jobList ]]"
+          initial-count="500"
+          target-framerate="5"
+        >
+          <div
+            class="list__download_item"
+            title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]"
+          >
+            <i
+              class$="list__download_item--icon mdi mdi-18px [[ getStatusClass(item.status) ]]"
+              title$="[[ getErrorTitle(item.errors) ]]"
+              on-click="restartDownload"
+            ></i>
+            <div class="list__download_item--connector">
+              [[ item.labels.connector ]]
+            </div>
+            <div class="list__download_item--manga">
+              [[ item.labels.manga ]]
+            </div>
+            <div class="list__download_item--chapter">
+              [[ item.labels.chapter ]]
+            </div>
+            <div
+              class="list__download_item--progress"
+              style$="background: linear-gradient(90deg, var(--accent) [[ item.progress ]]%, var(--text) 0%);"
+            >
+              [[ roundValue(item.progress, 2) ]]%
+            </div>
+          </div>
+        </template>
+      </div>
+      <!-- <table cellpadding="0">
+        <template
+          is="dom-repeat"
+          items="[[ jobList ]]"
+          initial-count="500"
+          target-framerate="5"
+        >
+          <tr
+            title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]"
+          >
+            <td class="fa-fw">
+              <i
+                class$="mdi [[ getStatusClass(item.status) ]] mdi-18px"
+                title$="[[ getErrorTitle(item.errors) ]]"
+                on-click="restartDownload"
+              ></i>
+            </td>
+            <td class="cell">[[ item.labels.connector ]]</td>
+            <td class="cell">[[ item.labels.manga ]]</td>
+            <td class="cell">[[ item.labels.chapter ]]</td>
+            <td
+              class="progress"
+              style$="background: linear-gradient(90deg, var(--job-list-progress-color) [[ item.progress ]]%, var(--job-list-progress-background-color) 0%);"
+            ></td>
+          </tr>
+        </template>
+      </table> -->
+    </div>
+    <div class="bar">
+      <div class="expander" on-click="toggleJobList">
+        <i
+          class$="mdi mdi-24px [[ getButtonClass(popupVisibility) ]] button"
+          title="Toggle download list"
+        ></i>
+      </div>
+      <div class="status">[[ jobList.length ]] Download(s)</div>
+    </div>
+  </template>
+
+  <script>
+    /** @polymerElement */
+    class HakunekoJobs extends Polymer.Element {
+      /**
+       *
+       */
+      static get is() {
+        return "hakuneko-jobs";
+      }
+
+      /**
+       *
+       */
+      static get properties() {
+        return {
+          settings: {
+            type: Object,
+            value: undefined,
+            notify: true, // enable upward data flow,
+            //readOnly: true, // prevent downward data flow
+            //observer: 'onSelectedMangaChanged'
+          },
+        };
+      }
+
+      /**
+       *
+       */
+      ready() {
+        super.ready();
+        // HACK: electron specific code should not be added to UI elements, but due to the
+        //       close confirmation bug this workaround is currently the best solution...
+        this.ipc = require("electron").ipcRenderer;
+        this.popupVisibility = false;
+        this.jobList = [];
+        // register callbacks for events published by download manager
+        Engine.DownloadManager.addEventListener(
+          "updated",
+          this.onDownloadStatusUpdated.bind(this)
+        );
+        this.ipc.on("close", this.onClose.bind(this));
+      }
+
+      /**
+       *
+       */
+      roundValue(value, rounder) {
+        return parseFloat(value).toFixed(rounder);
+      }
+
+      /**
+       *
+       */
+      toggleJobList() {
+        this.set("popupVisibility", !this.popupVisibility);
+      }
+
+      /**
+       * CSS class for the job list.
+       * The CSS class depends on the current visibility state.
+       */
+      getListClass(visibility) {
+        return visibility ? "show" : "hide";
+      }
+
+      /**
+       * CSS class for the show/hide button of the job list.
+       * The CSS class depends on the current visibility state.
+       */
+      getButtonClass(visibility) {
+        return visibility ? "mdi-close-box" : "mdi-download-multiple"; // fa-tasks
+      }
+
+      /**
+       * CSS class for the status of a job in the job list.
+       * The CSS class depends on the curent status of the job.
+       */
+      getStatusClass(status) {
+        switch (status) {
+          //case 'unavailable':
+          //    return 'fa-exclamation-triangle';
+          //case 'available':
+          //    return 'fa-cloud';
+          case "queued":
+            return "mdi-progress-clock buttonQueued";
+          case "downloading":
+            return "mdi-transfer buttonDownloading";
+          case "completed":
+            return "mdi-check-circle button buttonCompleted";
+          case "failed":
+            return "mdi-alert-decagram button buttonFailed";
+          default:
+            return "";
+        }
+      }
+
+      /**
+       *
+       */
+      getErrorTitle(errors) {
+        return (
+          (errors && errors.length > 0 ? "Click to re-download\n" : "") +
+          errors
+            .map((error) => {
+              return error.toString();
+            })
+            .join("\n")
+        );
+      }
+
+      /**
+       *
+       */
+      restartDownload(e) {
+        let job = e.model.item;
+        if (job.status === "failed" || job.status === "completed") {
+          Engine.DownloadManager.addDownload(job.chapter);
+        }
+      }
+
+      /**
+       *
+       */
+      onDownloadStatusUpdated(e) {
+        let job = e.detail;
+        let index = this.jobList.indexOf(job);
+        if (index > -1) {
+          // force an UI update of the changed job
+          this.notifyPath("jobList." + index + ".status");
+          this.notifyPath("jobList." + index + ".progress");
+          if (job.status === "completed") {
+            this.splice("jobList", index, 1);
+          }
+          if (job.status === "failed" && job.errors && job.errors.length > 0) {
+            this.notifyPath("jobList." + index + ".errors");
+          }
+        } else {
+          // remove similar job that failed
+          let position = this.jobList.findIndex((item) => {
+            return job.isSame(item);
+          });
+          if (position > -1 && this.jobList[position].status === "failed") {
+            this.splice("jobList", position, 1);
+          }
+          // add new job
+          if (job.status === "queued" || job.status === "downloading") {
+            this.push("jobList", job);
+          }
+        }
+      }
+
+      /**
+       *
+       */
+      async onClose(event) {
+        // check if any job is running
+        let index = this.jobList.findIndex((job) => {
+          return job.status === "queued" || job.status === "downloading";
+        });
+        if (
+          index < 0 ||
+          (await confirm(
+            "Downloads are still in progress.\nClose application anyway?"
+          ))
+        ) {
+          this.ipc.send("quit");
+        }
+      }
+    }
+    window.customElements.define(HakunekoJobs.is, HakunekoJobs);
+  </script>
+</dom-module>

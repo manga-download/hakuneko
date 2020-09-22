@@ -1,0 +1,489 @@
+<link rel="import" href="../../polymer/polymer-element.html" />
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html" />
+<link rel="import" href="../../polymer/lib/elements/dom-if.html" />
+<!-- <link rel="import" href="../../iron-list/iron-list.html"> -->
+<link rel="import" href="connectors.html" />
+<link rel="import" href="bookmarks.html" />
+<link rel="import" href="status.html" />
+<link rel="import" href="theme.html" />
+
+<dom-module id="hakuneko-mangas">
+  <template>
+    <style include="theme"></style>
+    <style>
+      :host {
+        display: flex;
+        flex-direction: column;
+        background: var(--base);
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        height: 2rem;
+        padding: 0 0.5rem;
+        font-weight: bold;
+        font-size: 1.125rem;
+        background: var(--accent);
+        color: var(--text);
+      }
+
+      .header__title {
+        flex: 1;
+      }
+
+      .header__title_icon {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .header__title_icon:hover {
+        background: #ffffff15;
+      }
+
+      #paste {
+        position: absolute;
+        z-index: -9999;
+        height: 0;
+        width: 0;
+        opacity: 0;
+      }
+
+      .filter {
+        flex: 0;
+        width: 100%;
+        padding-bottom: 0.5rem;
+      }
+
+      .filter__group {
+        margin-top: 0.25rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      .filter__group_input {
+        flex: 1;
+        margin: 0 !important;
+      }
+
+      .filter__group_icon {
+        width: 2rem;
+        height: 2rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: var(--text);
+      }
+
+      .notification {
+        margin: auto;
+        padding: 0.5rem 1rem;
+        font-weight: bold;
+        text-align: center;
+        background: var(--base);
+        border: 1px solid var(--accent);
+        color: var(--text);
+        font-size: 0.75rem;
+      }
+
+      .notification__line {
+        height: 1.5rem;
+        display: flex;
+        align-items: center;
+      }
+
+      .notification__line_icon {
+        margin: 0 0.25rem;
+        width: 1rem;
+        height: 1rem;
+      }
+
+      .list {
+        flex: 1;
+        border-top: 1px solid var(--accent);
+        border-bottom: 1px solid var(--accent);
+        background: var(--base);
+        overflow-y: auto;
+        padding: 0.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: flex-start;
+      }
+
+      .list__item {
+        cursor: pointer;
+        position: relative;
+        padding: 0.5rem;
+        width: 100%;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+        font-size: 1rem;
+        border: 1px solid var(--accent);
+        border-radius: var(--border-radius);
+        background: linear-gradient(#0006, #0006),
+          linear-gradient(var(--accent), var(--accent));
+        transition: 0.2s linear all;
+      }
+
+      .list__item:last-child {
+        margin-bottom: 0 !important;
+      }
+
+      .list__item:hover {
+        background: linear-gradient(#0003, #0003),
+          linear-gradient(var(--accent), var(--accent));
+        color: var(--text);
+      }
+      .manga.focus:hover,
+      .focus {
+        background: linear-gradient(var(--accent), var(--accent));
+        color: var(--text);
+      }
+
+      .button {
+        cursor: pointer;
+      }
+
+      .refresh {
+        cursor: pointer;
+        color: var(--accent);
+      }
+
+      .disabled {
+        color: var(--manga-button-disabled-color);
+        cursor: progress !important;
+      }
+
+      .footer {
+        flex: 0;
+        height: 2rem;
+      }
+    </style>
+    <div class="header">
+      <span class="header__title">Manga List</span>
+      <input id="paste" />
+      <i
+        class="header__icon mdi mdi-content-paste mdi-18px button"
+        on-click="onPasteClick"
+        title="Click to paste manga links from the clipboard (CTRL + V)"
+      ></i>
+    </div>
+    <div class="filter">
+      <div class="filter__group">
+        <i
+          class="filter__group_icon mdi mdi-24px mdi-power-plug"
+          title="Select a website from which the manga list should be shown"
+        ></i>
+        <hakuneko-connectors
+          class$="filter__group_input"
+          selected-connector="{{ selectedConnector }}"
+        ></hakuneko-connectors>
+        <i
+          class$="filter__group_icon mdi mdi-24px [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh"
+          on-click="onUpdateMangaListClick"
+          title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"
+        ></i>
+      </div>
+      <div class="filter__group">
+        <i
+          class="filter__group_icon mdi mdi-24px mdi-magnify"
+          title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"
+        ></i>
+        <input
+          class="filter__group_input"
+          type="text"
+          value="{{ mangaPattern::input }}"
+        />
+        <hakuneko-bookmarks
+          class$="filter__group_icon [[ getAppearance ]]"
+          selected-manga="{{ selectedManga }}"
+        ></hakuneko-bookmarks>
+      </div>
+    </div>
+    <div class="list">
+      <template
+        is="dom-if"
+        if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]"
+      >
+        <div class="notification">
+          <div class="notification__line">Manga list is loading or empty</div>
+          <div class="notification__line">
+            Click<i
+              class$="notification__line_icon mdi mdi-18px [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh"
+              on-click="onUpdateMangaListClick"
+              title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"
+            ></i
+            >button to update list
+          </div>
+        </div>
+      </template>
+      <template
+        is="dom-repeat"
+        items="[[ mangaList ]]"
+        filter="[[ filterMangas(mangaPattern) ]]"
+        rendered-item-count="{{ mangaFilteredCount }}"
+      >
+        <div
+          class$="list__item [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]"
+          title$="[[ item.title ]]&#10;[[ item.connector.label ]]"
+          on-click="onMangaClicked"
+        >
+          [[ item.title ]]
+        </div>
+      </template>
+    </div>
+    <div class="footer">
+      <hakuneko-status
+        class$="[[ getAppearance() ]]"
+        id="status"
+        message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"
+      ></hakuneko-status>
+    </div>
+  </template>
+
+  <script>
+    /** @polymerElement */
+    class HakunekoMangas extends Polymer.Element {
+      /**
+       *
+       */
+      static get is() {
+        return "hakuneko-mangas";
+      }
+
+      /**
+       *
+       */
+      static get properties() {
+        return {
+          selectedConnector: {
+            type: Object,
+            value: undefined,
+            notify: true, // enable upward data flow,
+            //readOnly: true, // prevent downward data flow
+            observer: "onSelectedConnectorChanged",
+          },
+          selectedManga: {
+            type: Object,
+            value: undefined,
+            notify: true, // enable upward data flow,
+            //readOnly: true, // prevent downward data flow
+            observer: "onSelectedMangaChanged",
+          },
+        };
+      }
+
+      /**
+       *
+       */
+      ready() {
+        super.ready();
+        // the bookmark connector which is required for some exceptional handling
+        this.bookmarkConnectorID = "bookmarks";
+        // currently active manga list
+        this.mangaList = this["mangaList"];
+        // register callbacks for published events
+        document.addEventListener(
+          EventListener.onMangaStatusChanged,
+          this.onMangaStatusChanged.bind(this)
+        );
+        Engine.BookmarkManager.addEventListener(
+          "changed",
+          this.onBookmarksChanged.bind(this)
+        );
+      }
+
+      /**
+       *
+       */
+      getAppearance() {
+        let appearance = "";
+        appearance +=
+          localStorage.getItem("themeColor") !== null
+            ? `${localStorage.getItem("themeColor")}`
+            : "";
+
+        appearance +=
+          localStorage.getItem("corner") !== null
+            ? ` ${localStorage.getItem("corner")}`
+            : "";
+
+        return appearance;
+      }
+
+      /**
+       * Observer will be executed, whenever the 'selectedConnector' is changed.
+       */
+      onSelectedConnectorChanged(connector) {
+        this.set("selectedManga", undefined);
+        if (!connector) {
+          this.set("mangaList", undefined);
+          return;
+        }
+        let statusID = this.$.status.addToQueue(
+          "Loading manga list (" + connector.label + ")"
+        );
+        // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage)
+        this.set("mangaList", []);
+        connector.getMangas((error, mangas) => {
+          // check if executing connector is still the selected connector (visible)
+          if (connector === this.selectedConnector) {
+            this.set("mangaList", mangas);
+          }
+          this.$.status.removeFromQueue(statusID);
+        });
+      }
+
+      /**
+       * Event listener attached to the corresponding refresh button element.
+       */
+      onUpdateMangaListClick(e) {
+        let connector = this.selectedConnector;
+        if (!connector || connector.isUpdating) {
+          return;
+        }
+        let statusID = this.$.status.addToQueue(
+          "Updating manga list (" + connector.label + ")"
+        );
+        connector.updateMangas((error, mangas) => {
+          // check if executing connector is still the selected connector (visible)
+          if (connector === this.selectedConnector) {
+            if (!error) {
+              this.set("mangaList", mangas);
+            }
+
+            // trigger update for refresh button style (update completed)
+            this.notifyPath("selectedConnector.isUpdating");
+          }
+          this.$.status.removeFromQueue(statusID);
+          if (error) {
+            alert(
+              "Failed to update manga list for " +
+                connector.label +
+                "\n\n" +
+                error.message,
+              "HakuNeko - " + connector.label,
+              "error"
+            );
+          }
+        });
+        // trigger update for refresh button style (update started)
+        this.notifyPath("selectedConnector.isUpdating");
+      }
+
+      /**
+       *
+       */
+      existMangasForValidConnector(connector, mangaCount) {
+        return (
+          connector &&
+          connector.id !== this.bookmarkConnectorID &&
+          (!mangaCount || mangaCount < 1)
+        );
+      }
+
+      /**
+       * Event listener attached to the corresponding <li> element.
+       * When the element is clicked, the corresponding manga from 'mangaList' will be assigned to 'selectedManga'.
+       */
+      onMangaClicked(e) {
+        this.set("selectedManga", e.model.item);
+        document.dispatchEvent(
+          new CustomEvent(EventListener.onSelectManga, { detail: e.model.item })
+        );
+      }
+
+      /**
+       * Observer will be executed, whenever the 'selectedManga' is changed.
+       */
+      onSelectedMangaChanged(manga) {
+        //
+      }
+
+      /**
+       *
+       */
+      getMangaClass(selectedManga, id) {
+        return !selectedManga || selectedManga.id !== id ? "" : "focus";
+      }
+
+      /**
+       *
+       */
+      getRefreshClass(isUpdating) {
+        return isUpdating
+          ? "mdi-loading mdi-spin disabled"
+          : "mdi-sync mdi-flip-v";
+      }
+
+      /**
+       *
+       */
+      filterMangas(pattern) {
+        let isLatin = /^[a-zA-Z0-9]+$/.test(pattern);
+        let threshold = isLatin ? 3 : 2;
+        if (!pattern || pattern.length < threshold) {
+          return null;
+        }
+        let p = pattern.toLowerCase();
+        return (manga) => {
+          return (
+            manga.title.toLowerCase().includes(p) ||
+            manga.connector.label.toLowerCase().includes(p)
+          );
+        };
+      }
+
+      /**
+       *
+       */
+      onMangaStatusChanged(e) {
+        let manga = e.detail;
+        if (
+          !this.mangaList ||
+          !this.selectedConnector ||
+          (this.selectedConnector.id !== this.bookmarkConnectorID &&
+            this.selectedConnector.id !== manga.connector.id)
+        ) {
+          return;
+        }
+        let index = this.mangaList.findIndex((item) => {
+          // mangas may be different objects (synchronizing connector list) but still be equivalent
+          // => comparing ids instead of comparing the objects directly
+          return item.id === manga.id;
+        });
+        if (index > -1) {
+          this.notifyPath("mangaList." + index + ".status");
+        }
+      }
+
+      /**
+       *
+       */
+      onBookmarksChanged(e) {
+        if (this.selectedConnector.id === this.bookmarkConnectorID) {
+          this.onSelectedConnectorChanged(this.selectedConnector);
+        }
+      }
+
+      /**
+       *
+       */
+      onPasteClick(evt) {
+        let clipboardConnector = Engine.Connectors.find(
+          (connector) => connector.id === "clipboard"
+        );
+        if (true /*clipboard seems to have valid manga links*/) {
+          this.set("selectedConnector", clipboardConnector);
+          this.onUpdateMangaListClick(evt);
+        }
+      }
+    }
+    window.customElements.define(HakunekoMangas.is, HakunekoMangas);
+  </script>
+</dom-module>
