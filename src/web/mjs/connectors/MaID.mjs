@@ -13,6 +13,7 @@ export default class MaID extends WordPressMangastream {
         this.queryMangas = 'div.mangalist-blc ul li.Manga a.series';
         this.queryChapters = 'div.series-chapter ul.series-chapterlist li div.flexch-infoz a';
         this.queryPages = 'div.reader-area source[src]:not([src=""])';
+        this.querMangaTitleFromURI = 'div.series-title h2';
     }
 
     async _getChapters(manga) {
@@ -21,7 +22,7 @@ export default class MaID extends WordPressMangastream {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.title.replace(manga.title, '').trim(),
+                title: element.querySelector('span.ch').textContent.trim(),
                 language: ''
             };
         });
