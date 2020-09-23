@@ -10,9 +10,10 @@ export default class KomikIndoWeb extends WordPressMangastream {
         this.url = 'https://komikindo.web.id';
         this.path = '/manga/?page=';
 
+        this.querMangaTitleFromURI = 'div#content div.postbody article h1.entry-title';
         this.queryMangas = 'div.listupd div.bsx a';
         this.queryChapters = 'div#chapterlist ul li div.eph-num a';
-        this.querMangaTitleFromURI = 'div#content div.postbody article h1.entry-title';
+        this.queryChaptersTitle = 'span.chapternum';
     }
 
     async _getMangas() {
@@ -32,19 +33,6 @@ export default class KomikIndoWeb extends WordPressMangastream {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.title.trim()
-            };
-        });
-    }
-
-    async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryChapters);
-        return data.map(element => {
-            this.adLinkDecrypt(element);
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.querySelector('span.chapternum').textContent.trim(),
-                language: ''
             };
         });
     }
