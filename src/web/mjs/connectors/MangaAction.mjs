@@ -7,6 +7,6 @@ export default class MangaAction extends WordPressMadara {
         super.id = 'mangaaction';
         super.label = 'مانجا اكشن (Manga Action)';
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
-        this.url = 'https://manga-action.com';
+        this.url = 'https://mangaaction.com';
     }
 }
