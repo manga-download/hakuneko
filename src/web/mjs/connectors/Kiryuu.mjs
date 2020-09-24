@@ -8,10 +8,10 @@ export default class Kiryuu extends WordPressMangastream {
         super.label = 'Kiryuu';
         this.tags = [ 'manga', 'indonesian' ];
         this.url = 'https://kiryuu.co';
-        this.path = '/manga/?list';
+        this.path = '/manga/list-mode/';
 
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
-        this.queryPages = 'div#readerarea > :not(.kln) source[src]:not([src=""])';
+        this.queryChapters = 'div#chapterlist ul li div.eph-num a';
+        this.queryChaptersTitle = 'span.chapternum';
     }
 
     async _getPages(chapter) {
