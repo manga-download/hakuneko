@@ -10,7 +10,6 @@ export default class KomikIndoWeb extends WordPressMangastream {
         this.url = 'https://komikindo.web.id';
         this.path = '/manga/?page=';
 
-        this.querMangaTitleFromURI = 'div#content div.postbody article h1.entry-title';
         this.queryMangas = 'div.listupd div.bsx a';
         this.queryChapters = 'div#chapterlist ul li div.eph-num a';
         this.queryChaptersTitle = 'span.chapternum';

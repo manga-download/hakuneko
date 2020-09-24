@@ -10,7 +10,6 @@ export default class Kiryuu extends WordPressMangastream {
         this.url = 'https://kiryuu.co';
         this.path = '/manga/list-mode/';
 
-        this.querMangaTitleFromURI = 'div#content div.postbody article h1.entry-title';
         this.queryChapters = 'div#chapterlist ul li div.eph-num a';
         this.queryChaptersTitle = 'span.chapternum';
     }

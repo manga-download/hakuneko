@@ -10,7 +10,6 @@ export default class KomikAV extends WordPressMangastream {
         this.url = 'https://komikav.com';
         this.path = '/manga/list-mode/';
 
-        this.querMangaTitleFromURI = 'div#content div.postbody article h1.entry-title';
         this.queryChapters = 'div#chapterlist ul li div.eph-num a';
         this.queryChaptersTitle = 'span.chapternum';
     }
