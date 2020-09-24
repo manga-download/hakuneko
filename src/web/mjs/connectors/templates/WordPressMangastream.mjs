@@ -38,8 +38,7 @@ export default class WordPressMangastream extends Connector {
             const title = this.queryChaptersTitle ? element.querySelector(this.queryChaptersTitle).textContent : element.text;
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.replace(manga.title, '').trim(),
-                language: ''
+                title: title.replace(manga.title, '').trim()
             };
         });
     }
