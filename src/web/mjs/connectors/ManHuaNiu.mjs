@@ -8,5 +8,6 @@ export default class ManHuaNiu extends SinMH {
         super.label = '漫画牛 (ManHuaNiu)';
         this.tags = [ 'webtoon', 'chinese' ];
         this.url = 'https://www.manhuaniu.com';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 }
