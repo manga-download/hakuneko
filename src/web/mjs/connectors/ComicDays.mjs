@@ -14,7 +14,8 @@ export default class ComicDays extends CoreView {
         this.queryMangaTitle = 'div.yomikiri-link-title h4';
     }
 
-    async _getMangaList(path, queryLink, queryTitle) {
+    async _getMangaListFromPages(path, queryLink, queryTitle) {
+        console.log(this.url + path);
         let request = new Request(this.url + path, this.requestOptions);
         let data = await this.fetchDOM(request, queryLink);
         return data.map(element => {
@@ -26,8 +27,8 @@ export default class ComicDays extends CoreView {
     }
 
     async _getMangas() {
-        let series = await this._getMangaList('/series', 'section.daily ul.daily-series > li.daily-series-item a.link', 'source');
-        let magazines = await this._getMangaList('/magazine', 'a.barayomi-magazine-list-link-latest', 'source.barayomi-magazine-series-image');
+        let series = await this._getMangaListFromPages('/series', 'section.daily ul.daily-series > li.daily-series-item a.link', 'source');
+        let magazines = await this._getMangaListFromPages('/magazine', 'a.barayomi-magazine-list-link-latest', 'source.barayomi-magazine-series-image');
         let mangas = await super._getMangas();
         let mangaList = [...series, ...magazines, ...mangas];
         // remove mangas with same title but different ID
