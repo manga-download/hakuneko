@@ -15,7 +15,6 @@ export default class ComicDays extends CoreView {
     }
 
     async _getMangaListFromPages(path, queryLink, queryTitle) {
-        console.log(this.url + path);
         let request = new Request(this.url + path, this.requestOptions);
         let data = await this.fetchDOM(request, queryLink);
         return data.map(element => {
