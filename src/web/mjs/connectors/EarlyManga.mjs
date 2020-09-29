@@ -7,6 +7,6 @@ export default class EarlyManga extends WordPressMadara {
         super.id = 'earlymanga';
         super.label = 'EarlyManga';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://earlymanga.website';
+        this.url = 'https://earlymanga.xyz';
     }
 }
