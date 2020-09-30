@@ -1,0 +1,160 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  background: var(--base);
+  border-left: 1px solid var(--accent);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  height: 2rem;
+  padding: 0 0.5rem;
+  font-weight: bold;
+  font-size: 1.125rem;
+  background: var(--accent);
+  color: var(--text);
+}
+
+.header__title {
+  flex: 1;
+}
+
+.header__title_icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header__title_icon:hover {
+  background: #ffffff15;
+}
+
+.filter {
+  flex: 0;
+  width: 100%;
+  padding-bottom: 0.5rem;
+}
+
+.filter__group {
+  margin-top: 0.25rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.filter__group_input {
+  flex: 1;
+  margin: 0 0.5rem 0 0 !important;
+}
+
+.filter__group_icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--text);
+}
+
+.list {
+  flex: 1;
+  border-top: 1px solid var(--accent);
+  border-bottom: 1px solid var(--accent);
+  background: var(--base);
+  overflow-y: auto;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.list__item {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  padding: 0.25rem;
+  margin-bottom: 0.25rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--border-radius);
+}
+
+.list__item:last-child {
+  margin-bottom: 0 !important;
+}
+
+.list__item:focus,
+.list__item:hover {
+  background: #fff1;
+}
+
+.list__item_actions {
+  display: flex;
+  flex-direction: row;
+}
+
+.list__item_actions_icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.preview {
+  color: lime;
+}
+
+.list__item_info {
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  font-size: 1.25rem;
+  text-shadow: 0 0 0.5rem #0009;
+}
+
+.button {
+  cursor: pointer;
+}
+.buttonOffline {
+  color: var(--chapter-button-offline-color);
+}
+.buttonAvailable {
+  color: var(--chapter-button-available-color);
+}
+.buttonQueued {
+  color: var(--chapter-button-queued-color);
+}
+.buttonDownloading {
+  color: var(--chapter-button-downloading-color);
+}
+.buttonCompleted {
+  color: var(--chapter-button-completed-color);
+}
+.buttonFailed {
+  color: var(--chapter-button-failed-color);
+}
+.markerActive {
+  color: var(--text);
+}
+.markerInactive {
+  color: var(--text);
+}
+.markerRemoved {
+  color: var(--chapter-marker-removed-color);
+}
+.markerDisabled {
+  visibility: hidden !important;
+}
+.footer {
+  flex: 0;
+}
+
+.completed {
+  text-shadow: 0 0 0.5rem var(--text);
+  color: var(--text);
+}

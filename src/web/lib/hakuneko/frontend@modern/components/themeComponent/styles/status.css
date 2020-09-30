@@ -1,0 +1,31 @@
+/* style for an item (chapter/manga) that cannot be downloaded */
+.unavailable {
+  color: #808080;
+}
+
+/* style for an item (chapter/manga) that can be added to the download list */
+.available {
+  color: #404040;
+}
+
+/* style for an item (chapter/manga) that is queued for download to the users device */
+.queued {
+  color: #4080f0;
+}
+
+/* style for an item (chapter/manga) that is currently downloaded to the users device */
+.downloading {
+  color: #4080f0;
+}
+
+/* style for an item (chapter/manga) that already exist on the users device */
+.completed {
+  color: #4080f0;
+}
+
+.suberlay {
+  position: absolute;
+  font-size: 0.5rem;
+  margin-left: -0.5rem;
+  margin-top: 0.75rem;
+}

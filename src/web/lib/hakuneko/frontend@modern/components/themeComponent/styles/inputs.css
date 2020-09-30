@@ -1,0 +1,101 @@
+input[type="text"],
+input[type="password"] {
+  width: 100%; /* adjust with padding and margin */
+}
+
+input[type="text"]:disabled,
+input[type="password"]:disabled {
+  color: #808080;
+  background-color: #ffffff15;
+}
+
+input[type="checkbox"] {
+  color: #404040;
+  margin: 0.5rem;
+}
+
+input[type="number"] {
+  width: 6rem !important;
+}
+
+input[type="text"],
+input[type="checkbox"],
+input[type="password"],
+input[type="number"],
+select {
+  width: 100%;
+  -webkit-appearance: none;
+  font-size: 0.75rem;
+  border: 1px solid var(--accent);
+  background-color: transparent;
+  color: var(--text);
+  margin: 0.25rem 0;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+}
+
+select {
+  padding: 0.5rem;
+  padding-right: 2rem !important;
+}
+
+select option {
+  background: var(--base);
+  color: var(--accent);
+}
+
+.select__wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.select__wrapper::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  content: "\f01d9";
+  font-family: "Material Design Icons";
+  font-size: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 100%;
+  color: var(--accent);
+  pointer-events: none;
+}
+
+.select__wrapper:active:before {
+  content: "\f01d8";
+}
+
+.checkbox__wrapper {
+  width: 2rem;
+  height: 2rem;
+  margin: 0.25rem 0;
+}
+.checkbox__wrapper input[type="checkbox"] {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.checkbox__wrapper input[type="checkbox"]:after {
+  content: "";
+  font-family: "Material Design Icons";
+  font-size: 1.25rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--accent);
+}
+
+.checkbox__wrapper input[type="checkbox"]:checked:after {
+  content: "\f012c";
+}

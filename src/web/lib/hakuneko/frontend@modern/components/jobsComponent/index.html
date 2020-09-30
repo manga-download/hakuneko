@@ -1,0 +1,59 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-jobs">
+  <template>
+    <style include="theme"></style>
+    <style>
+      @import url("./style.css");
+    </style>
+    <div class$="list [[ getListClass(popupVisibility) ]]">
+      <div class="list__download">
+        <template
+          is="dom-repeat"
+          items="[[ jobList ]]"
+          initial-count="500"
+          target-framerate="5"
+        >
+          <div
+            class="list__download_item"
+            title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]"
+          >
+            <i
+              class$="list__download_item--icon mdi mdi-18px [[ getStatusClass(item.status) ]]"
+              title$="[[ getErrorTitle(item.errors) ]]"
+              on-click="restartDownload"
+            ></i>
+            <div class="list__download_item--connector">
+              [[ item.labels.connector ]]
+            </div>
+            <div class="list__download_item--manga">
+              [[ item.labels.manga ]]
+            </div>
+            <div class="list__download_item--chapter">
+              [[ item.labels.chapter ]]
+            </div>
+            <div
+              class="list__download_item--progress"
+              style$="background: linear-gradient(90deg, var(--accent) [[ item.progress ]]%, var(--text) 0%);"
+            >
+              [[ roundValue(item.progress, 2) ]]%
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+    <div class="bar">
+      <div class="expander" on-click="toggleJobList">
+        <i
+          class$="mdi mdi-24px [[ getButtonClass(popupVisibility) ]] button"
+          title="Toggle download list"
+        ></i>
+      </div>
+      <div class="status">[[ jobList.length ]] Download(s)</div>
+    </div>
+  </template>
+
+  <script src="./script.js"></script>
+</dom-module>

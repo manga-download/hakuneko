@@ -1,0 +1,27 @@
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap");
+  #default_menubar {
+    display: none;
+  }
+
+  @font-face {
+    font-family: "Material Design Icons";
+    src: url("./../../assets/mdi/");
+    src: url("./../../assets/mdi/mdi-webfont.woff2?v=5.5.55")
+      format("woff2");
+    font-weight: normal;
+    font-style: normal;
+  }
+</style>
+
+<dom-module id="theme">
+  <template>
+    <style id="classTheme">
+      @import url("./../../assets/mdi/mdi.css");
+      @import url("./styles/general.css");
+      @import url("./styles/themes.css");
+      @import url("./styles/inputs.css");
+      @import url("./styles/status.css");
+    </style>
+  </template>
+</dom-module>

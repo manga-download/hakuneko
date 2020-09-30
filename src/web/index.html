@@ -1,250 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
+<head> 
+    <meta charset="utf-8">
     <title>HakuNeko</title>
-    <link rel="icon" href="./img/logo.png" />
-    <meta
-      name="viewport"
-      content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes"
-    />
-
+    <link rel="icon" href="./img/logo.png">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
     <script src="./js/protobufjs.min.js"></script>
     <script src="./js/crypto-js.min.js"></script>
     <script src="./js/oauth-1.0a.min.js"></script>
     <script src="./js/jszip.min.js" defer></script>
-    <script src="./js/pdfkit.standalone.js" defer></script>
+    <script src="./js/jspdf.min.js" defer></script>
     <script src="./js/hls.light.min.js" defer></script>
     <script src="./js/ass.min.js" defer></script>
     <script src="./js/sql.min.js" defer></script>
-    <script src="./js/exif-js.min.js" defer></script>
-    <link rel="stylesheet" href="./css/materialdesignicons/mdi.css" />
     <script type="module">
-      const electronDialog = require("electron").remote.dialog;
-      import HakuNeko from "./mjs/HakuNeko.mjs";
+        const electronDialog = require('electron').remote.dialog
+        import HakuNeko from './mjs/HakuNeko.mjs'
 
-      // https://github.com/electron/electron/blob/master/docs/api/dialog.md#dialogshowmessageboxbrowserwindow-options
-      function replaceDialogs() {
-        alert = async (message, title, type) => {
-          let options = {
-            type: type || "info",
-            title: title || "HakuNeko",
-            message: message,
-            buttons: ["OK"],
-          };
-          let response = await electronDialog.showMessageBox(options);
-          return response === options.buttons.indexOf("OK");
-        };
-        confirm = async (message, title, type, buttons) => {
-          let options = {
-            type: type || "question",
-            title: title || "HakuNeko",
-            message: message,
-            buttons: buttons || ["Yes", "No"],
-          };
-          let response = await electronDialog.showMessageBox(options);
-          return response.response === 0;
-        };
-      }
+        // https://github.com/electron/electron/blob/master/docs/api/dialog.md#dialogshowmessageboxbrowserwindow-options
+        function replaceDialogs() {
+            alert = async (message, title, type) => {
+                let options = {
+                    type: type || 'info',
+                    title: title || 'HakuNeko',
+                    message: message,
+                    buttons: [ 'OK' ]
+                };
+                let response = await electronDialog.showMessageBox(options);
+                return response === options.buttons.indexOf('OK');
+            };
+            confirm = async (message, title, type, buttons) => {
+                let options = {
+                    type: type || 'question',
+                    title: title || 'HakuNeko',
+                    message: message,
+                    buttons: buttons || [ 'Yes', 'No' ]
+                };
+                let response = await electronDialog.showMessageBox(options);
+                return response.response === 0;
+            };
+        }
 
-      async function loadEngine() {
-        console.log("Loading Engine:", "HakuNeko");
-        window.HakuNeko = new HakuNeko(window);
-        // TODO: remove backward compatibility alias 'Engine' when all references are set to HakuNeko engine
-        window.Engine = window.HakuNeko;
+        async function loadEngine() {
+            console.log('Loading Engine:', 'HakuNeko');
+            window.HakuNeko = new HakuNeko(window);
+            // TODO: remove backward compatibility alias 'Engine' when all references are set to HakuNeko engine
+            window.Engine = window.HakuNeko;
+            
+            await Engine.initialize();
+            // TODO: remove stuff that requires various globals, incl. global HakuNeko engine
+            //new HistoryWorker();
+            await Engine.Settings.load();
+            Engine.BookmarkManager.loadProfile( 'default', undefined );
+            Engine.ChaptermarkManager.loadChaptermarks( undefined );
+        }
 
-        await Engine.initialize();
-        // TODO: remove stuff that requires various globals, incl. global HakuNeko engine
-        //new HistoryWorker();
-        await Engine.Settings.load();
-        Engine.BookmarkManager.loadProfile("default", undefined);
-        Engine.ChaptermarkManager.loadChaptermarks(undefined);
-      }
+        function loadFrontend() {
+            let identifier = Engine.Settings.frontend.value;
+            console.log('Loading Frontend:', identifier);
+            loadClassicPolymer(identifier);
+        }
 
-      function loadFrontend() {
-        let identifier = Engine.Settings.frontend.value;
-        console.log("Loading Frontend:", identifier);
-        loadClassicPolymer(identifier);
-      }
+        function loadClassicPolymer(identifier) {
+            // the entry tag for the web application
+            let element = document.createElement('hakuneko-app');
+            document.body.appendChild(element);
+            // the required webcomponents for polymer
+            let webcomponents = document.createElement('script');
+            webcomponents.src = './lib/webcomponentsjs/webcomponents-loader.js';
+            document.head.appendChild(webcomponents);
+            // the hakuneko application polymer element
+            let frontend = document.createElement('link');
+            frontend.href = `./lib/hakuneko/${identifier}/app.html`;
+            frontend.rel = 'import';
+            document.head.appendChild(frontend);
+        }
 
-      function loadClassicPolymer(identifier) {
-        // the entry tag for the web application
-        let element = document.createElement("hakuneko-app");
-        document.body.appendChild(element);
-        // the required webcomponents for polymer
-        let webcomponents = document.createElement("script");
-        webcomponents.src = "./lib/webcomponentsjs/webcomponents-loader.js";
-        document.head.appendChild(webcomponents);
-        // the hakuneko application polymer element
-        let frontend = document.createElement("link");
-        frontend.href = `./lib/hakuneko/${identifier}/app.html`;
-        frontend.rel = "import";
-        document.head.appendChild(frontend);
-      }
+        function closeNotification() {
+            let notification = document.querySelector('#notification');
+            notification.parentNode.removeChild(notification);
+        }
 
-      function closeNotification() {
-        let notification = document.getElementById("notification");
-        notification.parentNode.removeChild(notification);
-      }
+        async function main() {
+            replaceDialogs();
+            await loadEngine();
+            loadFrontend();
+        }
 
-      async function main() {
-        replaceDialogs();
-        await loadEngine();
-        loadFrontend();
-        // setTimeout(document.getElementById('loading').remove(), 1000);
-      }
-
-      main();
+        main();
     </script>
     <script>
-      this.win = require("electron").remote.getCurrentWindow();
+        this.win=require('electron').remote.getCurrentWindow();
 
-      function minimizeWindow() {
-        this.win.minimize();
-      }
-
-      function maximizeWindow() {
-        let iconMaxWin = document.getElementById("windowMaximize");
-        if (!this.win.isMaximized()) {
-          iconMaxWin.classList = "mdi mdi-window-maximize icon";
-          this.win.maximize();
-        } else {
-          iconMaxWin.classList = "mdi mdi-window-restore icon";
-          this.win.unmaximize();
+        function minimizeWindow(){
+            this.win.minimize();
         }
-      }
 
-      function closeWindow() {
-        this.win.close();
-      }
+        function maximizeWindow(){
+            if (! this.win.isMaximized()) {
+                this.win.maximize();
+            } else {
+                this.win.unmaximize();
+            }
+        }
 
-      function windowReload() {
-        window.location.reload();
-      }
-
-      function closeNotification() {
-        document.getElementById('notification').remove()
-      }
+        function closeWindow(){
+            this.win.close();
+        }
     </script>
     <style>
-      @import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&display=swap');
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        text-decoration: none;
-        font-family: 'Quicksand' !important;
-      }
-      html,
-      body {
-        display: flex;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        background: #16141f;
-      }
+        html, body {
+            display:flex;
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
 
-      .notification {
-        display: none;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        background: #312d42;
-        color: #a39eb5;
-        width: 20rem;
-        padding: 2rem;
-        text-align: center;
-        font-family: sans-serif;
-        font-size: 1rem;
-        z-index: 2;
-        border: 1px solid #a39eb5;
-      }
+        #notification {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            margin: 0.5em;
+            padding: 0.5em;
+            box-shadow: 0px 2px 4px 2px #808080;
+            background-color: #fff8f0;
+            border: 1px solid #ffc0c0;
+            border-radius: 0.25em;
+            font-family: sans-serif;
+            text-align: center;
+            z-index: 2;
+        }
 
-      .notification a {
-        cursor: pointer;
-        color: #6940ff;
-      }
+        #notification a {
+            text-decoration: none;
+            cursor: pointer;
+        }
 
-      .notification > #close {
-        position: absolute;
-        top: 0;
-        right: 0;
-        transform: translate(50%, -50%);
-        background: #514973;
-        width: 1.5rem;
-        height: 1.5rem;
-        border-radius: 2rem;
-        cursor: pointer;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: #a39eb5;
-        border: 1px solid #a39eb5;
-      }
+        #notification > #close {
+            position: absolute;
+            margin-top: -2px;
+            right: 1em;
+            cursor: pointer;
+        }
 
-      .menubar {
-        display: flex;
-        width: 100%;
-        height: 2rem;
-        justify-content: flex-end;
-        align-items: center;
-        -webkit-app-region: drag;
-      }
+        #default_menubar {
+            width: 100%;
+            text-align : right;
+            -webkit-app-region: drag;
+        }
 
-      .menubar > .button {
-        -webkit-app-region: no-drag;
-        cursor: pointer;
-        width: 3rem;
-        height: 2rem;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        color: #cacaca;
-      }
-
-      .menubar .button:hover {
-        background: #ffffff15;
-      }
-      .menubar .button.close:hover {
-        background: #cf0420;
-      }
+        #default_menubar > span {
+            -webkit-app-region: no-drag;
+            cursor: pointer;
+        }
     </style>
-  </head>
-  <body>
-    <div id="default_menubar" class="menubar">
-      <i
-        class="mdi mdi-window-minimize button"
-        id="windowMinimize"
-        onclick="minimizeWindow"
-      ></i>
-      <i
-        class="mdi mdi-window-maximize button"
-        id="windowMaximize"
-        onclick="maximizeWindow"
-      ></i>
-      <i
-        class="mdi mdi-window-close button close"
-        id="windowClose"
-        onclick="closeWindow"
-      ></i>
+</head>
+<body>
+    <div id="default_menubar">
+        <!-- Using UTF8 as base64 PNG 🗕🗖🗙 because of MacOS -->
+        <span id="win_minimize" onclick="minimizeWindow()" title="Minimize Window"><img alt="minimize" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAABcSURBVEhLYxgFo2AUjIJRMApGATGAEUpjgKioqP+vXr2C8vADMTExhmXLluE0CytQUVH5D6SIwlC1WAETlKYZwOmtCRMmNPz48QPKww84ODgYCgoKGqBcegIGBgA9XBrRMdUaKQAAAABJRU5ErkJggg==" /></span>
+        <span id="win_maximize" onclick="maximizeWindow()" title="Maximize Window"><img alt="maximize" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAACESURBVEhL7ZZRCsAgCIZtDx2i57p0V4teO0QvLsGxxgYSw8HADyQR9McwySEiaLLxqYYJiKgLAE3RYTFGGqlXRjXmmuodXN5BSgm99xBC4MgarTXovUMpxXFo9DS1Q+3lnId7xlaMcj+/IhMQMQERExC5CdRa2VvnMXfeGxrr+u+/CoAdAOyl6foWTQEAAAAASUVORK5CYII=" /></span>
+        <span id="win_close" onclick="closeWindow()" title="Close Window"><img alt="close" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAYCAYAAADgdz34AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFLSURBVEhL7ZUxqoQwEIazDxa8g6CFlZ2ghSAiHsA9guWWHkC8hY0LImLjBTyB3kO8SdZZNC+J0aTZbgc+zPwZ5wd14g1jjL4Zf9v1a/EzkMbhJb9eLzzPM7IsCz2fz9smX8YwDHiaJqTrOsqyjL0HDGjiOAbHD3merxK7z9N1HdY07VPved4qsftMAjweD2IgM2nbljQHgiBYZbaGSXYcxyE3nZk0TcM0N03zUAMchJ0rk6qq8P1+J3tnzQGhuCMyKctSuTkgFGl4ExpZc0Ao8ohMVJoDSoOWpum2+o8kSbaVJESuNPwLpVGZE6G4U9c109wwDGzbNslVTIQiwA8R/cxd1yW6zEQo0uPPN9/xfZ/sX5kchL7vlSYUgKOBNimKYpXZGiYB6MNO5VMMw5DUiw670890bY6WZZEe1+M43qIo2rJj/H76kkDoDZkbCAEJwDteAAAAAElFTkSuQmCC" /></span>
     </div>
-    <div id="notification" class="notification">
-      A new <strong>HakuNeko Desktop Client</strong> is available for download
-      on
-      <a
-        href="https://github.com/manga-download/hakuneko/releases"
-        target="_blank"
-        >GitHub</a
-      >
-      <span
-        id="close"
-        onclick="closeNotification()"
-        title="Hide notification"
-        class="mdi mdi-close"
-      ></span>
+    <div id="notification">
+        A new <strong>HakuNeko Desktop Client</strong> is available for download on
+        <a href="https://github.com/manga-download/hakuneko/releases" target="_blank">GitHub</a>
+        <span id="close" onclick="closeNotification()" title="Hide notification">✖</span><!-- ❌&times; -->
     </div>
-  </body>
+</body>
 </html>

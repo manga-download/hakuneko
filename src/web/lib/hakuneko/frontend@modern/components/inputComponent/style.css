@@ -1,0 +1,25 @@
+:host {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+.item {
+  margin: 0.25em;
+  cursor: pointer;
+}
+.stretch {
+  display: flex;
+  flex: 1;
+  height: 2.5rem;
+}
+.shrink {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--accent);
+  color: var(--base);
+  margin-left: 0.5rem;
+  border-radius: var(--border-radius);
+}

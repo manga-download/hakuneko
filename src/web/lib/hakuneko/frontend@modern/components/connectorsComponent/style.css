@@ -1,0 +1,290 @@
+:host {
+  /*background-color: var(--menu-control-background-color);*/
+  flex: 1;
+}
+.popup {
+  flex-direction: column;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  background-color: var(--base);
+  padding: 0em;
+  margin: 2rem 0 0 0;
+  z-index: 1;
+}
+.show {
+  display: flex;
+}
+.hide {
+  display: none;
+}
+.button {
+  cursor: pointer;
+}
+.link {
+  margin-left: 0.5rem;
+}
+.active {
+  cursor: pointer;
+}
+.disabled {
+  cursor: not-allowed;
+  opacity: 0.25;
+}
+.clear {
+  color: var(--connector-button-clear-color);
+}
+.controls {
+  flex: 0;
+  display: flex;
+  width: 100%;
+  height: 2rem;
+  align-items: center;
+  color: var(--accent);
+  background: linear-gradient(
+      180deg,
+      var(--base) calc(100% - 1px),
+      transparent calc(100% - 1px)
+    ),
+    linear-gradient(90deg, var(--accent) 50%, transparent), var(--base);
+}
+
+.controls__title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  margin-right: 12.5rem;
+  text-transform: uppercase;
+}
+
+.controls__icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.controls__icon:hover {
+  background: #ffffff15;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow-y: hidden; /* Fixes overflow scrolling issue in flexbox, because inherited value is 'visible' */
+}
+.filters {
+  display: flex;
+  flex-direction: column;
+  max-height: 100%;
+  padding: 1rem;
+  margin: 1rem;
+  width: 17.5rem;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent);
+  overflow: hidden;
+}
+
+.filters__group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent);
+}
+
+.filters__group:last-child {
+  margin-bottom: 0;
+  flex: 1;
+}
+
+.filters__group_title,
+.filters__group_input {
+  display: flex;
+  color: var(--text);
+}
+
+.filters__group_title {
+  justify-content: space-between;
+  padding: 0 0.25rem;
+  background: var(--accent);
+}
+
+.filters__group_title--icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+}
+
+.filters__group_title--label {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  margin-right: 0.5rem;
+}
+
+.filters__group_input {
+  height: 2.5rem;
+  flex: 1;
+  background: var(--base);
+}
+
+.filters__group_input input {
+  flex: 1;
+  border-radius: 0.25rem;
+  border: 0;
+}
+
+.filters__group_tags {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  overflow-y: auto;
+  background: linear-gradient(#0007, #000d),
+    linear-gradient(var(--accent), var(--accent));
+  background-size: cover;
+  border-radius: 0 0 var(--border-radius) var(--border-radius);
+  padding: 0.25rem;
+}
+
+.filters__group_tags--tag {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: calc((100% - 0.5rem) / 2);
+  height: 1.5rem;
+  margin: 0.125rem;
+  font-size: 0.65rem;
+  color: var(--text);
+  background: linear-gradient(#0006, #0006),
+    linear-gradient(var(--accent), var(--accent));
+  border: 1px solid var(--accent);
+  border-radius: 0.125rem;
+}
+.filters__group_tags--tag:hover {
+  background: linear-gradient(#0003, #0003),
+    linear-gradient(var(--accent), var(--accent));
+}
+
+.filters__group_tags--tag.tagSelected {
+  background: linear-gradient(var(--accent), var(--accent));
+  color: var(--text);
+}
+
+.connectors {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-flow: row wrap;
+  align-content: flex-start;
+  margin: 1rem;
+  margin-left: 0;
+  border: 1px solid var(--accent);
+  padding: 0.5rem;
+  border-radius: var(--border-radius);
+}
+
+.pattern {
+  flex: 0;
+  width: 100%;
+  min-width: 16em;
+}
+.scroll {
+  flex: 1;
+  overflow-y: scroll;
+}
+
+.card {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 6rem;
+  margin: 0.5rem;
+  background: var(--base);
+  border: 1px solid var(--accent);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+@media screen and (min-width: 56rem) {
+  .card {
+    width: calc(50% - 1rem);
+  }
+}
+
+@media screen and (min-width: 80rem) {
+  .card {
+    width: calc(33.333333% - 1rem);
+  }
+}
+
+.card__icon {
+  width: 6rem;
+  height: 6rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1.5rem;
+  border-right: 1px solid var(--accent);
+  background: linear-gradient(#00000066, #00000066),
+    linear-gradient(var(--accent), var(--accent));
+}
+.card__info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.card__info_title {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  color: var(--text);
+}
+.card__info_tags {
+  flex: 1;
+  display: flex;
+  flex-flow: row wrap;
+  font-size: 0.75rem;
+  font-weight: 300;
+  justify-content: flex-end;
+  align-content: center;
+}
+.card__info_tags--tag {
+  color: var(--accent);
+  margin-right: 0.25rem;
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  height: 1rem;
+  font-weight: 900;
+}
+.card__info_tags--tag:last-child {
+  margin-right: 0;
+}
+.card__actions {
+  display: flex;
+  flex-direction: column;
+}
+.card__actions_action {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 2rem;
+  height: 2rem;
+  background: var(--accent);
+  color: var(--text);
+}
+
+.cardSelected {
+  background: linear-gradient(#00000099, #00000999),
+    linear-gradient(var(--accent), var(--accent)) !important;
+}

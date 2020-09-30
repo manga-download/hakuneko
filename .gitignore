@@ -14,3 +14,5 @@ cache
 /test/*.log
 junit.xml
 .idea/
+.editorconfig
+.prettierrc

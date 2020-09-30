@@ -1,0 +1,36 @@
+.bookmark {
+  position: relative;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bookmark__icon {
+  cursor: pointer;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.bookmark__suberlay {
+  cursor: pointer;
+  position: absolute;
+  bottom: 0;
+  right: 0.125rem;
+}
+
+.bookmarkAdd {
+  color: var(--bookmark-button-add-color) !important;
+}
+
+.bookmarkDelete {
+  color: var(--bookmark-button-delete-color) !important;
+}
+
+.bookmarkInvalid {
+  color: var(--bookmark-button-invalid-color) !important;
+}

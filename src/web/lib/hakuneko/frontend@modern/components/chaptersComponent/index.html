@@ -1,0 +1,127 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-repeat.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-if.html" />
+
+<link rel="import" href="./../statusComponent/index.html" />
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-chapters">
+  <template>
+    <style include="theme"></style>
+    <style>
+      @import url("./style.css");
+    </style>
+
+    <div class="header">
+      <div class="header__title">Chapter List</div>
+      <i
+        class$="header__title_icon mdi mdi-18px button [[ getSortClass(chapterSort) ]]"
+        on-click="onToggleSortClick"
+        title="Click to toggle chapter sorting"
+      ></i>
+      <i
+        class="header__title_icon mdi mdi-18px mdi-download button"
+        on-click="onDownloadChaptersClick"
+        title="Click to download all chapters currently shown in the filtered and sorted list"
+      ></i>
+    </div>
+    <div class="filter">
+      <div class="filter__group">
+        <i class="filter__group_icon mdi mdi-24px mdi-translate"></i>
+        <div class="filter__group_input select__wrapper">
+          <select id="languageSelection" value="{{  searchLanguage::change}}">
+            <option value="">*</option>
+            <template is="dom-repeat" items="[[ languageList ]]">
+              <option value$="[[ item ]]"></option>
+            </template>
+          </select>
+        </div>
+      </div>
+      <div class="filter__group">
+        <i
+          class="filter__group_icon mdi mdi-24px mdi-magnify"
+          title="Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles"
+        ></i>
+        <input
+          class="filter__group_input"
+          type="text"
+          value="{{ searchPattern::input }}"
+        />
+      </div>
+    </div>
+
+    <!-- preformance of <ul> is way better than <select> in chromium browser for large lists (thousands of children) -->
+    <div class="list">
+      <template
+        is="dom-if"
+        if="[[ existChaptermarkForChapters(markedChapter, chapterList) ]]"
+      >
+        <div class="list__item">
+          <div class="list__item_actions">
+            <i class="list__item_actions_icon"></i>
+            <i class="list__item_actions_icon"></i>
+            <i
+              class="list__item_actions_icon mdi mdi-18px mdi-bookmark button markerRemoved"
+              title="Click to remove the marked chapter"
+              on-click="onUnmarkChapterClick"
+            ></i>
+          </div>
+          <div
+            class="list__item_info"
+            title$='The chapter has been marked as "recently read" but is no longer available&#10;ID: [[ markedChapter.chapterID ]]'
+          >
+            [[ markedChapter.chapterTitle ]]
+          </div>
+        </div>
+      </template>
+      <template
+        is="dom-repeat"
+        items="[[ chapterList ]]"
+        filter="[[ filterChapters(searchPattern, searchLanguage) ]]"
+        sort="[[ sortChapters(chapterSort) ]]"
+        rendered-item-count="{{ chapterFilteredCount }}"
+        initial-count="500"
+        target-framerate="5"
+      >
+        <div
+          class$="list__item [[ getChapterClass(selectedChapter, item.id) ]]"
+        >
+          <div class="list__item_actions">
+            <i
+              class="list__item_actions_icon preview mdi mdi-18px mdi-eye button"
+              style$="[[ getPagePreviewStyle(readerEnabled) ]]"
+              on-click="onSelectChapterClick"
+              title="Show preview of chapter's pages"
+            ></i>
+            <i
+              class$="list__item_actions_icon mdi mdi-18px button [[ getChapterDownloadClass(item.status) ]]"
+              on-click="onProcessChapterClick"
+              title$="[[ getChapterDownloadTooltip(item.status) ]]"
+            ></i>
+            <i
+              class$="list__item_actions_icon mdi mdi-18px button [[ getChapterMarkClass(markedChapter, item) ]]"
+              on-click="onMarkChapterClick"
+              title$="[[ getChapterMarkTooltip(markedChapter, item) ]]"
+            ></i>
+          </div>
+          <div
+            class$="list__item_info title [[ item.status ]]"
+            title$="[[ item.title ]]&#10;Doubleclick to open the folder with your file manager"
+            on-dblclick="onShowFileManagerClick"
+          >
+            [[ item.title ]]
+          </div>
+        </div>
+      </template>
+    </div>
+    <div class="footer">
+      <hakuneko-status
+        class$="[[ getAppearance() ]]"
+        id="status"
+        message="Chapters: [[ chapterFilteredCount ]] / [[ chapterList.length ]]"
+      ></hakuneko-status>
+    </div>
+  </template>
+
+  <script src="./script.js"></script>
+</dom-module>

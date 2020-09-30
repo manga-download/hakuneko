@@ -1,0 +1,21 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-status">
+  <template>
+    <style include="theme"></style>
+    <style>
+      @import url("./style.css");
+    </style>
+    <div class="status__message">[[ message ]]</div>
+    <div
+      class$="status [[ getStatusClass(queue.length) ]]"
+      title$="[[ getQueueContent(queue.length) ]]"
+    >
+      [[ queue.legth ]]
+      <i class="status__icon mdi mdi-loading mdi-24px mdi-spin"></i>
+    </div>
+  </template>
+  <script src="./script.js"></script>
+</dom-module>

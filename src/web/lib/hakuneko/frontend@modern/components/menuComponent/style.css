@@ -1,0 +1,377 @@
+:host {
+  height: 2rem;
+}
+
+.menu {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background: linear-gradient(
+      180deg,
+      var(--base) calc(100% - 1px),
+      transparent calc(100% - 1px)
+    ),
+    linear-gradient(90deg, var(--accent) 50%, transparent), var(--base);
+}
+
+.item {
+  margin: 0.25rem;
+  cursor: pointer;
+}
+
+.title {
+  font-weight: bold;
+  font-size: 1rem;
+  color: var(--accent);
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup {
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  background: var(--base);
+  margin: 3rem 0 0 1rem;
+  height: calc(100% - 4rem);
+  transition: 0.2s linear all;
+  z-index: 10;
+  width: calc(30rem + 2px);
+  border: 1px solid var(--accent);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.appearance {
+  transition: 0.2s linear all;
+  position: absolute;
+  z-index: 100;
+  padding: 0.5rem;
+  width: 16rem;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 0 1px var(--accent);
+  background: var(--base);
+  border-radius: var(--border-radius);
+  right: -17rem;
+  top: 2.2rem;
+}
+
+.appearance__colors {
+  display: flex;
+  flex-flow: row wrap;
+}
+.appearance__radius {
+  display: flex;
+  flex-direction: row;
+}
+
+.appearance__colors_item {
+  width: 4rem;
+  height: 3rem;
+  border-radius: 0 0.5rem;
+  background: whitesmoke;
+  margin: 0.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
+
+.appearance__colors_item--label {
+  font-size: 0.5rem;
+  font-weight: 900;
+  width: 100%;
+  background: #00000077;
+  height: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-transform: uppercase;
+  color: var(--text);
+}
+
+.appearance__corner {
+  display: flex;
+  justify-content: space-around;
+  margin: 0.5rem 0;
+  border-top: 1px solid var(--accent);
+  padding-top: 1rem;
+}
+
+.appearance__corner_item {
+  display: flex;
+  align-items: center;
+  width: calc(50% - 1rem);
+  height: 2.25rem;
+  padding-left: 0.25rem;
+  background: var(--accent);
+  text-transform: uppercase;
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  overflow: hidden;
+  text-shadow: 0 0 0.5rem;
+}
+
+.appearance__corner_item.square {
+  border-radius: 0;
+}
+.appearance__corner_item.rounded {
+  border-radius: 0.5rem;
+}
+
+.appearance__colors_item.selected,
+.appearance__corner_item.selected {
+  position: relative;
+}
+
+.appearance__colors_item.selected:after,
+.appearance__corner_item.selected:after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: #00000077;
+  color: var(--accent);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: "Material Design Icons";
+  font-size: 0.7rem;
+  content: "\F04CE";
+}
+
+.appearance.show {
+  right: 7.5rem;
+}
+
+.popup.show {
+  left: 0;
+}
+
+.popup.hide {
+  left: -35.25rem;
+}
+
+.separator {
+  font-weight: bold;
+  height: 2rem;
+  padding: 0 0.5rem;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  background: var(--accent);
+  color: var(--text);
+}
+
+.about {
+  display: flex;
+  flex-direction: row;
+  margin: 0.5rem;
+}
+
+.logo {
+  display: flex;
+  width: 10rem;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.logo img {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--border-radius);
+}
+
+.info {
+  flex: 1;
+  margin-left: 0.5rem;
+  display: flex;
+}
+
+.credits {
+  background-color: var(--base);
+  padding: 0.5rem;
+  border: 1px solid var(--accent);
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  color: var(--text);
+  border-radius: var(--border-radius);
+}
+
+.credits__info {
+  border-bottom: 1px solid var(--accent);
+  padding-bottom: 0.5rem;
+}
+
+.people {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  justify-content: center;
+}
+.people__item {
+  display: flex;
+  flex-direction: row;
+  margin-top: 0.5rem;
+  flex: 1;
+  align-items: center;
+}
+
+.people__item:last-child {
+  margin-bottom: 0;
+}
+
+.people__item_title {
+  flex: 2;
+}
+
+.people__item_info {
+  flex: 3;
+  margin-left: 0.5rem;
+}
+
+.people__item_info .link .icon {
+  margin-right: 0.5rem;
+}
+
+.people__item_info--icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  color: var(--accent);
+  margin-right: 0.5rem;
+}
+
+.settings {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--base);
+  padding: 0.5rem;
+}
+
+.settings__group {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.settings__group:first-child {
+  border: none;
+}
+
+.settings__group:last-child {
+  margin-bottom: 0;
+}
+
+.settings__group_title {
+  width: 100%;
+  padding: 0.5rem;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.settings__group_options {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.settings__group_options--label {
+  flex: 1;
+  color: var(--text);
+}
+
+.settings__group_options--input {
+  flex: 1;
+}
+
+.group {
+  font-weight: bold;
+  color: var(--menu-control-category-color);
+  padding: 0.5rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--accent);
+}
+
+.button {
+  cursor: pointer;
+  -webkit-app-region: no-drag;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: var(--accent);
+}
+
+.button.close:hover {
+  background: #cf0420;
+  color: var(--text);
+}
+
+.button:hover {
+  background: #ffffff15;
+}
+
+.right {
+  display: flex;
+  flex-direction: row;
+}
+
+.right .button {
+  width: 2.5rem;
+}
+
+.buttons {
+  display: flex;
+  height: 2.5rem;
+  padding: 0.25rem;
+  background: var(--accent);
+}
+
+.buttons .button {
+  width: 2rem;
+  height: 2rem;
+  color: var(--text);
+}
+
+.buttonsLeft {
+  flex: 1;
+}
+
+.buttonsRight {
+  display: flex;
+  flex-direction: row;
+}
+
+.buttonsRight .button {
+  margin-left: 0.5rem;
+}
+
+#importFile {
+  display: none;
+}

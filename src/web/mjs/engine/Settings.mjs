@@ -60,7 +60,7 @@ export default class Settings extends EventTarget {
                 { value: 'frontend@classic-dark', name: 'Ken\'s Daedal Dark' },
                 { value: 'frontend@modern', name: 'Modern <devemloop>' }
             ],
-            value: 'frontend@modern'
+            value: 'frontend@classic-light'
         };
 
         this.readerEnabled = {

@@ -1,0 +1,238 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-if.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-repeat.html" />
+
+<link rel="import" href="./../inputComponent/index.html" />
+
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-menu">
+  <template>
+    <style>
+      @import url("./style.css");
+    </style>
+    <style include="theme"></style>
+    <div class="menu">
+      <i
+        class="mdi mdi-24px mdi-menu button"
+        title="Toggle menu"
+        on-click="togglePopup"
+      ></i>
+      <span class="title">HakuNeko</span>
+      <span class="right">
+        <i
+          class="mdi mdi-18px mdi-reload button"
+          title="Close HakuNeko"
+          on-click="windowReload"
+        ></i>
+        <i
+          class="mdi mdi-18px mdi-palette-swatch button"
+          title="Close HakuNeko"
+          on-click="togglePopupAppearance"
+        ></i>
+        <i
+          class="mdi mdi-18px mdi-window-minimize button"
+          title="Minize HakuNeko"
+          onclick="minimizeWindow()"
+        ></i>
+        <i
+          class="mdi mdi-18px mdi-window-maximize button"
+          title="Maximize HakuNeko"
+          onclick="maximizeWindow()"
+        ></i>
+        <i
+          class="mdi mdi-18px mdi-window-close button close"
+          title="Close HakuNeko"
+          onclick="closeWindow()"
+        ></i>
+      </span>
+      <div class$="popup [[ getPopupClass(popupVisibility) ]]">
+        <div class="separator">
+          <label>About</label>
+        </div>
+        <div class="about">
+          <div class="logo">
+            <img src="./img/logo_m.png" />
+          </div>
+          <div class="info">
+            <div class="credits">
+              <div class="credits__info">
+                &copy; [[ year ]]
+                <a
+                  class="link"
+                  on-click="openWindow"
+                  title="https://git.io/hakuneko"
+                  data-href="https://git.io/hakuneko"
+                >
+                  HakuNeko
+                </a>
+                rev.
+                <a
+                  class="link"
+                  on-click="openWindow"
+                  title="Revision History"
+                  data-href$="[[ version.revision.link ]]"
+                >
+                  [[ version.branch.label ]]@[[ version.revision.label ]]
+                </a>
+              </div>
+              <div class="people">
+                <div class="people__item">
+                  <div class="people__item_title">Development:</div>
+                  <div class="people__item_info">
+                    <a
+                      class="link"
+                      on-click="openWindow"
+                      data-href="https://github.com/orgs/manga-download/people"
+                      ><i class="icon mdi mdi-18px mdi-account-group"></i
+                      >Maintainers</a
+                    ><br />
+                    <a
+                      class="link"
+                      on-click="openWindow"
+                      data-href="https://github.com/manga-download/hakuneko/graphs/contributors"
+                      ><i class="icon mdi mdi-18px mdi-lightbulb-group"></i
+                      >Contributors</a
+                    >
+                  </div>
+                </div>
+                <div class="people__item">
+                  <div class="people__item_title">Artwork:</div>
+                  <div class="people__item_info">
+                    <a
+                      class="link"
+                      on-click="openWindow"
+                      data-href="https://www.deviantart.com/hakuneko3kune"
+                      ><i class="icon mdi mdi-18px mdi-cat"></i>HakuNeko3Kune</a
+                    >
+                  </div>
+                </div>
+                <div class="people__item">
+                  <div class="people__item_title">Help & Info:</div>
+                  <div class="people__item_info">
+                    <i
+                      class="people__item_info--icon mdi mdi-18px mdi-home"
+                      on-click="openWindow"
+                      title="Visit the HakuNeko Homepage"
+                      data-href="https://hakuneko.download"
+                    ></i>
+                    <i
+                      class="people__item_info--icon mdi mdi-18px mdi-book-open-page-variant"
+                      on-click="openWindow"
+                      title="Read the Online Documentation"
+                      data-href="https://hakuneko.download/docs/interface/"
+                    ></i>
+                    <i
+                      class="people__item_info--icon mdi mdi-18px mdi-bug"
+                      on-click="openWindow"
+                      title="Open a Ticket on GitHub"
+                      data-href="https://hakuneko.download/docs/troubleshoot/"
+                    ></i>
+                    <i
+                      class="people__item_info--icon mdi mdi-18px mdi-discord"
+                      on-click="openWindow"
+                      title="Login to the Community Support Channel"
+                      data-href="https://discordapp.com/invite/A5d3NDf"
+                    ></i>
+                    <i
+                      class="people__item_info--icon mdi mdi-18px mdi-google-street-view"
+                      on-click="openWindow"
+                      title="Show your external IP and Geolocation"
+                      data-href="https://ipinfo.io/json"
+                    ></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="separator">
+          <label>Settings</label>
+        </div>
+        <div class="settings">
+          <template is="dom-repeat" items="[[ settingCategories ]]">
+            <div class="settings__group">
+              <div class="settings__group_title">[[ item.category ]]</div>
+              <template is="dom-repeat" items="[[ item.settings ]]">
+                <div class="settings__group_options">
+                  <div
+                    class="settings__group_options--label"
+                    title="[[ item.description ]]"
+                  >
+                    [[ item.label ]]
+                  </div>
+                  <div class="settings__group_options--input">
+                    <hakuneko-input
+                      class$="[[ getAppearance ]]"
+                      item="{{ item }}"
+                    >
+                    </hakuneko-input>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+        </div>
+        <div class="buttons">
+          <div class="buttonsLeft">
+            <i
+              class="mdi mdi-24px mdi-file-import button"
+              title="Import bookmarks"
+              on-click="import"
+            ></i>
+            <input
+              type="file"
+              id="importFile"
+              accept="application/x-sqlite3,.db,.db3"
+              on-change="onImport"
+            />
+          </div>
+          <div class="buttonsRight">
+            <i
+              class="mdi mdi-content-save-cog mdi-24px button"
+              title="Save settings and close menu"
+              on-click="closeSaveChanges"
+            ></i>
+            <i
+              class="mdi mdi-24px mdi-close-box button"
+              title="Close menu without saving settings"
+              on-click="closeDiscardChanges"
+            ></i>
+          </div>
+        </div>
+      </div>
+      <div
+        class$="appearance [[ getPopupClassAppearance(popupVisibilityAppearance) ]]"
+      >
+        <div class="appearance__colors">
+          <template is="dom-repeat" items="[[ themes ]]">
+            <div
+              class$="appearance__colors_item [[ getThemeSelected(item.label) ]]"
+              on-click="setTheme"
+              style$="background: [[ item.color ]]"
+            >
+              <div
+                style$="color: [[ item.color ]]"
+                class="appearance__colors_item--label"
+              >
+                [[ item.label ]]
+              </div>
+            </div>
+          </template>
+        </div>
+        <div class="appearance__corner">
+          <template is="dom-repeat" items="[[ corners ]]">
+            <div
+              class$="appearance__corner_item [[ item.class ]] [[ getCornerSelected(item.value) ]]"
+              on-click="setCorner"
+            >
+              [[item.label]]
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="./script.js"></script>
+</dom-module>

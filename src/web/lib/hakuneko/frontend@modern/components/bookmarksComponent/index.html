@@ -1,0 +1,25 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-repeat.html" />
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-bookmarks">
+  <template>
+    <style include="theme"></style>
+    <style>
+      @import url("./style.css");
+    </style>
+    <div>
+      <span
+        class="bookmark"
+        title$="[[ getBookmarkTitle(selectedManga,bookmarkList.length) ]]"
+        on-click="processBookmark"
+      >
+        <i class="mdi mdi-24px mdi-star bookmark__icon"></i>
+        <i
+          class$="mdi [[ getBookmarkClass(selectedManga,bookmarkList.length) ]] bookmark__suberlay"
+        ></i>
+      </span>
+    </div>
+  </template>
+  <script src="./script.js"></script>
+</dom-module>

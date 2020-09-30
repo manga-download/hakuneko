@@ -1,0 +1,117 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-repeat.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-if.html" />
+
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-pages">
+  <template>
+    <style include="theme"></style>
+    <style>
+      @import url("./style.css");
+    </style>
+    <div
+      id="container"
+      style$="background-color: [[ getContainerColor(selectedMedia) ]];"
+    >
+      <template is="dom-if" if="[[ thumbnailViewMode(media,selectedMedia) ]]">
+        <template is="dom-repeat" items="[[ media ]]">
+          <div class="container__wrapper">
+            <div
+              class="container__wrapper_image thumbnail"
+              on-click="showViewer"
+              title$="Page [[ getPage(index) ]]"
+              data-page$="[[ getPage(index) ]]"
+            >
+              <img src$="[[ escapeBackgroundURI(item) ]]" alt="" />
+            </div>
+          </div>
+        </template>
+      </template>
+      <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
+        <div
+          id="buttons"
+          class="actions"
+          tabindex="0"
+          onblur="this.focus()"
+          on-keydown="onKeyDown"
+        >
+          <i
+            class="actions__action mdi mdi-close-circle mdi-18px button"
+            title="Close (ESC)"
+            on-click="hideViewer"
+          ></i>
+          <span class="actions__title">[[ selectedChapter.title ]]</span>
+          <i
+            class="actions__action mdi mdi-chevron-down mdi-18px button"
+            title="Chapter Down (ArrowLeft)"
+            on-click="requestChapterDown"
+          ></i>
+          <i
+            class="actions__action mdi mdi-chevron-up mdi-18px button"
+            title="Chapter Up (ArrowRight)"
+            on-click="requestChapterUp"
+          ></i>
+          &nbsp;
+          <i
+            class="actions__action mdi mdi-arrow-collapse-vertical mdi-18px button"
+            title="Decrease spacing between images (CTRL ➖)"
+            on-click="decreaseImagePadding"
+          ></i>
+          <i
+            class="actions__action mdi mdi-arrow-expand-vertical mdi-18px button"
+            title="Increase spacing between images (CTRL ➕)"
+            on-click="increaseImagePadding"
+          ></i>
+          &nbsp;
+          <i
+            class="actions__action mdi mdi-magnify-plus mdi-18px button"
+            title="Zoom In (➕)"
+            on-click="zoomIn"
+          ></i>
+          <i
+            class="actions__action mdi mdi-magnify-minus mdi-18px button"
+            title="Zoom Out (➖)"
+            on-click="zoomOut"
+          ></i>
+          &nbsp;
+        </div>
+        <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em">
+          <img
+            id$="page_[[ index ]]"
+            class="image"
+            src$="[[ item ]]"
+            style$="width: [[ imageWidth ]]%; margin: [[ imagePadding ]]em;"
+            onerror="imgError(this)"
+          />
+        </template>
+      </template>
+      <template
+        is="dom-if"
+        if="[[ videoViewMode(media,selectedMedia) ]]"
+        on-dom-change="onVideoElementChanged"
+      >
+        <div id="fullscreen" on-dblclick="toggleFullscreen">
+          <video
+            id="video"
+            controls
+            disablePictureInPicture
+            controlsList="nodownload nofullscreen"
+          >
+            <!-- dummy tracks to show subtitle menu in video player -->
+            <template is="dom-repeat" items="[[ media.subtitles ]]">
+              <track
+                kind="subtitles"
+                src="data:text/vtt,WEBVTT"
+                label$="[[ item.locale ]]"
+                srclang$="[[ item.locale ]]"
+              />
+            </template>
+          </video>
+        </div>
+      </template>
+    </div>
+  </template>
+
+  <script src="./script.js"></script>
+</dom-module>

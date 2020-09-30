@@ -1,0 +1,86 @@
+/**
+      * modern color styles
+      */
+.red {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #f44336;
+}
+.pink {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #e91e63;
+}
+.purple {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #9c27b0;
+}
+.dpurple {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #673ab7;
+}
+.indigo {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #3f51b5;
+}
+.blue {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #2196f3;
+}
+.cian {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #00bcd4;
+}
+.teal {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #009688;
+}
+.green {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #4caf50;
+}
+.lgreen {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #8bc34a;
+}
+.lime {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #cddc39;
+}
+.yellow {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #ffeb3b;
+}
+.amber {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #ffc107;
+}
+.orange {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #ff9800;
+}
+.dorange {
+  --base: #16141f;
+  --text: #f0f0f0;
+  --accent: #ff5722;
+}
+
+.corner__square {
+  --border-radius: 0rem;
+}
+
+.corner__rounded {
+  --border-radius: 0.5rem;
+}

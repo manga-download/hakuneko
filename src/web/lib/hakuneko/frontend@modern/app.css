@@ -1,0 +1,104 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+.app {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--base);
+}
+.control {
+  flex-direction: column;
+  width: 100%;
+  flex: 0;
+  margin: 1rem;
+}
+.show {
+  display: flex;
+}
+.hide {
+  display: none;
+}
+.mangas {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--accent);
+}
+
+.content {
+  width: 100%;
+  height: 100%;
+  flex: 1;
+  overflow: hidden;
+}
+
+hakuneko-menu {
+  flex: 0;
+  -webkit-app-region: drag;
+}
+hakuneko-jobs {
+  flex: 0;
+  width: 30rem;
+}
+hakuneko-pages {
+  flex: 100;
+  z-index: 0;
+  overflow-x: hidden;
+}
+hakuneko-start {
+  flex: 100;
+  z-index: 0;
+  overflow-x: hidden;
+}
+
+#loader {
+  position: fixed;
+  color: var(--app-loading-screen-color);
+  background-color: var(--app-loading-screen-background-color);
+  text-align: center;
+  font-size: 1.5em;
+  padding: 1rem;
+  top: 0%;
+  left: 0%;
+  bottom: 0%;
+  right: 0%;
+  z-index: 9999;
+}
+
+.quote {
+  display: inline-block;
+  max-width: 75%;
+  text-align: left;
+}
+
+.quoteText {
+  border-left: var(--app-loading-screen-quote-border);
+  padding-left: 0.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  font-style: italic;
+}
+
+.quoteAuthor {
+  text-align: right;
+  font-style: italic;
+}
+
+.suggestion {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  margin: 0.25em;
+  color: var(--app-loading-screen-link-color);
+  font-size: 0.75em;
+  text-decoration: none;
+}

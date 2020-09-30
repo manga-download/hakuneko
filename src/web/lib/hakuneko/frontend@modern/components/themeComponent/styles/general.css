@@ -1,0 +1,141 @@
+*,
+*:after,
+*:before {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  outline: none;
+  user-select: none;
+  font-size: 16px;
+  font-family: "Quicksand", Arial, Helvetica, sans-serif;
+}
+
+*::-webkit-scrollbar {
+  width: 0.75rem;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(90deg, var(--accent) 70%, transparent 70%);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 0.25rem;
+}
+
+a {
+  text-decoration: none;
+}
+
+.mdi {
+  text-shadow: 0 0 0.5rem;
+}
+
+:host {
+  /* general style for all elements importing this theme */
+  font-family: Arial, Helvetica, Sans, sans-serif;
+  font-size: 14px;
+  color: #404040;
+
+  /* application control group */
+  --app-loading-screen-color: #c0c0c0;
+  --app-loading-screen-background-color: #f8f8f8;
+  --app-loading-screen-quote-border: 8px solid lightgrey;
+  --app-loading-screen-link-color: #2080e0;
+  --app-control-border: 1px solid #a0a0a0;
+  --app-control-shadow: 0.25rem 0 1rem 0 rgba(0, 0, 0, 0.25);
+
+  /* style of menu */
+  --menu-control-title-color: #a0a0a0;
+  --menu-control-category-color: #a0a0a0;
+  --menu-control-background-color: #d6d6d6;
+  --menu-control-border: 1px solid #808080;
+  --menu-control-separator: 2px groove #f0f0f0;
+  --menu-control-shadow: 0.25rem 0.25rem 2rem 0.5rem rgba(0, 0, 0, 0.5);
+  --menu-credits-background-color: #f0f0f0;
+  --menu-credits-link-color: #2080e0;
+  --menu-settings-background-color: #e4e4e4;
+  --menu-settings-row-border: 1px solid rgba(128, 128, 128, 0.15);
+
+  /* style of connector list */
+  --connector-dialog-category-color: #a0a0a0;
+  --connector-dialog-background-color: #d6d6d6;
+  --connector-dialog-border: 1px solid #808080;
+  --connector-dialog-separator: 2px groove #f0f0f0;
+  --connector-dialog-shadow: 0 0 2rem 1rem rgba(0, 0, 0, 0.5);
+  --connector-card-background-color: #ffffff;
+  --connector-card-border: 1px solid #808080;
+  --connector-card-shadow: 0.25rem 0.25rem 0.5rem 0.25rem rgba(0, 0, 0, 0.25);
+  --connector-card-selected: rgb(179, 217, 255);
+  --connector-card-highlighted: rgb(217, 236, 255);
+  --connector-title-border: 1px solid rgba(0, 0, 0, 0.1);
+  --connector-button-clear-color: #e08080;
+  --connector-tag-list-background-color: #ffffff;
+  --connector-tag-color: #808080;
+  --connector-tag-background-color: #d6d6d6;
+  --connector-tag-border: 1px solid #808080;
+  --connector-tag-selected: rgb(179, 217, 255);
+
+  /* style of manga list */
+  --manga-control-background-color: #d6d6d6;
+  --manga-control-separator: 2px groove #f0f0f0;
+  --manga-list-notification-color: #fff8f0;
+  --manga-list-notification-border: 1px solid #ffc0c0;
+  --manga-list-background-color: #ffffff;
+  --manga-list-border: 1px solid rgba(0, 0, 0, 0.35);
+  --manga-list-selected: rgba(0, 128, 255, 0.3);
+  --manga-list-highlighted: rgba(0, 128, 255, 0.15);
+  --manga-refresh-button-color: #00e000;
+  --manga-refresh-button-shadow: 0 0 2px rgba(0, 0, 0, 0.75);
+  --manga-bookmark-button-color: #e0e000;
+  --manga-bookmark-button-shadow: 0 0 2px rgba(0, 0, 0, 0.75);
+  --manga-button-disabled-color: #808080 !important;
+
+  /* style of chapter list */
+  --chapter-control-background-color: #d6d6d6;
+  --chapter-control-separator: 2px groove #f0f0f0;
+  --chapter-list-background-color: #ffffff;
+  --chapter-list-border: 1px solid rgba(0, 0, 0, 0.35);
+  --chapter-list-selected: rgba(0, 128, 255, 0.3);
+  --chapter-list-highlighted: rgba(0, 128, 255, 0.15);
+  --chapter-button-offline-color: #d6d6d6;
+  --chapter-button-available-color: #2080e0;
+  --chapter-button-queued-color: #2080e0;
+  --chapter-button-downloading-color: #2080e0;
+  --chapter-button-completed-color: #e0e000;
+  --chapter-button-failed-color: #e08080;
+  --chapter-marker-active-color: #404040;
+  --chapter-marker-inactive-color: #2080e0;
+  --chapter-marker-removed-color: #e08080;
+
+  /* style of bookmark manager */
+  --bookmark-button-default-color: #e0e000;
+  --bookmark-button-invalid-color: #000000;
+  --bookmark-button-delete-color: #e08080;
+  --bookmark-button-add-color: #00e000;
+  --bookmark-button-shadow: 0 0 2px rgba(0, 0, 0, 0.75);
+
+  /* style of download manager */
+  --job-control-background-color: #d6d6d6;
+  --job-list-background-color: #ffffff;
+  --job-list-row-border: 1px solid rgba(128, 128, 128, 0.15);
+  --job-list-progress-background-color: rgba(128, 128, 128, 0.15);
+  --job-list-progress-color: rgba(0, 128, 255, 0.3);
+  --job-list-button-queued-color: #2080e0;
+  --job-list-button-downloading-color: #2080e0;
+  --job-list-button-completed-color: #e0e000;
+  --job-list-button-failed-color: #e08080;
+
+  /* style of page view */
+  --page-background-image: url("/img/background-classic-light.png");
+  --page-control-background-color: #a0a0a0;
+  --page-thumbnail-background-color: #ffffff;
+  --page-thumbnail-border: 1px solid #808080;
+  --page-thumbnail-shadow: 1rem 1rem 2rem rgba(0, 0, 0, 0.25);
+  --page-viewer-background-color: rgba(0, 0, 0, 0.95);
+  --page-reader-background-color: #202020;
+  --page-video-background-color: #000000;
+  --page-viewer-title-background-color: rgba(255, 255, 255, 0.95);
+  --page-viewer-title-shadow: 0 0 1rem rgba(0, 0, 0, 0.5);
+  --page-chapter-title-color: #202020;
+}

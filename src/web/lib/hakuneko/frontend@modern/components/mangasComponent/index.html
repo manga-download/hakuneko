@@ -1,0 +1,100 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-repeat.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-if.html" />
+
+<link rel="import" href="./../connectorsComponent/index.html" />
+<link rel="import" href="./../bookmarksComponent/index.html" />
+<link rel="import" href="./../statusComponent/" />
+
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-mangas">
+  <template>
+    <style include="theme"></style>
+    <style>
+      @import url("./style.css");
+    </style>
+    <div class="header">
+      <span class="header__title">Manga List</span>
+      <input id="paste" />
+      <i
+        class="header__icon mdi mdi-content-paste mdi-18px button"
+        on-click="onPasteClick"
+        title="Click to paste manga links from the clipboard (CTRL + V)"
+      ></i>
+    </div>
+    <div class="filter">
+      <div class="filter__group">
+        <i
+          class="filter__group_icon mdi mdi-24px mdi-power-plug"
+          title="Select a website from which the manga list should be shown"
+        ></i>
+        <hakuneko-connectors
+          class$="filter__group_input"
+          selected-connector="{{ selectedConnector }}"
+        ></hakuneko-connectors>
+        <i
+          class$="filter__group_icon mdi mdi-24px [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh"
+          on-click="onUpdateMangaListClick"
+          title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"
+        ></i>
+      </div>
+      <div class="filter__group">
+        <i
+          class="filter__group_icon mdi mdi-24px mdi-magnify"
+          title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"
+        ></i>
+        <input
+          class="filter__group_input"
+          type="text"
+          value="{{ mangaPattern::input }}"
+        />
+        <hakuneko-bookmarks
+          class$="filter__group_icon [[ getAppearance ]]"
+          selected-manga="{{ selectedManga }}"
+        ></hakuneko-bookmarks>
+      </div>
+    </div>
+    <div class="list">
+      <template
+        is="dom-if"
+        if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]"
+      >
+        <div class="notification">
+          <div class="notification__line">Manga list is loading or empty</div>
+          <div class="notification__line">
+            Click<i
+              class$="notification__line_icon mdi mdi-18px [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh"
+              on-click="onUpdateMangaListClick"
+              title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"
+            ></i
+            >button to update list
+          </div>
+        </div>
+      </template>
+      <template
+        is="dom-repeat"
+        items="[[ mangaList ]]"
+        filter="[[ filterMangas(mangaPattern) ]]"
+        rendered-item-count="{{ mangaFilteredCount }}"
+      >
+        <div
+          class$="list__item [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]"
+          title$="[[ item.title ]]&#10;[[ item.connector.label ]]"
+          on-click="onMangaClicked"
+        >
+          [[ item.title ]]
+        </div>
+      </template>
+    </div>
+    <div class="footer">
+      <hakuneko-status
+        class$="[[ getAppearance() ]]"
+        id="status"
+        message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"
+      ></hakuneko-status>
+    </div>
+  </template>
+
+  <script src="./script.js"></script>
+</dom-module>

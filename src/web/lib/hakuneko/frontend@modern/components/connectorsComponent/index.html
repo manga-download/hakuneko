@@ -1,0 +1,141 @@
+<link rel="import" href="./../../../../polymer/polymer-element.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-if.html" />
+<link rel="import" href="./../../../../polymer/lib/elements/dom-repeat.html" />
+
+<link rel="import" href="./../themeComponent/index.html" />
+
+<dom-module id="hakuneko-connectors">
+  <template>
+    <style include="theme"></style>
+    <style>
+      @import url("./style.css");
+    </style>
+    <input
+      type="text"
+      class="button"
+      on-click="showPopup"
+      value$="[[ selectedConnector.label ]]"
+      readonly
+    />
+    <div class$="popup [[ getPopupClass(popupVisibility) ]]">
+      <div class="controls" title="Click to cancel the website selection">
+        <i
+          class="controls__icon mdi mdi-18px mdi-close-box button"
+          on-click="closePopup"
+        ></i>
+        <div class="controls__title">connectors</div>
+      </div>
+      <div class="content">
+        <div class="filters">
+          <div class="filters__group clear button">
+            <div class="filters__group_title" on-click="clearFilters">
+              <i
+                class="filters__group_title--icon mdi mdi-18px mdi-filter-variant-remove button"
+              ></i>
+              <div class="filters__group_title--label">CLEAR FILTERS</div>
+            </div>
+          </div>
+          <div class="filters__group">
+            <div class="filters__group_title">
+              <i class="filters__group_title--icon mdi mdi-24px mdi-web"></i>
+              <div class="filters__group_title--label">WEBSITE</div>
+            </div>
+            <div class="filters__group_input">
+              <input
+                id="connectorPattern"
+                class="pattern"
+                type="text"
+                value="{{ connectorPattern::input }}"
+                title="Show only websites with a name that matches the entered pattern (case-insensitive)"
+              />
+            </div>
+          </div>
+          <div class="filters__group">
+            <div class="filters__group_title">
+              <i
+                class="filters__group_title--icon mdi mdi-24px mdi-book-open-blank-variant"
+              ></i>
+              <div class="filters__group_title--label">MANGA</div>
+            </div>
+            <div class="filters__group_input">
+              <input
+                id="mangaPattern"
+                class="pattern"
+                type="text"
+                value="{{ mangaPattern::input }}"
+                on-keyup="filterConnectorsByManga"
+                title="Show only websites with a manga that matches the entered pattern (case-insensitive)&#10;Searches only in local synchronized manga lists&#10;Press ENTER to perform the search"
+              />
+            </div>
+          </div>
+          <div class="filters__group group__tags">
+            <div
+              class="filters__group_title"
+              title="Show only websites containing the selected tags"
+            >
+              <i
+                class="filters__group_title--icon mdi mdi-24px mdi-tag-multiple"
+              ></i>
+              <div class="filters__group_title--label">TAGS</div>
+            </div>
+            <div class="filters__group_tags">
+              <template is="dom-repeat" items="[[ tags ]]">
+                <span
+                  class$="filters__group_tags--tag button [[ getTagClass(selectedTags, item) ]]"
+                  on-click="toggleTag"
+                  >[[ item.tag ]]</span
+                >
+              </template>
+            </div>
+          </div>
+        </div>
+        <div class="connectors">
+          <template
+            is="dom-repeat"
+            items="[[ connectorList ]]"
+            filter="[[ filterConnectors(connectorPattern, selectedTags) ]]"
+          >
+            <div
+              class$="card [[ getConnectorClass(selectedConnector, item) ]]"
+              title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]"
+              on-click="selectConnector"
+            >
+              <img
+                class="card__icon"
+                src$="[[ item.icon ]]"
+                onerror="this.src='/img/connectors/default';"
+              />
+              <div class="card__info">
+                <div class="card__info_title">[[ item.label ]]</div>
+                <div class="card__info_tags">
+                  <template is="dom-repeat" items="[[ item.tags ]]">
+                    <div class="card__info_tags--tag">[[ item ]]</div>
+                  </template>
+                </div>
+              </div>
+              <div class="card__actions">
+                <i
+                  class$="card__actions_action mdi mdi-24px mdi-login-variant link [[ getLoginClass(item.links) ]]"
+                  title="Click to open the login page"
+                  on-click="openLogin"
+                ></i>
+                <i
+                  class$="card__actions_action mdi mdi-24px mdi-account-cash link [[ getDonationClass(item.links) ]]"
+                  title="Click to open the donation page"
+                  on-click="openDonation"
+                ></i>
+                <i
+                  class="card__actions_action mdi mdi-24px mdi-application-export link active"
+                  title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha"
+                  on-click="openWebsite"
+                ></i>
+              </div>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="./script.js"></script>
+</dom-module>

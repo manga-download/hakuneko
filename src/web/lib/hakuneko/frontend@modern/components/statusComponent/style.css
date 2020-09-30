@@ -1,0 +1,32 @@
+:host {
+  display: flex;
+  flex-direction: row;
+  height: 2rem;
+  align-items: center;
+  background: var(--base);
+  color: var(--text);
+}
+.status {
+  flex: 0;
+}
+.status__message {
+  flex: 1;
+  margin-left: 0.5rem;
+}
+.status__icon {
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.popup {
+  padding: 0.5em;
+  background-color: #ffffff;
+}
+.show {
+  display: block;
+}
+.hide {
+  display: none;
+}
