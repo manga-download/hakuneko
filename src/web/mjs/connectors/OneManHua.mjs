@@ -7,7 +7,7 @@ export default class OneManHua extends ZYMK {
         super.id = 'onemanhua';
         super.label = 'Oh漫画';
         this.tags = [ 'webtoon', 'chinese' ];
-        this.url = 'https://www.ohmanhua.com';
+        this.url = 'https://www.cocomanhua.com';
 
         this.path = '/show?page=';
         this.pathSuffix = '';
