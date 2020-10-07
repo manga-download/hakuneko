@@ -6,7 +6,7 @@ export default class MangaRawr extends WordPressMadara {
         super();
         super.id = 'mangarawr';
         super.label = 'MangaRawr';
-        this.tags = [ 'english' ];
+        this.tags = [ 'manga', 'english' ];
         this.url = 'https://mangarawr.com';
     }
 }
