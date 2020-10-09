@@ -7,7 +7,7 @@ export default class MangaIndoWeb extends Connector {
         super();
         super.id = 'mangaindoweb';
         super.label = 'MangaIndoWeb';
-        this.tags = [ '!test', 'manga', 'indonesian' ];
+        this.tags = [ 'manga', 'indonesian' ];
         this.url = 'https://mangaindo.web.id';
         this.path = '/manga-list/';
 
