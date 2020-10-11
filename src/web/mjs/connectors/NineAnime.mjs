@@ -135,83 +135,58 @@ export default class NineAnime extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
+    async _getChapters(manga) {
         let script = `
-            new Promise( resolve => {
+            new Promise((resolve, reject)  => {
                 localStorage.setItem('player_autoplay', 0);
-                setTimeout( () => {
-                    let result = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
-                    .map( server => {
-                        return {
-                            name: server.dataset.name,
-                            label: server.innerText.trim(),
-                            episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + server.dataset.name + '"] ul.episodes li a' )]
-                            .map( episode => {
-                                let uri = new URL( episode.href );
-                                return {
-                                    id: uri.pathname + uri.search, // episode.dataset.id,
-                                    title: episode.innerText.trim() + ' [' + server.innerText.trim() + ']',
-                                    language: ''
-                                }
-                            } )
-                        }
-                    } );
-                    resolve( result );
-                }, 1000 );
-            } );
-            `;
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this._checkCaptcha(request)
-            .then(() => Engine.Request.fetchUI( request, script ))
-            .then( data => {
-                let episodeList = data.reduce( ( accumulator, server ) => accumulator.concat( server.episodes ), [] );
-                callback( null, episodeList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-    }
-
-    async _getPages(chapter) {
-        let script = `
-            new Promise((resolve, reject) => {
-                localStorage.setItem('player_autoplay', 0);
-                function hash(text) {
-                    return text.split('').reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) + index, 0);
-                }
-                setTimeout(async () => {
+                setTimeout(() => {
                     try {
-                        let uri = new URL('/ajax/episode/info', window.location.origin);
-                        uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
-                        uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
-                        uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
-                        uri.searchParams.set('ts', $('html').data().ts);
-                        uri.searchParams.set('_', 936); // hash('f2dl6d4e') + 5 * hash('0') => 695 + (5 * 48)
-                        let response = await fetch(uri.href, {
-                            headers: {
-                                // required to prevent IP ban
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
+                        let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
+                            return {
+                                id: element.dataset.id,
+                                label: element.textContent.trim()
+                            };
                         });
-                        let data = await response.json();
-                        resolve(data.target);
+                        let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
+                            return {
+                                servers: JSON.parse(element.dataset.sources),
+                                label: element.textContent.trim()
+                            };
+                        });
+                        let result = servers.reduce((accumulator, server) => {
+                            return accumulator.concat(episodes.map(episode => {
+                                return {
+                                    id: episode.servers[server.id],
+                                    title: episode.label + ' [' + server.label + ']'
+                                };
+                            }));
+                        }, []);
+                        resolve(result);
                     } catch(error) {
                         reject(error);
                     }
                 }, 2500);
             });
         `;
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let request = new Request(this.url + manga.id, this.requestOptions);
         await this._checkCaptcha(request);
-        let data = await Engine.Request.fetchUI(request, script, 15000);
+        return Engine.Request.fetchUI(request, script);
+    }
+
+    async _getPages(chapter) {
+
+        const referer = this.url + chapter.manga.id;
+        let uri = new URL('/ajax/anime/episode?id=' + chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        const key = CryptoJS.enc.Utf8.parse(data.url.slice(0, 9));
+        const encrypted = CryptoJS.enc.Base64.parse(data.url.slice(9));
+        data = CryptoJS.RC4.decrypt({ ciphertext: encrypted }, key).toString(CryptoJS.enc.Utf8);
         await this.wait(500);
+
         switch(true) {
             case data.includes('prettyfast'):
-                return this._getEpisodePrettyFast(data, request.url, this.config.resolution.value);
+                return this._getEpisodePrettyFast(data, referer, this.config.resolution.value);
             case data.includes('hydrax'):
                 return this._getEpisodeHydraX(data, this.config.resolution.value);
             case data.includes('rapidvid'):
@@ -219,7 +194,7 @@ export default class NineAnime extends Connector {
             case data.includes('openload'):
                 return this._getEpisodeOpenLoad(data, this.config.resolution.value);
             case data.includes('mcloud'):
-                return this._getEpisodeMyCloud(data, request.url, this.config.resolution.value);
+                return this._getEpisodeMyCloud(data, referer, this.config.resolution.value);
             case data.includes('mp4upload'):
                 return this._getEpisodeMp4upload(data, this.config.resolution.value);
             case data.includes('streamango'):
