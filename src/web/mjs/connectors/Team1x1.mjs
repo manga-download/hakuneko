@@ -13,7 +13,7 @@ export default class Team1x1 extends Connector {
     async _getMangaListFromPages( mangaPageLinks, index ) {
         index = index || 0;
         let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        let data = await this.fetchDOM( request, 'div#page-manga div.container div.last-post-manga div.thumb div.info h3 a', 5 )
+        let data = await this.fetchDOM( request, 'div#page-manga div.container div.last-post-manga div.thumb div.info h3 a', 5 );
         let mangaList = data.map( element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
