@@ -84,7 +84,7 @@ export default class NineAnime extends Connector {
         let data = await response.text();
         let dom = this.createDOM(data);
         let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
-        let metaTitle = dom.querySelector('div.head h2[data-jtitle].title'); // 'meta[property="og:title"]'
+        let metaTitle = dom.querySelector('div.info h1[data-jtitle].title');
         let id = this.getRootRelativeOrAbsoluteLink(metaURL, this.url);
         let title = metaTitle.dataset.jtitle.trim();
         return new Manga(this, id, title);
