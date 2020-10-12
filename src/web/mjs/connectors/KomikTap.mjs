@@ -16,13 +16,13 @@ export default class KomikTap extends WordPressMangastream {
 
     }
 
-    // NOTE: This web use costum lazyload methid
+    // NOTE: This web use costum lazyload method
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let nodelist = await this.fetchDOM(request, this.queryPages);
-        // NOTE: faster then find method
-        let data = JSON.parse(nodelist[nodelist.length-2].innerText.slice(14,-2))['sources'][0]['images'];
-        return data;
+        // NOTE: https://regex101.com/r/Iae1SC/1
+        let data = await this.fetchRegex(request, /(?<=ts_reader\.run\()(.*?)(?=\);<\/script>)/gi);
+        let result = JSON.parse(data)['sources'][0]['images'];
+        return result;
     }
 }

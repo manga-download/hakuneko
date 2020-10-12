@@ -18,42 +18,41 @@ export default class MangaIndoWeb extends Connector {
     }
 
     async _getMangas(){
-        const URI = new URL(this.path, this.url);
-        const request = new Request(URI, this.requestOptions);
+        const uri = new URL(this.path, this.url);
+        const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
 
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
+                id: this.getRootRelativeOrAbsoluteLink( element, this.url ),
                 title: element.text.trim()
             };
         });
     }
 
     async _getChapters(manga){
-        const URI = new URL(manga.id, this.url);
-        const request = new Request( URI, this.requestOptions );
+        const uri = new URL(manga.id, this.url);
+        const request = new Request( uri, this.requestOptions );
         let data = await this.fetchDOM(request, this.queryChapters);
 
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.replace( manga.title, '' ).replace( '–', '' ).trim()
             };
         });
     }
 
     async _getPages(chapter){
-        const URI = new URL(chapter.id, this.url);
-        const request = new Request(URI, this.requestOptions);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
 
         return data.map(element => this.getAbsolutePath( element, request.url ));
     }
 
     async _getMangaFromURI(uri){
-        const URI = new URL(uri);
-        const request = new Request(URI, this.requestOptions);
+        const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.querMangaTitleFromURI);
         const title = data[0].textContent.trim();
 
