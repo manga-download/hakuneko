@@ -54,8 +54,7 @@ export default class Team1x1 extends Connector {
         let script = `
         new Promise(resolve => {
             var interval = setInterval(function() {
-                if (typeof PushManga !== "undefined") {
-                    clearInterval(interval);
+                if (PushManga) {
                     resolve( PushManga.pages.original.map( p => p.page + '?token=' + p.token ) );
                 }
             }, 200);
