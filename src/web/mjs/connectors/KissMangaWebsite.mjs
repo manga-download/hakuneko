@@ -23,4 +23,9 @@ export default class KissMangaWebsite extends MangaNel {
         let data = await this.fetchDOM(request, 'div#vungdoc p#arraydata');
         return data[0].textContent.split(',').map(link => this.getAbsolutePath(link.trim(), request.url));
     }
+
+    canHandleURI(uri) {
+        // Test: https://regex101.com/r/aPR3zy/3/tests
+        return /^(m\.|chap\.)?kissmanga\.website$/.test(uri.hostname);
+    }
 }
