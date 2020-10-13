@@ -3,6 +3,7 @@ import Manga from '../engine/Manga.mjs';
 import PrettyFast from '../videostreams/PrettyFast.mjs';
 import Streamtape from '../videostreams/Streamtape.mjs';
 import MyCloud from '../videostreams/MyCloud.mjs';
+import Vidstream from '../videostreams/Vidstream.mjs';
 import HydraX from '../videostreams/HydraX.mjs';
 
 export default class NineAnime extends Connector {
@@ -174,6 +175,8 @@ export default class NineAnime extends Connector {
                 return this._getEpisodeOpenLoad(data, this.config.resolution.value);
             case data.includes('mcloud'):
                 return this._getEpisodeMyCloud(data, referer, this.config.resolution.value);
+            case data.includes('vidstream'):
+                return this._getEpisodeVidstream(data, referer, this.config.resolution.value);
             case data.includes('mp4upload'):
                 return this._getEpisodeMp4upload(data, this.config.resolution.value);
             case data.includes('streamango'):
@@ -241,6 +244,16 @@ export default class NineAnime extends Connector {
     async _getEpisodeMyCloud(link, referer, resolution) {
         let mycloud = new MyCloud(link, referer, this.fetchRegex.bind(this));
         let playlist = await mycloud.getPlaylist(parseInt(resolution));
+        return {
+            hash: 'id,language,resolution',
+            mirrors: [ playlist ],
+            subtitles: []
+        };
+    }
+
+    async _getEpisodeVidstream(link, referer, resolution) {
+        let vidstream = new Vidstream(link, referer, this.fetchRegex.bind(this));
+        let playlist = await vidstream.getPlaylist(parseInt(resolution));
         return {
             hash: 'id,language,resolution',
             mirrors: [ playlist ],
