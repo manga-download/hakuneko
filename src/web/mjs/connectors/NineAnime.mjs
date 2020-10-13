@@ -90,49 +90,28 @@ export default class NineAnime extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this._checkCaptcha(request)
-            .then(() => this.fetchDOM( request, 'div.film-list div.item div.inner a.name', 5 ))
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/filter?page=', this.requestOptions );
-        this._checkCaptcha(request)
-            .then(() => this.fetchDOM( request, 'div.paging-wrapper form span.total' ))
-            .then( data => {
-                let pageCount = parseInt( data[0].textContent.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        const uri = new URL('/filter', this.url);
+        uri.searchParams.set('keyword', '');
+        uri.searchParams.set('sort', 'default');
+        uri.searchParams.set('page', page);
+        const request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.anime-list li a.name');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
     async _getChapters(manga) {
