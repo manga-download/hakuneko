@@ -251,7 +251,7 @@ export default class NineAnime extends Connector {
     async _getEpisodeMp4upload(link/*, resolution*/) {
         let script = `
             new Promise(resolve => {
-                resolve(document.querySelector('div.plyr video source').src);
+                resolve(document.querySelector('div#player video').src);
             });
         `;
         let request = new Request(link, this.requestOptions);
@@ -267,10 +267,10 @@ export default class NineAnime extends Connector {
      */
     _getEpisodeStreamango( link/*, resolution*/ ) {
         let script = `
-                new Promise( resolve => {
-                    resolve( document.querySelector('video[id^="mgvideo"]').src );
-                } );
-            `;
+            new Promise(resolve => {
+                resolve(document.querySelector('video[id^="mgvideo"]').src);
+            });
+        `;
         let request = new Request( link, this.requestOptions );
         return Engine.Request.fetchUI( request, script )
             .then( stream => {
