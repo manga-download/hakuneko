@@ -35,4 +35,15 @@ export default class KomikIndoWeb extends WordPressMangastream {
             };
         });
     }
+
+    async _getPages(chapter) {
+        let script = `
+            new Promise(resolve => {
+                resolve(ts_reader.params.sources.pop().images);
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return await Engine.Request.fetchUI(request, script);
+    }
 }
