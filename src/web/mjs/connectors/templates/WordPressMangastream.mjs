@@ -50,6 +50,20 @@ export default class WordPressMangastream extends Connector {
             .filter(link => !link.includes('histats.com'));
     }
 
+    // TODO: many websites are switching to ts_reader, maybe detect thios and add support directly in MangaStream template...
+    /*
+    async _getPages(chapter) {
+        let script = `
+            new Promise(resolve => {
+                resolve(ts_reader.params.sources.pop().images);
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return await Engine.Request.fetchUI(request, script);
+    }
+    */
+
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.querMangaTitleFromURI);
