@@ -61,6 +61,7 @@ class HakunekoPages extends Polymer.Element {
             this.onVideoResized.bind(this)
         );
         this.autoNextChapter = false;
+        this.orientation = 'vertical'
     }
     /**
      *
@@ -407,7 +408,7 @@ class HakunekoPages extends Polymer.Element {
         //setTimeout( function() {
         // adjust new offsetY depending on height changed ratio of container after scaling images
         this.$.container.scrollTop =
-            previousOffset * this.$.container.scrollHeight / previousHeight;
+            (previousOffset * this.$.container.scrollHeight) / previousHeight;
         //}.bind( this ), 0 );
     }
 
