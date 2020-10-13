@@ -1,13 +1,13 @@
 import ZYMK from './templates/ZYMK.mjs';
 
-export default class OneManHua extends ZYMK {
+export default class CocoManHua extends ZYMK {
 
     constructor() {
         super();
-        super.id = 'onemanhua';
-        super.label = 'Oh漫画';
+        super.id = 'cocomanhua';
+        super.label = 'Coco漫画';
         this.tags = [ 'webtoon', 'chinese' ];
-        this.url = 'https://www.ohmanhua.com';
+        this.url = 'https://www.cocomanhua.com';
 
         this.path = '/show?page=';
         this.pathSuffix = '';
