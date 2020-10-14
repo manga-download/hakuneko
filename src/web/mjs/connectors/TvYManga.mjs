@@ -33,7 +33,6 @@ export default class TvYManga extends Connector {
     async _getChapters(manga) {
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'main#main div.entry-content ul.lcp_catlist li a');
-
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
