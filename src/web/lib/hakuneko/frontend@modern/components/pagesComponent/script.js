@@ -301,9 +301,7 @@ class HakunekoPages extends Polymer.Element {
      *
      */
     onVideoElementChanged(event) {
-
         this.resetSubtitles(true);
-
         let element = this.shadowRoot.querySelector("#video");
         //console.log( 'VIDEO', element, element.querySelector( 'input::-webkit-media-controls-toggle-closed-captions-button' ) );
         if (element) {
@@ -322,7 +320,6 @@ class HakunekoPages extends Polymer.Element {
             if (this.media && this.media.video) {
                 element.src = this.media.video;
             }
-
             this.videoResizeObserver.observe(element);
         }
     }
