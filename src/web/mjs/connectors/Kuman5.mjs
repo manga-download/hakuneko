@@ -5,9 +5,9 @@ export default class Kuman5 extends Connector {
     constructor() {
         super();
         super.id = 'kuman5';
-        super.label = '酷漫屋 (Kuman5)';
+        super.label = '酷漫屋 (Kuman55)';
         this.tags = [ 'manga', 'chinese' ];
-        this.url = 'http://www.kuman5.com';
+        this.url = 'http://www.kuman55.com';
     }
 
     async _getMangaFromURI(uri) {
