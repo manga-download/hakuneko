@@ -93,6 +93,14 @@
   margin-right: auto !important;
 }
 
+.image:first-child {
+  margin-top: 0 !important;
+}
+
+.image:last-child {
+  margin-bottom: 0 !important;
+}
+
 .actions {
   position: fixed;
   top: 0;

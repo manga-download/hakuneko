@@ -99,6 +99,7 @@
   flex-direction: column;
   justify-content: flex-start;
   align-items: flex-start;
+  overflow-wrap: break-word;
 }
 
 .list__item {

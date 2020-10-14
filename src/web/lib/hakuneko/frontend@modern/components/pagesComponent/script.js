@@ -61,6 +61,7 @@ class HakunekoPages extends Polymer.Element {
             this.onVideoResized.bind(this)
         );
         this.autoNextChapter = false;
+        this.orientation = 'vertical'
     }
     /**
      *
@@ -300,7 +301,9 @@ class HakunekoPages extends Polymer.Element {
      *
      */
     onVideoElementChanged(event) {
+
         this.resetSubtitles(true);
+
         let element = this.shadowRoot.querySelector("#video");
         //console.log( 'VIDEO', element, element.querySelector( 'input::-webkit-media-controls-toggle-closed-captions-button' ) );
         if (element) {
@@ -319,6 +322,7 @@ class HakunekoPages extends Polymer.Element {
             if (this.media && this.media.video) {
                 element.src = this.media.video;
             }
+
             this.videoResizeObserver.observe(element);
         }
     }
@@ -407,7 +411,7 @@ class HakunekoPages extends Polymer.Element {
         //setTimeout( function() {
         // adjust new offsetY depending on height changed ratio of container after scaling images
         this.$.container.scrollTop =
-            previousOffset * this.$.container.scrollHeight / previousHeight;
+            (previousOffset * this.$.container.scrollHeight) / previousHeight;
         //}.bind( this ), 0 );
     }
 
