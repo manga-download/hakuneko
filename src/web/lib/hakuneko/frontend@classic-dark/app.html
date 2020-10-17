@@ -21,7 +21,7 @@
             }
             .control {
                 flex-direction: column;
-                width: 100%;
+                width: calc(100% - 1px);
                 height: 100%;
                 flex: 1;
                 border-right: var(--app-control-border);
@@ -57,6 +57,12 @@
             hakuneko-menu {
                 flex: 0;
                 -webkit-app-region: drag;
+            }
+            hakuneko-mangas {
+                box-sizing: border-box;
+            }
+            hakuneko-chapters {
+                box-sizing: border-box;
             }
             hakuneko-jobs {
                 flex: 0;
