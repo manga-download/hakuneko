@@ -7,7 +7,7 @@ export default class MangaKu extends Connector {
         super.id = 'mangaku';
         super.label = 'MangaKu';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://mangaku.in';
+        this.url = 'https://mangaku.pro';
     }
 
     async _getMangas() {
