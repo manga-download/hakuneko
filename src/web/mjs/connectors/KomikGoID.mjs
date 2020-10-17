@@ -11,5 +11,6 @@ export default class KomikGoID extends WordPressMangastream {
         this.path = '/manga/?list';
 
         this.queryChapters = 'div.bixbox.bxcl ul li span.lchx a';
+        this.queryChaptersTitle = undefined;
     }
 }

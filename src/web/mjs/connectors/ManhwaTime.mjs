@@ -12,6 +12,8 @@ export default class ManhwaTime extends WordPressMangastream {
 
         this.queryMangas = 'div.animepost div.animposx > a';
         this.queryChapters = 'div#chapter_list span.lchx a';
+        this.queryChaptersTitle = undefined;
+        this.queryPages = 'div.reader-area img[src]:not([src=""])';
     }
 
     async _getMangas() {
@@ -22,7 +24,7 @@ export default class ManhwaTime extends WordPressMangastream {
 
     async _getChapters(manga) {
         const chapters = await super._getChapters(manga);
-        chapters.forEach(chapter => chapter.title = chapter.title.replace(manga.title, '').replace(/^Manhwa/i, '').trim());
+        chapters.forEach(chapter => chapter.title = chapter.title.replace(/^Manhwa/i, '').trim());
         return chapters;
     }
 }

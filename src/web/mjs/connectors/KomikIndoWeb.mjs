@@ -11,8 +11,6 @@ export default class KomikIndoWeb extends WordPressMangastream {
         this.path = '/manga/?page=';
 
         this.queryMangas = 'div.listupd div.bsx a';
-        this.queryChapters = 'div#chapterlist ul li div.eph-num a';
-        this.queryChaptersTitle = 'span.chapternum';
     }
 
     async _getMangas() {
@@ -34,16 +32,5 @@ export default class KomikIndoWeb extends WordPressMangastream {
                 title: element.title.trim()
             };
         });
-    }
-
-    async _getPages(chapter) {
-        let script = `
-            new Promise(resolve => {
-                resolve(ts_reader.params.sources.pop().images);
-            });
-        `;
-        const uri = new URL(chapter.id, this.url);
-        const request = new Request(uri, this.requestOptions);
-        return await Engine.Request.fetchUI(request, script);
     }
 }

@@ -9,11 +9,12 @@ export default class Komiku extends WordPressMangastream {
         super.label = 'Komiku';
         this.tags = ['manga', 'indonesian'];
         this.url = 'https://komiku.co.id';
-        this.path = '/daftar-komik/?list';
+        this.path = '/daftar-komik/';
 
         this.queryMangas = 'div#a-z ol li.ranking1 h4';
         this.queryChapters = 'table.chapter tbody tr td.judulseries a';
-        this.queryPages = 'div#Baca_Komik source[src]:not([src=""])';
+        this.queryChaptersTitle = undefined;
+        this.queryPages = 'div#Baca_Komik img[src]:not([src=""])';
     }
 
     async _getMangas() {
@@ -25,5 +26,10 @@ export default class Komiku extends WordPressMangastream {
                 title: element.textContent.trim()
             };
         });
+    }
+
+    async _getPages(chapter) {
+        let pageList = await super._getPages(chapter);
+        return pageList.filter(link => !link.endsWith('New-Project-2.jpg'));
     }
 }
