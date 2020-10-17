@@ -63,7 +63,7 @@ export default class ChaptermarkManager extends EventTarget {
     isChapterMarked( chapter, mark ) {
         return mark
             && chapter
-            && (mark.chapterID === this._getChapterIdentifier(chapter) || mark.chapterID === chapter.file.full)
+            && (mark.chapterID === this._getChapterIdentifier(chapter) || mark.chapterID === chapter.file.full || mark.chapterTitle === chapter.title)
             && mark.mangaID === chapter.manga.id
             && mark.connectorID === chapter.manga.connector.id;
     }
