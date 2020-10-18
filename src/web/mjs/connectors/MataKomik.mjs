@@ -11,5 +11,6 @@ export default class MataKomik extends WordPressMangastream {
         this.path = '/manga/?list';
 
         this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.queryChaptersTitle = undefined;
     }
 }

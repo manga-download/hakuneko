@@ -11,7 +11,8 @@ export default class MangaShiro extends WordPressMangastream {
         this.path = '/manga/?list';
 
         this.queryChapters = 'div.bxcl ul li span.lchx a';
-        this.queryPages = 'div#readerarea > :not(.kln) source[src]:not([src=""])';
+        this.queryChaptersTitle = undefined;
+        this.queryPages = 'div#readerarea > :not(.kln) img[src]:not([src=""])';
     }
 
     async _getPages(chapter) {

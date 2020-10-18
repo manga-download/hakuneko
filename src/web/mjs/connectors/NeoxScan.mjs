@@ -7,6 +7,6 @@ export default class NeoxScan extends WordPressMadara {
         super.id = 'neoxscan';
         super.label = 'Neox Scanlator';
         this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
-        this.url = 'https://neoxscans.com';
+        this.url = 'https://neoxscan.net';
     }
 }
