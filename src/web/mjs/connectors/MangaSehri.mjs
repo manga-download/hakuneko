@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class mangasehri extends WordPressMadara {
+export default class MangaSehri extends WordPressMadara {
 
     constructor() {
         super();
