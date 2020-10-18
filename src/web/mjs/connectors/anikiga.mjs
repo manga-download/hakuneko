@@ -7,6 +7,6 @@ export default class Anikiga extends WordPressMadara {
         super.id = 'anikiga';
         super.label = 'Anikiga';
         this.tags = [ 'manga', 'turkish' ];
-        this.url = 'http://anikiga.com/';
+        this.url = 'http://anikiga.com';
     }
 }
