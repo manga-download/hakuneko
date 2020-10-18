@@ -6,7 +6,7 @@ export default class MundoWuxia extends WordPressMadara {
         super();
         super.id = 'mundowuxia';
         super.label = 'Mundo Wuxia';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://mundowuxia.com';
     }
 }
