@@ -419,7 +419,6 @@ export default class Connector {
         if( clearIframettributes ) {
             content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
         }
-        content = content.replace(/<\/?noscript>/g, '');
         let dom = document.createElement( 'html' );
         dom.innerHTML = content;
         return dom;
