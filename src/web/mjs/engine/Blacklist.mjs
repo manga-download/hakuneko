@@ -99,6 +99,7 @@ export default class Blacklist {
             '*://*.revcontent.com/*',
             '*://*.revrtb.net/*',
             '*://*.runative-syndicate.com/*',
+            '*://*.runnersgunpowder.com/*',
             '*://*.sascdn.com/*',
             '*://*.scorecardresearch.com/*',
             '*://*.sharethis.com/*',

@@ -3,6 +3,7 @@ import Manga from '../engine/Manga.mjs';
 import PrettyFast from '../videostreams/PrettyFast.mjs';
 import Streamtape from '../videostreams/Streamtape.mjs';
 import MyCloud from '../videostreams/MyCloud.mjs';
+import Vidstream from '../videostreams/Vidstream.mjs';
 import HydraX from '../videostreams/HydraX.mjs';
 
 export default class NineAnime extends Connector {
@@ -84,134 +85,88 @@ export default class NineAnime extends Connector {
         let data = await response.text();
         let dom = this.createDOM(data);
         let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
-        let metaTitle = dom.querySelector('div.head h2[data-jtitle].title'); // 'meta[property="og:title"]'
+        let metaTitle = dom.querySelector('div.info h1[data-jtitle].title');
         let id = this.getRootRelativeOrAbsoluteLink(metaURL, this.url);
         let title = metaTitle.dataset.jtitle.trim();
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this._checkCaptcha(request)
-            .then(() => this.fetchDOM( request, 'div.film-list div.item div.inner a.name', 5 ))
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/filter?page=', this.requestOptions );
-        this._checkCaptcha(request)
-            .then(() => this.fetchDOM( request, 'div.paging-wrapper form span.total' ))
-            .then( data => {
-                let pageCount = parseInt( data[0].textContent.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        const uri = new URL('/filter', this.url);
+        uri.searchParams.set('keyword', '');
+        uri.searchParams.set('sort', 'default');
+        uri.searchParams.set('page', page);
+        const request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'ul.anime-list li a.name');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
+    async _getChapters(manga) {
         let script = `
-            new Promise( resolve => {
+            new Promise((resolve, reject)  => {
                 localStorage.setItem('player_autoplay', 0);
-                setTimeout( () => {
-                    let result = [...document.querySelectorAll( 'div#servers-container div.servers span.tabs span.tab' )]
-                    .map( server => {
-                        return {
-                            name: server.dataset.name,
-                            label: server.innerText.trim(),
-                            episodes: [...document.querySelectorAll( 'div#servers-container div.servers div.server[data-name="' + server.dataset.name + '"] ul.episodes li a' )]
-                            .map( episode => {
-                                let uri = new URL( episode.href );
-                                return {
-                                    id: uri.pathname + uri.search, // episode.dataset.id,
-                                    title: episode.innerText.trim() + ' [' + server.innerText.trim() + ']',
-                                    language: ''
-                                }
-                            } )
-                        }
-                    } );
-                    resolve( result );
-                }, 1000 );
-            } );
-            `;
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this._checkCaptcha(request)
-            .then(() => Engine.Request.fetchUI( request, script ))
-            .then( data => {
-                let episodeList = data.reduce( ( accumulator, server ) => accumulator.concat( server.episodes ), [] );
-                callback( null, episodeList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-    }
-
-    async _getPages(chapter) {
-        let script = `
-            new Promise((resolve, reject) => {
-                localStorage.setItem('player_autoplay', 0);
-                function hash(text) {
-                    return text.split('').reduce((accumulator, char, index) => accumulator + char.charCodeAt(0) + index, 0);
-                }
-                setTimeout(async () => {
+                setTimeout(() => {
                     try {
-                        let uri = new URL('/ajax/episode/info', window.location.origin);
-                        uri.searchParams.set('id', $('div.server ul.episodes li a.active').data().id);
-                        uri.searchParams.set('server', $('div.server:not(.hidden)').data().id);
-                        uri.searchParams.set('mcloud', window.mcloudKey); // From: https://mcloud.to/key
-                        uri.searchParams.set('ts', $('html').data().ts);
-                        uri.searchParams.set('_', 936); // hash('f2dl6d4e') + 5 * hash('0') => 695 + (5 * 48)
-                        let response = await fetch(uri.href, {
-                            headers: {
-                                // required to prevent IP ban
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
+                        let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
+                            return {
+                                id: element.dataset.id,
+                                label: element.textContent.trim()
+                            };
                         });
-                        let data = await response.json();
-                        resolve(data.target);
+                        let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
+                            return {
+                                servers: JSON.parse(element.dataset.sources),
+                                label: element.textContent.trim()
+                            };
+                        });
+                        let result = servers.reduce((accumulator, server) => {
+                            return accumulator.concat(episodes.map(episode => {
+                                return {
+                                    id: episode.servers[server.id],
+                                    title: episode.label + ' [' + server.label + ']'
+                                };
+                            }));
+                        }, []);
+                        resolve(result);
                     } catch(error) {
                         reject(error);
                     }
                 }, 2500);
             });
         `;
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let request = new Request(this.url + manga.id, this.requestOptions);
         await this._checkCaptcha(request);
-        let data = await Engine.Request.fetchUI(request, script, 15000);
+        return Engine.Request.fetchUI(request, script);
+    }
+
+    async _getPages(chapter) {
+
+        const referer = this.url + chapter.manga.id;
+        let uri = new URL('/ajax/anime/episode?id=' + chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        const key = CryptoJS.enc.Utf8.parse(data.url.slice(0, 9));
+        const encrypted = CryptoJS.enc.Base64.parse(data.url.slice(9));
+        data = CryptoJS.RC4.decrypt({ ciphertext: encrypted }, key).toString(CryptoJS.enc.Utf8);
         await this.wait(500);
+
         switch(true) {
             case data.includes('prettyfast'):
-                return this._getEpisodePrettyFast(data, request.url, this.config.resolution.value);
+                return this._getEpisodePrettyFast(data, referer, this.config.resolution.value);
             case data.includes('hydrax'):
                 return this._getEpisodeHydraX(data, this.config.resolution.value);
             case data.includes('rapidvid'):
@@ -219,7 +174,9 @@ export default class NineAnime extends Connector {
             case data.includes('openload'):
                 return this._getEpisodeOpenLoad(data, this.config.resolution.value);
             case data.includes('mcloud'):
-                return this._getEpisodeMyCloud(data, request.url, this.config.resolution.value);
+                return this._getEpisodeMyCloud(data, referer, this.config.resolution.value);
+            case data.includes('vidstream'):
+                return this._getEpisodeVidstream(data, referer, this.config.resolution.value);
             case data.includes('mp4upload'):
                 return this._getEpisodeMp4upload(data, this.config.resolution.value);
             case data.includes('streamango'):
@@ -294,10 +251,20 @@ export default class NineAnime extends Connector {
         };
     }
 
+    async _getEpisodeVidstream(link, referer, resolution) {
+        let vidstream = new Vidstream(link, referer, this.fetchRegex.bind(this));
+        let playlist = await vidstream.getPlaylist(parseInt(resolution));
+        return {
+            hash: 'id,language,resolution',
+            mirrors: [ playlist ],
+            subtitles: []
+        };
+    }
+
     async _getEpisodeMp4upload(link/*, resolution*/) {
         let script = `
             new Promise(resolve => {
-                resolve(document.querySelector('div.plyr video source').src);
+                resolve(document.querySelector('div#player video').src);
             });
         `;
         let request = new Request(link, this.requestOptions);
@@ -313,10 +280,10 @@ export default class NineAnime extends Connector {
      */
     _getEpisodeStreamango( link/*, resolution*/ ) {
         let script = `
-                new Promise( resolve => {
-                    resolve( document.querySelector('video[id^="mgvideo"]').src );
-                } );
-            `;
+            new Promise(resolve => {
+                resolve(document.querySelector('video[id^="mgvideo"]').src);
+            });
+        `;
         let request = new Request( link, this.requestOptions );
         return Engine.Request.fetchUI( request, script )
             .then( stream => {
