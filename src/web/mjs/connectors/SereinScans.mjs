@@ -6,7 +6,7 @@ export default class SereinScans extends WordPressMadara {
         super();
         super.id = 'sereinscans';
         super.label = 'Serein Scans';
-        this.tags = [ 'webtoon', 'Turkish' ];
+        this.tags = [ 'webtoon', 'turkish' ];
         this.url = 'https://sereinscans.com';
     }
 }
