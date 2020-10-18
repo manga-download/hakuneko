@@ -6,7 +6,7 @@ export default class CutiePie extends WordPressMadara {
         super();
         super.id = 'cutiepie';
         super.label = 'Cutie Pie';
-        this.tags = [ 'webtoon', 'Turkish' ];
-        this.url = 'https://cutiepie.ga/';
+        this.tags = [ 'webtoon', 'turkish' ];
+        this.url = 'https://cutiepie.ga';
     }
 }
