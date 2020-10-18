@@ -12,5 +12,6 @@ export default class KomikStation extends WordPressMangastream {
 
         this.queryMangas = 'div#content div.soralist ul li a.series';
         this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.queryChaptersTitle = undefined;
     }
 }

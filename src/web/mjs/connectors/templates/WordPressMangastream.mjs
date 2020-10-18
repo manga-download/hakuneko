@@ -13,9 +13,9 @@ export default class WordPressMangastream extends Connector {
         this.path = '/list/';
 
         this.queryMangas = 'div#content div.soralist ul li a.series';
-        this.queryChapters = 'div.cl ul li span.leftoff a';
-        this.queryChaptersTitle = undefined;
-        this.queryPages = 'div#readerarea source[src]:not([src=""])';
+        this.queryChapters = 'div#chapterlist ul li div.eph-num a';
+        this.queryChaptersTitle = 'span.chapternum';
+        this.queryPages = 'div#readerarea img[src]:not([src=""])';
         this.querMangaTitleFromURI = 'div#content div.postbody article h1';
     }
 
@@ -44,10 +44,26 @@ export default class WordPressMangastream extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element.dataset['src'] || element, request.url))
-            .filter(link => !link.includes('histats.com'));
+        const script = `
+            new Promise((resolve, reject) => {
+                if(window.ts_reader) {
+                    resolve(ts_reader.params.sources.pop().images);
+                } else {
+                    setTimeout(() => {
+                        try {
+                            const images = [...document.querySelectorAll('${this.queryPages}')];
+                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.src));
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, 500);
+                }
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await Engine.Request.fetchUI(request, script);
+        return data.map(link => this.getAbsolutePath(link, request.url)).filter(link => !link.includes('histats.com'));
     }
 
     async _getMangaFromURI(uri) {

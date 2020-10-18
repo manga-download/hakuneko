@@ -8,8 +8,6 @@ export default class Rawkuma extends WordPressMangastream {
         super.label = 'Rawkuma';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://rawkuma.com';
-
-        this.path = '/manga/?list';
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.path = '/manga/list-mode/';
     }
 }

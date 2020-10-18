@@ -14,6 +14,6 @@ export default class MaID extends WordPressMangastream {
         this.queryMangas = 'div.mangalist-blc ul li.Manga a.series';
         this.queryChapters = 'div.series-chapter ul.series-chapterlist li div.flexch-infoz a';
         this.queryChaptersTitle = 'span.ch';
-        this.queryPages = 'div.reader-area source[src]:not([src=""])';
+        this.queryPages = 'div.reader-area img[src]:not([src=""])';
     }
 }

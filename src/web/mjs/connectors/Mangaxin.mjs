@@ -1,13 +1,7 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-/**
- *
- */
 export default class MangaXin extends WordPressMangastream {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangaceng';
@@ -18,5 +12,6 @@ export default class MangaXin extends WordPressMangastream {
 
         this.queryMangas = 'div.listpst div.listttl > ul li a';
         this.queryChapters = 'div.epsleft a';
+        this.queryChaptersTitle = undefined;
     }
 }

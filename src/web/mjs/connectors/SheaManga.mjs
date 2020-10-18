@@ -9,8 +9,5 @@ export default class SheaManga extends WordPressMangastream {
         this.tags = [ 'webtoon', 'indonesian' ];
         this.url = 'https://sheamanga.my.id';
         this.path = '/manga/list-mode/';
-
-        this.queryChapters = 'div#chapterlist ul li div.eph-num a';
-        this.queryChaptersTitle = 'span.chapternum';
     }
 }

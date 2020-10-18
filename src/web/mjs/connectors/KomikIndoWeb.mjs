@@ -11,8 +11,6 @@ export default class KomikIndoWeb extends WordPressMangastream {
         this.path = '/manga/?page=';
 
         this.queryMangas = 'div.listupd div.bsx a';
-        this.queryChapters = 'div#chapterlist ul li div.eph-num a';
-        this.queryChaptersTitle = 'span.chapternum';
     }
 
     async _getMangas() {
