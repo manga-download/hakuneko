@@ -7,6 +7,6 @@ export default class TopManhuaNet extends WordPressMadara {
         super.id = 'topmanhuanet';
         super.label = 'Top Manhua net';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://topmanhwa.net/';
+        this.url = 'https://topmanhwa.net';
     }
 }
