@@ -7,6 +7,6 @@ export default class LovableSubs extends WordPressMadara {
         super.id = 'lovablesubs';
         super.label = 'lovablesubs';
         this.tags = [ 'manga', 'turkish' ];
-        this.url = 'https://lovablesubs.com/';
+        this.url = 'https://lovablesubs.com';
     }
 }
