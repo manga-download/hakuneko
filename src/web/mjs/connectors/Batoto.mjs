@@ -25,6 +25,6 @@ export default class Batoto extends AnyACG {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchRegex(request, this.queryPages);
         data = Object.values(JSON.parse(data[0]));
-        return data.map(element => this.getAbsolutePath(`https:${element}`, request.url));
+        return data.map(element => new URL(element, request.url).href)
     }
 }
