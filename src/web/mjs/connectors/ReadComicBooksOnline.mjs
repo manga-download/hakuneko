@@ -63,7 +63,7 @@ export default class ReadComicBooksOnline extends Connector {
      */
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchRegex(request, /messages\s*=\s*(\[.*\])\s*;/g);
+        let data = await this.fetchRegex(request, /messages\s*=\s*(\[[^\]]+\])\s*;/g);
         data = Object.values(JSON.parse(data[0]));
         return data.map(element => this.getAbsolutePath(element, request.url));
     }
