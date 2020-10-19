@@ -23,7 +23,7 @@ export default class WeComics extends Connector {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            page < 250 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
