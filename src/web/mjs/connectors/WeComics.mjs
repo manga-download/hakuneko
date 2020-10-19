@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class WeComics extends Connector {
 
@@ -8,6 +9,14 @@ export default class WeComics extends Connector {
         super.label = 'WeComics';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://m.wecomics.com';
+    }
+
+    async _getMangaFromURI(uri) {
+        const id = uri.searchParams.get('id');
+        const request = new Request(new URL('/h5/comic/detail/id/' + id, this.url), this.requestOptions);
+        const data = await this.fetchJSON(request);
+        const title = data.data.comic.title;
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
