@@ -58,7 +58,11 @@ export default class WeComics extends Connector {
         let uri = new URL(`/h5/comic/getPictureList/id/${chapter.manga.id}/cid/${chapter.id}`, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return WeComics_Vendor.getPictureList(data.data.chapter.data);
+        if(data.error_code === 2) {
+            return WeComics_Vendor.getPictureList(data.data.chapter.data);
+        } else {
+            throw new Error(`Failed to get chapter images (Error: ${data.error_code} - ${data.msg})!`);
+        }
     }
 }
 
