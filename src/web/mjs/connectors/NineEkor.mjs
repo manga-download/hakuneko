@@ -14,7 +14,7 @@ export default class NineEkor extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'main.site-main header.page-header h1.entry-title');
-        let id = uri;
+        let id = uri.pathname;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -45,7 +45,6 @@ export default class NineEkor extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'main.site-main div.page-content p source');
-        console.log(data)
         return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
