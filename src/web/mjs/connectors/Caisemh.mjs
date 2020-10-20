@@ -1,8 +1,7 @@
-import UserAgent from '../engine/UserAgent.mjs';
 import MH from './templates/MH.mjs';
 
 export default class Caisemh extends MH {
-    
+
     constructor() {
         super();
         super.id = 'caisemh';

@@ -1,8 +1,7 @@
 import MH from './templates/MH.mjs';
-import Manga from '../engine/Manga.mjs';
 
 export default class mkzhan extends MH {
-    
+
     constructor() {
         super();
         super.id = 'mkzhan';
@@ -16,8 +15,8 @@ export default class mkzhan extends MH {
         this.queryChapter = 'a.j-chapter-link';
         this.queryMangaTitle = 'div.de-info__box p.comic-title ';
         this.queryPages = 'div.rd-article-wr div.rd-article__pic source';
-
     }
+
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
@@ -34,7 +33,6 @@ export default class mkzhan extends MH {
             };
         });
     }
-    
     async _getMangas() {
         let mangaList = [];
         let request = new Request(new URL( `${this.path}1`, this.url), this.requestOptions);

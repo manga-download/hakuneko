@@ -1,7 +1,7 @@
 import MH from './templates/MH.mjs';
 
 export default class kuimh extends MH {
-    
+
     constructor() {
         super();
         super.id = 'kuimh';
