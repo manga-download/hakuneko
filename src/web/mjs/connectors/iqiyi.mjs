@@ -19,12 +19,8 @@ export default class iqiyi extends MH {
     }
 
     async _getPages(chapter) {
-        console.log(chapter.id)
-        console.log(this.url)
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        console.log(request)
         let data = await this.fetchDOM(request, this.queryPages);
-        console.log(data)
         return data.map(element => this.getAbsolutePath(element.dataset.original || element, request.url));
     }
 
