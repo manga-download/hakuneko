@@ -22,5 +22,5 @@ export default class MangaZukimobi extends WordPressZbulu {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.container-chap p#arraydata');
         return data[0].textContent.split(',').map(link => this.getAbsolutePath(link.trim(), request.url));
-    }    
+    }
 }
