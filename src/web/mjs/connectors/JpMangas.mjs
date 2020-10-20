@@ -1,11 +1,11 @@
 import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
 
-export default class JpMangas extends MangaReaderCMS {
+export default class Jpmangas extends MangaReaderCMS {
 
     constructor() {
         super();
         super.id = 'jpmangas';
-        super.label = 'JpMangas';
+        super.label = 'Jpmangas';
         this.tags = [ 'manga', 'webtoon', 'french' ];
         this.url = 'https://www.jpmangas.com';
 
