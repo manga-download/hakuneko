@@ -9,6 +9,7 @@ export default class kuman5 extends MH {
         this.url = 'http://www.kuman55.com';
 
         this.queryChapter = 'div#chapterlistload ul#detail-list-select-1 li a';
+        this.path = '/sort/1-%PAGE%.html';
     }
 
     async _getMangas() {
@@ -17,28 +18,17 @@ export default class kuman5 extends MH {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
+        mangaList.forEach(manga => manga.id = `/mulu${manga.id}1-1.html`);
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(`/sort/1-${page}.html`, this.url), this.requestOptions);
+        let request = new Request(new URL(this.path.replace('%PAGE%', page), this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
-            };
-        });
-    }
-
-    async _getChapters(manga) {
-        let request = new Request(new URL(`/mulu${manga.id}1-1.html`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryChapter);
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.childNodes[0].nodeValue.trim(),
-                language: ''
             };
         });
     }

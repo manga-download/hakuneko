@@ -9,7 +9,7 @@ export default class mkzhan extends MH {
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://www.mkzhan.com/';
 
-        this.path = '/category/?page=';
+        this.path = '/category/?page=%PAGE%';
         this.queryMangasPageCount = 'div#Pagination a:nth-last-child(2)';
         this.queryMangas = 'div.cate-comic-list div.common-comic-item a.cover';
         this.queryChapter = 'a.j-chapter-link';
@@ -32,16 +32,5 @@ export default class mkzhan extends MH {
                 title: element.textContent.trim()
             };
         });
-    }
-    async _getMangas() {
-        let mangaList = [];
-        let request = new Request(new URL( `${this.path}1`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
-        }
-        return mangaList;
     }
 }

@@ -10,7 +10,7 @@ export default class MH extends Connector {
         this.tags = [];
         this.url = undefined;
 
-        this.path = '/booklist?page=';
+        this.path = '/booklist?page=%PAGE%';
         this.pathMatch = /page=(\d+)/;
         this.queryMangasPageCount = 'div.page-pagination div.pagination li:nth-last-child(2) a';
         this.queryMangas = 'ul.mh-list li div.mh-item-detali h2.title a';
@@ -29,7 +29,7 @@ export default class MH extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(new URL(this.path, this.url), this.requestOptions);
+        let request = new Request(new URL(this.path.replace('%PAGE%', 1), this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
         let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
         for(let page = 1; page <= pageCount; page++) {
@@ -40,7 +40,7 @@ export default class MH extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(this.path + page, this.url), this.requestOptions);
+        let request = new Request(new URL(this.path.replace('%PAGE%', page), this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {

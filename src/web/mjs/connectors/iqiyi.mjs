@@ -9,7 +9,7 @@ export default class iqiyi extends MH {
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://www.iqiyi.com/';
 
-        this.path = '/manhua/category/%E5%85%A8%E9%83%A8_0_9_';
+        this.path = '/manhua/category/%E5%85%A8%E9%83%A8_0_9_%PAGE%';
         this.queryMangasPageCount = 'div.mod-page a:nth-last-child(2)';
         this.pathMatch = /_0_9_(\d+)/;
         this.queryMangas = 'ul.cartoon-hot-ul li.cartoon-hot-list a.cartoon-cover';
@@ -35,20 +35,8 @@ export default class iqiyi extends MH {
         });
     }
 
-    async _getMangas() {
-        let mangaList = [];
-        let request = new Request(new URL( `${this.path}1`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
-        }
-        return mangaList;
-    }
-
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(this.path + page, this.url), this.requestOptions);
+        let request = new Request(new URL(this.path.replace('%PAGE%', page), this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
