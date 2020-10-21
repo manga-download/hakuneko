@@ -39,11 +39,9 @@ export default class ComicTrail extends SpeedBinb {
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
-            let part = /\d{4}-\d{1,2}-\d{1,2}/.exec(element.children[1].firstElementChild.firstElementChild.children[1].textContent);
-            if (part == null){
+            let part = "";
+            if (!(/\d{4}-\d{1,2}-\d{1,2}/.test(element.children[1].firstElementChild.firstElementChild.children[1].textContent))){
                 part = ` ${element.children[1].firstElementChild.firstElementChild.children[1].textContent.trim()}`;
-            }else{
-                part = "";
             }
             return {
                 id: this.getRootRelativeOrAbsoluteLink(`${element.firstElementChild.firstElementChild.pathname}/` || "", this.url),
