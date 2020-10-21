@@ -7,7 +7,7 @@ export default class mkzhan extends MH {
         super.id = 'mkzhan';
         super.label = 'mkzhan';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
-        this.url = 'https://www.mkzhan.com/';
+        this.url = 'https://www.mkzhan.com';
 
         this.path = '/category/?page=%PAGE%';
         this.queryMangasPageCount = 'div#Pagination a:nth-last-child(2)';
@@ -15,12 +15,6 @@ export default class mkzhan extends MH {
         this.queryChapter = 'a.j-chapter-link';
         this.queryMangaTitle = 'div.de-info__box p.comic-title ';
         this.queryPages = 'div.rd-article-wr div.rd-article__pic source';
-    }
-
-    async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.getAbsolutePath(element.dataset.src || element, request.url));
     }
 
     async _getChapters(manga) {
