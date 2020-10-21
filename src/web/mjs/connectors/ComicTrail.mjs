@@ -12,7 +12,7 @@ export default class ComicTrail extends SpeedBinb {
 
         this.queryManga = 'section.section div.columns div.column div > a';
 
-        this.queryChapters = 'section.section > ul.columns > li.column.is-full-mobile.is-half-tablet.chapter-item div.columns.is-mobile.is-gapless.chapter-item__inner';
+        this.queryChapters = 'ul.columns > li.column div.chapter-item__inner';
 
     }
 
@@ -29,8 +29,8 @@ export default class ComicTrail extends SpeedBinb {
         let data = await this.fetchDOM(request, this.queryManga);
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.href, request.url),
-                title: element.children[0].attributes[2].value.trim()
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.children[0].getAttribute('alt').trim()
             };
         });
     }
@@ -39,13 +39,15 @@ export default class ComicTrail extends SpeedBinb {
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
-            let part = "";
-            if (!/\d{4}-\d{1,2}-\d{1,2}/.test(element.children[1].firstElementChild.firstElementChild.children[1].textContent)){
-                part = ` ${element.children[1].firstElementChild.firstElementChild.children[1].textContent.trim()}`;
+            let id = "";
+            if (element.querySelector('a.button.is-read') != null){
+                id = `${element.querySelector('a.button.is-read').href}/`;
             }
+            let title = '';
+            element.querySelectorAll('p.has-text-weight-bold').forEach(element => title=title.concat(element.textContent.trim()));
             return {
-                id: this.getRootRelativeOrAbsoluteLink(`${element.firstElementChild.firstElementChild.pathname}/` || "", this.url),
-                title: element.children[1].firstElementChild.firstElementChild.firstElementChild.textContent.trim() + part
+                id: this.getRootRelativeOrAbsoluteLink(id, this.url),
+                title: title
             };
         });
     }
