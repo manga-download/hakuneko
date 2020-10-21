@@ -7,7 +7,7 @@ export default class iqiyi extends MH {
         super.id = 'iqiyi';
         super.label = 'iqiyi';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
-        this.url = 'https://www.iqiyi.com/';
+        this.url = 'https://www.iqiyi.com';
 
         this.path = '/manhua/category/%E5%85%A8%E9%83%A8_0_9_%PAGE%';
         this.queryMangasPageCount = 'div.mod-page a:nth-last-child(2)';
