@@ -8,7 +8,7 @@ export default class ComicTrail extends SpeedBinb {
         super.id = 'comictrail';
         super.label = 'Comic Trail (コミックトレイル)';
         this.tags = [ 'manga', 'japanese' ];
-        this.url = 'https://comic-trail.jp/';
+        this.url = 'https://comic-trail.jp';
 
         this.queryManga = 'section.section div.columns div.column div > a';
 
