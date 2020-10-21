@@ -16,12 +16,11 @@ export default class xianman123 extends MH {
         this.queryPages = /picdata\s*=\s*(\[[^\]]+\])\s*;/g;
     }
 
-async _getPages(chapter) {
-    let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-    let data = await this.fetchRegex(request, this.queryPages);
-    let imgDomain = await this.fetchRegex(request, /imgDomain\s*=\s*'([^\']+)\s*'/g);
-    data = Object.values(JSON.parse(data));
-    return data.map(element => new URL(element, imgDomain[0]).href);
-}
-
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchRegex(request, this.queryPages);
+        let imgDomain = await this.fetchRegex(request, /imgDomain\s*=\s*'([^']+)\s*'/g);
+        data = Object.values(JSON.parse(data));
+        return data.map(element => new URL(element, imgDomain[0]).href);
+    }
 }
