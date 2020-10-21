@@ -19,9 +19,9 @@ export default class xianman123 extends MH {
 async _getPages(chapter) {
     let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
     let data = await this.fetchRegex(request, this.queryPages);
-    let domain = await this.fetchRegex(request, /imgDomain\s*=\s*'([^\']+)\s*'/g);
+    let imgDomain = await this.fetchRegex(request, /imgDomain\s*=\s*'([^\']+)\s*'/g);
     data = Object.values(JSON.parse(data));
-    return data.map(element => new URL(element, domain[0]).href);
+    return data.map(element => new URL(element, imgDomain[0]).href);
 }
 
 }
