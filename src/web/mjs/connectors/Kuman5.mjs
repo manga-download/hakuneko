@@ -22,17 +22,6 @@ export default class kuman5 extends MH {
         return mangaList;
     }
 
-    async _getMangasFromPage(page) {
-        let request = new Request(new URL(this.path.replace('%PAGE%', page), this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangas);
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim()
-            };
-        });
-    }
-
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchRegex(request, /km5_img_url\s*=\s*['"]([^'"]+)['"]/g);
