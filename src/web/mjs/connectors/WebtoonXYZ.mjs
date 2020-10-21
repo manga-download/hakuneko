@@ -8,5 +8,8 @@ export default class WebtoonXYZ extends WordPressMadara {
         super.label = 'WebtoonXYZ';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://www.webtoon.xyz';
+
+        // NOTE : in case they fix the structure
+        this.queryMangas = 'div.post-title h3 a, div.post-title h5 a, div.post-title .h5 a';
     }
 }
