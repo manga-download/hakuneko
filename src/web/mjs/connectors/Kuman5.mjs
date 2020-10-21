@@ -1,21 +1,15 @@
-import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
+import MH from './templates/MH.mjs';
 
-export default class Kuman5 extends Connector {
+export default class kuman5 extends MH {
     constructor() {
         super();
         super.id = 'kuman5';
         super.label = '酷漫屋 (Kuman55)';
         this.tags = [ 'manga', 'chinese' ];
         this.url = 'http://www.kuman55.com';
-    }
 
-    async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.banner_detail div.info h1');
-        let id = uri.pathname + uri.search;
-        let title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        this.queryChapter = 'div#chapterlistload ul#detail-list-select-1 li a';
+        this.path = '/sort/1-%PAGE%.html';
     }
 
     async _getMangas() {
@@ -24,30 +18,8 @@ export default class Kuman5 extends Connector {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
+        mangaList.forEach(manga => manga.id = `/mulu${manga.id}1-1.html`);
         return mangaList;
-    }
-
-    async _getMangasFromPage(page) {
-        let request = new Request(new URL(`/sort/1-${page}.html`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul.mh-list li div.mh-item-detali h2.title a');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim()
-            };
-        });
-    }
-
-    async _getChapters(manga) {
-        let request = new Request(new URL(`/mulu${manga.id}1-1.html`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#chapterlistload ul#detail-list-select-1 li a');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.childNodes[0].nodeValue.trim(),
-                language: ''
-            };
-        });
     }
 
     async _getPages(chapter) {
