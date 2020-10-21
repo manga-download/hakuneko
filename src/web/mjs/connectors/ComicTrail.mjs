@@ -40,7 +40,7 @@ export default class ComicTrail extends SpeedBinb {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             let part = "";
-            if (!(/\d{4}-\d{1,2}-\d{1,2}/.test(element.children[1].firstElementChild.firstElementChild.children[1].textContent))){
+            if (!/\d{4}-\d{1,2}-\d{1,2}/.test(element.children[1].firstElementChild.firstElementChild.children[1].textContent)){
                 part = ` ${element.children[1].firstElementChild.firstElementChild.children[1].textContent.trim()}`;
             }
             return {
