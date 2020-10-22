@@ -13,6 +13,7 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         this.pathMatch = /comic\/p(\d+)/;
         this.queryMangasPageCount = 'div.list-page ul.pagination li:last-child a';
         this.queryMangas = 'ul#webtoon-list-all li div.img-item div.in-lable a';
+        this.queryManga = 'meta[name="subject"]';
         this.queryChapter = 'div.serial-list li.list-item div.wr-subject a';
         this.scriptPages = `
         new Promise(resolve => {
@@ -45,6 +46,7 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(this.path.replace('%PAGE%', page));
+            console.log(mangas)
             mangaList.push(...mangas);
         }
         return mangaList;
