@@ -43,8 +43,7 @@ export default class ComicTrail extends SpeedBinb {
             if (element.querySelector('a.button.is-read') != null){
                 id = `${element.querySelector('a.button.is-read').href}/`;
             }
-            let title = '';
-            element.querySelectorAll('p.has-text-weight-bold').forEach(element => title=title.concat(element.textContent.trim()));
+            let title = [...element.querySelectorAll('p.has-text-weight-bold')].map(el => el.textContent.trim()).join(' ');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(id, this.url),
                 title: title
