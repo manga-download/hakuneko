@@ -14,7 +14,7 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         this.queryMangasPageCount = 'div.list-page ul.pagination li:last-child a';
         this.queryMangas = 'ul#webtoon-list-all li div.img-item div.in-lable a';
         this.queryManga = 'meta[name="subject"]';
-        this.queryChapter = 'div.serial-list li.list-item div.wr-subject a';
+        this.queryChapters = 'div.serial-list li.list-item div.wr-subject a';
         this.scriptPages =`
         new Promise(resolve => {
             let queryPages = 'div.view-padding div > img';
@@ -25,17 +25,6 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         });
         `;
 
-    }
-
-    async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryChapter);
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.textContent.replace(manga.title, '').trim()
-            };
-        });
     }
 
     async _getMangas() {
