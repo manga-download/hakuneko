@@ -15,10 +15,10 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         this.queryMangas = 'ul#webtoon-list-all li div.img-item div.in-lable a';
         this.queryManga = 'meta[name="subject"]';
         this.queryChapter = 'div.serial-list li.list-item div.wr-subject a';
-        this.scriptPages = `
+        this.scriptPages =`
         new Promise(resolve => {
             let queryPages = 'div.view-padding div > img'
-            if ([...document.querySelectorAll(queryPages)].map(image => JSON.stringify(image.dataset)) == ""){
+            if ([...document.querySelectorAll(queryPages)].length == 0){
                 queryPages = 'div.view-padding div > p:not([className]) img'
             }
             resolve([...document.querySelectorAll(queryPages)].map(image => JSON.stringify(image.dataset)))
