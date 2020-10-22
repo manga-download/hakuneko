@@ -112,7 +112,7 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.dataset.role, this.url),
+                id: this.getRootRelativeOrAbsoluteLink(element.dataset.role || element, this.url),
                 title: element.textContent.replace(manga.title, '').trim(),
                 language: ''
             };
