@@ -27,7 +27,7 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim()
+                title: element.textContent.replace(manga.title, '').trim()
             };
         });
     }
