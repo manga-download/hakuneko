@@ -38,26 +38,13 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         });
     }
 
-    async _getMangasFromPage(page) {
-        let request = new Request(new URL(this.path.replace('%PAGE%', page), this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangas);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
-                title: element.text.trim()
-            };
-        });
-    }
-
     async _getMangas() {
         let mangaList = [];
         let request = new Request(new URL(this.path.replace('%PAGE%', 1), this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        await new Promise(resolve => setTimeout(resolve, 2000));
         let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
         for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
+            let mangas = await this._getMangasFromPage(this.path.replace('%PAGE%', page));
             mangaList.push(...mangas);
         }
         return mangaList;
