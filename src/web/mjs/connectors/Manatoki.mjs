@@ -16,11 +16,17 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         this.queryChapter = 'div.serial-list li.list-item div.wr-subject a';
         this.scriptPages = `
         new Promise(resolve => {
-            resolve([...document.querySelectorAll('div.view-padding div > img')].map(img => img.src));
+            resolve([...document.querySelectorAll('div.view-padding div > img')].map(image => JSON.stringify(image.dataset)));
         });
         `;
 
     }
+
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        return (await Engine.Request.fetchUI(request, this.scriptPages)).map(img=> img.match(/"\S{11}":"(.*)"/)[1]);
+    }
+
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapter);
