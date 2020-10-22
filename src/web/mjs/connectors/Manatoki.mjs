@@ -17,7 +17,11 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         this.queryChapter = 'div.serial-list li.list-item div.wr-subject a';
         this.scriptPages = `
         new Promise(resolve => {
-            resolve([...document.querySelectorAll('div.view-padding div > img')].map(image => JSON.stringify(image.dataset)));
+            let queryPages = 'div.view-padding div > img'
+            if ([...document.querySelectorAll(queryPages)].map(image => JSON.stringify(image.dataset)) == ""){
+                queryPages = 'div.view-padding div > p:not([className]) img'
+            }
+            resolve([...document.querySelectorAll(queryPages)].map(image => JSON.stringify(image.dataset)))
         });
         `;
 
@@ -46,7 +50,6 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         let pageCount = parseInt(data[0].href.match(this.pathMatch)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(this.path.replace('%PAGE%', page));
-            console.log(mangas)
             mangaList.push(...mangas);
         }
         return mangaList;
