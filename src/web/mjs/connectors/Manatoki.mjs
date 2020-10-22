@@ -18,8 +18,8 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
         new Promise(resolve => {
             resolve([...document.querySelectorAll('div.view-padding div > img')].map(img => img.src));
         });
-    `;
-    
+        `;
+
     }
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
