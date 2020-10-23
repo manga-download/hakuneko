@@ -13,7 +13,7 @@ export default class LxHentai extends MojoPortalComic {
         this.queryChapter = 'div#listChuong li.row a';
         this.queryPages = 'div.reader div:not([class]) source';
         this.path = '/story/search.php?key=&status=&flexCat=&&type=&p=';
-        this.queryMangasPageCount = 'ul.pagination li.page-item:last-child a'
+        this.queryMangasPageCount = 'ul.pagination li.page-item:last-child a';
         this.pathMatch = /p=(\d+)/;
         this.queryMangas = 'div.container div.row div.col-md-2 a';
     }

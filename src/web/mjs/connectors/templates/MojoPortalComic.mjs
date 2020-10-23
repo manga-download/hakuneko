@@ -15,7 +15,7 @@ export default class MojoPortalComic extends Connector {
         this.queryChapter = 'div.list-chapter ul li.row div.chapter a';
         this.queryPages = 'div.reading div.page-chapter source';
         this.path = '/?page=';
-        this.queryMangasPageCount = 'div.pagination-outter ul.pagination li:last-of-type a'
+        this.queryMangasPageCount = 'div.pagination-outter ul.pagination li:last-of-type a';
         this.pathMatch = /(\d+)$/;
         this.queryMangas = 'div.ModuleContent div.items div.item figcaption a.jtip';
     }
