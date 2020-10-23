@@ -8,6 +8,17 @@ export default class RawMangatop extends Connector {
         super.label = 'Raw Manga (生漫画)';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://rawmanga.top';
+
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 429 errors during manga list update.',
+                input: 'numeric',
+                min: 0,
+                max: 5000,
+                value: 1000
+            }
+        };
     }
 
     async _getMangas() {
