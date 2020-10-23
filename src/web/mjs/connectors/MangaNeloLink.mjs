@@ -6,7 +6,7 @@ export default class MangaNeloLink extends WordPressMadara {
         super();
         super.id = 'manganelolink';
         super.label = 'Manga Nelo Link';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manganelo.link';
     }
 }
