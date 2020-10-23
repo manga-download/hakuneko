@@ -5,9 +5,9 @@ export default class LxHentai extends MojoPortalComic {
     constructor() {
         super();
         super.id = 'lxhentai';
-        super.label = 'LxHentai';
+        super.label = 'LxHentai(Hentai LXX)';
         this.tags = [ 'manga', 'hentai', 'vietnamese' ];
-        this.url = 'http://lxhentai.com';
+        this.url = 'https://lxhentai.com';
 
         this.queryMangaTitle = 'head title';
         this.queryChapter = 'div#listChuong li.row a';
