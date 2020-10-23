@@ -53,8 +53,8 @@ export default class CoreView extends Connector {
                 id: this.getRootRelativeOrAbsoluteLink(
                     this.queryMangaURI ? element.querySelector(this.queryMangaURI) : element,
                     request.url),
-                    title: this.queryMangaTitle ? element.querySelector(this.queryMangaTitle).textContent.trim() : element.textContent.trim()
-                };
+                title: this.queryMangaTitle ? element.querySelector(this.queryMangaTitle).textContent.trim() : element.textContent.trim()
+            };
         });
     }
 

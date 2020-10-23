@@ -10,7 +10,7 @@ export default class ComicZenon extends CoreView {
         this.url = 'https://comic-zenon.com';
 
         this.path = [ '/series/zenon', '/series/zenyon', '/series/tatan' ,'/series/oneshot' ];
-        this.queryManga = 'div.serial-contents section div.series-item h4 > a'
+        this.queryManga = 'div.serial-contents section div.series-item h4 > a';
         this.queryMangaTitle = undefined;
 
     }
