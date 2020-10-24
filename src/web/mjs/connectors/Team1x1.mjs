@@ -62,6 +62,6 @@ export default class Team1x1 extends Connector {
     async _getPages(chapter) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         let data = await this.fetchDOM( request, 'div#translationPageall source');
-        return data.map(dat=> dat.src)
+        return data.map(dat=> dat.src);
     }
 }
