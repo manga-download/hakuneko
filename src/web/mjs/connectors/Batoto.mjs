@@ -22,12 +22,12 @@ export default class Batoto extends AnyACG {
 
     async _getPages(chapter) {
         let script = `
-            new Promise(resolve => {
-                resolve(images.map(data => JSON.parse(CryptoJS.AES.decrypt(server, batojs).toString(CryptoJS.enc.Utf8))+data))
-            } );
+        new Promise(resolve => {
+            const base = JSON.parse(CryptoJS.AES.decrypt(server, batojs).toString(CryptoJS.enc.Utf8));
+            resolve(images.map(data => new URL(base + data, window.location.origin).href));
+        });
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await Engine.Request.fetchUI(request, script);
-        return data.map(element => new URL(element, request.url).href);
+        return Engine.Request.fetchUI(request, script);
     }
 }
