@@ -12,7 +12,7 @@ export default class RawMangatop extends Connector {
         this.config = {
             throttle: {
                 label: 'Throttle Requests [ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 429 errors during manga list update.',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests',
                 input: 'numeric',
                 min: 0,
                 max: 5000,
@@ -57,14 +57,9 @@ export default class RawMangatop extends Connector {
     }
 
     async _getPages(chapter) {
-        let pagesList = [];
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = (await this.fetchDOM(request, 'select.custom-select option:last-of-type' , 3))[1];
-        for(let page = 1; page <= data.value; page++) {
-            let pages = `${this.url}/viewer${chapter.id}/${page}`;
-            pagesList.push(pages);
-        }
-        return pagesList;
+        return new Array(Number(data.value)).fill().map((_, page) => `${this.url}/viewer${chapter.id}/${page + 1}`);
     }
 
 }
