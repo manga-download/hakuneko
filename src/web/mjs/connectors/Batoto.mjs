@@ -22,7 +22,7 @@ export default class Batoto extends AnyACG {
 
     async _getPages(chapter) {
         let script = `
-            new Promise((resolve) => {
+            new Promise(resolve => {
                 resolve(images.map(data => JSON.parse(CryptoJS.AES.decrypt(server, batojs).toString(CryptoJS.enc.Utf8))+data))
             } );
         `;
