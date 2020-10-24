@@ -1,6 +1,6 @@
 import SinMH from './templates/SinMH.mjs';
 
-export default class ManHuaBei extends SinMH {
+export default class ManHuaFen extends SinMH {
 
     constructor() {
         super();
