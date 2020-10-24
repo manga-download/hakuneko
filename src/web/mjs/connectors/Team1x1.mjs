@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/manga.mjs';
 
 export default class Team1x1 extends Connector {
 
@@ -8,6 +9,14 @@ export default class Team1x1 extends Connector {
         super.label = 'Team X';
         this.tags = [ 'webtoon', 'arabic' ];
         this.url = 'https://team1x1.com';
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.row > div.col-md-9 > h3');
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent;
+        return new Manga(this, id, title);
     }
 
     async _getMangaListFromPages( mangaPageLinks, index ) {
@@ -51,16 +60,8 @@ export default class Team1x1 extends Connector {
     }
 
     async _getPages(chapter) {
-        let script = `
-        new Promise(resolve => {
-            var interval = setInterval(function() {
-                if (PushManga) {
-                    resolve( PushManga.pages.original.map( p => p.page + '?token=' + p.token ) );
-                }
-            }, 200);
-        });
-        `;
         let request = new Request( this.url + chapter.id, this.requestOptions );
-        return await Engine.Request.fetchUI( request, script );
+        let data = await this.fetchDOM( request, 'div#translationPageall source');
+        return data.map(dat=> dat.src);
     }
 }
