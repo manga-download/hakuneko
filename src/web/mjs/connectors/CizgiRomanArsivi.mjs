@@ -6,7 +6,7 @@ export default class CizgiRomanArsivi extends WordPressMadara {
         super();
         super.id = 'cizgiromanarsivi';
         super.label = 'Çizgi Roman Arşivi (CizgiRomanArsivi)';
-        this.tags = [ 'manga', 'english' ];
+        this.tags = [ 'manga', 'webtoon', 'turkish' ];
         this.url = 'https://cizgiromanarsivi.com';
     }
 }
