@@ -17,6 +17,7 @@ export default class SinMH extends Connector {
         this.queryMangasPageCount = 'div.page-container ul.pagination li.last a';
         this.queryMangas = 'ul#contList li p.ell a';
         this.queryChapters = 'div.comic-chapters ul li a';
+        this.scriptPages = undefined
     }
 
     async _getMangaFromURI(uri) {
@@ -83,7 +84,7 @@ export default class SinMH extends Connector {
             });
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await Engine.Request.fetchUI(request, script);
+        let data = await Engine.Request.fetchUI(request, this.scriptPages || script);
         return data.map(page => this.createConnectorURI(page));
     }
 }
