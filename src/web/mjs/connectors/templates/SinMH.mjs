@@ -42,7 +42,7 @@ export default class SinMH extends Connector {
 
     async _getMangasFromPage(page) {
         let request = new Request(this.url + this.pathMatch.replace('(\\d+)', page), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangas);
+        let data = await this.fetchDOM(request, this.queryMangas,3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
@@ -61,7 +61,7 @@ export default class SinMH extends Connector {
                 let chapterList = [...document.querySelectorAll('${this.queryChapters}')].map(element => {
                     return {
                         id: new URL(element.href, window.location).pathname,
-                        title: element.text.trim(),
+                        title: element.text.trim().replace(/\\d+p$/, ''),
                         language: ''
                     };
                 });

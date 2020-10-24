@@ -1,4 +1,5 @@
 import SinMH from './templates/SinMH.mjs';
+
 export default class jpm1234 extends SinMH {
     constructor() {
         super();
@@ -12,11 +13,22 @@ export default class jpm1234 extends SinMH {
         this.pathMatch = '/All/0/0/0/0/0/lastpost/p/(\\d+)/'
         this.queryMangasPageCount = '#last_page';
         this.queryChapters = 'div.chapter-list ul li a';
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nChapters with lots of pages may require a longer delay',
+                input: 'numeric',
+                min: 0,
+                max: 5000,
+                value: 1000
+            }
+        };
 
-        this.scriptPages =`
-            new Promise(resolve => resolve(cInfo.fs.map(img => 'http://' + pageConfig.host.auto + img)));   
+        this.scriptPages = `
+            new Promise(resolve => resolve(cInfo.fs.map(img => 'http://' + (/\\d$/.test(img) ? pageConfig.host.auto[0].replace('uploads','') : pageConfig.host.auto) + img)));
         `;
     }
+
     async _getMangasFromPage(page) {
         let request = new Request(this.url + this.pathMatch.replace('(\\d+)', page), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas , 3);
