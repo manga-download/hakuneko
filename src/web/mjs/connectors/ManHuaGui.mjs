@@ -11,8 +11,6 @@ export default class ManHuaGui extends SinMH {
         this.requestOptions.headers.set('x-referer', this.url);
 
         this.api = 'SMH';
-        this.pathMatch = '/list/index_p(\\d+).html';
-        this.queryMangasPageCount = 'div#AspNetPager1 a:last-of-type';
         this.queryChapters = 'div.chapter-list ul li a';
         this.config = {
             throttle: {

@@ -10,7 +10,7 @@ export default class jpm1234 extends SinMH {
         this.requestOptions.headers.set('x-referer', this.url);
 
         this.path = '/All/';
-        this.pathMatch = '/All/0/0/0/0/0/lastpost/p/(\\d+)/'
+        this.pathMatch = '/All/0/0/0/0/0/lastpost/p/(\\d+)/';
         this.queryMangasPageCount = '#last_page';
         this.queryChapters = 'div.chapter-list ul li a';
         this.config = {

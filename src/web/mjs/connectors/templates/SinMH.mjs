@@ -17,7 +17,7 @@ export default class SinMH extends Connector {
         this.queryMangasPageCount = 'div.page-container ul.pagination li.last a';
         this.queryMangas = 'ul#contList li p.ell a';
         this.queryChapters = 'div.comic-chapters ul li a';
-        this.scriptPages = undefined
+        this.scriptPages = undefined;
     }
 
     async _getMangaFromURI(uri) {
