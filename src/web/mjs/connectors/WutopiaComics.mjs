@@ -9,16 +9,67 @@ export default class WutopiaComics extends Connector {
         super.label = 'Wutopia';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://www.wutopiacomics.com';
+
+        this.config = {
+            username: {
+                label: 'E-Mail',
+                description: 'E-Mail for login with your Wutopia account.',
+                input: 'text',
+                value: ''
+            },
+            password: {
+                label: 'Password',
+                description: 'Password for login with your Wutopia account.',
+                input: 'password',
+                value: ''
+            }
+        };
+
+        this.user = {
+            id: null,
+            sysToken: null
+        };
+    }
+
+    async _login() {
+        const user = this.config.username.value;
+        const pass = this.config.password.value;
+        if(user && pass) {
+            const data = await this._fetchPOST('/mobile/index/login', {
+                account: user,
+                password: pass
+            });
+            if(data.success && data.user) {
+                this.user.id = data.user.id;
+                this.user.sysToken = data.user.sysToken;
+            } else {
+                this._logout();
+            }
+        } else {
+            this._logout();
+        }
+    }
+
+    _logout() {
+        this.user = {
+            id: null,
+            sysToken: null
+        };
     }
 
     async _fetchPOST(path, body) {
+        const headers = {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'platform': '10'
+        };
+        if(this.user.id && this.user.sysToken) {
+            headers['userid'] = this.user.id;
+            headers['token'] = this.user.sysToken;
+        }
         let request = new Request(new URL(path, this.url), {
             method: 'POST',
             body: new URLSearchParams(body).toString(),
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'platform': '10'
-            }
+            headers: headers
         });
         return this.fetchJSON(request);
     }
@@ -54,7 +105,6 @@ export default class WutopiaComics extends Connector {
         return data.list.map(item => {
             return {
                 id: item.id,
-                //title: (item.chapterIndex + ' - ' + item.name).trim(),
                 title: 'Chapter ' + item.chapterIndex,
                 language: ''
             };
@@ -62,9 +112,14 @@ export default class WutopiaComics extends Connector {
     }
 
     async _getPages(chapter) {
+        await this._login();
         let data = await this._fetchPOST('/mobile/chapter/get', {
             id: chapter.id
         });
-        return data.chapter.picList.map(item => item.picUrl.split('@')[0]);
+        if(data.payState) {
+            return data.chapter.picList.map(item => item.picUrl.split('@').shift());
+        } else {
+            throw new Error('Chapter is locked and requires to be logged in and purchased!');
+        }
     }
 }
