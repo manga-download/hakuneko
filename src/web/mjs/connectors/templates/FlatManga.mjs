@@ -14,6 +14,7 @@ export default class FlatManga extends Connector {
         this.queryMangaTitle = 'head title';
         this.queryMangas = 'span[data-toggle="mangapop"] a';
         this.queryChapters = 'div#tab-chapper table tr td a.chapter';
+        this.queryChapterTitle = undefined;
         this.queryChapterLanguage = 'ul.manga-info h1 span.flag-icon';
         this.queryChapterLanguageClassRX = /flag-icon-([a-zA-Z]+)/;
         this.queryPages = 'source.chapter-img';
@@ -24,7 +25,7 @@ export default class FlatManga extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
         let id = uri.pathname;
-        let title = data[0].textContent.split(' | ')[0].trim();
+        let title = data[0].content || data[0].textContent.split(' | ')[0].trim();
         return new Manga(this, id, title);
     }
 
@@ -52,7 +53,7 @@ export default class FlatManga extends Connector {
         let language = dom.querySelector(this.queryChapterLanguage);
         language = language ? language.className.match(this.queryChapterLanguageRX)[1] : this.language;
         return [...dom.querySelectorAll(this.queryChapters)].map(element => {
-            let title = element.text.replace(manga.title, '');
+            let title = (this.queryChapterTitle ? element.querySelector(this.queryChapterTitle) : element).textContent.replace(manga.title, '');
             let mangaTitle = manga.title.replace(/\s*-\s*RAW$/, '');
             title = title.replace(new RegExp(mangaTitle, 'i'), '');
             title = title.replace(/^\s*-\s*/, '');
