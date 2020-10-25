@@ -8,6 +8,5 @@ export default class GuFengMH8 extends SinMH {
         super.label = '古风漫画网 (GuFengMH8)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://www.gufengmh8.com';
-        // this.requestOptions.headers.set('x-referer', this.url);
     }
 }
