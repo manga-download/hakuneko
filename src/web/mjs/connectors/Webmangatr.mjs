@@ -1,13 +1,14 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+//Movifox theme/template
 
-export default class webmangatr extends Connector {
+export default class Webmangatr extends Connector {
 
     constructor() {
         super();
         super.id = 'webmangatr';
         super.label = 'WEBMANGATR';
-        this.tags = ['Turkish' ,'webtoon','hentai'];
+        this.tags = ['turkish' ,'webtoon','hentai'];
         this.url = 'https://webmangatr.com';
     }
 
@@ -15,7 +16,7 @@ export default class webmangatr extends Connector {
         let mangaList = [];
         let request = new Request(this.url + '/dizi-arsivi/', this.requestOptions);
         let data = await this.fetchDOM(request, 'div.col-lg-8 > a:last-of-type');
-        let pageCount = data[0].getAttribute('data-max');
+        let pageCount = parseInt(data[0].dataset.max);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -48,7 +49,7 @@ export default class webmangatr extends Connector {
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await Engine.Request.fetchUI(request, script);
-        return data.map(page => this.createConnectorURI(page));
+        return data;
     }
 
     async _getChapters(manga) {
@@ -57,8 +58,8 @@ export default class webmangatr extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.replace(manga.title, '').trim(),
+                title: element.text.replace(manga.title, '').trim()
             };
         });
     }
-}//Movifox theme/template
+}
