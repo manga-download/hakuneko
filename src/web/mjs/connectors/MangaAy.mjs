@@ -44,7 +44,7 @@ export default class MangaAy extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = (await this.fetchRegex(request, /var dataurl = '([^']*)';\svar page_array = \[([^\]]*),\];\svar server = '([^']*)';/g))[0];
-        let pages = data[2].split(',')
+        let pages = data[2].split(',');
         return pages.map(datt => `${this.url}${data[3]}/${data[1]}/${datt.trim().replace(/'/g, '')}`);
     }
 
