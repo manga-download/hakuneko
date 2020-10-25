@@ -43,23 +43,10 @@ export default class MangaAy extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = (await this.fetchRegex(request, /var dataurl = '([^']*)';\svar page_array = \[([^\]]*),\];\svar server = '([^']*)';/g))[0];
-        let pages = data[2].split(',');
-        return pages.map(datt => `${this.url}${data[3]}/${data[1]}/${datt.trim().replace(/'/g, '')}`);
-    }
-
-    async fetchRegex(request, regex) {
-        if(!/\/[imsuy]*g[imsuy]*$/.test('' + regex)) {
-            throw new Error('The provided RegExp must contain the global "g" modifier!');
-        }
-        let response = await fetch(request);
+        const response = await fetch(request);
         let data = await response.text();
-        let result = [];
-        let match = undefined;
-        // eslint-disable-next-line no-cond-assign
-        while(match = regex.exec(data)) {
-            result.push(match);
-        }
-        return result;
+        data = data.match(/var dataurl = '([^']*)';\svar page_array = \[([^\]]*),\];\svar server = '([^']*)';/);
+        const pages = data[2].split(',');
+        return pages.map(datt => `${this.url}${data[3]}/${data[1]}/${datt.trim().replace(/'/g, '')}`);
     }
 }
