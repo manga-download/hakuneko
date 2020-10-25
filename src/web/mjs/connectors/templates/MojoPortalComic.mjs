@@ -44,7 +44,7 @@ export default class MojoPortalComic extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
         let id = uri.pathname + uri.search;
-        let title = (data[0].content || data[0].textContent).replace(new RegExp('-? ' + this.label, 'i'), '').trim();
+        let title = (data[0].content || data[0].textContent).replace(new RegExp('-?\\s' + this.label, 'i'), '').trim();
         return new Manga(this, id, title);
     }
 
