@@ -18,13 +18,16 @@ export default class Batoto extends AnyACG {
         this.queryMangaLink = 'a.item-title';
         this.queryMangaFlag = 'span.item-flag';
         this.queryChapters = 'div.episode-list div.main a.visited';
-        this.queryPages = /images\s*=\s*(\[[^\]]+\])\s*;/g;
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchRegex(request, this.queryPages);
-        data = Object.values(JSON.parse(data[0]));
-        return data.map(element => new URL(element, request.url).href);
+        let script = `
+        new Promise(resolve => {
+            const base = JSON.parse(CryptoJS.AES.decrypt(server, batojs).toString(CryptoJS.enc.Utf8));
+            resolve(images.map(data => new URL(base + data, window.location.origin).href));
+        });
+        `;
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }

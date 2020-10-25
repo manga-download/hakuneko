@@ -1,4 +1,5 @@
 import Connector from '../../engine/Connector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
 export default class CoreView extends Connector {
 
@@ -18,11 +19,21 @@ export default class CoreView extends Connector {
         // The query to retrieve the single manga title from inside of this.queryManga
         this.queryMangaTitle = 'h2.series-list-title';
 
+        this.queryMangaTitleFromURI = 'h1.series-header-title';
+
         this.queryChaptersAtomFeed = 'head link[type*="atom+xml"]';
         this.queryChapters = 'feed entry';
 
         this.queryPages = 'source.page-image[data-src]';
         this.queryEpisodeJSON = '#episode-json';
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangaTitleFromURI);
+        let id = uri.pathname;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
@@ -42,7 +53,7 @@ export default class CoreView extends Connector {
                 id: this.getRootRelativeOrAbsoluteLink(
                     this.queryMangaURI ? element.querySelector(this.queryMangaURI) : element,
                     request.url),
-                title: element.querySelector(this.queryMangaTitle).textContent.trim()
+                title: this.queryMangaTitle ? element.querySelector(this.queryMangaTitle).textContent.trim() : element.textContent.trim()
             };
         });
     }

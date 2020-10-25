@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class WeComics extends Connector {
 
@@ -10,11 +11,19 @@ export default class WeComics extends Connector {
         this.url = 'https://m.wecomics.com';
     }
 
+    async _getMangaFromURI(uri) {
+        const id = uri.searchParams.get('id');
+        const request = new Request(new URL('/h5/comic/detail/id/' + id, this.url), this.requestOptions);
+        const data = await this.fetchJSON(request);
+        const title = data.data.comic.title;
+        return new Manga(this, id, title);
+    }
+
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            page < 250 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
@@ -49,7 +58,11 @@ export default class WeComics extends Connector {
         let uri = new URL(`/h5/comic/getPictureList/id/${chapter.manga.id}/cid/${chapter.id}`, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return WeComics_Vendor.getPictureList(data.data.chapter.data);
+        if(data.error_code === 2) {
+            return WeComics_Vendor.getPictureList(data.data.chapter.data);
+        } else {
+            throw new Error(`Failed to get chapter images (Error: ${data.error_code} - ${data.msg})!`);
+        }
     }
 }
 
