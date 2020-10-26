@@ -7,8 +7,8 @@ export default class Bx117 extends Connector {
         super();
         super.id = 'bx117';
         super.label = '117漫画网 (bx117)';
-        this.tags = [ 'manga', 'webtoon', 'spanish' ];
-        this.url = 'http://m.bx117.com/';
+        this.tags = [ 'manga', 'webtoon', 'chinese' ];
+        this.url = 'http://m.bx117.com';
     }
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
@@ -32,7 +32,7 @@ export default class Bx117 extends Connector {
     async _getPages(chapter) {
         let script = `
             new Promise(resolve => {
-                resolve(new Array(qTcms_page.total).fill().map((pages,ind) => new URL(getPicUrlP(qTcms_S_m_murl,ind),qTcms_m_weburl).href));
+                resolve(new Array(qTcms_page.total).fill().map((_,ind) => new URL(getPicUrlP(qTcms_S_m_murl,ind),qTcms_m_weburl).href));
             });
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);
