@@ -36,7 +36,11 @@ export default class Bx117 extends Connector {
             });
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await Engine.Request.fetchUI(request, script);
-        return data;
+        return await Engine.Request.fetchUI(request, script);
+    }
+
+    async _getMangas() {
+        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 }
