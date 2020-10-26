@@ -43,7 +43,7 @@ export default class Asgard1team extends Connector {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'tbody > tr');
         return data.map(element => {
-            let num = element.querySelector('td[scope="row"]').textContent.trim()
+            let num = element.querySelector('td[scope="row"]').textContent.trim();
             let re = new RegExp(manga.title,'i');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),
