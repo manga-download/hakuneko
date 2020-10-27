@@ -11,10 +11,10 @@ export default class Bx117 extends Connector {
         this.url = 'http://m.bx117.com';
     }
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'p.txtItme.h1');
-        let id = uri.pathname + uri.search;
-        let title = data[0].textContent.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'p.txtItme.h1');
+        const id = uri.pathname + uri.search;
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
@@ -30,12 +30,12 @@ export default class Bx117 extends Connector {
     }
 
     async _getPages(chapter) {
-        let script = `
+        const script = `
             new Promise(resolve => {
                 resolve(new Array(qTcms_page.total).fill().map((_,ind) => new URL(getPicUrlP(qTcms_S_m_murl,ind+1),qTcms_m_weburl).href));
             });
         `;
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        const request = new Request(this.url + chapter.id, this.requestOptions);
         return await Engine.Request.fetchUI(request, script);
     }
 
@@ -51,7 +51,7 @@ export default class Bx117 extends Connector {
     }
 
     async _getMangasFromPage(page,retries,serial ) {
-        let response = await fetch('http://m.bx117.com/statics/qingtiancms.ashx', {
+        const response = await fetch('http://m.bx117.com/statics/qingtiancms.ashx', {
             method: 'POST',
             body: `page=${page}&action=GetWapList&_id=listbody&pagesize=12&order=1&classid1=0&url=%2Fstatics%2Fqingtiancms.ashx&typelianzai=110${serial }`,
             headers: {
@@ -64,10 +64,11 @@ export default class Bx117 extends Connector {
             return this._getMangasFromPage(page,retries-1,serial);
         }
         if (response.status == 200){
-            let data = this.createDOM(await response.text());
+            const data = this.createDOM(await response.text());
             return [...data.querySelectorAll('li')].map(element => {
+                console.log(element)
                 return {
-                    id: this.getRootRelativeOrAbsoluteLink(element.querySelector('source'), this.url),
+                    id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),
                     title: element.textContent.trim()
                 };
             });
