@@ -43,36 +43,28 @@ export default class Bx117 extends Connector {
         let mangaList = [];
         for(let i = 1; i <= 2 ; i++) {
             for(let page = 1, run = true; run; page++) {
-                let mangas = await this._getMangasFromPage(page,3,i);
+                let mangas = await this._getMangasFromPage(page,i);
                 mangas.length > 0 ? mangaList.push(...mangas) : run = false;
             }
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page,retries,serial ) {
-        const response = await fetch('http://m.bx117.com/statics/qingtiancms.ashx', {
+    async _getMangasFromPage(page,serial) {
+        const request = new Request('http://m.bx117.com/statics/qingtiancms.ashx', {
             method: 'POST',
-            body: `page=${page}&action=GetWapList&_id=listbody&pagesize=12&order=1&classid1=0&url=%2Fstatics%2Fqingtiancms.ashx&typelianzai=110${serial }`,
+            body: `page=${page}&action=GetWapList&_id=listbody&pagesize=12&order=1&classid1=0&url=%2Fstatics%2Fqingtiancms.ashx&typelianzai=110${serial}`,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'X-Requested-With': 'XMLHttpRequest',
             }
         });
-        if(response.status >= 500 && retries > 0 ) {
-            await this.wait( 2500 );
-            return this._getMangasFromPage(page,retries-1,serial);
-        }
-        if (response.status == 200){
-            const data = this.createDOM(await response.text());
-            return [...data.querySelectorAll('li')].map(element => {
-                console.log(element)
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),
-                    title: element.textContent.trim()
-                };
-            });
-        };
-        throw new Error( `Failed to receive mangas list from m.bx117, report to github issues if there is not already one` )
+        const data = await this.fetchDOM(request, 'li' ,3);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),
+                title: element.textContent.trim()
+            };
+        });
     }
 }
