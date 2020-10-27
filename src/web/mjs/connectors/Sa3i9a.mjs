@@ -1,6 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-
+//mnanauk theme/template
 export default class Sa3i9a extends Connector {
 
     constructor() {
@@ -12,11 +12,10 @@ export default class Sa3i9a extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, '#content h1');
-        console.log(data)
-        let id = uri.pathname + uri.search;
-        let title = data[0].textContent.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, '#content h1');
+        const id = uri.pathname + uri.search;
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
@@ -30,9 +29,9 @@ export default class Sa3i9a extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        if (page == 1) {page = ''};
-        let request = new Request(new URL(`/قائمة-المانجا-${page}/`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.item.red > a');
+        if (page == 1) {page = '';}
+        const request = new Request(new URL(`/قائمة-المانجا-${page}/`, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.item.red > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -43,30 +42,33 @@ export default class Sa3i9a extends Connector {
 
     async _getChapters(manga) {
         let ChaptersList = [];
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, '#post-nav > div > a:last-child');
+        let req;
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, '#post-nav > div > a:last-child');
         for(let page = 1, run = true; run; page++) {
-            let Chapters = await this._getChaptersFromPage(page,data[0].href,manga);
+            if (data.length == 0){
+                req = manga.id;
+                run = false;
+            } else {req = data[0].href.replace(/page\/(\d+)/,`page/${page}`);}
+            let Chapters = await this._getChaptersFromPage(req);
             Chapters.length > 0 ? ChaptersList.push(...Chapters) : run = false;
         }
         return ChaptersList;
     }
-    async _getChaptersFromPage(page,link,manga){
-        let request = new Request(new URL(link.replace(/page\/(\d+)/,`page/${page}`), this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.ft-ctbox h2 > a');
-        console.log(data)
+    async _getChaptersFromPage(req){
+        const data = await this.fetchDOM(new Request(new URL(req, this.url), this.requestOptions), 'div.ft-ctbox h2 > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.replace('مانجا','').replace(new RegExp(manga.title,'i'),'').replace('مترجم','').replace('الفصل','').trim(),
+                title: element.text.trim(),
                 language: ''
             };
         });
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.content_chap source');
-        return data.map(element => this.getAbsolutePath(element, request.url));
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'section source');
+        return data.map(element => this.getAbsolutePath(element.dataset.src, request.url));
     }
 }
