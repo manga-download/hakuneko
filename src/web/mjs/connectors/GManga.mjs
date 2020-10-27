@@ -64,8 +64,8 @@ export default class GManga extends Connector {
         data = data['isCompact'] ? this._unpack(data) : data;
         return data.releases.map(chapter => {
             let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
-            title += chapter.title ? ' - ' + chapter.title : '' ;
-            title += chapter.team_name ? ' [' + chapter.team_name + ']' : '' ;
+            title += chapter.title ? ' - ' + chapter.title : '';
+            title += chapter.team_name ? ' [' + chapter.team_name + ']' : '';
             return {
                 id: manga.id + '/chapter/' + chapter.chapter + '/' + chapter.team_name,
                 title: title,

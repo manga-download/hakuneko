@@ -5,7 +5,7 @@ export default class jpm1234 extends SinMH {
         super();
         super.id = 'jpm1234';
         super.label = 'jpm1234';
-        this.tags = [ 'manga','webtoon','chinese' ];
+        this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'http://jpm1234.com';
         this.requestOptions.headers.set('x-referer', this.url);
 

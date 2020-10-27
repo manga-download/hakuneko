@@ -6,7 +6,7 @@ export default class wuqimh extends SinMH {
         super();
         super.id = 'wuqimh';
         super.label = 'wuqimh';
-        this.tags = [ 'manga','hentai','chinese' ];
+        this.tags = [ 'manga', 'hentai', 'chinese' ];
         this.url = 'http://www.wuqimh.com';
         this.requestOptions.headers.set('x-referer', this.url);
 

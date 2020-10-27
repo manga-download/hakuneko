@@ -20,7 +20,7 @@ export default class Chapter extends EventTarget {
         this.manga = manga;
         this.id = id;
         this.title = title;
-        this.file = status === statusDefinitions.offline ? this._getRawFileName( title ) : this._getSanatizedFileName( title ) ;
+        this.file = status === statusDefinitions.offline ? this._getRawFileName( title ) : this._getSanatizedFileName( title );
         this.language = language;
         this.status = status;
         this.pageProcess = false;

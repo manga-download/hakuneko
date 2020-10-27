@@ -77,7 +77,7 @@ export default class UraSunday extends Connector {
         }
         try {
             images = await this._extractWebarenaNew(data, request.url);
-        } catch(error){
+        } catch(error) {
             //
         }
         try {

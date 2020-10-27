@@ -34,7 +34,7 @@ export default class MangaShip extends Connector {
 
     async _getChapters(manga) {
         let uri = new URL(manga.id, this.url);
-        let request = new Request(uri , this.requestOptions);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.plylist-single-content > a:first-of-type');
         return data.map(element => {
             return {
