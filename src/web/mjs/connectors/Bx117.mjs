@@ -53,7 +53,16 @@ export default class Bx117 extends Connector {
     async _getMangasFromPage(page,serial) {
         const request = new Request('http://m.bx117.com/statics/qingtiancms.ashx', {
             method: 'POST',
-            body: `page=${page}&action=GetWapList&_id=listbody&pagesize=12&order=1&classid1=0&url=%2Fstatics%2Fqingtiancms.ashx&typelianzai=110${serial}`,
+            body: new URLSearchParams({
+                page: page,
+                action:'GetWapList',
+                _id:'listbody',
+                pagesize:12,
+                order:1,
+                classid1:0,
+                url:'/statics/qingtiancms.ashx',
+                typelianzai:`110${serial}`
+            }).toString(),
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'X-Requested-With': 'XMLHttpRequest',
