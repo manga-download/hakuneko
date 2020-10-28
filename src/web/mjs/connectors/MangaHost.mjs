@@ -7,7 +7,7 @@ export default class MangaHost extends Connector {
         super.id = 'mangahost';
         super.label = 'MangaHost';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://mangahost2.com';
+        this.url = 'https://mangahosted.com';
     }
 
     _getMangaListFromPages( mangaPageLinks, index ) {
