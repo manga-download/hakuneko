@@ -29,7 +29,7 @@ export default class Sa3i9a extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        if (page == 1) {page = '';}
+        page = page === 1 ? '' : page;
         const request = new Request(new URL(`/قائمة-المانجا-${page}/`, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'div.item.red > a');
         return data.map(element => {
@@ -41,7 +41,7 @@ export default class Sa3i9a extends Connector {
     }
 
     async _getChapters(manga) {
-        let ChaptersList = [];
+        let chaptersList = [];
         let req;
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, '#post-nav > div > a:last-child');
@@ -50,10 +50,10 @@ export default class Sa3i9a extends Connector {
                 req = manga.id;
                 run = false;
             } else {req = data[0].href.replace(/page\/(\d+)/,`page/${page}`);}
-            let Chapters = await this._getChaptersFromPage(req);
-            Chapters.length > 0 ? ChaptersList.push(...Chapters) : run = false;
+            let chapters = await this._getChaptersFromPage(req);
+            chapters.length > 0 ? chaptersList.push(...chapters) : run = false;
         }
-        return ChaptersList;
+        return chaptersList;
     }
     async _getChaptersFromPage(req){
         const data = await this.fetchDOM(new Request(new URL(req, this.url), this.requestOptions), 'div.ft-ctbox h2 > a');
