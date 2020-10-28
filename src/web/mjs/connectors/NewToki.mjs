@@ -10,8 +10,8 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         this.url = 'https://newtoki.com';
 
         this.path = [ '/webtoon', '/comic' ];
-        this.queryMangasPageCount = 'section.board-list ul.pagination li:last-of-type a';
-        this.queryMangas = 'section.board-list div.list-container ul.list div.list-item div.in-lable a';
+        this.queryMangasPageCount = 'div.list-page ul.pagination li:last-child a';
+        this.queryMangas = 'ul#webtoon-list-all li div.img-item div.in-lable a';
         this.queryManga = 'meta[name="subject"]';
         this.queryChapters = 'div.serial-list li.list-item div.wr-subject a';
         this.scriptPages = `
