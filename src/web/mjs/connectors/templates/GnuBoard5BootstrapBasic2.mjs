@@ -89,7 +89,7 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
 
     async _getMangasFromPage(page) {
         let request = new Request(new URL(page, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangas);
+        let data = await this.fetchDOM(request, this.queryMangas, 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
