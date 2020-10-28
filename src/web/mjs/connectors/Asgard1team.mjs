@@ -55,6 +55,6 @@ export default class Asgard1team extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request,'div.container source');
-        return data.map(element => this.getAbsolutePath(element.getAttribute('src'),this.url));
+        return data.map(element => this.getAbsolutePath(element,this.url));
     }
 }
