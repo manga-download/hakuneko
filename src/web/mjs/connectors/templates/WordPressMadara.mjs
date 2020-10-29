@@ -8,6 +8,7 @@ export default class WordPressMadara extends Connector {
         super.id = undefined;
         super.label = undefined;
         this.url = undefined;
+        this.path = '';
 
         this.queryMangas = 'div.post-title h3 a, div.post-title h5 a';
         this.queryChapters = 'li.wp-manga-chapter > a';
@@ -27,7 +28,7 @@ export default class WordPressMadara extends Connector {
 
         this.requestOptions.method = 'POST';
         this.requestOptions.body = form.toString();
-        let request = new Request(this.url + '/wp-admin/admin-ajax.php', this.requestOptions);
+        let request = new Request(new URL(this.path + '/wp-admin/admin-ajax.php', this.url), this.requestOptions);
         request.headers.set('content-type', 'application/x-www-form-urlencoded');
         request.headers.set('x-referer', this.url);
         this.requestOptions.method = 'GET';
@@ -62,7 +63,7 @@ export default class WordPressMadara extends Connector {
         let data = [...dom.querySelectorAll(this.queryChapters)];
         let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
         if(placeholder) {
-            let uri = new URL('/wp-admin/admin-ajax.php', this.url);
+            let uri = new URL(this.path + '/wp-admin/admin-ajax.php', this.url);
             let request = new Request(uri, {
                 method: 'POST',
                 body: 'action=manga_get_chapters&manga=' + placeholder.dataset.id,
