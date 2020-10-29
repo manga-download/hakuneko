@@ -7,7 +7,7 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         super.id = 'newtoki';
         super.label = 'NewToki';
         this.tags = [ 'manga', 'webtoon', 'korean' ];
-        this.url = 'https://newtoki.com';
+        this.url = 'https://newtoki83.com';
 
         this.path = [ '/webtoon', '/comic' ];
         this.queryMangasPageCount = 'div.list-page ul.pagination li:last-child a';
@@ -16,14 +16,28 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         this.queryChapters = 'div.serial-list li.list-item div.wr-subject a';
         this.scriptPages = `
         new Promise(resolve => {
-            const queryPages = document.querySelectorAll('div.view-padding div > img').length === 0 ? 'div.view-padding div > p:not([class]) img' : 'div.view-padding div > img';
-            resolve([...document.querySelectorAll(queryPages)].map(image => JSON.stringify(image.dataset).match(/"\\S{11}":"(.*)"/)[1]));
+            const images = [...document.querySelectorAll('div.view-padding div > img, div.view-padding div > p:not([class]) img')];
+            resolve(images.map(image => JSON.stringify(image.dataset).match(/"\\S{11}":"(.*)"/)[1]));
         });
         `;
     }
 
     canHandleURI(uri) {
         return /https?:\/\/newtoki\d*.com/.test(uri.origin);
+    }
+
+    async _initializeConnector() {
+        /*
+         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+         * => append random search parameter to avoid caching
+         */
+        let uri = new URL(this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
+        this.requestOptions.headers.set('x-referer', this.url);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
     async _getMangas() {
