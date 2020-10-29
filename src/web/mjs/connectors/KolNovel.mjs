@@ -25,7 +25,6 @@ export default class KolNovel extends WordPressMangastream {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             this.adLinkDecrypt(element);
-            console
             const title = this.queryChaptersTitle ? [...element.querySelectorAll(this.queryChaptersTitle)].map(ele => ele.textContent).join(' ') : element.text;
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
