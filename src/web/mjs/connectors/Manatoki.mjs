@@ -24,7 +24,7 @@ export default class Manatoki extends GnuBoard5BootstrapBasic2 {
     }
     canHandleURI(uri) {
         return /https?:\/\/manatoki\d*.net/.test(uri.origin);
-        
+
     }
 
     async _initializeConnector() {
