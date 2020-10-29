@@ -18,7 +18,7 @@ export default class CopyToon extends GnuBoard5BootstrapBasic2 {
         this.config = {
             url: {
                 label: 'URL',
-                description: 'This website changes their URL regualry.\nThis is the last known URL which can also be manually set by the user.',
+                description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
                 value: 'https://copytoon104.com'
             }

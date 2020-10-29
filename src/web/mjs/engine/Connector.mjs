@@ -437,7 +437,7 @@ export default class Connector {
         if( request instanceof URL ) {
             request = new Request( request.href, this.requestOptions );
         }
-        return fetch( request )
+        return fetch( request.clone() )
             .then( response => {
                 if( response.status >= 500 && retries > 0 ) {
                     return this.wait( 2500 )
