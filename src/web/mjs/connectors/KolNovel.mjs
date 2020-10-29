@@ -1,6 +1,6 @@
-import WordPressMadaraNovel from './templates/WordPressMadaraNovel.mjs';
-
-export default class KolNovel extends WordPressMadaraNovel {
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
+//possible template/theme WordPressMangastreamNovel
+export default class KolNovel extends WordPressMangastream {
 
     constructor() {
         super();
@@ -9,6 +9,58 @@ export default class KolNovel extends WordPressMadaraNovel {
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
         this.url = 'https://kolnovel.com';
 
-        this.novelObstaclesQuery = 'div#text-chapter-toolbar, div#ucare-quick-link-widget, div.kolno-after-content';
+        this.queryChapters = 'div.eplister ul li a';
+        this.queryChaptersTitle = 'div:not(.epl-date)';
+        this.path = '/series/list-mode/';
+
+        this.novelContentQuery = 'div.epwrapper div[itemprop="text"]';
+        this.novelObstaclesQuery = 'div[class]';
+        this.novelFormat = 'image/png';
+        this.novelWidth = '56em'; // parseInt(1200 / window.devicePixelRatio) + 'px';
+        this.novelPadding = '1.5em';
+    }
+
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
+        return data.map(element => {
+            this.adLinkDecrypt(element);
+            const title = this.queryChaptersTitle ? [...element.querySelectorAll(this.queryChaptersTitle)].map(ele => ele.textContent).join(' ') : element.text;
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: title.replace(manga.title, '').trim()
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        uri.searchParams.set('style', 'list');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.novelContentQuery);
+        return data.length > 0 ? this._getPagesNovel(request) : super._getPages(chapter);
+    }
+
+    async _getPagesNovel(request) {
+        let script = `
+            new Promise(resolve => {
+                document.body.style.width = '${this.novelWidth}';
+                let container = document.querySelector('div.bixbox div.epwrapper');
+                container.style.maxWidth = '${this.novelWidth}';
+                container.style.padding = '0';
+                container.style.margin = '0';
+                let novel = document.querySelector('div.epcontent');
+                novel.style.padding = '${this.novelPadding}';
+                novel.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
+                let script = document.createElement('script');
+                script.onload = async function() {
+                    let canvas = await html2canvas(novel);
+                    resolve(canvas.toDataURL('${this.novelFormat}'));
+                }
+                script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                document.body.appendChild(script);
+            });
+        `;
+        return [ await Engine.Request.fetchUI(request, script) ];
     }
 }
