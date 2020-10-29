@@ -13,14 +13,6 @@ export default class MangaLink extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page = 0, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
-        }
-        return mangaList;
-    }
-    async _getMangas() {
-        let mangaList = [];
         let request = new Request(new URL('/mangas',this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'li:last-of-type > a');
         let pageCount = parseInt(data[0].href.match(/(\d*)$/)[1]);
