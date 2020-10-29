@@ -12,5 +12,4 @@ export default class MangaProZ extends WordPressMangastream {
         this.path = '/manga/list-mode/';
     }
 
-
 }
