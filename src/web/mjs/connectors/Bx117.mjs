@@ -20,7 +20,7 @@ export default class Bx117 extends Connector {
 
     async _getChapters(manga) {
         const request = new Request(this.url + manga.id, this.requestOptions);
-        const data = await this.fetchDOM(request, 'a.d-nowrap',3);
+        const data = await this.fetchDOM(request, 'a.d-nowrap', 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -41,16 +41,16 @@ export default class Bx117 extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let i = 1; i <= 2 ; i++) {
+        for(let i = 1; i <= 2; i++) {
             for(let page = 1, run = true; run; page++) {
-                let mangas = await this._getMangasFromPage(page,i);
+                let mangas = await this._getMangasFromPage(page, i);
                 mangas.length > 0 ? mangaList.push(...mangas) : run = false;
             }
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page,serial) {
+    async _getMangasFromPage(page, serial) {
         const request = new Request('http://m.bx117.com/statics/qingtiancms.ashx', {
             method: 'POST',
             body: new URLSearchParams({
@@ -68,7 +68,7 @@ export default class Bx117 extends Connector {
                 'X-Requested-With': 'XMLHttpRequest',
             }
         });
-        const data = await this.fetchDOM(request, 'li' ,3);
+        const data = await this.fetchDOM(request, 'li', 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),

@@ -13,7 +13,7 @@ export default class MangaLink extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(new URL('/mangas',this.url), this.requestOptions);
+        let request = new Request(new URL('/mangas', this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'li:last-of-type > a');
         let pageCount = parseInt(data[0].href.match(/(\d*)$/)[1]);
         for(let page = 1; page <= pageCount; page++) {
@@ -24,7 +24,7 @@ export default class MangaLink extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(`/mangas?page=${page}`,this.url), this.requestOptions);
+        let request = new Request(new URL(`/mangas?page=${page}`, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.d-flex > div > a');
         return data.map(element => {
             return {
@@ -55,8 +55,8 @@ export default class MangaLink extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request,'#images source');
-        return data.map(element => this.getAbsolutePath(element.dataset.src,this.url));
+        let data = await this.fetchDOM(request, '#images source');
+        return data.map(element => this.getAbsolutePath(element.dataset.src, this.url));
     }
 
 }
