@@ -198,11 +198,12 @@ export default class LineWebtoon extends Connector {
     }
 
     async _loadImage(url) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             let uri = new URL(url);
             uri.searchParams.delete('type');
             let image = new Image();
             image.onload = () => resolve(image);
+            image.onerror = error => reject(error);
             image.src = uri.href;
         });
     }
