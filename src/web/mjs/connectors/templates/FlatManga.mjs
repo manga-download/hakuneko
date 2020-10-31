@@ -10,7 +10,6 @@ export default class FlatManga extends Connector {
         this.url = undefined;
 
         this.queryChapters = 'div#tab-chapper table tr td a.chapter';
-        this.queryChapterTitle = undefined;
         this.language = 'jp';
     }
 
@@ -38,7 +37,7 @@ export default class FlatManga extends Connector {
         let language = dom.querySelector('ul.manga-info h1 span.flag-icon');
         language = language ? language.className.match(/flag-icon-([a-zA-Z]+)/)[1] : this.language;
         return [...dom.querySelectorAll(this.queryChapters)].map(element => {
-            let title = (this.queryChapterTitle ? element.querySelector(this.queryChapterTitle) : element).textContent.replace(manga.title, '');
+            let title = element.text.replace(manga.title, '');
             let mangaTitle = manga.title.replace(/\s*-\s*RAW$/, '');
             title = title.replace(mangaTitle.toUpperCase(), '');
             title = title.replace(mangaTitle, '');
