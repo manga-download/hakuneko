@@ -11,6 +11,8 @@ export default class ManHuaGui extends SinMH {
         this.requestOptions.headers.set('x-referer', this.url);
 
         this.api = 'SMH';
+        //this.path = '/list/index_p%PAGE%.html';
+        //this.queryMangasPageCount = 'div.pager a:last-of-type';
         this.queryChapters = 'div.chapter-list ul li a';
         this.config = {
             throttle: {
@@ -22,9 +24,9 @@ export default class ManHuaGui extends SinMH {
                 value: 2500
             }
         };
-        this.scriptPages =`
+        this.queryPagesScript =`
             new Promise(resolve => {
-                SMH.imgData = function(data) {
+                ${this.api}.imgData = function(data) {
                     let origin = 'https://' + servs[pVars.curServ].hosts[pVars.curHost].h + '.hamreus.com';
                     let pageLinks = data.files.map(file => origin + data.path + file + '?cid=' + data.cid + '&md5=' + data.sl.md5);
                     return {
@@ -38,7 +40,7 @@ export default class ManHuaGui extends SinMH {
     }
 
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        let msg = 'This function was disabled to prevent of being IP banned by the website owner, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
 }
