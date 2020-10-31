@@ -9,11 +9,15 @@ export default class jpm1234 extends SinMH {
         this.url = 'http://jpm1234.com';
         this.requestOptions.headers.set('x-referer', this.url);
 
-        this.path = '/All/';
-        this.pathMatch = '/All/0/0/0/0/0/lastpost/p/(\\d+)/';
+        this.path = '/All/0/0/0/0/0/lastpost/p/%PAGE%/';
+        this.queryManga = 'div.cf div.fl div.book-title h1';
         this.queryMangasPageCount = '#last_page';
         this.queryMangas = 'ul#contList li p.ell a:not([href="//"])';
         this.queryChapters = 'div.chapter-list ul li a';
+        this.queryPagesScript = `
+            new Promise(resolve => resolve(cInfo.fs.map(img => 'http://' + (/\\d$/.test(img) ? pageConfig.host.auto[0].replace('uploads','') : pageConfig.host.auto) + img)));
+        `;
+
         this.config = {
             throttle: {
                 label: 'Throttle Requests [ms]',
@@ -24,8 +28,5 @@ export default class jpm1234 extends SinMH {
                 value: 1000
             }
         };
-        this.scriptPages = `
-            new Promise(resolve => resolve(cInfo.fs.map(img => 'http://' + (/\\d$/.test(img) ? pageConfig.host.auto[0].replace('uploads','') : pageConfig.host.auto) + img)));
-        `;
     }
 }
