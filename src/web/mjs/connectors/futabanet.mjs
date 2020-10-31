@@ -8,30 +8,30 @@ export default class futabanet extends SpeedBinb {
         super.id = 'futabanet';
         super.label = 'がうがうモンスター (Futabanet Monster)';
         this.tags = [ 'manga', 'japanese' ];
-        this.url = 'https://futabanet.jp';
+        this.url = 'https://gaugau.futabanet.jp';
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'h2.detail-ex__title');
+        let data = await this.fetchDOM(request, 'h1.detail-ex__title');
         let id = uri.pathname;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/list/monster/serial', this.url), this.requestOptions);
+        let request = new Request(new URL('/list/works', this.url), this.requestOptions);
         let pages = await this.fetchDOM(request, 'li.m-pager__last a');
         pages = Number( new URL(pages[0].href).searchParams.get('page') );
 
         let data;
         let mangas = [];
-        for (let page = 0; page <= pages; page++) {
-            request = new Request(this.url + '/list/monster/serial?page=' + page);
+        for (let page = 1; page <= pages; page++) {
+            request = new Request(this.url + '/list/works?page=' + page);
             data = await this.fetchDOM(request, 'div.m-result-list__item a');
             mangas.push( ...data.map(element => {
                 return {
-                    id: this.getRootRelativeOrAbsoluteLink('/list/monster' + element.href, this.url),
+                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                     title: element.querySelector('.m-result-list__title').textContent.trim()
                 };
             }));
