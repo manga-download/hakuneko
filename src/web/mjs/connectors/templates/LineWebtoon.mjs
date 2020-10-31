@@ -12,6 +12,17 @@ export default class LineWebtoon extends Connector {
         this.baseURL = 'https://www.webtoons.com';
         this.requestOptions.headers.set('x-referer', this.baseURL);
         this.requestOptions.headers.set('x-cookie', 'ageGatePass=true');
+
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests',
+                input: 'numeric',
+                min: 0,
+                max: 5000,
+                value: 250
+            }
+        };
     }
 
     get icon() {
