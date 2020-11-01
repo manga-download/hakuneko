@@ -6,7 +6,7 @@ export default class Dmzj extends SinMH {
         super();
         super.id = 'dmzj';
         super.label = '动漫之家(DMZJ)';
-        this.tags = [ 'manga', 'multi-lingual' ];
+        this.tags = [ 'manga', 'chinese', 'webtoon' ];
         this.url = 'https://www.dmzj.com';
         this.requestOptions.headers.set('x-referer', this.url);
 
