@@ -53,7 +53,6 @@ export default class Qimiaomh extends Connector {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
-        console.log(data);
         return data.map(element => {
             const title = element.title;
             return {
