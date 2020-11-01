@@ -11,11 +11,10 @@ export default class Dmzj extends SinMH {
         this.requestOptions.headers.set('x-referer', this.url);
 
         this.queryChapters = 'div.tab-content-selected ul li a';
-        this.queryManga = 'div.comic_deCon > h1'
+        this.queryManga = 'div.comic_deCon > h1';
         this.path = '/category/0-0-0-0-0-0-%PAGE%.html';
-        this.queryMangasPageCount = 'a.pg_last'
+        this.queryMangasPageCount = 'a.pg_last';
         this.queryMangas = 'h3 > a';
-
 
         this.queryPagesScript =`
             new Promise(resolve => {
