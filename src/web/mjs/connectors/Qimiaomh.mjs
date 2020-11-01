@@ -21,7 +21,7 @@ export default class Qimiaomh extends Connector {
         let checkData = await this.fetchDOM(request, 'div.paging ul li a');
         let result = {
             data: null,
-            run: true
+            check: null
         };
 
         result.data = data.map(element => {
@@ -31,11 +31,11 @@ export default class Qimiaomh extends Connector {
             };
         });
 
-        result.run = checkData.find(element => {
+        result.check = checkData.find(element => {
             return element.href == "javascript:void(0)";
         });
 
-        if(page === 1)result.run = null;
+        if(page === 1)result.check = null;
 
         return result;
     }
@@ -44,7 +44,7 @@ export default class Qimiaomh extends Connector {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
             let result = await this._getMangasFromPage(page);
-            result.run ? run = false : mangaList.push(...result.data) ;
+            !result.check ? mangaList.push(...result.data) : run = false ;
         }
         return mangaList;
     }
