@@ -1,5 +1,5 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
-//possible template/theme WordPressMangastreamNovel
+//template/theme LightNovel, basically WordPressMangastreamNovel
 export default class KolNovel extends WordPressMangastream {
 
     constructor() {
