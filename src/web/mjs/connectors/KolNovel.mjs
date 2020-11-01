@@ -44,6 +44,7 @@ export default class KolNovel extends WordPressMangastream {
     async _getPagesNovel(request) {
         let script = `
             new Promise(resolve => {
+                document.body.className = document.body.className.replace('darkmode', 'lightmode')
                 document.body.style.width = '${this.novelWidth}';
                 let container = document.querySelector('div.bixbox div.epwrapper');
                 container.style.maxWidth = '${this.novelWidth}';
