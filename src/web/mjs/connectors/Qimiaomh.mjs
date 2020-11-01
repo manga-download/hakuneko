@@ -73,13 +73,12 @@ export default class EpikManga extends Connector {
                     } catch(error) {
                         reject(error);
                     }
-                }, 2000);
+                }, 1000);
             });
         `;
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await Engine.Request.fetchUI(request, script);
-        console.log(data);
         return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
