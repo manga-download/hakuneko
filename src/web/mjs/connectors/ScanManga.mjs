@@ -82,7 +82,7 @@ export default class ScanManga extends Connector {
 
     async _getPagesNovel(request) {
         let script = `
-            new Promise(resolve => {
+            new Promise((resolve, reject) => {
                 document.body.style.width = '56em';
                 let novel = document.querySelector('article.aLN');
                 novel.style.padding = '1.5em';
