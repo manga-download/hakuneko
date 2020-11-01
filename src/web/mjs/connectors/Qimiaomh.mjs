@@ -1,6 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 
-export default class EpikManga extends Connector {
+export default class Qimiaomh extends Connector {
 
     constructor() {
         super();
