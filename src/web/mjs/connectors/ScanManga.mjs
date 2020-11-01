@@ -87,9 +87,14 @@ export default class ScanManga extends Connector {
                 let novel = document.querySelector('article.aLN');
                 novel.style.padding = '1.5em';
                 let script = document.createElement('script');
+                script.onerror = error => reject(error);
                 script.onload = async function() {
-                    let canvas = await html2canvas(novel);
-                    resolve(canvas.toDataURL('image/png'));
+                    try{
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('image/png'));
+                    }catch (error){
+                        reject(error)
+                    }
                 }
                 script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
                 document.body.appendChild(script);
