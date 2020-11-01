@@ -10,6 +10,14 @@ export default class MojoPortalComic extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
+
+        this.queryMangaTitle = 'meta[property="og:title"]';
+        this.queryChapter = 'div.list-chapter ul li.row div.chapter a';
+        this.queryPages = 'div.reading div.page-chapter source';
+        this.path = '/?page=';
+        this.queryMangasPageCount = 'div.pagination-outter ul.pagination li:last-of-type a';
+        this.pathMatch = /(\d+)$/;
+        this.queryMangas = 'div.ModuleContent div.items div.item figcaption a.jtip';
     }
 
     _getImageURL(chapterURL, imageURL) {
@@ -34,17 +42,17 @@ export default class MojoPortalComic extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'meta[property="og:title"]');
+        let data = await this.fetchDOM(request, this.queryMangaTitle);
         let id = uri.pathname + uri.search;
-        let title = data[0].content.replace(new RegExp('-? ' + this.label, 'i'), '').trim();
+        let title = (data[0].content || data[0].textContent).replace(new RegExp('-?\\s' + this.label, 'i'), '').trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url + '/?page=', this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.pagination-outter ul.pagination li:last-of-type a');
-        let pageCount = parseInt(data[0] ? data[0].href.match(/\d+$/)[0] : 1);
+        let request = new Request(this.url + this.path, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangasPageCount);
+        let pageCount = parseInt(data[0] ? data[0].href.match(this.pathMatch)[1] : 1);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -53,8 +61,8 @@ export default class MojoPortalComic extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(this.url + '/?page=' + page, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.ModuleContent div.items div.item figcaption a.jtip', 3);
+        let request = new Request(this.url + this.path + page, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangas, 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
@@ -65,7 +73,7 @@ export default class MojoPortalComic extends Connector {
 
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.list-chapter ul li.row div.chapter a');
+        let data = await this.fetchDOM(request, this.queryChapter);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
@@ -77,7 +85,7 @@ export default class MojoPortalComic extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.reading div.page-chapter source');
+        let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
             let url = this.getAbsolutePath(element.dataset.original || element.dataset.src || element, request.url); // element.dataset.cdn
             return this._getImageURL(request.url, url);

@@ -1,13 +1,24 @@
 export default class Streamtape {
 
-    constructor(url, fetchDOM) {
+    constructor(url) {
         this._uri = new URL(url);
-        this._fetchDOM = fetchDOM;
     }
 
     async getStream() {
-        let request = new Request(this._uri);
-        let data = await this._fetchDOM(request, 'div#videolink');
-        return new URL(data[0].textContent.trim(), request.url).href;
+        const script = `
+            new Promise(async (resolve, reject) => {
+                try {
+                    const uri = new URL(document.querySelector('div#videolink').textContent.trim(), window.location.origin);
+                    const response = await fetch(uri, {
+                        method: 'HEAD' // headers: { 'Range': 'bytes=0-0' }
+                    });
+                    resolve(response.url);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        `;
+        const request = new Request(this._uri);
+        return Engine.Request.fetchUI(request, script);
     }
 }

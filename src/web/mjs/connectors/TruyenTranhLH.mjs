@@ -1,13 +1,19 @@
-import Connector from '../engine/Connector.mjs';
+import FlatManga from './templates/FlatManga.mjs';
 
-export default class TruyenTranhLH extends Connector {
+export default class TruyenTranhLH extends FlatManga {
 
     constructor() {
         super();
         super.id = 'truyentranhlh';
-        super.label = 'TruyenTranhLH';
+        super.label = 'TruyentranhLH';
         this.tags = [ 'manga', 'webtoon', 'vietnamese' ];
         this.url = 'https://truyentranhlh.net';
+
+        this.queryMangaTitle = 'meta[property="og:title"]';
+        this.queryChapters = 'ul.list-chapters > a';
+        this.queryChapterTitle = 'div.chapter-name';
+        this.queryPages = 'div#chapter-content source';
+        this.language = '';
     }
 
     async _getMangas() {
@@ -33,25 +39,5 @@ export default class TruyenTranhLH extends Connector {
                 title: element.text.trim()
             };
         });
-    }
-
-    async _getChapters(manga) {
-        let uri = new URL(manga.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul.list-chapters > a');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.title.replace(manga.title, '').trim(),
-                language: ''
-            };
-        });
-    }
-
-    async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#chapter-content source');
-        return data.map(element => this.getAbsolutePath(element.dataset.src || element, request.url));
     }
 }

@@ -419,7 +419,6 @@ export default class Connector {
         if( clearIframettributes ) {
             content = content.replace( /<iframe[^<]*?>/g, '<iframe>');
         }
-        content = content.replace(/<\/?noscript>/g, '');
         let dom = document.createElement( 'html' );
         dom.innerHTML = content;
         return dom;
@@ -438,7 +437,7 @@ export default class Connector {
         if( request instanceof URL ) {
             request = new Request( request.href, this.requestOptions );
         }
-        return fetch( request )
+        return fetch( request.clone() )
             .then( response => {
                 if( response.status >= 500 && retries > 0 ) {
                     return this.wait( 2500 )

@@ -9,8 +9,5 @@ export default class SekteKomik extends WordPressMangastream {
         this.tags = [ 'webtoon', 'indonesian' ];
         this.url = 'http://sektekomik.com';
         this.path = '/manga/list-mode/';
-
-        this.queryChapters = 'div#chapterlist ul li div.eph-num a';
-        this.queryChaptersTitle = 'span.chapternum';
     }
 }

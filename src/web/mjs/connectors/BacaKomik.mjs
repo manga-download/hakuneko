@@ -12,6 +12,7 @@ export default class BacaKomik extends WordPressMangastream {
 
         this.queryMangas = 'div.cpp div.daftarkartun div.jdlbar ul li a.tip';
         this.queryChapters = 'div.eps_lst ul li span.lchx a';
-        this.queryPages = 'div.chapter-area div.chapter-content div.chapter-image source';
+        this.queryChaptersTitle = undefined;
+        this.queryPages = 'div.chapter-area div.chapter-content div.chapter-image img';
     }
 }

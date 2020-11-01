@@ -19,41 +19,18 @@ export default class NHentai extends Connector {
         return new Manga( this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
+    async _getMangas() {
         let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
-        callback( new Error( msg ), undefined );
+        throw new Error(msg);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        Promise.resolve()
-            .then( () => {
-                callback( null, [ Object.assign( { language: '' }, manga ) ] );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        return [ Object.assign({ language: '' }, manga) ];
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
+    async _getPages(chapter) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'div#thumbnail-container a.gallerythumb source' )
-            .then( data => {
-                let pageList = data.map( element => element.dataset['src'].replace( 't.', 'i.' ).replace( 't.', '.' ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+        const data = await this.fetchDOM(request, 'div#thumbnail-container a.gallerythumb source.lazyload');
+        return data.map(element => element.dataset.src.replace('t.', 'i.').replace('t.', '.'));
     }
 }
