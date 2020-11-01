@@ -22,7 +22,7 @@ export default class WordPressMadaraNovel extends WordPressMadara {
 
     async _getPagesNovel(request) {
         let script = `
-            new Promise(resolve => {
+            new Promise((resolve, reject) => {
                 document.body.style.width = '${this.novelWidth}';
                 let container = document.querySelector('div.content-area div.container');
                 container.style.maxWidth = '${this.novelWidth}';
@@ -32,9 +32,14 @@ export default class WordPressMadaraNovel extends WordPressMadara {
                 novel.style.padding = '${this.novelPadding}';
                 document.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
+                script.onerror = error => reject(error);
                 script.onload = async function() {
-                    let canvas = await html2canvas(novel);
-                    resolve(canvas.toDataURL('${this.novelFormat}'));
+                    try{
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('${this.novelFormat}'));
+                    }catch (error){
+                        reject(error)
+                    }
                 }
                 script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
                 document.body.appendChild(script);
