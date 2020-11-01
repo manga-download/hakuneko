@@ -7,7 +7,7 @@ export default class ScanManga extends Connector {
         super();
         super.id = 'scanmanga';
         super.label = 'ScanManga';
-        this.tags = [ 'manga', 'french' ];
+        this.tags = [ 'manga', 'french', 'novel' ];
         this.url = 'https://www.scan-manga.com';
     }
 
