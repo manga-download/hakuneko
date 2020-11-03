@@ -26,7 +26,7 @@ export default class MangaRaw extends Connector {
 
     async _getMangasFromPage(page) {
         let request = new Request(`${this.url}/browse/?results=${page}`, this.requestOptions);
-        let data = await this.fetchDOM(request, '.novel-item a',3);
+        let data = await this.fetchDOM(request, '.novel-item a', 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),

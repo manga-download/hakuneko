@@ -14,7 +14,7 @@ export default class Sukima extends Connector {
     }
 
     async _getMangas() {
-        let categorys = await this._fetchPOST('/api/book/v1/free/','{"store":false,"genre":"0"}');
+        let categorys = await this._fetchPOST('/api/book/v1/free/', '{"store":false,"genre":"0"}');
 
         let uri;
         let pages;
@@ -52,7 +52,7 @@ export default class Sukima extends Connector {
     }
 
     async _getChapters(manga) {
-        let books = await this._fetchPOST('/api/book/v1/title/'+manga.id+'/','{}');
+        let books = await this._fetchPOST('/api/book/v1/title/'+manga.id+'/', '{}');
 
         let chapters = [];
         for (const book of books.contents) {
@@ -145,7 +145,7 @@ export default class Sukima extends Connector {
 
     async _getMangaFromURI(uri) {
         let id = uri.pathname.match(/\/(\w+)\/?$/)[1];
-        let data = await this._fetchPOST('/api/book/v1/title/'+id+'/','{}');
+        let data = await this._fetchPOST('/api/book/v1/title/'+id+'/', '{}');
         return new Manga(this, id, data.title);
     }
 

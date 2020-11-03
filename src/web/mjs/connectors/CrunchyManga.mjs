@@ -18,7 +18,7 @@ export default class CrunchyManga extends Crunchyroll {
         return data.map(manga => {
             return {
                 id: manga.series_id,
-                title:  manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace(/^\// , '')
+                title:  manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace(/^\//, '')
             };
         });
     }

@@ -36,7 +36,7 @@ export default class MangaAy extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.replace(manga.title,'').trim(),
+                title: element.text.replace(manga.title, '').trim(),
             };
         });
     }

@@ -25,7 +25,7 @@ export default class ScantradUnion extends Connector {
             mangas.push( ...data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
-                    title: element.text.trim().replace(/^(\[Partenaire\])/,"")
+                    title: element.text.trim().replace(/^(\[Partenaire\])/, "")
                 };
             }));
         }
@@ -68,6 +68,6 @@ export default class ScantradUnion extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(new URL(uri.href), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.projet-description > h2');
-        return new Manga(this, uri.pathname, data[0].textContent.trim().replace(/^(\[Partenaire\])/,""));
+        return new Manga(this, uri.pathname, data[0].textContent.trim().replace(/^(\[Partenaire\])/, ""));
     }
 }

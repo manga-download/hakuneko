@@ -44,7 +44,7 @@ export default class Qimiaomh extends Connector {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
             let result = await this._getMangasFromPage(page);
-            !result.check ? mangaList.push(...result.data) : run = false ;
+            !result.check ? mangaList.push(...result.data) : run = false;
         }
         return mangaList;
     }

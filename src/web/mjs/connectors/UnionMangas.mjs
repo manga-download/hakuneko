@@ -81,7 +81,7 @@ export default class UnionMangas extends Connector {
                     return uri.href;
                 } );
                 pageList = pageList.filter( page => {
-                    return page.indexOf( 'banner' ) < 0 ;
+                    return page.indexOf( 'banner' ) < 0;
                 } );
                 callback( null, pageList );
             } )

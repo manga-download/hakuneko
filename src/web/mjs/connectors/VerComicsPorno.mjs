@@ -6,7 +6,7 @@ export default class VerComicsPorno extends Connector {
         super();
         super.id = 'vercomicsporno';
         super.label = 'VerComicsPorno';
-        this.tags = ['porn' ,'spanish'];
+        this.tags = ['porn', 'spanish'];
         this.url = 'https://vercomicsporno.com';
 
         this.path = '/page/';
@@ -22,14 +22,14 @@ export default class VerComicsPorno extends Connector {
             this.cfMailDecrypt(element);
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.href.split('/')[3].replace(/(-)/g,' ')
+                title: element.href.split('/')[3].replace(/(-)/g, ' ')
             };
         });
     }
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url + this.path + '1' , this.requestOptions);
+        let request = new Request(this.url + this.path + '1', this.requestOptions);
         let data = await this.fetchDOM(request, this.pager);
         let pageCount = parseInt(data[0].href.match(/\d+$/));
         for(let page = 1; page <= pageCount; page++) {

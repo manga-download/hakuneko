@@ -49,12 +49,9 @@ export default class Ohtabooks extends SpeedBinb {
                     partId = partId.match(/\d+/);
 
                     let title = element.querySelector( '.title' );
-                    if( title )
-                    {
+                    if( title ) {
                         title = title.textContent;
-                    }
-                    else if( element.classList.contains( 'btnMini' ) )
-                    {
+                    } else if( element.classList.contains( 'btnMini' ) ) {
                         title = element.textContent;
                     }
 

@@ -7,7 +7,7 @@ export default class MangaJar extends Connector {
         super();
         super.id = 'mangajar';
         super.label = 'MangaJar';
-        this.tags = [ 'manga', 'english', 'scanlation' , 'webtoon' ];
+        this.tags = [ 'manga', 'english', 'scanlation', 'webtoon' ];
         this.url = 'https://mangajar.com';
     }
 

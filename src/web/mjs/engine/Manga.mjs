@@ -76,7 +76,7 @@ export default class Manga extends EventTarget {
             return fileName === chapter.file.full
                 || fileName === chapter.file.name + extensions.mp4
                 || fileName === chapter.file.name + extensions.mkv
-                || fileName === chapter.file.name + extensions.m3u8 ;
+                || fileName === chapter.file.name + extensions.m3u8;
         } );
     }
 
@@ -173,7 +173,7 @@ export default class Manga extends EventTarget {
         // extract volume number
         let volume = name.match( reVol );
         if( volume && volume.length > 1 ) {
-            volume = volume[1] ? volume[1] : '' ;
+            volume = volume[1] ? volume[1] : '';
         } else {
             volume = '';
         }
@@ -183,7 +183,7 @@ export default class Manga extends EventTarget {
         // extract chapter number
         let chapter = name.match( reCh );
         if( chapter && chapter.length > 1 ) {
-            chapter = chapter[1] ? chapter[1] : '' ;
+            chapter = chapter[1] ? chapter[1] : '';
         } else {
             chapter = '';
         }
@@ -206,7 +206,7 @@ export default class Manga extends EventTarget {
      */
     _padNumberPrefixWithZeros( text, digits ) {
         let prefix = text.toString().match( /^\d+/ );
-        let count = prefix && prefix.length > 0 ? prefix[0].length : 0 ;
+        let count = prefix && prefix.length > 0 ? prefix[0].length : 0;
         count = Math.min( digits, count );
         return '0'.repeat( digits - count ) + text;
     }

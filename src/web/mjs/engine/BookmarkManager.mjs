@@ -176,7 +176,7 @@ export default class BookmarkManager extends EventTarget {
             return false;
         }
         let index = this.bookmarks.findIndex( ( bookmark ) => {
-            return bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id ;
+            return bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id;
         });
         if( index < 0 ) {
             let bookmark = new Bookmark( manga );
@@ -194,7 +194,7 @@ export default class BookmarkManager extends EventTarget {
      */
     deleteBookmark( bookmark ) {
         let index = this.bookmarks.findIndex( ( b ) => {
-            return b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector ;
+            return b.key.manga === bookmark.key.manga && b.key.connector === bookmark.key.connector;
         });
         if( index > -1 ) {
             this.bookmarks.splice( index, 1 );
@@ -209,6 +209,6 @@ export default class BookmarkManager extends EventTarget {
      * Helper function for sorting
      */
     compareBookmarks( a, b ) {
-        return a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1 ;
+        return a.title.manga.toLowerCase() < b.title.manga.toLowerCase() ? -1 : 1;
     }
 }
