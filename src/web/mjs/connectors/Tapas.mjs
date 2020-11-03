@@ -7,7 +7,7 @@ export default class Tapas extends Connector {
         super();
         super.id = 'tapas';
         super.label = 'Tapas';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = [ 'webtoon', 'english', 'novel' ];
         this.url = 'https://tapas.io';
         this.requestOptions.headers.set('x-cookie', 'adjustedBirthDate=1990-01-01');
     }
@@ -83,9 +83,41 @@ export default class Tapas extends Connector {
             });
     }
 
-    async _getPages(chapter) {
+    async _getPagesManga(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.viewer > article > source.content__img');
         return data.map(image => this.getAbsolutePath(image.dataset.src, request.url));
     }
+
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        uri.searchParams.set('style', 'list');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, '.ep-epub-contents');
+        return data.length > 0 ? this._getPagesNovel(request) : this._getPagesManga(chapter);
+    }
+
+    async _getPagesNovel(request) {
+        let script = `
+            new Promise((resolve, reject) => {
+                document.body.style.width = '56em';
+                let novel = document.querySelector('.ep-epub-content');
+                novel.style.padding = '1.5em';
+                let script = document.createElement('script');
+                script.onerror = error => reject(error);
+                script.onload = async function() {
+                    try{
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('image/png'));
+                    }catch (error){
+                        reject(error)
+                    }
+                }
+                script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                document.body.appendChild(script);
+            });
+        `;
+        return [ await Engine.Request.fetchUI(request, script) ];
+    }
+
 }
