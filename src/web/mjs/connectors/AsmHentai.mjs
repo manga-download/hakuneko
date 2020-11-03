@@ -31,8 +31,46 @@ export default class AsmHentai extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.gallery source.lazy');
-        return data.map(element => this.getAbsolutePath(element.dataset.src.replace('t.jpg', '.jpg'), request.url));
+        const script = `
+            /*
+            new Promise(async resolve => {
+                const response = await fetch('/load_thumbs', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        _token: $('meta[name="csrf-token"]').attr('content'),
+                        id: $("#id").val(),
+                        dir: $("#dir").val(),
+                        v_pages: 0,
+                        t_pages: $("#t_pages").val(),
+                        type: 2
+                    }),
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const data = await response.text();
+                resolve(data);
+            });
+            */
+            new Promise((resolve, reject) => {
+                const timer = setInterval(() => {
+                    try {
+                        const button = document.querySelector('#load_all');
+                        if(button) {
+                            button.click();
+                        } else {
+                            clearInterval(timer);
+                            const images = [...document.querySelectorAll('div.gallery img')].map(image => (image.dataset.src || image.src).replace('t.jpg', '.jpg'));
+                            resolve(images);
+                        }
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 500);
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }
