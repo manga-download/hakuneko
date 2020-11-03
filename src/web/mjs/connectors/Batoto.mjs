@@ -10,8 +10,8 @@ export default class Batoto extends AnyACG {
         this.url = 'https://bato.to';
 
         this.path = '/browse?sort=title&page=';
-        this.queryMangaTitle = 'div#series-page div.title-set';
-        this.queryMangaTitleText = 'h3.item-title a';
+        this.queryMangaTitle = 'h3.item-title';
+        this.queryMangaTitleText = 'a';
         this.queryMangaTitleFlag = 'span.item-flag';
         this.queryMangaPages = 'nav.d-none ul.pagination li.page-item:nth-last-child(2) a.page-link';
         this.queryMangas = 'div#series-list div.item-text';
