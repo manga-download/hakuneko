@@ -2,11 +2,11 @@ import Connector from '../engine/Connector.mjs';
 
 export default class Migudm extends Connector {
 
-    constructor(){
+    constructor() {
         super();
         super.id = 'migudm';
         super.label = '咪咕 (Migudm)';
-        this.tags = [ 'manhhua', 'chinese' ];
+        this.tags = [ 'manhua', 'chinese' ];
         this.url = 'https://www.migudm.cn';
 
         this.path = '/comic/list_p%PAGE%/';
@@ -41,10 +41,9 @@ export default class Migudm extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
-            const title = element.title;
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.replace(manga.title, '').trim()
+                title: element.title.replace(manga.title, '').trim()
             };
         });
     }
