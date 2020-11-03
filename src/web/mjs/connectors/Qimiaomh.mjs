@@ -6,7 +6,7 @@ export default class Qimiaomh extends Connector {
         super();
         super.id = 'qimiaomh';
         super.label = '奇妙漫画 (Qimiaomh)';
-        this.tags = [ 'manhua', 'chinese' ];
+        this.tags = [ 'webtoon', 'chinese' ];
         this.url = 'https://www.qimiaomh.com';
 
         this.queryMangas = 'div.wrapper div.mt20 div.classification h2 a';
