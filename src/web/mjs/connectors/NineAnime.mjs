@@ -292,7 +292,7 @@ export default class NineAnime extends Connector {
     }
 
     async _getEpisodeStreamtape(link/*, resolution*/) {
-        let streamtape = new Streamtape(link, this.fetchDOM.bind(this));
+        let streamtape = new Streamtape(link);
         let stream = await streamtape.getStream();
         return {
             video: stream,

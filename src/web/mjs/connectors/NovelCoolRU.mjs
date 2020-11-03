@@ -5,7 +5,7 @@ export default class NovelcoolRU extends Novelcool {
         super();
         super.id = 'novelcool-ru';
         super.label = 'Novel Cool (RU)';
-        this.tags = [ 'rusian', 'manga', 'webtoon'];
+        this.tags = [ 'russian', 'manga', 'webtoon'];
         this.url = 'https://ru.novelcool.com';
     }
 }

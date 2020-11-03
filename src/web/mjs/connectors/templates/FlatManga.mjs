@@ -1,4 +1,5 @@
 import Connector from '../../engine/Connector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
 export default class FlatManga extends Connector {
 
@@ -8,15 +9,30 @@ export default class FlatManga extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
+        this.path = '/manga-list.html?listType=allABC';
 
+        this.queryMangaTitle = 'head title';
+        this.queryMangas = 'span[data-toggle="mangapop"] a';
         this.queryChapters = 'div#tab-chapper table tr td a.chapter';
+        this.queryChapterTitle = undefined;
+        this.queryChapterLanguage = 'ul.manga-info h1 span.flag-icon';
+        this.queryChapterLanguageClassRX = /flag-icon-([a-zA-Z]+)/;
+        this.queryPages = 'source.chapter-img';
         this.language = 'jp';
     }
 
-    async _getMangas() {
-        let uri = new URL('/manga-list.html?listType=allABC', this.url);
+    async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'span[data-toggle="mangapop"] a');
+        let data = await this.fetchDOM(request, this.queryMangaTitle);
+        let id = uri.pathname;
+        let title = data[0].content || data[0].textContent.split(' | ')[0].trim();
+        return new Manga(this, id, title);
+    }
+
+    async _getMangas() {
+        let uri = new URL(this.path, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryMangas);
         return data.map( element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -34,13 +50,12 @@ export default class FlatManga extends Connector {
         }
         let data = await response.text();
         let dom = this.createDOM(data);
-        let language = dom.querySelector('ul.manga-info h1 span.flag-icon');
-        language = language ? language.className.match(/flag-icon-([a-zA-Z]+)/)[1] : this.language;
+        let language = dom.querySelector(this.queryChapterLanguage);
+        language = language ? language.className.match(this.queryChapterLanguageRX)[1] : this.language;
         return [...dom.querySelectorAll(this.queryChapters)].map(element => {
-            let title = element.text.replace(manga.title, '');
+            let title = (this.queryChapterTitle ? element.querySelector(this.queryChapterTitle) : element).textContent.replace(manga.title, '');
             let mangaTitle = manga.title.replace(/\s*-\s*RAW$/, '');
-            title = title.replace(mangaTitle.toUpperCase(), '');
-            title = title.replace(mangaTitle, '');
+            title = title.replace(new RegExp(mangaTitle, 'i'), '');
             title = title.replace(/^\s*-\s*/, '');
             title = title.replace(/-\s*-\s*Read\s*Online\s*$/, '');
             title = title.trim();
@@ -55,7 +70,7 @@ export default class FlatManga extends Connector {
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'source.chapter-img');
+        let data = await this.fetchDOM(request, this.queryPages);
         return data
             .map(element => {
                 try { element.dataset.src = atob(element.dataset.src); } catch(_) { /* ignore */ }

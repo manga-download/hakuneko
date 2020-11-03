@@ -106,13 +106,12 @@ export default class MangaFox extends Connector {
         //Get Meta informations from last Image
         let lastImage = await new Promise(resolve => {
             const img = new Image();
-            img.onload = function() {
-                resolve(img);
-            };
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
             img.src = pages.slice(-1);
         });
         //Check if the last image seems to be the usual ad
-        if(lastImage.naturalHeight===563 && lastImage.naturalWidth===1000) {
+        if(lastImage && lastImage.naturalHeight === 563 && lastImage.naturalWidth === 1000) {
             pages.pop();
         }
         return pages;
