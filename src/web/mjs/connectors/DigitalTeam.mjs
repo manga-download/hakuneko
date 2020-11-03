@@ -83,7 +83,7 @@ export default class DigitalTeam extends Connector {
                 return response.json();
             } )
             .then( data => {
-                data = typeof data === 'string' ? JSON.parse( data ) : data ;
+                data = typeof data === 'string' ? JSON.parse( data ) : data;
                 let pageList = data[0].map( ( file, index ) => {
                     if( external ) {
                         return data[1][index] + file.name + file.ex;

@@ -441,12 +441,9 @@ export default class Request {
          * NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
          */
         if( !uri.pathname.includes( 'chk_jschl' ) ) {
-            // Priority 1: Force referer for certain hosts
             if( uri.hostname.includes( '.mcloud.to' ) ) {
                 details.requestHeaders['Referer'] = uri.href;
-            }
-            // Priority 2: Use referer provided by connector
-            else if( details.requestHeaders['x-referer'] ) {
+            } else if( details.requestHeaders['x-referer'] ) {
                 details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
             }
         }

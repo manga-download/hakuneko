@@ -67,7 +67,7 @@ export default class DynastyScans extends Connector {
                 // do not change the command order!
                 let duplicateCount = titleStack.filter( t => t === chapter.title ).length;
                 titleStack.push( chapter.title );
-                chapter.title += duplicateCount > 0 ? ' #' + duplicateCount : '' ;
+                chapter.title += duplicateCount > 0 ? ' #' + duplicateCount : '';
             }
             callback( null, chapterList );
         } catch(error) {

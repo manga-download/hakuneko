@@ -38,7 +38,7 @@ export default class MangaCruzers extends Connector {
             let seasons = page.match(/season-(\d+)$/);
             if(seasons) {
                 let count = parseInt(seasons[1]);
-                seasons = [...new Array(count).keys()].map(p => page.replace(/season-(\d+)$/ ,`season-${p+1}`));
+                seasons = [...new Array(count).keys()].map(p => page.replace(/season-(\d+)$/, `season-${p+1}`));
                 return [ ...accumulator, ...seasons.reverse() ];
             } else {
                 return [ ...accumulator, page ];

@@ -17,7 +17,7 @@ export default class MangaIndoWeb extends Connector {
         this.querMangaTitleFromURI = 'div#main article div.title h2';
     }
 
-    async _getMangas(){
+    async _getMangas() {
         const uri = new URL(this.path, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
@@ -30,7 +30,7 @@ export default class MangaIndoWeb extends Connector {
         });
     }
 
-    async _getChapters(manga){
+    async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request( uri, this.requestOptions );
         let data = await this.fetchDOM(request, this.queryChapters);
@@ -43,7 +43,7 @@ export default class MangaIndoWeb extends Connector {
         });
     }
 
-    async _getPages(chapter){
+    async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
@@ -51,7 +51,7 @@ export default class MangaIndoWeb extends Connector {
         return data.map(element => this.getAbsolutePath( element, request.url ));
     }
 
-    async _getMangaFromURI(uri){
+    async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.querMangaTitleFromURI);
         const title = data[0].textContent.trim();

@@ -19,7 +19,7 @@ export default class UserAgent {
         let $ = UserAgent;
         let sep = ['_', '.'];
         let major = ['10'];
-        let minor = ['8','9', '10', '11', '12', '13'];
+        let minor = ['8', '9', '10', '11', '12', '13'];
         let patch = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
         let version = [ $._rd( major ), $._rd( minor ), $._rd( patch ) ].join( $._rd( sep ) );
         return 'Macintosh; Intel Mac OS X ' + version;
