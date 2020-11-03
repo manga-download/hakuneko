@@ -6,7 +6,7 @@ export default class Migudm extends Connector {
         super();
         super.id = 'migudm';
         super.label = '咪咕 (Migudm)';
-        this.tags = [ 'manhua', 'chinese' ];
+        this.tags = [ 'webtoon', 'chinese' ];
         this.url = 'https://www.migudm.cn';
 
         this.path = '/comic/list_p%PAGE%/';
