@@ -15,7 +15,8 @@ export default class Kiryuu extends WordPressMangastream {
         const fakeLinkPatterns = [
             /[.,]5\.(jpg|png)$/i,
             /iklan\.(jpg|png)$/i,
-            /zz\.(jpg|png)$/i
+            /zz\.(jpg|png)$/i,
+            /\.filerun\./i
         ];
         let pageList = await super._getPages(chapter);
         return pageList.filter(link => !fakeLinkPatterns.some(pattern => pattern.test(link)));
