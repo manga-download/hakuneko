@@ -7,7 +7,7 @@ export default class Migudm extends Connector {
         super.id = 'migudm';
         super.label = '咪咕 (Migudm)';
         this.tags = [ 'manhhua', 'chinese' ];
-        this.url = 'https://www.migudm.cn/';
+        this.url = 'https://www.migudm.cn';
 
         this.path = '/comic/list_p%PAGE%/';
         this.queryMangas = 'div.classificationList ul li div.clItemRight h4.title a';
@@ -21,7 +21,6 @@ export default class Migudm extends Connector {
             let mangas = await this._getMangasFromPage(page);
             mangas.length ? mangaList.push(...mangas) : run = false;
         }
-        console.log(mangaList);
         return mangaList;
     }
 
