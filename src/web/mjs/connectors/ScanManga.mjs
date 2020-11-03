@@ -7,7 +7,7 @@ export default class ScanManga extends Connector {
         super();
         super.id = 'scanmanga';
         super.label = 'ScanManga';
-        this.tags = [ 'manga', 'french' ];
+        this.tags = [ 'manga', 'french', 'novel' ];
         this.url = 'https://www.scan-manga.com';
     }
 
@@ -54,7 +54,7 @@ export default class ScanManga extends Connector {
             });
     }
 
-    async _getPages(chapter) {
+    async _getPagesManga(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let response = await fetch(request);
         let data = await response.text();
@@ -70,6 +70,37 @@ export default class ScanManga extends Connector {
             url: baseURL + link,
             referer: request.url
         }));
+    }
+
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        uri.searchParams.set('style', 'list');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, '.aLN');
+        return data.length > 0 ? this._getPagesNovel(request) : this._getPagesManga(chapter);
+    }
+
+    async _getPagesNovel(request) {
+        let script = `
+            new Promise((resolve, reject) => {
+                document.body.style.width = '56em';
+                let novel = document.querySelector('article.aLN');
+                novel.style.padding = '1.5em';
+                let script = document.createElement('script');
+                script.onerror = error => reject(error);
+                script.onload = async function() {
+                    try{
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('image/png'));
+                    }catch (error){
+                        reject(error)
+                    }
+                }
+                script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                document.body.appendChild(script);
+            });
+        `;
+        return [ await Engine.Request.fetchUI(request, script) ];
     }
 
     _handleConnectorURI( payload ) {

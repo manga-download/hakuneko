@@ -43,7 +43,7 @@ export default class KolNovel extends WordPressMangastream {
 
     async _getPagesNovel(request) {
         let script = `
-            new Promise(resolve => {
+            new Promise((resolve, reject) => {
                 document.body.className = document.body.className.replace('darkmode', 'lightmode')
                 document.body.style.width = '${this.novelWidth}';
                 let container = document.querySelector('div.bixbox div.epwrapper');
@@ -54,9 +54,14 @@ export default class KolNovel extends WordPressMangastream {
                 novel.style.padding = '${this.novelPadding}';
                 novel.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
+                script.onerror = error => reject(error);
                 script.onload = async function() {
-                    let canvas = await html2canvas(novel);
-                    resolve(canvas.toDataURL('${this.novelFormat}'));
+                    try{
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('${this.novelFormat}'));
+                    }catch (error){
+                        reject(error)
+                    }
                 }
                 script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
                 document.body.appendChild(script);
