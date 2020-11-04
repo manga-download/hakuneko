@@ -19,6 +19,25 @@ export default class WordPressMangastream extends Connector {
         this.querMangaTitleFromURI = 'div#content div.postbody article h1';
     }
 
+    get _queryPagesScript() {
+        return this.queryPagesScript || `
+            new Promise((resolve, reject) => {
+                if(window.ts_reader) {
+                    resolve(ts_reader.params.sources.pop().images);
+                } else {
+                    setTimeout(() => {
+                        try {
+                            const images = [...document.querySelectorAll('${this.queryPages}')];
+                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.src));
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, 500);
+                }
+            });
+        `;
+    }
+
     async _getMangas() {
         let request = new Request(new URL(this.path, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
@@ -44,25 +63,9 @@ export default class WordPressMangastream extends Connector {
     }
 
     async _getPages(chapter) {
-        const script = `
-            new Promise((resolve, reject) => {
-                if(window.ts_reader) {
-                    resolve(ts_reader.params.sources.pop().images);
-                } else {
-                    setTimeout(() => {
-                        try {
-                            const images = [...document.querySelectorAll('${this.queryPages}')];
-                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.src));
-                        } catch(error) {
-                            reject(error);
-                        }
-                    }, 500);
-                }
-            });
-        `;
         const uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await Engine.Request.fetchUI(request, script);
+        let data = await Engine.Request.fetchUI(request, this._queryPagesScript);
         return data.map(link => this.getAbsolutePath(link, request.url)).filter(link => !link.includes('histats.com'));
     }
 
