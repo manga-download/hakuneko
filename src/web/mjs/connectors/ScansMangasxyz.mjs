@@ -16,11 +16,11 @@ export default class ScansMangasxyz extends WordPressMangastream {
     }
 
     async _getPages(chapter) {
-        let pagelist = []
+        let pagelist = [];
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = (await this.fetchDOM(request, 'body'))[0];
         for (let i = 1; i <= parseInt(data.querySelector('div.nav_apb > a:nth-last-of-type(2)').text); i++) {
-            pagelist.push(data.querySelector('a[rel=nofollow] > source').src.replace(/(\d+)(\.)/,i+'$2'))
+            pagelist.push(data.querySelector('a[rel=nofollow] > source').src.replace(/(\d+)(\.)/, i+'$2'));
         }
         return pagelist;
     }
