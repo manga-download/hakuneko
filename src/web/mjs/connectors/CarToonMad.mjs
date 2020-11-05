@@ -60,6 +60,6 @@ export default class CarToonMad extends Connector {
         const data = await this.fetchDOM(request, 'body');
         const maxpage = parseInt(data[0].querySelector('a:nth-last-of-type(2).pages').textContent);
         const pageone = data[0].querySelector('a > source[oncontextmenu]').src;
-        return [...new Array(maxpage)].map((_,int) => pageone.replace(/(\d+)$/,('000' + (int+1)).slice(-3)));
+        return [...new Array(maxpage)].map((_, int) => pageone.replace(/(\d+)$/, ('000' + (int+1)).slice(-3)));
     }
 }
