@@ -7,7 +7,7 @@ export default class KissmangaORG extends Connector {
         super();
         super.id = 'kissmangaorg';
         super.label = 'Kissmanga.org';
-        this.tags = [ '!test', 'manga', 'webtoon', 'english' ];
+        this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://kissmanga.org';
         this.path = '/manga_list/';
 
@@ -46,7 +46,7 @@ export default class KissmangaORG extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.replace('-', '').replace(manga.title, '').trim()
+                title: element.text.replace(manga.title + ' -', '').trim()
             };
         });
     }
@@ -55,7 +55,7 @@ export default class KissmangaORG extends Connector {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element.dataset['data-src'] || element.src, this.url)).filter(link => !link.includes('adskeeper.co.uk'));
+        return data.map(element => this.getAbsolutePath(element.src, this.url));
     }
 
     async _getMangaFromURI(uri) {
