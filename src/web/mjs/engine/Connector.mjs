@@ -446,7 +446,7 @@ export default class Connector {
                 if( response.status === 200 ) {
                     return response.arrayBuffer()
                         .then( data => {
-                            let dom = this.createDOM( new TextDecoder(encoding).decode(data) );
+                            let dom = this.createDOM( new TextDecoder(encoding || 'utf8').decode(data) );
                             return Promise.resolve( !selector ? dom : [...dom.querySelectorAll( selector )] );
                         } );
                 }
