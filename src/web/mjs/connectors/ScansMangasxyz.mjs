@@ -19,7 +19,7 @@ export default class ScansMangasxyz extends WordPressMangastream {
         let pagelist = [];
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = (await this.fetchDOM(request, 'body'))[0];
-        const lenloop = parseInt(data.querySelector('div.nav_apb > a:nth-last-of-type(2)').text)
+        const lenloop = parseInt(data.querySelector('div.nav_apb > a:nth-last-of-type(2)').text);
         for (let i = 1; i <= lenloop; i++) {
             pagelist.push(data.querySelector('a[rel=nofollow] > source').src.replace(/(\d+)(\.)/, i+'$2'));
         }
