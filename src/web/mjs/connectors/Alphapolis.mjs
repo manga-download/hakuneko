@@ -8,14 +8,14 @@ export default class Alphapolis extends Connector {
         super.id = 'alphapolis';
         super.label = 'ALPHAPOLIS (アルファポリス)';
         this.tags = ['manga', 'japanese', 'hentai'];
-        this.url = 'https://www.alphapolis.co.jp/';
+        this.url = 'https://www.alphapolis.co.jp';
     }
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(new URL('/manga/official/search', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'span:last-child > a');
-        let pageCount = parseInt(data[0].href.match(/(\d)+$/)[1]);
+        const request = new Request(new URL('/manga/official/search', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'span:last-child > a');
+        const pageCount = parseInt(data[0].href.match(/(\d)+$/)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -24,8 +24,8 @@ export default class Alphapolis extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(`/manga/official/search?page=${page}`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.official-manga-panel > a');
+        const request = new Request(new URL(`/manga/official/search?page=${page}`, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.official-manga-panel > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -35,22 +35,22 @@ export default class Alphapolis extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.manga-detail-description > div.title');
-        let id = uri.pathname + uri.search;
-        let title = data[0].textContent.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.manga-detail-description > div.title');
+        const id = uri.pathname + uri.search;
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchRegex(request, /_pages\.push\("([^)]*)"\);/g);
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const data = await this.fetchRegex(request, /_pages\.push\("([^)]*)"\);/g);
         return data.filter(link => link.length > 5);
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.episode-unit');
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.episode-unit');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a.read-episode'), this.url),
