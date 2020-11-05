@@ -13,7 +13,7 @@ export default class Mangafast extends Connector {
 
         this.queryMangas = 'div.p.mrg div.ls5 a';
         this.queryChapters = 'table tbody tr td.jds a';
-        this.queryPages = 'body div div#Read img';
+        this.queryPages = 'body div div#Read source';
         this.queryMangaTitle = 'div.sc table tbody tr td a';
     }
 
@@ -51,22 +51,10 @@ export default class Mangafast extends Connector {
     }
 
     async _getPages(manga) {
-        const script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        const images = [...document.querySelectorAll('${this.queryPages}')];
-                        resolve(images.map(image => image.dataset['src'] || image.dataset['data-src'] || image.src));
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 1000);
-            });
-        `;
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, script);
-        return data.map(element => this.getAbsolutePath(element, request.url)).filter(link => !link.includes('adskeeper.co.uk'));
+        const data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element.dataset['data-src'] || element.src, request.url)).filter(link => !link.includes('adskeeper.co.uk'));
     }
 
     async _getMangaFromURI(uri) {
