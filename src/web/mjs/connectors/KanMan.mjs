@@ -6,7 +6,7 @@ export default class KanMan extends MHXK {
         super();
         super.id = 'kanman';
         super.label = '看漫画 (KanMan)';
-        this.tags = [ 'manga','webtoon', 'Chinese'];
+        this.tags = [ 'manga', 'webtoon', 'Chinese'];
         this.url = 'https://www.kanman.com';
 
         this.product = {
