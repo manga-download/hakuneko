@@ -428,7 +428,7 @@ export default class Connector {
      * Get the content for the given Request
      * and get all elements matching the given CSS selector.
      */
-    fetchDOM( request, selector, retries ) {
+    fetchDOM( request, selector, retries, encoding ) {
         retries = retries || 0;
         if( typeof request === 'string' ) {
             request = new Request( request, this.requestOptions );
@@ -444,9 +444,9 @@ export default class Connector {
                         .then( () => this.fetchDOM( request, selector, retries - 1 ) );
                 }
                 if( response.status === 200 ) {
-                    return response.text()
+                    return response.arrayBuffer()
                         .then( data => {
-                            let dom = this.createDOM( data );
+                            let dom = this.createDOM( new TextDecoder(encoding).decode(data) );
                             return Promise.resolve( !selector ? dom : [...dom.querySelectorAll( selector )] );
                         } );
                 }

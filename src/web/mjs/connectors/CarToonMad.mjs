@@ -1,6 +1,5 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-const iconv = require('iconv-lite');
 
 export default class CarToonMad extends Connector {
 
@@ -27,30 +26,30 @@ export default class CarToonMad extends Connector {
 
     async _getMangasFromPage(page) {
         const request = new Request(new URL('/comic99.'+('00' + page).slice(-2)+'.html', this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, 'a.a1');
+        const data = await this.fetchDOM(request, 'a.a1',0,'big5');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: iconv.decode(element.textContent.trim(), "big5")
+                title: element.textContent.trim()
             };
         });
     }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'td:nth-child(2)  tr:nth-child(3) > td:nth-child(2) > a:last-child');
+        const data = await this.fetchDOM(request, 'td:nth-child(2)  tr:nth-child(3) > td:nth-child(2) > a:last-child',0,'big5');
         const id = uri.pathname + uri.search;
-        const title = iconv.decode(data[0].textContent.trim(), 'big5');
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getChapters(manga) {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, '#info td > a');
+        const data = await this.fetchDOM(request, '#info td > a',0,'big5');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: iconv.decode(element.textContent.trim(), 'big5')
+                title: element.textContent.trim()
             };
         });
     }
