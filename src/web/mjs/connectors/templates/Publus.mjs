@@ -117,8 +117,7 @@ export default class Publus extends Connector {
             canvas.height = bitmap.height;
             var ctx = canvas.getContext('2d');
             let blocks = this.NFBR_a3E_a3f(bitmap.width, bitmap.height, this.NFBR_a0X_a3g, this.NFBR_a0X_a3G, key);
-            for (let q of blocks)
-            {
+            for (let q of blocks) {
                 /*if(q.srcX < l.x + l.width && q.srcX + q.width >= l.x && q.srcY < l.y + l.height && q.srcY + q.height >= l.y)*/
                 ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
             }

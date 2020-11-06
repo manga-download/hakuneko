@@ -90,7 +90,7 @@ export default class WordPressLightPro extends Connector {
     _getChapterList( manga, callback ) {
         this.fetchDOM( this.url + manga.id, this.queryChaptersPageCount )
             .then( data => {
-                let pageCount = data.length === 0 ? 1 : parseInt( data[0].href.match( /(\d+)\/$/ )[1] ) ;
+                let pageCount = data.length === 0 ? 1 : parseInt( data[0].href.match( /(\d+)\/$/ )[1] );
                 let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + manga.id + 'chapters-list/' + ( page + 1 ) + '/' );
                 pageLinks[0] = this.url + manga.id;
                 return this._getChapterListFromPages( manga, pageLinks );

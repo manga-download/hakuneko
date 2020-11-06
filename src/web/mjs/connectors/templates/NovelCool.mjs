@@ -25,10 +25,10 @@ export default class Novelcool extends Connector {
 
         let mangas = [];
         while (more_pages) {
-            let request = new Request(new URL(this.manga_page_query.replace('{page}',page), this.url), this.requestOptions);
+            let request = new Request(new URL(this.manga_page_query.replace('{page}', page), this.url), this.requestOptions);
             let data = await fetch(request);
 
-            if ( data.url === this.url+this.manga_page_query.replace('{page}',page++) ) {
+            if ( data.url === this.url+this.manga_page_query.replace('{page}', page++) ) {
                 data = this.createDOM(await data.text());
                 data = [...data.querySelectorAll( this.manga_selector )];
 
