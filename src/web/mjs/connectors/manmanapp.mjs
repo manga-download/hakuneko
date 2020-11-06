@@ -67,12 +67,12 @@ export default class ManmanApp extends Connector {
                 id: '/comic/detail-'+element.id+'.html',
                 title: element.title
             };
-        }): '';
+        }): [];
     }
 
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'source.man_img');
-        return data.map(ele => ele.src);
+        return data.map(ele => this.getAbsolutePath(ele, request.url));
     }
 }
