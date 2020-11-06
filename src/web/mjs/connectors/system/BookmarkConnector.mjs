@@ -28,7 +28,7 @@ export default class BookmarkConnector {
      */
     _getConnectorByID( id ) {
         return Engine.Connectors.find( connector => {
-            return connector.id === id ;
+            return connector.id === id;
         } ) || new InvalidConnector( id, `${id} (unavailable)` );
     }
 
@@ -68,7 +68,7 @@ export default class BookmarkConnector {
             return manga;
         });
         mangas.sort( ( a, b ) => {
-            return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 ;
+            return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
         });
         callback( null, mangas );
     }

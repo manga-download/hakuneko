@@ -20,8 +20,7 @@ export default class SpeedBinb extends Connector {
         this.fetchDOM( request, 'div#content.pages' )
             .then( data => {
                 data = data[0];
-                if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] )
-                {
+                if( data.dataset['ptbinb'] && data.dataset['ptbinbCid'] ) {
                     let uri = new URL(chapter.id, this.baseURL);
                     uri.searchParams.set('cid', data.dataset['ptbinbCid']);
                     return this._getPageList_v016113(uri.pathname + uri.search, data.dataset.ptbinb);
@@ -174,7 +173,7 @@ export default class SpeedBinb extends Connector {
         configuration.ServerType = parseInt(configuration.ServerType);
 
         if( configuration['ServerType'] === 2 ) {
-            return this._getPageLinksContent_v016201( configuration , u);
+            return this._getPageLinksContent_v016201( configuration, u);
         }
         return Promise.reject( new Error( 'Content server type not supported!' ) );
     }
@@ -372,7 +371,7 @@ export default class SpeedBinb extends Connector {
      * Copied from official SpeedBinb library
      */
     _tt(t) {
-        var n = Date.now().toString(16).padStart(16,'x') // w.getRandomString(16)
+        var n = Date.now().toString(16).padStart(16, 'x') // w.getRandomString(16)
             , i = Array(Math.ceil(16 / t.length) + 1).join(t)
             , r = i.substr(0, 16)
             , e = i.substr(-16, 16)
@@ -425,7 +424,7 @@ export default class SpeedBinb extends Connector {
         var s = ptbl[i[0]]
             , u = ctbl[i[1]];
         // get a descrambler based on the descramble key pair
-        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u,s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u,s) : "" === u && "" === s ? new _speedbinb_h : null;
+        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u, s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u, s) : "" === u && "" === s ? new _speedbinb_h : null;
     }
 
     /**
@@ -447,7 +446,7 @@ export default class SpeedBinb extends Connector {
      * Get a descrambler based on the descramble key pair from ctbl / ptbl
      */
     _lt_002(s, u) {
-        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u,s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u,s) : "" === u && "" === s ? new _speedbinb_h : null;
+        return "=" === u.charAt(0) && "=" === s.charAt(0) ? new _speedbinb_f(u, s) : u.match(/^[0-9]/) && s.match(/^[0-9]/) ? new _speedbinb_a(u, s) : "" === u && "" === s ? new _speedbinb_h : null;
     }
 
     /**
