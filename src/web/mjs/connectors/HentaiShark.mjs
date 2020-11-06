@@ -6,7 +6,7 @@ export default class HentaiShark extends Connector {
     constructor() {
         super();
         super.id = 'hentaishark';
-        super.label = 'HentaiShark';
+        super.label = 'Hentai Shark';
         this.tags = ['hentai', 'multi-lingual'];
         this.url = 'https://www.hentaishark.com/';
     }
@@ -36,9 +36,6 @@ export default class HentaiShark extends Connector {
 
     async _getMangas() {
         let msg = 'This website does not provide a manga list due to how long it would take, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
-    }
-
     async _getMangaFromURI(uri) {
         let request = new Request(new URL(uri.href), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.col-sm-7 > h2');
