@@ -14,7 +14,6 @@ export default class ManmanApp extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'li.title');
-        console.log(data)
         let id = uri.pathname + uri.search;
         let title = data[0].firstChild.textContent.trim();
         return new Manga(this, id, title);
@@ -45,15 +44,15 @@ export default class ManmanApp extends Connector {
 
     async _getChapters(manga) {
         let chaptersList = [];
-        const id = manga.id.match(/(\d+).html/)[1]
+        const id = manga.id.match(/(\d+).html/)[1];
         for(let page = 1, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(page,id);
+            let chapters = await this._getChaptersFromPage(page, id);
             chapters.length > 0 ? chaptersList.push(...chapters) : run = false;
         }
         return chaptersList;
     }
 
-    async _getChaptersFromPage(page,id) {
+    async _getChaptersFromPage(page, id) {
         let request = new Request(new URL('/works/comic-list-ajax.html', this.url), {
             method: 'POST',
             body: new URLSearchParams({
@@ -73,7 +72,7 @@ export default class ManmanApp extends Connector {
 
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request,'source.man_img');
-        return data.map(ele => ele.src)
+        const data = await this.fetchDOM(request, 'source.man_img');
+        return data.map(ele => ele.src);
     }
 }
