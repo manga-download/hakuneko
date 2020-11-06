@@ -46,7 +46,7 @@ export default class HentaiShark extends Connector {
 
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request,"a > source.lazy")
-        return data.map(ele => ele.src.replace('thumb_',''))
+        const data = await this.fetchDOM(request, "a > source.lazy");
+        return data.map(ele => ele.src.replace('thumb_', ''));
     }
 }
