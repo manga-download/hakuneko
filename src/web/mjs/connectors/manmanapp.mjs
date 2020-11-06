@@ -12,18 +12,18 @@ export default class ManmanApp extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'li.title');
-        let id = uri.pathname + uri.search;
-        let title = data[0].firstChild.textContent.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'li.title');
+        const id = uri.pathname + uri.search;
+        const title = data[0].firstChild.textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(new URL('/comic/category_1.html', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.paging li:last-of-type > a');
-        let pageCount = parseInt(data[0].href.match(/(\d+).html/)[1]);
+        const request = new Request(new URL('/comic/category_1.html', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.paging li:last-of-type > a');
+        const pageCount = parseInt(data[0].href.match(/(\d+).html/)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -32,8 +32,8 @@ export default class ManmanApp extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(`/comic/category_${page}.html`, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'li.title > a');
+        const request = new Request(new URL(`/comic/category_${page}.html`, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'li.title > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -53,7 +53,7 @@ export default class ManmanApp extends Connector {
     }
 
     async _getChaptersFromPage(page, id) {
-        let request = new Request(new URL('/works/comic-list-ajax.html', this.url), {
+        const request = new Request(new URL('/works/comic-list-ajax.html', this.url), {
             method: 'POST',
             body: new URLSearchParams({
                 id: id,
