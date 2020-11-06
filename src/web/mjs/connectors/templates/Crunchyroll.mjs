@@ -186,7 +186,7 @@ export default class Crunchyroll extends Connector {
                 throw new Error(data.message);
             } else {
                 this._authToken = data.data.auth;
-                this._subscriptions = data.data.user.premium.split('|') ;
+                this._subscriptions = data.data.user.premium.split('|');
             }
         }
     }
