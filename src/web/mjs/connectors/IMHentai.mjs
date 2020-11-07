@@ -1,24 +1,22 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-// Similar to HentaiFox, IMHentai
-export default class AsmHentai extends Connector {
+// Similar to AsmHentai, HentaiFox
+export default class IMHentai extends Connector {
 
     constructor() {
         super();
-        super.id = 'asmhentai';
-        super.label = 'AsmHentai';
-        this.tags = [ 'hentai', 'multi-lingual' ];
-        this.url = 'https://asmhentai.com';
+        super.id = 'imhentai';
+        super.label = 'IMHentai';
+        this.tags = [ 'hentai', 'english' ];
+        this.url = 'https://imhentai.com';
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.book_page div.info h1', 3);
+        let data = await this.fetchDOM(request, 'div.right_details h1', 3);
         let id = uri.pathname;
-        let element = data[0];
-        this.cfMailDecrypt(element);
-        let title = element.textContent.trim();
+        let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
@@ -36,24 +34,26 @@ export default class AsmHentai extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(async () => {
                     try {
-                        const response = await fetch('/load_thumbs', {
+                        const response = await fetch('/inc/thumbs_loader.php', {
                             method: 'POST',
-                            body: JSON.stringify({
-                                _token: $('meta[name="csrf-token"]').attr('content'),
-                                id: $("#id").val(),
-                                dir: $("#dir").val(),
-                                v_pages: 0,
-                                t_pages: $("#t_pages").val(),
+                            body: new URLSearchParams({
+                                server: $('#load_server').val(),
+                                u_id: $('#gallery_id').val(),
+                                g_id: $('#load_id').val(),
+                                img_dir: $('#load_dir').val(),
+                                visible_pages: 0,
+                                total_pages: $('#load_pages').val(),
                                 type: 2
-                            }),
+                            }).toString(),
                             headers: {
-                                'Content-Type': 'application/json'
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
                             }
                         });
                         const data = await response.text();
                         const dom = document.createElement('div');
                         dom.innerHTML = data;
-                        const images = [...dom.querySelectorAll('div.preview_thumb img.lazy')].map(image => (image.dataset.src || image.src).replace('t.jpg', '.jpg'));
+                        const images = [...dom.querySelectorAll('div.gthumb img.lazy')].map(image => (image.dataset.src || image.src).replace('t.jpg', '.jpg'));
                         resolve(images);
                     } catch(error) {
                         reject(error);
