@@ -8,7 +8,7 @@ export default class HentaiShark extends Connector {
         super.id = 'hentaishark';
         super.label = 'Hentai Shark';
         this.tags = ['hentai', 'multi-lingual'];
-        this.url = 'https://www.hentaishark.com/';
+        this.url = 'https://www.hentaishark.com';
     }
 
     async _getMangas() {
@@ -37,7 +37,7 @@ export default class HentaiShark extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri.href), this.requestOptions);
         const data = await this.fetchDOM(request, 'div.col-sm-7 > h2');
-        return new Manga(this, uri.pathname, data[0].textContent);
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     async _getChapters(manga) {
@@ -46,7 +46,7 @@ export default class HentaiShark extends Connector {
 
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, "a > source.lazy");
+        const data = await this.fetchDOM(request, 'a > source.lazy');
         return data.map(ele => ele.src.replace('thumb_', ''));
     }
 }
