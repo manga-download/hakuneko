@@ -23,7 +23,7 @@ export default class TopToon extends Connector {
         new Promise(resolve => resolve(jsonFileUrl))
         `;
         const req = new Request('https://toptoon.com/hashtag', this.requestOptions);
-        const request = new Request((await Engine.Request.fetchUI(req, script)), this.requestOptions);
+        const request = new Request(await Engine.Request.fetchUI(req, script), this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.map(ele => {
             return{
