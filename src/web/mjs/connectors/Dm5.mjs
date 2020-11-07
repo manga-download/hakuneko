@@ -114,34 +114,6 @@ export default class Dm5 extends Connector {
         return data.filter((item, index) => data.indexOf(item) === index).map(element => this.getAbsolutePath(element, request.url));
     }
 
-    // async _getPages(chapter) {
-    //     let chapterList = [];
-    //     for(let page = 1, run = true; run; page++) {
-    //         let result = await this._getPagesFromPage(page, chapter.id);
-    //         result.length ? chapterList.push(...result) : run = false;
-    //     }
-    //     return chapterList;
-    // }
-
-    async _getPagesFromPage(page, id) {
-        const script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        const images = [...document.querySelectorAll('${this.queryPages}')];
-                        resolve(images.map(image => image.dataset['src'] || image.dataset['data-src'] || image.src));
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 1000);
-            });
-        `;
-        const uri = new URL(id.slice(0, -1) + '-p' + page, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, script);
-        return data.map(element => this.getAbsolutePath(element, this.url));
-    }
-
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitle);
