@@ -13,7 +13,7 @@ export default class MundoMangaKun extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, "h1.titulo_projeto");
+        const data = await this.fetchDOM(request, 'h1.titulo_projeto');
         const id = uri.pathname + uri.search;
         const title = data[0].textContent.trim();
         return new Manga(this, id, title);
@@ -43,8 +43,8 @@ export default class MundoMangaKun extends Connector {
     }
 
     async _getChapters(manga) {
-        const request = new Request(this.url + manga.id, this.requestOptions);
-        const data = await this.fetchDOM(request, "div.capitulos_leitor_online > a");
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.capitulos_leitor_online > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.getAttribute('onclick').match(/'link':'([^']*)'/)[1], request.url),
@@ -54,7 +54,7 @@ export default class MundoMangaKun extends Connector {
     }
 
     async _getPages(chapter) {
-        const request = new Request(this.url + chapter.id, this.requestOptions);
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = await this.fetchRegex(request, /paginas\s*=\s*(\[[^\]]*\]);/g);
         return JSON.parse(data);
     }
