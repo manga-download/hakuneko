@@ -1,7 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-// Similar to AsmHentai
+// Similar to AsmHentai, IMHentai
 export default class HentaiFox extends Connector {
 
     constructor() {
