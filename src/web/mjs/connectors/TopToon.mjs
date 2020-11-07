@@ -19,11 +19,9 @@ export default class TopToon extends Connector {
     }
 
     async _getMangas() {
-        let script = `
-        new Promise(resolve => resolve(jsonFileUrl))
-        `;
         const req = new Request('https://toptoon.com/hashtag', this.requestOptions);
-        const request = new Request(await Engine.Request.fetchUI(req, script), this.requestOptions);
+        const api = await this.fetchRegex(req, /jsonFileUrl\s*=\s*'([^']*)';/g);
+        const request = new Request(api[0], this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.map(ele => {
             return{
