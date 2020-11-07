@@ -19,7 +19,9 @@ export default class TopToon extends Connector {
     }
 
     async _getMangas() {
-        const request = new Request('https://fastidious.toptoon.com/production/comicTotal/504656797d23c25a58c9e6e4890ffeefb0e930abbb449df40ca641736117818e.json', this.requestOptions);
+        const req = new Request('https://toptoon.com/hashtag', this.requestOptions);
+        const api = await this.fetchRegex(req, /jsonFileUrl\s*=\s*'([^']*)';/g);
+        const request = new Request(api[0], this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.map(ele => {
             return{
