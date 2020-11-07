@@ -34,8 +34,8 @@ export default class TopToon extends Connector {
         const data = await this.fetchDOM(request, 'tr.episode_tr');
         return data.map(ele => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(`/comic/ep_view/${ele.getAttribute('data-comic-id')}/${ele.getAttribute('data-episode-id')}`, this.url),
-                title: ele.getAttribute('data-episode-title').trim()
+                id: this.getRootRelativeOrAbsoluteLink(`/comic/ep_view/${ele.dataset['comicId']}/${ele.dataset['episodeId']}`, this.url),
+                title: ele.dataset['episodeTitle'].trim()
             };
         });
     }
@@ -43,6 +43,6 @@ export default class TopToon extends Connector {
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, '#viewerContentsWrap > div > source');
-        return data.map(element => this.getAbsolutePath(element.src, request.url));
+        return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
