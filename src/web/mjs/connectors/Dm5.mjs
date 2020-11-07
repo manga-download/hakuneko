@@ -14,7 +14,7 @@ export default class Dm5 extends Connector {
         this.queryMangas = 'div.box-body ul li div.mh-item div.mh-item-detali h2.title a';
         this.queryChapters = 'div#chapterlistload ul#detail-list-select-1 li a';
         this.queryPages = 'div#showimage div#cp_img img#cp_image';
-        this.queryMangaTitle = 'div.banner_detail_form div.info p.title font';
+        this.queryMangaTitle = 'div.banner_detail_form div.info p.title';
     }
 
     async _getMangas() {
