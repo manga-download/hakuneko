@@ -1,6 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
+// Similar to AsmHentai, IMHentai
 export default class HentaiFox extends Connector {
 
     constructor() {
@@ -9,56 +10,58 @@ export default class HentaiFox extends Connector {
         super.label = 'HentaiFox';
         this.tags = [ 'hentai', 'english' ];
         this.url = 'https://hentaifox.com';
-        this.cdn = 'https://i.hentaifox.com';
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.gallery_right div.info h1', 3);
         let id = uri.pathname;
-        let title = data[0].innerText.trim();
+        let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        let mangaList = [];
-        let request = new Request(this.url, this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul.pagination li:nth-last-of-type(2) a.page-link');
-        let pageCount = parseInt(data[0].text.trim());
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
-        }
-        return mangaList;
-    }
-
-    async _getMangasFromPage(page) {
-        let request = new Request(`${this.url}/pag/${page}/`, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.lc_galleries div.thumb div.caption h2.g_title a');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim()
-            };
-        });
+        let msg = 'This website provides a manga list that is to large to scrape, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
     async _getChapters(manga) {
-        return [ {
-            id: manga.id,
-            title: manga.title,
-            language: ''
-        } ];
+        return [ { ...manga, language: '' } ];
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.display_gallery input[id*="load_"]');
-        let directory = data.find(element => element.id === 'load_dir').value;
-        let identifier = data.find(element => element.id === 'load_id').value;
-        let pages = parseInt(data.find(element => element.id === 'load_pages').value);
-        return [...Array(pages - 1).keys()].map(key => {
-            return [ this.cdn, directory, identifier, key + 1 + '.jpg' ].join('/');
-        });
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(async () => {
+                    try {
+                        const response = await fetch('/includes/thumbs_loader.php', {
+                            method: 'POST',
+                            body: new URLSearchParams({
+                                u_id: $('#gallery_id').val(),
+                                g_id: $('#load_id').val(),
+                                img_dir: $('#load_dir').val(),
+                                visible_pages: 0,
+                                total_pages: $('#load_pages').val(),
+                                type: 2
+                            }).toString(),
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
+                        });
+                        const data = await response.text();
+                        const dom = document.createElement('div');
+                        dom.innerHTML = data;
+                        const images = [...dom.querySelectorAll('div.g_thumb img.lazy')].map(image => (image.dataset.src || image.src).replace('t.jpg', '.jpg'));
+                        resolve(images);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 1000);
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }
