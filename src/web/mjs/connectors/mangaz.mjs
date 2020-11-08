@@ -6,7 +6,7 @@ export default class Mangaz extends Connector {
     constructor() {
         super();
         super.id = 'mangaz';
-        super.label = 'mangaz';
+        super.label = 'Manga Library Z (マンガ図書館Z)';
         this.tags = ['manga', 'japanese'];
         this.url = 'https://www.mangaz.com';
     }
@@ -27,7 +27,7 @@ export default class Mangaz extends Connector {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         });
-        let data = await this.fetchDOM(request, 'h4 > a');
+        const data = await this.fetchDOM(request, 'h4 > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
@@ -48,9 +48,8 @@ export default class Mangaz extends Connector {
         const script = `
             new Promise(async (resolve,reject) => {
                 let g = JCOMI.namespace("JCOMI.document")
-                let H = JCOMI.namespace("JCOMI.config")
                 let b = g.getDoc()
-                let img = g.getImages().map(ele => g.getLocationDir('enc') + ele.file + "?vw=" + encodeURIComponent(H.getVersion()))
+                let img = g.getImages().map(ele => g.getLocationDir('enc') + ele.file + "?vw=" + encodeURIComponent(JCOMI.namespace("JCOMI.config").getVersion()))
                 resolve(await Promise.all(img.map(async (ele) => {
                     try{
                         let res = await fetch(ele)
