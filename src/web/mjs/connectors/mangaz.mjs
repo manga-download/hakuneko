@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+const forge = require('node-forge');
 
 export default class Mangaz extends Connector {
 
@@ -50,21 +51,23 @@ export default class Mangaz extends Connector {
                 let g = JCOMI.namespace("JCOMI.document")
                 let b = g.getDoc()
                 let img = g.getImages().map(ele => g.getLocationDir('enc') + ele.file + "?vw=" + encodeURIComponent(JCOMI.namespace("JCOMI.config").getVersion()))
-                resolve(await Promise.all(img.map(async (ele) => {
-                    try{
-                        let res = await fetch(ele)
-                        let data = await res.arrayBuffer();
-                        let a = forge.aes.startDecrypting(b.Enc.key, b.Enc.iv);
-                        await a.update(forge.util.createBuffer(data));
-                        return 'data:image/jpg;base64,' + a.output.toString();
-                    }catch(error){
-                        reject(error)
-                    }
-                })));
+                resolve({img:img,b:b});
             });
         `;
         const request = new Request(new URL(chapter.id.replace('navi', 'virgo/view'), this.url), this.requestOptions);
-        return (await Engine.Request.fetchUI(request, script)).map(ele => this.createConnectorURI(ele));
+        const data = await Engine.Request.fetchUI(request, script)
+        return data.img.map(ele => this.createConnectorURI({url:this.getAbsolutePath(ele, request.url), key:data.b}));
+    }
+
+    async _handleConnectorURI(payload) {
+        let response = await fetch(payload.url)
+        let encrypted = await response.arrayBuffer();
+        let a = forge.aes.startDecrypting(payload.key.Enc.key, payload.key.Enc.iv);
+        await a.update(forge.util.createBuffer(encrypted));
+        return {
+            mimeType: 'image/jpg',
+            data: "data:image/jpg;base64," + a.output.toString()
+        };
     }
 
     async _getChapters(manga) {
