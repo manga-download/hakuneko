@@ -64,12 +64,12 @@ export default class Mangaz extends Connector {
 
     async _handleConnectorURI(payload) {
         let response = await fetch(payload.url)
-        let encrypted = await response.arrayBuffer();
+        let encrypted = await response.text();
         let key = payload.key;
         let iv = payload.iv;
         let data = CryptoJS.AES.decrypt(encrypted, key, {iv:iv});
         return {
-            mimeType: 'image/jpg',
+            mimeType: response.headers.get('content-type'),
             data: data
         };
     }
