@@ -53,7 +53,7 @@ export default class Mangaz extends Connector {
                 resolve({img:img,b:b});
             });
         `;
-        const request = new Request(new URL(chapter.id.replace('navi', 'virgo/view'), this.url), this.requestOptions);
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script)
         return data.img.map(ele => this.createConnectorURI({url:this.getAbsolutePath(ele, request.url), key:data.b}));
     }
@@ -75,11 +75,11 @@ export default class Mangaz extends Connector {
         const data = await this.fetchDOM(request, 'body');
         return data[0].querySelector("li.box") ? [...data[0].querySelectorAll("li.box")].map(ele => {
             return{
-                id:ele.querySelector('button').dataset['url'],
+                id:ele.querySelector('button').dataset['url'].replace('navi', 'virgo/view'),
                 title:ele.querySelector('span').textContent.trim()
             };
         }): [{
-            id:data[0].querySelector('button').dataset['url'],
+            id:data[0].querySelector('button').dataset['url'].replace('navi', 'virgo/view'),
             title:manga.title
         }];
     }
