@@ -21,7 +21,7 @@ export default class Mangaz extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const request = new Request(new URL('/title/addpage_renewal?query=&page='+page,this.url), {
+        const request = new Request(new URL('/title/addpage_renewal?query=&page='+page, this.url), {
             method:'GET',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -51,7 +51,7 @@ export default class Mangaz extends Connector {
                 let H = JCOMI.namespace("JCOMI.config")
                 let b = g.getDoc()
                 let img = g.getImages().map(ele => g.getLocationDir('enc') + ele.file + "?vw=" + encodeURIComponent(H.getVersion()))
-                let list = await Promise.all(img.map(async (ele) => {
+                resolve(await Promise.all(img.map(async (ele) => {
                     try{
                         let res = await fetch(ele)
                         let data = await res.arrayBuffer();
@@ -61,11 +61,10 @@ export default class Mangaz extends Connector {
                     }catch(error){
                         reject(error)
                     }
-                }));
-                resolve(list)
+                })));
             });
         `;
-        const request = new Request(new URL(chapter.id.replace('navi','virgo/view'), this.url), this.requestOptions);
+        const request = new Request(new URL(chapter.id.replace('navi', 'virgo/view'), this.url), this.requestOptions);
         return (await Engine.Request.fetchUI(request, script)).map(ele => this.createConnectorURI(ele));
     }
 
@@ -76,7 +75,7 @@ export default class Mangaz extends Connector {
             return{
                 id:ele.querySelector('button').dataset['url'],
                 title:ele.querySelector('span').textContent.trim()
-            }
+            };
         }): [{
             id:data[0].querySelector('button').dataset['url'],
             title:manga.title
