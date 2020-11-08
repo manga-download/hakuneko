@@ -1,6 +1,5 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-const forge = require('node-forge');
 
 export default class Mangaz extends Connector {
 
@@ -62,11 +61,12 @@ export default class Mangaz extends Connector {
     async _handleConnectorURI(payload) {
         let response = await fetch(payload.url)
         let encrypted = await response.arrayBuffer();
-        let a = forge.aes.startDecrypting(payload.key.Enc.key, payload.key.Enc.iv);
-        await a.update(forge.util.createBuffer(encrypted));
+        let key = CryptoJS.enc.Base64.parse(payload.key.Enc.key);
+        let iv = CryptoJS.enc.Base64.parse(payload.key.Enc.iv);
+        let data = CryptoJS.AES.decrypt(encrypted, key, {iv:iv});
         return {
             mimeType: 'image/jpg',
-            data: "data:image/jpg;base64," + a.output.toString()
+            data: data
         };
     }
 
