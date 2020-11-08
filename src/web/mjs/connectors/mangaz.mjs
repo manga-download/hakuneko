@@ -55,14 +55,18 @@ export default class Mangaz extends Connector {
         `;
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script)
-        return data.img.map(ele => this.createConnectorURI({url:this.getAbsolutePath(ele, request.url), key:data.b}));
+        return data.img.map(ele => this.createConnectorURI({
+            url:this.getAbsolutePath(ele, request.url),
+            key:data.b.Enc.key,
+            iv:data.b.Enc.iv
+        }));
     }
 
     async _handleConnectorURI(payload) {
         let response = await fetch(payload.url)
         let encrypted = await response.arrayBuffer();
-        let key = CryptoJS.enc.Base64.parse(payload.key.Enc.key);
-        let iv = CryptoJS.enc.Base64.parse(payload.key.Enc.iv);
+        let key = payload.key;
+        let iv = payload.iv;
         let data = CryptoJS.AES.decrypt(encrypted, key, {iv:iv});
         return {
             mimeType: 'image/jpg',
