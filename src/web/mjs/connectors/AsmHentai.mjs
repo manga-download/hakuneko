@@ -34,31 +34,20 @@ export default class AsmHentai extends Connector {
     async _getPages(chapter) {
         const script = `
             new Promise((resolve, reject) => {
-                setTimeout(async () => {
+                setTimeout(() => {
                     try {
-                        const response = await fetch('/load_thumbs', {
-                            method: 'POST',
-                            body: JSON.stringify({
-                                _token: $('meta[name="csrf-token"]').attr('content'),
-                                id: $("#id").val(),
-                                dir: $("#dir").val(),
-                                v_pages: 0,
-                                t_pages: $("#t_pages").val(),
-                                type: 2
-                            }),
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
+                        const pages = parseInt($("#t_pages").val());
+                        const dir = $("#dir").val();
+                        const id = $("#id").val();
+                        const images = [...new Array(pages)].map((_, index) => {
+                            const file = (index + 1) + '.jpg';
+                            return [ 'https://images.asmhentai.com', dir, id, file ].join('/');
                         });
-                        const data = await response.text();
-                        const dom = document.createElement('div');
-                        dom.innerHTML = data;
-                        const images = [...dom.querySelectorAll('div.preview_thumb img.lazy')].map(image => (image.dataset.src || image.src).replace('t.jpg', '.jpg'));
                         resolve(images);
                     } catch(error) {
                         reject(error);
                     }
-                }, 1000);
+                }, 2500);
             });
         `;
         const uri = new URL(chapter.id, this.url);
