@@ -21,21 +21,25 @@ export default class Komiku extends WordPressMangastream {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
-            mangas.length === 20 ? mangaList.push(...mangas) : run = false;
+            mangas.length ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(this.path + page + '/', this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangas);
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim()
-            };
-        });
+        try {
+            const uri = new URL(this.path + page + '/', this.url);
+            const request = new Request(uri, this.requestOptions);
+            const data = await this.fetchDOM(request, this.queryMangas);
+            return data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: element.text.trim()
+                };
+            });
+        } catch(error) {
+            return [];
+        }
     }
 
     async _getPages(chapter) {
