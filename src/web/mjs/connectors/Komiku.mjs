@@ -38,7 +38,11 @@ export default class Komiku extends WordPressMangastream {
                 };
             });
         } catch(error) {
-            return [];
+            if(error.message.includes('404')) {
+                return [];
+            } else {
+                throw new Error(error);
+            }
         }
     }
 
