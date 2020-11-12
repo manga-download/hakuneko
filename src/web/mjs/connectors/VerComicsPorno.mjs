@@ -13,7 +13,7 @@ export default class VerComicsPorno extends Connector {
         this.path = '/page/';
         this.queryMangas = 'div.gallery > a.cover';
         this.pager = 'ul.pagination li:last-of-type a';
-        this.listPages = 'div.comicimg source:not([src*="banner.png"])';
+        this.listPages = 'div.comicimg source:not([src*="descargavcp.png"]):not([data-lazy-src*="banner.png"])';
     }
 
     async _getMangasFromPage(page) {
