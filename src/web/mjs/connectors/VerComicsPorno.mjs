@@ -10,9 +10,9 @@ export default class VerComicsPorno extends Connector {
         this.url = 'https://vercomicsporno.com';
 
         this.path = '/page/';
-        this.queryMangas = '#posts .gallery > a';
+        this.queryMangas = 'div.gallery > a.cover';
         this.pager = 'ul.pagination li:last-of-type a';
-        this.listPages = '#posts source.lazy:not(:last-child)';
+        this.listPages = 'div.comicimg source.lazy:not(:last-child)';
     }
 
     async _getMangasFromPage(page) {
@@ -22,7 +22,7 @@ export default class VerComicsPorno extends Connector {
             this.cfMailDecrypt(element);
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.href.split('/')[3].replace(/(-)/g, ' ')
+                title: element.querySelector('div.caption').textContent.trim()
             };
         });
     }
