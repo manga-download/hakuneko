@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 
+// base for VerMangasPorno
 export default class VerComicsPorno extends Connector {
 
     constructor() {
@@ -12,7 +13,7 @@ export default class VerComicsPorno extends Connector {
         this.path = '/page/';
         this.queryMangas = 'div.gallery > a.cover';
         this.pager = 'ul.pagination li:last-of-type a';
-        this.listPages = 'div.comicimg source.lazy:not(:last-child)';
+        this.listPages = 'div.comicimg source:not([src*="banner.png"])';
     }
 
     async _getMangasFromPage(page) {
