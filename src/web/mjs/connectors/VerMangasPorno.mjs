@@ -8,7 +8,5 @@ export default class VerMangasPorno extends VerComicsPorno {
         super.label = 'VerMangasPorno';
         this.tags = [ 'hentai', 'spanish' ];
         this.url = 'https://vermangasporno.com';
-
-        this.listPages = 'div.comicimg source:not([src*="banner.png"])';
     }
 }
