@@ -92,7 +92,11 @@ export default class MangaDex extends Connector {
                 title += ' (' + chapter.language + ')';
             }
             if(chapter.groups.length) {
-                title += ' [' + chapter.groups.map(group => data.data.groups[group]).join(', ') + ']';
+                const getGroup = groupID => {
+                    const group = data.data.groups.find(g => g.id === groupID);
+                    return group ? group.name : 'unknown';
+                };
+                title += ' [' + chapter.groups.map(getGroup).join(', ') + ']';
             }
             return {
                 id: chapter.id,
