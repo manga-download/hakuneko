@@ -63,14 +63,16 @@ export default class Mangaz extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        let response = await fetch(payload.url)
-        let encrypted = await response.text();
-        let key = payload.key;
-        let iv = payload.iv;
-        let data = CryptoJS.AES.decrypt(encrypted, key, {iv:iv});
+        const response = await fetch(payload.url);
+        const encrypted = CryptoJS.lib.WordArray.create(await response.arrayBuffer());
+        const iv = CryptoJS.enc.Base64.parse(btoa(payload.iv));
+        const key = CryptoJS.enc.Utf8.parse(payload.key);
+        let decrypted = CryptoJS.AES.decrypt({ ciphertext: encrypted }, key, { iv: iv });
+        decrypted = decrypted.toString(CryptoJS.enc.Utf8);
+        decrypted = Uint8Array.from(atob(decrypted), char => char.charCodeAt(0));
         return {
             mimeType: response.headers.get('content-type'),
-            data: data
+            data: decrypted
         };
     }
 
