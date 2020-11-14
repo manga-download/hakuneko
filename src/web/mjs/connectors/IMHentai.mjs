@@ -32,33 +32,20 @@ export default class IMHentai extends Connector {
     async _getPages(chapter) {
         const script = `
             new Promise((resolve, reject) => {
-                setTimeout(async () => {
+                setTimeout(() => {
                     try {
-                        const response = await fetch('/inc/thumbs_loader.php', {
-                            method: 'POST',
-                            body: new URLSearchParams({
-                                server: $('#load_server').val(),
-                                u_id: $('#gallery_id').val(),
-                                g_id: $('#load_id').val(),
-                                img_dir: $('#load_dir').val(),
-                                visible_pages: 0,
-                                total_pages: $('#load_pages').val(),
-                                type: 2
-                            }).toString(),
-                            headers: {
-                                'Content-Type': 'application/x-www-form-urlencoded',
-                                'X-Requested-With': 'XMLHttpRequest'
-                            }
+                        const server = $('#load_server').val();
+                        const dir = $('#load_dir').val();
+                        const id = $('#load_id').val();
+                        const images = Object.values(g_th).map((item, index) => {
+                            const file = (index + 1) + (item.startsWith('j') ? '.jpg' : '.png');
+                            return [ 'https://m' + server + '.imhentai.com', dir, id, file ].join('/');
                         });
-                        const data = await response.text();
-                        const dom = document.createElement('div');
-                        dom.innerHTML = data;
-                        const images = [...dom.querySelectorAll('div.gthumb img.lazy')].map(image => (image.dataset.src || image.src).replace('t.jpg', '.jpg'));
                         resolve(images);
                     } catch(error) {
                         reject(error);
                     }
-                }, 1000);
+                }, 2500);
             });
         `;
         const uri = new URL(chapter.id, this.url);
