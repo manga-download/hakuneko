@@ -54,7 +54,7 @@ export default class Mangaz extends Connector {
             });
         `;
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, script)
+        const data = await Engine.Request.fetchUI(request, script);
         return data.img.map(ele => this.createConnectorURI({
             url:this.getAbsolutePath(ele, request.url),
             key:data.b.Enc.key,
