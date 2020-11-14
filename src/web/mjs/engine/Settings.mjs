@@ -276,8 +276,7 @@ export default class Settings extends EventTarget {
                     && data[key] !== undefined
                     && this[key]
                     && this[key].input
-                    && this[key].input !== types.disabled)
-                {
+                    && this[key].input !== types.disabled) {
                     this[key].value = this._getDecryptedValue(this[key].input, data[key]);
                     this[key].value = this._getValidValue('General', this[key]);
                 }
@@ -290,8 +289,7 @@ export default class Settings extends EventTarget {
                         && data.connectors[connector.id]
                         && data.connectors[connector.id][key] !== undefined
                         && connector.config[key]
-                        && connector.config[key].input)
-                    {
+                        && connector.config[key].input) {
                         connector.config[key].value = this._getDecryptedValue(connector.config[key].input, data.connectors[connector.id][key]);
                         connector.config[key].value = this._getValidValue(connector.label, connector.config[key], true);
                     }

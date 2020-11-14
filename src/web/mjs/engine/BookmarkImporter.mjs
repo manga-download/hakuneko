@@ -147,7 +147,7 @@ export default class BookmarkImporter {
      */
     _mapFMDConnectorID( connectorFMD ) {
         let connectorID = this._connectorMap[connectorFMD];
-        return connectorID ? connectorID : connectorFMD ;
+        return connectorID ? connectorID : connectorFMD;
     }
 
     /**
@@ -155,6 +155,6 @@ export default class BookmarkImporter {
      */
     _mapFMDMangaID( connectorID, mangaFMD ) {
         let mangaConvert = this._mangaMap[connectorID];
-        return mangaConvert ? mangaConvert( mangaFMD ) : mangaFMD ;
+        return mangaConvert ? mangaConvert( mangaFMD ) : mangaFMD;
     }
 }

@@ -1,6 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
+// Similar to HentaiFox, IMHentai
 export default class AsmHentai extends Connector {
 
     constructor() {
@@ -22,7 +23,7 @@ export default class AsmHentai extends Connector {
     }
 
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
+        let msg = 'This website provides a manga list that is to large to scrape, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
 
@@ -31,8 +32,26 @@ export default class AsmHentai extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.gallery source.lazy');
-        return data.map(element => this.getAbsolutePath(element.dataset.src.replace('t.jpg', '.jpg'), request.url));
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        const pages = parseInt($("#t_pages").val());
+                        const dir = $("#dir").val();
+                        const id = $("#id").val();
+                        const images = [...new Array(pages)].map((_, index) => {
+                            const file = (index + 1) + '.jpg';
+                            return [ 'https://images.asmhentai.com', dir, id, file ].join('/');
+                        });
+                        resolve(images);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }

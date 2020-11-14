@@ -27,7 +27,7 @@ export default class DownloadJob extends EventTarget {
         this.requestOptions = chapter.manga.connector.requestOptions || {};
         // TODO: initialize requestOptions.headers = new Headers() if not set
         this.chunkSize = 8388608; // 8 MB
-        this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50 ;
+        this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50;
         this.status = undefined;
         this.progress = 0;
         this.errors = [];

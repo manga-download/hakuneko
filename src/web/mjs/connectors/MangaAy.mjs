@@ -20,7 +20,19 @@ export default class MangaAy extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/seriler', this.url), this.requestOptions);
+        let mangaList = [];
+        const request = new Request(new URL('/seriler', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'nav > ul > li:last-child > a');
+        const pageCount = parseInt(data[0].href.match(/(\d+)$/)[1]);
+        for(let page = 0; page <= pageCount; page+=100) {
+            let mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        let request = new Request(new URL(`/seriler/${page}`, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'td:nth-child(2) > a');
         return data.map(element => {
             return {
@@ -36,7 +48,7 @@ export default class MangaAy extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.replace(manga.title,'').trim(),
+                title: element.text.replace(manga.title, '').trim(),
             };
         });
     }

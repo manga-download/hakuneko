@@ -75,13 +75,9 @@ export default class MangaDex extends Connector {
     }
 
     async _getChapters(manga) {
-        /*
-         * '/api/manga/7938'
-         * '/api/?type=manga&id=7938'
-         */
-        let data = await this._requestAPI(new URL('/api/manga/' + this._migratedMangaID(manga.id), this.url), 'chapter');
-        return Object.keys(data.chapter).map(id => {
-            let chapter = data.chapter[id];
+        const uri = new URL(`/api/v2/manga/${this._migratedMangaID(manga.id)}/chapters`, this.url);
+        let data = await this._requestAPI(uri, 'chapter');
+        return data.data.chapters.map(chapter => {
             let title = '';
             if(chapter.volume) { // => string, not a number
                 title += 'Vol.' + this._padNum(chapter.volume, 2);
@@ -92,28 +88,29 @@ export default class MangaDex extends Connector {
             if(chapter.title) {
                 title += (title ? ' - ' : '') + chapter.title;
             }
-            if(chapter.lang_code) {
-                title += ' (' + chapter.lang_code + ')';
+            if(chapter.language) {
+                title += ' (' + chapter.language + ')';
             }
-            if(chapter.group_name) {
-                title += ' [' + chapter.group_name + ']';
+            if(chapter.groups.length) {
+                const getGroup = groupID => {
+                    const group = data.data.groups.find(g => g.id === groupID);
+                    return group ? group.name : 'unknown';
+                };
+                title += ' [' + chapter.groups.map(getGroup).join(', ') + ']';
             }
             return {
-                id: id,
+                id: chapter.id,
                 title: title.trim(),
-                language: chapter.lang_code
+                language: chapter.language
             };
         });
     }
 
     async _getPages(chapter) {
-        /*
-         * '/api/chapter/778765'
-         * '/api/?server=null&type=chapter&id=778765'
-         */
-        let data = await this._requestAPI(new URL('/api/chapter/' + chapter.id, this.url), 'page');
-        let baseURL = this._getNode(data.server) + data.hash + '/';
-        return data.page_array.map(page => this.createConnectorURI(baseURL + page));
+        const uri = new URL(`/api/v2/chapter/${chapter.id}?saver=false`, this.url);
+        const data = await this._requestAPI(uri, 'page');
+        const baseURL = this._getNode(data.data.server) + data.data.hash + '/';
+        return data.data.pages.map(page => this.createConnectorURI(baseURL + page));
     }
 
     _getNode(server) {

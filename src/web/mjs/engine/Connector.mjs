@@ -114,7 +114,7 @@ export default class Connector {
                     } );
                     // sort by title
                     mangas.sort( ( a, b ) => {
-                        return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 ;
+                        return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
                     } );
 
                     this.mangaCache = undefined;
@@ -153,7 +153,7 @@ export default class Connector {
             .then( existingMangaTitles => {
                 this.existingManga = existingMangaTitles;
                 // check if manga list is cached
-                return this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() ;
+                return this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile();
             } )
             .then( mangas => {
                 callback( null, mangas );
@@ -408,8 +408,8 @@ export default class Connector {
      *       => do not forget to remove this prefix from the links!
      */
     createDOM( content, replaceImageTags, clearIframettributes ) {
-        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true ;
-        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true ;
+        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true;
+        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true;
         if( replaceImageTags ) {
             content = content.replace( /<img/g, '<source');
             content = content.replace( /<\/img/g, '</source');
@@ -428,7 +428,7 @@ export default class Connector {
      * Get the content for the given Request
      * and get all elements matching the given CSS selector.
      */
-    fetchDOM( request, selector, retries ) {
+    fetchDOM( request, selector, retries, encoding ) {
         retries = retries || 0;
         if( typeof request === 'string' ) {
             request = new Request( request, this.requestOptions );
@@ -444,9 +444,9 @@ export default class Connector {
                         .then( () => this.fetchDOM( request, selector, retries - 1 ) );
                 }
                 if( response.status === 200 ) {
-                    return response.text()
+                    return response.arrayBuffer()
                         .then( data => {
-                            let dom = this.createDOM( data );
+                            let dom = this.createDOM( new TextDecoder(encoding || 'utf8').decode(data) );
                             return Promise.resolve( !selector ? dom : [...dom.querySelectorAll( selector )] );
                         } );
                 }

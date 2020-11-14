@@ -8,7 +8,7 @@ export default class Webmangatr extends Connector {
         super();
         super.id = 'webmangatr';
         super.label = 'WEBMANGATR';
-        this.tags = ['turkish' ,'webtoon','hentai'];
+        this.tags = ['turkish', 'webtoon', 'hentai'];
         this.url = 'https://webmangatr.com';
     }
 

@@ -10,7 +10,19 @@ export default class MangaKita extends WordPressMangastream {
         this.url = 'https://mangakita.net';
         this.path = '/daftar-manga/?list';
 
+        this.querMangaTitleFromURI = 'div#content div.animeinfo h1';
         this.queryChapters = 'div.bxcl ul li div.lch a';
         this.queryChaptersTitle = undefined;
+    }
+
+    async _getPages(chapter) {
+        const fakeLinkPatterns = [
+            /[.,]5\.(jpg|png)$/i,
+            /iklan\.(jpg|png)$/i,
+            /zz\.(jpg|png)$/i,
+            /\.filerun\./i
+        ];
+        let pageList = await super._getPages(chapter);
+        return pageList.filter(link => !fakeLinkPatterns.some(pattern => pattern.test(link)));
     }
 }

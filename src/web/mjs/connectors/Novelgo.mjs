@@ -39,7 +39,7 @@ export default class Novelgo extends Connector {
         return mangaList;
     }
 
-    async _getChaptersFromJSON(page, id){
+    async _getChaptersFromJSON(page, id) {
         const uri = new URL('/wp-json/noveils/v1/chapters', this.url);
         uri.searchParams.set('paged', page);
         uri.searchParams.set('perpage', 250);
@@ -57,7 +57,7 @@ export default class Novelgo extends Connector {
     async _getChapters(manga) {
         const mangaId = manga.id.slice(7, -1);
         let chapterList = [];
-        for (let page = 1, run = true; run; page++){
+        for (let page = 1, run = true; run; page++) {
             let chapters = await this._getChaptersFromJSON(page, mangaId);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }

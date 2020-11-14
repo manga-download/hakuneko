@@ -44,17 +44,17 @@ export default class Asgard1team extends Connector {
         let data = await this.fetchDOM(request, 'tbody > tr');
         return data.map(element => {
             let num = element.querySelector('td[scope="row"]').textContent.trim();
-            let re = new RegExp(manga.title,'i');
+            let re = new RegExp(manga.title, 'i');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),
-                title: `${num} ${element.querySelector('a').text.replace(re,'').replace(num,'').trim()}`
+                title: `${num} ${element.querySelector('a').text.replace(re, '').replace(num, '').trim()}`
             };
         });
     }
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request,'div.container source');
-        return data.map(element => this.getAbsolutePath(element,this.url));
+        let data = await this.fetchDOM(request, 'div.container source');
+        return data.map(element => this.getAbsolutePath(element, this.url));
     }
 }

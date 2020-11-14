@@ -27,7 +27,12 @@
     },
     "rules": {
         "semi": ["error", "always"],
+        "semi-spacing": "error",
+        "comma-spacing": "error",
+        "brace-style": "error",
         "no-extra-parens": "error",
+        "space-before-blocks": "error",
+        //"object-curly-spacing": "error",
         "indent": ["error", 4, { "SwitchCase": 1 }],
         "no-trailing-spaces": "error",
         "no-multiple-empty-lines": ["error", {"max": 1, "maxBOF": 0, "maxEOF": 0}],

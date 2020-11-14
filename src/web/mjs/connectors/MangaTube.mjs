@@ -54,7 +54,7 @@ export default class MangaTube extends Connector {
                         .then( data => {
                             let mangaList = data.success.map( entry => {
                                 return {
-                                    id: entry.manga_slug,//entry.manga_id,
+                                    id: entry.manga_slug, //entry.manga_id,
                                     title: entry.manga_title
                                 };
                             } );
@@ -86,9 +86,9 @@ export default class MangaTube extends Connector {
                     let volume = card.querySelector( 'a.btn' ).text.trim();
                     let chapters = [...card.querySelectorAll( 'ul.chapter-list li > a:nth-of-type(2)' )].map( element => {
                         let number = element.querySelector( 'b' );
-                        number = number ? number.textContent.trim() : '' ;
+                        number = number ? number.textContent.trim() : '';
                         let description = element.querySelector( 'span.chapter-name' );
-                        description = description ? description.textContent.trim() : '' ;
+                        description = description ? description.textContent.trim() : '';
                         let title = volume;
                         title += ( title && number ? ' ' : '' ) + number;
                         title += ( title && description ? ' - ' : '' ) + description;

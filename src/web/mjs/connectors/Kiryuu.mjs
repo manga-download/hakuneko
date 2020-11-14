@@ -12,15 +12,13 @@ export default class Kiryuu extends WordPressMangastream {
     }
 
     async _getPages(chapter) {
+        const fakeLinkPatterns = [
+            /[.,]5\.(jpg|png)$/i,
+            /iklan\.(jpg|png)$/i,
+            /zz\.(jpg|png)$/i,
+            /\.filerun\./i
+        ];
         let pageList = await super._getPages(chapter);
-        // TODO: Maybe use regex /(iklan\.png|\.5\.jpg|,5\.jpg|ZZ\.jpg)$/.test(link)
-        // or use array ['iklan.png', '.5.jpg', ',5.jpg', 'ZZ.jpg'].some(pattern => link.endsWith(pattern))
-        return pageList.filter(link => {
-            return !link.includes('.filerun.')
-                && !link.endsWith('iklan.png')
-                && !link.endsWith('.5.jpg')
-                && !link.endsWith(',5.jpg')
-                && !link.endsWith('ZZ.jpg');
-        });
+        return pageList.filter(link => !fakeLinkPatterns.some(pattern => pattern.test(link)));
     }
 }

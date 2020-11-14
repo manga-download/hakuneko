@@ -35,7 +35,7 @@ export default class Sa3i9a extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.replace('مانجا','').trim()
+                title: element.text.replace('مانجا', '').trim()
             };
         });
     }
@@ -46,16 +46,18 @@ export default class Sa3i9a extends Connector {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, '#post-nav > div > a:last-child');
         for(let page = 1, run = true; run; page++) {
-            if (data.length == 0){
+            if (data.length == 0) {
                 req = manga.id;
                 run = false;
-            } else {req = data[0].href.replace(/page\/(\d+)/,`page/${page}`);}
+            } else {
+                req = data[0].href.replace(/page\/(\d+)/, `page/${page}`);
+            }
             let chapters = await this._getChaptersFromPage(req);
             chapters.length > 0 ? chaptersList.push(...chapters) : run = false;
         }
         return chaptersList;
     }
-    async _getChaptersFromPage(req){
+    async _getChaptersFromPage(req) {
         const data = await this.fetchDOM(new Request(new URL(req, this.url), this.requestOptions), 'div.ft-ctbox h2 > a');
         return data.map(element => {
             return {
