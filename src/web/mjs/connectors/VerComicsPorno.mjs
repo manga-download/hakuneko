@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 
+// base for VerMangasPorno
 export default class VerComicsPorno extends Connector {
 
     constructor() {
@@ -10,9 +11,9 @@ export default class VerComicsPorno extends Connector {
         this.url = 'https://vercomicsporno.com';
 
         this.path = '/page/';
-        this.queryMangas = '#posts .gallery > a';
+        this.queryMangas = 'div.gallery > a.cover';
         this.pager = 'ul.pagination li:last-of-type a';
-        this.listPages = '#posts source.lazy:not(:last-child)';
+        this.listPages = 'div.comicimg source:not([src*="descargavcp.png"]):not([data-lazy-src*="banner.png"])';
     }
 
     async _getMangasFromPage(page) {
@@ -22,7 +23,7 @@ export default class VerComicsPorno extends Connector {
             this.cfMailDecrypt(element);
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.href.split('/')[3].replace(/(-)/g, ' ')
+                title: element.querySelector('div.caption').textContent.trim()
             };
         });
     }
@@ -50,6 +51,6 @@ export default class VerComicsPorno extends Connector {
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, this.listPages);
-        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element, request.url));
+        return data.map(element => this.getAbsolutePath(element.dataset['lazySrc'] || element.dataset['src'] || element, request.url));
     }
 }
