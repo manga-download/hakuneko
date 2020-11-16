@@ -1,6 +1,6 @@
-import FoolSlide from './templates/FoolSlide.mjs';
+import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
 
-export default class KirishimaFansub extends FoolSlide {
+export default class KirishimaFansub extends MangaReaderCMS {
 
     constructor() {
         super();
@@ -8,7 +8,7 @@ export default class KirishimaFansub extends FoolSlide {
         super.label = 'KirishimaFansub';
         this.tags = [ 'manga', 'high-quality', 'spanish', 'scanlation' ];
         this.url = 'https://www.kirishimafansub.net';
-        this.path = '/lector/directory/';
+        this.path = '/reader/';
         this.language = 'spanish';
     }
 }
