@@ -24,20 +24,33 @@ export default class Request {
         let isCookieAvailable = hcCookies.some(cookie => cookie.expirationDate > Date.now()/1000 + 1800);
         if(settings.hCaptchaAccessibilityUUID.value && !isCookieAvailable) {
             let script = `
-                new Promise(resolve => {
-                    document.querySelector('button[title*="cookie"]').click();
-                    setTimeout(() => resolve(document.cookie), 2500);
+                new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            document.querySelector('button[data-cy*="setAccessibilityCookie"]').click();
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, 1000);
+                    setInterval(() => {
+                        if(document.cookie.includes('hc_accessibility=')) {
+                            resolve(document.cookie);
+                        }
+                    }, 750);
+                    setTimeout(() => {
+                        reject(new Error('The hCaptcha accessibility cookie was not applied within the given timeout!'));
+                    }, 7500);
                 });
             `;
             let uri = new URL('https://accounts.hcaptcha.com/verify_email/' + settings.hCaptchaAccessibilityUUID.value);
             let request = new window.Request(uri);
-            let data = await this.fetchUI(request, script, 30000);
-            if(data.includes('hc_accessibility=')) {
+            try {
+                let data = await this.fetchUI(request, script, 30000);
                 console.log('Initialization of hCaptcha accessibility signup succeeded.', data);
-            } else {
+            } catch(error) {
                 // Maybe quota of cookie requests exceeded
                 // Maybe account suspension because of suspicious behavior/abuse
-                console.warn('Initialization of hCaptcha accessibility signup failed!', data);
+                console.warn('Initialization of hCaptcha accessibility signup failed!', error);
             }
         }
     }
