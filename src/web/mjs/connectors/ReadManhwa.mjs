@@ -1,3 +1,4 @@
+/* eslint-disable no-trailing-spaces */
 import Connector from "../engine/Connector.mjs";
 
 export default class ReadManhwa extends Connector {
@@ -47,17 +48,14 @@ export default class ReadManhwa extends Connector {
         const data = await this.fetchJSON(request);
         return data.map(el => {
             return {
-                id: el.slug+'&&%@'+manga.id,
+                id: el.slug,
                 title: el.name,
             };
         });
     }
 
-    async _getPages(chapter) {
-        const ch = chapter.id.split('&&%@');
-        const chapter_id = ch[0];
-        const manga_id = ch[1];
-        const uri = new URL(`/api/comics/${manga_id}/${chapter_id}/images`, this.url);
+    async _getPages(chapter) {        
+        const uri = new URL(`/api/comics/${chapter.manga.id}/${chapter.id}/images`, this.url);
         uri.searchParams.set('nsfw', true);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
