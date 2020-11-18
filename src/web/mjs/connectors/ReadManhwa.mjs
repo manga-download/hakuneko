@@ -2,8 +2,6 @@ import Connector from "../engine/Connector.mjs";
 
 export default class ReadManhwa extends Connector {
 
-    // TODO: Add Website Icon
-
     constructor() {
         super();
         super.id = 'readmanhwa';
