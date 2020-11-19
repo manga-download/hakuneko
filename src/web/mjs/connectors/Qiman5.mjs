@@ -37,7 +37,15 @@ export default class Qiman5 extends SinMH {
             });
         `;
         this.queryPagesScript = `
-            new Promise(resolve => resolve(newImgs));
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        resolve(newImgs);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 1000);
+            });
         `;
     }
 
