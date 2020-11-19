@@ -22,14 +22,18 @@ export default class Qiman5 extends SinMH {
                             button.click();
                         }
                         setTimeout(() => {
-                            let chapterList = [...document.querySelectorAll('${this.queryChapters}')].map(element => {
-                                return {
-                                    id: element.pathname,
-                                    title: element.text.trim()
-                                };
-                            });
-                            resolve(chapterList);
-                        }, 5000);
+                            try {
+                                let chapterList = [...document.querySelectorAll('${this.queryChapters}')].map(element => {
+                                    return {
+                                        id: element.pathname,
+                                        title: element.text.trim()
+                                    };
+                                });
+                                resolve(chapterList);
+                            } catch(error) {
+                                reject(error);        
+                            }
+                        }, 6000);
                     } catch(error) {
                         reject(error);
                     }
