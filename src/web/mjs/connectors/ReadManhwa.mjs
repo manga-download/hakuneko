@@ -1,5 +1,5 @@
-/* eslint-disable no-trailing-spaces */
-import Connector from "../engine/Connector.mjs";
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ReadManhwa extends Connector {
 
@@ -54,7 +54,7 @@ export default class ReadManhwa extends Connector {
         });
     }
 
-    async _getPages(chapter) {        
+    async _getPages(chapter) {
         const uri = new URL(`/api/comics/${chapter.manga.id}/${chapter.id}/images`, this.url);
         uri.searchParams.set('nsfw', true);
         const request = new Request(uri, this.requestOptions);
@@ -62,6 +62,16 @@ export default class ReadManhwa extends Connector {
         return data.images.map(el => {
             return el.source_url;
         });
+    }
+
+    async _getMangaFromURI(uri) {
+        const ch = uri.pathname.split('/');
+        const slug = ch[ch.length-1];
+        const request = new Request(new URL(`/api/comics/${slug}?nsfw=true`, this.url), this.requestOptions);
+        const data = await this.fetchJSON(request);
+        const id = data.slug;
+        const title = data.title;
+        return new Manga(this, id, title);
     }
 
 }
