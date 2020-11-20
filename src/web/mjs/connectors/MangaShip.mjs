@@ -48,10 +48,10 @@ export default class MangaShip extends Connector {
     async _getPages(chapter) {
         let uri = new URL(chapter.id.replace('/Oku/', '/MangaOku/'), this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.reading-content source');
+        let data = await this.fetchDOM(request, 'div.reading-content div[style*="background-image"]');
         return data.map(element => {
-            if(element.src.startsWith('data:')) {
-                const data = element.src.split(',')[1];
+            if(element.style.backgroundImage.includes('data:image')) {
+                const data = element.style.backgroundImage.split('"')[1].split(',').pop();
                 return this._mapDataUriType(data) + data;
             } else {
                 return this.getAbsolutePath(element, request.url);
