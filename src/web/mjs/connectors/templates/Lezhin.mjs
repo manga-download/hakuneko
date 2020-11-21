@@ -1,4 +1,5 @@
 import Connector from '../../engine/Connector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
 export default class Lezhin extends Connector {
 
@@ -63,6 +64,14 @@ export default class Lezhin extends Connector {
         // force user locale user setting to be the same as locale from the currently used website ...
         // => prevent a warning webpage that would appear otherwise when loading chapters / pages
         return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.comicInfo__detail h2.comicInfo__title');
+        let id = uri.pathname.match(/comic\/([^/]+)/)[1];
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     /**
