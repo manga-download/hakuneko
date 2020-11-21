@@ -36,16 +36,23 @@ export default class Lezhin extends Connector {
         }
         let script = `
             new Promise((resolve, reject) => {
-                let form = $('form#login-form');
-                form.find('input#login-email').val('${this.config.username.value}');
-                form.find('input#login-password').val('${this.config.password.value}');
-                $.ajax({
-                    type: 'POST',
-                    url: form.prop('action'),
-                    data: form.serialize(),
-                    success: resolve,
-                    error: reject
-                });
+                try {
+                    if($('#log-nav-email').length) {
+                        return resolve();
+                    }
+                    const form = $('form#email');
+                    form.find('input#login-email').val('${this.config.username.value}');
+                    form.find('input#login-password').val('${this.config.password.value}');
+                    $.ajax({
+                        type: 'POST',
+                        url: form.prop('action'),
+                        data: form.serialize(),
+                        success: resolve,
+                        error: reject
+                    });
+                } catch(error) {
+                    reject(error);
+                }
             });
         `;
         let request = new Request(new URL(this.url + '/login'), this.requestOptions);
