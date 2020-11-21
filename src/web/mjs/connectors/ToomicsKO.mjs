@@ -47,7 +47,7 @@ export default class ToomicsKO extends Toomics {
         return data.map(element => {
             return {
                 id: element.dataset.toggle === 'modal' ? element.id.match(/idx(\d+)$/)[1] : this.getRootRelativeOrAbsoluteLink(element, this.baseURL).replace(/bridge\/type\/\d+/, 'episode'),
-                title: element.querySelector(this.queryMangaTitle).textContent.replace(/\[[^\[\]]+\]$/, '').trim()
+                title: element.querySelector(this.queryMangaTitle).textContent.replace(/\u005B[^\u005B\u005D]+\u005D$/, '').trim()
             };
         });
     }
