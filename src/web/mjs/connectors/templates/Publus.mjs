@@ -8,6 +8,7 @@ export default class Publus extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
+        this.version = '1.0.X';
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             scrapeDelay: {
@@ -19,56 +20,102 @@ export default class Publus extends Connector {
                 value: 5000
             }
         };
+
+        this.scripts = {
+            '1.0.X': `
+                new Promise((resolve, reject) => {
+                    setTimeout(async () => {
+                        try {
+                            if(this.NFBR) {
+                                let configuration = await (await fetch(NFBR.GlobalConfig.SERVER_DOMAIN + NFBR.GlobalConfig.WEBAPI_CONTENT_CHECK + window.location.search)).json();
+                                let packURI = new URL(configuration.url + NFBR.a5n.a5N + '_pack.json', window.location.origin);
+                                packURI.search = '?' + new URLSearchParams(configuration.auth_info || {}).toString();
+                                let pack = await (await fetch(packURI)).json();
+                                let pageList = Object.keys(pack).filter(key => key.includes('xhtml')).sort().map(key => {
+                                    let uri = new URL(configuration.url + key + '/0.jpeg', window.location.origin);
+                                    uri.search = packURI.search;
+                                    let file = uri.pathname.match(/(item|text).*[0-9]+/)[0];
+                                    for (let d = v = 0; d < file.length; d++) {
+                                        v += file.charCodeAt(d);
+                                    }
+                                    return {
+                                        mode: 'puzzle',
+                                        imageUrl: uri.href,
+                                        encryptionKey: v % NFBR.a0X.a3h + 1
+                                    };
+                                });
+                                let lastPage = pageList.pop();
+                                if(lastPage.imageUrl.includes('cover')) {
+                                    pageList.unshift(lastPage);
+                                } else {
+                                    pageList.push(lastPage);
+                                }
+                                return resolve(pageList);
+                            }
+                            throw new Error('Unsupported image viewer!');
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }, ${this.config.scrapeDelay.value});
+                });
+            `,
+            '1.2.X': `
+                new Promise((resolve, reject) => {
+                    setTimeout(async () => {
+                        try {
+                            function extract(license) {
+                                const pages = license.contents
+                                // use 'mobile' images instead of encrypted 'OPS' images
+                                .filter(page => page.content_file_name.startsWith('mobile/OPS/images')) // startsWith('OPS/images')
+                                .map(page => {
+                                    const encrypted = page.content_file_name.endsWith('dat');
+                                    const file = page.content_file_name.replace('.jpeg', ''); // '/0'
+                                    for (let d = v = 0; d < file.length; d++) {
+                                        v += file.charCodeAt(d);
+                                    }
+                                    return {
+                                        mode: encrypted ? 'RC4-puzzle' : 'puzzle',
+                                        imageUrl: license.agreement.url_prefix + page.content_file_name + '?' + new URLSearchParams(license.auth_info),
+                                        encryptionKey: encrypted ? atob(license.agreement.key) : v % NFBR.a0X.a3h + 1
+                                    };
+                                });
+                                resolve(pages);
+                            }
+                            var a2f = new NFBR.a2f();
+                            a2f.parseLicenseObject = extract;
+                            a2f.a5W({
+                                //contentType: undefined,
+                                contentId: new URL(window.location).searchParams.get('cid'),
+                                title: true,
+                                preview: true,
+                                winWidth: 3840,
+                                winHeight: 2160
+                            });
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, ${this.config.scrapeDelay.value});
+                });
+            `
+        };
     }
 
     async _getPages(chapter) {
-        let uri = new URL( chapter.id, this.url );
-        let request = new Request( uri.href, this.requestOptions );
-        let script = `
-            new Promise((resolve, reject) => {
-                setTimeout(async () => {
-                    try {
-                        if(this.NFBR) {
-                            let configuration = await (await fetch(NFBR.GlobalConfig.SERVER_DOMAIN + NFBR.GlobalConfig.WEBAPI_CONTENT_CHECK + window.location.search)).json();
-                            let packURI = new URL(configuration.url + NFBR.a5n.a5N + '_pack.json', window.location.origin);
-                            packURI.search = '?' + new URLSearchParams(configuration.auth_info || {}).toString();
-                            let pack = await (await fetch(packURI)).json();
-                            let pageList = Object.keys(pack).filter(key => key.includes('xhtml')).sort().map(key => {
-                                let uri = new URL(configuration.url + key + '/0.jpeg', window.location.origin);
-                                uri.search = packURI.search;
-                                let file = uri.pathname.match(/(item|text).*[0-9]+/)[0];
-                                for (let d = v = 0; d < file.length; d++) {
-                                    v += file.charCodeAt(d);
-                                }
-                                return {
-                                    mode: 'puzzle',
-                                    imageUrl: uri.href,
-                                    encryptionKey: v % NFBR.a0X.a3h + 1
-                                };
-                            });
-                            let lastPage = pageList.pop();
-                            if(lastPage.imageUrl.includes('cover')) {
-                                pageList.unshift(lastPage);
-                            } else {
-                                pageList.push(lastPage);
-                            }
-                            return resolve(pageList);
-                        }
-                        throw new Error('Unsupported image viewer!');
-                    } catch (error) {
-                        reject(error);
-                    }
-                }, ${this.config.scrapeDelay.value});
-            });
-        `;
-        let data = await Engine.Request.fetchUI(request, script);
+        const uri = new URL( chapter.id, this.url );
+        const request = new Request( uri.href, this.requestOptions );
+        const data = await Engine.Request.fetchUI(request, this.scripts[this.version]);
         return data.map(page => page.mode === 'raw' ? page.imageUrl : this.createConnectorURI(page));
     }
 
     async _handleConnectorURI(payload) {
-        let request = new Request(payload.imageUrl, this.requestOptions);
-        let response = await fetch(request);
+        const request = new Request(payload.imageUrl, this.requestOptions);
+        const response = await fetch(request);
         switch (payload.mode) {
+            case 'RC4-puzzle': {
+                let data = await response.text();
+                data = atob(data);
+                throw new Error('Not implemented!');
+            }
             case 'puzzle': {
                 let data = await response.blob();
                 data = await this._descrambleImage(data, payload.encryptionKey);
