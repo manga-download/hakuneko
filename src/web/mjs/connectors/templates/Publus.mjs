@@ -61,26 +61,32 @@ export default class Publus extends Connector {
             `,
             '1.2.X': `
                 new Promise((resolve, reject) => {
+                    function extract(license) {
+                        try {
+                            const pages = license.contents
+                            // use 'mobile' images instead of encrypted 'OPS' images
+                            .filter(page => page.content_file_name.startsWith('mobile/OPS/images')) // startsWith('OPS/images')
+                            .map(page => {
+                                // mobile/OPS/images/08102234872509305501_copyright.jpg/0.jpeg
+                                // => OPS/images/08102234872509305501_cover.jpg/0
+                                const encrypted = page.content_file_name.endsWith('dat');
+                                const file = page.content_file_name.match(/^mobile\\/(.+0)\\.jpeg$/)[1];
+                                for (let d = v = 0; d < file.length; d++) {
+                                    v += file.charCodeAt(d);
+                                }
+                                return {
+                                    mode: encrypted ? 'RC4-puzzle' : 'puzzle',
+                                    imageUrl: license.agreement.url_prefix + page.content_file_name + '?' + new URLSearchParams(license.auth_info),
+                                    encryptionKey: encrypted ? atob(license.agreement.key) : v % NFBR.a0X.a3h + 1
+                                };
+                            });
+                            resolve(pages);
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }
                     setTimeout(async () => {
                         try {
-                            function extract(license) {
-                                const pages = license.contents
-                                // use 'mobile' images instead of encrypted 'OPS' images
-                                .filter(page => page.content_file_name.startsWith('mobile/OPS/images')) // startsWith('OPS/images')
-                                .map(page => {
-                                    const encrypted = page.content_file_name.endsWith('dat');
-                                    const file = page.content_file_name.replace('.jpeg', ''); // '/0'
-                                    for (let d = v = 0; d < file.length; d++) {
-                                        v += file.charCodeAt(d);
-                                    }
-                                    return {
-                                        mode: encrypted ? 'RC4-puzzle' : 'puzzle',
-                                        imageUrl: license.agreement.url_prefix + page.content_file_name + '?' + new URLSearchParams(license.auth_info),
-                                        encryptionKey: encrypted ? atob(license.agreement.key) : v % NFBR.a0X.a3h + 1
-                                    };
-                                });
-                                resolve(pages);
-                            }
                             var a2f = new NFBR.a2f();
                             a2f.parseLicenseObject = extract;
                             a2f.a5W({
@@ -111,11 +117,13 @@ export default class Publus extends Connector {
         const request = new Request(payload.imageUrl, this.requestOptions);
         const response = await fetch(request);
         switch (payload.mode) {
+            /*
             case 'RC4-puzzle': {
                 let data = await response.text();
                 data = atob(data);
                 throw new Error('Not implemented!');
             }
+            */
             case 'puzzle': {
                 let data = await response.blob();
                 data = await this._descrambleImage(data, payload.encryptionKey);
