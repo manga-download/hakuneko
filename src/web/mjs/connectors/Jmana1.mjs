@@ -13,6 +13,9 @@ export default class Jmana1 extends Connector {
         this.queryMangas = 'div.section div div.conts ul.allList li a';
         this.queryChapters = 'div.post-content-list h2 a';
         this.queryPages = 'div ul.listType.view li#view_content2 source';
+        this.queryMangaTitle = 'div.media-body.col-9 div div h2 a';
+
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangas() {
@@ -26,7 +29,7 @@ export default class Jmana1 extends Connector {
 
     async _getMangasFromPage(page) {
         // NOTE: Avoid 429 Too Many Request
-        await new Promise(r => setTimeout(r, 2000));
+        await this.wait(1000);
         const uri = new URL(this.path, this.url);
         uri.searchParams.set('page', page);
         const request = new Request(uri, this.requestOptions);
@@ -51,21 +54,19 @@ export default class Jmana1 extends Connector {
         });
     }
 
-    // TODO: address 403 Forbidden
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => {
-            return this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url);
-        });
+        return data.map(img => this.createConnectorURI(this.getAbsolutePath(img.dataset['src'] || img['srcset'] || img, request.url)));
     }
 
     async _getMangaFromURI(uri) {
-        const urlParams = new URLSearchParams(uri.search);
-        const bookname = urlParams.get('bookname');
+        const bookname = uri.searchParams.get('bookname');
+        const request = new Request(new URL(`/book?bookname=${bookname}`, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangaTitle);
         const id = `/book?bookname=${bookname}`;
-        const title = bookname.replace('+', ' ');
+        const title = data[0].textContent.replace('제목', '').replace(':', '').trim();
         return new Manga(this, id, title);
     }
 }
