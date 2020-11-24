@@ -8,7 +8,6 @@ export default class Publus extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
-        this.version = '1.0.X';
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             scrapeDelay: {
@@ -20,96 +19,81 @@ export default class Publus extends Connector {
                 value: 5000
             }
         };
-
-        this.scripts = {
-            '1.0.X': `
-                new Promise((resolve, reject) => {
-                    setTimeout(async () => {
-                        try {
-                            if(this.NFBR) {
-                                let configuration = await (await fetch(NFBR.GlobalConfig.SERVER_DOMAIN + NFBR.GlobalConfig.WEBAPI_CONTENT_CHECK + window.location.search)).json();
-                                let packURI = new URL(configuration.url + NFBR.a5n.a5N + '_pack.json', window.location.origin);
-                                packURI.search = '?' + new URLSearchParams(configuration.auth_info || {}).toString();
-                                let pack = await (await fetch(packURI)).json();
-                                let pageList = Object.keys(pack).filter(key => key.includes('xhtml')).sort().map(key => {
-                                    let uri = new URL(configuration.url + key + '/0.jpeg', window.location.origin);
-                                    uri.search = packURI.search;
-                                    let file = uri.pathname.match(/(item|text).*[0-9]+/)[0];
-                                    for (let d = v = 0; d < file.length; d++) {
-                                        v += file.charCodeAt(d);
-                                    }
-                                    return {
-                                        mode: 'puzzle',
-                                        imageUrl: uri.href,
-                                        encryptionKey: v % NFBR.a0X.a3h + 1
-                                    };
-                                });
-                                let lastPage = pageList.pop();
-                                if(lastPage.imageUrl.includes('cover')) {
-                                    pageList.unshift(lastPage);
-                                } else {
-                                    pageList.push(lastPage);
-                                }
-                                return resolve(pageList);
-                            }
-                            throw new Error('Unsupported image viewer!');
-                        } catch (error) {
-                            reject(error);
-                        }
-                    }, ${this.config.scrapeDelay.value});
-                });
-            `,
-            '1.2.X': `
-                new Promise((resolve, reject) => {
-                    function extract(license) {
-                        try {
-                            const pages = license.contents
-                            // use 'mobile' images instead of encrypted 'OPS' images
-                            .filter(page => page.content_file_name.startsWith('mobile/OPS/images')) // startsWith('OPS/images')
-                            .map(page => {
-                                // mobile/OPS/images/08102234872509305501_copyright.jpg/0.jpeg
-                                // => OPS/images/08102234872509305501_cover.jpg/0
-                                const encrypted = page.content_file_name.endsWith('dat');
-                                const file = page.content_file_name.match(/^mobile\\/(.+0)\\.jpeg$/)[1];
-                                for (let d = v = 0; d < file.length; d++) {
-                                    v += file.charCodeAt(d);
-                                }
-                                return {
-                                    mode: encrypted ? 'RC4-puzzle' : 'puzzle',
-                                    imageUrl: license.agreement.url_prefix + page.content_file_name + '?' + new URLSearchParams(license.auth_info),
-                                    encryptionKey: encrypted ? atob(license.agreement.key) : v % NFBR.a0X.a3h + 1
-                                };
-                            });
-                            resolve(pages);
-                        } catch(error) {
-                            reject(error);
-                        }
-                    }
-                    setTimeout(async () => {
-                        try {
-                            var a2f = new NFBR.a2f();
-                            a2f.parseLicenseObject = extract;
-                            a2f.a5W({
-                                //contentType: undefined,
-                                contentId: new URL(window.location).searchParams.get('cid'),
-                                title: true,
-                                preview: true,
-                                winWidth: 3840,
-                                winHeight: 2160
-                            });
-                        } catch(error) {
-                            reject(error);
-                        }
-                    }, ${this.config.scrapeDelay.value});
-                });
-            `
-        };
     }
 
     async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(async () => {
+                    try {
+                        const a2f = NFBR.a2F ? new NFBR.a2F() : new NFBR.a2f();
+                        const params = new URL(window.location).searchParams;
+                        a2f.a5W({
+                            contentId: params.get(NFBR.a5q.Key.CONTENT_ID), // Content ID => 'cid'
+                            a6m: params.get(NFBR.a5q.Key.LICENSE_TOKEN), // License Token => 'lit'
+                            preview: params.get(NFBR.a5q.Key.LOOK_INSIDE) === '1', // Look Inside => 'lin'
+                            contentType: params.get(NFBR.a5q.Key.CONTENT_TYPE) || 1, // Content Type => 'cty'
+                            title: params.get(NFBR.a5q.Key.CONTENT_TITLE), // Content Title => 'cti'
+                            winWidth: 3840,
+                            winHeight: 2160
+                        }).done(meta => {
+                            (async function(){
+                                try {
+                                    const url = meta.url + 'configuration_pack.json?' + (meta.contentAppendParam || '');
+                                    const response = await fetch(url);
+                                    const data = await response.json();
+                                    // TODO: filter 'cover' / 'copyright' / 'credit' ?
+                                    const pages = data.configuration.contents.map(page => {
+                                        let mode = 'raw';
+                                        let file = page.file + '/0';
+                                        for (let d = v = 0; d < file.length; d++) {
+                                            v += file.charCodeAt(d);
+                                        }
+                                        if(meta.lpInfoParam && meta.lpInfoParam.key) {
+                                            //mode = 'rc4-puzzle';
+                                            //file += '.dat?';
+                                            // use mobile images right now, until image decryption is ready ...
+                                            mode = 'puzzle';
+                                            file = 'mobile/' + file + '.jpeg?';
+                                        } else {
+                                            // TODO: find more reliable way to distinguish between 'raw' and 'puzzle' mode
+                                            mode = meta.url.includes('bookwalker.jp') ? 'raw' : 'puzzle';
+                                            file += '.jpeg?';
+                                        }
+                                        return {
+                                            // TODO: when meta.lpInfoParam.key exist
+                                            // mode => use 'rc4-puzzle'
+                                            // extension => use '.dat' instead of '.jpeg'
+                                            mode: mode,
+                                            imageUrl: meta.url + file + (meta.contentAppendParam || ''),
+                                            encryption: {
+                                                pattern: v % NFBR.a0X.a3h + 1,
+                                                key: null
+                                                /*
+                                                    // RC4 Key Creation ...
+                                                    // bid + NFBR.a1k.a1b => 16 bytes
+                                                    // For image decryption see: https://github.com/h-ishioka/jumpbookstore/blob/c2e2b63083def529831632fe7b6f623152d29670/src/jumpbookstore/extract.py#L48
+                                                */
+                                            }
+                                        };
+                                    });
+                                    resolve(pages);
+                                } catch(error) {
+                                    reject(error);
+                                }
+                            })();
+                        }).fail(error => {
+                            reject(error);
+                        });
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, ${this.config.scrapeDelay.value});
+            });
+        `;
         const uri = new URL( chapter.id, this.url );
         const request = new Request( uri.href, this.requestOptions );
-        const data = await Engine.Request.fetchUI(request, this.scripts[this.version]);
+        const data = await Engine.Request.fetchUI(request, script);
         return data.map(page => page.mode === 'raw' ? page.imageUrl : this.createConnectorURI(page));
     }
 
@@ -146,9 +130,9 @@ export default class Publus extends Connector {
     }
 
     /**
-     ******************************
-     *** GANGANONLINE CODE BEGIN ***
-     *****************************
+     *************************
+     *** PUBLUS CODE BEGIN ***
+     *************************
      */
 
     _decryptXOR(encrypted, key) {
@@ -182,16 +166,10 @@ export default class Publus extends Connector {
         } );
     }
 
-    /**
-     *
-     */
     get NFBR_a0X_a3g() {
         return 64;
     }
 
-    /**
-     *
-     */
     get NFBR_a0X_a3G() {
         return 64;
     }
@@ -278,23 +256,14 @@ export default class Publus extends Connector {
         return u;
     }
 
-    /**
-     *
-     */
     calcPositionWithRest_(a, f, b, e) {
         return a * e + (a >= f ? b : 0);
     }
 
-    /**
-     *
-     */
     calcXCoordinateXRest_(a, f, b) {
         return (a + 61 * b) % f;
     }
 
-    /**
-     *
-     */
     calcYCoordinateXRest_(a, f, b, e, d) {
         var c = 1 === d % 2;
         (a < f ? c : !c) ? (e = b,
@@ -303,9 +272,6 @@ export default class Publus extends Connector {
         return (a + 53 * d + 59 * b) % e + f;
     }
 
-    /**
-     *
-     */
     calcXCoordinateYRest_(a, f, b, e, d) {
         var c = 1 == d % 2;
         (a < b ? c : !c) ? (e -= f,
@@ -314,16 +280,13 @@ export default class Publus extends Connector {
         return (a + 67 * d + f + 71) % e + b;
     }
 
-    /**
-     *
-     */
     calcYCoordinateYRest_(a, f, b) {
         return (a + 73 * b) % f;
     }
 
     /**
-     ****************************
-     *** GANGANONLINE CODE END ***
-     ***************************
+     ***********************
+     *** PUBLUS CODE END ***
+     ***********************
      */
 }
