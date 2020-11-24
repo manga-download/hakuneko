@@ -75,8 +75,19 @@ export default class MangaDex extends Connector {
     }
 
     async _getChapters(manga) {
+        let chapterList = [];
+        for(let page = 1, run = true; run; page++) {
+            let chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(manga, page) {
         const uri = new URL(`/api/v2/manga/${this._migratedMangaID(manga.id)}/chapters`, this.url);
-        let data = await this._requestAPI(uri, 'chapter');
+        uri.searchParams.set('p', page);
+        const request = new Request(uri);
+        const data = await this.fetchJSON(request);
         return data.data.chapters.map(chapter => {
             let title = '';
             if(chapter.volume) { // => string, not a number
@@ -107,8 +118,11 @@ export default class MangaDex extends Connector {
     }
 
     async _getPages(chapter) {
-        const uri = new URL(`/api/v2/chapter/${chapter.id}?saver=false`, this.url);
-        const data = await this._requestAPI(uri, 'page');
+        const uri = new URL(`/api/v2/chapter/${chapter.id}`, this.url);
+        uri.searchParams.set('mark_read', false);
+        uri.searchParams.set('saver', false);
+        const request = new Request(uri);
+        const data = await this.fetchJSON(request);
         const baseURL = this._getNode(data.data.server) + data.data.hash + '/';
         return data.data.pages.map(page => this.createConnectorURI(baseURL + page));
     }
@@ -124,16 +138,6 @@ export default class MangaDex extends Connector {
             this.config.node.value = 'https://s2.mangadex.cf';
         }
         return new URL('/data/', this.config.node.value).href;
-    }
-
-    async _requestAPI(url, label) {
-        let request = new Request(url, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        if(data.status.toLowerCase() !== 'ok') {
-            let message = data.status === 'external' ? 'External reference: ' + data.external : data[ 'message' ] || 'No information available';
-            throw new Error(`Failed to receive ${label} list (status: ${data.status})\n${message}`);
-        }
-        return data;
     }
 
     _padNum(number, places) {
