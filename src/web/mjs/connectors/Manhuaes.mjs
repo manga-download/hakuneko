@@ -31,7 +31,7 @@ export default class ManhuaES extends MojoPortalComic {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.reading-detail source.lazyload');
+        let data = await this.fetchDOM(request, 'div.reading-detail > :not(.mrt5)  source.lazyload');
         return data.map(element => this.getAbsolutePath(element.dataset.src, this.url));
     }
 }
