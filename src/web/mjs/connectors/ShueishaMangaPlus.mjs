@@ -64,8 +64,14 @@ export default class ShueishaMangaPlus extends Publus {
             .filter(page => page.mangaPage)
             .map(page => {
                 let image = page.mangaPage;
-                image = Object.assign(image, { mode: image.encryptionKey ? 'xor' : 'raw' });
-                return image.encryptionKey ? this.createConnectorURI(image) : image.imageUrl;
+                image = Object.assign(image, {
+                    mode: image.encryptionKey ? 'xor' : 'raw',
+                    encryption: {
+                        pattern: null,
+                        key: image.encryptionKey
+                    }
+                });
+                return image.mode === 'raw' ? image.imageUrl : this.createConnectorURI(image);
             });
     }
 }

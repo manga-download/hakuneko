@@ -110,14 +110,14 @@ export default class Publus extends Connector {
             */
             case 'puzzle': {
                 let data = await response.blob();
-                data = await this._descrambleImage(data, payload.encryptionKey);
+                data = await this._descrambleImage(data, payload.encryption.pattern);
                 return this._blobToBuffer(data);
             }
             case 'xor': {
                 let data = await response.arrayBuffer();
                 data = {
                     mimeType: response.headers.get('content-type'),
-                    data: await this._decryptXOR(data, payload.encryptionKey)
+                    data: await this._decryptXOR(data, payload.encryption.key)
                 };
                 this._applyRealMime(data);
                 return data;
