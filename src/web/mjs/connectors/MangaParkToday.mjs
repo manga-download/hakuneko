@@ -6,7 +6,7 @@ export default class MangaParkToday extends Connector {
         super();
         super.id = 'mangaparktoday';
         super.label = 'MangaPark.Today';
-        this.tags = [ '!test', 'manga', 'webtoon', 'english'];
+        this.tags = [ 'manga', 'webtoon', 'english'];
         this.url = 'http://mangapark.today';
 
         this.path = '/latest-manga';
