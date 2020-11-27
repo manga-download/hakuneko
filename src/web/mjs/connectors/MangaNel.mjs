@@ -20,7 +20,8 @@ export default class MangaNel extends Connector {
         this._queryChapters = [
             'ul.row-content-chapter li a.chapter-name', // manganelo, mangabat
             'div.chapter_list ul li a', // mangairo
-            'div.chapter-list div.row span a' // mangakakalot(s), kissmangawebsite, manganeloinfo
+            'div.chapter-list div.row span a', // mangakakalot(s), kissmangawebsite, manganeloinfo
+            'div.content.mCustomScrollbar div.chapter-list ul li.row div.chapter h4 a.xanh' // MangaPark
         ].join(', ');
 
         this._queryPages = [
