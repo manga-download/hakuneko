@@ -79,17 +79,7 @@ export default class MangaDex extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
-        for(let page = 1, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(manga, page);
-            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
-        }
-        return chapterList;
-    }
-
-    async _getChaptersFromPage(manga, page) {
         const uri = new URL(`/api/v2/manga/${this._migratedMangaID(manga.id)}/chapters`, this.url);
-        uri.searchParams.set('p', page);
         const request = new Request(uri);
         const data = await this.fetchJSON(request);
         return data.data.chapters
