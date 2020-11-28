@@ -14,6 +14,12 @@ export default class MangaKawaii extends MangaReaderCMS {
         this.language = 'fr';
     }
 
+    async _getMangas() {
+        const mangas = await super._getMangas();
+        mangas.forEach(manga => manga.title = manga.title.replace(/^\//, '').trim());
+        return mangas;
+    }
+
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchRegex(request, /attr\s*\(\s*['"]data-src['"]\s*,\s*['"]\s*([^'"]+)\s*['"]\s*\)/g);
