@@ -13,8 +13,9 @@ export default class TakeShobo extends SpeedBinb {
         this.queryMangaTitle = 'section.work_main div.col_work_name h1';
         this.queryMangas = 'section.lineup ul li a';
         this.queryMangasTitle = 'source';
-        this.queryChapters = 'section.episode div.box_episode div.box_episode_text a:first-of-type';
+        this.queryChapters = 'section.episode div.box_episode div.box_episode_text';
         this.queryChaptersTitle = 'div.episode_title';
+        this.queryChaptersLink = 'a:first-of-type';
     }
 
     async _getMangaFromURI(uri) {
@@ -40,10 +41,9 @@ export default class TakeShobo extends SpeedBinb {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
-            let title = element.parentElement.querySelector(this.queryChaptersTitle);
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.innerText.replace(manga.title, '').trim(),
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector(this.queryChaptersLink), request.url),
+                title: element.querySelector(this.queryChaptersTitle).innerText.replace(manga.title, '').trim(),
                 language: ''
             };
         });
