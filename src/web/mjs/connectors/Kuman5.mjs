@@ -18,8 +18,12 @@ export default class kuman5 extends MH {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
-        mangaList.forEach(manga => manga.id = `/mulu${manga.id}1-1.html`);
         return mangaList;
+    }
+
+    async _getChapters(manga) {
+        const mangaID = /^\/mulu/.test(manga.id) ? manga.id : `/mulu${manga.id}1-1.html`;
+        return super._getChapters(Object.assign(manga, { id: mangaID }));
     }
 
     async _getPages(chapter) {
