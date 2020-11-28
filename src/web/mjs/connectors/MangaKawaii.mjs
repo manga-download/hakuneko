@@ -10,7 +10,7 @@ export default class MangaKawaii extends MangaReaderCMS {
         this.url = 'https://www.mangakawaii.com';
 
         this.queryMangas = 'ul.manga-list-text li a.alpha-link';
-        this.queryChapters = 'div.chapters-list div.chapter-item div.chapter-item__name a.list-item__title';
+        this.queryChapters = 'table.table--manga tbody td.table__chapter a';
         this.language = 'fr';
     }
 
