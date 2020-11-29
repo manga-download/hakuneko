@@ -26,6 +26,6 @@ export default class KissMangaWebsite extends MangaNel {
 
     canHandleURI(uri) {
         // Test: https://regex101.com/r/aPR3zy/3/tests
-        return /^(m\.|chap\.)?kissmanga\.website$/.test(uri.hostname);
+        return /^(m\.|chap\.)?kissmanga\.(website|cc)$/.test(uri.hostname);
     }
 }
