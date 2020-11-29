@@ -15,10 +15,10 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         this.queryManga = 'meta[name="subject"]';
         this.queryChapters = 'div.serial-list li.list-item div.wr-subject a';
         this.scriptPages = `
-        new Promise(resolve => {
-            const images = [...document.querySelectorAll('div.view-padding div > img, div.view-padding div > p:not([class]) img')];
-            resolve(images.map(image => JSON.stringify(image.dataset).match(/"\\S{11}":"(.*)"/)[1]));
-        });
+            new Promise(resolve => {
+                const images = [...document.querySelectorAll('div.view-padding div > img, div.view-padding div > p:not([style*="none"]) img')];
+                resolve(images.map(image => JSON.stringify(image.dataset).match(/"\\S{11}":"(.*)"/)[1]));
+            });
         `;
     }
 
