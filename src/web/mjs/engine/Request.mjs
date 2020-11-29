@@ -344,7 +344,7 @@ export default class Request {
                 webPreferences: {
                     nodeIntegration: false,
                     webSecurity: false,
-                    images: images
+                    images: images || false
                 }
             } );
             //win.webContents.openDevTools();
