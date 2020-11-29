@@ -11,6 +11,10 @@ export default class MangaDex extends Connector {
         this.url = 'https://mangadex.org';
         this.requestOptions.headers.set('x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2');
         this.requestOptions.headers.set('x-referer', this.url);
+        this.licensedChapterGroups = [
+            9097 // MangaPlus
+        ];
+
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             node: {
@@ -75,46 +79,38 @@ export default class MangaDex extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
-        for(let page = 1, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(manga, page);
-            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
-        }
-        return chapterList;
-    }
-
-    async _getChaptersFromPage(manga, page) {
         const uri = new URL(`/api/v2/manga/${this._migratedMangaID(manga.id)}/chapters`, this.url);
-        uri.searchParams.set('p', page);
         const request = new Request(uri);
         const data = await this.fetchJSON(request);
-        return data.data.chapters.map(chapter => {
-            let title = '';
-            if(chapter.volume) { // => string, not a number
-                title += 'Vol.' + this._padNum(chapter.volume, 2);
-            }
-            if(chapter.chapter) { // => string, not a number
-                title += ' Ch.' + this._padNum(chapter.chapter, 4);
-            }
-            if(chapter.title) {
-                title += (title ? ' - ' : '') + chapter.title;
-            }
-            if(chapter.language) {
-                title += ' (' + chapter.language + ')';
-            }
-            if(chapter.groups.length) {
-                const getGroup = groupID => {
-                    const group = data.data.groups.find(g => g.id === groupID);
-                    return group ? group.name : 'unknown';
+        return data.data.chapters
+            .filter(chapter => !this.licensedChapterGroups.some(id => chapter.groups.includes(id)))
+            .map(chapter => {
+                let title = '';
+                if(chapter.volume) { // => string, not a number
+                    title += 'Vol.' + this._padNum(chapter.volume, 2);
+                }
+                if(chapter.chapter) { // => string, not a number
+                    title += ' Ch.' + this._padNum(chapter.chapter, 4);
+                }
+                if(chapter.title) {
+                    title += (title ? ' - ' : '') + chapter.title;
+                }
+                if(chapter.language) {
+                    title += ' (' + chapter.language + ')';
+                }
+                if(chapter.groups.length) {
+                    const getGroup = groupID => {
+                        const group = data.data.groups.find(g => g.id === groupID);
+                        return group ? group.name : 'unknown';
+                    };
+                    title += ' [' + chapter.groups.map(getGroup).join(', ') + ']';
+                }
+                return {
+                    id: chapter.id,
+                    title: title.trim(),
+                    language: chapter.language
                 };
-                title += ' [' + chapter.groups.map(getGroup).join(', ') + ']';
-            }
-            return {
-                id: chapter.id,
-                title: title.trim(),
-                language: chapter.language
-            };
-        });
+            });
     }
 
     async _getPages(chapter) {
