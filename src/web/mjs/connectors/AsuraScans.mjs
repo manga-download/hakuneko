@@ -11,5 +11,6 @@ export default class AsuraScans extends WordPressMangastream {
         this.path = '/manga/';
 
         this.queryMangas = 'div#content div.postbody div.listupd div.bs div.bsx a';
+        this.queryPages = 'div#readerarea img[loading]';
     }
 }
