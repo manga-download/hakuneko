@@ -99,7 +99,7 @@ export default class Publus extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        const uri = new URL(payload.imageUrl);
+        const uri = new URL(payload.imageUrl, this.url);
         const request = new Request(uri, this.requestOptions);
         const response = await fetch(request);
         switch (payload.mode) {
