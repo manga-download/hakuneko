@@ -109,8 +109,8 @@ export default class WordPressMadara extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.queryTitleForURI);
-        const title = [...data].pop().content;
-
+        const element = [...data].pop();
+        const title = (element.content || element.textContent).trim();
         return new Manga(this, uri, title);
     }
 }
