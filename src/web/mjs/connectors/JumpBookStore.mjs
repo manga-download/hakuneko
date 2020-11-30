@@ -19,11 +19,9 @@ export default class JumpBookStore extends Publus {
 
     async _getMangas() {
         let mangaList = [];
-        for(let section of [ null ]) { // [ 'newb', 'newy', 'adultnew' ]
-            for(let page = 1, run = true; run; page++) {
-                let mangas = await this._getMangasFromPage(page, section);
-                mangas.length ? mangaList.push(...mangas) : run = false;
-            }
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page, section);
+            mangas.length ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
