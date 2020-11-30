@@ -20,22 +20,19 @@ export default class JumpBookStore extends Publus {
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page, section);
+            let mangas = await this._getMangasFromPage(page);
             mangas.length ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page, section) {
+    async _getMangasFromPage(page) {
         const uri = new URL('/item_list.html', this.url);
         uri.searchParams.set('SEARCH_MAX_ROW_LIST', 100);
         uri.searchParams.set('item_list_mode', 1);
         uri.searchParams.set('sort_order', 4);
         uri.searchParams.set('request', 'page');
         uri.searchParams.set('next_page', page);
-        if(section) {
-            uri.searchParams.set('acs_section', section);
-        }
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.item_list_img a.panel_search_image');
         return data.map(element => {
