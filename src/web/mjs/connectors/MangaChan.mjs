@@ -1,107 +1,69 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-/**
- *
- */
 export default class MangaChan extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'mangachan';
         super.label = 'Манга-тян (Manga-chan)';
         this.tags = [ 'manga', 'russian' ];
         this.url = 'https://manga-chan.me';
-
-        this.path = '/catalog';
-        this.queryMangas = 'div#content div.content_row div.manga_row1 h2 a.title_link';
-        this.queryChapters = 'table.table_cha tr td div.manga2 a';
-        this.queryPages = /['"]fullimg['"]\s*:\s*(\[(?:\s*['"]http[^'"]*['"]\s*,?\s*)*\])/;
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( mangaPageLinks[ index ], this.requestOptions );
-        return this.fetchDOM( request, this.queryMangas, 5 )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.title.trim() // element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#info_wrap div.name_row h1 a.title_top_a');
+        let id = this.getRootRelativeOrAbsoluteLink(data[0], this.url);
+        let title = data[0].text.trim();
+        return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url + this.path, this.requestOptions );
-        this.fetchDOM( request, 'div#pagination span a:last-of-type' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => request.url + '?offset=' + page * 20 );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        const mangaList = [];
+        const request = new Request(new URL('/catalog', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#pagination span a:last-of-type');
+        const pageCount = parseInt(data[0].text.trim());
+        for(let page = 0; page <= pageCount; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, this.queryChapters )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.replace( manga.title, '' ).trim().replace( 'Читать онлайн', manga.title ),
-                        language: 'ru'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        const uri = new URL('/catalog', this.url);
+        uri.searchParams.set('offset', page * 20);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#content div.content_row div.manga_row1 h2 a.title_link', 3);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        fetch( request )
-            .then( response => response.text() )
-            .then( data => {
-                let pageList = JSON.parse(data.match(this.queryPages)[1].replace(/'/g, '"'))
-                // temporary fix image CDN for old domain which are no longer available
-                    .map( link => link.replace( /img\d+\.manga-chan\.me/, 'manga-chan.me' ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions );
+        const data = await this.fetchDOM(request, 'table.table_cha tr td div.manga2 a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.replace(manga.title, '').trim().replace('Читать онлайн', manga.title),
+                language: 'ru'
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        const script = `
+            new Promise(resolve => resolve(fullimg));
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions );
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(link => this.getAbsolutePath(link, request.url));
     }
 }

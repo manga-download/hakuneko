@@ -22,63 +22,103 @@ export default class Publus extends Connector {
     }
 
     async _getPages(chapter) {
-        let uri = new URL( chapter.id, this.url );
-        let request = new Request( uri.href, this.requestOptions );
-        let script = `
+        const script = `
             new Promise((resolve, reject) => {
                 setTimeout(async () => {
                     try {
-                        if(this.NFBR) {
-                            let configuration = await (await fetch(NFBR.GlobalConfig.SERVER_DOMAIN + NFBR.GlobalConfig.WEBAPI_CONTENT_CHECK + window.location.search)).json();
-                            let packURI = new URL(configuration.url + NFBR.a5n.a5N + '_pack.json', window.location.origin);
-                            packURI.search = '?' + new URLSearchParams(configuration.auth_info || {}).toString();
-                            let pack = await (await fetch(packURI)).json();
-                            let pageList = Object.keys(pack).filter(key => key.includes('xhtml')).sort().map(key => {
-                                let uri = new URL(configuration.url + key + '/0.jpeg', window.location.origin);
-                                uri.search = packURI.search;
-                                let file = uri.pathname.match(/(item|text).*[0-9]+/)[0];
-                                for (let d = v = 0; d < file.length; d++) {
-                                    v += file.charCodeAt(d);
+                        const a2f = NFBR.a2F ? new NFBR.a2F() : new NFBR.a2f();
+                        const params = new URL(window.location).searchParams;
+                        a2f.a5W({
+                            contentId: params.get(NFBR.a5q.Key.CONTENT_ID), // Content ID => 'cid'
+                            a6m: params.get(NFBR.a5q.Key.LICENSE_TOKEN), // License Token => 'lit'
+                            preview: params.get(NFBR.a5q.Key.LOOK_INSIDE) === '1', // Look Inside => 'lin'
+                            contentType: params.get(NFBR.a5q.Key.CONTENT_TYPE) || 1, // Content Type => 'cty'
+                            title: params.get(NFBR.a5q.Key.CONTENT_TITLE), // Content Title => 'cti'
+                            winWidth: 3840,
+                            winHeight: 2160
+                        }).done(meta => {
+                            (async function(){
+                                try {
+                                    const url = meta.url + 'configuration_pack.json?' + (meta.contentAppendParam || '');
+                                    const response = await fetch(url);
+                                    const data = await response.json();
+                                    // TODO: filter 'cover' / 'copyright' / 'credit' ?
+                                    const pages = data.configuration.contents.map(page => {
+                                        let mode = 'raw';
+                                        let file = page.file + '/0';
+                                        for (let d = v = 0; d < file.length; d++) {
+                                            v += file.charCodeAt(d);
+                                        }
+                                        if(data.ct && data.et && data.st) {
+                                            mode = 'RC4+puzzle';
+                                            file += '.dat?';
+                                            /* May also use low quality mobile images instead of RC4 encrypted images ...
+                                            mode = 'puzzle';
+                                            file = 'mobile/' + file + '.jpeg?';
+                                            */
+                                        } else {
+                                            // TODO: find more reliable way to distinguish between 'raw' and 'puzzle' mode
+                                            mode = meta.url.includes('bookwalker.jp') ? 'raw' : 'puzzle';
+                                            file += '.jpeg?';
+                                        }
+                                        return {
+                                            mode: mode,
+                                            imageUrl: meta.url + file + (meta.contentAppendParam || ''),
+                                            encryption: {
+                                                pattern: v % NFBR.a0X.a3h + 1,
+                                                key: {
+                                                    ct: data.ct,
+                                                    et: data.et,
+                                                    st: data.st,
+                                                    bs: data.bs || 128,
+                                                    hs: data.hs || 1024,
+                                                    useRawContent: undefined
+                                                    // See also: https://github.com/h-ishioka/jumpbookstore/blob/c2e2b63083def529831632fe7b6f623152d29670/src/jumpbookstore/extract.py#L21-L26
+                                                }
+                                            }
+                                        };
+                                    });
+                                    resolve(pages);
+                                } catch(error) {
+                                    reject(error);
                                 }
-                                return {
-                                    mode: 'puzzle',
-                                    imageUrl: uri.href,
-                                    encryptionKey: v % NFBR.a0X.a3h + 1
-                                };
-                            });
-                            let lastPage = pageList.pop();
-                            if(lastPage.imageUrl.includes('cover')) {
-                                pageList.unshift(lastPage);
-                            } else {
-                                pageList.push(lastPage);
-                            }
-                            return resolve(pageList);
-                        }
-                        throw new Error('Unsupported image viewer!');
-                    } catch (error) {
+                            })();
+                        }).fail(error => {
+                            reject(error);
+                        });
+                    } catch(error) {
                         reject(error);
                     }
                 }, ${this.config.scrapeDelay.value});
             });
         `;
-        let data = await Engine.Request.fetchUI(request, script);
+        const uri = new URL( chapter.id, this.url );
+        const request = new Request( uri.href, this.requestOptions );
+        const data = await Engine.Request.fetchUI(request, script);
         return data.map(page => page.mode === 'raw' ? page.imageUrl : this.createConnectorURI(page));
     }
 
     async _handleConnectorURI(payload) {
-        let request = new Request(payload.imageUrl, this.requestOptions);
-        let response = await fetch(request);
+        const uri = new URL(payload.imageUrl, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const response = await fetch(request);
         switch (payload.mode) {
+            case 'RC4+puzzle': {
+                let data = await response.text();
+                data = this._decryptRC4(data, uri.pathname.split('/').pop(), payload.encryption.key);
+                data = await this._descrambleImage(data, payload.encryption.pattern);
+                return this._blobToBuffer(data);
+            }
             case 'puzzle': {
                 let data = await response.blob();
-                data = await this._descrambleImage(data, payload.encryptionKey);
+                data = await this._descrambleImage(data, payload.encryption.pattern);
                 return this._blobToBuffer(data);
             }
             case 'xor': {
                 let data = await response.arrayBuffer();
                 data = {
                     mimeType: response.headers.get('content-type'),
-                    data: await this._decryptXOR(data, payload.encryptionKey)
+                    data: await this._decryptXOR(data, payload.encryption.key)
                 };
                 this._applyRealMime(data);
                 return data;
@@ -90,11 +130,16 @@ export default class Publus extends Connector {
         }
     }
 
-    /**
-     ******************************
-     *** GANGANONLINE CODE BEGIN ***
-     *****************************
-     */
+    _decryptRC4(plain, file, key) {
+        const bytes = atob(plain).split('').map(c => c.charCodeAt(0));
+        // create chunks of size 49152
+        const chunks = [];
+        while(bytes.length > 0) {
+            chunks.push(bytes.splice(0, 49152));
+        }
+        const decrypted = NFBR.a5QLoader.dea0q_(chunks, key.ct + key.st + file, key.ct + file + key.et, file + key.st + key.et, key.bs, key.hs);
+        return new Blob(decrypted.map(chunk => new Uint8Array(chunk)), { type: 'image/jpeg' });
+    }
 
     _decryptXOR(encrypted, key) {
         if (key) {
@@ -116,7 +161,7 @@ export default class Publus extends Connector {
             canvas.width = bitmap.width;
             canvas.height = bitmap.height;
             var ctx = canvas.getContext('2d');
-            let blocks = this.NFBR_a3E_a3f(bitmap.width, bitmap.height, this.NFBR_a0X_a3g, this.NFBR_a0X_a3G, key);
+            let blocks = NFBR.a3E.a3f(bitmap.width, bitmap.height, NFBR.a0X.a3g, NFBR.a0X.a3G, key);
             for (let q of blocks) {
                 /*if(q.srcX < l.x + l.width && q.srcX + q.width >= l.x && q.srcY < l.y + l.height && q.srcY + q.height >= l.y)*/
                 ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
@@ -126,149 +171,221 @@ export default class Publus extends Connector {
             }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value)/100);
         } );
     }
-
-    /**
-     *
-     */
-    get NFBR_a0X_a3g() {
-        return 64;
-    }
-
-    /**
-     *
-     */
-    get NFBR_a0X_a3G() {
-        return 64;
-    }
-
-    /**
-     * a => image width
-     * f => image height
-     * b => scramble block width
-     * e => scramble block height
-     * d => pattern
-     */
-    NFBR_a3E_a3f(a, f, b, e, d) {
-        var c = Math.floor(a / b)
-            , h = Math.floor(f / e);
-        a %= b;
-        f %= e;
-        var g, l, k, m, p, r, t, q, u = [];
-        g = c - 43 * d % c;
-        g = 0 == g % c ? (c - 4) % c : g;
-        g = 0 == g ? c - 1 : g;
-        l = h - 47 * d % h;
-        l = 0 == l % h ? (h - 4) % h : l;
-        l = 0 == l ? h - 1 : l;
-        0 < a && 0 < f && (k = g * b,
-        m = l * e,
-        u.push({
-            srcX: k,
-            srcY: m,
-            destX: k,
-            destY: m,
-            width: a,
-            height: f
-        }));
-        if (0 < f)
-            for (t = 0; t < c; t++)
-                p = this.calcXCoordinateXRest_(t, c, d),
-                k = this.calcYCoordinateXRest_(p, g, l, h, d),
-                p = this.calcPositionWithRest_(p, g, a, b),
-                r = k * e,
-                k = this.calcPositionWithRest_(t, g, a, b),
-                m = l * e,
-                u.push({
-                    srcX: k,
-                    srcY: m,
-                    destX: p,
-                    destY: r,
-                    width: b,
-                    height: f
-                });
-        if (0 < a)
-            for (q = 0; q < h; q++)
-                k = this.calcYCoordinateYRest_(q, h, d),
-                p = this.calcXCoordinateYRest_(k, g, l, c, d),
-                p *= b,
-                r = this.calcPositionWithRest_(k, l, f, e),
-                k = g * b,
-                m = this.calcPositionWithRest_(q, l, f, e),
-                u.push({
-                    srcX: k,
-                    srcY: m,
-                    destX: p,
-                    destY: r,
-                    width: a,
-                    height: e
-                });
-        for (t = 0; t < c; t++)
-            for (q = 0; q < h; q++)
-                p = (t + 29 * d + 31 * q) % c,
-                k = (q + 37 * d + 41 * p) % h,
-                r = p >= this.calcXCoordinateYRest_(k, g, l, c, d) ? a : 0,
-                m = k >= this.calcYCoordinateXRest_(p, g, l, h, d) ? f : 0,
-                p = p * b + r,
-                r = k * e + m,
-                k = t * b + (t >= g ? a : 0),
-                m = q * e + (q >= l ? f : 0),
-                u.push({
-                    srcX: k,
-                    srcY: m,
-                    destX: p,
-                    destY: r,
-                    width: b,
-                    height: e
-                });
-        return u;
-    }
-
-    /**
-     *
-     */
-    calcPositionWithRest_(a, f, b, e) {
-        return a * e + (a >= f ? b : 0);
-    }
-
-    /**
-     *
-     */
-    calcXCoordinateXRest_(a, f, b) {
-        return (a + 61 * b) % f;
-    }
-
-    /**
-     *
-     */
-    calcYCoordinateXRest_(a, f, b, e, d) {
-        var c = 1 === d % 2;
-        (a < f ? c : !c) ? (e = b,
-        f = 0) : (e -= b,
-        f = b);
-        return (a + 53 * d + 59 * b) % e + f;
-    }
-
-    /**
-     *
-     */
-    calcXCoordinateYRest_(a, f, b, e, d) {
-        var c = 1 == d % 2;
-        (a < b ? c : !c) ? (e -= f,
-        b = f) : (e = f,
-        b = 0);
-        return (a + 67 * d + f + 71) % e + b;
-    }
-
-    /**
-     *
-     */
-    calcYCoordinateYRest_(a, f, b) {
-        return (a + 73 * b) % f;
-    }
-
-    /**
-     ****************************
-     *** GANGANONLINE CODE END ***
-     ***************************
-     */
 }
+
+/**
+ *************************
+ *** PUBLUS CODE BEGIN ***
+ *************************
+ */
+
+const NFBR = {
+    a0b: {
+        a0F: function(a) {
+            var b, c, d, e = [], f = [];
+            for (b = 0; b < 256; b++)
+                e[b] = b;
+            for (b = 0; b < 256; b++)
+                f[b] = a.charCodeAt(b % a.length);
+            for (c = 0,
+            b = 0; b < 256; b++)
+                c = (c + e[b] + f[b]) % 256,
+                d = e[b],
+                e[b] = e[c],
+                e[c] = d;
+            return e;
+        },
+        a0g: function(a, b) {
+            var c, d, e, f, g = [], h = [];
+            h.length = a.length,
+            g = this.a0F(b),
+            c = 0,
+            d = 0;
+            for (var i = a.length, j = 0; j < i; j++)
+                c = (c + 1) % 256,
+                d = (d + g[c]) % 256,
+                f = g[c],
+                g[c] = g[d],
+                g[d] = f,
+                e = (g[c] + g[d]) % 256,
+                h[j] = a[j] ^ g[e];
+            return h;
+        },
+        a0G: function(a, b) {
+            return NFBR.a0b.a0g(a, b);
+        }
+    },
+    a0A: {
+        a0f: function(b, c, d) {
+            var e = [];
+            "undefined" == typeof d && (d = 0),
+            e = NFBR.a0b.a0F(b);
+            for (var f = 0; f < c.length; f++)
+                c[f] = c[f] ^ e[(f + d) % 256];
+            return c;
+        },
+        a0e: function(b, c, d) {
+            var e = c
+                , f = []
+                , g = []
+                , h = 0
+                , i = d;
+            for (i > e.length && (i = e.length),
+            f.length = i,
+            g.length = i,
+            h = 0; h < i; h++)
+                f[h] = c[h];
+            for (g = NFBR.a0b.a0G(f, b),
+            h = 0; h < i; h++)
+                c[h] = g[h];
+        }
+    },
+    a5QLoader: {
+        dea0q_: function(a, b, c, d, e, f) {
+            var h, i, j, k, l;//, m = $.Deferred(), n = new NFBR.a0b;
+            for (h = 0,
+            i = 0; i < a.length; i++)
+                NFBR.a0A.a0f(d, a[i], h),
+                h += a[i].length;
+            for (k = new Array(Math.ceil(length / e)),
+            l = new Array(Math.ceil(length / e)),
+            h = 0,
+            j = 0,
+            i = 0; i < a.length; i++) {
+                for (; h < a[i].length; h += e)
+                    k[j] = a[i][h],
+                    j += 1;
+                h -= a[i].length;
+            }
+            for (l = NFBR.a0b.a0G(k, c),
+            h = 0,
+            j = 0,
+            i = 0; i < a.length; i++) {
+                for (; h < a[i].length; h += e)
+                    a[i][h] = l[j],
+                    j += 1;
+                h -= a[i].length;
+            }
+            return NFBR.a0A.a0e(b, a[0], f),
+            //m.resolve(a),
+            //m.promise()
+            a;
+        }
+    },
+    a0X: {
+        a3g: 64,
+        a3G: 64
+    },
+    a3E: {
+        /**
+         * a => image width
+         * b => image height
+         * f => scramble block width
+         * g => scramble block height
+         * h => pattern
+         */
+        a3f: function(a, b, f, g, h) {
+            var i, n, o, p, q, r, s, t, u, v, w, x, y = Math.floor(a / f), z = Math.floor(b / g), A = a % f, B = b % g, C = [];
+            if (i = y - 43 * h % y,
+            i = i % y == 0 ? (y - 4) % y : i,
+            i = 0 == i ? y - 1 : i,
+            n = z - 47 * h % z,
+            n = n % z == 0 ? (z - 4) % z : n,
+            n = 0 == n ? z - 1 : n,
+            A > 0 && B > 0 && (o = i * f,
+            p = n * g,
+            C.push({
+                srcX: o,
+                srcY: p,
+                destX: o,
+                destY: p,
+                width: A,
+                height: B
+            })),
+            B > 0)
+                for (s = 0; s < y; s++)
+                    u = NFBR.a3E.calcXCoordinateXRest_(s, y, h),
+                    v = NFBR.a3E.calcYCoordinateXRest_(u, i, n, z, h),
+                    q = NFBR.a3E.calcPositionWithRest_(u, i, A, f),
+                    r = v * g,
+                    o = NFBR.a3E.calcPositionWithRest_(s, i, A, f),
+                    p = n * g,
+                    C.push({
+                        srcX: o,
+                        srcY: p,
+                        destX: q,
+                        destY: r,
+                        width: f,
+                        height: B
+                    });
+            if (A > 0)
+                for (t = 0; t < z; t++)
+                    v = NFBR.a3E.calcYCoordinateYRest_(t, z, h),
+                    u = NFBR.a3E.calcXCoordinateYRest_(v, i, n, y, h),
+                    q = u * f,
+                    r = NFBR.a3E.calcPositionWithRest_(v, n, B, g),
+                    o = i * f,
+                    p = NFBR.a3E.calcPositionWithRest_(t, n, B, g),
+                    C.push({
+                        srcX: o,
+                        srcY: p,
+                        destX: q,
+                        destY: r,
+                        width: A,
+                        height: g
+                    });
+            for (s = 0; s < y; s++)
+                for (t = 0; t < z; t++)
+                    u = (s + h * 29 + 31 * t) % y,
+                    v = (t + h * 37 + 41 * u) % z,
+                    w = u >= NFBR.a3E.calcXCoordinateYRest_(v, i, n, y, h) ? A : 0,
+                    x = v >= NFBR.a3E.calcYCoordinateXRest_(u, i, n, z, h) ? B : 0,
+                    q = u * f + w,
+                    r = v * g + x,
+                    o = s * f + (s >= i ? A : 0),
+                    p = t * g + (t >= n ? B : 0),
+                    C.push({
+                        srcX: o,
+                        srcY: p,
+                        destX: q,
+                        destY: r,
+                        width: f,
+                        height: g
+                    });
+            return C;
+        },
+        calcPositionWithRest_: function(a, b, c, d) {
+            return a * d + (a >= b ? c : 0);
+        },
+        calcXCoordinateXRest_: function(b, c, d) {
+            var e = (b + 61 * d) % c;
+            return e;
+        },
+        calcYCoordinateXRest_: function(a, b, c, d, e) {
+            var /*h, */i, j, k, l = e % 2 === 1;
+            return k = a < b ? l : !l,
+            k ? (j = c,
+            i = 0) : (j = d - c,
+            i = c),
+            /*h = */(a + e * 53 + c * 59) % j + i;
+        },
+        calcXCoordinateYRest_: function(a, b, c, d, e) {
+            var /*f, */g, j, k, l = e % 2 == 1;
+            return k = a < c ? l : !l,
+            k ? (j = d - b,
+            g = b) : (j = b,
+            g = 0),
+            /*f = */(a + e * 67 + b + 71) % j + g;
+        },
+        calcYCoordinateYRest_: function(a, c, d) {
+            var e = (a + 73 * d) % c;
+            return e;
+        }
+    }
+};
+
+/**
+ ***********************
+ *** PUBLUS CODE END ***
+ ***********************
+ */

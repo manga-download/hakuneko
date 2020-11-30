@@ -73,7 +73,7 @@ export default class ComicWalker extends Connector {
 
     _getPageList( manga, chapter, callback ) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'div#cw-viewer' )
+        this.fetchDOM( request, 'main#app' )
             .then( data => {
                 let uri = `${data[0].dataset.apiEndpointUrl}/api/v1/comicwalker/episodes/${data[0].dataset.episodeId}/frames`;
                 request = new Request( uri, this.requestOptions );

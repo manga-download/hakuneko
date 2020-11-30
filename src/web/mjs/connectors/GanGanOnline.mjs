@@ -78,8 +78,14 @@ export default class GanGanOnline extends Publus {
                 .filter(page => !(page.image || page.linkImage).imageUrl.includes('extra_manga_page'))
                 .map(page => {
                     let image = page.image || page.linkImage;
-                    image = Object.assign(image, { mode: image.encryptionKey ? 'xor' : 'raw' });
-                    return image.encryptionKey ? this.createConnectorURI(image) : image.imageUrl;
+                    image = Object.assign(image, {
+                        mode: image.encryptionKey ? 'xor' : 'raw',
+                        encryption: {
+                            pattern: null,
+                            key: image.encryptionKey
+                        }
+                    });
+                    return image.mode === 'raw' ? image.imageUrl : this.createConnectorURI(image);
                 });
         } else {
             return super._getPages(chapter);
