@@ -7,7 +7,7 @@ export default class KooManga extends WordPressZbulu {
         super.id = 'koomanga';
         super.label = 'KooManga';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'http://koomanga.com';
+        this.url = 'https://koomanga.com';
     }
 
     canHandleURI(uri) {
