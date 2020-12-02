@@ -8,7 +8,7 @@ export default class Team1x1 extends Connector {
         super.id = 'team1x1';
         super.label = 'Team X';
         this.tags = [ 'webtoon', 'arabic' ];
-        this.url = 'https://team1x1.com';
+        this.url = 'https://team1x11.com';
     }
 
     async _getMangaFromURI(uri) {
