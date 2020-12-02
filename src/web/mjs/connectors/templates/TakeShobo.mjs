@@ -40,7 +40,7 @@ export default class TakeShobo extends SpeedBinb {
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
-        return data.map(element => {
+        return data.filter(element => element.querySelector(this.queryChaptersLink)).map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector(this.queryChaptersLink), request.url),
                 title: element.querySelector(this.queryChaptersTitle).innerText.replace(manga.title, '').trim(),
