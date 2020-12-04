@@ -519,6 +519,9 @@ export default class Request {
              */
             details.responseHeaders['Access-Control-Expose-Headers'] = ['Content-Length'];
         }
+        if(uri.hostname.includes('webtoons') && uri.searchParams.get('title_no')) {
+            details.responseHeaders['Set-Cookie'] = `agn2=${uri.searchParams.get('title_no')}; Domain=${uri.hostname}; Path=/`;
+        }
 
         return details;
     }
