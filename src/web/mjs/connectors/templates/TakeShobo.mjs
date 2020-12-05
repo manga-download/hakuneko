@@ -48,10 +48,4 @@ export default class TakeShobo extends SpeedBinb {
             };
         });
     }
-
-    // TODO: some images can not be downloaded, e.g. from:
-    // Manga:   https://storia.takeshobo.co.jp/manga/yomikiri-dash/
-    // Chapter: https://storia.takeshobo.co.jp/manga/yomikiri-dash/_files_ecstasy/ecstasy/
-    // Uses:    https://storia.takeshobo.co.jp/manga/yomikiri-dash/_files_ecstasy/data/0001.ptimg.json
-    // Correct: https://storia.takeshobo.co.jp/manga/yomikiri-dash/_files_ecstasy/ecstasy/data/0001.ptimg.json
 }
