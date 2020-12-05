@@ -16,7 +16,7 @@ export default class EpikManga extends FlatManga {
 
     async _getMangaFromURI(uri) {
         const manga = await super._getMangaFromURI(uri);
-        manga.title = manga.title.split(' | ').shift();
+        manga.title = manga.title.split(' | ').shift().trim();
         return manga;
     }
 
