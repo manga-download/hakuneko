@@ -8,6 +8,8 @@ export default class ManhuaES extends MojoPortalComic {
         super.label = 'ManhuaES';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://manhuaes.com';
+
+        this.queryPages = 'div.reading-detail > :not(.mrt5) source';
     }
 
     async _getMangas() {
@@ -27,11 +29,5 @@ export default class ManhuaES extends MojoPortalComic {
         }
 
         return mangas;
-    }
-
-    async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.reading-detail > :not(.mrt5) source.lazyload');
-        return data.map(element => this.getAbsolutePath(element.dataset.src, this.url));
     }
 }
