@@ -9,25 +9,22 @@ export default class ManhuaES extends MojoPortalComic {
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://manhuaes.com';
 
+        this.path = '/category-comics/manga/';
+        this.queryMangasPageCount = 'ul.pagination li:nth-last-child(2) > a';
+        this.pathMatch = /(\d+)\/?$/;
+        this.queryMangas = 'div.overlay a.head';
         this.queryPages = 'div.reading-detail > :not(.mrt5) source';
     }
 
-    async _getMangas() {
-        let request = new Request(new URL('/category-comics/manga/', this.url), this.requestOptions);
-        let pages = await this.fetchDOM(request, 'ul.pagination li:nth-last-child(2) > a');
-        pages = Number(pages[0].text);
-        let mangas = [];
-        for (let page = 0; page <= pages; page++) {
-            request = new Request(new URL('/category-comics/manga/page/' + page, this.url), this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.overlay a.head');
-            mangas.push( ...data.map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.text.trim()
-                };
-            }));
-        }
-
-        return mangas;
+    async _getMangasFromPage(page) {
+        const uri = new URL(`${this.path}page/${page}/`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangas, 3);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim()
+            };
+        });
     }
 }
