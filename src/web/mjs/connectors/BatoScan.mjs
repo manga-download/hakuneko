@@ -4,7 +4,7 @@ export default class BatoScan extends FlatManga {
 
     constructor() {
         super();
-        super.id = 'hanascan';
+        super.id = 'batoscan';
         super.label = 'BatoScan';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://batoscan.net';
