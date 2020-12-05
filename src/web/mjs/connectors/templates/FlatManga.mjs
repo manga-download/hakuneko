@@ -11,7 +11,7 @@ export default class FlatManga extends Connector {
         this.url = undefined;
         this.path = '/manga-list.html?listType=allABC';
 
-        this.queryMangaTitle = 'head title';
+        this.queryMangaTitle = '[itemprop="name"]';
         this.queryMangas = 'span[data-toggle="mangapop"] a';
         this.queryChapters = 'div#tab-chapper table tr td a.chapter';
         this.queryChapterTitle = undefined;
