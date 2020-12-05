@@ -1,13 +1,7 @@
 import WordPressClarityMangaReader from './templates/WordPressClarityMangaReader.mjs';
 
-/**
- *
- */
 export default class PlotTwistNoFansub extends WordPressClarityMangaReader {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'plottwistnofansub';
@@ -15,6 +9,7 @@ export default class PlotTwistNoFansub extends WordPressClarityMangaReader {
         this.tags = [ 'manga', 'high-quality', 'spanish', 'scanlation' ];
         this.url = 'https://www.plot-twistnf-scans.com';
 
-        this.paths = [ '/proyectos-finalizados/', '/proyectos-activos/' ];
+        this.paths = [ '/proyectos-finalizados-new/', '/proyectos-activosss/' ];
+        this.queryMangas = 'div.vc_gitem-zone a.vc_gitem-link';
     }
 }
