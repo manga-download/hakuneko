@@ -11,7 +11,7 @@ export default class FlatManga extends Connector {
         this.url = undefined;
         this.path = '/manga-list.html?listType=allABC';
 
-        this.queryMangaTitle = 'head title';
+        this.queryMangaTitle = 'li:last-of-type span[itemprop="name"]';
         this.queryMangas = 'span[data-toggle="mangapop"] a';
         this.queryChapters = 'div#tab-chapper table tr td a.chapter';
         this.queryChapterTitle = undefined;
@@ -25,7 +25,7 @@ export default class FlatManga extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
         let id = uri.pathname;
-        let title = data[0].content || data[0].textContent.split(' | ')[0].trim();
+        let title = (data[0].content || data[0].textContent).trim();
         return new Manga(this, id, title);
     }
 
