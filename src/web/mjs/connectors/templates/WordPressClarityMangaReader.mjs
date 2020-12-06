@@ -111,24 +111,20 @@ export default class WordPressClarityMangaReader extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let script = `
-            new Promise( resolve => {
-                resolve( obj.images.map( img => obj.image_url + obj.title + '_' + img.manga_id + '/ch_' + obj.actual + '/' + img.image_name ) );
-            } );
+    async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        resolve(obj.images.map(img => obj.image_url + obj.title + '_' + img.manga_id + '/ch_' + obj.actual + '/' + img.image_name));
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
         `;
-        let uri = new URL( chapter.id, this.url );
-        let request = new Request( uri.href, this.requestOptions );
-        Engine.Request.fetchUI( request, script )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }
