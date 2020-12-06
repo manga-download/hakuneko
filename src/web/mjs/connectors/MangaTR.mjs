@@ -9,8 +9,15 @@ export default class MangaTR extends FlatManga {
         this.tags = [ 'manga', 'turkish' ];
         this.url = 'https://manga-tr.com';
 
+        this.queryMangaTitle = 'meta[property="og:title"]';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-cookie', 'read_type=1');
+    }
+
+    async _getMangaFromURI(uri) {
+        const manga = await super._getMangaFromURI(uri);
+        manga.title = manga.title.split(' - ').shift().trim();
+        return manga;
     }
 
     async _getChapters(manga) {
