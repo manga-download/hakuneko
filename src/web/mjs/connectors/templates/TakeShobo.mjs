@@ -40,9 +40,14 @@ export default class TakeShobo extends SpeedBinb {
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
-        return data.map(element => {
+        return data.filter(element => element.querySelector(this.queryChaptersLink)).map(element => {
+            // NOTE: In some cases the chapter is redirected to an URL correctly ending with a '/'
+            //       When using the URL without the ending '/', the SpeedBin template may produce a wrong base URL,
+            //       which will lead to 404 errors when acquiring the images
+            let id = this.getRootRelativeOrAbsoluteLink(element.querySelector(this.queryChaptersLink), request.url);
+            id += id.endsWith('/') ? '' : '/';
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector(this.queryChaptersLink), request.url),
+                id: id,
                 title: element.querySelector(this.queryChaptersTitle).innerText.replace(manga.title, '').trim(),
                 language: ''
             };
