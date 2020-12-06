@@ -1,13 +1,13 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class Wakamics extends WordPressMadara {
+export default class NekoScan extends WordPressMadara {
 
     constructor() {
         super();
-        super.id = 'wakamics';
-        super.label = 'Wakamics';
+        super.id = 'nekoscan';
+        super.label = 'NEKOSCAN';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://wakamics.com';
+        this.url = 'https://nekoscan.com';
 
         this.queryPages = 'div.page-break source, div.text-left p source';
     }
