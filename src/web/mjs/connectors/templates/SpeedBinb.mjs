@@ -33,9 +33,10 @@ export default class SpeedBinb extends Connector {
                 }
                 let imageConfigurtions = data.querySelectorAll( 'div[data-ptimg$="ptimg.json"]' );
                 if( imageConfigurtions.length > 0 ) {
+                    // TODO: Use the response URL instead of the request URL (in case of redirection ...)
                     return this._getPageList_v016061( [...imageConfigurtions], request.url );
                 }
-                //
+
                 throw new Error( 'Unsupported version of SpeedBinb reader!' );
             } )
             .then( pageList => callback( null, pageList ) )
