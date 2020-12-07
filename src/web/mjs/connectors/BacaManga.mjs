@@ -21,7 +21,7 @@ export default class BacaManga extends WordPressMangastream {
                     try {
                         const loadedImages = [...document.querySelectorAll('${this.queryPages}')].map(img => img.src);
                         if(loadedImages.length === 0) {
-                            return reject(new Error('No references found which could be used to extract images!'));
+                            throw new Error('No references found which could be used to extract images!');
                         }
                         const qualifiers = Object.values(window).filter(value => value instanceof Array && value.length && loadedImages.every(img => value.includes(img)));
                         resolve(qualifiers.pop());
