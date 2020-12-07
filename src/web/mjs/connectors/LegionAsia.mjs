@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class LegionAsia extends WordPressMadara {
+export default class LegionAsia extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,5 +8,6 @@ export default class LegionAsia extends WordPressMadara {
         super.label = 'LegionAsia';
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://legionasia.com';
+        this.path = '/manga/list-mode/';
     }
 }
