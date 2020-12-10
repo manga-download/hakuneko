@@ -7,6 +7,6 @@ export default class ManHuaDex extends WordPressMadara {
         super.id = 'manhuadex';
         super.label = 'ManHuaDex';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://manhuadex.com/';
+        this.url = 'https://manhuadex.com';
     }
 }
