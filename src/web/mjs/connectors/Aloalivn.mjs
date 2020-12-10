@@ -7,7 +7,7 @@ export default class Aloalivn extends WordPressMadara {
         super.id = 'aloalivn';
         super.label = 'Aloalivn';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://aloalivn.com/';
-        this.queryPages = 'li.blocks-gallery-item source'
+        this.url = 'https://aloalivn.com';
+        this.queryPages = 'li.blocks-gallery-item source';
     }
 }
