@@ -7,6 +7,6 @@ export default class GoddessManga extends WordPressMadara {
         super.id = 'goddessmanga';
         super.label = 'GoddessManga';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://goddessmanga.com/';
+        this.url = 'https://goddessmanga.com';
     }
 }
