@@ -49,7 +49,7 @@ export default class Team1x1 extends Connector {
     async _getChapters(manga) {
         let chapterList = [];
         const request = new Request(this.url + manga.id, this.requestOptions);
-        const data = await this.fetchDOM(request, 'span.current');
+        const data = await this.fetchDOM(request, 'div.pagination span.current');
         const pageCount = parseInt(data[0].textContent.trim());
         for (let page = 1; page <= pageCount; page++) {
             let chapters = await this._getChaptersFromPage(page, manga);
