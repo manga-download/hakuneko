@@ -29,6 +29,14 @@ export default class NineAnime extends Connector {
                     { value: '1080', name: '1080p' }
                 ],
                 value: ''
+            },
+            throttle: {
+                label: 'Video Stream Throttle [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading packets from the video stream.\nThe download may fail if there are too many packets requested within a certain interval.',
+                input: 'numeric',
+                min: 100,
+                max: 10000,
+                value: 1000
             }
         };
     }
