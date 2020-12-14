@@ -155,6 +155,7 @@ export default class LineWebtoon extends Connector {
                 });
             `;
             let request = new Request(this.baseURL + chapter.id, this.requestOptions);
+            // NOTE: `engine/Request.mjs` injects a server cookie to prevent client side age confirmation which is checked on the website
             let data = await Engine.Request.fetchUI(request, script);
             let pageList = data.map(payload => this.createConnectorURI(payload));
             callback(null, pageList);
