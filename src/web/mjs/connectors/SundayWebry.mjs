@@ -21,7 +21,7 @@ export default class SundayWebry extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page of ['/serialized.php', '/updated.php']) {
+        for(let page of ['/serialized.php', '/updated.php', '/yoru-sunday.php']) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }
