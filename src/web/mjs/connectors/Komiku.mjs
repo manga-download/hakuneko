@@ -20,13 +20,13 @@ export default class Komiku extends Connector {
     }
 
     async _getMangas() {
-        const uri = new URL(this.url);
+        const uri = new URL('/daftar-komik/', this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'nav ul li[itemprop="name"], div.perapih div.ls2, section#Terbaru div.ls4w div.ls4');
+        const data = await this.fetchDOM(request, 'div.ls4 div.ls4j h4 a');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a[href*="/manga/"]'), this.url),
-                title: element.querySelector('a span, div.ls2j h4 a, div.ls4j h4 a').textContent.trim()
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
             };
         });
     }
