@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class SkyMangas extends WordPressMadara {
+export default class SkyMangas extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,5 +8,6 @@ export default class SkyMangas extends WordPressMadara {
         super.label = 'Sky Mangas';
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://skymangas.com';
+        this.path = '/manga/list-mode/';
     }
 }
