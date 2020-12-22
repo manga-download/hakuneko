@@ -42,20 +42,19 @@ export default class LittleGarden extends Connector {
 
         const data = await this.fetchGraphQL(new URL('/graphql', this.url), operationName, query, variables);
         return data.data.chapters.map((chapter) => ({
-            id: `${manga.id}/${chapter.number}`,
+            id: chapter.number,
             title: chapter.number.toString(),
             language: ''
         }));
     }
 
     async _getPages(chapter) {
-        const mangaSlug = chapter.id.substring(1, chapter.id.lastIndexOf('/'));
-        const chapterNumber = parseInt(chapter.id.substring(chapter.id.lastIndexOf('/') + 1));
+        const mangaSlug = chapter.manga.id.substr(1);
         const operationName = 'pages';
         const query = 'query pages($slug: String, $number: Float, $isAdmin: Boolean!) {\n  chapters(limit: 1, skip: 0, where: {deleted: false, number: $number, published: $isAdmin, manga: {slug: $slug, published: $isAdmin, deleted: false}}) {\npages { original }}\n}\n';
         const variables = {
             slug: mangaSlug,
-            number: chapterNumber,
+            number: chapter.id,
             isAdmin: true
         };
 
