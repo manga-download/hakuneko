@@ -1,6 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
+// also base class for readhentai
 export default class HentaiShark extends Connector {
 
     constructor() {

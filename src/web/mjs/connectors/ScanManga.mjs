@@ -9,6 +9,9 @@ export default class ScanManga extends Connector {
         super.label = 'ScanManga';
         this.tags = [ 'manga', 'french', 'novel' ];
         this.url = 'https://www.scan-manga.com';
+        // If not set, defaults to "fr" for french machines, which will return empty responses
+        // Only fail for "fr" language, and works for any other language, including "fr-FR" and random strings
+        this.requestOptions.headers.set('accept-language', 'en');
     }
 
     async _getMangaFromURI(uri) {
