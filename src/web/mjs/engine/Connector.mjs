@@ -476,6 +476,28 @@ export default class Connector {
             } );
     }
 
+    fetchGraphQL(request, operationName, query, variables) {
+        if( typeof request === 'string' ) {
+            request = new Request( request, this.requestOptions );
+        }
+        // TODO: check if this will affect (replace) the input parameter?
+        if( request instanceof URL ) {
+            request = new Request( request.href, this.requestOptions );
+        }
+
+        const graphQLRequest = new Request(request, {
+            method: 'POST',
+            body: JSON.stringify({
+                operationName,
+                query,
+                variables,
+            })
+        });
+        graphQLRequest.headers.set('content-type', 'application/json');
+
+        return this.fetchJSON(graphQLRequest);
+    }
+
     async fetchRegex(request, regex) {
         if(!/\/[imsuy]*g[imsuy]*$/.test('' + regex)) {
             throw new Error('The provided RegExp must contain the global "g" modifier!');
