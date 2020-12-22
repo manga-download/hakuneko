@@ -478,21 +478,17 @@ export default class Connector {
 
     fetchGraphQL(request, operationName, query, variables) {
         if( typeof request === 'string' ) {
-            request = new Request( request, this.requestOptions );
-        }
-        // TODO: check if this will affect (replace) the input parameter?
-        if( request instanceof URL ) {
-            request = new Request( request.href, this.requestOptions );
+            request = new URL(request);
         }
 
-        const graphQLRequest = new Request(request, {
+        const graphQLRequest = new Request(request.href ? request.href : request.url, Object.assign(this.requestOptions, {
             method: 'POST',
             body: JSON.stringify({
                 operationName,
                 query,
                 variables,
             })
-        });
+        }));
         graphQLRequest.headers.set('content-type', 'application/json');
 
         return this.fetchJSON(graphQLRequest);

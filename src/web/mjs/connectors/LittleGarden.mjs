@@ -6,7 +6,7 @@ export default class LittleGarden extends Connector {
         super();
         super.id = 'littlegarden';
         super.label = 'Little Garden';
-        this.tags = ['manga', 'french'];
+        this.tags = ['manga', 'french', 'webtoon'];
         this.url = 'https://littlexgarden.com';
     }
 
@@ -23,8 +23,8 @@ export default class LittleGarden extends Connector {
         const urlList = await this.fetchDOM(request, 'div.listing a.no-select');
 
         return urlList.map((urlElement) => ({
-            id: this.getRelativeLink(urlElement),
-            title: urlElement.title
+            id: this.getRootRelativeOrAbsoluteLink(urlElement, this.url),
+            title: urlElement.title.trim()
         }));
     }
 
