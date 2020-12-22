@@ -491,7 +491,16 @@ export default class Connector {
         }));
         graphQLRequest.headers.set('content-type', 'application/json');
 
-        return this.fetchJSON(graphQLRequest);
+        return this.fetchJSON(graphQLRequest)
+            .then(data => {
+                if (data.errors) {
+                    throw new Error(this.label + ' errors: ' + data.errors.map(error => error.message).join('\n'));
+                }
+                if (!data.data) {
+                    throw new Error(this.label + 'No data available!');
+                }
+                return data.data;
+            });
     }
 
     async fetchRegex(request, regex) {

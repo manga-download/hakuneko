@@ -41,7 +41,7 @@ export default class LittleGarden extends Connector {
         };
 
         const data = await this.fetchGraphQL(new URL('/graphql', this.url), operationName, query, variables);
-        return data.data.chapters.map((chapter) => ({
+        return data.chapters.map((chapter) => ({
             id: chapter.number,
             title: chapter.number.toString(),
             language: ''
@@ -59,6 +59,6 @@ export default class LittleGarden extends Connector {
         };
 
         const data = await this.fetchGraphQL(new URL('/graphql', this.url), operationName, query, variables);
-        return data.data.chapters[0].pages.map((page) => this.getAbsolutePath(`/static/images/${page.original}`, this.url));
+        return data.chapters[0].pages.map((page) => this.getAbsolutePath(`/static/images/${page.original}`, this.url));
     }
 }
