@@ -6,6 +6,10 @@ export default class MyCloud {
         this._fetchRegex = fetchRegex;
     }
 
+    _getBestSource(sources) {
+        return sources.pop().file;
+    }
+
     async getPlaylist(resolution) {
         let request = new Request(this._uri.href.replace('/embed/', '/info/'), {
             headers: {
@@ -15,7 +19,7 @@ export default class MyCloud {
         });
         let response = await fetch(request);
         let data = await response.json();
-        let playlist = data.media.sources.pop().file;
+        let playlist = this._getBestSource(data.media.sources);
         request = new Request(playlist);
         request.headers.set('x-referer', this._uri.href);
         let streams = await this._fetchRegex(request, /^(.*?\d+\.m3u8)$/gm);
