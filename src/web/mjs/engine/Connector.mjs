@@ -476,6 +476,33 @@ export default class Connector {
             } );
     }
 
+    fetchGraphQL(request, operationName, query, variables) {
+        if( typeof request === 'string' ) {
+            request = new URL(request);
+        }
+
+        const graphQLRequest = new Request(request.href ? request.href : request.url, Object.assign(this.requestOptions, {
+            method: 'POST',
+            body: JSON.stringify({
+                operationName,
+                query,
+                variables,
+            })
+        }));
+        graphQLRequest.headers.set('content-type', 'application/json');
+
+        return this.fetchJSON(graphQLRequest)
+            .then(data => {
+                if (data.errors) {
+                    throw new Error(this.label + ' errors: ' + data.errors.map(error => error.message).join('\n'));
+                }
+                if (!data.data) {
+                    throw new Error(this.label + 'No data available!');
+                }
+                return data.data;
+            });
+    }
+
     async fetchRegex(request, regex) {
         if(!/\/[imsuy]*g[imsuy]*$/.test('' + regex)) {
             throw new Error('The provided RegExp must contain the global "g" modifier!');
