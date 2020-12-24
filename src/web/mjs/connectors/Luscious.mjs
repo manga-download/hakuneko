@@ -20,20 +20,6 @@ export default class Luscious extends Connector {
         return new Manga(this, id, title);
     }
 
-    async _getGraphQL(gql) {
-        let uri = new URL(this.apiURL);
-        uri.searchParams.set('query', gql);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        if(data.errors) {
-            throw new Error(this.label + ' errors: ' + data.errors.map(error => error.message).join('\n'));
-        }
-        if(!data.data) {
-            throw new Error(this.label + 'No data available!');
-        }
-        return data.data;
-    }
-
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
@@ -51,7 +37,7 @@ export default class Luscious extends Connector {
                 }
             }
         }`;
-        let data = await this._getGraphQL(gql);
+        let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         return data.album.list.items.map(item => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(item.url, this.url),
