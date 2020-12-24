@@ -48,10 +48,10 @@
       <div class="expander" on-click="toggleJobList">
         <i
           class$="mdi mdi-24px [[ getButtonClass(popupVisibility) ]] button"
-          title="Toggle download list"
+          title$="[[i18n('jobs.title_download_list')]]"
         ></i>
       </div>
-      <div class="status">[[ jobList.length ]] Download(s)</div>
+      <div class="status">[[ jobList.length ]] [[i18n('jobs.download')]](s)</div>
     </div>
   </template>
 

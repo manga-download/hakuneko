@@ -61,8 +61,8 @@ hakuneko-start {
 
 #loader {
   position: fixed;
-  color: var(--app-loading-screen-color);
-  background-color: var(--app-loading-screen-background-color);
+  color: var(--accent);
+  background-color: var(--base);
   text-align: center;
   font-size: 1.5em;
   padding: 1rem;
@@ -80,7 +80,7 @@ hakuneko-start {
 }
 
 .quoteText {
-  border-left: var(--app-loading-screen-quote-border);
+  border-left: var(--accent);
   padding-left: 0.5rem;
   margin-top: 0.5rem;
   margin-bottom: 0.5rem;
@@ -98,7 +98,7 @@ hakuneko-start {
   right: 0;
   bottom: 0;
   margin: 0.25em;
-  color: var(--app-loading-screen-link-color);
+  color: var(--accent);
   font-size: 0.75em;
   text-decoration: none;
 }

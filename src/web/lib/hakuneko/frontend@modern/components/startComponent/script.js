@@ -21,6 +21,13 @@ class HakunekoStart extends Polymer.Element {
     async ready() {
         super.ready();
     }
+
+    /**
+     * 
+     */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
+    }
 }
 
 window.customElements.define(HakunekoStart.is, HakunekoStart);

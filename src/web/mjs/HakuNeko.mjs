@@ -8,6 +8,7 @@ import BookmarkManager from './engine/BookmarkManager.mjs';
 import ChaptermarkManager from './engine/ChaptermarkManager.mjs';
 import Connectors from './engine/Connectors.mjs';
 import DownloadManager from './engine/DownloadManager.mjs';
+import I18n from './engine/I18n.mjs';
 //import HistoryWorker from './engine/HistoryWorker.mjs'
 import Request from './engine/Request.mjs';
 import Settings from './engine/Settings.mjs';
@@ -25,6 +26,7 @@ export default class HakuNeko {
         this._enums = Enums;
 
         let ipc = new InterProcessCommunication();
+        this._i18n = new I18n();
         this._blacklist = new Blacklist();
         this._downloadManager = new DownloadManager();
         this._settings = new Settings();
@@ -77,6 +79,10 @@ export default class HakuNeko {
 
     get Enums() {
         return this._enums;
+    }
+
+    get I18n() {
+        return this._i18n;
     }
 
     get Request() {

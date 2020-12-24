@@ -246,5 +246,12 @@ class HakunekoConnectors extends Polymer.Element {
     getDonationClass(links) {
         return links && links.donation ? "active" : "disabled";
     }
+
+    /**
+    * 
+    */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
+    }
 }
 window.customElements.define(HakunekoConnectors.is, HakunekoConnectors);

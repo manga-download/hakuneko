@@ -102,7 +102,7 @@ class HakunekoMangas extends Polymer.Element {
             return;
         }
         let statusID = this.$.status.addToQueue(
-            "Updating manga list (" + connector.label + ")"
+            `${this.i18n('mangas.update_manga_list')} (${connector.label})`
         );
         connector.updateMangas((error, mangas) => {
             // check if executing connector is still the selected connector (visible)
@@ -117,11 +117,8 @@ class HakunekoMangas extends Polymer.Element {
             this.$.status.removeFromQueue(statusID);
             if (error) {
                 alert(
-                    "Failed to update manga list for " +
-                        connector.label +
-                        "\n\n" +
-                        error.message,
-                    "HakuNeko - " + connector.label,
+                    `${this.i18n('mangas.failed_update_manga_list')} ${connector.label} \n\n ${error.message}`,
+                    `${this.i18n('general.title_application ')} ${connector.label}`,
                     "error"
                 );
             }
@@ -239,6 +236,13 @@ class HakunekoMangas extends Polymer.Element {
             this.set("selectedConnector", clipboardConnector);
             this.onUpdateMangaListClick(evt);
         }
+    }
+
+    /**
+    * 
+    */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
     }
 }
 window.customElements.define(HakunekoMangas.is, HakunekoMangas);

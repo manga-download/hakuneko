@@ -477,6 +477,13 @@ class HakunekoPages extends Polymer.Element {
             });
         }
     }
+
+    /**
+    * 
+    */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
+    }
 }
 
 window.customElements.define(HakunekoPages.is, HakunekoPages);

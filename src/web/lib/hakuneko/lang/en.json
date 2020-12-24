@@ -1,0 +1,181 @@
+{
+  "general": {
+    "title_application": "HakuNeko",
+    "no_available": "No action available!",
+    "click": "Click",
+    "close": "Close",
+    "reload": "Reload",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "select": "Select",
+    "arrow_left": "Arrow Left",
+    "arrow_right": "Arrow Right",
+    "arrow_up": "Arrow Up",
+    "arrow_down": "Arrow Down"
+  },
+  "start": {
+    "title": "HakuNeko",
+    "welcome": "Welcome to Hakuneko",
+    "parragraph_01": "was made to help users who download media for circumstances that requires offline usage.",
+    "parragraph_02": "The philosophy is",
+    "parragraph_03": "ad-hoc consumption",
+    "parragraph_04": "get it when you want to read/watch it.",
+    "parragraph_05": "Read the \"how to use\" documentation at hakuneko.download (link available in the menu)",
+    "find_site": "Find a site to get the content you want to view",
+    "disclaimer": "is not hosting anything. Find a website on the internet that provides the content you want. Then :",
+    "tutorial": {
+      "step_01": "Select your connector (the website). Use the filters",
+      "step_02": "Click on the refresh button (can take minutes)",
+      "step_03": "Find a manga",
+      "step_04": "Filter chapters by language (optional)",
+      "step_05": "Select a chapter"
+    },
+    "help": "The connector you are looking for is not in the list ?",
+    "issue": "Create a website request on the github (issue)",
+    "extra_tutorial": "Use the copy/paste feature if you already have the manga link",
+    "see_documentation": "See the documentation for details",
+    "ready_to_go": "Ready to go",
+    "enjoy": "You can now download, view, bookmark your favorite mangas"
+  },
+  "chapters": {
+    "title": "Chapters",
+    "chapter_list": "Chapter List",
+    "title_toggle_sorting": "Click to toggle chapter sorting",
+    "title_download_chapter": "Click to download all chapters currently shown in the filtered and sorted list",
+    "title_filter_chapter": "Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles",
+    "title_remove_marked": "Click to remove the marked chapter",
+    "title_recently_read": "Mark this chapter as \"recently read\"",
+    "title_marked_recently_read": "The chapter has been marked as \"recently read\" but is no longer available",
+    "title_remove_recently_read": "Remove the \"recently read\" marker from this chapter",
+    "title_show_preview": "Show preview of chapter's pages",
+    "title_open_folder": "Doubleclick to open the folder with your file manager",
+    "re_download": "Re-download existing chapter?",
+    "available": "AVAILABLE",
+    "offline": "OFFLINE",
+    "download": "Download",
+    "downloading": "DOWNLOADING",
+    "downloaded": "DOWNLOADED",
+    "failed": "DOWNLOAD FAILED",
+    "queued": "QUEUED",
+    "click_download": "Click to download chapter",
+    "not_available": "Chapter is no available",
+    "avaliable_only_directory": "The chapter is only accessable from the manga directory",
+    "loading_chapter_list": "Loading chapter list",
+    "remove_download_manager": "Click to remove chapter from download manager",
+    "delete_download": "Click to delete and re-download chapter",
+    "view_details": "Check the exclamation mark in the joblist for details",
+    "no_tooltip": "No tooltip available!",
+    "new_chapter": "new chapter(s) from the current chapter list?"
+  },
+  "bookmarks": {
+    "title": "Bookmarks",
+    "remove": "Click to remove the selected manga from the bookmark list",
+    "add": "Click to add the selected manga to the bookmark list",
+    "cannot": "Cannot bookmark mangas from this",
+    "select": "Please select a manga to use the bookmark feature"
+  },
+  "connectors": {
+    "title": "Connectors",
+    "clear_filter": "clear filter",
+    "website": "website",
+    "manga": "manga",
+    "tags": "tags",
+    "labe": "label",
+    "title_connector_pattern": "Show only websites with a name that matches the entered pattern (case-insensitive)",
+    "title_manga_pattern": "Show only websites with a manga that matches the entered pattern (case-insensitive)&#10;Searches only in local synchronized manga lists&#10;Press ENTER to perform the search",
+    "show_mangas": "Click to show mangas from this website",
+    "title_login_page": "Click to open the login page",
+    "title_donation_page": "Click to open the donation page",
+    "title_open_website": "Click to open the website in a new window",
+    "title_various_taks": "This can be useful for various taks e.g.",
+    "title_website_status": "Check / Investigate the website status",
+    "title_website_protecction": "Bypass CloudFlare protection",
+    "title_unlock_captcha": "Unlock a Captcha"
+  },
+  "inputs": {
+    "title": "Input",
+    "browse": "Browse"
+  },
+  "jobs": {
+    "title": "Jobs",
+    "title_download_list": "Toggle download list",
+    "download": "Download",
+    "re_download": "Click to re-download",
+    "download_in_progress": "Downloads are still in progress.",
+    "close_application_anyway": "Close application anyway?"
+  },
+  "mangas": {
+    "title": "Mangas",
+    "manga_list": "Manga List",
+    "manga_list_loading": "Manga list is loading or empty",
+    "manga_update_list": "Button to update list",
+    "title_manga_paste": "Click to paste manga links from the clipboard",
+    "title_select_website": "Select a website from which the manga list should be shown",
+    "title_sync_local": "Synchronize local manga list with online list from",
+    "title_filter": "Enter a pattern (at least 3 characters) to filter the manga list by their titles",
+    "update_manga_list": "Updating manga list",
+    "failed_update_manga_list": "Failed to update manga list for"
+  },
+  "menu": {
+    "title": "Menu",
+    "about": "About",
+    "revision": "Revision History",
+    "development": "Development",
+    "maintainers": "Maintainers",
+    "contributors": "Contributors",
+    "artwork": "Artwork",
+    "help": "Help",
+    "info": "Info",
+    "title_visit_homepage": "Visit the HakuNeko Homepage",
+    "title_read_documentation": "Read the online documentation",
+    "title_open_ticket": "Open a ticket on github",
+    "title_login_community": "Login to the community support channel",
+    "title_show_ip": "Show your external IP and Geolocation",
+    "settings": "Settings",
+    "import_bookmarks": "Import bookmarks",
+    "save_settings": "Save settings and close menu",
+    "close_without_saving": "Close menu without saving settings"
+  },
+  "pages": {
+    "title": "Pages",
+    "page": "Page",
+    "chapter_down": "Chapter Down",
+    "chapter_up": "Chapter Up",
+    "title_decrease_spacing": "Decrease spacing between images",
+    "title_increase_spacing": "Increase spacing between images",
+    "title_zoom_in": "Zoom In",
+    "title_zoom_out": "Zoom Out"
+  },
+  "settings": {
+    "languages": {
+      "english": "English",
+      "spanish": "Spanish"
+    },
+    "corners": {
+      "straight": "straight corner",
+      "rounded": "rounded corner"
+    },
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "default": "Default"
+    },
+    "colors": {
+      "red": "red",
+      "pink": "pink",
+      "purple": "purple",
+      "dpurple": "dpurple",
+      "indigo": "indigo",
+      "blue": "blue",
+      "cian": "cian",
+      "teal": "teal",
+      "green": "green",
+      "lgreen": "lgreen",
+      "lime": "lime",
+      "yellow": "yellow",
+      "amber": "amber",
+      "orange": "orange",
+      "dorange": "dorange"
+    }
+  }
+}

@@ -1,0 +1,181 @@
+{
+  "general": {
+    "title_application": "HakuNeko",
+    "no_available": "¡Acción no disponible!",
+    "click": "Click",
+    "close": "Cerrar",
+    "reload": "Recargar",
+    "minimize": "Minimizar",
+    "maximize": "Maximizar",
+    "select": "Seleccionar",
+    "arrow_left": "Flecha izquierda",
+    "arrow_right": "Flecha derecha",
+    "arrow_up": "Flecha arriba",
+    "arrow_down": "Flecha abajo"
+  },
+  "start": {
+    "title": "HakuNeko",
+    "welcome": "Bienvenido a Hakuneko",
+    "parragraph_01": "se creó para ayudar a los usuarios que descargan medios en circunstancias que requieren el uso sin conexión.",
+    "parragraph_02": "La filosofía es",
+    "parragraph_03": "apropiado para el consumo",
+    "parragraph_04": "consígalo cuando quiera leerlo/verlo.",
+    "parragraph_05": "Lea la documentación de \"cómo usar\" en hakuneko.download (enlace disponible en el menú)",
+    "find_site": "Busque un sitio para obtener el contenido que desea ver",
+    "disclaimer": "no aloja nada. Busque un sitio web en Internet que proporcione el contenido que desea. Luego :",
+    "tutorial": {
+      "step_01": "Seleccione su conector (el sitio web). Usa los filtros",
+      "step_02": "Haga clic en el botón de actualización (puede tardar unos minutos)",
+      "step_03": "Busque un manga",
+      "step_04": "Filtre los capitulos por lenguaje (opcional)",
+      "step_05": "Seleccione un capitulo"
+    },
+    "help": "¿El conector que está buscando no está en la lista?",
+    "issue": "Crear una solicitud de sitio web en github (issue)",
+    "extra_tutorial": "Use la función copiar/pegar si ya tiene el enlace de manga",
+    "see_documentation": "Consulte la documentación para obtener más detalles.",
+    "ready_to_go": "Listo para comenzar",
+    "enjoy": "Ahora puede descargar, ver y marcar sus mangas favoritos"
+  },
+  "chapters": {
+    "title": "Capitulos",
+    "chapter_list": "Lista de Capitulos",
+    "title_toggle_sorting": "Haga clic para ordenar los capitulos",
+    "title_download_chapter": "Haga clic para descargar todos los capitulos que se muestran en la lista",
+    "title_filter_chapter": "Ingrese una palabra clave (soporta expresiones e.g. '/ch 001/i') para filtrar la lista de capitulos",
+    "title_remove_marked": "Haga clic para desmarcar el capitulo",
+    "title_recently_read": "Marcar este capitulo como \"leido\"",
+    "title_marked_recently_read": "El capitulo ha sido marcado como \"leido\" pero ya no esta disponible",
+    "title_remove_recently_read": "Elimina la marca de \"leído\" de este capítulo",
+    "title_show_preview": "Mostrar vista previa de las páginas del capítulo",
+    "title_open_folder": "Haga doble clic para abrir la carpeta con su administrador de archivos",
+    "re_download": "Desea volver a descargar el capitulo?",
+    "available": "DISPONIBLE",
+    "offline": "DESCONECTADO",
+    "download": "Descargado",
+    "downloading": "DESCARGANDO",
+    "downloaded": "DESCARGADO",
+    "failed": "FALLO LA DESCARGA",
+    "queued": "EN COLA",
+    "click_download": "Haga click para descargar el capitulo",
+    "not_available": "Capitulo no disponible",
+    "avaliable_only_directory": "Solo se puede acceder al capítulo desde el directorio de manga.",
+    "loading_chapter_list": "Cargando lista de capitulos",
+    "remove_download_manager": "Haga clic para eliminar el capitulo del administrador de descargas",
+    "delete_download": "Haga clic para eliminar y volver a descargar el capítulo",
+    "view_details": "Consulte el signo de exclamación en la lista de trabajos para obtener más detalles.",
+    "no_tooltip": "¡No hay información disponible!",
+    "new_chapter": "¿nuevo(s) capítulo(s) de la lista de capítulos actual?"
+  },
+  "bookmarks": {
+    "title": "Favoritos",
+    "remove": "Haga clic para eliminar el manga seleccionado de la lista de favoritos",
+    "add": "Haga clic para agregar el manga seleccionado a la lista de favoritos",
+    "cannot": "No se puede agregar a favoritos este manga",
+    "select": "Selecciona un manga para agregarlo a favoritos"
+  },
+  "connectors": {
+    "title": "Conectores",
+    "clear_filter": "limpiar filtros",
+    "website": "sitio web",
+    "manga": "manga",
+    "tags": "etiquetas",
+    "label": "label",
+    "title_connector_pattern": "Mostrar solo sitios web con un nombre que coincida con el patrón ingresado (no distingue entre mayúsculas y minúsculas)",
+    "title_manga_pattern": "Mostrar solo sitios web con un manga que coincida con el patrón ingresado (no distingue entre mayúsculas y minúsculas) &#10; Busca solo en listas locales de manga &#10; Presione ENTER para realizar la búsqueda",
+    "show_mangas": "Haga clic para mostrar mangas de este sitio web",
+    "title_login_page": "Haga clic para abrir la página de inicio de sesión",
+    "title_donation_page": "Haga clic para abrir la página de donaciones",
+    "title_open_website": "Haga clic para abrir el sitio web en una nueva ventana",
+    "title_various_taks": "Esto puede ser útil para varias tareas, p. Ej.",
+    "title_website_status": "Verificar / investigar el estado del sitio web",
+    "title_website_protecction": "Omitir la protección CloudFlare",
+    "title_unlock_captcha": "Desbloquea un Captcha"
+  },
+  "inputs": {
+    "title": "Input",
+    "browse": "Buscar"
+  },
+  "jobs": {
+    "title": "Trabajos",
+    "title_download_list": "Alternar lista de descargas",
+    "download": "Descargar",
+    "re_download": "Haga clic para volver a descargar",
+    "download_in_progress": "Las descargas aún están en curso.",
+    "close_application_anyway": "¿Cerrar la aplicación de todos modos?"
+  },
+  "mangas": {
+    "title": "Mangas",
+    "manga_list": "Lista de mangas",
+    "manga_list_loading": "La lista de manga se está cargando o está vacía",
+    "manga_update_list": " para actualizar la lista",
+    "title_manga_paste": "Haga clic para pegar enlaces de manga desde el portapapeles",
+    "title_select_website": "Seleccione un sitio web desde el que se debe mostrar la lista de manga",
+    "title_sync_local": "Sincronizar la lista local de mangas con la lista en línea de",
+    "title_filter": "Ingrese un patrón (al menos 3 caracteres) para filtrar la lista de manga por sus títulos",
+    "update_manga_list": "Actualizando la lista de manga",
+    "failed_update_manga_list": "No se pudo actualizar la lista de manga para"
+  },
+  "menu": {
+    "title": "Menu",
+    "about": "Acerca de",
+    "revision": "Revisión histórica",
+    "development": "Desarrollo",
+    "maintainers": "Mantenedores",
+    "contributors": "Colaboradores",
+    "artwork": "Arte",
+    "help": "Ayuda",
+    "info": "Información",
+    "title_visit_homepage": "Visite la página de inicio de HakuNeko",
+    "title_read_documentation": "Leer la documentación en línea",
+    "title_open_ticket": "Abra un ticket en github",
+    "title_login_community": "Inicie sesión en el canal de soporte de la comunidad",
+    "title_show_ip": "Muestra tu IP externa y geolocalización",
+    "settings": "Configuraciones",
+    "import_bookmarks": "Importar favoritos",
+    "save_settings": "Guardar la configuración y cerrar el menú",
+    "close_without_saving": "Cerrar el menú sin guardar la configuración"
+  },
+  "pages": {
+    "title": "Páginas",
+    "page": "Pagina",
+    "chapter_down": "Bajar capítulo",
+    "chapter_up": "Subir capítulo",
+    "title_decrease_spacing": "Disminuir el espacio entre paginas",
+    "title_increase_spacing": "Aumentar el espacio entre imágenes",
+    "title_zoom_in": "Acercarse",
+    "title_zoom_out": "Alejarse"
+  },
+  "settings": {
+    "languages": {
+      "english": "Ingles",
+      "spanish": "Español"
+    },
+    "corners": {
+      "straight": "Esquinas rectas",
+      "rounded": "Esquinas redondas"
+    },
+    "theme": {
+      "light": "Claro",
+      "dark": "Oscuro",
+      "default": "Defecto"
+    },
+    "colors": {
+      "red": "rojo",
+      "pink": "rosa",
+      "purple": "purpura",
+      "dpurple": "purpura oscuro",
+      "indigo": "indigo",
+      "blue": "azul",
+      "cian": "cian",
+      "teal": "teal",
+      "green": "verde",
+      "lgreen": "verde claro",
+      "lime": "lima",
+      "yellow": "amarillo",
+      "amber": "ambar",
+      "orange": "naranja",
+      "dorange": "naranja oscuro"
+    }
+  }
+}

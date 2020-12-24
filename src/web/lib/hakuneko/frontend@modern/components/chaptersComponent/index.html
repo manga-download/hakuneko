@@ -13,16 +13,16 @@
     </style>
 
     <div class="header">
-      <div class="header__title">Chapter List</div>
+      <div class="header__title">[[ i18n('chapters.chapter_list') ]]</div>
       <i
         class$="header__title_icon mdi mdi-18px button [[ getSortClass(chapterSort) ]]"
         on-click="onToggleSortClick"
-        title="Click to toggle chapter sorting"
+        title$="[[ i18n('chapters.title_toggle_sorting') ]]"
       ></i>
       <i
         class="header__title_icon mdi mdi-18px mdi-download button"
         on-click="onDownloadChaptersClick"
-        title="Click to download all chapters currently shown in the filtered and sorted list"
+        title$="[[ i18n('chapters.title_download_chapter') ]]"
       ></i>
     </div>
     <div class="filter">
@@ -40,7 +40,7 @@
       <div class="filter__group">
         <i
           class="filter__group_icon mdi mdi-24px mdi-magnify"
-          title="Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles"
+          title$="[[ i18n('chapters.title_filter_chapter') ]]"
         ></i>
         <input
           class="filter__group_input"
@@ -62,13 +62,13 @@
             <i class="list__item_actions_icon"></i>
             <i
               class="list__item_actions_icon mdi mdi-18px mdi-bookmark button markerRemoved"
-              title="Click to remove the marked chapter"
+              title$="[[ i18n('chapters.title_remove_marked') ]]"
               on-click="onUnmarkChapterClick"
             ></i>
           </div>
           <div
             class="list__item_info"
-            title$='The chapter has been marked as "recently read" but is no longer available&#10;ID: [[ markedChapter.chapterID ]]'
+            title$="[[ i18n('chapters.title_market_recently_read') ]]&#10;ID: [[ markedChapter.chapterID ]]"
           >
             [[ markedChapter.chapterTitle ]]
           </div>
@@ -91,7 +91,7 @@
               class="list__item_actions_icon preview mdi mdi-18px mdi-eye button"
               style$="[[ getPagePreviewStyle(readerEnabled) ]]"
               on-click="onSelectChapterClick"
-              title="Show preview of chapter's pages"
+              title$="[[ i18n('chapters.title_show_preview') ]]"
             ></i>
             <i
               class$="list__item_actions_icon mdi mdi-18px button [[ getChapterDownloadClass(item.status) ]]"
@@ -106,7 +106,7 @@
           </div>
           <div
             class$="list__item_info title [[ item.status ]]"
-            title$="[[ item.title ]]&#10;Doubleclick to open the folder with your file manager"
+            title$="[[ item.title ]]&#10;[[ i18n('chapters.title_open_folder') ]]"
             on-dblclick="onShowFileManagerClick"
           >
             [[ item.title ]]
@@ -118,7 +118,7 @@
       <hakuneko-status
         class$="[[ getAppearance() ]]"
         id="status"
-        message="Chapters: [[ chapterFilteredCount ]] / [[ chapterList.length ]]"
+        message="[[ i18n('chapters.title') ]]: [[ chapterFilteredCount ]] / [[ chapterList.length ]]"
       ></hakuneko-status>
     </div>
   </template>

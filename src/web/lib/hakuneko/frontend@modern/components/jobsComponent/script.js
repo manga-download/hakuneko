@@ -100,7 +100,7 @@ class HakunekoJobs extends Polymer.Element {
      */
     getErrorTitle(errors) {
         return (
-            (errors && errors.length > 0 ? "Click to re-download\n" : "") +
+            (errors && errors.length > 0 ? `${this.i18n('jobs.re_download')}\n` : "") +
             errors
                 .map((error) => {
                     return error.toString();
@@ -165,11 +165,18 @@ class HakunekoJobs extends Polymer.Element {
         if (
             index < 0 ||
             await confirm(
-                "Downloads are still in progress.\nClose application anyway?"
+                `${this.i18n('jobs.download_in_progress')}\n${'jobs.close_application_anyway'}`
             )
         ) {
             this.ipc.send("quit");
         }
+    }
+
+    /**
+    * 
+    */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
     }
 }
 window.customElements.define(HakunekoJobs.is, HakunekoJobs);

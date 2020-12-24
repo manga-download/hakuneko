@@ -119,7 +119,7 @@ class HakunekoChapters extends Polymer.Element {
         this.onChaptermarksChanged(undefined);
         // load chapterlist
         let statusID = this.$.status.addToQueue(
-            "Loading chapter list (" + manga.title + ")"
+            `${this.i18n('chapters.loading_chapter_list')} (${manga.title})`
         );
         manga.getChapters((error, chapters) => {
             // only apply chapters when selected manga has not changed
@@ -169,21 +169,21 @@ class HakunekoChapters extends Polymer.Element {
     getChapterDownloadTooltip(status) {
         switch (status) {
             case "unavailable":
-                return "Chapter is not available";
+                return `${this.i18n('chapters.not_available')}`;
             case "offline":
-                return "OFFLINE\nThe chapter is only accessable from the manga directory";
+                return `${this.i18n('chapters.offline')}\n${this.i18n('chapters.avaliable_only_directory')}`;
             case "available":
-                return "AVAILABLE\nClick to download chapter";
+                return `${this.i18n('chapters.available')}\n${this.i18n('chapters.click_download')}`;
             case "queued":
-                return "QUEUED\nClick to remove chapter from download manager";
+                return `${this.i18n('chapters.queued')}\n${this.i18n('chapters.remove_download_manager')}`;
             case "downloading":
-                return "DOWNLOADING";
+                return `${this.i18n('chapters.downloading')}`;
             case "completed":
-                return "DOWNLOADED\nClick to delete and re-download chapter";
+                return `${this.i18n('chapters.downloaded')}\n${this.i18n('chapters.delete_download')}`;
             case "failed":
-                return "DOWNLOAD FAILED\nCheck the exclamation mark in the joblist for details\nClick to delete and re-download the chapter";
+                return `${this.i18n('chapters.failed')}\n${this.i18n('chapters.view_details')}\n${this.i18n('chapters.delete_download')}`;
             default:
-                return "No tooltip available!";
+                return `${this.i18n('chapters.no_tooltip')}`;
         }
     }
 
@@ -232,8 +232,8 @@ class HakunekoChapters extends Polymer.Element {
      */
     getChapterMarkTooltip(markedChapter, chapter) {
         return Engine.ChaptermarkManager.isChapterMarked(chapter, markedChapter)
-            ? 'Remove the "recently read" marker from this chapter'
-            : 'Mark this chapter as "recently read"';
+            ? `${this.i18n('chapters.title_remove_recently_read')}`
+            : `${this.i18n('chapters.title_recently_read')}`;
     }
 
     /**
@@ -259,16 +259,16 @@ class HakunekoChapters extends Polymer.Element {
         let chapter = e.model.item;
         switch (chapter.status) {
             case "unavailable":
-                alert("No action available!");
+                alert(`${this.i18n('general.no_available')}`);
                 break;
             case "offline":
-                alert("No action available!");
+                alert(`${this.i18n('general.no_available')}`);
                 break;
             case "available":
                 Engine.DownloadManager.addDownload(chapter);
                 break;
             case "completed":
-                if (await confirm("Re-download existing chapter?")) {
+                if (await confirm(`${this.i18n('chapters.re_download')}`)) {
                     Engine.DownloadManager.addDownload(chapter);
                 }
                 break;
@@ -276,7 +276,7 @@ class HakunekoChapters extends Polymer.Element {
                 Engine.DownloadManager.addDownload(chapter);
                 break;
             default:
-                alert("No action available!");
+                alert(`${this.i18n('general.no_available')}`);
                 break;
         }
     }
@@ -307,9 +307,7 @@ class HakunekoChapters extends Polymer.Element {
         if (
             chapterList.length > 0 &&
             await confirm(
-                "Download " +
-                    chapterList.length +
-                    " new chapter(s) from the current chapter list?"
+                `${this.i18n('chapters.download')} ${chapterList.length} ${this.i18n('chapters.new_chapter')}`
             )
         ) {
             chapterList.forEach((chapter) => {
@@ -551,6 +549,13 @@ class HakunekoChapters extends Polymer.Element {
         if (index > -1) {
             this.notifyPath("chapterList." + index + ".status");
         }
+    }
+
+    /**
+     * 
+     */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
     }
 }
 window.customElements.define(HakunekoChapters.is, HakunekoChapters);

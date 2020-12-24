@@ -70,14 +70,14 @@ class HakunekoBookmarks extends Polymer.Element {
                     );
                 });
                 if (index > -1) {
-                    return "Click to remove the selected manga from the bookmark list";
+                    return `${this.i18n('bookmarks.remove')}`;
                 }
-                return "Click to add the selected manga to the bookmark list";
+                return `${this.i18n('bookmarks.add')}`;
             } else {
-                return `Cannot bookmark mangas from this ${manga.connector.label}!`;
+                return `${ this.i18n('bookmarks.cannot') } ${manga.connector.label}!`;
             }
         }
-        return "Please select a manga to use the bookmark feature";
+        return `${this.i18n('bookmarks.select')}`;
     }
 
     /**
@@ -97,7 +97,7 @@ class HakunekoBookmarks extends Polymer.Element {
             } else {
                 Engine.BookmarkManager.addBookmark(manga);
             }
-            return "Click to add the selected manga to bookmarks";
+            return `${this.i18n('bookmarks.add')}`;
         }
     }
 
@@ -107,6 +107,13 @@ class HakunekoBookmarks extends Polymer.Element {
     onBookmarksChanged(e) {
         this.bookmarkList = e.detail;
         this.notifyPath("bookmarkList.length");
+    }
+    
+    /**
+     * 
+     */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
     }
 }
 window.customElements.define(HakunekoBookmarks.is, HakunekoBookmarks);

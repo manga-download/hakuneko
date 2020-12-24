@@ -50,13 +50,13 @@
   position: absolute;
   z-index: 100;
   padding: 0.5rem;
-  width: 16rem;
+  width: 19rem;
   display: flex;
   flex-direction: column;
   box-shadow: 0 0 0 1px var(--accent);
   background: var(--base);
   border-radius: var(--border-radius);
-  right: -17rem;
+  right: -20rem;
   top: 2.2rem;
 }
 
@@ -70,7 +70,7 @@
 }
 
 .appearance__colors_item {
-  width: 4rem;
+  width: 5rem;
   height: 3rem;
   border-radius: 0 0.5rem;
   background: whitesmoke;
@@ -94,7 +94,7 @@
   color: var(--text);
 }
 
-.appearance__corner {
+.appearance__corner, .appearance__language {
   display: flex;
   justify-content: space-around;
   margin: 0.5rem 0;
@@ -102,12 +102,12 @@
   padding-top: 1rem;
 }
 
-.appearance__corner_item {
+.appearance__corner_item, .appearance__language_item {
   display: flex;
   align-items: center;
   width: calc(50% - 1rem);
   height: 2.25rem;
-  padding-left: 0.25rem;
+  padding: 0 1rem;
   background: var(--accent);
   text-transform: uppercase;
   color: var(--text);
@@ -126,12 +126,15 @@
 }
 
 .appearance__colors_item.selected,
-.appearance__corner_item.selected {
+.appearance__corner_item.selected,
+.appearance__language_item.selected {
   position: relative;
 }
 
 .appearance__colors_item.selected:after,
-.appearance__corner_item.selected:after {
+.appearance__corner_item.selected:after,
+.appearance__language_item.selected:after
+ {
   position: absolute;
   top: 0;
   right: 0;

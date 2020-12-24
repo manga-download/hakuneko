@@ -15,19 +15,19 @@
       @import url("./style.css");
     </style>
     <div class="header">
-      <span class="header__title">Manga List</span>
+      <span class="header__title">[[i18n('mangas.manga_list')]]</span>
       <input id="paste" />
       <i
         class="header__icon mdi mdi-content-paste mdi-18px button"
         on-click="onPasteClick"
-        title="Click to paste manga links from the clipboard (CTRL + V)"
+        title$="[[i18n('mangas.title_manga_paste')]] (CTRL + V)"
       ></i>
     </div>
     <div class="filter">
       <div class="filter__group">
         <i
           class="filter__group_icon mdi mdi-24px mdi-power-plug"
-          title="Select a website from which the manga list should be shown"
+          title$="[[i18n('mangas.title_select_website')]]"
         ></i>
         <hakuneko-connectors
           class$="filter__group_input"
@@ -36,13 +36,13 @@
         <i
           class$="filter__group_icon mdi mdi-24px [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh"
           on-click="onUpdateMangaListClick"
-          title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"
+          title$="[[i18n('mangas.title_sync_local')]] &lt;[[ selectedConnector.label ]]&gt;"
         ></i>
       </div>
       <div class="filter__group">
         <i
           class="filter__group_icon mdi mdi-24px mdi-magnify"
-          title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"
+          title$="[[i18n('mangas.title_filter')]]"
         ></i>
         <input
           class="filter__group_input"
@@ -61,14 +61,14 @@
         if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]"
       >
         <div class="notification">
-          <div class="notification__line">Manga list is loading or empty</div>
+          <div class="notification__line">[[i18n('mangas.manga_list_loading')]]</div>
           <div class="notification__line">
-            Click<i
+            [[i18n('general.click')]]<i
               class$="notification__line_icon mdi mdi-18px [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh"
               on-click="onUpdateMangaListClick"
-              title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"
+              title$="[[i18n('mangas.title_sync_local')]] &lt;[[ selectedConnector.label ]]&gt;"
             ></i
-            >button to update list
+            >[[i18n('mangas.manga_update_list')]]
           </div>
         </div>
       </template>
@@ -91,7 +91,7 @@
       <hakuneko-status
         class$="[[ getAppearance() ]]"
         id="status"
-        message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"
+        message="[[i18n('mangas.title')]]: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"
       ></hakuneko-status>
     </div>
   </template>

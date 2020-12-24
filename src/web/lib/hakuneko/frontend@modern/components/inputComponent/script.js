@@ -70,5 +70,12 @@ class HakunekoInput extends Polymer.Element {
             this.set("item.value", path);
         }
     }
+
+    /**
+    * 
+    */
+    i18n(key, def) {
+        return Engine.I18n.translate(key, def);
+    }
 }
 window.customElements.define(HakunekoInput.is, HakunekoInput);

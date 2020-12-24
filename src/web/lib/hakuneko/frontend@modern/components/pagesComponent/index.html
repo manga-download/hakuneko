@@ -20,7 +20,7 @@
             <div
               class="container__wrapper_image thumbnail"
               on-click="showViewer"
-              title$="Page [[ getPage(index) ]]"
+              title$="[[i18n('pages.page')]] [[ getPage(index) ]]"
               data-page$="[[ getPage(index) ]]"
             >
               <img src$="[[ escapeBackgroundURI(item) ]]" alt="" />
@@ -38,40 +38,40 @@
         >
           <i
             class="actions__action mdi mdi-close-circle-outline mdi-18px button"
-            title="Close (ESC)"
+            title$="[[i18n('general.close')]] (ESC)"
             on-click="hideViewer"
           ></i>
           <span class="actions__title">[[ selectedChapter.title ]]</span>
           <i
             class="actions__action mdi mdi-chevron-down-circle-outline mdi-18px button"
-            title="Chapter Down (ArrowLeft)"
+            title$="[[i18n('chapter_down')]] ([[i18n('arrow_left')]])"
             on-click="requestChapterDown"
           ></i>
           <i
             class="actions__action mdi mdi-chevron-up-circle-outline mdi-18px button"
-            title="Chapter Up (ArrowRight)"
+            title="[[i18n('chapter_up')]] ([[i18n('arrow_right')]])"
             on-click="requestChapterUp"
           ></i>
           &nbsp;
           <i
             class="actions__action mdi mdi-arrow-collapse-vertical mdi-18px button"
-            title="Decrease spacing between images (CTRL ➖)"
+            title$="[[i18n('pages.title_decrease_spacing')]] (CTRL ➖)"
             on-click="decreaseImagePadding"
           ></i>
           <i
             class="actions__action mdi mdi-arrow-expand-vertical mdi-18px button"
-            title="Increase spacing between images (CTRL ➕)"
+            title$="[[i18n('pages.title_decrease_spacing')]] (CTRL ➕)"
             on-click="increaseImagePadding"
           ></i>
           &nbsp;
           <i
             class="actions__action mdi mdi-plus-circle-outline mdi-18px button"
-            title="Zoom In (➕)"
+            title$="[[i18n('pages.title_zoom_in')]] (➕)"
             on-click="zoomIn"
           ></i>
           <i
             class="actions__action mdi mdi-minus-circle-outline mdi-18px button"
-            title="Zoom Out (➖)"
+            title$="[[i18n('pages.title_zoom_out')]] (➖)"
             on-click="zoomOut"
           ></i>
           &nbsp;
