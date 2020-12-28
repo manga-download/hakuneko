@@ -11,7 +11,7 @@ export default class LineWebtoon extends Connector {
         this.url = undefined;
         this.baseURL = 'https://www.webtoons.com';
         this.requestOptions.headers.set('x-referer', this.baseURL);
-        this.requestOptions.headers.set('x-cookie', 'ageGatePass=true');
+        this.requestOptions.headers.set('x-cookie', 'needCCPA=false; pagGDPR=true');
 
         this.config = {
             throttle: {
