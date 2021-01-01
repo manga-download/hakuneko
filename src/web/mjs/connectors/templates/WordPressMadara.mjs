@@ -36,33 +36,9 @@ export default class WordPressMadara extends Connector {
         return request;
     }
 
-    async _getFilteredMangas(pattern) {
-        if (pattern == undefined) {
-            return true;
-        }
-        let form = new URLSearchParams();
-        form.append('action', 'wp-manga-search-manga');
-        form.append('title', pattern);
-        this.requestOptions.method = 'POST';
-        this.requestOptions.body = form.toString();
-        let request = new Request(new URL(this.path + '/wp-admin/admin-ajax.php', this.url), this.requestOptions);
-        request.headers.set('content-type', 'application/x-www-form-urlencoded');
-        request.headers.set('x-referer', this.url);
-        this.requestOptions.method = 'GET';
-        delete this.requestOptions.body;
-
-        let data = await this.fetchJSON(request);
-        return data.success ? data.data.map(ele => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(ele.url, request.url),
-                title: ele.title.trim()
-            };
-        }) : [];
-    }
-
     async _getMangas() {
         let mangaList = [];
-        for (let page = 0, run = true; run; page++) {
+        for(let page = 0, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
@@ -86,7 +62,7 @@ export default class WordPressMadara extends Connector {
         let dom = (await this.fetchDOM(request, 'body'))[0];
         let data = [...dom.querySelectorAll(this.queryChapters)];
         let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
-        if (placeholder) {
+        if(placeholder) {
             let uri = new URL(this.path + '/wp-admin/admin-ajax.php', this.url);
             let request = new Request(uri, {
                 method: 'POST',
