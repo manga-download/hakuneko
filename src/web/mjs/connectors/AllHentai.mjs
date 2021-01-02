@@ -43,8 +43,7 @@ export default class AllHentai extends Connector {
             let pageCount = parseInt(data.pop().text);
             let pageLinks = [...new Array(pageCount).keys()].map(page => {
                 let uri = new URL('list', this.url);
-                uri.searchParams.set('offset', 60 * page);
-                uri.searchParams.set('max', 60);
+                uri.searchParams.set('offset', 70 * page);
                 return uri.href;
             });
             let mangaList = await this._getMangaListFromPages(pageLinks);
