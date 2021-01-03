@@ -8,7 +8,7 @@ export default class NineHentai extends Connector {
         super.id = '9hentai';
         super.label = '9hentai';
         this.tags = ['hentai', 'multi-lingual'];
-        this.url = 'https://9hentai.com';
+        this.url = 'https://9hentai.ru';
     }
 
     async _getMangaFromURI(uri) {
