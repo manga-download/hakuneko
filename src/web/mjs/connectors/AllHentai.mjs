@@ -21,11 +21,11 @@ export default class AllHentai extends Connector {
 
     async _getMangaListFromPages(mangaPageLinks, index) {
         index = index || 0;
-        let data = await this.fetchDOM(mangaPageLinks[index], 'table.cTable tr td a:first-of-type', 5);
+        let data = await this.fetchDOM(mangaPageLinks[index], 'div#mangaBox div.desc h3 a', 5);
         let mangaList = data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.childNodes[0].textContent.trim()
+                title: element.textContent.trim()
             };
         });
         if(index < mangaPageLinks.length - 1) {
@@ -43,8 +43,7 @@ export default class AllHentai extends Connector {
             let pageCount = parseInt(data.pop().text);
             let pageLinks = [...new Array(pageCount).keys()].map(page => {
                 let uri = new URL('list', this.url);
-                uri.searchParams.set('offset', 60 * page);
-                uri.searchParams.set('max', 60);
+                uri.searchParams.set('offset', 70 * page);
                 return uri.href;
             });
             let mangaList = await this._getMangaListFromPages(pageLinks);
@@ -58,7 +57,7 @@ export default class AllHentai extends Connector {
     async _getChapterList(manga, callback) {
         try {
             let request = new Request(this.url + manga.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'table.cTable tr td a[title]');
+            let data = await this.fetchDOM(request, 'div.chapters-link table tr td a[title]');
             let chapterList = data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -76,7 +75,7 @@ export default class AllHentai extends Connector {
     async _getPageList(manga, chapter, callback) {
         try {
             let script = `new Promise(resolve => {
-                resolve(pictures.map(picture => picture.url));
+                resolve(rm_h.pics.map(picture => picture.url));
             });`;
             let request = new Request(this.url + chapter.id, this.requestOptions);
             let data = await Engine.Request.fetchUI(request, script);
