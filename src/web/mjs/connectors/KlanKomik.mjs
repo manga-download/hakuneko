@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class KlanKomik extends WordPressMadara {
+export default class KlanKomik extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,5 +8,7 @@ export default class KlanKomik extends WordPressMadara {
         super.label = 'KlanKomik';
         this.tags = [ 'webtoon', 'indonesian' ];
         this.url = 'https://klankomik.com';
+        this.path = '/manga/list-mode/';
     }
+
 }
