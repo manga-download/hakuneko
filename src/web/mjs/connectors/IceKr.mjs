@@ -1,6 +1,6 @@
 import SinMH from './templates/SinMH.mjs';
 
-export default class iceKr extends SinMH {
+export default class IceKr extends SinMH {
 
     constructor() {
         super();
