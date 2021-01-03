@@ -5,9 +5,9 @@ export default class MangaDropOut extends WordPressMadara {
     constructor() {
         super();
         super.id = 'mangadropout';
-        super.label = 'MangaDropOut';
-        this.tags = [ 'hentai', 'indonesian' ];
-        this.url = 'https://www.mangadropout.xyz';
+        super.label = 'KomikTap (MDO)';
+        this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
+        this.url = 'https://manhwa.komiktap.co';
 
         this.queryTitleForURI = 'div.post-title h1';
     }
