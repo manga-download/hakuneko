@@ -79,7 +79,10 @@ export default class FlatManga extends Connector {
                 try {
                     element.dataset.original = atob(element.dataset.original);
                 } catch(_) { /* ignore */ }
-                return this.getAbsolutePath(element.dataset.src || element.dataset.original || element, request.url);
+                try {
+                    element.dataset.pagespeedLazySrc = atob(element.dataset.pagespeedLazySrc);
+                } catch(_) { /* ignore */ }
+                return this.getAbsolutePath(element.dataset.src || element.dataset.original || element.dataset.pagespeedLazySrc || element, request.url);
             })
             .filter(url => !url.includes('3282f6a4b7_o') && !url.includes('donate'))
             .map(url => this.createConnectorURI(url));
