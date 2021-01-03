@@ -1,11 +1,11 @@
 import SinMH from './templates/SinMH.mjs';
 
-export default class guoman8 extends SinMH {
+export default class Guoman8 extends SinMH {
 
     constructor() {
         super();
         super.id = 'guoman8';
-        super.label = '国漫吧 (guoman8)';
+        super.label = '国漫吧 (Guoman8)';
         this.tags = [ 'manga', 'chinese' ];
         this.url = 'http://www.guoman8.cc';
         this.requestOptions.headers.set('x-referer', this.url);
