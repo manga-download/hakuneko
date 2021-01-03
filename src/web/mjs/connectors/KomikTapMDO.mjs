@@ -1,10 +1,10 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class MangaDropOut extends WordPressMadara {
+export default class KomikTapMDO extends WordPressMadara {
 
     constructor() {
         super();
-        super.id = 'mangadropout';
+        super.id = 'komiktap-mdo';
         super.label = 'KomikTap (MDO)';
         this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
         this.url = 'https://manhwa.komiktap.co';
