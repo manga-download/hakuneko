@@ -54,38 +54,37 @@ export default class Luscious extends Connector {
         } ];
     }
 
-    async _getPagesFromPage(chapter, page) {
-        let part = chapter.id.split('/').filter(part => part !== '').pop();
-        let path = ['', 'pictures', 'album', part, 'sorted', 'position', 'page', page, ''].join('/');
-        let request = new Request(new URL(path, this.url), this.requestOptions);
-        try {
-            let data = await this.fetchDOM(request, 'div.picture_page div.thumbnail source.safe_link');
-            return data.map(element => this.createConnectorURI(this.getAbsolutePath(element.dataset.src.replace(/\.\d+x\d+\.jpg/, ''), request.url)));
-        } catch(error) {
-            // catch 404 error when page number exceeds available pages
-            return [];
-        }
-    }
-
     async _getPages(chapter) {
+        const query = `
+            query AlbumListOwnPictures($input: PictureListInput!) {
+                picture {
+                    list(input: $input) {
+                        items {
+                            url_to_original
+                        }
+                    }
+                }
+            }
+        `;
+        const variables = {
+            input: {
+                filters: [
+                    {
+                        name: 'album_id',
+                        value: chapter.id.match(/_(\d+)\/?$/)[1]
+                    }
+                ],
+                display : 'date_newest',
+                page: 0
+            }
+        };
         let pageList = [];
         for(let page = 1, run = true; run; page++) {
-            let pages = await this._getPagesFromPage(chapter, page);
+            variables.input.page = page;
+            const data = await this.fetchGraphQL(this.apiURL, 'AlbumListOwnPictures', query, variables);
+            const pages = data.picture.list.items.map(item => item.url_to_original);
             pages.length > 0 ? pageList.push(...pages) : run = false;
         }
         return pageList;
-    }
-
-    async _handleConnectorURI(payload) {
-        let promises = ['.png', '.jpg'].map(extension => {
-            let request = new Request(payload + extension, this.requestOptions);
-            return fetch(request);
-        });
-        let responses = await Promise.all(promises);
-        let response = responses.find(response => response.ok);
-        return {
-            mimeType: response.headers.get('content-type'),
-            data: new Uint8Array(await response.arrayBuffer())
-        };
     }
 }
