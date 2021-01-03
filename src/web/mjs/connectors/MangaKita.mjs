@@ -9,10 +9,6 @@ export default class MangaKita extends WordPressMangastream {
         this.tags = [ 'manga', 'indonesian' ];
         this.url = 'https://mangakita.net';
         this.path = '/daftar-manga/?list';
-
-        this.querMangaTitleFromURI = 'div#content div.animeinfo h1';
-        this.queryChapters = 'div.bxcl ul li div.lch a';
-        this.queryChaptersTitle = undefined;
     }
 
     async _getPages(chapter) {
