@@ -1,6 +1,6 @@
 import SinMH from './templates/SinMH.mjs';
 
-export default class guoman8 extends SinMH {
+export default class Guoman8 extends SinMH {
 
     constructor() {
         super();
