@@ -8,6 +8,6 @@ export default class LHScan extends FlatManga {
         super.label = 'LoveHeaven';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://loveheaven.net';
-        this.requestOptions.headers.set( 'x-referer', this.url );
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 }
