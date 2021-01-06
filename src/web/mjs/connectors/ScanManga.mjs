@@ -11,7 +11,8 @@ export default class ScanManga extends Connector {
         this.url = 'https://www.scan-manga.com';
         // If not set, defaults to "fr" for french machines, which will return empty responses
         // Only fail for "fr" language, and works for any other language, including "fr-FR" and random strings
-        this.requestOptions.headers.set('accept-language', 'en');
+        //this.requestOptions.headers.set('accept-language', 'en');
+        //this fix got broke almost immediately
     }
 
     async _getMangaFromURI(uri) {
@@ -23,23 +24,8 @@ export default class ScanManga extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/scanlation/scan.data.json', this.url), this.requestOptions);
-        request.headers.set('x-cookie', '_ga=GA1.2.137581646.' + parseInt(Date.now()/1000)); // google analytics cookie
-        //request.headers.set('x-referer', this.url + '/scanlation/liste_series.html');
-        request.headers.set('x-requested-with', 'XMLHttpRequest');
-        let data = await this.fetchJSON(request);
-        let mangaList = [];
-        for(let title in data) {
-            let id = data[title][0];
-            let slug = data[title][1] || title;
-            let element = document.createElement('div');
-            element.innerHTML = title;
-            mangaList.push({
-                id: `/${id}/${slug}.html`,
-                title: element.textContent.trim()
-            });
-        }
-        return mangaList;
+        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
     async _getChapters(manga) {
