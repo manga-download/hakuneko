@@ -81,7 +81,7 @@ export default class NineAnime extends Connector {
                 }, 120000);
             });
         } else {
-            await this.wait(500);
+            await this.wait(2500);
             return Promise.resolve();
         }
     }
