@@ -9,7 +9,7 @@ export default class ScanManga extends Connector {
         super.label = 'ScanManga';
         this.tags = ['manga', 'french', 'novel'];
         this.url = 'https://www.scan-manga.com';
-        var _0x1087 = ['381sfGWON', '916955zZjSQL', '31ElJoip', '708qNyAYT', '2ayDZDy', 'accept-language', 'set', '2RuRNTr', '681974vvHWEX', '71297ucZdkv', '19023wnFPih', 'headers', '1EktpzL', 'requestOptions', '2315QJlMKR', '765166pfLgfQ', 'en-US', '2469XKKoaj']; var _0x3907 = function (_0x376230, _0x20d038) { _0x376230 = _0x376230 - 0x1be; var _0x1087ed = _0x1087[_0x376230]; return _0x1087ed; }; var _0x59f72d = _0x3907; (function (_0x6ca478, _0x265693) { var _0x302037 = _0x3907; while (!![]) { try { var _0x5c9580 = parseInt(_0x302037(0x1bf)) * -parseInt(_0x302037(0x1c4)) + parseInt(_0x302037(0x1c3)) * parseInt(_0x302037(0x1c7)) + parseInt(_0x302037(0x1ce)) + -parseInt(_0x302037(0x1cf)) * -parseInt(_0x302037(0x1c5)) + -parseInt(_0x302037(0x1ca)) * -parseInt(_0x302037(0x1c2)) + parseInt(_0x302037(0x1c9)) * -parseInt(_0x302037(0x1be)) + -parseInt(_0x302037(0x1cd)) * parseInt(_0x302037(0x1cc)); if (_0x5c9580 === _0x265693) break; else _0x6ca478['push'](_0x6ca478['shift']()); } catch (_0x5bf218) { _0x6ca478['push'](_0x6ca478['shift']()); } } }(_0x1087, 0xf353f), this[_0x59f72d(0x1c8)][_0x59f72d(0x1c6)][_0x59f72d(0x1c1)](_0x59f72d(0x1c0), _0x59f72d(0x1cb)));
+        this.requestOptions.headers.set('accept-language', 'en-US,en;q=0.9,de;q=0.8');
     }
 
     async _getMangaFromURI(uri) {
@@ -21,8 +21,23 @@ export default class ScanManga extends Connector {
     }
 
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        let request = new Request(new URL('/scanlation/scan.data.json', this.url), this.requestOptions);
+        request.headers.set('x-cookie', `_ga=GA1.2.137581646.${parseInt(Date.now()/1000)}; addtl_consent=1~${new Array(647).fill().map(() => Math.floor(41 * Math.random())).join('.')}`);
+        request.headers.set('x-referer', this.url + '/scanlation/liste_series.html');
+        request.headers.set('x-requested-with', 'XMLHttpRequest');
+        let data = await this.fetchJSON(request);
+        let mangaList = [];
+        for(let title in data) {
+            let id = data[title][0];
+            let slug = data[title][1] || title;
+            let element = document.createElement('div');
+            element.innerHTML = title;
+            mangaList.push({
+                id: `/${id}/${slug}.html`,
+                title: element.textContent.trim()
+            });
+        }
+        return mangaList;
     }
 
     async _getChapters(manga) {
