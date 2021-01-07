@@ -58,39 +58,13 @@ export default class NineAnime extends Connector {
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
-    async _checkCaptcha(request) {
-        let response = await fetch(request);
-        let body = await response.text();
-        if(body.includes('/waf-verify')) {
-            return new Promise((resolve, reject) => {
-                let win = window.open(request.url);
-                let timer = setInterval(() => {
-                    if(win.closed) {
-                        clearTimeout(timeout);
-                        clearInterval(timer);
-                        resolve();
-                    } else {
-                        //console.log('OPEN:', win.location.href);
-                    }
-                }, 750);
-                let timeout = setTimeout(() => {
-                    clearTimeout(timeout);
-                    clearInterval(timer);
-                    win.close();
-                    reject(new Error('Captcha has not been solved within the given timeout!'));
-                }, 120000);
-            });
-        } else {
-            await this.wait(2500);
-            return Promise.resolve();
-        }
-    }
-
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        await this._checkCaptcha(request);
         let response = await fetch(request);
         let data = await response.text();
+        if(/waf-verify/i.test(data)) {
+            throw new Error('The website is protected by captcha, please use manual website interaction to bypass the captcha for the selected anime!');
+        }
         let dom = this.createDOM(data);
         let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
         let metaTitle = dom.querySelector('div.info h1[data-jtitle].title');
@@ -127,6 +101,9 @@ export default class NineAnime extends Connector {
         let script = `
             new Promise((resolve, reject)  => {
                 localStorage.setItem('player_autoplay', 0);
+                if(/waf-verify/i.test(document.body.innerHTML)) {
+                    throw new Error('The website is protected by captcha, please use manual website interaction to bypass the captcha for the selected anime!');
+                }
                 setTimeout(() => {
                     try {
                         let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
@@ -157,7 +134,6 @@ export default class NineAnime extends Connector {
             });
         `;
         let request = new Request(this.url + manga.id, this.requestOptions);
-        await this._checkCaptcha(request);
         return Engine.Request.fetchUI(request, script);
     }
 
