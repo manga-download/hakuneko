@@ -56,6 +56,7 @@ export default class NineAnime extends Connector {
         let request = new Request(uri.href, this.requestOptions);
         this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
+        this.wait(5000);
     }
 
     async _getMangaFromURI(uri) {
