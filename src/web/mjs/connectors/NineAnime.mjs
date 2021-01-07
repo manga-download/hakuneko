@@ -104,33 +104,35 @@ export default class NineAnime extends Connector {
                 if(/waf-verify/i.test(document.body.innerHTML)) {
                     throw new Error('The website is protected by captcha, please use manual website interaction to bypass the captcha for the selected anime!');
                 }
-                setTimeout(() => {
+                setInterval(() => {
                     try {
-                        let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
-                            return {
-                                id: element.dataset.id,
-                                label: element.textContent.trim()
-                            };
-                        });
-                        let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
-                            return {
-                                servers: JSON.parse(element.dataset.sources),
-                                label: element.textContent.trim()
-                            };
-                        });
-                        let result = servers.reduce((accumulator, server) => {
-                            return accumulator.concat(episodes.map(episode => {
+                        if(document.querySelector('div#episodes div.servers')) {
+                            let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
                                 return {
-                                    id: episode.servers[server.id],
-                                    title: episode.label + ' [' + server.label + ']'
+                                    id: element.dataset.id,
+                                    label: element.textContent.trim()
                                 };
-                            }));
-                        }, []);
-                        resolve(result);
+                            });
+                            let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
+                                return {
+                                    servers: JSON.parse(element.dataset.sources),
+                                    label: element.textContent.trim()
+                                };
+                            });
+                            let result = servers.reduce((accumulator, server) => {
+                                return accumulator.concat(episodes.map(episode => {
+                                    return {
+                                        id: episode.servers[server.id],
+                                        title: episode.label + ' [' + server.label + ']'
+                                    };
+                                }));
+                            }, []);
+                            resolve(result);
+                        }
                     } catch(error) {
                         reject(error);
                     }
-                }, 2500);
+                }, 500);
             });
         `;
         let request = new Request(this.url + manga.id, this.requestOptions);
