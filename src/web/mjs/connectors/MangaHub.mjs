@@ -15,25 +15,6 @@ export default class MangaHub extends Connector {
         this.path = 'm01';
     }
 
-    async _getGraphQL(gql) {
-        this.requestOptions.method = 'POST';
-        this.requestOptions.body = JSON.stringify({ query: gql });
-        let request = new Request(this.apiURL, this.requestOptions);
-        request.headers.set('content-type', 'application/json');
-        this.requestOptions.headers.delete('content-type');
-        delete this.requestOptions.body;
-        this.requestOptions.method = 'GET';
-
-        let data = await this.fetchJSON(request);
-        if(data.errors) {
-            throw new Error(this.label + ' errors: ' + data.errors.map(error => error.message).join('\n'));
-        }
-        if(!data.data) {
-            throw new Error(this.label + 'No data available!');
-        }
-        return data.data;
-    }
-
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div#mangadetail div.container-fluid div.row h1');
@@ -50,7 +31,7 @@ export default class MangaHub extends Connector {
                 }
             }
         }`;
-        let data = await this._getGraphQL(gql);
+        let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         return data.search.rows.map(manga => {
             return {
                 id: manga.slug, // manga.id
@@ -67,7 +48,7 @@ export default class MangaHub extends Connector {
                 }
             }
         }`;
-        let data = await this._getGraphQL(gql);
+        let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         return data.manga.chapters.map(chapter => {
             // .padStart( 4, '0' )
             let title = `Ch. ${chapter.number} - ${chapter.title}`;
@@ -85,7 +66,7 @@ export default class MangaHub extends Connector {
                 pages
             }
         }`;
-        let data = await this._getGraphQL(gql);
+        let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         data = JSON.parse(data.chapter.pages);
         return Object.values(data).map(page => new URL(page, this.cdnURL).href);
     }
