@@ -19,6 +19,7 @@ export default class Blacklist {
             '*://*.adnxs.com/*',
             '*://*.adriver.ru/*',
             '*://*.adservice.google.com/*',
+            '*://*.adskeeper.co.uk/*',
             '*://*.adsrvr.org/*',
             '*://*.adtrue.com/*',
             '*://*.advertising.com/*',

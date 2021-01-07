@@ -488,6 +488,12 @@ export default class Request {
         }
         delete details.requestHeaders['x-sec-fetch-mode'];
 
+        //
+        if(details.requestHeaders['x-sec-fetch-site']) {
+            details.requestHeaders['Sec-Fetch-Site'] = details.requestHeaders['x-sec-fetch-site'];
+        }
+        delete details.requestHeaders['x-sec-fetch-site'];
+
         return details;
     }
 
