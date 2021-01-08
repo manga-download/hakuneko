@@ -174,12 +174,12 @@ export default class Request {
         }
         headers = headers.join( '\n' );
         return {
-            /*
-             *userAgent: undefined,
-             *postData: undefined,
-             */
+            // set user agent to prevent `window.navigator.userAgent` being set to elecetron ...
+            userAgent: request.headers.get('x-user-agent') || this.userAgent,
             httpReferrer: referer ? referer : undefined,
             extraHeaders: headers ? headers : undefined
+
+            //postData: undefined,
         };
     }
 
