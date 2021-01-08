@@ -64,7 +64,8 @@ export default class WeComics extends Connector {
         if(!data.data.chapter.data) {
             throw new Error('No image data available, make sure your account is logged in and the chapter is purchased!');
         }
-        return WeComics_Vendor.getPictureList(data.data.chapter.data);
+        data = WeComics_Vendor.getPictureList(data.data.chapter.data);
+        return data.map(image => image.replace('0_800', '0_1200'));
     }
 }
 
