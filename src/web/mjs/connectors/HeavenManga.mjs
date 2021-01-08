@@ -5,7 +5,7 @@ export default class HeavenManga extends WordPressZbulu {
     constructor() {
         super();
         super.id = 'heavenmanga';
-        super.label = 'Heaven Manga';
+        super.label = 'Heaven Toon';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://heaventoon.com';
     }
