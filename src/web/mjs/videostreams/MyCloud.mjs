@@ -19,19 +19,43 @@ export default class MyCloud {
     }
 
     async getStream(resolution) {
-        let sources = await this._getSources();
-        sources = sources.filter(source => source.includes('.mp4'));
-        const stream = sources.shift().file;
+        const sources = await this._getSources();
+        return this._extractStream(resolution, sources);
+    }
+
+    async _extractStream(resolution, sources) {
+        sources = sources.filter(source => source.file.includes('.mp4'));
+        return sources.shift().file;
     }
 
     async getPlaylist(resolution) {
-        let sources = await this._getSources();
-        sources = sources.filter(source => source.includes('.m3u8'));
+        const sources = await this._getSources();
+        return this._extractPlaylist(resolution, sources);
+    }
+
+    async _extractPlaylist(resolution, sources) {
+        sources = sources.filter(source => source.file.includes('.m3u8'));
         const playlist = sources.shift().file;
         const request = new Request(playlist);
         request.headers.set('x-referer', this._uri.href);
-        let streams = await this._fetchRegex(request, /^(.*?\d+\.m3u8)$/gm);
-        let stream = (streams.find(s => s.includes(resolution)) || streams[0]).trim();
+        const streams = await this._fetchRegex(request, /^(.*?\d+\.m3u8)$/gm);
+        const stream = (streams.find(s => s.includes(resolution)) || streams[0]).trim();
         return playlist.replace(/[^/]+$/, stream);
+    }
+
+    async getStreamAndPlaylist(resolution) {
+        const sources = await this._getSources();
+        let result = {};
+        try {
+            result['stream'] = await this._extractStream(resolution, sources);
+        } catch(error) {
+            //
+        }
+        try {
+            result['playlist'] = await this._extractPlaylist(resolution, sources);
+        } catch(error) {
+            //
+        }
+        return result;
     }
 }
