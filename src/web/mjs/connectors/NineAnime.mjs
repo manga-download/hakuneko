@@ -249,12 +249,21 @@ export default class NineAnime extends Connector {
 
     async _getEpisodeVidstream(link, referer, resolution) {
         let vidstream = new Vidstream(link, referer, this.fetchRegex.bind(this));
-        let playlist = await vidstream.getPlaylist(parseInt(resolution));
-        return {
-            hash: 'id,language,resolution',
-            mirrors: [ playlist ],
-            subtitles: []
-        };
+        let result = await vidstream.getStreamAndPlaylist(parseInt(resolution));
+        if(result.stream) {
+            return {
+                video: result.stream,
+                subtitles: []
+            };
+        }
+        if(result.playlist) {
+            return {
+                hash: 'id,language,resolution',
+                mirrors: [ result.playlist ],
+                subtitles: []
+            };
+        }
+        throw new Error('No stream/playlist found!');
     }
 
     async _getEpisodeMp4upload(link/*, resolution*/) {
