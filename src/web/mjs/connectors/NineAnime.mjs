@@ -231,7 +231,7 @@ export default class NineAnime extends Connector {
     async _getEpisodeMyCloud(link, referer, resolution) {
         let mycloud = new MyCloud(link, referer, this.fetchRegex.bind(this));
         let result = await mycloud.getStreamAndPlaylist(parseInt(resolution));
-        if(result.stream) {
+        if(!resolution && result.stream) {
             return {
                 video: result.stream,
                 subtitles: []
@@ -250,7 +250,7 @@ export default class NineAnime extends Connector {
     async _getEpisodeVidstream(link, referer, resolution) {
         let vidstream = new Vidstream(link, referer, this.fetchRegex.bind(this));
         let result = await vidstream.getStreamAndPlaylist(parseInt(resolution));
-        if(result.stream) {
+        if(!resolution && result.stream) {
             return {
                 video: result.stream,
                 subtitles: []
