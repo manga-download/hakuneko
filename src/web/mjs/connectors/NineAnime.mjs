@@ -230,12 +230,21 @@ export default class NineAnime extends Connector {
 
     async _getEpisodeMyCloud(link, referer, resolution) {
         let mycloud = new MyCloud(link, referer, this.fetchRegex.bind(this));
-        let playlist = await mycloud.getPlaylist(parseInt(resolution));
-        return {
-            hash: 'id,language,resolution',
-            mirrors: [ playlist ],
-            subtitles: []
-        };
+        let result = await mycloud.getStreamAndPlaylist(parseInt(resolution));
+        if(result.stream) {
+            return {
+                video: result.stream,
+                subtitles: []
+            };
+        }
+        if(result.playlist) {
+            return {
+                hash: 'id,language,resolution',
+                mirrors: [ result.playlist ],
+                subtitles: []
+            };
+        }
+        throw new Error('No stream/playlist found!');
     }
 
     async _getEpisodeVidstream(link, referer, resolution) {
