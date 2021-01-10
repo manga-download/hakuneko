@@ -90,7 +90,8 @@ export default class WordPressMadara extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => this.createConnectorURI({
-            url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url),
+            // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+            url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url).replace(/\/i\d+\.wp\.com/, ''),
             referer: request.url
         }));
     }
