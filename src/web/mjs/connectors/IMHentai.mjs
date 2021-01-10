@@ -34,11 +34,12 @@ export default class IMHentai extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
+                        const extensions = [ '.jpg', '.png', '.gif', '.webp' ];
                         const server = $('#load_server').val();
                         const dir = $('#load_dir').val();
                         const id = $('#load_id').val();
                         const images = Object.values(g_th).map((item, index) => {
-                            const file = (index + 1) + (item.startsWith('j') ? '.jpg' : '.png');
+                            const file = (index + 1) + extensions.find(ext => ext[1] === item[0]);
                             return [ 'https://m' + server + '.imhentai.com', dir, id, file ].join('/');
                         });
                         resolve(images);
