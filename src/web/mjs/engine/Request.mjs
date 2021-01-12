@@ -1,4 +1,4 @@
-import UserAgent from './UserAgent.mjs';
+import HeaderGenerator from './HeaderGenerator.mjs';
 import Cookie from './Cookie.mjs';
 
 export default class Request {
@@ -8,7 +8,7 @@ export default class Request {
         let electron = require( 'electron' );
         this.electronRemote = electron.remote;
         this.browser = this.electronRemote.BrowserWindow;
-        this.userAgent = UserAgent.random();
+        this.userAgent = HeaderGenerator.randomUA();
 
         this.electronRemote.app.on( 'login', this._loginHandler );
         ipc.listen('on-before-send-headers', this.onBeforeSendHeadersHandler.bind(this));
