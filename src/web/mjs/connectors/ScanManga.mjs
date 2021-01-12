@@ -9,7 +9,7 @@ export default class ScanManga extends Connector {
         super.label = 'ScanManga';
         this.tags = ['manga', 'french', 'novel'];
         this.url = 'https://www.scan-manga.com';
-        this.requestOptions.headers.set('accept-language', 'en-US,en;q=0.9,de;q=0.8');
+        this.requestOptions.headers.set('accept-language', Math.random().toString(36).substr(2, 2));
     }
 
     async _getMangaFromURI(uri) {
