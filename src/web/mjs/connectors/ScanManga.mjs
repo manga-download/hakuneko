@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+import languageHeaderGenerator from '../engine/languageHeaderGenerator.mjs';
 
 export default class ScanManga extends Connector {
 
@@ -9,7 +10,7 @@ export default class ScanManga extends Connector {
         super.label = 'ScanManga';
         this.tags = ['manga', 'french', 'novel'];
         this.url = 'https://www.scan-manga.com';
-        this.requestOptions.headers.set('accept-language', Math.random().toString(36).substr(2, 2));
+        this.requestOptions.headers.set('accept-language', languageHeaderGenerator.random());
     }
 
     async _getMangaFromURI(uri) {
