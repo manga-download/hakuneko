@@ -1,4 +1,4 @@
-import UserAgent from './UserAgent.mjs';
+import HeaderGenerator from './HeaderGenerator.mjs';
 import Cookie from './Cookie.mjs';
 
 export default class Request {
@@ -9,7 +9,7 @@ export default class Request {
         this.electronRemote = electron.remote;
         this.protocol = this.electronRemote.require( 'electron' ).protocol;
         this.browser = this.electronRemote.BrowserWindow;
-        this.userAgent = UserAgent.random();
+        this.userAgent = HeaderGenerator.randomUA();
 
         this.electronRemote.app.on( 'login', this._loginHandler );
         this._settings = settings;
