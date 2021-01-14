@@ -140,6 +140,11 @@ export default class Request {
                     return handleAutomaticRedirect();
                 }
 
+                // 9anime WAF captcha
+                if(/waf-verify/i.test(document.body.innerHTML)) {
+                    return handleUserInteractionRequired();
+                }
+
                 // Default
                 handleNoRedirect();
             });

@@ -102,9 +102,6 @@ export default class NineAnime extends Connector {
         let script = `
             new Promise((resolve, reject)  => {
                 localStorage.setItem('player_autoplay', 0);
-                if(/waf-verify/i.test(document.body.innerHTML)) {
-                    throw new Error('The website is protected by captcha, please use manual website interaction to bypass the captcha for the selected anime!');
-                }
                 setInterval(() => {
                     try {
                         if(document.querySelector('div#episodes div.servers')) {
