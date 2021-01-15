@@ -15,6 +15,7 @@ export default class WordPressMangastream extends Connector {
         this.queryMangas = 'div#content div.soralist ul li a.series';
         this.queryChapters = 'div#chapterlist ul li div.eph-num a';
         this.queryChaptersTitle = 'span.chapternum';
+        this.queryChaptersTitleBloat = undefined;
         this.queryPages = 'div#readerarea img[src]:not([src=""])';
         this.querMangaTitleFromURI = 'div#content div.postbody article h1';
     }
@@ -35,6 +36,13 @@ export default class WordPressMangastream extends Connector {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             this.adLinkDecrypt(element);
+            if(this.queryChaptersTitleBloat) {
+                [...element.querySelectorAll(this.queryChaptersTitleBloat)].forEach(bloat => {
+                    if(bloat.parentElement) {
+                        bloat.parentElement.removeChild(bloat);
+                    }
+                });
+            }
             const title = this.queryChaptersTitle ? element.querySelector(this.queryChaptersTitle).textContent : element.text;
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),

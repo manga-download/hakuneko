@@ -1,4 +1,4 @@
-import UserAgent from './UserAgent.mjs';
+import HeaderGenerator from './HeaderGenerator.mjs';
 import Cookie from './Cookie.mjs';
 
 export default class Request {
@@ -8,7 +8,7 @@ export default class Request {
         let electron = require( 'electron' );
         this.electronRemote = electron.remote;
         this.browser = this.electronRemote.BrowserWindow;
-        this.userAgent = UserAgent.random();
+        this.userAgent = HeaderGenerator.randomUA();
 
         this.electronRemote.app.on( 'login', this._loginHandler );
         ipc.listen('on-before-send-headers', this.onBeforeSendHeadersHandler.bind(this));
@@ -174,12 +174,12 @@ export default class Request {
         }
         headers = headers.join( '\n' );
         return {
-            /*
-             *userAgent: undefined,
-             *postData: undefined,
-             */
+            // set user agent to prevent `window.navigator.userAgent` being set to elecetron ...
+            userAgent: request.headers.get('x-user-agent') || this.userAgent,
             httpReferrer: referer ? referer : undefined,
             extraHeaders: headers ? headers : undefined
+
+            //postData: undefined,
         };
     }
 
@@ -463,6 +463,12 @@ export default class Request {
             details.requestHeaders['Sec-Fetch-Mode'] = details.requestHeaders['x-sec-fetch-mode'];
         }
         delete details.requestHeaders['x-sec-fetch-mode'];
+
+        //
+        if(details.requestHeaders['x-sec-fetch-site']) {
+            details.requestHeaders['Sec-Fetch-Site'] = details.requestHeaders['x-sec-fetch-site'];
+        }
+        delete details.requestHeaders['x-sec-fetch-site'];
 
         return details;
     }

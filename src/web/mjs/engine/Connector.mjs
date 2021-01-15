@@ -35,7 +35,7 @@ export default class Connector {
             credentials: 'same-origin', // 'include',
             headers: new Headers()
         };
-        this.requestOptions.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
+        this.requestOptions.headers.set('accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
     }
 
     canHandleURI(uri) {
@@ -481,7 +481,8 @@ export default class Connector {
             request = new URL(request);
         }
 
-        const graphQLRequest = new Request(request.href ? request.href : request.url, Object.assign(this.requestOptions, {
+        const requestOptions = JSON.parse(JSON.stringify(this.requestOptions));
+        const graphQLRequest = new Request(request.href ? request.href : request.url, Object.assign(requestOptions, {
             method: 'POST',
             body: JSON.stringify({
                 operationName,

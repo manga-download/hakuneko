@@ -13,7 +13,7 @@ export default class LELScan extends Connector {
         super.id = 'lelscan';
         super.label = 'LELScan';
         this.tags = [ 'manga', 'high-quality', 'french', 'scanlation' ];
-        this.url = 'http://lelscanv.com';
+        this.url = 'https://lelscans.net';
     }
 
     /**

@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 
 export default class ScanManga extends Connector {
 
@@ -7,11 +8,9 @@ export default class ScanManga extends Connector {
         super();
         super.id = 'scanmanga';
         super.label = 'ScanManga';
-        this.tags = [ 'manga', 'french', 'novel' ];
+        this.tags = ['manga', 'french', 'novel'];
         this.url = 'https://www.scan-manga.com';
-        // If not set, defaults to "fr" for french machines, which will return empty responses
-        // Only fail for "fr" language, and works for any other language, including "fr-FR" and random strings
-        this.requestOptions.headers.set('accept-language', 'en');
+        this.requestOptions.headers.set('accept-language', HeaderGenerator.randomLang());
     }
 
     async _getMangaFromURI(uri) {
@@ -24,8 +23,8 @@ export default class ScanManga extends Connector {
 
     async _getMangas() {
         let request = new Request(new URL('/scanlation/scan.data.json', this.url), this.requestOptions);
-        request.headers.set('x-cookie', '_ga=GA1.2.137581646.' + parseInt(Date.now()/1000)); // google analytics cookie
-        //request.headers.set('x-referer', this.url + '/scanlation/liste_series.html');
+        request.headers.set('x-cookie', `_ga=GA1.2.137581646.${parseInt(Date.now()/1000)}; addtl_consent=1~${new Array(647).fill().map(() => Math.floor(41 * Math.random())).join('.')}`);
+        request.headers.set('x-referer', this.url + '/scanlation/liste_series.html');
         request.headers.set('x-requested-with', 'XMLHttpRequest');
         let data = await this.fetchJSON(request);
         let mangaList = [];
@@ -66,7 +65,7 @@ export default class ScanManga extends Connector {
         let pageList = [];
         let match = undefined;
         // eslint-disable-next-line no-cond-assign
-        while(match = regex.exec(data)) {
+        while (match = regex.exec(data)) {
             pageList.push(match[1]);
         }
         return pageList.map(link => this.createConnectorURI({
@@ -103,10 +102,10 @@ export default class ScanManga extends Connector {
                 document.body.appendChild(script);
             });
         `;
-        return [ await Engine.Request.fetchUI(request, script) ];
+        return [await Engine.Request.fetchUI(request, script)];
     }
 
-    _handleConnectorURI( payload ) {
+    _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches

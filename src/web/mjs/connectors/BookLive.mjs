@@ -19,34 +19,22 @@ export default class BookLive extends SpeedBinb {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
+    async _getMangas() {
         // https://booklive.jp/select/title/page_no/5012
-        let msg = 'This website does not support mangas/chapters, please copy and paste the links containing the chapters directly from your browser into HakuNeko.';
-        callback( new Error( msg ), undefined );
+        const msg = 'This website does not support mangas/chapters, please copy and paste the links containing the chapters directly from your browser into HakuNeko.';
+        throw new Error(msg);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'div#product_detail_area div.product_actions ul[class*="_actions"] a.bl-bviewer' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: '/bviewer/s/?cid=' + element.dataset.title + '_' + element.dataset.vol,
-                        title: element.dataset.vol.trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#product_detail_area div.product_actions ul a.bl-bviewer');
+        return data.map(element => {
+            return {
+                id: '/bviewer/s/?cid=' + element.dataset.title + '_' + element.dataset.vol,
+                title: element.dataset.vol.trim(),
+                language: ''
+            };
+        });
     }
 }

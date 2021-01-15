@@ -47,7 +47,7 @@ export default class MundoMangaKun extends Connector {
         const data = await this.fetchDOM(request, 'div.capitulos_leitor_online > a');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.getAttribute('onclick').match(/'link':'([^']*)'/)[1], request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element.getAttribute('onclick').match(/'link':'([^']*)'/)[1].replace(/\\\//g, '/'), request.url),
                 title: element.textContent.trim()
             };
         });

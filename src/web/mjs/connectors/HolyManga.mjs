@@ -26,4 +26,9 @@ export default class HolyManga extends WordPressZbulu {
         this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
+
+    async _getPages(chapter) {
+        const pages = await super._getPages(chapter);
+        return pages.filter(page => !/cover.png$/.test(page));
+    }
 }
