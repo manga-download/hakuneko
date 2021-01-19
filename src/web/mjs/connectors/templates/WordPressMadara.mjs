@@ -89,11 +89,18 @@ export default class WordPressMadara extends Connector {
         uri.searchParams.set('style', 'list');
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.createConnectorURI({
-            // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
-            url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url).replace(/\/i\d+\.wp\.com/, ''),
-            referer: request.url
-        }));
+        return data.map(element => {
+            if (element.src.includes('data:image')) {
+                const data = element.src.split(',').pop();
+                return this._mapDataUriType(data) + data;
+            } else {
+                return this.createConnectorURI({
+                    // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+                    url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url).replace(/\/i\d+\.wp\.com/, ''),
+                    referer: request.url
+                });
+            }
+        });
     }
 
     _handleConnectorURI(payload) {
@@ -113,5 +120,15 @@ export default class WordPressMadara extends Connector {
         const element = [...data].pop();
         const title = (element.content || element.textContent).trim();
         return new Manga(this, uri, title);
+    }
+
+    _mapDataUriType(signature) {
+        if (signature.startsWith('/9j/4AA')) {
+            return 'data:image/jpeg;base64,';
+        }
+        if (signature.startsWith('iVBORw0')) {
+            return 'data:image/png;base64,';
+        }
+        return 'data:application/octet-stream;base64,';
     }
 }
