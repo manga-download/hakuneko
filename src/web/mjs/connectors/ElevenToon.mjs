@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -13,7 +14,14 @@ export default class ElevenToon extends Connector {
         super.id = '11toon';
         super.label = '11toon';
         this.tags = [ 'manga', 'korean' ];
-        this.url = 'http://www.11toon.com';
+        this.url = 'http://www.11toon3.com';
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(new URL(uri), this.requestOptions);
+        const data = await this.fetchDOM(request, '#cover-info h2');
+        const title = data[0].textContent.trim();
+        return new Manga(this, uri, title);
     }
 
     /**
