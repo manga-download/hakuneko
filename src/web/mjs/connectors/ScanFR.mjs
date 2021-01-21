@@ -9,7 +9,7 @@ export default class ScanFR extends MangaReaderCMS {
         this.tags = [ 'manga', 'french' ];
         this.url = 'https://www.scan-fr.cc';
 
-        this.queryChapters = 'ul.chapters888 li h5.chapter-title-rtlrr';
+        this.queryChapters = 'ul.chapterszozo li a';
         this.language = 'fr';
     }
 }
