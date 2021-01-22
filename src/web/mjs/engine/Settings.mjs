@@ -253,6 +253,20 @@ export default class Settings extends EventTarget {
             ],
             value: 'none'
         };
+
+        this.NovelDarkmode = {
+            label: 'dark/light mode novels',
+            description: [
+                'choose between light and dark mode for novels',
+                'this may not work for all connectors that support novels'
+            ].join('\n'),
+            input: types.select,
+            options: [
+                { value: 'false', name: 'Light' },
+                { value: 'true', name: 'Dark' },
+            ],
+            value: 'false'
+        };
     }
 
     *[Symbol.iterator]() {
