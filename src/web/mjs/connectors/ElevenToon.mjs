@@ -17,6 +17,10 @@ export default class ElevenToon extends Connector {
         this.url = 'http://www.11toon3.com';
     }
 
+    canHandleURI(uri) {
+        return /https?:\/\/www\.11toon\d*\.com/.test(uri.origin);
+    }
+
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, '#cover-info h2');
