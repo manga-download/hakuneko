@@ -27,4 +27,17 @@ export default class ManhuaES extends MojoPortalComic {
             };
         });
     }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, {
+            "headers": {
+                "x-referer": "https://manhuaes.com/"
+            },
+        });
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
+    }
 }
