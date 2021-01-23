@@ -11,6 +11,19 @@ export default class Team1x1 extends Connector {
         this.url = 'https://tqneplus.com';
 
     }
+    canHandleURI(uri) {
+        return /https?:\/\/team1x\d*\.com|https:\/\/tqneplus\.com/.test(uri.origin);
+    }
+
+    async _initializeConnector() {
+        let uri = new URL(this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri.href, this.requestOptions);
+        let dat = await fetch(request);
+        this.url = new URL(dat.url).origin;
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
+    }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
