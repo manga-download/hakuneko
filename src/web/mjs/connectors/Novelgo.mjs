@@ -74,6 +74,10 @@ export default class Novelgo extends Connector {
                 container.style.margin = '0';
                 let novel = document.querySelector('${this.novelContentQuery}');
                 novel.style.padding = '${this.novelPadding}';
+                if (${Engine._settings.NovelDarkmode.value}){
+                    novel.style.backgroundColor = 'black'
+                    novel.style.color = 'white'
+                }
                 document.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
                 script.onload = async function() {

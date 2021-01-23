@@ -29,6 +29,10 @@ export default class ComicoNovel extends Connector {
                                 // TODO: include figcaption.cn-picture__caption
                             } else {
                                 element.parentElement.style.margin = '0';
+                                if (${Engine._settings.NovelDarkmode.value}){
+                                    element.style.backgroundColor = 'black'
+                                    element.style.color = 'white'
+                                }
                                 let canvas = await html2canvas(element);
                                 images.push(canvas.toDataURL('image/png'));
                             }

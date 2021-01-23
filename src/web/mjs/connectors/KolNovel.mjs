@@ -52,6 +52,10 @@ export default class KolNovel extends WordPressMangastream {
                 container.style.margin = '0';
                 let novel = document.querySelector('div.epcontent');
                 novel.style.padding = '${this.novelPadding}';
+                if (${Engine._settings.NovelDarkmode.value}){
+                    novel.style.backgroundColor = 'black'
+                    novel.style.color = 'white'
+                }
                 novel.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
                 script.onerror = error => reject(error);

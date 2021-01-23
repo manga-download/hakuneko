@@ -255,7 +255,7 @@ export default class Settings extends EventTarget {
         };
 
         this.NovelDarkmode = {
-            label: 'dark/light mode novels',
+            label: 'Light/Dark mode for Novels',
             description: [
                 'choose between light and dark mode for novels',
                 'this may not work for all connectors that support novels'

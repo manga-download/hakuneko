@@ -103,6 +103,10 @@ export default class Tapas extends Connector {
                 document.body.style.width = '56em';
                 let novel = document.querySelector('.ep-epub-content');
                 novel.style.padding = '1.5em';
+                if (${Engine._settings.NovelDarkmode.value}){
+                    novel.style.backgroundColor = 'black'
+                    novel.style.color = 'white'
+                }
                 let script = document.createElement('script');
                 script.onerror = error => reject(error);
                 script.onload = async function() {
