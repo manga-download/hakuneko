@@ -7,6 +7,6 @@ export default class NineMangaRU extends NineManga {
         super.id = 'ninemanga-ru';
         super.label = 'NineMangaRU';
         this.tags = [ 'manga', 'russian' ];
-        this.url = 'http://ru.ninemanga.com';
+        this.url = 'https://ru.ninemanga.com';
     }
 }
