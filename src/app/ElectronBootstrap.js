@@ -255,12 +255,12 @@ module.exports = class ElectronBootstrap {
             show: false,
             backgroundColor: '#f8f8f8',
             webPreferences: {
-                experimentalFeatures: true,
+                experimentalFeatures: false,
                 nodeIntegration: true,
                 enableRemoteModule: true,
-                // allowRunningInsecureContent: false,
-                //worldSafeExecuteJavaScript: true,
-                //contextIsolation: true,
+                contextIsolation: false,
+                allowRunningInsecureContent: false,
+                worldSafeExecuteJavaScript: true,
                 webSecurity: false // required to open local images in browser
             },
             frame: false
