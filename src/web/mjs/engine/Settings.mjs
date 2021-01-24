@@ -257,8 +257,9 @@ export default class Settings extends EventTarget {
         this.NovelDarkmode = {
             label: 'Light/Dark mode for Novels',
             description: [
-                'choose between light and dark mode for novels',
-                'this may not work for all connectors that support novels'
+                'Choose between light and dark mode for novels.',
+                'This changes the image itself not just the reader view.',
+                'This may not work for all connectors that support novels.'
             ].join('\n'),
             input: types.select,
             options: [
