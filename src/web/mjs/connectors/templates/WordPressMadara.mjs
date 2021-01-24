@@ -38,7 +38,7 @@ export default class WordPressMadara extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page = 0, run = true; run; page++) {
+        for (let page = 0, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
@@ -62,7 +62,7 @@ export default class WordPressMadara extends Connector {
         let dom = (await this.fetchDOM(request, 'body'))[0];
         let data = [...dom.querySelectorAll(this.queryChapters)];
         let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
-        if(placeholder) {
+        if (placeholder) {
             let uri = new URL(this.path + '/wp-admin/admin-ajax.php', this.url);
             let request = new Request(uri, {
                 method: 'POST',
@@ -88,7 +88,15 @@ export default class WordPressMadara extends Connector {
         // TODO: setting this parameter seems to be problematic for various website (e.g. ChibiManga, AniMangaES server will crash)
         uri.searchParams.set('style', 'list');
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryPages);
+        let data;
+        if (this.queryPages instanceof Array) {
+            let data1 = await this.fetchDOM(request, 'body');
+            this.queryPages.forEach(ele => {
+                if (data1[0].querySelectorAll(ele).length > 0) {
+                    data = [...data1[0].querySelectorAll(ele)];
+                }
+            });
+        }
         return data.map(element => this.createConnectorURI({
             // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
             url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url).replace(/\/i\d+\.wp\.com/, ''),
