@@ -96,15 +96,19 @@ export default class WordPressMadara extends Connector {
         }));
     }
 
-    _handleConnectorURI(payload) {
+    async _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set('x-referer', payload.referer);
-        let promise = super._handleConnectorURI(payload.url);
-        this.requestOptions.headers.delete('x-referer');
-        return promise;
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        request.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 
     async _getMangaFromURI(uri) {
