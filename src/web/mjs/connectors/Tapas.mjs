@@ -104,6 +104,10 @@ export default class Tapas extends Connector {
                 let novel = document.querySelector('.ep-epub-content');
                 novel.style.padding = '1.5em';
                 if (${Engine._settings.NovelDarkmode.value}){
+                    [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                        ele.style.backgroundColor = 'black'
+                        ele.style.color = 'white'
+                    })
                     novel.style.backgroundColor = 'black'
                     novel.style.color = 'white'
                 }

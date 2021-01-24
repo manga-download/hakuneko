@@ -31,6 +31,10 @@ export default class WordPressMadaraNovel extends WordPressMadara {
                 let novel = document.querySelector('div.entry-content');
                 novel.style.padding = '${this.novelPadding}';
                 if (${Engine._settings.NovelDarkmode.value}){
+                    [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                        ele.style.backgroundColor = 'black'
+                        ele.style.color = 'white'
+                    })
                     novel.style.backgroundColor = 'black'
                     novel.style.color = 'white'
                 }

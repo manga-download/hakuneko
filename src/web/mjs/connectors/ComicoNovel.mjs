@@ -30,6 +30,10 @@ export default class ComicoNovel extends Connector {
                             } else {
                                 element.parentElement.style.margin = '0';
                                 if (${Engine._settings.NovelDarkmode.value}){
+                                    [...element.querySelectorAll(":not(:empty)")].forEach(ele => {
+                                        ele.style.backgroundColor = 'black'
+                                        ele.style.color = 'white'
+                                    })
                                     element.style.backgroundColor = 'black'
                                     element.style.color = 'white'
                                 }

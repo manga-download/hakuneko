@@ -89,6 +89,10 @@ export default class ScanManga extends Connector {
                 let novel = document.querySelector('article.aLN');
                 novel.style.padding = '1.5em';
                 if (${Engine._settings.NovelDarkmode.value}){
+                    [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                        ele.style.backgroundColor = 'black'
+                        ele.style.color = 'white'
+                    })
                     novel.style.backgroundColor = 'black'
                     novel.style.color = 'white'
                 }
