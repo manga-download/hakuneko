@@ -257,6 +257,10 @@ module.exports = class ElectronBootstrap {
             webPreferences: {
                 experimentalFeatures: true,
                 nodeIntegration: true,
+                enableRemoteModule: true,
+                // allowRunningInsecureContent: false,
+                //worldSafeExecuteJavaScript: true,
+                //contextIsolation: true,
                 webSecurity: false // required to open local images in browser
             },
             frame: false
