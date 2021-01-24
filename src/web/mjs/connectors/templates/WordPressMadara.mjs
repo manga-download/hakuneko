@@ -96,6 +96,8 @@ export default class WordPressMadara extends Connector {
                     data = [...data1[0].querySelectorAll(ele)];
                 }
             });
+        } else {
+            data = await this.fetchDOM(request, this.queryPages);
         }
         return data.map(element => this.createConnectorURI({
             // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
