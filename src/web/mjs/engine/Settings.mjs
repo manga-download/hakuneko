@@ -262,10 +262,10 @@ export default class Settings extends EventTarget {
             ].join('\n'),
             input: types.select,
             options: [
-                { value: 'false', name: 'Light' },
-                { value: 'true', name: 'Dark' },
+                { value: JSON.stringify({background:'white', text:'black'}), name: 'Light' },
+                { value: JSON.stringify({background:'black', text:'white'}), name: 'Dark' },
             ],
-            value: 'false'
+            value: JSON.stringify({background:'white', text:'black'})
         };
     }
 

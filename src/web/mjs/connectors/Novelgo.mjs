@@ -65,6 +65,7 @@ export default class Novelgo extends Connector {
     }
 
     async _getPagesNovel(request) {
+        let darkmode =JSON.parse(Engine._settings.NovelDarkmode.value);
         let script = `
             new Promise(resolve => {
                 document.body.style.width = '${this.novelWidth}';
@@ -74,14 +75,12 @@ export default class Novelgo extends Connector {
                 container.style.margin = '0';
                 let novel = document.querySelector('${this.novelContentQuery}');
                 novel.style.padding = '${this.novelPadding}';
-                if (${Engine._settings.NovelDarkmode.value}){
-                    [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
-                        ele.style.backgroundColor = 'black'
-                        ele.style.color = 'white'
-                    })
-                    novel.style.backgroundColor = 'black'
-                    novel.style.color = 'white'
-                }
+                [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                    ele.style.backgroundColor = '${darkmode.background}'
+                    ele.style.color = '${darkmode.text}'
+                })
+                novel.style.backgroundColor = '${darkmode.background}'
+                novel.style.color = '${darkmode.text}'
                 document.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
                 script.onload = async function() {

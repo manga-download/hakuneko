@@ -16,6 +16,7 @@ export default class ComicoNovel extends Connector {
     }
 
     async _getPages(chapter) {
+        let darkmode =JSON.parse(Engine._settings.NovelDarkmode.value);
         let script = `
             new Promise((resolve, reject) => {
                 let script = document.createElement('script');
@@ -29,14 +30,12 @@ export default class ComicoNovel extends Connector {
                                 // TODO: include figcaption.cn-picture__caption
                             } else {
                                 element.parentElement.style.margin = '0';
-                                if (${Engine._settings.NovelDarkmode.value}){
-                                    [...element.querySelectorAll(":not(:empty)")].forEach(ele => {
-                                        ele.style.backgroundColor = 'black'
-                                        ele.style.color = 'white'
-                                    })
-                                    element.style.backgroundColor = 'black'
-                                    element.style.color = 'white'
-                                }
+                                [...element.querySelectorAll(":not(:empty)")].forEach(ele => {
+                                    ele.style.backgroundColor = '${darkmode.background}'
+                                    ele.style.color = '${darkmode.text}'
+                                })
+                                element.style.backgroundColor = '${darkmode.background}'
+                                element.style.color = '${darkmode.text}'
                                 let canvas = await html2canvas(element);
                                 images.push(canvas.toDataURL('image/png'));
                             }
