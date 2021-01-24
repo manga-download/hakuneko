@@ -134,7 +134,7 @@ export default class NineAnime extends Connector {
             });
         `;
         let request = new Request(this.url + manga.id, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        return Engine.Request.fetchUI(request, script, null, true);
     }
 
     async _getPages(chapter) {

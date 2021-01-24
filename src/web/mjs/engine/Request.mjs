@@ -100,7 +100,7 @@ export default class Request {
 
     get _scrapingCheckScript() {
         return `
-            new Promise((resolve, reject) => {
+            new Promise(async (resolve, reject) => {
 
                 function handleError(message) {
                     reject(new Error(message));
@@ -140,9 +140,12 @@ export default class Request {
                     return handleAutomaticRedirect();
                 }
 
-                // 9anime WAF captcha
-                if(/waf-verify/i.test(document.body.innerHTML)) {
-                    return handleUserInteractionRequired();
+                // 9anime WAF re-captcha
+                if(window.location.hostname.includes('9anime')) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    if(document.querySelector('div#episodes form[action*="waf-verify"]')) {
+                        return handleUserInteractionRequired();
+                    }
                 }
 
                 // Default
