@@ -196,6 +196,8 @@ export default class Request {
                 //partition: 'japscan',
                 preload: preloadScriptFile,
                 nodeIntegration: preferences.nodeIntegration || false,
+                contextIsolation: true,
+                allowRunningInsecureContent: false,
                 webSecurity: preferences.webSecurity || false,
                 images: preferences.images || false
             }
@@ -266,6 +268,8 @@ export default class Request {
             webPreferences: {
                 preload: preloadScriptFile,
                 nodeIntegration: preferences.nodeIntegration || false,
+                contextIsolation: true,
+                allowRunningInsecureContent: false,
                 webSecurity: preferences.webSecurity || false,
                 images: preferences.images || false
             }
@@ -326,6 +330,8 @@ export default class Request {
                 show: false,
                 webPreferences: {
                     nodeIntegration: false,
+                    contextIsolation: true,
+                    allowRunningInsecureContent: false,
                     webSecurity: false,
                     images: images || false
                 }
