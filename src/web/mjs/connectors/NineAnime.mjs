@@ -56,41 +56,16 @@ export default class NineAnime extends Connector {
         let request = new Request(uri.href, this.requestOptions);
         this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
-    }
-
-    async _checkCaptcha(request) {
-        let response = await fetch(request);
-        let body = await response.text();
-        if(body.includes('/waf-verify')) {
-            return new Promise((resolve, reject) => {
-                let win = window.open(request.url);
-                let timer = setInterval(() => {
-                    if(win.closed) {
-                        clearTimeout(timeout);
-                        clearInterval(timer);
-                        resolve();
-                    } else {
-                        //console.log('OPEN:', win.location.href);
-                    }
-                }, 750);
-                let timeout = setTimeout(() => {
-                    clearTimeout(timeout);
-                    clearInterval(timer);
-                    win.close();
-                    reject(new Error('Captcha has not been solved within the given timeout!'));
-                }, 120000);
-            });
-        } else {
-            await this.wait(500);
-            return Promise.resolve();
-        }
+        this.wait(5000);
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        await this._checkCaptcha(request);
         let response = await fetch(request);
         let data = await response.text();
+        if(/waf-verify/i.test(data)) {
+            throw new Error('The website is protected by captcha, please use manual website interaction to bypass the captcha for the selected anime!');
+        }
         let dom = this.createDOM(data);
         let metaURL = dom.querySelector('meta[property="og:url"]').content.trim();
         let metaTitle = dom.querySelector('div.info h1[data-jtitle].title');
@@ -127,38 +102,39 @@ export default class NineAnime extends Connector {
         let script = `
             new Promise((resolve, reject)  => {
                 localStorage.setItem('player_autoplay', 0);
-                setTimeout(() => {
+                setInterval(() => {
                     try {
-                        let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
-                            return {
-                                id: element.dataset.id,
-                                label: element.textContent.trim()
-                            };
-                        });
-                        let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
-                            return {
-                                servers: JSON.parse(element.dataset.sources),
-                                label: element.textContent.trim()
-                            };
-                        });
-                        let result = servers.reduce((accumulator, server) => {
-                            return accumulator.concat(episodes.map(episode => {
+                        if(document.querySelector('div#episodes div.servers')) {
+                            let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
                                 return {
-                                    id: episode.servers[server.id],
-                                    title: episode.label + ' [' + server.label + ']'
+                                    id: element.dataset.id,
+                                    label: element.textContent.trim()
                                 };
-                            }));
-                        }, []);
-                        resolve(result);
+                            });
+                            let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
+                                return {
+                                    servers: JSON.parse(element.dataset.sources),
+                                    label: element.textContent.trim()
+                                };
+                            });
+                            let result = servers.reduce((accumulator, server) => {
+                                return accumulator.concat(episodes.map(episode => {
+                                    return {
+                                        id: episode.servers[server.id],
+                                        title: episode.label + ' [' + server.label + ']'
+                                    };
+                                }));
+                            }, []);
+                            resolve(result);
+                        }
                     } catch(error) {
                         reject(error);
                     }
-                }, 2500);
+                }, 500);
             });
         `;
         let request = new Request(this.url + manga.id, this.requestOptions);
-        await this._checkCaptcha(request);
-        return Engine.Request.fetchUI(request, script);
+        return Engine.Request.fetchUI(request, script, null, true);
     }
 
     async _getPages(chapter) {
@@ -251,22 +227,40 @@ export default class NineAnime extends Connector {
 
     async _getEpisodeMyCloud(link, referer, resolution) {
         let mycloud = new MyCloud(link, referer, this.fetchRegex.bind(this));
-        let playlist = await mycloud.getPlaylist(parseInt(resolution));
-        return {
-            hash: 'id,language,resolution',
-            mirrors: [ playlist ],
-            subtitles: []
-        };
+        let result = await mycloud.getStreamAndPlaylist(parseInt(resolution));
+        if(!resolution && result.stream) {
+            return {
+                video: result.stream,
+                subtitles: []
+            };
+        }
+        if(result.playlist) {
+            return {
+                hash: 'id,language,resolution',
+                mirrors: [ result.playlist ],
+                subtitles: []
+            };
+        }
+        throw new Error('No stream/playlist found!');
     }
 
     async _getEpisodeVidstream(link, referer, resolution) {
         let vidstream = new Vidstream(link, referer, this.fetchRegex.bind(this));
-        let playlist = await vidstream.getPlaylist(parseInt(resolution));
-        return {
-            hash: 'id,language,resolution',
-            mirrors: [ playlist ],
-            subtitles: []
-        };
+        let result = await vidstream.getStreamAndPlaylist(parseInt(resolution));
+        if(!resolution && result.stream) {
+            return {
+                video: result.stream,
+                subtitles: []
+            };
+        }
+        if(result.playlist) {
+            return {
+                hash: 'id,language,resolution',
+                mirrors: [ result.playlist ],
+                subtitles: []
+            };
+        }
+        throw new Error('No stream/playlist found!');
     }
 
     async _getEpisodeMp4upload(link/*, resolution*/) {

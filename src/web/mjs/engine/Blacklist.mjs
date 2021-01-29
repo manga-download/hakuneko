@@ -23,6 +23,7 @@ export default class Blacklist {
             '*://*.adsrvr.org/*',
             '*://*.adtrue.com/*',
             '*://*.advertising.com/*',
+            '*://*.advinci.uno/*',
             '*://*.ambient-platform.com/*',
             '*://*.amung.us/*',
             '*://*.apis.google.com/*',
@@ -53,6 +54,7 @@ export default class Blacklist {
             '*://*.dtscout.com/*',
             '*://*.elasticad.net/*',
             '*://*.eventronbesed.info/*',
+            '*://*.evergreensame.com/*',
             '*://*.exosrv.com/*',
             //'*://*.facebook.com/*',
             //'*://*.facebook.net/*',
@@ -117,6 +119,7 @@ export default class Blacklist {
             '*://*.yieldbird.com/*',
             '*://*.yimg.com/*',
             '*://*.your-notice.com/*',
+            '*://*.zap.buzz/*',
             '*://*.zeusadx.com/*',
             '*://*.zryydi.com/*',
         ];
