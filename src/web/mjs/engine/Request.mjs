@@ -100,7 +100,7 @@ export default class Request {
 
     get _scrapingCheckScript() {
         return `
-            new Promise((resolve, reject) => {
+            new Promise(async (resolve, reject) => {
 
                 function handleError(message) {
                     reject(new Error(message));
@@ -138,6 +138,14 @@ export default class Request {
                 // DDoS Guard Checks
                 if(document.querySelector('div#link-ddg a[href*="ddos-guard"]')) { // Sample => https://manga-tr.com
                     return handleAutomaticRedirect();
+                }
+
+                // 9anime WAF re-captcha
+                if(window.location.hostname.includes('9anime')) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    if(document.querySelector('div#episodes form[action*="waf-verify"]')) {
+                        return handleUserInteractionRequired();
+                    }
                 }
 
                 // Default
