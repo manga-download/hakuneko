@@ -15,7 +15,7 @@ export default class MangaRaw extends Connector {
         let mangaList = [];
         let request = new Request(this.url +'/browse/', this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.pagination li:nth-child(2) a');
-        let pageCount = parseInt(data[1].textContent);
+        let pageCount = parseInt(data[0].textContent);
         for(let page = 1; page <= pageCount; page++) {
             await this.wait(250);
             let mangas = await this._getMangasFromPage(page);
@@ -46,7 +46,6 @@ export default class MangaRaw extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.chapter-content source');
-        console.log(data);
         return data.map(element => this.getAbsolutePath(element.src, request.url));
     }
 
