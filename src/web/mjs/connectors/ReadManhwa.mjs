@@ -9,6 +9,9 @@ export default class ReadManhwa extends Connector {
         super.label = 'ReadManhwa';
         this.tags = [ 'webtoon', 'manga', 'english' ];
         this.url = 'https://readmanhwa.com';
+        this.links = {
+            login: 'https://readmanhwa.com/en/login'
+        };
     }
 
     async _getMangas() {

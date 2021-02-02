@@ -9,6 +9,9 @@ export default class YaoiHavenReborn extends Connector {
         super.label = 'Yaoi Haven Reborn';
         this.tags = [ 'hentai', 'english' ];
         this.url = 'https://www.yaoihavenreborn.com/';
+        this.links = {
+            login: 'https://www.yaoihavenreborn.com/auth/login'
+        };
     }
 
     async _getMangaFromURI(uri) {

@@ -8,5 +8,8 @@ export default class ZeroScans extends Genkan {
         super.label = 'ZeroScans';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://zeroscans.com';
+        this.links = {
+            login: 'https://zeroscans.com/login'
+        };
     }
 }

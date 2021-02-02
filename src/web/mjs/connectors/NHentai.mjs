@@ -9,6 +9,9 @@ export default class NHentai extends Connector {
         super.label = 'NHentai';
         this.tags = [ 'hentai' ];
         this.url = 'https://nhentai.net';
+        this.links = {
+            login: 'https://nhentai.net/login/'
+        };
     }
 
     async _getMangaFromURI(uri) {

@@ -1,7 +1,7 @@
 import SinMH from './templates/SinMH.mjs';
 
 export default class ZuiMH extends SinMH {
-
+//dead?
     constructor() {
         super();
         super.id = 'zuimh';

@@ -9,6 +9,9 @@ export default class TopToon extends Connector {
         super.label = 'TOPTOON (탑툰)';
         this.tags = [ 'webtoon', 'korean' ];
         this.url = 'https://toptoon.com';
+        this.links = {
+            login: 'https://toptoon.com/login'
+        };
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);

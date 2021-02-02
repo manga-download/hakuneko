@@ -9,5 +9,8 @@ export default class SkyMangas extends WordPressMangastream {
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://skymangas.com';
         this.path = '/manga/list-mode/';
+        this.links = {
+            login: 'https://skymangas.com/login/'
+        };
     }
 }

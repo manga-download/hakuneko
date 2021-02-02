@@ -7,5 +7,8 @@ export default class NovelcoolIT extends Novelcool {
         super.label = 'Novel Cool (IT)';
         this.tags = [ 'italian', 'manga', 'webtoon'];
         this.url = 'https://it.novelcool.com';
+        this.links = {
+            login: 'https://it.novelcool.com/login.html'
+        };
     }
 }

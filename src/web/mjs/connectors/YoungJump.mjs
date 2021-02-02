@@ -8,6 +8,9 @@ export default class YoungJump extends SpeedBinb {
         super.label = 'ヤングジャンプ / ウルトラジャンプ (young jump/ultra jump)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.youngjump.world';
+        this.links = {
+            login: 'https://www.youngjump.world'
+        };
     }
 
     async _getMangas() {

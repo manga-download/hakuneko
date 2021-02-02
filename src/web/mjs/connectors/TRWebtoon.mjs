@@ -8,6 +8,9 @@ export default class TRWebtoon extends MangaReaderCMS {
         super.label = 'TR Webtoon';
         this.tags = [ 'webtoon', 'turkish' ];
         this.url = 'https://trwebtoon.com';
+        this.links = {
+            login: 'https://trwebtoon.com/yonetici/login'
+        };
 
         this.queryChapters = 'ul.chapters li h5.chapter-title-rtl a';
         this.language = 'tr';

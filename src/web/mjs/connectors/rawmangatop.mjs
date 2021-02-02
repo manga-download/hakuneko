@@ -8,6 +8,9 @@ export default class RawMangatop extends Connector {
         super.label = 'Raw Manga (生漫画)';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://rawmanga.top';
+        this.links = {
+            login: 'https://rawmanga.top/login'
+        };
 
         this.config = {
             throttle: {
