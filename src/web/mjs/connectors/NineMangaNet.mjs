@@ -8,6 +8,9 @@ export default class NineMangaNet extends MangaReaderCMS {
         super.label = 'Ninemanga.net';
         this.tags = [ 'manga', 'webtoon', 'spanish' ];
         this.url = 'https://ninemanga.net';
+        this.links = {
+            login: 'https://ninemanga.net/auth/login'
+        };
 
         this.language = 'es';
     }

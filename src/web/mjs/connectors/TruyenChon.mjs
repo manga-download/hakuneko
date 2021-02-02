@@ -8,5 +8,8 @@ export default class TruyenChon extends MojoPortalComic {
         super.label = 'TruyenChon';
         this.tags = [ 'manga', 'webtoon', 'vietnamese' ];
         this.url = 'http://truyenchon.com';
+        this.links = {
+            login: 'https://truyenchon.com/Secure/Login.aspx'
+        };
     }
 }

@@ -14,6 +14,9 @@ export default class PervEden extends Connector {
         super.label = 'PervEden';
         this.tags = [];
         this.url = 'https://www.perveden.com';
+        this.links = {
+            login: 'https://www.perveden.com/eng/login'
+        };
     }
 
     _getMangaList( callback ) {

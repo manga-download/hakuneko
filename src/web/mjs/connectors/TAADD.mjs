@@ -9,6 +9,9 @@ export default class TAADD extends Connector {
         super.label = 'TAADD';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://www.taadd.com';
+        this.links = {
+            login: 'https://my.taadd.com/login.html'
+        };
 
         this.bypassAdultWarning = true;
         this.queryMangaTitle = 'meta[property="og:title"]';

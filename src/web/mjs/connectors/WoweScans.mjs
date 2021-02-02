@@ -1,5 +1,5 @@
 import Genkan from './templates/Genkan.mjs';
-
+//dead?
 export default class WoweScans extends Genkan {
 
     constructor() {

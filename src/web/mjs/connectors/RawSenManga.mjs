@@ -8,6 +8,9 @@ export default class RawSenManga extends Connector {
         super.label = 'RawSenManga';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://raw.senmanga.com';
+        this.links = {
+            login: 'https://raw.senmanga.com/login'
+        };
         this.requestOptions.headers.set('x-cookie', 'viewer=1');
     }
 

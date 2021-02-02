@@ -9,6 +9,9 @@ export default class SaikaiScan extends Connector {
         super.label = 'Saikaiscan';
         this.tags = [ 'manga', 'portuguese', 'webtoon' ];
         this.url = 'https://saikaiscan.com.br';
+        this.links = {
+            login: 'https://saikaiscan.com.br/login'
+        };
     }
 
     async _getMangaFromURI(uri) {

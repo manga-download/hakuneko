@@ -8,5 +8,8 @@ export default class SecretScans extends Genkan {
         super.label = 'Secret Scans';
         this.tags = [ 'webtoon', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://secretscans.co';
+        this.links = {
+            login: 'https://secretscans.co/login'
+        };
     }
 }
