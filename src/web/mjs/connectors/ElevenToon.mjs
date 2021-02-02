@@ -30,8 +30,7 @@ export default class ElevenToon extends Connector {
         uri.searchParams.set('ts', Date.now());
         uri.searchParams.set('rd', Math.random());
         let request = new Request(uri.href, this.requestOptions);
-        let dat = await fetch(request);
-        this.url = new URL(dat.url).origin;
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
