@@ -1,5 +1,5 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
-
+//dead?
 export default class TsubakiNoScan extends WordPressMadara {
 
     constructor() {

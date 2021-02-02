@@ -14,6 +14,9 @@ export default class SenManga extends Connector {
         super.label = 'SenManga';
         this.tags = [];
         this.url = 'http://www.senmanga.com';
+        this.links = {
+            login: 'https://www.senmanga.com/login'
+        };
     }
 
     _getMangaList( callback ) {

@@ -8,5 +8,8 @@ export default class ReadHentai extends HentaiShark {
         super.label = 'Read Hentai';
         this.tags = ['hentai', 'multi-lingual'];
         this.url = 'https://readhent.ai';
+        this.links = {
+            login: 'https://readhent.ai/auth/login'
+        };
     }
 }

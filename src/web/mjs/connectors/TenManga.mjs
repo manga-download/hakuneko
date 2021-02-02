@@ -8,6 +8,9 @@ export default class TenManga extends TAADD {
         super.label = 'TenManga';
         this.tags = [ 'manga', 'english' ];
         this.url = 'http://www.tenmanga.com';
+        this.links = {
+            login: 'http://www.tenmanga.com/login'
+        };
 
         //this.bypassAdultWarning = true;
         this.queryMangaTitle = 'div.container_book div.book-info h1';
