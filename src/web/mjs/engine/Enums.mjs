@@ -14,6 +14,6 @@ export default class Enums {
     }
 
     static get NovelColorProfiles() {
-        return Engine._settings.NovelColorProfile.options.filter(ele => ele.value.toLowerCase() == Engine._settings.NovelColorProfile.value.toLowerCase())[0].val;
+        return Engine._settings.NovelColorProfile.options.find(ele => ele.value.toLowerCase() == Engine._settings.NovelColorProfile.value.toLowerCase()).val;
     }
 }
