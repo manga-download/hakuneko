@@ -45,7 +45,7 @@ export default class MangaRaw extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.chapter-content source');
+        let data = await this.fetchDOM(request, 'section.page-in>div>div>source');
         return data.map(element => this.getAbsolutePath(element.src, request.url));
     }
 
