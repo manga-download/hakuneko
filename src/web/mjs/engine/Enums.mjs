@@ -12,4 +12,8 @@ export default class Enums {
             onSelectManga:            'onSelectManga'
         };
     }
+
+    static get NovelColorProfiles() {
+        return Engine._settings.NovelColorProfile.options.filter(ele => ele.value.toLowerCase() == Engine._settings.NovelColorProfile.value.toLowerCase())[0].val;
+    }
 }

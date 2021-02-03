@@ -98,7 +98,7 @@ export default class Tapas extends Connector {
     }
 
     async _getPagesNovel(request) {
-        let darkmode =JSON.parse(Engine._settings.NovelDarkmode.value);
+        let darkmode = Engine.Enums.NovelColorProfiles;
         let script = `
             new Promise((resolve, reject) => {
                 document.body.style.width = '56em';

@@ -16,7 +16,7 @@ export default class ComicoNovel extends Connector {
     }
 
     async _getPages(chapter) {
-        let darkmode =JSON.parse(Engine._settings.NovelDarkmode.value);
+        let darkmode = Engine.Enums.NovelColorProfiles;
         let script = `
             new Promise((resolve, reject) => {
                 let script = document.createElement('script');
