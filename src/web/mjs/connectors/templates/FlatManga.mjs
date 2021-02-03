@@ -53,6 +53,9 @@ export default class FlatManga extends Connector {
         let language = dom.querySelector(this.queryChapterLanguage);
         language = language ? language.className.match(this.queryChapterLanguageRX)[1] : this.language;
         return [...dom.querySelectorAll(this.queryChapters)].map(element => {
+            if(element.dataset.href) {
+                element.setAttribute('href', element.dataset.href + element.getAttribute('href'));
+            }
             let title = (this.queryChapterTitle ? element.querySelector(this.queryChapterTitle) : element).textContent.replace(manga.title, '');
             let mangaTitle = manga.title.replace(/\s*-\s*RAW$/, '');
             title = title.replace(new RegExp(mangaTitle, 'i'), '');
