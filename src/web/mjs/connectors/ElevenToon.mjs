@@ -32,7 +32,7 @@ export default class ElevenToon extends Connector {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, '#cover-info h2');
         const title = data[0].textContent.trim();
-        return new Manga(this, uri, title);
+        return new Manga(this, uri.pathname, title);
     }
 
     async _getMangasFromPage(page) {
@@ -51,7 +51,7 @@ export default class ElevenToon extends Connector {
         let request = new Request(this.url + '/bbs/board.php?bo_table=toon_c&type=upd&page=', this.requestOptions);
         let data = await this.fetchDOM(request, 'main.main nav.pg_wrap span.pg a.pg_end');
         let pageCount = parseInt(data[0].href.match(/\d+$/)[0]);
-        for(let page = 1; page <= pageCount; page++) {
+        for (let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }
@@ -87,7 +87,7 @@ export default class ElevenToon extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        return Engine.Request.fetchUI(request, `new Promise( resolve => resolve( img_list ) )`)
+        return Engine.Request.fetchUI(request, `new Promise( resolve => resolve( img_list ) )`);
     }
 
 }
