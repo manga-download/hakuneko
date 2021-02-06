@@ -9,7 +9,7 @@ export default class YoungJump extends SpeedBinb {
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.youngjump.world';
         this.links = {
-            login: 'https://www.youngjump.world'
+            login: 'https://www.youngjump.world/?login=1'
         };
     }
 
