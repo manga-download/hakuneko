@@ -10,17 +10,6 @@ export default class kakaopage extends Connector {
         this.tags = [ 'webtoon', 'manga', 'korean' ];
         this.url = 'https://page.kakao.com';
         this.requestOptions.headers.set('x-origin', this.url);
-
-        this.config = {
-            throttle: {
-                label: 'Throttle Requests [ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting errors during chapter download.',
-                input: 'numeric',
-                min: 100,
-                max: 5000,
-                value: 250
-            }
-        };
     }
 
     async _getMangaFromURI(uri) {
