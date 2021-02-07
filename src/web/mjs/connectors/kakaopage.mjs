@@ -9,7 +9,7 @@ export default class kakaopage extends Connector {
         super.label = 'Page Kakao (카카오페이지) ';
         this.tags = [ 'webtoon', 'manga', 'korean' ];
         this.url = 'https://page.kakao.com';
-        this.requestOptions.headers.set('x-referer', this.url);
+        this.requestOptions.headers.set('x-origin', this.url);
     }
 
     async _getMangaFromURI(uri) {
