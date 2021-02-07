@@ -9,6 +9,9 @@ export default class JumpBookStore extends Publus {
         super.label = 'ジャンプBOOKストア (Jump Book Store)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://jumpbookstore.com';
+        this.links = {
+            login: 'https://jumpbookstore.com/login.html'
+        };
     }
 
     async _getMangaFromURI(uri) {
