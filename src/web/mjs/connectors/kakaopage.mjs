@@ -65,6 +65,20 @@ export default class kakaopage extends Connector {
         this.requestOptions.method = 'GET';
         delete this.requestOptions.body;
         let data = await this.fetchJSON(request);
-        return data.downloadData.members.files.map(element => data.downloadData.members.sAtsServerUrl + element.secureUrl);
+        return data.downloadData.members.files.map(element => this.createConnectorURI(data.downloadData.members.sAtsServerUrl + element.secureUrl));
+    }
+
+    async _handleConnectorURI(payload) {
+        /*
+         * TODO: only perform requests when from download manager
+         * or when from browser for preview and selected chapter matches
+         */
+        let request = new Request(payload, this.requestOptions);
+        request.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
