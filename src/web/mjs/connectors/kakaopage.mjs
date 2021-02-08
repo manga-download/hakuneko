@@ -76,6 +76,7 @@ export default class kakaopage extends Connector {
          */
         let request = new Request(payload.url, this.requestOptions);
         request.headers.set('x-referer', payload.referer);
+        request.headers.set('x-origin', payload.referer);
         request.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
         let response = await fetch(request);
         let data = await response.blob();
