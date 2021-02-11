@@ -5,8 +5,8 @@ export default class NtsVoidScans extends WordPressMadara {
     constructor() {
         super();
         super.id = 'ntsvoidscans';
-        super.label = 'Nts & Void Scans';
+        super.label = 'Void Scans';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://ntsvoidscans.com';
+        this.url = 'https://voidscans.com';
     }
 }
