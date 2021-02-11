@@ -17,6 +17,7 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         this.queryMangas = 'ul#webtoon-list-all li div.img-item div.in-lable a';
         this.queryManga = 'meta[name="subject"]';
         this.queryChapters = 'div.serial-list li.list-item div.wr-subject a';
+        this.queryChaptersTitleBloat = 'span.orangered';
         this.scriptPages = `
             new Promise(resolve => {
                 const images = [...document.querySelectorAll('div.view-padding div > img, div.view-padding div > p:not([style*="none"]) img')];

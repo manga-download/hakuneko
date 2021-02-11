@@ -70,6 +70,7 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
         this.queryManga = 'meta[property="og:title"]';
         this.queryMangas = 'div#wt_list .section-item div.section-item-title > a';
         this.queryChapters = 'div#bo_list table.web_list tbody tr td.content__title';
+        this.queryChaptersTitleBloat = undefined;
         this.scriptPages = `
             new Promise(resolve => {
                 resolve([...document.querySelectorAll('div#toon_img img')].map(img => img.src));
@@ -111,9 +112,16 @@ export default class GnuBoard5BootstrapBasic2 extends Connector {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
+            if(this.queryChaptersTitleBloat) {
+                [...element.querySelectorAll(this.queryChaptersTitleBloat)].forEach(bloat => {
+                    if(bloat.parentElement) {
+                        bloat.parentElement.removeChild(bloat);
+                    }
+                });
+            }
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.dataset.role || element, this.url),
-                title: element.textContent.replace(manga.title, '').trim(),
+                title: element.innerText.replace(manga.title, '').trim(),
                 language: ''
             };
         });
