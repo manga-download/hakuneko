@@ -11,8 +11,8 @@
   "main": "main.js",
   "dependencies": {
     "@logtrine/logtrine": "latest",
+    "discord-rpc": "latest",
     "fs-extra": "latest",
-    "jszip": "latest",
-    "discord-rpc": "^3.1.4"
+    "jszip": "latest"
   }
 }
