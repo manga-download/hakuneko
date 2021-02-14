@@ -80,6 +80,9 @@ export default class FlatManga extends Connector {
                     element.dataset.src = atob(element.dataset.src);
                 } catch(_) { /* ignore */ }
                 try {
+                    element.dataset.src = atob(element.dataset.srcset);
+                } catch(_) { /* ignore */ }
+                try {
                     element.dataset.original = atob(element.dataset.original);
                 } catch(_) { /* ignore */ }
                 try {
@@ -88,7 +91,7 @@ export default class FlatManga extends Connector {
                 try {
                     element.dataset.aload = atob(element.dataset.aload);
                 } catch(_) { /* ignore */ }
-                return this.getAbsolutePath(element.dataset.aload || element.dataset.src || element.dataset.original || element.dataset.pagespeedLazySrc || element, request.url);
+                return this.getAbsolutePath(element.dataset.aload || element.dataset.src || element.dataset.srcset || element.dataset.original || element.dataset.pagespeedLazySrc || element, request.url);
             })
             .filter(url => !url.includes('3282f6a4b7_o') && !url.includes('donate'))
             .map(url => this.createConnectorURI(url));
