@@ -14,6 +14,13 @@ module.exports = class ElectronBootstrap {
         this._window = null;
         this._schemes = [
             {
+                scheme: 'file',
+                privileges: {
+                    standard: true,
+                    supportFetchAPI: false
+                }
+            },
+            {
                 scheme: this._configuration.applicationProtocol,
                 privileges: {
                     standard: true,
@@ -60,6 +67,7 @@ module.exports = class ElectronBootstrap {
         return new Promise(resolve => {
             electron.app.on('ready', () => {
                 this._appIcon = electron.nativeImage.createFromPath(path.join(this._configuration.applicationCacheDirectory, 'img', 'tray', process.platform === 'win32' ? 'logo.ico' : 'logo.png'));
+                this._registerFileProtocol();
                 this._registerCacheProtocol();
                 this._registerConnectorProtocol();
                 this._createWindow();
@@ -76,9 +84,16 @@ module.exports = class ElectronBootstrap {
         });
     }
 
-    /**
-     *
-     */
+    _registerFileProtocol() {
+        electron.protocol.registerFileProtocol('file', async (request, callback) => {
+            try {
+                callback(decodeURI(request.url.replace('file://', '')));
+            } catch(error) {
+                callback(undefined);
+            }
+        });
+    }
+
     _registerCacheProtocol() {
         electron.protocol.registerBufferProtocol(this._configuration.applicationProtocol, async (request, callback) => {
             try {
@@ -250,6 +265,7 @@ module.exports = class ElectronBootstrap {
         this._window = new electron.BrowserWindow({
             width: 1120,
             height: 680,
+            frame: false,
             title: 'HakuNeko',
             icon: this._appIcon,
             show: false,
@@ -261,9 +277,8 @@ module.exports = class ElectronBootstrap {
                 contextIsolation: false,
                 allowRunningInsecureContent: false,
                 worldSafeExecuteJavaScript: true,
-                webSecurity: false // required to open local images in browser
-            },
-            frame: false
+                webSecurity: false // required for custom protocols and to open local images in browser
+            }
         });
 
         this._setupBeforeSendHeaders();
