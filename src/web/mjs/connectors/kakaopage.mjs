@@ -17,7 +17,7 @@ export default class kakaopage extends Connector {
         uri = new URL(uri);
         const request = new Request(uri, this.requestOptions);
         let id = uri.searchParams.get('seriesId');
-        let data = await this.fetchDOM(request, 'h2', 3);
+        let data = await this.fetchDOM(request, 'h2.text-ellipsis.webfont', 3);
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -43,11 +43,11 @@ export default class kakaopage extends Connector {
         form.append('direction', 'desc');
         form.append('page_size', 20);
         form.append('without_hidden', true);
-        this.requestOptions.method = 'POST';
-        this.requestOptions.body = form;
-        let request = new Request('https://api2-page.kakao.com/api/v5/store/singles', this.requestOptions);
-        this.requestOptions.method = 'GET';
-        delete this.requestOptions.body;
+        let request = new Request('https://api2-page.kakao.com/api/v5/store/singles', {
+            ...this.requestOptions,
+            method: 'POST',
+            body: form
+        });
         let data = await this.fetchJSON(request);
         return data.singles.map(ele => {
             return{
@@ -62,7 +62,11 @@ export default class kakaopage extends Connector {
         form.append('productId', chapter.id);
         this.requestOptions.method = 'POST';
         this.requestOptions.body = form;
-        let request = new Request('https://api2-page.kakao.com/api/v1/inven/get_download_data/web', this.requestOptions);
+        let request = new Request('https://api2-page.kakao.com/api/v1/inven/get_download_data/web', {
+            ...this.requestOptions,
+            method: 'POST',
+            body: form
+        });
         this.requestOptions.method = 'GET';
         delete this.requestOptions.body;
         let data = await this.fetchJSON(request);
