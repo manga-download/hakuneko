@@ -316,7 +316,13 @@
                         if(popup.closed) {
                             clearInterval(watchdog);
                         } else {
-                            popup.eval(`window.onbeforeunload = evt => undefined;`);
+                            const script = `
+                                new Promise(resolve => {
+                                    window.onbeforeunload = evt => undefined;
+                                    resolve();
+                                });
+                            `;
+                            popup.eval(script);
                         }
                     }, 500);
                 }

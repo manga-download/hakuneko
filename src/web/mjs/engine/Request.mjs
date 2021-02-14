@@ -88,13 +88,14 @@ export default class Request {
      */
     get _domPreparationScript() {
         return `
-            {
-                let images = [...document.querySelectorAll( 'img[onerror]' )];
-                for( let image of images ) {
-                    image.removeAttribute( 'onerror' );
+            new Promise(resolve => {
+                let images = [...document.querySelectorAll('img[onerror]')];
+                for(let image of images) {
+                    image.removeAttribute('onerror');
                     image.onerror = undefined;
                 }
-            }
+                resolve();
+            });
         `;
     }
 

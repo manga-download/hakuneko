@@ -278,7 +278,7 @@
                     } else {
                         let script = `
                             // loal scope for variable declaration
-                            {
+                            new Promise(resolve => {
                                 window.onbeforeunload = evt => undefined;
                                 let warning = document.querySelector('div.unsupported-browser');
                                 if(warning) {
@@ -288,7 +288,8 @@
                                 if(signup) {
                                     signup.parentNode.removeChild(signup);
                                 }
-                            }
+                                resolve();
+                            });
                         `;
                         popup.eval(script);
                     }
