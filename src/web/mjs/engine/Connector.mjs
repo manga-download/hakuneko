@@ -103,7 +103,7 @@ export default class Connector {
         this.initialize()
             .then( () => {
                 this._getMangaList( ( error, mangas ) => {
-                    if( error || !mangas ) {
+                    if( error || !mangas || mangas.length === 0 ) {
                         this.isUpdating = false;
                         callback( error, undefined );
                         return;
