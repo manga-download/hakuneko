@@ -70,12 +70,12 @@ export default class Mangaz extends Connector {
         let decrypted = CryptoJS.AES.decrypt({ ciphertext: encrypted }, key, { iv: iv });
         decrypted = decrypted.toString(CryptoJS.enc.Utf8);
         decrypted = Uint8Array.from(atob(decrypted), char => char.charCodeAt(0));
-        let data = {
+        decrypted = {
             mimeType: response.headers.get('content-type'),
             data: decrypted
         };
-        this._applyRealMime(data);
-        return data;
+        this._applyRealMime(decrypted);
+        return decrypted;
     }
 
     async _getChapters(manga) {
