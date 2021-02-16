@@ -478,6 +478,13 @@ export default class Request {
         }
         delete details.requestHeaders['x-sec-fetch-site'];
 
+        // HACK: Imgur does not support request with accept types containing other mimes then images
+        //       => overwrite accept header to prevent redirection to HTML notice
+        if(/i\.imgur\.com/i.test(uri.hostname)) {
+            details.requestHeaders['Accept'] = 'image/webp,image/apng,image/*,*/*';
+            delete details.requestHeaders['accept'];
+        }
+
         return details;
     }
 
