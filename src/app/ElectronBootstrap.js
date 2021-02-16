@@ -87,7 +87,7 @@ module.exports = class ElectronBootstrap {
     _registerFileProtocol() {
         electron.protocol.registerFileProtocol('file', async (request, callback) => {
             try {
-                callback(decodeURI(request.url.replace('file://', '')));
+                callback(decodeURI(new URL(request.url).pathname));
             } catch(error) {
                 callback(undefined);
             }
