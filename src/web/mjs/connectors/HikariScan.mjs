@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class HikariScan extends WordPressMadara {
+export default class HikariScan extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,5 +8,6 @@ export default class HikariScan extends WordPressMadara {
         super.label = 'Hikari Scan';
         this.tags = [ 'manga', 'portuguese' ];
         this.url = 'https://hikariscan.com.br';
+        this.path = '/manga/list-mode/';
     }
 }
