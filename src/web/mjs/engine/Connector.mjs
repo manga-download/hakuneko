@@ -743,4 +743,12 @@ export default class Connector {
             return;
         }
     }
+
+    _getChapterRegex() {
+        return /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i;
+    }
+
+    _getVolumeRegex() {
+        return /\s*(?:vol\.?|volume|tome)\s*(\d+)/i;
+    }
 }
