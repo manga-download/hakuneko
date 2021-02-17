@@ -143,8 +143,9 @@ export default class Manga extends EventTarget {
             .then( chapters => {
                 let chapterFormat = Engine.Settings.chapterTitleFormat.value;
                 // de-serialize chapters into objects
+                let formatRegex = this.connector._getFormatRegex();
                 this.chapterCache = chapters.map( chapter => {
-                    return new Chapter( this, chapter.id, this.formatChapterTitle( chapter.title, chapterFormat ), chapter.language );
+                    return new Chapter( this, chapter.id, this.formatChapterTitle( chapter.title, chapterFormat, formatRegex ), chapter.language );
                 } );
                 return Promise.resolve( this.chapterCache );
             } )
@@ -158,7 +159,7 @@ export default class Manga extends EventTarget {
     /**
      *
      */
-    formatChapterTitle( title, format ) {
+    formatChapterTitle( title, format, formatRegex ) {
         //
         let result = format;
         // do not extract volume/chapter
@@ -167,8 +168,8 @@ export default class Manga extends EventTarget {
         }
 
         let name = title;
-        let reVol = this.connector._getVolumeRegex();
-        let reCh = this.connector._getChapterRegex(); // $ not working in character groups => [\s\:$]+ does not work
+        let reVol = formatRegex.volumeRegex;
+        let reCh = formatRegex.chapterRegex; // $ not working in character groups => [\s\:$]+ does not work
 
         // extract volume number
         let volume = name.match( reVol );

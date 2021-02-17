@@ -744,11 +744,10 @@ export default class Connector {
         }
     }
 
-    _getChapterRegex() {
-        return /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i;
-    }
-
-    _getVolumeRegex() {
-        return /\s*(?:vol\.?|volume|tome)\s*(\d+)/i;
+    _getFormatRegex() {
+        return{
+            chapterRegex:/\s*(?:^|ch\.?|ep\.?|chapter|chapitre|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
+            volumeRegex:/\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+        };
     }
 }
