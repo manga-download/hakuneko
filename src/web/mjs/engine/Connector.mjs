@@ -753,7 +753,7 @@ export default class Connector {
         } else if (this.tags.includes('turkish')) {
             return {
                 chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|Bölüm|chapitre|episode|#)\s*([\d.?\-?v?,?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+                volumeRegex: /\s*(?:vol\.?|volume|Cilt|tome)\s*(\d+)/i
             };
         } else {
             return {
