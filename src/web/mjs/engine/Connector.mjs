@@ -775,6 +775,11 @@ export default class Connector {
                 chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Cap[ií]tulo|cap|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
                 volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
             };
+        } else if (this.tags.includes('polish')) {
+            return {
+                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Rozdział|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+            };
         } else {
             return {
                 chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
