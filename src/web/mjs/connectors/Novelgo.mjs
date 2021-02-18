@@ -65,7 +65,7 @@ export default class Novelgo extends Connector {
     }
 
     async _getPagesNovel(request) {
-        let darkmode = Engine.Enums.NovelColorProfiles;
+        let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise(resolve => {
                 document.body.style.width = '${this.novelWidth}';

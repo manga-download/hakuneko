@@ -42,7 +42,7 @@ export default class KolNovel extends WordPressMangastream {
     }
 
     async _getPagesNovel(request) {
-        let darkmode = Engine.Enums.NovelColorProfiles;
+        let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise((resolve, reject) => {
                 document.body.className = document.body.className.replace('darkmode', 'lightmode')

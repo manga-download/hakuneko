@@ -254,7 +254,7 @@ export default class Settings extends EventTarget {
             value: 'none'
         };
 
-        this.NovelColorProfile = {
+        this.NovelColorProfiles = {
             label: 'Light/Dark mode for Novels',
             description: [
                 'Choose between light and dark mode for novels.',
@@ -268,6 +268,10 @@ export default class Settings extends EventTarget {
             ],
             value: 'Light',
         };
+    }
+
+    NovelColorProfile() {
+        return this.NovelColorProfiles.options.find(ele => ele.value.toLowerCase() == this.NovelColorProfiles.value.toLowerCase()).val;
     }
 
     *[Symbol.iterator]() {

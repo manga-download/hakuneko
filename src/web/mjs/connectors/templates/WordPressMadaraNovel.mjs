@@ -21,7 +21,7 @@ export default class WordPressMadaraNovel extends WordPressMadara {
     }
 
     async _getPagesNovel(request) {
-        let darkmode = Engine.Enums.NovelColorProfiles;
+        let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise((resolve, reject) => {
                 document.body.style.width = '${this.novelWidth}';
