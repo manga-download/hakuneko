@@ -745,56 +745,9 @@ export default class Connector {
     }
 
     getFormatRegex() {
-        if (this.tags.includes('vietnamese')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|Chap|Chương|chapitre|episode|#):?\s*([\d.?\-?v?,?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('turkish')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|Bölüm|chapitre|episode|#):?\s*([\d.?\-?v?,?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|Sezon|Cilt|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('thai')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|ตอนที่|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('spanish')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Cap[ií]tulo|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('russian')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Глава|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|Том|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('portuguese')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Cap[ií]tulo|cap|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('polish')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Rozdział|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('italian')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Capitolo|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
-            };
-        } else if (this.tags.includes('german')) {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Kapitel|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
-                volumeRegex: /\s*(?:vol\.?|volume|Band|tome)\s*(\d+)/i
-            };
-        } else {
-            return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
-                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
-            };
-        }
+        return {
+            chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Bölüm|Chap|Chương|ตอนที่|Kapitel|Capitolo|Rozdział|Глава|Cap[ií]tulo|cap|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+            volumeRegex: /\s*(?:vol\.?|volume|Sezon|Том|Band|Cilt|tome)\s*(\d+)/i
+        };
     }
 }
