@@ -13,7 +13,7 @@ export default class LovableSubs extends WordPressMadara {
     getFormatRegex() {
         return {
             chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|Bölüm|chapitre|episode|#)?\s*([\d.?\-?v?,?]+)\s*(?:^|ch\.?|ep\.?|chapter|\.?Bölüm|chapitre|episode|#)?\s*(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
-            volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+            volumeRegex: super.getFormatRegex().volumeRegex
         };
     }
 }

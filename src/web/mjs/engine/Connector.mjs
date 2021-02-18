@@ -753,7 +753,17 @@ export default class Connector {
         } else if (this.tags.includes('turkish')) {
             return {
                 chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|Bölüm|chapitre|episode|#)\s*([\d.?\-?v?,?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
-                volumeRegex: /\s*(?:vol\.?|volume|Cilt|tome)\s*(\d+)/i
+                volumeRegex: /\s*(?:vol\.?|volume|Sezon|Cilt|tome)\s*(\d+)/i
+            };
+        } else if (this.tags.includes('thai')) {
+            return {
+                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|ตอนที่|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+            };
+        } else if (this.tags.includes('spanish')) {
+            return {
+                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Capitulo|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+                volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
             };
         } else {
             return {
@@ -761,5 +771,5 @@ export default class Connector {
                 volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
             };
         }
-    }
+    }//ตอนที่
 }
