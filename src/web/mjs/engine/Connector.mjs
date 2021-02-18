@@ -762,8 +762,13 @@ export default class Connector {
             };
         } else if (this.tags.includes('spanish')) {
             return {
-                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Capitulo|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Cap[ií]tulo|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
                 volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+            };
+        } else if (this.tags.includes('russian')) {
+            return {
+                chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Глава|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+                volumeRegex: /\s*(?:vol\.?|volume|Том|tome)\s*(\d+)/i
             };
         } else {
             return {
@@ -771,5 +776,5 @@ export default class Connector {
                 volumeRegex: /\s*(?:vol\.?|volume|tome)\s*(\d+)/i
             };
         }
-    }//ตอนที่
+    }
 }
