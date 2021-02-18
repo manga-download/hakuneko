@@ -26,4 +26,11 @@ export default class KooManga extends WordPressZbulu {
         this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
+
+    getFormatRegex() {
+        return{
+            chapterRegex:/\s*(?:^|ch\.?|ep\.?|chapter|chap|chapitre|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
+            volumeRegex:/\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+        };
+    }
 }
