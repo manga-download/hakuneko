@@ -42,6 +42,7 @@ export default class KolNovel extends WordPressMangastream {
     }
 
     async _getPagesNovel(request) {
+        let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise((resolve, reject) => {
                 document.body.className = document.body.className.replace('darkmode', 'lightmode')
@@ -52,6 +53,12 @@ export default class KolNovel extends WordPressMangastream {
                 container.style.margin = '0';
                 let novel = document.querySelector('div.epcontent');
                 novel.style.padding = '${this.novelPadding}';
+                [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                    ele.style.backgroundColor = '${darkmode.background}'
+                    ele.style.color = '${darkmode.text}'
+                })
+                novel.style.backgroundColor = '${darkmode.background}'
+                novel.style.color = '${darkmode.text}'
                 novel.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
                 script.onerror = error => reject(error);
