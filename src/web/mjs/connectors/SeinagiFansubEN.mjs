@@ -8,6 +8,9 @@ export default class SeinagiFansubEN extends FoolSlide {
         super.label = 'SeinagiFansub (EN)';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://seinagi.org.es';
+        this.links = {
+            login: 'https://seinagi.org.es/forum/index.php?action=login'
+        };
         this.path = '/reader/directory/';
         this.language = 'english';
     }

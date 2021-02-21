@@ -9,6 +9,9 @@ export default class Tsumino extends Connector {
         super.label = 'Tsumino';
         this.tags = [ 'hentai', 'english' ];
         this.url = 'https://www.tsumino.com';
+        this.links = {
+            login: 'https://www.tsumino.com/Account/Login'
+        };
     }
 
     async _getMangaFromURI(uri) {

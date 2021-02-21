@@ -1,5 +1,5 @@
 import WordPressJarida from './templates/WordPressJarida.mjs';
-
+//dead?
 export default class ReadRawMangaInfo extends WordPressJarida {
 
     constructor() {

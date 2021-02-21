@@ -8,5 +8,8 @@ export default class ReaperScans extends Genkan {
         super.label = 'Reaper Scans';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://reaperscans.com';
+        this.links = {
+            login: 'https://reaperscans.com/login'
+        };
     }
 }

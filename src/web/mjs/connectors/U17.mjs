@@ -9,6 +9,9 @@ export default class U17 extends Connector {
         super.label = '有妖气 (U17)';
         this.tags = [ 'webtoon', 'chinese' ];
         this.url = 'http://www.u17.com';
+        this.links = {
+            login: 'https://passport.u17.com/member_v2/login.php?url=https://www.u17.com/'
+        };
     }
 
     async _getMangaFromURI(uri) {

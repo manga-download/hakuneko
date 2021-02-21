@@ -9,6 +9,9 @@ export default class ShonenJumpRookie extends Connector {
         super.label = 'ジャンプルーキー (Jump Rookie)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://rookie.shonenjump.com';
+        this.links = {
+            login: 'https://rookie.shonenjump.com/account/signin'
+        };
     }
 
     // Fetch API does not provide access to custom headers => use XmlHTTPRequest instead

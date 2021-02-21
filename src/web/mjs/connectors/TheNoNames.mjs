@@ -8,5 +8,8 @@ export default class TheNoNames extends Genkan {
         super.label = 'The Nonames Scans';
         this.tags = [ 'webtoon', 'english', 'scanlation' ];
         this.url = 'https://the-nonames.com';
+        this.links = {
+            login: 'https://the-nonames.com/login'
+        };
     }
 }

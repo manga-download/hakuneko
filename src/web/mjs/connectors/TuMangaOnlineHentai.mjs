@@ -9,6 +9,9 @@ export default class TuMangaOnlineHentai extends Connector {
         super.label = 'TMOHentai';
         this.tags = [ 'hentai', 'spanish' ];
         this.url = 'https://tmohentai.com';
+        this.links = {
+            login: 'https://tmohentai.com/login'
+        };
     }
 
     async _getMangaFromURI(uri) {

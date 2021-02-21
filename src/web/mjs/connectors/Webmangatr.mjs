@@ -62,4 +62,11 @@ export default class Webmangatr extends Connector {
             };
         });
     }
+
+    getFormatRegex() {
+        return {
+            chapterRegex: /\s*([\d.?\-?v?,?]+)\s*(?:^|ch\.?|ep\.?|chapter|\.? Bölüm|chapitre|episode|#)?\s*(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+            volumeRegex: /\s*(\d+)\s*(?:vol\.?|volume|\.? Sezon|Cilt|tome)/i
+        };
+    }
 }

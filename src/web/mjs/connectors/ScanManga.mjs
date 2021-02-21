@@ -83,11 +83,18 @@ export default class ScanManga extends Connector {
     }
 
     async _getPagesNovel(request) {
+        let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise((resolve, reject) => {
                 document.body.style.width = '56em';
                 let novel = document.querySelector('article.aLN');
                 novel.style.padding = '1.5em';
+                [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                    ele.style.backgroundColor = '${darkmode.background}'
+                    ele.style.color = '${darkmode.text}'
+                })
+                novel.style.backgroundColor = '${darkmode.background}'
+                novel.style.color = '${darkmode.text}'
                 let script = document.createElement('script');
                 script.onerror = error => reject(error);
                 script.onload = async function() {

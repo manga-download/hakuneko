@@ -6,9 +6,9 @@ export default class Manga347 extends WordPressMadara {
         super();
         super.id = 'manga347';
         super.label = 'Manga 347';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = ['webtoon', 'english'];
         this.url = 'https://manga347.com';
 
-        this.queryPages = 'ul.blocks-gallery-grid li.blocks-gallery-item figure source';
+        this.queryPages = 'figure source, div.page-break source';
     }
 }

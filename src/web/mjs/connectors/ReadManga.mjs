@@ -8,6 +8,9 @@ export default class ReadManga extends Connector {
         super.label = 'ReadManga';
         this.tags = [ 'manga', 'russian' ];
         this.url = 'https://readmanga.live';
+        this.links = {
+            login: 'https://grouple.co/internal/auth/login'
+        };
 
         this.config = {
             throttle: {

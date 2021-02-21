@@ -8,6 +8,9 @@ export default class TruyenTranhLH extends FlatManga {
         super.label = 'TruyentranhLH';
         this.tags = [ 'manga', 'webtoon', 'vietnamese' ];
         this.url = 'https://truyentranhlh.net';
+        this.links = {
+            login: 'https://truyentranhlh.net/login'
+        };
 
         this.queryMangaTitle = 'meta[property="og:title"]';
         this.queryChapters = 'ul.list-chapters > a';

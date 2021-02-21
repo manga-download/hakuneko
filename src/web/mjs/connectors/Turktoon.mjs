@@ -1,11 +1,11 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class Truktoon extends WordPressMangastream {
+export default class Turktoon extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'truktoon';
-        super.label = 'Truktoon';
+        super.id = 'turktoon';
+        super.label = 'Turktoon';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
         this.url = 'https://turktoon.com';
         this.path = '/manga/?list';

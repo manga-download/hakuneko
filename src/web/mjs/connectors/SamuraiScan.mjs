@@ -8,6 +8,9 @@ export default class SamuraiScan extends MangaReaderCMS {
         super.label = 'Samurai Scan';
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://samuraiscan.com';
+        this.links = {
+            login: 'https://samuraiscan.com/auth/login'
+        };
 
         this.queryChapters = 'div.chapters h3.chapter-title a';
     }
