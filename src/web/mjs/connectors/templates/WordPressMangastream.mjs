@@ -71,7 +71,8 @@ export default class WordPressMangastream extends Connector {
         const uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await Engine.Request.fetchUI(request, script);
-        return data.map(link => this.getAbsolutePath(link, request.url)).filter(link => !link.includes('histats.com'));
+        // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+        return data.map(link => this.getAbsolutePath(link, request.url).replace(/\/i\d+\.wp\.com/, '')).filter(link => !link.includes('histats.com'));
     }
 
     async _getMangaFromURI(uri) {
