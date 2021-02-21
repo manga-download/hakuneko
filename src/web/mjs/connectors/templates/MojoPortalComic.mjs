@@ -95,7 +95,6 @@ export default class MojoPortalComic extends Connector {
     async _handleConnectorURI(payload) {
         let request = new Request(payload.url, this.requestOptions);
         request.headers.set('x-referer', payload.referer);
-        request.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
         let response = await fetch(request);
         if(!response.ok) {
             response = await fetch(this._getGoogleImageProxyRequest(payload.url));
