@@ -11,6 +11,22 @@ export default class Team1x1 extends Connector {
         this.url = 'https://tqneplus.com';
 
     }
+    canHandleURI(uri) {
+        return /team1x\d*\.com|tqneplus\.com/.test(uri.hostname);
+    }
+
+    async _initializeConnector() {
+        /*
+         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+         * => append random search parameter to avoid caching
+         */
+        let uri = new URL(this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
+    }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
@@ -74,7 +90,7 @@ export default class Team1x1 extends Connector {
 
     async _getPages(chapter) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
-        let data = await this.fetchDOM( request, 'div[id^="translationPageall"] picture embed');
+        let data = await this.fetchDOM(request, 'div[id^="translationPageall"] embed');
         return data.map(dat=> dat.src);
     }
 }

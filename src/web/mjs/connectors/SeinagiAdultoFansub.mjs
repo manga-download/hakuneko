@@ -8,6 +8,9 @@ export default class SeinagiAdultoFansub extends FoolSlide {
         super.label = 'SeinagiAdultoFansub';
         this.tags = [ 'hentai', 'high-quality', 'spanish', 'scanlation' ];
         this.url = 'https://adulto.seinagi.org.es';
+        this.links = {
+            login: 'https://adulto.seinagi.org.es/account/auth/login/'
+        };
         //this.path        = '/directory/';
         this.language = 'spanish';
     }

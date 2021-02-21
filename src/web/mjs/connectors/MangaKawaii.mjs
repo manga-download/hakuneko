@@ -11,7 +11,7 @@ export default class MangaKawaii extends MangaReaderCMS {
 
         this.queryMangas = 'ul.manga-list-text li a.alpha-link';
         this.queryChapters = 'table.table--manga tbody td.table__chapter a';
-        this.queryPages = 'div#all source.img-fluid';
+        this.queryPages = 'div.text-center source.img-fluid';
         this.language = 'fr';
     }
 

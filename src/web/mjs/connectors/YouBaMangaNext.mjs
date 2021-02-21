@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-
+//dead
 // Wordpress Theme: NewsMax
 export default class YouBaMangaNext extends Connector {
 

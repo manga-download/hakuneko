@@ -5,13 +5,13 @@ export default class HeavenManga extends WordPressZbulu {
     constructor() {
         super();
         super.id = 'heavenmanga';
-        super.label = 'Heaven Toon';
+        super.label = 'MyToon';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://heaventoon.com';
+        this.url = 'https://mytoon.net';
     }
 
     canHandleURI(uri) {
-        return /https?:\/\/w+\d*.heaventoon.com/.test(uri.origin);
+        return /https?:\/\/(w+\d*.)?mytoon.net/.test(uri.origin);
     }
 
     async _initializeConnector() {

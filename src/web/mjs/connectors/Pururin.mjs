@@ -14,6 +14,9 @@ export default class Pururin extends Connector {
         super.label = 'Pururin';
         this.tags = [];
         this.url = 'https://pururin.io';
+        this.links = {
+            login: 'https://pururin.io/login'
+        };
     }
 
     _getMangaList( callback ) {

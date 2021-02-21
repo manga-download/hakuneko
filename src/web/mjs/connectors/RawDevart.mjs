@@ -9,6 +9,9 @@ export default class RawDevart extends Connector {
         super.label = 'Rawdevart';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://rawdevart.com';
+        this.links = {
+            login: 'https://rawdevart.com/login/'
+        };
     }
 
     async _getMangaFromURI(uri) {

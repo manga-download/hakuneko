@@ -8,6 +8,9 @@ export default class SelfManga extends ReadManga {
         super.label = 'SelfManga';
         this.tags = [ 'manga', 'russian' ];
         this.url = 'https://selfmanga.ru';
+        this.links = {
+            login: 'https://grouple.co/internal/auth/login'
+        };
 
         this.preferSubtitleAsMangaTitle = false;
     }

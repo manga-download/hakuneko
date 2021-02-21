@@ -9,6 +9,9 @@ export default class PixivComics extends Connector {
         this.label = 'pixivコミック';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://comic.pixiv.net';
+        this.links = {
+            login: 'https://accounts.pixiv.net/login'
+        };
         this.apiURL = 'https://comic.pixiv.net/api/app/';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-requested-with', this.url);

@@ -38,7 +38,7 @@ export default class WordPressMadara extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page = 0, run = true; run; page++) {
+        for (let page = 0, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
@@ -62,7 +62,7 @@ export default class WordPressMadara extends Connector {
         let dom = (await this.fetchDOM(request, 'body'))[0];
         let data = [...dom.querySelectorAll(this.queryChapters)];
         let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
-        if(placeholder) {
+        if (placeholder) {
             let uri = new URL(this.path + '/wp-admin/admin-ajax.php', this.url);
             let request = new Request(uri, {
                 method: 'POST',
@@ -89,22 +89,32 @@ export default class WordPressMadara extends Connector {
         uri.searchParams.set('style', 'list');
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.createConnectorURI({
-            // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
-            url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url).replace(/\/i\d+\.wp\.com/, ''),
-            referer: request.url
-        }));
+        return data.map(element => {
+            if (element.src.includes('data:image')) {
+                return element.src.match(/data:image[^\s'"]*/)[0];
+            } else {
+                return this.createConnectorURI({
+                    // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+                    url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url).replace(/\/i\d+\.wp\.com/, ''),
+                    referer: request.url
+                });
+            }
+        });
     }
 
-    _handleConnectorURI(payload) {
+    async _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set('x-referer', payload.referer);
-        let promise = super._handleConnectorURI(payload.url);
-        this.requestOptions.headers.delete('x-referer');
-        return promise;
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        request.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 
     async _getMangaFromURI(uri) {
