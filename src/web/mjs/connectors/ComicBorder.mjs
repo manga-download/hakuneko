@@ -8,6 +8,7 @@ export default class ComicBorder extends CoreView {
         super.label = 'コミックボーダー (ComicBorder)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://comicborder.com';
+        this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Linux; Android 9; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4026.0 Mobile Safari/537.36');
     }
 
     async _getMangas() {
