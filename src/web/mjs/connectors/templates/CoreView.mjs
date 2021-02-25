@@ -9,7 +9,8 @@ export default class CoreView extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
-
+        this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Linux; Android 9; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4026.0 Mobile Safari/537.36');
+        
         // The URL pathes to parse
         this.path = [ '/series', '/series/oneshot', '/series/finished' ];
         // The query to select *all* required data for *one* manga
