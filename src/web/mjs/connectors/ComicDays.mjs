@@ -8,7 +8,8 @@ export default class ComicDays extends CoreView {
         super.label = 'コミックDAYS (Comic Days)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://comic-days.com';
-
+        this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Linux; Android 9; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4026.0 Mobile Safari/537.36');
+        
         this.path = [ '/oneshot', '/newcomer', '/daysneo' ];
         this.queryManga = 'div.yomikiri-container ul.yomikiri-items > li.yomikiri-item-box > a.yomikiri-link';
         this.queryMangaTitle = 'div.yomikiri-link-title h4';
