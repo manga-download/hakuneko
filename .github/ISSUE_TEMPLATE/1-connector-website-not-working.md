@@ -1,5 +1,5 @@
 ---
-name: ❗ Connector/Website not working
+name: "❗ Connector/Website not working"
 about: Notify that a connector is not working
 title: "[NameOfConnector] Connector not working"
 labels: Website Change
