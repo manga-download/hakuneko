@@ -1,5 +1,5 @@
 ---
-name: Website Removal Request
+name: ⛔ Website Removal Request
 about: Under certain conditions website owners may request the removal of their website
   from HakuNeko
 title: Removal Request for [WEBSITE]
