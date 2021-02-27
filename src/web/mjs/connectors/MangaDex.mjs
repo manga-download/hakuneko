@@ -14,29 +14,12 @@ export default class MangaDex extends Connector {
         this.licensedChapterGroups = [
             9097 // MangaPlus
         ];
+        this.serverPrimary = 'https://s2.mangadex.org/data/';
+        this.serverSecondary = 'https://s5.mangadex.org/data/';
+        this.networkSeed = undefined;
 
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
-            node: {
-                label: 'Image Server',
-                description: [
-                    'Select the MD@Home mirror from which the images should be downloaded.',
-                    'You can either get a random unofficial mirror (hosted by an unknown user),',
-                    'or choose one of the official mirrors (hosted by MangaDex staff).',
-                    '',
-                    'There is a risk that unofficial mirrors may log your data / provide malicious images.'
-                ].join('\n'),
-                input: 'select',
-                options: [
-                    { value: '', name: 'Random Mirror (unofficial)' },
-                    { value: 'https://s2.mangadex.org', name: 's2.mangadex.org (US)' },
-                    { value: 'https://s3.mangadex.org', name: 's3.mangadex.org (DE)' },
-                    { value: 'https://s5.mangadex.org', name: 's5.mangadex.org (US)' },
-                    { value: 'https://s2.mangadex.cf', name: 's2.mangadex.cf (CloudFlare CDN)' },
-                    { value: 'https://s5.mangadex.cf', name: 's5.mangadex.cf (CloudFlare CDN)' }
-                ],
-                value: 'https://s2.mangadex.org'
-            },
             throttle: {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecuitive requests.',
@@ -46,6 +29,21 @@ export default class MangaDex extends Connector {
                 value: 2500
             }
         };
+    }
+
+    async _initializeConnector() {
+        // TODO: determine seed from remote service?
+        this.networkSeed = 'https://d156gdtycsqca.xnvda7fch4zhr.mangadex.network:443/data/';
+        console.log(`Assigned Seed '${this.networkSeed}' to ${this.label}`);
+        /*
+         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
+         * => append random search parameter to avoid caching
+         */
+        let uri = new URL(this.url);
+        uri.searchParams.set('ts', Date.now());
+        uri.searchParams.set('rd', Math.random());
+        let request = new Request(uri.href, this.requestOptions);
+        return Engine.Request.fetchUI(request, '');
     }
 
     async _getMangaFromURI(uri) {
@@ -81,7 +79,7 @@ export default class MangaDex extends Connector {
     async _getChapters(manga) {
         const uri = new URL(`/api/v2/manga/${this._migratedMangaID(manga.id)}/chapters`, this.url);
         const request = new Request(uri);
-        const data = await this.fetchJSON(request);
+        const data = await this.fetchJSON(request, 3);
         return data.data.chapters
             .filter(chapter => !this.licensedChapterGroups.some(id => chapter.groups.includes(id)))
             .map(chapter => {
@@ -118,22 +116,35 @@ export default class MangaDex extends Connector {
         uri.searchParams.set('mark_read', false);
         uri.searchParams.set('saver', false);
         const request = new Request(uri);
-        const data = await this.fetchJSON(request);
-        const baseURL = this._getNode(data.data.server) + data.data.hash + '/';
-        return data.data.pages.map(page => this.createConnectorURI(baseURL + page));
+        const data = await this.fetchJSON(request, 3);
+        return data.data.pages.map(file => this.createConnectorURI({
+            networkNode: data.data.server, // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
+            serverFallback: data.data.serverFallback, // e.g. 'https://s2.mangadex.org/data/'
+            hash: data.data.hash, // e.g. '1c41e55e32b21321ff11907469e5c323'
+            file: file // e.g. '123.png'
+        }));
     }
 
-    _getNode(server) {
-        let uri = new URL(server, this.url);
-        // images that are still hosted on mangadex.org are not yet available in MD@Home infrastructure
-        if(uri.origin === this.url || !this.config.node.value) {
-            return uri.href;
+    async _handleConnectorURI(payload) {
+        const servers = [
+            this.serverPrimary,
+            this.serverSecondary,
+            this.networkSeed,
+            payload.serverFallback,
+            payload.networkNode
+        ];
+        for(let node of servers) {
+            try {
+                const uri = new URL(node + payload.hash + '/' + payload.file);
+                let request = new Request(uri, this.requestOptions);
+                let response = await fetch(request);
+                if(response.status === 200) {
+                    let data = await response.blob();
+                    return this._blobToBuffer(data);
+                }
+            } finally {/**/}
         }
-        // Use new CloudFlare CDN domain instead of old CloudFlare CDN domain
-        if(this.config.node.value.includes('hakuneko.download')) {
-            this.config.node.value = 'https://s2.mangadex.cf';
-        }
-        return new URL('/data/', this.config.node.value).href;
+        throw new Error('');
     }
 
     _padNum(number, places) {
