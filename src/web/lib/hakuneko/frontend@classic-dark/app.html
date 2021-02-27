@@ -37,6 +37,8 @@
                 display: none;
             }
             .mangas {
+                resize: horizontal;
+                overflow: auto;
                 display: flex;
                 flex-direction: row;
                 /*width: 100%;*/
@@ -60,12 +62,16 @@
             }
             hakuneko-mangas {
                 box-sizing: border-box;
+                resize: horizontal;
+                overflow: auto;
             }
             hakuneko-chapters {
                 box-sizing: border-box;
+                flex-grow: 1;
             }
             hakuneko-jobs {
                 flex: 0;
+                width: -webkit-fill-available;
             }
             hakuneko-pages {
                 flex: 100;
