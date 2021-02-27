@@ -61,8 +61,7 @@ export default class WordPressJarida extends Connector {
         try {
             let data = await this._getChapterListFromPages(manga);
             callback(null, data);
-        }
-        catch(error) {
+        } catch(error) {
             console.error(error, manga);
             callback(error, undefined);
         }

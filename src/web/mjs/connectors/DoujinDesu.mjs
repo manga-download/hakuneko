@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class DoujinDesu extends WordPressEManga {
+export default class DoujinDesu extends WordPressMangastream {
 
     constructor() {
         super();
@@ -12,6 +12,7 @@ export default class DoujinDesu extends WordPressEManga {
 
         this.queryMangas = 'div.listttl ul li a';
         this.queryChapters = 'div#chapter_list span.eps a';
-        this.queryPages = 'div.reader-area source[src]:not([src=""])';
+        this.queryChaptersTitle = undefined;
+        this.queryPages = 'div.reader-area img[src]:not([src=""])';
     }
 }

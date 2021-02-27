@@ -11,7 +11,18 @@ export default class LineWebtoon extends Connector {
         this.url = undefined;
         this.baseURL = 'https://www.webtoons.com';
         this.requestOptions.headers.set('x-referer', this.baseURL);
-        this.requestOptions.headers.set('x-cookie', 'ageGatePass=true');
+        this.requestOptions.headers.set('x-cookie', 'needCCPA=false; pagGDPR=true');
+
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests',
+                input: 'numeric',
+                min: 0,
+                max: 5000,
+                value: 250
+            }
+        };
     }
 
     get icon() {
@@ -144,6 +155,7 @@ export default class LineWebtoon extends Connector {
                 });
             `;
             let request = new Request(this.baseURL + chapter.id, this.requestOptions);
+            // NOTE: `engine/Request.mjs` injects a server cookie to prevent client side age confirmation which is checked on the website
             let data = await Engine.Request.fetchUI(request, script);
             let pageList = data.map(payload => this.createConnectorURI(payload));
             callback(null, pageList);
@@ -198,11 +210,12 @@ export default class LineWebtoon extends Connector {
     }
 
     async _loadImage(url) {
-        return new Promise(resolve => {
+        return new Promise((resolve, reject) => {
             let uri = new URL(url);
             uri.searchParams.delete('type');
             let image = new Image();
             image.onload = () => resolve(image);
+            image.onerror = error => reject(error);
             image.src = uri.href;
         });
     }

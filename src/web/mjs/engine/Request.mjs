@@ -1,4 +1,4 @@
-import UserAgent from './UserAgent.mjs';
+import HeaderGenerator from './HeaderGenerator.mjs';
 import Cookie from './Cookie.mjs';
 
 export default class Request {
@@ -8,7 +8,7 @@ export default class Request {
         let electron = require( 'electron' );
         this.electronRemote = electron.remote;
         this.browser = this.electronRemote.BrowserWindow;
-        this.userAgent = UserAgent.random();
+        this.userAgent = HeaderGenerator.randomUA();
 
         this.electronRemote.app.on( 'login', this._loginHandler );
         ipc.listen('on-before-send-headers', this.onBeforeSendHeadersHandler.bind(this));
@@ -24,20 +24,33 @@ export default class Request {
         let isCookieAvailable = hcCookies.some(cookie => cookie.expirationDate > Date.now()/1000 + 1800);
         if(settings.hCaptchaAccessibilityUUID.value && !isCookieAvailable) {
             let script = `
-                new Promise(resolve => {
-                    document.querySelector('button[title*="cookie"]').click();
-                    setTimeout(() => resolve(document.cookie), 2500);
+                new Promise((resolve, reject) => {
+                    setTimeout(() => {
+                        try {
+                            document.querySelector('button[data-cy*="setAccessibilityCookie"]').click();
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, 1000);
+                    setInterval(() => {
+                        if(document.cookie.includes('hc_accessibility=')) {
+                            resolve(document.cookie);
+                        }
+                    }, 750);
+                    setTimeout(() => {
+                        reject(new Error('The hCaptcha accessibility cookie was not applied within the given timeout!'));
+                    }, 7500);
                 });
             `;
             let uri = new URL('https://accounts.hcaptcha.com/verify_email/' + settings.hCaptchaAccessibilityUUID.value);
             let request = new window.Request(uri);
-            let data = await this.fetchUI(request, script, 30000);
-            if(data.includes('hc_accessibility=')) {
+            try {
+                let data = await this.fetchUI(request, script, 30000);
                 console.log('Initialization of hCaptcha accessibility signup succeeded.', data);
-            } else {
+            } catch(error) {
                 // Maybe quota of cookie requests exceeded
                 // Maybe account suspension because of suspicious behavior/abuse
-                console.warn('Initialization of hCaptcha accessibility signup failed!', data);
+                console.warn('Initialization of hCaptcha accessibility signup failed!', error);
             }
         }
     }
@@ -87,7 +100,7 @@ export default class Request {
 
     get _scrapingCheckScript() {
         return `
-            new Promise((resolve, reject) => {
+            new Promise(async (resolve, reject) => {
 
                 function handleError(message) {
                     reject(new Error(message));
@@ -127,6 +140,14 @@ export default class Request {
                     return handleAutomaticRedirect();
                 }
 
+                // 9anime WAF re-captcha
+                if(window.location.hostname.includes('9anime')) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    if(document.querySelector('div#episodes form[action*="waf-verify"]')) {
+                        return handleUserInteractionRequired();
+                    }
+                }
+
                 // Default
                 handleNoRedirect();
             });
@@ -161,12 +182,12 @@ export default class Request {
         }
         headers = headers.join( '\n' );
         return {
-            /*
-             *userAgent: undefined,
-             *postData: undefined,
-             */
+            // set user agent to prevent `window.navigator.userAgent` being set to elecetron ...
+            userAgent: request.headers.get('x-user-agent') || this.userAgent,
             httpReferrer: referer ? referer : undefined,
             extraHeaders: headers ? headers : undefined
+
+            //postData: undefined,
         };
     }
 
@@ -314,7 +335,7 @@ export default class Request {
                 webPreferences: {
                     nodeIntegration: false,
                     webSecurity: false,
-                    images: images
+                    images: images || false
                 }
             } );
             //win.webContents.openDevTools();
@@ -417,12 +438,9 @@ export default class Request {
          * NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
          */
         if( !uri.pathname.includes( 'chk_jschl' ) ) {
-            // Priority 1: Force referer for certain hosts
             if( uri.hostname.includes( '.mcloud.to' ) ) {
                 details.requestHeaders['Referer'] = uri.href;
-            }
-            // Priority 2: Use referer provided by connector
-            else if( details.requestHeaders['x-referer'] ) {
+            } else if( details.requestHeaders['x-referer'] ) {
                 details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
             }
         }
@@ -454,6 +472,19 @@ export default class Request {
         }
         delete details.requestHeaders['x-sec-fetch-mode'];
 
+        //
+        if(details.requestHeaders['x-sec-fetch-site']) {
+            details.requestHeaders['Sec-Fetch-Site'] = details.requestHeaders['x-sec-fetch-site'];
+        }
+        delete details.requestHeaders['x-sec-fetch-site'];
+
+        // HACK: Imgur does not support request with accept types containing other mimes then images
+        //       => overwrite accept header to prevent redirection to HTML notice
+        if(/i\.imgur\.com/i.test(uri.hostname) || /\.(jpg|jpeg|png|gif|webp)/i.test(uri.pathname)) {
+            details.requestHeaders['Accept'] = 'image/webp,image/apng,image/*,*/*';
+            delete details.requestHeaders['accept'];
+        }
+
         return details;
     }
 
@@ -477,6 +508,9 @@ export default class Request {
              *details.responseHeaders['Access-Control-Allow-Methods'] = 'HEAD, GET';
              */
             details.responseHeaders['Access-Control-Expose-Headers'] = ['Content-Length'];
+        }
+        if(uri.hostname.includes('webtoons') && uri.searchParams.get('title_no')) {
+            details.responseHeaders['Set-Cookie'] = `agn2=${uri.searchParams.get('title_no')}; Domain=${uri.hostname}; Path=/`;
         }
 
         return details;

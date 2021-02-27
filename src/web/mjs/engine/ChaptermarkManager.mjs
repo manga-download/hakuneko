@@ -57,13 +57,13 @@ export default class ChaptermarkManager extends EventTarget {
 
     _getChapterIdentifier( chapter ) {
         // some chapters are using objects as ID, these will provide a hash as identifier
-        return chapter.id.hash || chapter.id ;
+        return chapter.id.hash || chapter.id;
     }
 
     isChapterMarked( chapter, mark ) {
         return mark
             && chapter
-            && (mark.chapterID === this._getChapterIdentifier(chapter) || mark.chapterID === chapter.file.full)
+            && (mark.chapterID === this._getChapterIdentifier(chapter) || mark.chapterID === chapter.file.full || mark.chapterTitle === chapter.title)
             && mark.mangaID === chapter.manga.id
             && mark.connectorID === chapter.manga.connector.id;
     }
@@ -104,7 +104,7 @@ export default class ChaptermarkManager extends EventTarget {
         let chaptermark = undefined;
         if( manga ) {
             chaptermark = this.chaptermarks.find( mark => {
-                return mark.mangaID === manga.id && mark.connectorID === manga.connector.id ;
+                return mark.mangaID === manga.id && mark.connectorID === manga.connector.id;
             } );
             // backward compatibility (old chaptermarks don't have a title)
             if( chaptermark ) {

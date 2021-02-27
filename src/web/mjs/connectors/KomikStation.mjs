@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class KomikStation extends WordPressEManga {
+export default class KomikStation extends WordPressMangastream {
 
     constructor() {
         super();
@@ -12,5 +12,6 @@ export default class KomikStation extends WordPressEManga {
 
         this.queryMangas = 'div#content div.soralist ul li a.series';
         this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.queryChaptersTitle = undefined;
     }
 }

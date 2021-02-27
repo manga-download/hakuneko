@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 
 export default class ScanManga extends Connector {
 
@@ -7,8 +8,9 @@ export default class ScanManga extends Connector {
         super();
         super.id = 'scanmanga';
         super.label = 'ScanManga';
-        this.tags = [ 'manga', 'french' ];
+        this.tags = ['manga', 'french', 'novel'];
         this.url = 'https://www.scan-manga.com';
+        this.requestOptions.headers.set('accept-language', HeaderGenerator.randomLang());
     }
 
     async _getMangaFromURI(uri) {
@@ -21,8 +23,8 @@ export default class ScanManga extends Connector {
 
     async _getMangas() {
         let request = new Request(new URL('/scanlation/scan.data.json', this.url), this.requestOptions);
-        request.headers.set('x-cookie', '_ga=GA1.2.137581646.' + parseInt(Date.now()/1000)); // google analytics cookie
-        //request.headers.set('x-referer', this.url + '/scanlation/liste_series.html');
+        request.headers.set('x-cookie', `_ga=GA1.2.137581646.${parseInt(Date.now()/1000)}; addtl_consent=1~${new Array(647).fill().map(() => Math.floor(41 * Math.random())).join('.')}`);
+        request.headers.set('x-referer', this.url + '/scanlation/liste_series.html');
         request.headers.set('x-requested-with', 'XMLHttpRequest');
         let data = await this.fetchJSON(request);
         let mangaList = [];
@@ -54,7 +56,7 @@ export default class ScanManga extends Connector {
             });
     }
 
-    async _getPages(chapter) {
+    async _getPagesManga(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let response = await fetch(request);
         let data = await response.text();
@@ -63,7 +65,7 @@ export default class ScanManga extends Connector {
         let pageList = [];
         let match = undefined;
         // eslint-disable-next-line no-cond-assign
-        while(match = regex.exec(data)) {
+        while (match = regex.exec(data)) {
             pageList.push(match[1]);
         }
         return pageList.map(link => this.createConnectorURI({
@@ -72,7 +74,45 @@ export default class ScanManga extends Connector {
         }));
     }
 
-    _handleConnectorURI( payload ) {
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        uri.searchParams.set('style', 'list');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, '.aLN');
+        return data.length > 0 ? this._getPagesNovel(request) : this._getPagesManga(chapter);
+    }
+
+    async _getPagesNovel(request) {
+        let darkmode = Engine.Settings.NovelColorProfile();
+        let script = `
+            new Promise((resolve, reject) => {
+                document.body.style.width = '56em';
+                let novel = document.querySelector('article.aLN');
+                novel.style.padding = '1.5em';
+                [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                    ele.style.backgroundColor = '${darkmode.background}'
+                    ele.style.color = '${darkmode.text}'
+                })
+                novel.style.backgroundColor = '${darkmode.background}'
+                novel.style.color = '${darkmode.text}'
+                let script = document.createElement('script');
+                script.onerror = error => reject(error);
+                script.onload = async function() {
+                    try{
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('image/png'));
+                    }catch (error){
+                        reject(error)
+                    }
+                }
+                script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                document.body.appendChild(script);
+            });
+        `;
+        return [await Engine.Request.fetchUI(request, script)];
+    }
+
+    _handleConnectorURI(payload) {
         /*
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches

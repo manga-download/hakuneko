@@ -8,14 +8,17 @@ export default class RawSenManga extends Connector {
         super.label = 'RawSenManga';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://raw.senmanga.com';
+        this.links = {
+            login: 'https://raw.senmanga.com/login'
+        };
         this.requestOptions.headers.set('x-cookie', 'viewer=1');
     }
 
     async _getMangas() {
         let mangaList = [];
         let request = new Request(this.url + '/directory', this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#content ul.pagination li:nth-last-of-type(2) a.page-link');
-        let pageCount = parseInt(data[0].textContent);
+        let data = await this.fetchDOM(request, 'div.content ul.pagination li:nth-last-of-type(2) a.page-link');
+        let pageCount = parseInt(data[0].textContent.trim());
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -25,21 +28,21 @@ export default class RawSenManga extends Connector {
 
     async _getMangasFromPage(page) {
         let request = new Request(this.url + '/directory?page=' + page, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#content ul.directory li.series div.details p.title a');
+        let data = await this.fetchDOM(request, 'div.content div.upd div.item > a');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim()
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('div.series-title').textContent.trim()
             };
         });
     }
 
     async _getChapters(manga) {
         let request = new Request(this.url + manga.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.list div.element div.title a');
+        let data = await this.fetchDOM(request, 'div.content ul.chapter-list li > a.series');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim(),
                 language: ''
             };

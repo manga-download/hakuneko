@@ -9,5 +9,7 @@ export default class AdonisFansub extends WordPressMadara {
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
         this.url = 'https://manga.adonisfansub.com';
         this.requestOptions.headers.set('x-referer', this.url);
+
+        this.queryTitleForURI = 'div.profile-manga div.post-title h1';
     }
 }

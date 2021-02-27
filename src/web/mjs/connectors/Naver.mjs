@@ -9,6 +9,9 @@ export default class Naver extends Connector {
         super.label = '네이버 웹툰 (Naver Webtoon)';
         this.tags = [ 'webtoon', 'korean' ];
         this.url = 'https://comic.naver.com';
+        this.links = {
+            login: 'https://nid.naver.com/nidlogin.login'
+        };
     }
 
     async _getMangaFromURI(uri) {

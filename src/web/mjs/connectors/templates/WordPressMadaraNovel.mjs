@@ -21,8 +21,9 @@ export default class WordPressMadaraNovel extends WordPressMadara {
     }
 
     async _getPagesNovel(request) {
+        let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
-            new Promise(resolve => {
+            new Promise((resolve, reject) => {
                 document.body.style.width = '${this.novelWidth}';
                 let container = document.querySelector('div.content-area div.container');
                 container.style.maxWidth = '${this.novelWidth}';
@@ -30,11 +31,22 @@ export default class WordPressMadaraNovel extends WordPressMadara {
                 container.style.margin = '0';
                 let novel = document.querySelector('div.entry-content');
                 novel.style.padding = '${this.novelPadding}';
+                [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                    ele.style.backgroundColor = '${darkmode.background}'
+                    ele.style.color = '${darkmode.text}'
+                })
+                novel.style.backgroundColor = '${darkmode.background}'
+                novel.style.color = '${darkmode.text}'
                 document.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
+                script.onerror = error => reject(error);
                 script.onload = async function() {
-                    let canvas = await html2canvas(novel);
-                    resolve(canvas.toDataURL('${this.novelFormat}'));
+                    try{
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('${this.novelFormat}'));
+                    }catch (error){
+                        reject(error)
+                    }
                 }
                 script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
                 document.body.appendChild(script);

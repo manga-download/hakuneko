@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class Rawkuma extends WordPressEManga {
+export default class Rawkuma extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,8 +8,6 @@ export default class Rawkuma extends WordPressEManga {
         super.label = 'Rawkuma';
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://rawkuma.com';
-
-        this.path = '/manga/?list';
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.path = '/manga/list-mode/';
     }
 }

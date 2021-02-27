@@ -22,30 +22,6 @@ export default class ReaderFront extends Connector {
     /**
      *
      */
-    _getJsonResponse( gql/*, type*/ ) {
-        this.requestOptions.method = 'POST';
-        this.requestOptions.body = JSON.stringify( gql );
-        this.requestOptions.headers.set( 'content-type', 'application/json' );
-        let promise = fetch( this.apiURL, this.requestOptions )
-            .then( response => response.json() )
-            .then( data => {
-                if( data[ 'errors' ] ) {
-                    throw new Error( this.label + ' errors: ' + data.errors.map( error => error.message ).join( '\n' ) );
-                }
-                if( !data[ 'data' ] ) {
-                    throw new Error( this.label + 'No data available!' );
-                }
-                return Promise.resolve( data.data );
-            } );
-        this.requestOptions.headers.delete( 'content-type' );
-        delete this.requestOptions.body;
-        this.requestOptions.method = 'GET';
-        return promise;
-    }
-
-    /**
-     *
-     */
     _getMangaList( callback ) {
         let gql = {
             operationName: 'Works',
@@ -60,7 +36,7 @@ export default class ReaderFront extends Connector {
                         }
                     }`
         };
-        this._getJsonResponse( gql, 'mangas' )
+        this.fetchGraphQL(this.apiURL, gql.operationName, gql.query, gql.variables )
             .then( data => {
                 let mangaList = data.works.map( manga => {
                     return {
@@ -100,7 +76,7 @@ export default class ReaderFront extends Connector {
                         }
                     }`
         };
-        this._getJsonResponse( gql, 'chapters' )
+        this.fetchGraphQL(this.apiURL, gql.operationName, gql.query, gql.variables )
             .then( data => {
                 let chapterList = data.work.chapters.map( chapter => {
                 // .padStart( 4, '0' )
@@ -145,7 +121,7 @@ export default class ReaderFront extends Connector {
                         }
                     }`
         };
-        this._getJsonResponse( gql, 'pages' )
+        this.fetchGraphQL(this.apiURL, gql.operationName, gql.query, gql.variables)
             .then( data => {
                 let chapter = data.chapterById;
                 let pageList = chapter.pages.map( page => {

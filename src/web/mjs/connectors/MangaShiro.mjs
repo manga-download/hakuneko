@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class MangaShiro extends WordPressEManga {
+export default class MangaShiro extends WordPressMangastream {
 
     constructor() {
         super();
@@ -11,7 +11,8 @@ export default class MangaShiro extends WordPressEManga {
         this.path = '/manga/?list';
 
         this.queryChapters = 'div.bxcl ul li span.lchx a';
-        this.queryPages = 'div#readerarea > :not(.kln) source[src]:not([src=""])';
+        this.queryChaptersTitle = undefined;
+        this.queryPages = 'div#readerarea > :not(.kln) img[src]:not([src=""])';
     }
 
     async _getPages(chapter) {

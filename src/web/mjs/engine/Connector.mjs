@@ -35,7 +35,7 @@ export default class Connector {
             credentials: 'same-origin', // 'include',
             headers: new Headers()
         };
-        this.requestOptions.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
+        this.requestOptions.headers.set('accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9');
     }
 
     canHandleURI(uri) {
@@ -103,7 +103,7 @@ export default class Connector {
         this.initialize()
             .then( () => {
                 this._getMangaList( ( error, mangas ) => {
-                    if( error || !mangas ) {
+                    if( error || !mangas || mangas.length === 0 ) {
                         this.isUpdating = false;
                         callback( error, undefined );
                         return;
@@ -114,7 +114,7 @@ export default class Connector {
                     } );
                     // sort by title
                     mangas.sort( ( a, b ) => {
-                        return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1 ;
+                        return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
                     } );
 
                     this.mangaCache = undefined;
@@ -153,7 +153,7 @@ export default class Connector {
             .then( existingMangaTitles => {
                 this.existingManga = existingMangaTitles;
                 // check if manga list is cached
-                return this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile() ;
+                return this.mangaCache && this.mangaCache.length ? this._getUpdatedMangasFromCache() : this._getUpdatedMangasFromFile();
             } )
             .then( mangas => {
                 callback( null, mangas );
@@ -408,8 +408,8 @@ export default class Connector {
      *       => do not forget to remove this prefix from the links!
      */
     createDOM( content, replaceImageTags, clearIframettributes ) {
-        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true ;
-        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true ;
+        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true;
+        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true;
         if( replaceImageTags ) {
             content = content.replace( /<img/g, '<source');
             content = content.replace( /<\/img/g, '</source');
@@ -428,30 +428,27 @@ export default class Connector {
      * Get the content for the given Request
      * and get all elements matching the given CSS selector.
      */
-    fetchDOM( request, selector, retries ) {
+    async fetchDOM(request, selector, retries, encoding) {
         retries = retries || 0;
-        if( typeof request === 'string' ) {
-            request = new Request( request, this.requestOptions );
+        if(typeof request === 'string') {
+            request = new Request(request, this.requestOptions);
         }
         // TODO: check if this will affect (replace) the input parameter?
-        if( request instanceof URL ) {
-            request = new Request( request.href, this.requestOptions );
+        if(request instanceof URL) {
+            request = new Request(request.href, this.requestOptions);
         }
-        return fetch( request )
-            .then( response => {
-                if( response.status >= 500 && retries > 0 ) {
-                    return this.wait( 2500 )
-                        .then( () => this.fetchDOM( request, selector, retries - 1 ) );
-                }
-                if( response.status === 200 ) {
-                    return response.text()
-                        .then( data => {
-                            let dom = this.createDOM( data );
-                            return Promise.resolve( !selector ? dom : [...dom.querySelectorAll( selector )] );
-                        } );
-                }
-                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
-            } );
+        const response = await fetch(request.clone());
+        if(response.status >= 500 && retries > 0) {
+            await this.wait(2500);
+            return this.fetchDOM(request, selector, retries - 1);
+        }
+        const content = response.headers.get('content-type');
+        if(response.status === 200 || content.includes('text/html')) {
+            const data = await response.arrayBuffer();
+            const dom = this.createDOM(new TextDecoder(encoding || 'utf8').decode(data));
+            return Promise.resolve(!selector ? dom : [...dom.querySelectorAll(selector)]);
+        }
+        throw new Error(`Failed to receive content from "${request.url}" (type: ${content}, status: ${response.status}) - ${response.statusText}`);
     }
 
     /**
@@ -477,6 +474,34 @@ export default class Connector {
                 }
                 throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
             } );
+    }
+
+    fetchGraphQL(request, operationName, query, variables) {
+        if( typeof request === 'string' ) {
+            request = new URL(request);
+        }
+
+        const requestOptions = JSON.parse(JSON.stringify(this.requestOptions));
+        const graphQLRequest = new Request(request.href ? request.href : request.url, Object.assign(requestOptions, {
+            method: 'POST',
+            body: JSON.stringify({
+                operationName,
+                query,
+                variables,
+            })
+        }));
+        graphQLRequest.headers.set('content-type', 'application/json');
+
+        return this.fetchJSON(graphQLRequest)
+            .then(data => {
+                if (data.errors) {
+                    throw new Error(this.label + ' errors: ' + data.errors.map(error => error.message).join('\n'));
+                }
+                if (!data.data) {
+                    throw new Error(this.label + 'No data available!');
+                }
+                return data.data;
+            });
     }
 
     async fetchRegex(request, regex) {
@@ -717,5 +742,12 @@ export default class Connector {
             data.mimeType = 'image/bmp';
             return;
         }
+    }
+
+    getFormatRegex() {
+        return {
+            chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Bölüm|Chap|Chương|ตอนที่|Kapitel|Capitolo|Rozdział|Глава|Cap[ií]tulo|cap|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+            volumeRegex: /\s*(?:vol\.?|volume|Sezon|Том|Band|Cilt|tome)\s*(\d+)/i
+        };
     }
 }

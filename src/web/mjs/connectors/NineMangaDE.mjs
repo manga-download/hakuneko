@@ -7,6 +7,6 @@ export default class NineMangaDE extends NineManga {
         super.id = 'ninemanga-de';
         super.label = 'NineMangaDE';
         this.tags = [ 'manga', 'german' ];
-        this.url = 'http://de.ninemanga.com';
+        this.url = 'https://de.ninemanga.com';
     }
 }

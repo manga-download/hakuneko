@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class KomikIndo extends WordPressEManga {
+export default class KomikIndo extends WordPressMangastream {
 
     constructor() {
         super();
@@ -11,5 +11,6 @@ export default class KomikIndo extends WordPressEManga {
         this.path = '/manga-list/?list';
 
         this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.queryChaptersTitle = undefined;
     }
 }

@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class SekteKomik extends WordPressEManga {
+export default class SekteKomik extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,9 +8,6 @@ export default class SekteKomik extends WordPressEManga {
         super.label = 'SEKTEKOMIK.COM';
         this.tags = [ 'webtoon', 'indonesian' ];
         this.url = 'http://sektekomik.com';
-        this.path = '/manga/?list';
-
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
-        this.queryPages = 'div#readerarea > :not(.kln) source[src]:not([src=""])';
+        this.path = '/manga/list-mode/';
     }
 }

@@ -7,7 +7,7 @@ export default class KooManga extends WordPressZbulu {
         super.id = 'koomanga';
         super.label = 'KooManga';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'http://koomanga.com';
+        this.url = 'https://koomanga.com';
     }
 
     canHandleURI(uri) {
@@ -25,5 +25,12 @@ export default class KooManga extends WordPressZbulu {
         let request = new Request(uri.href, this.requestOptions);
         this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
+    }
+
+    getFormatRegex() {
+        return{
+            chapterRegex:/\s*(?:^|ch\.?|ep\.?|chapter|chap|chapitre|episode|#)\s*([\d.?\-?v?]+)(?:\s|:|$)+/i,
+            volumeRegex:/\s*(?:vol\.?|volume|tome)\s*(\d+)/i
+        };
     }
 }

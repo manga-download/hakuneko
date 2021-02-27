@@ -8,6 +8,9 @@ export default class UnionMangas extends Connector {
         super.label = 'UnionMangas';
         this.tags = [ 'manga', 'portuguese' ];
         this.url = 'https://unionleitor.top';
+        this.links = {
+            login: 'https://unionmangas.top/login'
+        };
     }
 
     _getMangaListFromPages( mangaPageLinks, index ) {
@@ -81,7 +84,7 @@ export default class UnionMangas extends Connector {
                     return uri.href;
                 } );
                 pageList = pageList.filter( page => {
-                    return page.indexOf( 'banner' ) < 0 ;
+                    return page.indexOf( 'banner' ) < 0;
                 } );
                 callback( null, pageList );
             } )

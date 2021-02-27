@@ -14,6 +14,9 @@ export default class ReadComicsOnline extends MangaReaderCMS {
         super.label = 'Read Comics Online';
         this.tags = [ 'comic', 'english' ];
         this.url = 'https://readcomicsonline.ru';
+        this.links = {
+            login: 'https://readcomicsonline.ru/auth/login'
+        };
 
         this.language = 'en';
     }

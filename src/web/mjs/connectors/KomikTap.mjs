@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class KomikTap extends WordPressEManga {
+export default class KomikTap extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,9 +8,6 @@ export default class KomikTap extends WordPressEManga {
         super.label = 'KomikTap';
         this.tags = [ 'manga', 'webtoon', 'hentai', 'indonesian' ];
         this.url = 'https://komiktap.in';
-        this.path = '/manga/?list';
-
-        this.queryMangas = 'div#content div.soralist ul li a.series';
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.path = '/manga/list-mode/';
     }
 }

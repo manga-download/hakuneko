@@ -200,17 +200,17 @@ export default class VRV extends Connector {
         return this._getAllStreams( this.api.base + episode.__links__.streams.href )
             .then( meta => {
                 let prefix = '';
-                let volume = episode.season_number ? 'S' + ( '0' + episode.season_number ).slice( -2 ) : '' ;
-                let number = episode.episode_number ? 'E' + ( '00' + episode.episode_number ).slice( -3 ) : '' ;
+                let volume = episode.season_number ? 'S' + ( '0' + episode.season_number ).slice( -2 ) : '';
+                let number = episode.episode_number ? 'E' + ( '00' + episode.episode_number ).slice( -3 ) : '';
                 prefix += volume;
-                prefix += prefix.length > 0 && number.length > 0 ? '.' : '' ;
+                prefix += prefix.length > 0 && number.length > 0 ? '.' : '';
                 prefix += number;
-                prefix += prefix.length > 0 ? ' - ' : '' ;
+                prefix += prefix.length > 0 ? ' - ' : '';
                 prefix += episode.title;
                 let reproducedEpisodes = meta.streams.reduce( ( accumulator, localizedStream ) => {
-                    let lng = localizedStream.locale ? ' (' + localizedStream.locale + ')' : '' ;
+                    let lng = localizedStream.locale ? ' (' + localizedStream.locale + ')' : '';
                     let episodeStreams = localizedStream.resolutions.map( resolution => {
-                        let res = resolution.height ? ' [' + resolution.height + 'p]' : '' ;
+                        let res = resolution.height ? ' [' + resolution.height + 'p]' : '';
                         return {
                             id: {
                                 hash: [episode.id, localizedStream.locale, resolution.height].join( ',' ),
@@ -462,7 +462,7 @@ export default class VRV extends Connector {
                     this.api.private = this.api.base + data.__links__.disc_index_unsigned.href.replace( /\/index$/, '' );
                     this.policies = data.signing_policies;
                     // verify if premium access is granted
-                    this.subscription = this.api.private.indexOf( this.subscriptionID ) > -1 ;
+                    this.subscription = this.api.private.indexOf( this.subscriptionID ) > -1;
                     this.regionBlock = !data.service_available;
                     this.initialized = true;
                     return Promise.resolve( this.initialized );

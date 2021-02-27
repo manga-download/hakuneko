@@ -1,15 +1,13 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class MangaSusuReborn extends WordPressEManga {
+export default class MangaSusuReborn extends WordPressMangastream {
 
     constructor() {
         super();
         super.id = 'mangasusureborn';
         super.label = 'MangaSusu Reborn';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
-        this.url = 'https://mangasusu.fun';
-        this.path = '/manga/?list';
-
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
+        this.url = 'https://mangasusu.world';
+        this.path = '/manga/list-mode/';
     }
 }

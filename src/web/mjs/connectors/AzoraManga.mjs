@@ -7,6 +7,6 @@ export default class AzoraManga extends WordPressMadara {
         super.id = 'azoramanga';
         super.label = 'أزورا مانج (AZORA MANGA)';
         this.tags = [ 'webtoon', 'arabic' ];
-        this.url = 'https://www.azoramanga.com';
+        this.url = 'https://azoramanga.com';
     }
 }

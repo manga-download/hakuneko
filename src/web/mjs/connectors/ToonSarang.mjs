@@ -1,5 +1,5 @@
 import GnuBoard5BootstrapBasic2 from './templates/GnuBoard5BootstrapBasic2.mjs';
-
+//dead?
 export default class ToonSarang extends GnuBoard5BootstrapBasic2 {
 
     constructor() {

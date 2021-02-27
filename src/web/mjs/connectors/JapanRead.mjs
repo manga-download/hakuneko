@@ -20,13 +20,18 @@ export default class JapanRead extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/manga-list', this.url), this.requestOptions);
+        const requestOptions = {
+            headers: {
+                'x-requested-with': 'XMLHttpRequest'
+            }
+        };
+        let request = new Request(new URL('/mangas-list/content', this.url), requestOptions);
         let pages = await this.fetchDOM(request, 'ul.pagination li.page-item:nth-last-child(2) > a');
         pages = Number(pages[0].text);
 
         let mangas = [];
-        for (let page = 0; page <= pages; page++) {
-            request = new Request(new URL('/manga-list?page=' + page, this.url), this.requestOptions);
+        for (let page = 1; page <= pages; page++) {
+            request = new Request(new URL('/mangas-list/content?page=' + page, this.url), requestOptions);
             let data = await this.fetchDOM(request, 'a.text-truncate', 5);
             mangas.push( ...data.map(element => {
                 return {
@@ -38,16 +43,27 @@ export default class JapanRead extends Connector {
 
         return mangas;
     }
-
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'a.text-truncate');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.textContent.trim(),
-            };
-        });
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        const chapters = [...document.querySelectorAll('div.chapter-container div.chapter-row a.text-truncate')].map(element => {
+                            return {
+                                id: element.pathname,
+                                title: element.textContent.trim()
+                            };
+                        });
+                        resolve(chapters);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
+        `;
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 
     async _getPages(chapter) {

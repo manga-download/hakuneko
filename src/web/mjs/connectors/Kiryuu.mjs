@@ -1,6 +1,6 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class Kiryuu extends WordPressEManga {
+export default class Kiryuu extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,20 +8,17 @@ export default class Kiryuu extends WordPressEManga {
         super.label = 'Kiryuu';
         this.tags = [ 'manga', 'indonesian' ];
         this.url = 'https://kiryuu.co';
-        this.path = '/manga/?list';
-
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
-        this.queryPages = 'div#readerarea > :not(.kln) source[src]:not([src=""])';
+        this.path = '/manga/list-mode/';
     }
 
     async _getPages(chapter) {
+        const fakeLinkPatterns = [
+            /[.,]5\.(jpg|png)$/i,
+            /iklan\.(jpg|png)$/i,
+            /zz\.(jpg|png)$/i,
+            /\.filerun\./i
+        ];
         let pageList = await super._getPages(chapter);
-        return pageList.filter(link => {
-            return !link.includes('.filerun.')
-                && !link.endsWith('iklan.png')
-                && !link.endsWith('.5.jpg')
-                && !link.endsWith(',5.jpg')
-                && !link.endsWith('ZZ.jpg');
-        });
+        return pageList.filter(link => !fakeLinkPatterns.some(pattern => pattern.test(link)));
     }
 }

@@ -1,13 +1,7 @@
-import WordPressEManga from './templates/WordPressEManga.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-/**
- *
- */
-export default class KomikMama extends WordPressEManga {
+export default class KomikMama extends WordPressMangastream {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'komikmama';
@@ -17,5 +11,6 @@ export default class KomikMama extends WordPressEManga {
         this.path = '/manga-list/?list';
 
         this.queryChapters = 'div.bxcl ul li div.lch a';
+        this.queryChaptersTitle = undefined;
     }
 }

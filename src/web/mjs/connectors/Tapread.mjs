@@ -26,8 +26,7 @@ export default class Tapread extends Connector {
     async _getMangaList(callback) {
         try {
             let mangaList = [];
-            for(let page = 1; page < 99; page++)
-            {
+            for(let page = 1; page < 99; page++) {
                 let request = new Request(this.url + '/comic/moredetail?pageNo=' + page, this.requestOptions);
                 let data = await this.fetchJSON(request);
                 if(!data.result) {
