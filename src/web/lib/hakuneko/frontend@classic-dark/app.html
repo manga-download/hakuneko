@@ -129,9 +129,9 @@
         </style>
         <div class$="control [[ getControlClass(selectedMediaIndex) ]]">
             <hakuneko-menu></hakuneko-menu>
-            <div class="mangas">
+            <div class="mangas" style$="[[ getMangasListStyle(readerEnabled) ]]">
                 <hakuneko-mangas style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="{{ connector }}" selected-manga="{{ manga }}"></hakuneko-mangas>
-                <hakuneko-chapters style$="[[ getMangaListStyle(readerEnabled) ]]" selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
+                <hakuneko-chapters style$="[[ getChapterListStyle(readerEnabled) ]]" selected-connector="[[ connector ]]" selected-manga="[[ manga ]]" selected-chapter="{{ chapter }}"></hakuneko-chapters>
             </div>
             <hakuneko-jobs></hakuneko-jobs>
         </div>
@@ -172,15 +172,22 @@
             /**
              *
              */
+             getMangasListStyle(readerEnabled) {
+                return ( readerEnabled ? '' : 'resize: none; width: 100%;' );
+            }
+
+            /**
+             *
+             */
             getMangaListStyle(readerEnabled) {
-                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+                return ( readerEnabled ? 'width: 20em;resize: horizontal;overflow: auto;' : 'flex: 1; width: 50%;' );
             }
 
             /**
              *
              */
             getChapterListStyle(readerEnabled) {
-                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; max-width: 50%;' );
+                return ( readerEnabled ? 'width: 20em;' : 'flex: 1; width: 50%;' );
             }
 
             /**
