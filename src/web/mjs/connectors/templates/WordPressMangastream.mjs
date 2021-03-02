@@ -64,7 +64,7 @@ export default class WordPressMangastream extends Connector {
                         } catch(error) {
                             reject(error);
                         }
-                    }, 500);
+                    }, 2500);
                 }
             });
         `;
