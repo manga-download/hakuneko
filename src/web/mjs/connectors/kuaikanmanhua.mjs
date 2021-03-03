@@ -78,8 +78,6 @@ export default class Kuaikanmanhua extends Connector {
     }
 
     async _getPageList(manga, chapter, callback) {
-        // clone header, then set mobile user-agent.
-        // mobile site gives larger (1280px wide) images, while desktop site returns smaller (750px) images.
         let newRequestOptions = Object.assign({}, this.requestOptions);
         newRequestOptions.headers.set(
             'x-user-agent',
