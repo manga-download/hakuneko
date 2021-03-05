@@ -16,7 +16,7 @@ export default class MangaDex extends Connector {
         ];
         this.serverPrimary = 'https://s2.mangadex.org/data/';
         this.serverSecondary = 'https://s5.mangadex.org/data/';
-        this.networkSeed = undefined;
+        this.serverNetwork = [];
 
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
@@ -33,8 +33,8 @@ export default class MangaDex extends Connector {
 
     async _initializeConnector() {
         // TODO: determine seed from remote service?
-        this.networkSeed = 'https://d156gdtycsqca.xnvda7fch4zhr.mangadex.network:443/data/';
-        console.log(`Assigned Seed '${this.networkSeed}' to ${this.label}`);
+        this.serverNetwork.push('https://d156gdtycsqca.xnvda7fch4zhr.mangadex.network:443/data/');
+        console.log(`Added Network Seeds '[ ${this.serverNetwork.join(', ')} ]' to ${this.label}`);
         /*
          * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
          * => append random search parameter to avoid caching
@@ -129,7 +129,7 @@ export default class MangaDex extends Connector {
         const servers = [
             this.serverPrimary,
             this.serverSecondary,
-            this.networkSeed,
+            ...this.serverNetwork,
             payload.serverFallback,
             payload.networkNode
         ];
