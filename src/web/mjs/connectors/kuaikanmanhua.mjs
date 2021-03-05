@@ -1,7 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-export default class Kauikanmanhua extends Connector {
+export default class Kuaikanmanhua extends Connector {
 
     constructor() {
         super();
@@ -78,13 +78,19 @@ export default class Kauikanmanhua extends Connector {
     }
 
     async _getPageList(manga, chapter, callback) {
+        let newRequestOptions = Object.assign({}, this.requestOptions);
+        newRequestOptions.headers.set(
+            'x-user-agent',
+            'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1'
+        );
+
         try {
             let script = `
             new Promise(resolve => {
-                let pages = __NUXT__.data[0].comicInfo.comicImages.map(img => img.url);
+                let pages = __NUXT__.data[0].comicInfo.comic_images.map(img => img.url);
                 resolve(pages);
             });`;
-            let request = new Request(this.url + chapter.id, this.requestOptions);
+            let request = new Request(this.url + chapter.id, newRequestOptions);
             let pageList = await Engine.Request.fetchUI(request, script);
             callback(null, pageList);
         } catch (error) {
