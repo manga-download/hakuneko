@@ -33,7 +33,7 @@ export default class MangaDex extends Connector {
 
     async _initializeConnector() {
         // TODO: determine seed from remote service?
-        this.serverNetwork.push('https://d156gdtycsqca.xnvda7fch4zhr.mangadex.network:443/data/');
+        this.serverNetwork.push('https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network:443/data/');
         console.log(`Added Network Seeds '[ ${this.serverNetwork.join(', ')} ]' to ${this.label}`);
         /*
          * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
