@@ -9,7 +9,7 @@ export default class IMHentai extends Connector {
         super.id = 'imhentai';
         super.label = 'IMHentai';
         this.tags = [ 'hentai', 'english' ];
-        this.url = 'https://imhentai.com';
+        this.url = 'https://imhentai.xxx';
     }
 
     async _getMangaFromURI(uri) {
@@ -40,7 +40,7 @@ export default class IMHentai extends Connector {
                         const id = $('#load_id').val();
                         const images = Object.values(g_th).map((item, index) => {
                             const file = (index + 1) + extensions.find(ext => ext[1] === item[0]);
-                            return [ 'https://m' + server + '.imhentai.com', dir, id, file ].join('/');
+                            return [ 'https://m' + server + '.' + window.location.hostname, dir, id, file ].join('/');
                         });
                         resolve(images);
                     } catch(error) {

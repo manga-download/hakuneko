@@ -8,6 +8,6 @@ export default class MasterKomik extends WordPressMangastream {
         super.label = 'MasterKomik';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
         this.url = 'https://masterkomik.com';
-        this.path = '/manga/?list';
+        this.path = '/manga/list-mode/';
     }
 }
