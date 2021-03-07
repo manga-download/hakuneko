@@ -55,7 +55,7 @@ export default class WordPressMangastream extends Connector {
         const script = `
             new Promise((resolve, reject) => {
                 if(window.ts_reader) {
-                    resolve(ts_reader.params.sources.pop().images);
+                    resolve(ts_reader.params.sources.shift().images);
                 } else {
                     setTimeout(() => {
                         try {
@@ -64,7 +64,7 @@ export default class WordPressMangastream extends Connector {
                         } catch(error) {
                             reject(error);
                         }
-                    }, 500);
+                    }, 2500);
                 }
             });
         `;

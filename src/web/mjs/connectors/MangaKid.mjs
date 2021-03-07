@@ -7,7 +7,7 @@ export default class MangaKid extends WordPressMangastream {
         super.id = 'mangakid';
         super.label = 'MangaKid';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://mangakid.club';
+        this.url = 'https://mangakid.site';
         this.path = '/manga-lists/';
 
         this.queryChapters = 'div.cl ul li span.leftoff a';

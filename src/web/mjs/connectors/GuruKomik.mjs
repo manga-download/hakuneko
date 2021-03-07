@@ -8,6 +8,6 @@ export default class GuruKomik extends WordPressMangastream {
         super.label = 'GuruKomik';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
         this.url = 'https://gurukomik.com';
-        this.path = '/manga/?list';
+        this.path = '/manga/list-mode/';
     }
 }

@@ -8,6 +8,8 @@ export default class Turktoon extends WordPressMangastream {
         super.label = 'Turktoon';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
         this.url = 'https://turktoon.com';
-        this.path = '/manga/?list';
+        this.path = '/manga/list-mode/';
+
+        this.queryChaptersTitleBloat = 'span.chapterdate';
     }
 }
