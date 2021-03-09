@@ -7,6 +7,6 @@ export default class PMScans extends WordPressMadara {
         super.id = 'pmscans';
         super.label = 'PMScans';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'http://www.pmscans.com';
+        this.url = 'https://www.pmscans.com';
     }
 }
