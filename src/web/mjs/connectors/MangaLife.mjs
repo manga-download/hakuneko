@@ -73,10 +73,17 @@ export default class MangaLife extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
+                        const isNotGoingToHappen = 'justgiveupalready'; // try better protection if you want to challenge HakuNeko :P
                         let vm = angular.element($('[ng-app="MainApp"]')).scope().vm;
                         let pages = vm.Pages.map(page => {
                             // TODO: skip slash when vm.CurChapter.Directory is empty
-                            return 'https://' + vm.CurPathName + '/manga' + '/' + vm.IndexName + '/' + vm.CurChapter.Directory + '/' + vm.ChapterImage(vm.CurChapter.Chapter) + '-' + vm.PageImage(page) + '.png';
+                            return [
+                                'https://' + vm[isNotGoingToHappen],
+                                'manga',
+                                vm.IndexName,
+                                vm.CurChapter.Directory || '.',
+                                vm.ChapterImage(vm.CurChapter.Chapter) + '-' + vm.PageImage(page) + '.png'
+                            ].join('/');
                         });
                         resolve(pages);
                     } catch(error) {
