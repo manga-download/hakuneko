@@ -8,7 +8,7 @@ export default class MangaLivre extends Connector {
         super.id = 'mangalivre';
         super.label = 'Manga Livre';
         this.tags = [ 'manga', 'portuguese', 'webtoon' ];
-        this.url = 'https://mangalivre.com';
+        this.url = 'https://mangalivre.net';
     }
 
     async _getMangas() {

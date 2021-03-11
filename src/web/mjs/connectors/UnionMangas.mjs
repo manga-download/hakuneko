@@ -7,7 +7,7 @@ export default class UnionMangas extends Connector {
         super.id = 'unionmangas';
         super.label = 'UnionMangas';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://unionleitor.top';
+        this.url = 'https://unionmangas.top'; // https://unionleitor.top
         this.links = {
             login: 'https://unionmangas.top/login'
         };
@@ -73,24 +73,10 @@ export default class UnionMangas extends Connector {
             } );
     }
 
-    _getPageList( manga, chapter, callback ) {
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        this.fetchDOM(request, 'source[pag]')
-            .then( data => {
-                let pageList = data.map( element => {
-                    let uri = new URL( element.src );
-                    uri.protocol = new URL( this.url ).protocol;
-                    return uri.href;
-                } );
-                pageList = pageList.filter( page => {
-                    return page.indexOf( 'banner' ) < 0;
-                } );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'source.img-manga');
+        return data.map(element => this.getAbsolutePath(element, request.url)).filter(link => !link.includes('banner'));
     }
 }

@@ -9,6 +9,7 @@ export default class MangaLife extends Connector {
         super.label = 'MangaLife';
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manga4life.com';
+        this.requestOptions.headers.set('x-cookie', 'FullPage=yes');
     }
 
     async _getMangaFromURI(uri) {
@@ -73,12 +74,7 @@ export default class MangaLife extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
-                        let vm = angular.element($('[ng-app="MainApp"]')).scope().vm;
-                        let pages = vm.Pages.map(page => {
-                            // TODO: skip slash when vm.CurChapter.Directory is empty
-                            return 'https://' + vm.CurPathName + '/manga' + '/' + vm.IndexName + '/' + vm.CurChapter.Directory + '/' + vm.ChapterImage(vm.CurChapter.Chapter) + '-' + vm.PageImage(page) + '.png';
-                        });
-                        resolve(pages);
+                        resolve([...document.querySelectorAll('div.ImageGallery div[ng-repeat] img')].map(img => img.src));
                     } catch(error) {
                         reject(error);
                     }

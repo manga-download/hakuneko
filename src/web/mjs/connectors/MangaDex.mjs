@@ -9,6 +9,7 @@ export default class MangaDex extends Connector {
         super.label = 'MangaDex';
         this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
         this.url = 'https://mangadex.org';
+        this.api = 'https://api.mangadex.org/v2/';
         this.requestOptions.headers.set('x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2');
         this.requestOptions.headers.set('x-referer', this.url);
         this.licensedChapterGroups = [
@@ -77,7 +78,7 @@ export default class MangaDex extends Connector {
     }
 
     async _getChapters(manga) {
-        const uri = new URL(`/api/v2/manga/${this._migratedMangaID(manga.id)}/chapters`, this.url);
+        const uri = new URL(`manga/${this._migratedMangaID(manga.id)}/chapters`, this.api);
         const request = new Request(uri);
         const data = await this.fetchJSON(request, 3);
         return data.data.chapters
@@ -112,9 +113,8 @@ export default class MangaDex extends Connector {
     }
 
     async _getPages(chapter) {
-        const uri = new URL(`/api/v2/chapter/${chapter.id}`, this.url);
-        uri.searchParams.set('mark_read', false);
-        uri.searchParams.set('saver', false);
+        const uri = new URL(`chapter/${chapter.id}`, this.api);
+        uri.searchParams.set('saver', 0);
         const request = new Request(uri);
         const data = await this.fetchJSON(request, 3);
         return data.data.pages.map(file => this.createConnectorURI({
