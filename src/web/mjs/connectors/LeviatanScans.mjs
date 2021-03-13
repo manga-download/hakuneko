@@ -1,13 +1,7 @@
-import Genkan from './templates/Genkan.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-/**
- *
- */
-export default class LeviatanScans extends Genkan {
+export default class LeviatanScans extends WordPressMadara {
 
-    /**
-     *
-     */
     constructor() {
         super();
         super.id = 'leviatanscans';
