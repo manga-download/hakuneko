@@ -90,12 +90,19 @@ export default class WordPressMadara extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
+            element.src = element.dataset['src'] || element['srcset'] || element.src;
             if (element.src.includes('data:image')) {
                 return element.src.match(/data:image[^\s'"]*/)[0];
             } else {
+                const uri = new URL(this.getAbsolutePath(element, request.url));
+                // HACK: bypass proxy for https://website.net/wp-content/webpc-passthru.php?src=https://website.net/wp-content/uploads/WP-manga/data/manga/chapter/001.jpg&nocache=1?ssl=1
+                const canonical = uri.searchParams.get('src');
+                if(canonical && /^https?:/.test(canonical)) {
+                    uri.href = canonical;
+                }
                 return this.createConnectorURI({
                     // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
-                    url: this.getAbsolutePath(element.dataset['src'] || element['srcset'] || element, request.url).replace(/\/i\d+\.wp\.com/, ''),
+                    url: uri.href.replace(/\/i\d+\.wp\.com/, ''),
                     referer: request.url
                 });
             }
@@ -109,7 +116,6 @@ export default class WordPressMadara extends Connector {
          */
         let request = new Request(payload.url, this.requestOptions);
         request.headers.set('x-referer', payload.referer);
-        request.headers.set('accept', 'image/webp,image/apng,image/*,*/*');
         let response = await fetch(request);
         let data = await response.blob();
         data = await this._blobToBuffer(data);

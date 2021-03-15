@@ -7,7 +7,7 @@ export default class ManmanApp extends Connector {
         super();
         super.id = 'manmanapp';
         super.label = 'Manman Comic 漫漫漫画';
-        this.tags = [ 'manga', 'webtoon', 'chineses' ];
+        this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://www.manmanapp.com';
     }
 

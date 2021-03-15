@@ -14,7 +14,7 @@ export default class MangaJar extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'span.post-name');
-        let id = uri.pathname.split('manga/')[1];
+        let id = uri.pathname;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -33,32 +33,29 @@ export default class MangaJar extends Connector {
         let data = await this.fetchDOM(request, 'div.row article.flex-item div.post-description a.card-about');
         return data.map(element => {
             return {
-                id: element.href.split('/').pop(),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.querySelector( 'p.card-title' ).textContent.trim()
             };
         });
     }
 
     async _getChapters( manga ) {
-        let request = new Request(new URL(`/manga/${manga.id}/chaptersList`, this.url));
-        let data = await this.fetchDOM(request, 'li.chapter-item');
-
+        let request = new Request(new URL(manga.id.replace(/\/$/, '') + '/chaptersList', this.url));
+        let data = await this.fetchDOM(request, 'ul.list-group li.chapter-item a');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), request.url),
-                title: element.querySelector('span.chapter-title').textContent.trim(),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.innerText.trim(),
                 language: ''
             };
         });
-
     }
 
     async _getPages( chapter ) {
         let request = new Request(new URL(chapter.id, this.url));
-        let data = await this.fetchDOM(request, 'source.img-fluid');
+        let data = await this.fetchDOM(request, 'source.page-image');
         return data.map( element => {
-            return this.getAbsolutePath(element, request.url);
+            return this.getAbsolutePath(element.dataset.src || element, request.url);
         });
     }
-
 }

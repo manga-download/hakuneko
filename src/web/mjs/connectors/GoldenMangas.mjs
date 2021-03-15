@@ -7,7 +7,7 @@ export default class GoldenMangas extends Connector {
         super.id = 'goldenmangas';
         super.label = 'GoldenMangas';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://goldenmanga.top';
+        this.url = 'https://goldenmangas.top';
     }
 
     /**

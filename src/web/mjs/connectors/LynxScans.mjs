@@ -1,15 +1,15 @@
 import Genkan from './templates/Genkan.mjs';
 
-export default class SecretScans extends Genkan {
+export default class LynxScans extends Genkan {
 
     constructor() {
         super();
         super.id = 'secretscans';
-        super.label = 'Secret Scans';
+        super.label = 'Lynx Scans';
         this.tags = [ 'webtoon', 'high-quality', 'english', 'scanlation' ];
-        this.url = 'https://secretscans.co';
+        this.url = 'https://lynxscans.com';
         this.links = {
-            login: 'https://secretscans.co/login'
+            login: 'https://lynxscans.com/login'
         };
     }
 }

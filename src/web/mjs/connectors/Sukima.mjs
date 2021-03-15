@@ -14,41 +14,51 @@ export default class Sukima extends Connector {
     }
 
     async _getMangas() {
-        let categorys = await this._fetchPOST('/api/book/v1/free/', '{"store":false,"genre":"0"}');
-
         let uri;
-        let pages;
-        let mangas = [];
-        for (const category of categorys.rows) {
-            if (category.more_btn.link.startsWith('/book/search/')) {
-                uri = new URL(category.more_btn.link, this.url);
-                pages = 1;
-                for (let page = 1; page <= pages; page++) {
-                    let body = JSON.stringify(
-                        {
-                            'free': [1, 2],
-                            'page': page,
-                            'sort_by': 0,
-                            'tag': [uri.searchParams.get('tag')]
-                        }
-                    );
-
-                    let pageContent = await this._fetchPOST('/api/v1/search/', body);
-                    pages = pageContent.max_page;
-
-                    for (const manga of pageContent.items) {
-                        mangas.push(
-                            {
-                                id: manga.title_code,
-                                title: manga.title_name
-                            }
-                        );
-                    }
-                }
-            }
+        let mangaList = [];
+        const pageContent = await this._fetchPOST('/api/v1/search/', JSON.stringify({
+            'page': 0,
+            'sort_by': 0
+        }));
+        const pageCount = pageContent.max_page;
+        for (let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPages(page);
+            mangaList.push(...mangas);
         }
 
-        return mangas;
+        let categorys = await this._fetchPOST('/api/book/v1/free/', '{"store":false,"genre":"0"}');
+        for (const category of categorys.rows) {
+            uri = new URL(category.more_btn.link, this.url);
+            if (uri.searchParams.get('tag') != null) {
+                const pageContent = await this._fetchPOST('/api/v1/search/', JSON.stringify({
+                    'page': 0,
+                    'sort_by': 0,
+                    'tag': [uri.searchParams.get('tag')]
+                }));
+                const pageCount = pageContent.max_page;
+                for (let page = 1; page <= pageCount; page++) {
+                    let mangas = await this._getMangasFromPages(page, [uri.searchParams.get('tag')]);
+                    mangaList.push(...mangas);
+                }
+
+            }
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPages(page, tag) {
+        let body = {
+            'page': page,
+            'sort_by': 0
+        };
+        body.tag = tag;
+        const pageContent = await this._fetchPOST('/api/v1/search/', JSON.stringify(body));
+        return pageContent.items.map(element => {
+            return {
+                id: element.title_code,
+                title: element.title_name,
+            };
+        });
     }
 
     async _getChapters(manga) {

@@ -9,6 +9,6 @@ export default class ManhuaUs extends WordPressMadara {
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://manhuaus.com';
 
-        this.queryPages = 'ul.blocks-gallery-grid li.blocks-gallery-item source';
+        this.queryPages = 'div.page-break source, ul.blocks-gallery-grid li.blocks-gallery-item source';
     }
 }

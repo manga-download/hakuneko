@@ -63,16 +63,20 @@ export default class MangaLib extends Connector {
     }
 
     async _getChapters(manga) {
+        const script = `
+            new Promise(resolve => {
+                const chapters = window.__DATA__.chapters.list.map(entry => {
+                    return {
+                        id: '/' + window.__DATA__.manga.slug + '/v' + entry.chapter_volume + '/c' + entry.chapter_number,
+                        title: entry.chapter_number + (entry.chapter_name ? ' - ' + entry.chapter_name : '')
+                    };
+                });
+                resolve(chapters);
+            });
+        `;
         let uri = new URL(manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.chapters-list div.chapter-item div.chapter-item__name a');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.replace(manga.title, '').trim(),
-                language: 'ru'
-            };
-        });
+        return Engine.Request.fetchUI(request, script);
     }
 
     async _getPages(chapter) {

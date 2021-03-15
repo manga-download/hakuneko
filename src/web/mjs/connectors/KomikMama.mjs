@@ -8,7 +8,7 @@ export default class KomikMama extends WordPressMangastream {
         super.label = 'Komikmama';
         this.tags = [ 'manga', 'indonesian' ];
         this.url = 'https://komikmama.net';
-        this.path = '/manga-list/?list';
+        this.path = '/manga/list-mode/';
 
         this.queryChapters = 'div.bxcl ul li div.lch a';
         this.queryChaptersTitle = undefined;

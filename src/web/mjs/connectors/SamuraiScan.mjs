@@ -1,6 +1,6 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class SamuraiScan extends MangaReaderCMS {
+export default class SamuraiScan extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,10 +8,5 @@ export default class SamuraiScan extends MangaReaderCMS {
         super.label = 'Samurai Scan';
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://samuraiscan.com';
-        this.links = {
-            login: 'https://samuraiscan.com/auth/login'
-        };
-
-        this.queryChapters = 'div.chapters h3.chapter-title a';
     }
 }

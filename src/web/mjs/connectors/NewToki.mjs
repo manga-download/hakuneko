@@ -7,7 +7,7 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         super.id = 'newtoki';
         super.label = 'NewToki';
         this.tags = [ 'manga', 'webtoon', 'korean' ];
-        this.url = 'https://newtoki83.com';
+        this.url = 'https://newtoki95.com';
         this.links = {
             login: 'https://newtoki95.com/bbs/login.php'
         };
