@@ -441,7 +441,7 @@ export default class Request {
          * Overwrite the Referer header, but
          * NEVER overwrite the referer for CloudFlare's DDoS protection to prevent infinite redirects!
          */
-        if( !uri.pathname.includes( 'chk_jschl' ) ) {
+        if(!/(ch[kl]_jschl|challenge-platform)/i.test(uri.href)) {
             if( uri.hostname.includes( '.mcloud.to' ) ) {
                 details.requestHeaders['Referer'] = uri.href;
             } else if( details.requestHeaders['x-referer'] ) {
