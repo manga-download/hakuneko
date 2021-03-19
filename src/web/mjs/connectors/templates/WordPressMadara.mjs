@@ -85,7 +85,7 @@ export default class WordPressMadara extends Connector {
 
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
-        // TODO: setting this parameter seems to be problematic for various website (e.g. ChibiManga, AniMangaES server will crash)
+        // TODO: setting this parameter seems to be problematic for various websites (e.g. ChibiManga, AniMangaES, MangaSpark server will reject/crash)
         uri.searchParams.set('style', 'list');
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
