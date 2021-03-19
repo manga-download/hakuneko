@@ -433,9 +433,13 @@ export default class Request {
             delete details.requestHeaders['x-user-agent'];
         }
 
+        // Prevent loading anything from cache (espacially CloudFlare protection)
+        details.requestHeaders['Cache-Control'] = details.requestHeaders['no-cache'];
+        details.requestHeaders['Pragma'] = details.requestHeaders['no-cache'];
+
         /*
          * Overwrite the Referer header, but
-         * NEVER overwrite the referer for cloudflare's DDoS protection to prevent infinite redirects!
+         * NEVER overwrite the referer for CloudFlare's DDoS protection to prevent infinite redirects!
          */
         if( !uri.pathname.includes( 'chk_jschl' ) ) {
             if( uri.hostname.includes( '.mcloud.to' ) ) {
