@@ -15,8 +15,6 @@ export default class WebNovel extends Connector {
 
     async _initializeConnector() {
         let uri = new URL( this.url );
-        uri.searchParams.set( 'ts', Date.now() );
-        uri.searchParams.set( 'rd', Math.random() );
         let request = new Request( uri.href, this.requestOptions );
         return Engine.Request.fetchUI( request, `new Promise( resolve => resolve( decodeURIComponent( document.cookie ).match( /_csrfToken=([^;]+);/ )[1] ) )` )
             .then( data => this.token = data );
