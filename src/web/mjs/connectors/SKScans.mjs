@@ -1,6 +1,6 @@
-import Genkan from './templates/Genkan.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class SKScans extends Genkan {
+export default class SKScans extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,8 +8,5 @@ export default class SKScans extends Genkan {
         super.label = 'SK Scans (Sleeping Knight)';
         this.tags = [ 'webtoon', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://skscans.com';
-        this.links = {
-            login: 'https://skscans.com/login'
-        };
     }
 }
