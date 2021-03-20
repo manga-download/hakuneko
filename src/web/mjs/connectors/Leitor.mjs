@@ -23,7 +23,7 @@ export default class Leitor extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.series-info span.series-title h1');
+        const data = await this.fetchDOM(request, 'div#series-data div.series-info span.series-title h1');
         const id = uri.pathname;
         const title = data[0].textContent.trim();
         return new Manga(this, id, title);
