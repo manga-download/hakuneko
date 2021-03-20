@@ -51,6 +51,21 @@ export default class IMHentai extends Connector {
         `;
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(link => {
+            const payload = {
+                url: link,
+                referer: request.url
+            };
+            return this.createConnectorURI(payload);
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
