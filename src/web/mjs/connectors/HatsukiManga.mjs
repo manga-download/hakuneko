@@ -32,10 +32,11 @@ export default class HatsukiManga extends Connector {
     }
 
     async _getChapters(manga) {
+        const url = new URL(manga.id, this.url);
         const uri = new URL('/src/get_all_caps.php', this.url);
         const request = new Request(uri, {
             method: 'POST',
-            body: 'idObra=' + new URL(manga.id, this.url).searchParams.get('id'),
+            body: 'idObra=' + url.searchParams.get('id'),
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded'
             }
@@ -45,7 +46,8 @@ export default class HatsukiManga extends Connector {
             const chapter = element.querySelector('div.capitulo-apartado p.enlace-apartado').textContent.trim();
             const scanlations = [...element.querySelectorAll('ul.lista-de-capitulos li.elemento-capitulo')].map(item => {
                 return {
-                    id: this.getRootRelativeOrAbsoluteLink(item.querySelector('a.scan-capitulo[href*="viewer?id"]'), request.url),
+                    // https://hatsukimanga.com/biblioteca/viewer?id_capitulo=18228
+                    id: this.getRootRelativeOrAbsoluteLink(item.querySelector('a.scan-capitulo[href*="viewer?id"]'), url.href),
                     title: `${chapter} [${item.querySelector('a.scan-capitulo[href*="scan?ids"]').text.trim()}]`
                 };
             });
