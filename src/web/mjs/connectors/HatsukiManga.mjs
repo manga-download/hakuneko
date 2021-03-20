@@ -46,7 +46,6 @@ export default class HatsukiManga extends Connector {
             const chapter = element.querySelector('div.capitulo-apartado p.enlace-apartado').textContent.trim();
             const scanlations = [...element.querySelectorAll('ul.lista-de-capitulos li.elemento-capitulo')].map(item => {
                 return {
-                    // https://hatsukimanga.com/biblioteca/viewer?id_capitulo=18228
                     id: this.getRootRelativeOrAbsoluteLink(item.querySelector('a.scan-capitulo[href*="viewer?id"]'), url.href),
                     title: `${chapter} [${item.querySelector('a.scan-capitulo[href*="scan?ids"]').text.trim()}]`
                 };
