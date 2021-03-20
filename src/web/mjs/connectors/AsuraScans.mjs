@@ -12,4 +12,9 @@ export default class AsuraScans extends WordPressMangastream {
 
         this.queryPages = 'div#readerarea img[loading]';
     }
+
+    async _getPages(chapter) {
+        const images = await super._getPages(chapter);
+        return images.filter(link => !/panda_gif_large/i.test(link));
+    }
 }

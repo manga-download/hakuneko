@@ -8,5 +8,6 @@ export default class DarkYueRealm extends WordPressMadara {
         super.label = 'DarkYue Realm';
         this.tags = [ 'manga', 'portuguese' ];
         this.url = 'https://darkyuerealm.site';
+        this.path = '/web';
     }
 }

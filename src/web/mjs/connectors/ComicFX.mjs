@@ -10,7 +10,7 @@ export default class ComicFX extends MangaReaderCMS {
         this.url = 'https://comicfx.net';
 
         this.queryMangas = 'ul.manga-list li a';
-        this.queryChapters = 'div.chaplist ul li a';
+        this.queryChapters = 'div.chaplist ul li a:not([class])';
         this.queryPages = 'div#all source.img-responsive';
         this.language = 'id';
     }
