@@ -21,13 +21,7 @@ export default class MangaHasu extends Connector {
      *
      */
     async _initializeConnector() {
-        /*
-         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
-         * => append random search parameter to avoid caching
-         */
         let uri = new URL( this.url + '/0/0.html' );
-        uri.searchParams.set( 'ts', Date.now() );
-        uri.searchParams.set( 'rd', Math.random() );
         let request = new Request( uri.href, this.requestOptions );
         return Engine.Request.fetchUI( request, '' );
     }

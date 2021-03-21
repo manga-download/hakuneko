@@ -15,13 +15,7 @@ export default class Ngomik extends WordPressMangastream {
         // NOTE: Multiple domains may be protected by CloudFlare and needs to be unlocked ...
         const domains = [ this.url, 'https://cdn.ngomik.in', 'https://cdn2.ngomik.in' ];
         for(let domain of domains) {
-            /*
-             * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
-             * => append random search parameter to avoid caching
-             */
             let uri = new URL(domain);
-            uri.searchParams.set('ts', Date.now());
-            uri.searchParams.set('rd', Math.random());
             let request = new Request(uri.href, this.requestOptions);
             await Engine.Request.fetchUI(request, '', 60000, true);
         }

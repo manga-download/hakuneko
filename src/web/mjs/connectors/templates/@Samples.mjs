@@ -18,8 +18,6 @@ export default class Samples extends Connector {
      * e.g. Bypass CloudFlare protection
      * _initializeConnector() {
      * let uri = new URL( this.url );
-     * uri.searchParams.set( 'ts', Date.now() );
-     * uri.searchParams.set( 'rd', Math.random() );
      * let request = new Request( uri.href, this.requestOptions );
      * return Engine.Request.fetchUI( request, '' );
      * }

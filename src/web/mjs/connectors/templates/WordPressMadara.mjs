@@ -85,10 +85,16 @@ export default class WordPressMadara extends Connector {
 
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
-        // NOTE: Some websites will reject/crash when 'style' parameter is set (e.g. ChibiManga, AniMangaES, MangaSpark)
         uri.searchParams.set('style', 'list');
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
+        // HACK: Some Madara websites have added the '?style=list' pattern as CloudFlare WAF rule
+        //       => Try without style parameter to bypass CloudFlare matching rule
+        if(!data || !data.length) {
+            uri.searchParams.delete('style');
+            request = new Request(uri, this.requestOptions);
+            data = await this.fetchDOM(request, this.queryPages);
+        }
         return data.map(element => {
             element.src = element.dataset['src'] || element['srcset'] || element.src;
             if (element.src.includes('data:image')) {
