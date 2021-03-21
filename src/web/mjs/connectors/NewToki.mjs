@@ -31,13 +31,7 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
     }
 
     async _initializeConnector() {
-        /*
-         * sometimes cloudflare bypass will fail, because chrome successfully loads the page from its cache
-         * => append random search parameter to avoid caching
-         */
         let uri = new URL(this.url);
-        uri.searchParams.set('ts', Date.now());
-        uri.searchParams.set('rd', Math.random());
         let request = new Request(uri.href, this.requestOptions);
         this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
         this.requestOptions.headers.set('x-referer', this.url);
