@@ -50,8 +50,6 @@ module.exports = class CommandlineArgumentExtractor {
      */
     get options() {
         return {
-            //Add the Cube loader (yet again)
-            applicationCubeURL:           this._get('--cubeloader-url'),
             applicationUpdateURL:         this._get('--update-url') || this._get('-u'),
             applicationStartupURL:        this._get('--startup-url'),
             applicationCacheDirectory:    this._get('--cache-directory') || this._get('-c'),

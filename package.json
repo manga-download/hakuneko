@@ -15,9 +15,8 @@
     "@hakuneko/kindlegen-binaries": "latest",
     "@logtrine/logtrine": "latest",
     "asar": "latest",
-    "babel-core": "^6.26.3",
     "discord-rpc": "latest",
-    "electron": "8.3.4",
+    "electron": "^7.3.3",
     "eslint": "latest",
     "fs-extra": "latest",
     "innosetup-compiler": "latest",
@@ -27,8 +26,6 @@
     "polymer-build": "latest",
     "puppeteer-core": "latest",
     "rcedit": "latest",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
     "win-7zip": "latest"
   },
   "scripts": {

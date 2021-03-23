@@ -63,7 +63,7 @@ module.exports = class App {
                 delete process.env.HAKUNEKO_PORTABLE;
             }
             await this._electron.launch();
-            await this._electron.loadURL(this._configuration.applicationCubeURL);
+            await this._electron.loadURL(`hakuneko://cache/cubeloader.html`);
             await this._updater.updateCache(this._configuration.publicKey);
             this._electron.loadURL(this._configuration.applicationStartupURL);
         } catch(error) {
