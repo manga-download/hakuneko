@@ -25,6 +25,8 @@ module.exports = class Configuration {
         let applicationExecutableDirectory = path.dirname(electron.app.getPath('exe'));
         this._applicationUpdateURL = options['applicationUpdateURL'] || 'https://manga-download.github.io/hakuneko/master/latest';
         this._applicationStartupURL = options['applicationStartupURL'] || 'hakuneko://cache/index.html';
+        //Add the cubeloader
+        this._applicationCubeURL = options['applicationCubeURL'] || 'hakuneko://cache/cubeloader.html';
         this._applicationCacheDirectory = options['applicationCacheDirectory'] || path.join(applicationExecutableDirectory, 'cache');
         this._applicationUserDataDirectory = options['applicationUserDataDirectory'] || path.join(applicationExecutableDirectory, 'userdata');
     }
@@ -36,6 +38,7 @@ module.exports = class Configuration {
         console.log('Configuration');
         console.log(separator);
         console.log('Update URL           :', this.applicationUpdateURL);
+        console.log('Cubeloader URL       :', this.applicationCubeURL); //add the cube loader
         console.log('Connector Protocol   :', this.connectorProtocol);
         console.log('Application Protocol :', this.applicationProtocol);
         console.log('Startup URL          :', this.applicationStartupURL);
@@ -66,6 +69,11 @@ module.exports = class Configuration {
 
     get applicationStartupURL() {
         return this._applicationStartupURL;
+    }
+
+    //Add the cubeloader url
+    get applicationCubeURL() {
+        return this._applicationCubeURL;
     }
 
     get applicationCacheDirectory() {

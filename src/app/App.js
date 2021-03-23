@@ -1,4 +1,4 @@
-const path = require('path');
+﻿const path = require('path');
 const { ConsoleLogger } = require('@logtrine/logtrine');
 const Configuration = require('./Configuration');
 const ConfigurationLinux = require('./ConfigurationLinux');
@@ -9,13 +9,6 @@ const UpdateServerManager = require('./UpdateServerManager');
 const CacheDirectoryManager = require('./CacheDirectoryManager');
 const Updater = require('./Updater');
 const ElectronBootstrap = require('./ElectronBootstrap');
-
-const loadingPage = `
-<div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%); font-family: monospace; font-size: 1.25em; font-weight: bold; text-align: center; opacity: 0.33;">
-    <div style="margin-bottom: 1.5em;">Checking for Update</div>
-    <progress></progress>
-</div>
-`;
 
 module.exports = class App {
 
@@ -70,7 +63,7 @@ module.exports = class App {
                 delete process.env.HAKUNEKO_PORTABLE;
             }
             await this._electron.launch();
-            await this._electron.loadHTML(loadingPage);
+            await this._electron.loadURL(this._configuration.applicationCubeURL);
             await this._updater.updateCache(this._configuration.publicKey);
             this._electron.loadURL(this._configuration.applicationStartupURL);
         } catch(error) {

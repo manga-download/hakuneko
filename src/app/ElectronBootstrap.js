@@ -248,12 +248,12 @@ module.exports = class ElectronBootstrap {
         }
 
         this._window = new electron.BrowserWindow({
-            width: 1120,
-            height: 680,
-            title: 'HakuNeko',
+            width: 800, //1120
+            height: 600, //680
+            titlebarstyle: 'hidden', //oooo borderless window!
             icon: this._appIcon,
-            show: false,
-            backgroundColor: '#f8f8f8',
+            show: false, //No Idea what the hell this does, I'll leave it alone
+            backgroundColor: '#202225', //The Color change was killing me going into dark mode
             webPreferences: {
                 experimentalFeatures: true,
                 nodeIntegration: true,
