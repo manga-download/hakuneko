@@ -16,7 +16,7 @@
     "@logtrine/logtrine": "latest",
     "asar": "latest",
     "discord-rpc": "latest",
-    "electron": "^7.3.3",
+    "electron": "^8.3.4",
     "eslint": "latest",
     "fs-extra": "latest",
     "innosetup-compiler": "latest",
