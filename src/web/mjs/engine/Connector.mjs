@@ -445,14 +445,15 @@ export default class Connector {
         if((response == null || response.status >= 500) && retries > 0) {
             await this.wait(2500);
             return this.fetchDOM(request, selector, retries - 1);
+        } else if (response != null ) {
+            const content = response.headers.get('content-type');
+            if(response.status === 200 || content.includes('text/html')) {
+                const data = await response.arrayBuffer();
+                const dom = this.createDOM(new TextDecoder(encoding || 'utf8').decode(data));
+                return Promise.resolve(!selector ? dom : [...dom.querySelectorAll(selector)]);
+            }
         }
 
-        const content = response.headers.get('content-type');
-        if(response.status === 200 || content.includes('text/html')) {
-            const data = await response.arrayBuffer();
-            const dom = this.createDOM(new TextDecoder(encoding || 'utf8').decode(data));
-            return Promise.resolve(!selector ? dom : [...dom.querySelectorAll(selector)]);
-        }
         throw new Error(`Failed to receive content from "${request.url}" (type: ${content}, status: ${response.status}) - ${response.statusText}`);
     }
 
