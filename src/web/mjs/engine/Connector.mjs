@@ -22,6 +22,8 @@ export default class Connector {
         this.mangaCache = undefined;
         //
         this.existingMangas = [];
+        // retries for fetch
+        this.retries = 3
         /*
          * initialize the default request options
          * these request options will also be used for download jobs (image/media stream downloads)
@@ -55,6 +57,7 @@ export default class Connector {
      */
     async _initializeConnector() {
         let uri = new URL(this.url);
+        this.retries = parseInt(Engine.Settings.retries.value) || this.retries
         let request = new Request(uri.href, this.requestOptions);
         return Engine.Request.fetchUI(request, '');
     }
@@ -423,7 +426,7 @@ export default class Connector {
      * and get all elements matching the given CSS selector.
      */
     async fetchDOM(request, selector, retries, encoding) {
-        retries = retries || 0;
+        retries = retries || this.retries;
         if(typeof request === 'string') {
             request = new Request(request, this.requestOptions);
         }
@@ -431,11 +434,17 @@ export default class Connector {
         if(request instanceof URL) {
             request = new Request(request.href, this.requestOptions);
         }
-        const response = await fetch(request.clone());
-        if(response.status >= 500 && retries > 0) {
+
+        let response = null
+        try {
+            response = await fetch(request.clone());
+        } catch {}
+
+        if((response == null || response.status >= 500) && retries > 0) {
             await this.wait(2500);
             return this.fetchDOM(request, selector, retries - 1);
         }
+
         const content = response.headers.get('content-type');
         if(response.status === 200 || content.includes('text/html')) {
             const data = await response.arrayBuffer();
@@ -449,7 +458,7 @@ export default class Connector {
      *
      */
     fetchJSON( request, retries ) {
-        retries = retries || 0;
+        retries = retries || this.retries;
         if( typeof request === 'string' ) {
             request = new Request( request, this.requestOptions );
         }
