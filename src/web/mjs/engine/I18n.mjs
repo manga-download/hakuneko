@@ -4,9 +4,12 @@ export default class I18n {
         this.path = require("path");
         this.lang =
             localStorage.getItem("lang") === null
-                ? "es"
+                ? "en"
                 : localStorage.getItem("lang");
         this.dic = undefined;
+        this.getDictionary(
+            `./src/web/lib/hakuneko/lang/${this.lang}.json`;
+        );
     }
 
     getDictionary(url) {
@@ -26,7 +29,7 @@ export default class I18n {
         });
     }
 
-    translate(key, def = '') {
+    translate(key, def = "") {
         const tmpContext = key.split(".");
         var translate = this.dic;
         while (tmpContext.length !== 0) {
