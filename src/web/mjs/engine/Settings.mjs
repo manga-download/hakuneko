@@ -98,7 +98,7 @@ export default class Settings extends EventTarget {
             description: 'No of times to retry if the site fetch failes',
             input: types.numeric,
             value: 3
-        }
+        };
 
         this.chapterTitleFormat = {
             label: 'Chapter Title Format',

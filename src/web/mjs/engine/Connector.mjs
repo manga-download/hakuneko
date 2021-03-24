@@ -23,7 +23,7 @@ export default class Connector {
         //
         this.existingMangas = [];
         // retries for fetch
-        this.retries = 3
+        this.retries = 3;
         /*
          * initialize the default request options
          * these request options will also be used for download jobs (image/media stream downloads)
@@ -57,7 +57,7 @@ export default class Connector {
      */
     async _initializeConnector() {
         let uri = new URL(this.url);
-        this.retries = parseInt(Engine.Settings.retries.value) || this.retries
+        this.retries = parseInt(Engine.Settings.retries.value) || this.retries;
         let request = new Request(uri.href, this.requestOptions);
         return Engine.Request.fetchUI(request, '');
     }
@@ -435,10 +435,12 @@ export default class Connector {
             request = new Request(request.href, this.requestOptions);
         }
 
-        let response = null
+        let response = null;
         try {
             response = await fetch(request.clone());
-        } catch {}
+        } catch(e) {
+            console.warn(`failed to fetch ${request.url} retrying..., retries left: ${retries}`);
+        }
 
         if((response == null || response.status >= 500) && retries > 0) {
             await this.wait(2500);
