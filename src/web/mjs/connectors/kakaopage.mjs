@@ -19,6 +19,7 @@ export default class kakaopage extends Connector {
         let id = uri.searchParams.get('seriesId');
         let data = await this.fetchDOM(request, 'h2.text-ellipsis.webfont', 3);
         let title = data[0].textContent.trim();
+        if(id == null) id = uri.href.split('/').filter(e => e).pop()
         return new Manga(this, id, title);
     }
 
