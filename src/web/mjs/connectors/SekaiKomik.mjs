@@ -7,7 +7,7 @@ export default class SekaiKomik extends WordPressMangastream {
         super.id = 'sekaikomik';
         super.label = 'SekaiKomik';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://www.sekaikomik.com';
+        this.url = 'https://www.sekaikomik.net';
         this.path = '/daftar-komik/?list';
     }
 }
