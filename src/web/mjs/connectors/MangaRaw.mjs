@@ -11,6 +11,14 @@ export default class MangaRaw extends Connector {
         this.url = 'https://www.manga-raw.club';
     }
 
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.main-head h1[itemprop="name"]');
+        let id = uri.pathname + uri.search;
+        let title = data[0].textContent.trim();
+        return new Manga(this, id, title);
+    }
+
     async _getMangas() {
         let mangaList = [];
         let request = new Request(this.url +'/browse/', this.requestOptions);
@@ -35,20 +43,6 @@ export default class MangaRaw extends Connector {
         });
     }
 
-    async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'h1.section__title');
-        let id = uri.pathname + uri.search;
-        let title = data[0].textContent.trim();
-        return new Manga(this, id, title);
-    }
-
-    async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.page-in>div>source');
-        return data.map(element => this.getAbsolutePath(element.src, request.url));
-    }
-
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
@@ -62,5 +56,11 @@ export default class MangaRaw extends Connector {
                 language: language ? language.pop() : 'raw'
             };
         });
+    }
+
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'section.page-in div source[onerror]');
+        return data.map(element => this.getAbsolutePath(element.src, request.url));
     }
 }
