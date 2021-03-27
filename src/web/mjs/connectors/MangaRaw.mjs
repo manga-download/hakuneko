@@ -38,7 +38,7 @@ export default class MangaRaw extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim()
+                title: element.title.trim()
             };
         });
     }
