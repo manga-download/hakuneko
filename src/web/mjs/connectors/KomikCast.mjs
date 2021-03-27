@@ -10,7 +10,7 @@ export default class KomikCast extends WordPressMangastream {
         this.url = 'https://komikcast.com';
         this.path = '/daftar-komik/?list';
 
-        this.queryMangas = 'div.text-mode_list-items ul li a.series';
+        this.queryMangas = 'div.text-mode_list-items ul li a.series, div.text-mode_list-items ul li a.text-mode_list-item';
         this.queryChapters = 'div.komik_info-chapters ul li.komik_info-chapters-item a.chapter-link-item';
         this.queryChaptersTitle = undefined;
         this.queryPages = 'div.main-reading-area img[src^="http"], div.separator img[src^="http"]';
