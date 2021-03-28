@@ -65,6 +65,21 @@ export default class Manga1001 extends Connector {
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.entry-content figure.wp-block-image source');
-        return data.map(element => this.getAbsolutePath(element.dataset.src || element, request.url));
+        return data.map(element => {
+            return this.createConnectorURI({
+                url: this.getAbsolutePath(element.dataset.src || element, request.url),
+                referer: request.url
+            });
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
