@@ -18,10 +18,10 @@ export default class ComicExtra extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, '.general-nav a');
         const pages = data.map(element => {
-            return this.getRootRelativeOrAbsoluteLink(element, request.url)
+            return this.getRootRelativeOrAbsoluteLink(element, request.url);
         });
 
-        for(let page of pages){
+        for(let page of pages) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }
