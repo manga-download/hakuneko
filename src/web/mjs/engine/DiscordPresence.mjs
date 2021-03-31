@@ -101,14 +101,16 @@ export default class DiscordPresence {
         }
     }
 
-    stopDiscordPresence() {
+    stopDiscordPresence(reset = false) {
+        // Setting reset to true will assume a proper connection was already lost
+
         this.statusNew = false;
         clearInterval(this.updater);
-        if (this.rpc) {
+        if (this.rpc && !reset) {
             this.rpc.clearActivity();
             this.rpc.destroy();
-            this.rpc = null;
         }
+        this.rpc = null;
     }
 
     async startDiscordPresence() {
@@ -130,36 +132,42 @@ export default class DiscordPresence {
             }, 15200);
         });
 
-        this.rpc.login({ clientId: discordPresenceId })
-            .catch (error => {
-                if (typeof error !== 'undefined') { // discord-rpc error handling
-                    if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
-                        console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
-                    } else if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'RPC_CONNECTION_TIMEOUT') {
-                        console.warn('WARNING: DiscordPresence - RPC connection timed out.');
-                        // Cleanup
-                        this.stopDiscordPresence();
+        try {
+            await this.rpc.login({ clientId: discordPresenceId });
+        } catch (error) {
+            if (typeof error !== 'undefined') { // discord-rpc error handling
+                if (/Could not connect/i.test(error.message)) {
+                    console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
+                    return;
+                }
 
-                        // Waiting delay for Discord API to allow new connection
-                        setTimeout( () => {
-                            // Re-evaluate if enabled
-                            this._onSettingsChanged();
-                        }, 120000);
-                    } else {
-                        throw new Error(error);
-                    }
-
-                } else { // Javascript error handling
-                    console.warn('WARNING: DiscordPresence - Connection was closed unexpectedly.');
+                if (/RPC_CONNECTION_TIMEOUT/i.test(error.message)) {
+                    console.warn('WARNING: DiscordPresence - RPC connection timed out.');
                     // Cleanup
-                    this.stopDiscordPresence();
+                    this.stopDiscordPresence(true);
 
                     // Waiting delay for Discord API to allow new connection
                     setTimeout( () => {
-                        // Re-evaluate if still enabled
+                        // Re-evaluate if enabled
                         this._onSettingsChanged();
-                    }, 15200);
+                    }, 120000);
+
+                    return;
                 }
-            });
+
+                throw new Error(error); // Unknown error
+
+            } else { // Javascript error handling
+                console.warn('WARNING: DiscordPresence - Connection was closed unexpectedly.');
+                // Cleanup
+                this.stopDiscordPresence(true);
+
+                // Waiting delay for Discord API to allow new connection
+                setTimeout( () => {
+                    // Re-evaluate if still enabled
+                    this._onSettingsChanged();
+                }, 15200);
+            }
+        }
     }
 }
