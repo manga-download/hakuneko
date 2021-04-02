@@ -63,7 +63,7 @@ export default class DiscordPresence {
     _onSelectChapter(event) {
         this.isThisHentai(event.detail.manga.connector.tags);
         this.status['details'] = 'Viewing ' + event.detail.manga.title;
-        this.status['state'] = event.detail.title;
+        this.status['state'] = event.detail.title.padEnd(2); // State min. length is 2 char
         this.status.startTimestamp = + new Date();
         this.statusNew = true;
         if (this.enabled && !this.rpc) this.startDiscordPresence();
@@ -107,8 +107,8 @@ export default class DiscordPresence {
         if (this.rpc) {
             this.rpc.clearActivity();
             this.rpc.destroy();
-            this.rpc = null;
         }
+        this.rpc = null;
     }
 
     async startDiscordPresence() {
@@ -124,20 +124,48 @@ export default class DiscordPresence {
                 this.updateStatus();
             }, 2000);
 
-            // activity can only be set every 15 seconds
+            // activity can only be set every 15 seconds (API limit)
             this.updater = setInterval(() => {
                 this.updateStatus();
             }, 15200);
         });
 
-        this.rpc.login({ clientId: discordPresenceId })
-            .catch (error => {
-                if (error.message.match(/[A-z]+/g).join('').toUpperCase() == 'COULDNOTCONNECT') {
+        try {
+            await this.rpc.login({ clientId: discordPresenceId });
+        } catch (error) {
+            if (typeof error !== 'undefined') { // discord-rpc error handling
+                if (/Could not connect/i.test(error.message)) {
                     console.warn('WARNING: DiscordPresence - Could not connect (Is Discord running?)');
-                } else {
-                    throw new Error(error);
+                    return;
                 }
+
+                if (/RPC_CONNECTION_TIMEOUT/i.test(error.message)) {
+                    console.warn('WARNING: DiscordPresence - RPC connection timed out.');
+                    // Reset
+                    this.rpc = null;
+
+                    // Waiting delay for Discord API to allow new connection
+                    setTimeout( () => {
+                        // Re-evaluate if enabled
+                        this._onSettingsChanged();
+                    }, 120000);
+
+                    return;
+                }
+
+                throw error; // Unknown error
+
+            } else { // Javascript error handling
+                console.warn('WARNING: DiscordPresence - Connection was closed unexpectedly.');
+                // Reset
                 this.rpc = null;
-            });
+
+                // Waiting delay for Discord API to allow new connection
+                setTimeout( () => {
+                    // Re-evaluate if still enabled
+                    this._onSettingsChanged();
+                }, 15200);
+            }
+        }
     }
 }
