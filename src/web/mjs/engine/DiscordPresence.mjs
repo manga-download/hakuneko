@@ -101,12 +101,10 @@ export default class DiscordPresence {
         }
     }
 
-    stopDiscordPresence(reset = false) {
-        // Setting reset to true will assume a proper connection was already lost
-
+    stopDiscordPresence() {
         this.statusNew = false;
         clearInterval(this.updater);
-        if (this.rpc && !reset) {
+        if (this.rpc) {
             this.rpc.clearActivity();
             this.rpc.destroy();
         }
@@ -143,8 +141,8 @@ export default class DiscordPresence {
 
                 if (/RPC_CONNECTION_TIMEOUT/i.test(error.message)) {
                     console.warn('WARNING: DiscordPresence - RPC connection timed out.');
-                    // Cleanup
-                    this.stopDiscordPresence(true);
+                    // Reset
+                    this.rpc = null;
 
                     // Waiting delay for Discord API to allow new connection
                     setTimeout( () => {
@@ -155,12 +153,12 @@ export default class DiscordPresence {
                     return;
                 }
 
-                throw new Error(error); // Unknown error
+                throw error; // Unknown error
 
             } else { // Javascript error handling
                 console.warn('WARNING: DiscordPresence - Connection was closed unexpectedly.');
-                // Cleanup
-                this.stopDiscordPresence(true);
+                // Reset
+                this.rpc = null;
 
                 // Waiting delay for Discord API to allow new connection
                 setTimeout( () => {
