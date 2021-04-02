@@ -26,7 +26,7 @@ export default class Samples extends Connector {
     // Recommend to overwrite the manga extractor for copy & paster URLs ...
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'meta[itemprop="name"]');
+        const data = await this.fetchDOM(request, 'meta[property="og:title"]');
         return new Manga(this, uri.pathname, data[0].content.trim());
     }
 
