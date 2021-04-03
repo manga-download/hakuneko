@@ -7,7 +7,7 @@ export default class MangaSusuReborn extends WordPressMangastream {
         super.id = 'mangasusureborn';
         super.label = 'MangaSusu Reborn';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
-        this.url = 'https://mangasusu.world';
+        this.url = 'https://mangasusu.biz';
         this.path = '/manga/list-mode/';
     }
 }

@@ -16,7 +16,7 @@ export default class kakaopage extends Connector {
     async _getMangaFromURI(uri) {
         uri = new URL(uri);
         const request = new Request(uri, this.requestOptions);
-        let id = uri.searchParams.get('seriesId');
+        let id = uri.searchParams.get('seriesId') || uri.pathname.split('/').filter(part => part).pop();
         let data = await this.fetchDOM(request, 'h2.text-ellipsis.webfont', 3);
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);

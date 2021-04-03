@@ -13,63 +13,61 @@ export default class JapanRead extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'h1.card-header');
-        let id = uri.pathname;
-        let title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        let data = await this.fetchDOM(request, 'div.card-manga h1.card-header');
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     async _getMangas() {
-        const requestOptions = {
-            headers: {
-                'x-requested-with': 'XMLHttpRequest'
-            }
-        };
-        let request = new Request(new URL('/mangas-list/content', this.url), requestOptions);
-        let pages = await this.fetchDOM(request, 'ul.pagination li.page-item:nth-last-child(2) > a');
-        pages = Number(pages[0].text);
-
-        let mangas = [];
-        for (let page = 1; page <= pages; page++) {
-            request = new Request(new URL('/mangas-list/content?page=' + page, this.url), requestOptions);
-            let data = await this.fetchDOM(request, 'a.text-truncate', 5);
-            mangas.push( ...data.map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.innerText.trim()
-                };
-            }));
+        let mangaList = [];
+        for (let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
-
-        return mangas;
+        return mangaList;
     }
+
+    async _getMangasFromPage(page) {
+        const uri = new URL('/manga-list?page=' + page, this.url);
+        const request = new Request(uri, {
+            method: 'POST',
+            body: 'list_view=3',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        const data = await this.fetchDOM(request, 'div.row a.manga_title');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
+    }
+
     async _getChapters(manga) {
-        const script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        const chapters = [...document.querySelectorAll('div.chapter-container div.chapter-row a.text-truncate')].map(element => {
-                            return {
-                                id: element.pathname,
-                                title: element.textContent.trim()
-                            };
-                        });
-                        resolve(chapters);
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 2500);
-            });
-        `;
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const data = await this.fetchDOM(request, 'div.chapter-container div.chapter-row a.text-truncate');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let id = await this.fetchDOM(request, 'head meta[data-chapter-id]');
-        let data = await this.fetchJSON(this.url + '/api/?type=chapter&id=' + id[0].dataset.chapterId);
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        const id = await this.fetchDOM(request, 'head meta[data-chapter-id]');
+        uri = new URL('/api/?type=chapter&id=' + id[0].dataset.chapterId, this.url);
+        request = new Request(uri, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+        let data = await this.fetchJSON(request);
         return data.page_array.map( page => this.getAbsolutePath( data.baseImagesUrl + '/' + page, request.url ) );
     }
 }

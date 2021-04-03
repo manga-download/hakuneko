@@ -9,12 +9,12 @@ export default class Mangafast extends Connector {
         super.label = 'Mangafast';
         this.tags = [ 'manga', 'webtoon', 'english'];
         this.url = 'https://mangafast.net';
-        this.path = '/read/';
+    }
 
-        this.queryMangas = 'div.p.mrg div.ls5 a';
-        this.queryChapters = 'table tbody tr td.jds a';
-        this.queryPages = 'body div div#Read source';
-        this.queryMangaTitle = 'div.sc table tbody tr td a';
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'article header#Judul h1[itemprop="name"]');
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     async _getMangas() {
@@ -27,9 +27,9 @@ export default class Mangafast extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(this.path + 'page/' + page + '/', this.url);
+        const uri = new URL(`/list-manga/page/${page}/`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangas);
+        const data = await this.fetchDOM(request, 'div.daftar div.kan > a:first-of-type');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
@@ -41,11 +41,11 @@ export default class Mangafast extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryChapters);
+        const data = await this.fetchDOM(request, 'div.chapter-link-w a.chapter-link');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.title.replace(manga.title, '').trim()
+                title: element.querySelector('span.text-left').textContent.replace(manga.title, '').trim()
             };
         });
     }
@@ -53,15 +53,7 @@ export default class Mangafast extends Connector {
     async _getPages(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element.dataset['data-src'] || element.src, request.url)).filter(link => !link.includes('adskeeper.co.uk'));
-    }
-
-    async _getMangaFromURI(uri) {
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangaTitle);
-        const id = uri.pathname;
-        const title = data[0].text.trim();
-        return new Manga(this, id, title);
+        const data = await this.fetchDOM(request, 'section.read-comic div.content-comic source');
+        return data.map(element => this.getAbsolutePath(element.dataset['src'] || element.dataset['data-src'] || element, request.url)).filter(link => !link.includes('adskeeper.co.uk'));
     }
 }
