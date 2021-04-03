@@ -197,14 +197,15 @@ export default class Lezhin extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
-                        if(!__LZ_DATA__) {
-                            throw new Error('No data found, this may happen if the chapter requires to be logged in!');
+                        if(window.location.pathname.includes('/login')) {
+                            throw new Error('You need to be logged in to access the content of this chapter!');
                         }
-                        const purchased = __LZ_DATA__.product.subscribed || __LZ_DATA__.purchased.includes(__LZ_DATA__.episode.id);
+                        const subscribed = __LZ_DATA__.product && __LZ_DATA__.product.subscribed;
+                        const purchased = __LZ_DATA__.purchased && __LZ_DATA__.purchased.includes(__LZ_DATA__.episode.id);
                         const images = __LZ_DATA__.episode.scrollsInfo.map(x => {
                             const uri = new URL('/v2' + x.path, __LZ_CONFIG__.cdnUrl);
                             uri.searchParams.set('access_token', '${this.accessToken}');
-                            uri.searchParams.set('purchased', purchased);
+                            uri.searchParams.set('purchased', subscribed || purchased);
                             uri.searchParams.set('q', 40);
                             return uri.href;
                         });
