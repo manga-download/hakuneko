@@ -11,7 +11,7 @@ export default class LianScans extends WordPressMangastream {
         this.path = '/manga-list/';
 
         this.querMangaTitleFromURI = 'div.series-title h2';
-        this.queryMangas = 'div.mangalist-blc ul li.Manga a.series';
+        this.queryMangas = 'div.mangalist-blc ul li a.series';
         this.queryChapters = 'div.series-chapter ul.series-chapterlist li div.flexch-infoz a';
         this.queryChaptersTitle = 'span';
         this.queryChaptersTitleBloat = 'span > span.date';
