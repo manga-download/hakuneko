@@ -1,4 +1,5 @@
 import Connector from '../../engine/Connector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
 export default class Genkan extends Connector {
 
@@ -14,6 +15,12 @@ export default class Genkan extends Connector {
         let uri = new URL( this.url + '/comics/-/0/0' );
         let request = new Request( uri.href, this.requestOptions );
         return Engine.Request.fetchUI( request, '' );
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'meta[property="og:title"]');
+        return new Manga(this, uri.pathname, data[0].content.trim());
     }
 
     /**
