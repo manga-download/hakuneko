@@ -13,7 +13,7 @@ export default class Mangafast extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'article header#Judul h1[itemprop="name"]');
+        const data = await this.fetchDOM(request, '#article-info div.info > span > b');
         return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
@@ -45,7 +45,7 @@ export default class Mangafast extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.querySelector('span.text-left').textContent.replace(manga.title, '').trim()
+                title: element.querySelector('span.left').textContent.replace(manga.title, '').trim()
             };
         });
     }
