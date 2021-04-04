@@ -43,7 +43,17 @@ export default class Genkan extends Connector {
     }
 
     async _getChapters(manga) {
+        let chapterList = [];
+        for (let page = 1, run = true; run; page++) {
+            const chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(manga, page) {
         const uri = new URL(manga.id, this.url);
+        uri.searchParams.set('page', page);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'table.min-w-full tbody tr');
         return data.map(element => {
