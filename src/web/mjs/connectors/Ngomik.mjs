@@ -23,18 +23,21 @@ export default class Ngomik extends WordPressMangastream {
 
     async _getMangas() {
         let mangaList = [];
-        const request = new Request(new URL(this.path, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.pagination > a:nth-last-of-type(2)');
-        const pageCount = parseInt(data[0].text.trim());
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
+        let categories = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+        categories = [ '.', '0-9', ...categories ];
+        for(let category of categories) {
+            for (let page = 1, run = true; run; page++) {
+                const mangas = await this._getMangasFromPage(category, page);
+                mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            }
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page) {
-        const request = new Request(new URL(`${this.path}page/${page}/`, this.url), this.requestOptions);
+    async _getMangasFromPage(category, page) {
+        const uri = new URL(`${this.path}page/${page}/`, this.url);
+        uri.searchParams.set('show', category);
+        const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.page div.listo div.bsx > a');
         return data.map(element => {
             return {
