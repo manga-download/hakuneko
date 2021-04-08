@@ -15,6 +15,6 @@ export default class SixParkbbsClub extends SixParkbbs {
         this.queryMangaTitle = 'td.show_content font b';
         this.queryMangas = 'div#d_list ul li a:nth-child(1)';
         this.queryMangasMatch = /(【(连载|英肉|短篇|生肉|韩肉)】.*)|(\[连载\].*)/;
-        this.queryPage = 'td.show_content pre center source';
+        this.queryPage = 'td.show_content pre source';
     }
 }

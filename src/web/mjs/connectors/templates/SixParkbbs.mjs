@@ -63,6 +63,6 @@ export default class SixParkbbs extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(this.sub + chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPage);
-        return data.map(element => this.getAbsolutePath(element.attributes.mydatasrc.value || element.attributes.src.value, request.url));
+        return data.map(element => this.getAbsolutePath(element.attributes.src.value, request.url));
     }
 }
