@@ -47,7 +47,7 @@ export default class SixParkbbs extends Connector {
             return element.text.match(this.queryMangasMatch) != null;
         }).map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, (this.url + this.sub)),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url + this.sub),
                 title: element.text.trim()
             };
         });
