@@ -9,6 +9,6 @@ export default class KumoTran extends WordPressMadara {
         this.tags = [ 'manga', 'webtoon', 'thai' ];
         this.url = 'https://www.kumotran.com';
 
-        this.queryPages = 'div.reading-content p source';
+        this.queryPages = 'div.reading-content source, div.reading-content canvas';
     }
 }
