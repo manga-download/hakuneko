@@ -8,8 +8,9 @@ export default class SixParkbbsClub extends SixParkbbs {
         super.label = '6parkbbs (卡通漫画)';
         this.tags = [ 'manga', 'webtoon', 'chinese', 'english', 'korean', 'raw' ];
         this.url = 'https://club.6parkbbs.com';
+        this.sub = '/enter6'
 
-        this.path = '/enter6/index.php?app=forum&act=list&pre=55764&nowpage=%PAGE%&start=55764'
+        this.path = '/index.php?app=forum&act=list&pre=55764&nowpage=%PAGE%&start=55764'
         this.pathMatch = /nowpage=(\d+)\&start/;
         this.queryMangaTitle = 'td.show_content font b';
         this.queryMangas = 'div#d_list ul li a:nth-child(1)';
