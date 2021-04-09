@@ -44,7 +44,7 @@ export default class SixParkbbs extends Connector {
         let request = new Request(new URL(this.sub + this.path.replace('%PAGE%', `${page}`), this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.filter(element=> {
-            return element.text.match(this.queryMangasMatch) != null;
+            return !this.queryMangasMatch || this.queryMangasMatch.test(element.text);
         }).map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url + this.sub),
@@ -63,6 +63,6 @@ export default class SixParkbbs extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(this.sub + chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPage);
-        return data.map(element => this.getAbsolutePath(element.attributes.src.value, request.url));
+        return data.map(element => this.getAbsolutePath(element.getAttribute('mydatasrc') || element.attributes.src.value, request.url));
     }
 }
