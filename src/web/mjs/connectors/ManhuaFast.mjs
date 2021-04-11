@@ -8,5 +8,7 @@ export default class ManhuaFast extends WordPressMadara {
         super.label = 'Manhuafast';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://manhuafast.com';
+
+        this.queryPages = 'figure source, div.page-break source';
     }
 }

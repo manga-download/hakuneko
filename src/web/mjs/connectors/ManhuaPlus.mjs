@@ -8,6 +8,7 @@ export default class ManhuaPlus extends WordPressMadara {
         super.label = 'ManhuaPlus';
         this.tags = [ 'webtoon', 'vietnamese' ];
         this.url = 'https://manhuaplus.com';
+
         this.queryPages = 'figure source, div.page-break source';
     }
 }
