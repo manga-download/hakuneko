@@ -46,7 +46,7 @@ export default class EarlyManga extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.chapter-row > div.order-lg-2 > a:not([style])');
+        const data = await this.fetchDOM(request, 'div:not(.d-none) > div.chapter-row > div.order-lg-2 > a:not([style])');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
