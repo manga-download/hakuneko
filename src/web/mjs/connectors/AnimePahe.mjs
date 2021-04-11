@@ -38,7 +38,7 @@ export default class AnimePahe extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div#modalBookmark div.modal-body div a[href*="pahe.win/a"]');
         let title = data[0].title.trim();
-        let id = await this._getMangaID(uri.pathname.split('/').pop(), title);
+        let id = uri.pathname.split('/').pop();
         return new Manga(this, id, title);
     }
 
@@ -51,36 +51,49 @@ export default class AnimePahe extends Connector {
             this.cfMailDecrypt(element);
             let title = element.text.trim();
             mangaList.push({
-                id: await this._getMangaID(element.pathname.split('/').pop(), title),
+                id: element.pathname.split('/').pop(),
                 title: title
             });
         }
         return mangaList;
     }
 
-    async _getMangaID(guid, title) {
-        let uri = new URL('/api', this.url);
+    async _getRealMangaID(manga) {
+        const uri = new URL('/api', this.url);
         uri.searchParams.set('m', 'search');
         uri.searchParams.set('l', 8);
-        uri.searchParams.set('q', title);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        return data.data.find(manga => manga.session === guid).id;
+        uri.searchParams.set('q', manga.title);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSON(request);
+        if(data.data.length === 1) {
+            return data.data[0].id;
+        }
+        const matchesByTitle = data.data.filter(entry => entry.title === manga.title);
+        if(matchesByTitle.length === 1) {
+            return matchesByTitle[0].id;
+        }
+        const matchesBySession = data.data.filter(entry => entry.session === manga.id);
+        if(matchesBySession.length === 1) {
+            return matchesBySession[0].id;
+        }
+        throw new Error('Failed to find the real ID for the given anime!', manga);
     }
 
     async _getChapters(manga) {
         let chapterList = [];
+        const mangaID = await this._getRealMangaID(manga);
         for(let page = 1, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(manga, page);
+            let chapters = await this._getChaptersFromPage(mangaID, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
         return chapterList;
     }
 
-    async _getChaptersFromPage(manga, page) {
+    async _getChaptersFromPage(mangaID, page) {
         let uri = new URL('/api', this.url);
         uri.searchParams.set('m', 'release');
-        uri.searchParams.set('id', manga.id);
+        uri.searchParams.set('id', mangaID);
+        uri.searchParams.set('session', mangaID);
         uri.searchParams.set('page', page);
         //uri.searchParams.set('l', 30); // limit
         //uri.searchParams.set('sort', 'episode_desc');
@@ -102,9 +115,10 @@ export default class AnimePahe extends Connector {
     }
 
     async _getPages(chapter) {
+        const mangaID = await this._getRealMangaID(chapter.manga);
         let uri = new URL('/api', this.url);
         uri.searchParams.set('m', 'links');
-        uri.searchParams.set('id', chapter.manga.id);
+        uri.searchParams.set('id', mangaID);
         uri.searchParams.set('session', chapter.id);
         uri.searchParams.set('p', 'kwik');
         let request = new Request(uri, this.requestOptions);
