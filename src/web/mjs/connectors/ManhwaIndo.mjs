@@ -1,14 +1,14 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class Manhwaland extends WordPressMangastream {
+export default class ManhwaIndo extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'manhwaland';
-        super.label = 'Manhwaland';
-        this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://manhwaland.net';
-        this.path = '/manhwa-list/';
+        super.id = 'manhwaindo';
+        super.label = 'ManhwaIndo';
+        this.tags = ['webtoon', 'indonesian'];
+        this.url = 'https://manhwaindo.com';
+        this.path = '/daftar-manhwa/';
 
         this.querMangaTitleFromURI = 'div.series-info div.series-titlex h1';
         this.queryMangas = 'div.mangalist-blc ul li.Manhwa a.series';

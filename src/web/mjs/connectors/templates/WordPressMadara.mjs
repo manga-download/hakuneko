@@ -96,7 +96,8 @@ export default class WordPressMadara extends Connector {
             data = await this.fetchDOM(request, this.queryPages);
         }
         return data.map(element => {
-            element.src = element.dataset['src'] || element['srcset'] || element.src;
+            element.src = element.dataset['url'] || element.dataset['src'] || element['srcset'] || element.src;
+            element.setAttribute('src', element.src);
             if (element.src.includes('data:image')) {
                 return element.src.match(/data:image[^\s'"]*/)[0];
             } else {
