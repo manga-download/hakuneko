@@ -8,7 +8,7 @@ export default class KissComic extends Connector {
         super.id = 'kisscomic';
         super.label = 'KissComic (ReadComicOnline)';
         this.tags = [ 'comic', 'english' ];
-        this.url = 'https://readcomiconline.to';
+        this.url = 'https://readcomiconline.li';
     }
 
     async _getMangaFromURI(uri) {
