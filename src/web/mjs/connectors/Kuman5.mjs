@@ -4,9 +4,9 @@ export default class kuman5 extends MH {
     constructor() {
         super();
         super.id = 'kuman5';
-        super.label = '酷漫屋 (Kuman55)';
+        super.label = '酷漫屋 (Kuman57)';
         this.tags = [ 'manga', 'chinese' ];
-        this.url = 'http://www.kuman55.com';
+        this.url = 'http://www.kuman57.com';
 
         this.queryChapter = 'div#chapterlistload ul#detail-list-select-1 li a';
         this.path = '/sort/1-%PAGE%.html';
