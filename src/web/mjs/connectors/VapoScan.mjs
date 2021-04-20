@@ -7,6 +7,6 @@ export default class VapoScan extends WordPressMadara {
         super.id = 'vaposcan';
         super.label = 'Vapo Scan';
         this.tags = [ 'webtoon', 'portuguese' ];
-        this.url = 'https://vaposcan.xyz';
+        this.url = 'https://vaposcan.net';
     }
 }
