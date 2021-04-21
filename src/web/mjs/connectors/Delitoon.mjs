@@ -19,12 +19,12 @@ export default class Delitoon extends Connector {
         let data = await this.fetchDOM(request, 'div.serie-page div.container div.informations-part1.detail div div.bloc-left h2');
         return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
-    
+
     async _getMangas() {
         let mangaList = [];
-        let genres = ['Romance','BL','Drama','Sentimental','Historique','Slice%20of%20Life','Fantastique','Comédie','Thriller','Action','Aventure','SF'];
-        for(let page = 0; page < genres.length; page++) {
-            let mangas = await this._getMangasFromPage(genres[page]);
+        let genres = ['Romance', 'BL', 'Drama', 'Sentimental', 'Historique', 'Slice%20of%20Life', 'Fantastique', 'Comédie', 'Thriller', 'Action', 'Aventure', 'SF'];
+        for(let genre of genres) {
+            let mangas = await this._getMangasFromPage(genre);
             mangaList.push(...mangas);
         }
         return mangaList;
@@ -35,13 +35,13 @@ export default class Delitoon extends Connector {
         let data = await this.fetchDOM(request, 'div.genres-page div.content ul li');
         return data.filter(element => element.querySelector('h3'))
             .map(element => {
-                let title = element.querySelector('div.container-infos h3').textContent.trim();
-                let link = element.querySelector('li a');
+                let title = element.querySelector('div.genres-page div.content ul li div.container-infos h3').textContent.trim();
+                let link = element.closest('a');
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(link, request.url),
                     title: title
-            };
-        });
+                };
+            });
     }
 
     async _getChapters(manga) {
@@ -50,12 +50,12 @@ export default class Delitoon extends Connector {
         return data.filter(element => element.querySelector('div.number'))
             .map(element => {
                 let title = element.querySelector('div.container-infos div.bloc-infos div.number').textContent.trim();
-                let link = element.querySelector('li a');
+                let link = element.closest('a');
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(link, request.url),
                     title: 'Episode ' + title
-            };
-        });
+                };
+            });
     }
 
     async _getPages(chapter) {
