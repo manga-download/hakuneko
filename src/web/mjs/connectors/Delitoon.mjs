@@ -35,8 +35,8 @@ export default class Delitoon extends Connector {
         let data = await this.fetchDOM(request, 'div.genres-page div.content ul li');
         return data.filter(element => element.querySelector('h3'))
             .map(element => {
-                let title = element.querySelector('div.genres-page div.content ul li div.container-infos h3').textContent.trim();
-                let link = element.closest('a');
+                let title = element.querySelector('div.container-infos h3').textContent.trim();
+                let link = element.querySelector('li a');
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(link, request.url),
                     title: title
@@ -50,7 +50,7 @@ export default class Delitoon extends Connector {
         return data.filter(element => element.querySelector('div.number'))
             .map(element => {
                 let title = element.querySelector('div.container-infos div.bloc-infos div.number').textContent.trim();
-                let link = element.closest('a');
+                let link = element.querySelector('li a');
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(link, request.url),
                     title: 'Episode ' + title
