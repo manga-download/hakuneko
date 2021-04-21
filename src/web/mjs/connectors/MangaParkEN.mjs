@@ -45,16 +45,38 @@ export default class MangaParkEN extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        return (await this.fetchDOM(request, 'div.episode-list')).reduce((accumulator, element) => {
-            const flavour = element.previousElementSibling.classList.contains('episode-head') ? element.previousElementSibling.textContent.trim() : undefined;
-            const chapters = [...element.querySelectorAll('div.episode-item > a')].map(chapter => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(chapter, this.url),
-                    title: chapter.text.trim() + (flavour ? ` [${flavour}]` : '')
-                };
-            });
-            return accumulator.concat(chapters);
-        }, []);
+        const data = await this.fetchDOM(request, 'div.episode-head');
+        return data
+            .map(element => {
+                let iid = element.getAttribute('@click');
+                iid = iid ? iid.match(/\d+/) : undefined;
+                iid = iid ? iid[0] : undefined;
+                let language = element.querySelector('em[data-lang]');
+                language = language ? ' | ' + language.dataset.lang : '';
+                let title = element.querySelector('b');
+                title = title ? title.textContent.replace(/\s+/g, ' ').trim() : '';
+                title += language.toUpperCase();
+                return { iid, title };
+            })
+            .filter(folder => folder.iid)
+            .reduce(async (accumulator, folder) => {
+                const req = new Request(this.url + '/ajax.reader.subject.episodes.folder', {
+                    method: 'POST',
+                    body: `{"iid":${folder.iid}}`,
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                });
+                const foo = await this.fetchJSON(req);
+                const dom = this.createDOM(foo.html);
+                const chapters = [...dom.querySelectorAll('div.episode-item a.chapt')].map(element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                        title: element.text.trim() + (folder.title ? ` [${folder.title}]` : '')
+                    };
+                });
+                return (await accumulator).concat(chapters);
+            }, Promise.resolve([]));
     }
 
     async _getPages(chapter) {
