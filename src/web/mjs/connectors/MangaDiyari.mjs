@@ -7,6 +7,6 @@ export default class MangaDiyari extends WordPressMadara {
         super.id = 'mangadiyari';
         super.label = 'MangaDiyari';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://mangadiyari.com';
+        this.url = 'https://manga-diyari.com';
     }
 }
