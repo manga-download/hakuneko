@@ -7,6 +7,6 @@ export default class NekoBreakerScan extends WordPressMadara {
         super.id = 'nekobreakerscan';
         super.label = 'NekoBreaker Scan';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://nekobreaker.com';
+        this.url = 'https://nekobreakerscan.com';
     }
 }
