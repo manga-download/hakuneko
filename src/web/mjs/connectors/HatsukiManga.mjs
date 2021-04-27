@@ -57,6 +57,6 @@ export default class HatsukiManga extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.lista-de-paginas li.li-pagina source.imagen-pagina');
-        return data.map(element => this.getAbsolutePath(element, request.url)).filter(link => /(.jpg|.png|.webp)$/.test(link));
+        return data.map(element => this.getAbsolutePath(element.getAttribute('data-src') || element, request.url)).filter(link => /(.jpg|.png|.webp)$/.test(link));
     }
 }
