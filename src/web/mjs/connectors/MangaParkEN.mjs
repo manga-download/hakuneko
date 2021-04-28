@@ -9,7 +9,7 @@ export default class MangaParkEN extends Connector {
         super.id = 'mangapark-en';
         super.label = 'MangaPark';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://v3.mangapark.net';
+        this.url = 'https://mangapark.net';
         this.requestOptions.headers.set('x-cookie', 'set=h=1;');
     }
 
@@ -45,16 +45,34 @@ export default class MangaParkEN extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        return (await this.fetchDOM(request, 'div.episode-list')).reduce((accumulator, element) => {
-            const flavour = element.previousElementSibling.classList.contains('episode-head') ? element.previousElementSibling.textContent.trim() : undefined;
-            const chapters = [...element.querySelectorAll('div.episode-item > a')].map(chapter => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(chapter, this.url),
-                    title: chapter.text.trim() + (flavour ? ` [${flavour}]` : '')
-                };
-            });
-            return accumulator.concat(chapters);
-        }, []);
+        const data = await this.fetchDOM(request, 'div.episode-head');
+        return data
+            .map(element => {
+                const sid = manga.id.match(/\/(\d+)\//)[1];
+                const lang = element.getAttribute('@click').match(/'(\w+)'/)[1];
+                const language = element.querySelector('b').textContent.trim();
+                return { sid, lang, language };
+            })
+            .filter(folder => folder.lang)
+            .reduce(async (accumulator, folder) => {
+                const req = new Request(this.url + '/ajax.reader.subject.episodes.lang', {
+                    method: 'POST',
+                    body: JSON.stringify(folder),
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    }
+                });
+                const data = await this.fetchJSON(req);
+                const dom = this.createDOM(data.html);
+                const chapters = [...dom.querySelectorAll('div.episode-item a.chapt')].map(element => {
+                    return {
+                        id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                        title: element.text.trim() + ` [${folder.language}]`,
+                        language: folder.language
+                    };
+                });
+                return (await accumulator).concat(chapters);
+            }, Promise.resolve([]));
     }
 
     async _getPages(chapter) {
