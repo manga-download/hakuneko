@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ScanTrad extends Connector {
 
@@ -11,6 +12,14 @@ export default class ScanTrad extends Connector {
         this.links = {
             login: 'https://scantrad.net/connexion'
         };
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#chap-top div.info div.titre');
+        let id = uri.pathname + uri.search;
+        let title = data[0].firstChild.data.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
