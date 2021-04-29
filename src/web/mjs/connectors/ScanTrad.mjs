@@ -9,9 +9,6 @@ export default class ScanTrad extends Connector {
         super.label = 'ScanTrad';
         this.tags = [ 'manga', 'french', 'high-quality', 'scanlation' ];
         this.url = 'https://scantrad.net';
-        this.links = {
-            login: 'https://scantrad.net/connexion'
-        };
     }
 
     async _getMangaFromURI(uri) {
