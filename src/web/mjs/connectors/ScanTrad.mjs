@@ -38,20 +38,19 @@ export default class ScanTrad extends Connector {
         let data = await this.fetchDOM(request, 'div.chapitre a.ch-left');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.querySelector('div.chl-titre span.chl-num').textContent.trim()
             };
         });
     }
 
     async _getPages(chapter) {
-        let referer = new URL(chapter.id, this.url).href;
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.main_img div.sc-lel > source');
         return data.map(element => this.createConnectorURI({
-            url:this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr'),
-            referer: referer
-        })).filter(link => !link.includes('/images/'));
+            url: this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr'),
+            referer: request.url
+        }));
     }
 
     async _handleConnectorURI(payload) {
