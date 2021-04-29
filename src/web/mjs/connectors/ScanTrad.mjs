@@ -36,8 +36,20 @@ export default class ScanTrad extends Connector {
     }
 
     async _getPages(chapter) {
+        let referer = new URL(chapter.id, this.url).href;
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.main_img div.sc-lel > source');
-        return data.map(element => this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr')).filter(link => !link.includes('/images/'));
+        return data.map(element => this.createConnectorURI({
+            url:this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr'),
+            referer: referer
+        })).filter(link => !link.includes('/images/'));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
