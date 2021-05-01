@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ScanTrad extends Connector {
 
@@ -8,9 +9,14 @@ export default class ScanTrad extends Connector {
         super.label = 'ScanTrad';
         this.tags = [ 'manga', 'french', 'high-quality', 'scanlation' ];
         this.url = 'https://scantrad.net';
-        this.links = {
-            login: 'https://scantrad.net/connexion'
-        };
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#chap-top div.info div.titre');
+        let id = uri.pathname + uri.search;
+        let title = data[0].firstChild.data.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
@@ -29,7 +35,7 @@ export default class ScanTrad extends Connector {
         let data = await this.fetchDOM(request, 'div.chapitre a.ch-left');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.querySelector('div.chl-titre span.chl-num').textContent.trim()
             };
         });
@@ -38,6 +44,17 @@ export default class ScanTrad extends Connector {
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.main_img div.sc-lel > source');
-        return data.map(element => this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr')).filter(link => !link.includes('/images/'));
+        return data.map(element => this.createConnectorURI({
+            url: this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr'),
+            referer: request.url
+        }));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
