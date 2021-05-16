@@ -13,70 +13,43 @@ export default class UnionMangas extends Connector {
         };
     }
 
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangas() {
+        let mangaList = [];
+        for (let page = 1, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.bloco-manga a:nth-of-type(2)', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/mangas/visualizacoes', 'nav ul.pagination li:last-of-type a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].href.match(/(\d+)$/)[1] );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/mangas/visualizacoes/' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        const uri = new URL('/mangas/visualizacoes/' + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.tamanho-bloco-perfil div.lista-mangas-novos > a:last-of-type');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    _getChapterList( manga, callback ) {
-        let uri = new URL(manga.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        this.fetchDOM(request, 'div.row.lancamento-linha div:first-of-type a:first-of-type' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim(),
-                        language: 'pt'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.perfil-manga div.capitulos div:first-of-type > a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'source.img-manga');
-        return data.map(element => this.getAbsolutePath(element, request.url)).filter(link => !link.includes('banner'));
+        return data.map(element => this.getAbsolutePath(element, request.url)).filter(link => !link.includes('banner_'));
     }
 }
