@@ -9,6 +9,7 @@ export default class TakeShobo extends SpeedBinb {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
+        this.path = '/';
 
         this.queryMangaTitle = 'section.work_main div.col_work_name h1';
         this.queryMangas = 'section.lineup ul li a';
@@ -25,8 +26,9 @@ export default class TakeShobo extends SpeedBinb {
     }
 
     async _getMangas() {
-        let request = new Request(new URL(this.url + '/'), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangas);
+        const uri = new URL(this.path, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             let title = element.querySelector(this.queryMangasTitle).getAttribute('alt');
             let match = title.match(/『(.*)』/);

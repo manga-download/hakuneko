@@ -8,5 +8,6 @@ export default class GammaPlus extends TakeShobo {
         super.label = 'GammaPlus';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://gammaplus.takeshobo.co.jp';
+        this.path = '/parts_sub_lineup.html';
     }
 }

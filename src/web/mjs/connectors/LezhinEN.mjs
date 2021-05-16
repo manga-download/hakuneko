@@ -7,7 +7,7 @@ export default class LezhinEN extends Lezhin {
         super.id = 'lezhin-en';
         super.label = 'Lezhin (english)';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://www.lezhin.com/en';
+        this.url = 'https://www.lezhinus.com/en';
         this.links = {
             login: this.url + '/login#email'
         };
