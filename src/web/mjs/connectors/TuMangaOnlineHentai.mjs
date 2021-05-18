@@ -24,9 +24,7 @@ export default class TuMangaOnlineHentai extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let hasNext = true;
-        let page = 1;
-        while (hasNext) {
+        for (let page = 1, hasNext = true; hasNext; page++) {
             let request = new Request(this.url + '/section/all?view=list&order=alphabetic&page=' + page, this.requestOptions);
             const body = (await this.fetchDOM(request, 'body'))[0];
             let data = [...body.querySelectorAll('div.panel-body table.table tbody tr td.text-left a')];
@@ -36,9 +34,8 @@ export default class TuMangaOnlineHentai extends Connector {
                     title: element.text.trim()
                 };
             });
-            mangaList = [...mangaList, ...mangas];
-            hasNext = !body.querySelectorAll('ul.pagination li')[1].className.includes("disabled");
-            page++;
+            mangaList.push(...mangas);
+            hasNext = !document.querySelector('ul.pagination li:first-child + li[class*="disabled"]');
         }
         return mangaList;
     }
