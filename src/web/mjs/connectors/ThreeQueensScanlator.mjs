@@ -6,7 +6,7 @@ export default class ThreeQueensScanlator extends WordPressMadara {
         super();
         super.id = 'threequeensscanlator';
         super.label = 'Three Queens Scanlator';
-        this.tags = [ 'manga', 'high-quality', 'Portuguese', 'scanlation' ];
+        this.tags = [ 'manga', 'high-quality', 'portuguese', 'scanlation' ];
         this.url = 'https://tqscan.com.br';
     }
 }
