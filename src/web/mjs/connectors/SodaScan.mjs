@@ -7,6 +7,6 @@ export default class SodaScan extends WordPressMadara {
         super.id = 'sodascan';
         super.label = 'Soda Scan';
         this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
-        this.url = 'https://sodascan.xyz/';
+        this.url = 'https://sodascan.xyz';
     }
 }
