@@ -11,5 +11,6 @@ export default class FlameScansORG extends WordPressMangastream {
         this.path = '/series/list-mode/';
 
         this.queryMangas = 'div.postbody div.soralist ul li a.series';
+        this.queryChapters = 'div#chapterlist ul li a';
     }
 }

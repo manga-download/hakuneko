@@ -6,9 +6,9 @@ export default class CopyToon extends GnuBoard5BootstrapBasic2 {
         super();
         super.id = 'copytoon';
         super.label = 'CopyToon';
-        this.tags = [ 'webtoon', 'korean' ];
+        this.tags = ['webtoon', 'korean'];
 
-        this.path = [ '/웹툰', '/포토툰' ];
+        this.path = ['/웹툰', '/포토툰'];
         this.scriptPages = `
             new Promise(resolve => {
                 resolve([...document.querySelectorAll('div#bo_v_con img')].map(img => img.src));
@@ -20,7 +20,7 @@ export default class CopyToon extends GnuBoard5BootstrapBasic2 {
                 label: 'URL',
                 description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
-                value: 'https://copytoon104.com'
+                value: 'https://copytoon142.com/'
             }
         };
     }
@@ -30,7 +30,7 @@ export default class CopyToon extends GnuBoard5BootstrapBasic2 {
     }
 
     set url(value) {
-        if(this.config && value) {
+        if (this.config && value) {
             this.config.url.value = value;
             Engine.Settings.save();
         }
