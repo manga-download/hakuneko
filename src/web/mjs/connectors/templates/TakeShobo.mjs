@@ -9,7 +9,7 @@ export default class TakeShobo extends SpeedBinb {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
-        this.path = '/';
+        this.path = '/parts_sub_lineup.html';
 
         this.queryMangaTitle = 'section.work_main div.col_work_name h1';
         this.queryMangas = 'section.lineup ul li a';
