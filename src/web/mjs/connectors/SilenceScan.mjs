@@ -10,4 +10,4 @@ export default class SilenceScan extends WordPressMangastream {
         this.url = 'https://silencescan.net';
         this.path = '/manga/list-mode/';
     }
- }
+}
