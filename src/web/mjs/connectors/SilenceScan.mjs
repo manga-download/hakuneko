@@ -8,8 +8,6 @@ export default class SilenceScan extends WordPressMangastream {
         super.label = 'Silence Scan';
         this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
         this.url = 'https://silencescan.net';
-
         this.path = '/manga/list-mode/';
-
     }
  }
