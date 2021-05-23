@@ -193,9 +193,9 @@ export default class GManga extends Connector {
                 , i = 0;
             return n.forEach(function (t) {
                 o[t] = this._unpack(r[i], e + 1),
-                    i += 1;
+                i += 1;
             }.bind(this)),
-                o;
+            o;
         }
         if (t.isArray) {
             o = [];
@@ -204,11 +204,11 @@ export default class GManga extends Connector {
                     , r = 0;
                 n.forEach(function (n) {
                     e[n] = t[r],
-                        r += 1;
+                    r += 1;
                 }),
-                    o.push(e);
+                o.push(e);
             }),
-                o;
+            o;
         }
     }
 
