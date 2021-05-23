@@ -70,7 +70,7 @@ export default class GManga extends Connector {
             title += chapterization.title ? ' - ' + chapterization.title : '';
             title += teams.name ? ' [' + teams.name + ']' : '';
             return {
-                id: manga.id + '/' + manga.title + '/' + chapterization.chapter + '/' + (teams.name ? teams.name : ''),
+                id: manga.id + '/chapter/' + chapterization.chapter + '/' + (teams.name ? teams.name : ''),
                 title: title,
                 language: ''
             };
