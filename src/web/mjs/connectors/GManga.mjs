@@ -7,7 +7,7 @@ export default class GManga extends Connector {
         super();
         super.id = 'gmanga';
         super.label = 'GManga';
-        this.tags = [ 'manga', 'webtoon', 'arabic' ];
+        this.tags = ['manga', 'webtoon', 'arabic'];
         this.url = 'https://gmanga.me';
 
         this.mangaSearch = {
@@ -35,7 +35,7 @@ export default class GManga extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page = 1, run = true; run; page++) {
+        for (let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
@@ -49,7 +49,7 @@ export default class GManga extends Connector {
         let data = await this.fetchJSON(request);
         data = data['iv'] ? this._haqiqa(data.data) : data;
         data = data.mangas || [];
-        return data.map( manga => {
+        return data.map(manga => {
             return {
                 id: manga.id,
                 title: manga.title
@@ -63,11 +63,14 @@ export default class GManga extends Connector {
         data = data['iv'] ? this._haqiqa(data.data) : data;
         data = data['isCompact'] ? this._unpack(data) : data;
         return data.releases.map(chapter => {
-            let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
-            title += chapter.title ? ' - ' + chapter.title : '';
-            title += chapter.team_name ? ' [' + chapter.team_name + ']' : '';
+            let chapterization = data.chapterizations.find(ele => ele.id == chapter.chapterization_id);
+            let teams = data.teams.find(ele => ele.id == chapter.team_id);
+
+            let title = 'Vol.' + chapterization.volume + ' Ch.' + chapterization.chapter;
+            title += chapterization.title ? ' - ' + chapterization.title : '';
+            title += teams.name ? ' [' + teams.name + ']' : '';
             return {
-                id: manga.id + '/chapter/' + chapter.chapter + '/' + chapter.team_name,
+                id: manga.id + '/' + manga.title + '/' + chapterization.chapter + '/' + (teams.name ? teams.name : ''),
                 title: title,
                 language: ''
             };
@@ -81,7 +84,7 @@ export default class GManga extends Connector {
         let url = (data.globals.wla.configs.http_media_server || data.globals.wla.configs.media_server) + '/uploads/releases/';
         data = data.readerDataAction.readerData.release;
         let images = [];
-        if(data.pages && data.pages.length > 0) {
+        if (data.pages && data.pages.length > 0) {
             images = data.pages.map(page => '/hq/' + page);
         } else {
             images = data.webp_pages.map(page => '/hq_webp/' + page);
@@ -103,7 +106,7 @@ export default class GManga extends Connector {
         let lease = (parseInt(Date.now() / 1000) + 120).toString(36);
         uri.searchParams.set('ak3', lease);
         let data = await super._handleConnectorURI(uri.href);
-        if(data.mimeType === 'text/html') {
+        if (data.mimeType === 'text/html') {
             return super._handleConnectorURI(uri.href.replace('/hq', '/mq'));
         } else {
             return data;
@@ -131,20 +134,20 @@ export default class GManga extends Connector {
      */
 
     _r(t) {
-        return (this._r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(t) {
+        return (this._r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (t) {
             return typeof t;
         }
-            : function(t) {
+            : function (t) {
                 return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t;
             }
         )(t);
     }
 
     _a(t) {
-        return (this._a = "function" == typeof Symbol && "symbol" === this._r(Symbol.iterator) ? function(t) {
+        return (this._a = "function" == typeof Symbol && "symbol" === this._r(Symbol.iterator) ? function (t) {
             return this._r(t);
         }.bind(this)
-            : function(t) {
+            : function (t) {
                 return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : this._r(t);
             }.bind(this)
         )(t);
@@ -188,24 +191,24 @@ export default class GManga extends Connector {
         if (t.isObject) {
             var o = {}
                 , i = 0;
-            return n.forEach(function(t) {
+            return n.forEach(function (t) {
                 o[t] = this._unpack(r[i], e + 1),
-                i += 1;
+                    i += 1;
             }.bind(this)),
-            o;
+                o;
         }
         if (t.isArray) {
             o = [];
-            return r.forEach(function(t) {
+            return r.forEach(function (t) {
                 var e = {}
                     , r = 0;
-                n.forEach(function(n) {
+                n.forEach(function (n) {
                     e[n] = t[r],
-                    r += 1;
+                        r += 1;
                 }),
-                o.push(e);
+                    o.push(e);
             }),
-            o;
+                o;
         }
     }
 
