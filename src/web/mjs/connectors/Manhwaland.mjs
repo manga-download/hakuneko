@@ -7,7 +7,7 @@ export default class Manhwaland extends WordPressMangastream {
         super.id = 'manhwaland';
         super.label = 'Manhwaland';
         this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://manhwaland.net';
+        this.url = 'https://manhwaland.cc';
         this.path = '/manhwa-list/';
 
         this.querMangaTitleFromURI = 'div.series-info div.series-titlex h1';
