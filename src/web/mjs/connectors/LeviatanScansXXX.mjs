@@ -6,7 +6,7 @@ export default class LeviatanScans extends WordPressMadara {
         super();
         super.id = 'leviatanscans-xxx';
         super.label = 'LeviatanScans (XXX)';
-        this.tags = [ 'webtoon', 'high-quality', 'english', 'scanlation', 'hentai' ];
+        this.tags = [ 'webtoon', 'high-quality', 'english', 'scanlation', 'hentai'];
         this.url = 'https://xxx.leviatanscans.com';
     }
 }
