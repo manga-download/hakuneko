@@ -29,7 +29,7 @@ export default class EarlyManga extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(`/loadmore/manga-${ 40 * page }`, this.url);
+        const uri = new URL(`/lazymore/manga-${ 40 * page }`, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         if(typeof data === 'string') {

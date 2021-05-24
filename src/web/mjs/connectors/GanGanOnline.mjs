@@ -41,25 +41,15 @@ export default class GanGanOnline extends Publus {
 
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let response = await fetch(request);
-        let data = await response.text();
-        let dom = this.createDOM(data);
-        let chapterLatest = dom.querySelector('div.gn_detail_story_list dd ul');
-        chapterLatest = {
-            id: this.getRootRelativeOrAbsoluteLink(chapterLatest.querySelector('li.gn_detail_story_btn a.gn_link_btn'), this.url),
-            title: chapterLatest.querySelector('li.gn_detail_story_list_ttl').textContent.trim(),
-            language: 'jp'
-        };
-        let chapterList = [...dom.querySelectorAll('div.gn_detail_story_past ul.past_2c li.gn_detail_story_past_2c a.gn_link_list')]
-            .map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.text.trim(),
-                    language: 'jp'
-                };
-            });
-        chapterList.push(chapterLatest);
-        return chapterList;
+
+        let data = await this.fetchDOM(request, 'div.gn_detail_story_list dd ul');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('li.gn_detail_story_btn a.gn_link_btn:first-of-type'), this.url),
+                title: element.querySelector('li.gn_detail_story_list_ttl').textContent.trim(),
+                language: 'jp'
+            };
+        });
     }
 
     async _getPages(chapter) {

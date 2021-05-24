@@ -1,13 +1,12 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class Mgkomik extends WordPressMangastream {
+export default class Mgkomik extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'mgkomik';
         super.label = 'MGKOMIK';
         this.tags = [ 'webtoon', 'indonesian' ];
-        this.url = 'https://mgkomik.my.id';
-        this.path = '/komik/list-mode/';
+        this.url = 'https://mgkomik.com';
     }
 }

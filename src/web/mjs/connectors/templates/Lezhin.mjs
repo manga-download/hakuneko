@@ -26,6 +26,12 @@ export default class Lezhin extends Connector {
                 description: 'Password for login with your Lezhin account.\nAn account is required to access R-rated content.',
                 input: 'password',
                 value: ''
+            },
+            forceJPEG: {
+                label: 'Force JPEG',
+                description: 'Always use JPEG instead of WEBP images, even when WEBP images would be available.\nNote: The WEBP images are smaller in size but still provide the same or even slightly better quality.',
+                input: 'checkbox',
+                value: true
             }
         };
     }
@@ -202,8 +208,10 @@ export default class Lezhin extends Connector {
                         }
                         const subscribed = __LZ_DATA__.product && __LZ_DATA__.product.subscribed;
                         const purchased = __LZ_DATA__.purchased && __LZ_DATA__.purchased.includes(__LZ_DATA__.episode.id);
+                        const hasOnlyJPEG = !!__LZ_DATA__.episode.d2;
                         const images = __LZ_DATA__.episode.scrollsInfo.map(x => {
-                            const uri = new URL('/v2' + x.path, __LZ_CONFIG__.cdnUrl);
+                            const extension = ${this.config.forceJPEG.value} || hasOnlyJPEG ? '.jpg' : '.webp';
+                            const uri = new URL('/v2' + x.path + extension, __LZ_CONFIG__.cdnUrl);
                             uri.searchParams.set('access_token', '${this.accessToken}');
                             uri.searchParams.set('purchased', subscribed || purchased);
                             uri.searchParams.set('q', 40);

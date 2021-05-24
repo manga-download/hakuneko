@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ScanTrad extends Connector {
 
@@ -8,41 +9,52 @@ export default class ScanTrad extends Connector {
         super.label = 'ScanTrad';
         this.tags = [ 'manga', 'french', 'high-quality', 'scanlation' ];
         this.url = 'https://scantrad.net';
-        this.links = {
-            login: 'https://scantrad.net/connexion'
-        };
+    }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#chap-top div.info div.titre');
+        let id = uri.pathname + uri.search;
+        let title = data[0].firstChild.data.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
         let request = new Request(this.url + '/mangas', this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.main div.home a.home-manga');
+        let data = await this.fetchDOM(request, 'div.main div.home div.manga div.manga_right div.mr-info a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.querySelector('div.hmi-titre').textContent.trim()
+                title: element.text.trim()
             };
         });
     }
 
     async _getChapters(manga) {
         let request = new Request(this.url + manga.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.chapitre');
-        return data.filter(element => element.querySelector('span.chl-num'))
-            .map(element => {
-                let number = element.querySelector('div.chl-titre span.chl-num').textContent.trim();
-                let title = element.querySelector('div.chl-titre span.chl-titre').textContent.trim();
-                let link = element.querySelector('div.ch-right a');
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(link, request.url),
-                    title: number + ' - ' + title,
-                    language: ''
-                };
-            });
+        let data = await this.fetchDOM(request, 'div.chapitre a.ch-left');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('div.chl-titre span.chl-num').textContent.trim()
+            };
+        });
     }
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.main_img div.sc-lel > source');
-        return data.map(element => this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr')).filter(link => !link.includes('/images/'));
+        return data.map(element => this.createConnectorURI({
+            url: this.getAbsolutePath(element.dataset.src || element, 'https://scan-trad.fr'),
+            referer: request.url
+        }));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }

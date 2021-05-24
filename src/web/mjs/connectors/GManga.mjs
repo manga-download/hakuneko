@@ -11,14 +11,15 @@ export default class GManga extends Connector {
         this.url = 'https://gmanga.me';
 
         this.mangaSearch = {
+            title: '',
             manga_types: {
-                include: [1, 2, 3, 4, 5, 6, 7],
+                include: [ '1', '2', '3', '4', '5', '6', '7', '8' ],
                 exclude: []
             },
             story_status: { include: [], exclude: [] },
-            translation_status: { include: [], exclude: [3] },
-            categories: { include: [], exclude: [] },
-            chapters: { min: null, max: null },
+            translation_status: { include: [], exclude: [ 3 ] },
+            categories: { include: [ null ], exclude: [] },
+            chapters: { min: '', max: '' },
             dates: { start: null, end: null },
             page: 0
         };
@@ -58,16 +59,22 @@ export default class GManga extends Connector {
     }
 
     async _getChapters(manga) {
+        function getMangaSlug(/*mangaTitle*/) {
+            // NOTE: As of today, the manga slug (e.g. 'how-to-fight') can be any arbitrary string
+            return 'manga-slug'; // mangaTitle.replace(/\s+/g, '-').replace(/[^-\w]+/gi, '').toLowerCase();
+        }
         let request = new Request(new URL(`/api/mangas/${manga.id}/releases`, this.url), this.requestOptions);
         let data = await this.fetchJSON(request);
         data = data['iv'] ? this._haqiqa(data.data) : data;
         data = data['isCompact'] ? this._unpack(data) : data;
         return data.releases.map(chapter => {
-            let title = 'Vol.' + chapter.volume + ' Ch.' + chapter.chapter;
-            title += chapter.title ? ' - ' + chapter.title : '';
-            title += chapter.team_name ? ' [' + chapter.team_name + ']' : '';
+            const team = data.teams.find(t => t.id === chapter.team_id);
+            const chapterization = data.chapterizations.find(c => c.id === chapter.chapterization_id);
+            let title = 'Vol.' + chapterization.volume + ' Ch.' + chapterization.chapter;
+            title += chapterization.title ? ' - ' + chapterization.title : '';
+            title += team.name ? ' [' + team.name + ']' : '';
             return {
-                id: manga.id + '/chapter/' + chapter.chapter + '/' + chapter.team_name,
+                id: [ manga.id, getMangaSlug(manga.title), chapterization.chapter, team.name ].join('/'),
                 title: title,
                 language: ''
             };

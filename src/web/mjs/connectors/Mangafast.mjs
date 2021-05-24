@@ -21,7 +21,8 @@ export default class Mangafast extends Connector {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
-            mangas.length ? mangaList.push(...mangas) : run = false;
+            mangaList.push(...mangas);
+            run = mangas.continue;
         }
         return mangaList;
     }
@@ -29,13 +30,18 @@ export default class Mangafast extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL(`/list-manga/page/${page}/`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.daftar div.kan > a:first-of-type');
-        return data.map(element => {
+        const body = (await this.fetchDOM(request, 'body'))[0];
+        const nextLink = body.querySelector('main section div.btn-w > a:last-of-type');
+        const hasNextLink = nextLink ? /next/i.test(nextLink.text) : false;
+        const data = [...body.querySelectorAll('div.list-content div.ls4j h3 a')];
+        const mangas = data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.trim()
             };
         });
+        mangas['continue'] = hasNextLink;
+        return mangas;
     }
 
     async _getChapters(manga) {

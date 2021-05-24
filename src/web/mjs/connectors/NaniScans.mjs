@@ -32,9 +32,18 @@ export default class NaniScans extends Connector {
     }
 
     async _getChapters(manga) {
-        const uri = new URL(manga.id, this.url);
+        let chapList = [];
+        for(let page = 1, run = true; run; page++) {
+            let chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length ? chapList.push(...chapters) : run = false;
+        }
+        return chapList;
+    }
+
+    async _getChaptersFromPage(manga, page) {
+        const uri = new URL(manga.id + `/${page}/`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div#chapters div.item div.content p a:last-of-type');
+        const data = await this.fetchDOM(request, 'div.item div.content p a:last-of-type');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
