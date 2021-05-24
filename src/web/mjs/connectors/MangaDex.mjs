@@ -53,7 +53,7 @@ export default class MangaDex extends Connector {
         if(page > 99) {
             // NOTE: Current limit is 10000 entries, maybe login is required to show more?
             //       => Do not throw an error but return gracefully instead, so at least the partial list is shown
-            console.error('MangaDex is a jerk and currently limiting the manga list to max. 10000 entries!');
+            console.error('For unknown reasons MangaDex is limiting all lists (e.g. mangas) to a maximum of 10000 entries!');
             return [];
         }
         await this.wait(this.throttleGlobal);
