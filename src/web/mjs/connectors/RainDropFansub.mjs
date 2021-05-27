@@ -12,7 +12,8 @@ export default class RainDropFansub extends MangaReaderCMS {
             login: 'https://raindropteamfan.com/auth/login'
         };
 
-        this.queryChapters = 'ul.chapters li h5.chapter-title-rtl a';
+        this.queryMangas = 'ul.price-list li a';
+        this.queryChapters = 'ul.chapters li h3.chapter-title-rtl a';
         this.language = 'tr';
     }
 }
