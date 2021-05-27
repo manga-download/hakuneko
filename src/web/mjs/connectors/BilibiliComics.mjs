@@ -11,19 +11,27 @@ export default class BilibiliComics extends Connector {
         this.url = 'https://www.bilibilicomics.com';
     }
 
-    async _getMangaFromURI(uri) {
-        let request = new Request(new URL('/twirp/comic.v2.Comic/ComicDetail?device=pc&platform=web', this.url), {
+    async _fetchTwirp(path, body) {
+        const uri = new URL('/twirp/comic.v1.Comic' + path, this.url);
+        uri.searchParams.set('device', 'pc');
+        uri.searchParams.set('platform', 'web');
+        const request = new Request(uri, {
             method: 'POST',
-            body: JSON.stringify({
-                comic_id: parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
-            }),
+            body: JSON.stringify(body),
             headers: {
                 'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8'
             }
         });
-        let data = await this.fetchJSON(request);
-        return new Manga(this, data.data.id, data.data.title);
+        const data = await this.fetchJSON(request);
+        return data.data;
+    }
+
+    async _getMangaFromURI(uri) {
+        const data = await this._fetchTwirp('/ComicDetail', {
+            comic_id: parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
+        });
+        return new Manga(this, data.id, data.title);
     }
 
     async _getMangas() {
@@ -36,27 +44,16 @@ export default class BilibiliComics extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL('/twirp/comic.v1.Comic/ClassPage', this.url);
-        uri.searchParams.set('device', 'pc');
-        uri.searchParams.set('platform', 'web');
-        let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify({
-                style_id: -1,
-                area_id: -1,
-                is_free: -1,
-                is_finish: -1,
-                order: 0,
-                page_size: 18,
-                page_num: page
-            }),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=UTF-8'
-            }
+        const data = await this._fetchTwirp('/ClassPage', {
+            style_id: -1,
+            area_id: -1,
+            is_free: -1,
+            is_finish: -1,
+            order: 0,
+            page_size: 18,
+            page_num: page
         });
-        let data = await this.fetchJSON(request);
-        return data.data.map(entry => {
+        return data.map(entry => {
             return {
                 id: entry.season_id,
                 title: entry.title.trim()
@@ -65,21 +62,10 @@ export default class BilibiliComics extends Connector {
     }
 
     async _getChapters(manga) {
-        let uri = new URL('/twirp/comic.v2.Comic/ComicDetail', this.url);
-        uri.searchParams.set('device', 'pc');
-        uri.searchParams.set('platform', 'web');
-        let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify({
-                comic_id: manga.id
-            }),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=UTF-8'
-            }
+        const data = await this._fetchTwirp('/ComicDetail', {
+            comic_id: manga.id
         });
-        let data = await this.fetchJSON(request);
-        return data.data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
+        return data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
             return {
                 id: entry.id,
                 title: entry.short_title + ' - ' + entry.title,
@@ -89,73 +75,13 @@ export default class BilibiliComics extends Connector {
     }
 
     async _getPages(chapter) {
-        let uri = new URL('/twirp/comic.v1.Comic/GetImageIndex', this.url);
-        uri.searchParams.set('device', 'pc');
-        uri.searchParams.set('platform', 'web');
-        let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify({
-                ep_id: chapter.id
-            }),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=UTF-8'
-            }
+        const data = await this._fetchTwirp('/GetImageIndex', {
+            ep_id: chapter.id
         });
-        let data = await this.fetchJSON(request);
-
-        uri = new URL(data.data.path, data.data.host);
-        let images = await this._getImageIndex(uri);
-        //images = images.map(image => image + '@1100w.jpg');
-
-        uri = new URL('/twirp/comic.v1.Comic/ImageToken', this.url);
-        uri.searchParams.set('device', 'pc');
-        uri.searchParams.set('platform', 'web');
-        request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify({
-                urls: JSON.stringify(images)
-            }),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=UTF-8'
-            }
+        let images = data.images.map(image => [ image.path, '@', image.x, 'w.jpg' ].join(''));
+        images = await this._fetchTwirp('/ImageToken', {
+            urls: JSON.stringify(images)
         });
-        data = await this.fetchJSON(request);
-
-        return data.data.map(image => image.url + '?token=' + image.token);
-    }
-
-    async _getImageIndex(uri) {
-        let request = new Request(uri);
-        let response = await fetch(request);
-        let encrypted = await response.arrayBuffer();
-        let match = uri.pathname.match(/manga\/(\d+)\/(\d+)\/data/);
-        let mangaID = parseInt(match[1]);
-        let chapterID = parseInt(match[2]);
-
-        let decrypted = this._decrypt(encrypted, mangaID, chapterID);
-        let zip = await JSZip.loadAsync(decrypted, {});
-        let index = await zip.file('index.dat').async('string');
-        return JSON.parse(index).pics;
-    }
-
-    _decrypt(buffer, mangaID, chapterID) {
-        let key = [
-            chapterID & 0xff,
-            chapterID >> 8 & 0xff,
-            chapterID >> 16 & 0xff,
-            chapterID >> 24 & 0xff,
-            mangaID & 0xff,
-            mangaID >> 8 & 0xff,
-            mangaID >> 16 & 0xff,
-            mangaID >> 24 & 0xff
-        ];
-        // create a view for the buffer
-        let decrypted = new Uint8Array(buffer, 9);
-        for(let index in decrypted) {
-            decrypted[index] ^= key[index % key.length];
-        }
-        return decrypted;
+        return images.map(image => image.url + '?token=' + image.token);
     }
 }
