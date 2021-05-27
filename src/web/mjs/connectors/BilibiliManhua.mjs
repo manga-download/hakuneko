@@ -78,45 +78,10 @@ export default class BilibiliManhua extends Connector {
         const data = await this._fetchTwirp('/GetImageIndex', {
             ep_id: chapter.id
         });
-        const uri = new URL(data.path, data.host);
-        let images = await this._getImageIndex(uri);
-        //images = images.map(image => image + '@1100w.jpg');
+        let images = data.images.map(image => [ image.path, '@', image.x, 'w.jpg' ].join(''));
         images = await this._fetchTwirp('/ImageToken', {
             urls: JSON.stringify(images)
         });
         return images.map(image => image.url + '?token=' + image.token);
-    }
-
-    async _getImageIndex(uri) {
-        let request = new Request(uri);
-        let response = await fetch(request);
-        let encrypted = await response.arrayBuffer();
-        let match = uri.pathname.match(/manga\/(\d+)\/(\d+)\/data/);
-        let mangaID = parseInt(match[1]);
-        let chapterID = parseInt(match[2]);
-
-        let decrypted = this._decrypt(encrypted, mangaID, chapterID);
-        let zip = await JSZip.loadAsync(decrypted, {});
-        let index = await zip.file('index.dat').async('string');
-        return JSON.parse(index).pics;
-    }
-
-    _decrypt(buffer, mangaID, chapterID) {
-        let key = [
-            chapterID & 0xff,
-            chapterID >> 8 & 0xff,
-            chapterID >> 16 & 0xff,
-            chapterID >> 24 & 0xff,
-            mangaID & 0xff,
-            mangaID >> 8 & 0xff,
-            mangaID >> 16 & 0xff,
-            mangaID >> 24 & 0xff
-        ];
-        // create a view for the buffer
-        let decrypted = new Uint8Array(buffer, 9);
-        for(let index in decrypted) {
-            decrypted[index] ^= key[index % key.length];
-        }
-        return decrypted;
     }
 }
