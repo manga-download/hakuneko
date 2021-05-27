@@ -1,12 +1,12 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-export default class NetEaseComic extends Connector {
+export default class BilibiliManhua extends Connector {
 
     constructor() {
         super();
         super.id = 'neteasecomic';
-        super.label = '哔哩哔哩 漫画 (bilibili Comics)';
+        super.label = '哔哩哔哩 漫画 (Bilibili Manhua)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
     }
