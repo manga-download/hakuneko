@@ -6,9 +6,9 @@ export default class MangaNel extends Connector {
     constructor() {
         super();
         super.id = 'manganel';
-        super.label = 'MangaNelo';
+        super.label = 'Manganato';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://manganelo.com';
+        this.url = 'https://manganato.com';
 
         this.path = '/genre-all/';
         this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
@@ -18,14 +18,14 @@ export default class MangaNel extends Connector {
         this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
 
         this._queryChapters = [
-            'ul.row-content-chapter li a.chapter-name', // manganelo, mangabat
+            'ul.row-content-chapter li a.chapter-name', // manganato, mangabat
             'div.chapter_list ul li a', // mangairo
             'div.chapter-list div.row span a', // mangakakalot(s), kissmangawebsite, manganeloinfo
             'div.content.mCustomScrollbar div.chapter-list ul li.row div.chapter h4 a.xanh' // MangaPark
         ].join(', ');
 
         this._queryPages = [
-            'div.container-chapter-reader source', // manganelo, mangabat
+            'div.container-chapter-reader source', // manganato, mangabat
             'div.chapter-content div.panel-read-story source', // mangairo
             'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s), kissmangawebsite, manganeloinfo
         ].join(', ');
@@ -33,7 +33,7 @@ export default class MangaNel extends Connector {
 
     canHandleURI(uri) {
         // Test: https://regex101.com/r/aPR3zy/3/tests
-        return /^(m\.|chap\.)?manganelo\.com$/.test(uri.hostname);
+        return /^(m\.|chap\.)?(read)?manganato\.com$/.test(uri.hostname);
     }
 
     async _getMangaFromURI(uri) {
@@ -64,7 +64,7 @@ export default class MangaNel extends Connector {
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                // get absolute links to support cross referencing between MangaNel affiliates and sub-domains
+                // get absolute links to support cross referencing between MangaNato affiliates and sub-domains
                 id: this.getAbsolutePath(element, request.url),
                 title: element.text.replace(this.mangaTitleFilter, '').trim()
             };
@@ -78,7 +78,7 @@ export default class MangaNel extends Connector {
         return data.map(element => {
             this.cfMailDecrypt(element);
             return {
-                // get absolute links to support cross referencing between MangaNel affiliates and sub-domains
+                // get absolute links to support cross referencing between MangaNato affiliates and sub-domains
                 id: this.getAbsolutePath(element, request.url),
                 title: element.text.replace(manga.title, '').replace(this.chapterTitleFilter, '').trim(),
                 language: ''

@@ -1,6 +1,6 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class NoxSubs extends MangaReaderCMS {
+export default class NoxSubs extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,7 +8,6 @@ export default class NoxSubs extends MangaReaderCMS {
         super.label = 'Nox Subs';
         this.tags = [ 'webtoon', 'manga', 'turkish' ];
         this.url = 'https://noxsubs.com';
-
-        this.language = 'tr';
+        this.path = '/manga/list-mode/';
     }
 }
