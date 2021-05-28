@@ -13,6 +13,7 @@ export default class ManhuaScan extends FlatManga {
         this.queryChapters = 'div#tab-chapper div#list-chapters span.title a.chapter';
     }
 
+    // Same decryption as in HeroScan
     async _getPages(chapter) {
         const script = `
             new Promise(async resolve => {

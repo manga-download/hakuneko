@@ -1,14 +1,14 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
-//dead?
+
 export default class ReadWebtoons extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'readwebtoons';
-        super.label = 'ReadWebtoons';
-        this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://readwebtoons.com';
+        super.label = 'WebtoonUpdates';
+        this.tags = [ 'webtoon', 'hentai', 'english' ];
+        this.url = 'https://webtoonupdates.com';
 
-        this.queryPages = 'div.reading-content p source';
+        this.queryPages = 'div.reading-content p source, div.reading-content div.page-break source';
     }
 }
