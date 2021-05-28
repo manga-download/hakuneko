@@ -42,24 +42,28 @@ export default class MangaDex extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page = 0, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        // NOTE: Small hack to partially bypass the 10000 result entries limit by utilizing the status filter
+        for(let status of [ 'ongoing', 'completed', 'hiatus', 'cancelled' ]) {
+            for(let page = 0, run = true; run; page++) {
+                let mangas = await this._getMangasFromPage(status, page);
+                mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            }
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page) {
+    async _getMangasFromPage(status, page) {
         if(page > 99) {
             // NOTE: Current limit is 10000 entries, maybe login is required to show more?
             //       => Do not throw an error but return gracefully instead, so at least the partial list is shown
-            console.error('For unknown reasons MangaDex is limiting all lists (e.g. mangas) to a maximum of 10000 entries!');
+            //console.error('For unknown reasons MangaDex is limiting all lists (e.g. mangas) to a maximum of 10000 entries!');
             return [];
         }
         await this.wait(this.throttleGlobal);
         const uri = new URL('/manga', this.api);
         uri.searchParams.set('limit', 100);
         uri.searchParams.set('offset', 100 * page);
+        uri.searchParams.set('status[]', status);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
         return !data.results ? [] : data.results.map(result => {
