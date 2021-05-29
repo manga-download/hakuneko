@@ -7,7 +7,7 @@ export default class UnionMangas extends Connector {
         super.id = 'unionmangas';
         super.label = 'UnionMangas';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://unionmangas.top'; // https://unionleitor.top
+        this.url = 'https://unionmangas.top';
         this.links = {
             login: 'https://unionmangas.top/login'
         };
@@ -25,7 +25,7 @@ export default class UnionMangas extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL('/mangas/visualizacoes/' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.tamanho-bloco-perfil div.lista-mangas-novos > a:last-of-type');
+        const data = await this.fetchDOM(request, 'div.tamanho-bloco-perfil div.lista-mangas-novos > a:last-of-type', 3);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
