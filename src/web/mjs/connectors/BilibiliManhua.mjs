@@ -78,7 +78,7 @@ export default class BilibiliManhua extends Connector {
         const data = await this._fetchTwirp('/GetImageIndex', {
             ep_id: chapter.id
         });
-        let images = data.images.map(image => [ image.path, '@', image.x, 'w.jpg' ].join(''));
+        let images = data.images.map(image => image.path + '@' + image.x + 'w.jpg');
         images = await this._fetchTwirp('/ImageToken', {
             urls: JSON.stringify(images)
         });
