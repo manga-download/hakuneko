@@ -10,6 +10,7 @@ export default class MangaLife extends Connector {
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manga4life.com';
         this.requestOptions.headers.set('x-cookie', 'FullPage=yes');
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
