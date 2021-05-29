@@ -8,5 +8,6 @@ export default class MangaSee extends MangaLife {
         super.label = 'MangaSee';
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://mangasee123.com';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 }
