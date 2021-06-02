@@ -11,6 +11,7 @@ export default class LoveHug extends FlatManga {
         this.path = '/manga-list.html';
         this.requestOptions.headers.set('x-referer', this.url);
 
+        this.queryMangaTitle = 'li:last-of-type a[itemprop="item"]';
         this.queryMangas = 'div.series-title a';
         this.queryChapters = 'ul.list-chapters > a';
         this.queryChapterTitle = 'div.chapter-name';
