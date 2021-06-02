@@ -9,6 +9,7 @@ export default class ComicFX extends Connector {
         super.label = 'Comic FX';
         this.tags = [ 'manga', 'webtoon', 'english', 'indonesian' ];
         this.url = 'https://comicfx.net';
+        this.requestOptions.headers.set('x-referer', this.url);
 
         this.queryChapters = 'div.chaplist ul li a:not([class])';
         this.queryPages = 'div#all source.img-responsive';
@@ -50,6 +51,24 @@ export default class ComicFX extends Connector {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div#lcanv source.img-responsive');
-        return data.map(image => this.getAbsolutePath(image.dataset.src || image, request.url));
+        return data.map(image => {
+            let url = this.getAbsolutePath(image.dataset.src || image, request.url);
+            try {
+                if(/img\.comicfx\.net\/img\/\d+\//.test(url)) {
+                    const encoded = url.split('/').pop().split('.').shift();
+                    url = decodeURIComponent(atob(encoded));
+                }
+            } catch(error) {/**/}
+            url = url
+                // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+                .replace(/\/i\d+\.wp\.com/, '')
+                // HACK: bypass 'cdn.statically.io' image CDN to ensure original images are loaded directly from host
+                .replace(/cdn\.statically\.io\/img\//, '')
+                .replace(/\/(w=\d+|h=\d+|q=\d+|f=auto)(,(w=\d+|h=\d+|q=\d+|f=auto))*\//, '/');
+            return url.includes('img.comicfx.net') ? this.createConnectorURI(url) : url;
+        }).filter(url => {
+            const adImageFiles = [ '/4WWje.jpg' ];
+            return adImageFiles.every(adImageFile => !url.endsWith(adImageFile));
+        });
     }
 }
