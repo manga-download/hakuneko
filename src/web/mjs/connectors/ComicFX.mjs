@@ -66,6 +66,9 @@ export default class ComicFX extends Connector {
                 .replace(/cdn\.statically\.io\/img\//, '')
                 .replace(/\/(w=\d+|h=\d+|q=\d+|f=auto)(,(w=\d+|h=\d+|q=\d+|f=auto))*\//, '/');
             return url.includes('img.comicfx.net') ? this.createConnectorURI(url) : url;
-        }).filter(url => !url.endsWith('/4WWje.jpg'));
+        }).filter(url => {
+            const adImageFiles = [ '/4WWje.jpg' ];
+            return adImageFiles.every(adImageFile => !url.endsWith(adImageFile));
+        });
     }
 }
