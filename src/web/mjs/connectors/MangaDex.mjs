@@ -18,13 +18,14 @@ export default class MangaDex extends Connector {
         ];
         this.serverNetwork = [
             'http://s2.mangadex.org/data/',
-            'http://s5.mangadex.org/data/'
+            'http://s5.mangadex.org/data/',
+            'https://uploads.mangadex.org/data/'
         ];
     }
 
     async _initializeConnector() {
-        // TODO: determine seed from remote service?
-        this.serverNetwork.push('https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network:443/data/');
+        this.serverNetwork.push('https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network/data/');
+        this.serverNetwork.push('https://dj5jn4gz46ea6.xnvda7fch4zhr.mangadex.network/data/');
         console.log(`Added Network Seeds '[ ${this.serverNetwork.join(', ')} ]' to ${this.label}`);
         const request = new Request(this.url, this.requestOptions);
         return Engine.Request.fetchUI(request, '');
@@ -42,17 +43,27 @@ export default class MangaDex extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        // NOTE: Small hack to partially bypass the 10000 result entries limit by utilizing the status filter
-        for(let status of [ 'ongoing', 'completed', 'hiatus', 'cancelled' ]) {
+        // NOTE: Small hack to partially bypass the 10000 result entries limit by utilizing the status and order filter
+        const queries = [
+            { status: 'ongoing', order: 'asc' },
+            { status: 'ongoing', order: 'desc' },
+            { status: 'completed', order: 'asc' },
+            { status: 'completed', order: 'desc' },
+            { status: 'hiatus', order: 'asc' },
+            { status: 'hiatus', order: 'desc' },
+            { status: 'cancelled', order: 'asc' },
+            { status: 'cancelled', order: 'desc' }
+        ];
+        for(let query of queries) {
             for(let page = 0, run = true; run; page++) {
-                let mangas = await this._getMangasFromPage(status, page);
+                let mangas = await this._getMangasFromPage(page, query);
                 mangas.length > 0 ? mangaList.push(...mangas) : run = false;
             }
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(status, page) {
+    async _getMangasFromPage(page, query) {
         if(page > 99) {
             // NOTE: Current limit is 10000 entries, maybe login is required to show more?
             //       => Do not throw an error but return gracefully instead, so at least the partial list is shown
@@ -63,7 +74,13 @@ export default class MangaDex extends Connector {
         const uri = new URL('/manga', this.api);
         uri.searchParams.set('limit', 100);
         uri.searchParams.set('offset', 100 * page);
-        uri.searchParams.set('status[]', status);
+        uri.searchParams.set('status[]', query.status);
+        uri.searchParams.set('order[createdAt]', query.order);
+        uri.searchParams.append('contentRating[]', 'none');
+        uri.searchParams.append('contentRating[]', 'safe');
+        uri.searchParams.append('contentRating[]', 'suggestive');
+        uri.searchParams.append('contentRating[]', 'erotica');
+        uri.searchParams.append('contentRating[]', 'pornographic');
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
         return !data.results ? [] : data.results.map(result => {
