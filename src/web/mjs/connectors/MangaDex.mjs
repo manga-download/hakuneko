@@ -34,6 +34,7 @@ export default class MangaDex extends Connector {
     canHandleURI(uri) {
         // See: https://www.reddit.com/r/mangadex/comments/nn584s/list_of_appssites_that_currently_use_the_mangadex/
         return [
+            /https?:\/\/mangadex\.org\/title\//,
             /https?:\/\/mangastack\.cf\/manga\//,
             /https?:\/\/manga\.megu\.red\/manga\//,
             /https?:\/\/manga\.ayaya\.red\/manga\//,
