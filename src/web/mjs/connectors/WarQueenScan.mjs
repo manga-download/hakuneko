@@ -7,6 +7,6 @@ export default class WarQueenScan extends WordPressMadara {
         super.id = 'warqueenscan';
         super.label = 'War Queen Scan';
         this.tags = [ 'webtoon', 'portuguese' ];
-        this.url = 'https://wqscan.com';
+        this.url = 'https://wqscan.com.br';
     }
 }
