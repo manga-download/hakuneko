@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-//import Manga from '../engine/Manga.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class MangaDex extends Connector {
 
@@ -31,19 +31,31 @@ export default class MangaDex extends Connector {
         return Engine.Request.fetchUI(request, '');
     }
 
+    canHandleURI(uri) {
+        // See: https://www.reddit.com/r/mangadex/comments/nn584s/list_of_appssites_that_currently_use_the_mangadex/
+        return [
+            /https?:\/\/mangadex\.org\/title\//,
+            /https?:\/\/mangastack\.cf\/manga\//,
+            /https?:\/\/manga\.megu\.red\/manga\//,
+            /https?:\/\/manga\.ayaya\.red\/manga\//,
+            /https?:\/\/(www\.)?chibiview\.app\/manga\//,
+            /https?:\/\/simpledex\.github\.io\/#\/manga\//,
+            /https?:\/\/cubari\.moe\/read\/mangadex\//
+        ].some(regex => regex.test(uri.href));
+    }
+
     async _getMangaFromURI(uri) {
-        // NOTE: The website is still down, only the API is working for now (2021-05-22)
-        throw new Error('The MangaDex website is still under development, therefore copy & paste is not yet supported!\n' + uri.href);
-        /*
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, '...', 3);
-        return new Manga(this, id, title);
-        */
+        // NOTE: The MangaDex website is still down, but there are some provisional frontends which can be used for search, copy & paste
+        const regexGUID = /[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}/;
+        const id = (uri.pathname.match(regexGUID) || uri.hash.match(regexGUID))[0].toLowerCase();
+        const request = new Request(new URL('/manga/' + id, this.api), this.requestOptions);
+        const data = await this.fetchJSON(request);
+        return new Manga(this, id, data.data.attributes.title.en);
     }
 
     async _getMangas() {
         let mangaList = [];
-        // NOTE: Small hack to partially bypass the 10000 result entries limit by utilizing the status and order filter
+        // NOTE: Due to a limit of 10k results, it is necessary to permutate some filters in order to get as many results as possible
         const queries = [
             { status: 'ongoing', order: 'asc' },
             { status: 'ongoing', order: 'desc' },
