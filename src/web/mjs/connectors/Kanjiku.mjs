@@ -9,9 +9,9 @@ export default class Kanjiku extends Connector {
         super.label = 'Kanjiku';
         this.tags = [ 'manga', 'webtoon', 'german' ];
         this.url = 'https://kanjiku.net';
-		this.requestOptions.headers.set('x-cookie', 'clicked=true');
+        this.requestOptions.headers.set('x-cookie', 'clicked=true');
     }
-	
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.container h1.manga_page_title');
@@ -25,7 +25,7 @@ export default class Kanjiku extends Connector {
         let data = await this.fetchDOM(request, 'div.manga_flex-row a.manga_box');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
             };
         });
@@ -36,20 +36,20 @@ export default class Kanjiku extends Connector {
         let data = await this.fetchDOM(request, 'div.tab1 div.manga_overview_box a.latest_ch_number');
         return data.map(element => {
             let payload = {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url).substring(0, this.getRootRelativeOrAbsoluteLink(element, request.url).length -1)+'0',
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url).replace('/.$/', '0'),
                 title: element.text,
             };
-			return payload;
+            return payload;
         });
     }
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-		let data = await this.fetchDOM(request, 'div.container source');
+        let data = await this.fetchDOM(request, 'div.container source');
         return data.map(element => {
             let payload = {
-                url: this.getAbsolutePath(element, request.url).substring(0, this.getAbsolutePath(element, request.url).length -24),
-                referer: request.url
+                url: this.getAbsolutePath(element, this.url).replace('/.{24}$/', ''),
+                referer: this.url
             };
             return this.createConnectorURI(payload);
         });
