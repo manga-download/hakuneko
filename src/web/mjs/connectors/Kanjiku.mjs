@@ -36,7 +36,7 @@ export default class Kanjiku extends Connector {
         let data = await this.fetchDOM(request, 'div.tab1 div.manga_overview_box a.latest_ch_number');
         return data.map(element => {
             let payload = {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url).replace('/.$/', '0'),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url).replace(/.$/, '0'),
                 title: element.text,
             };
             return payload;
@@ -46,13 +46,7 @@ export default class Kanjiku extends Connector {
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.container source');
-        return data.map(element => {
-            let payload = {
-                url: this.getAbsolutePath(element, this.url).replace('/.{24}$/', ''),
-                referer: this.url
-            };
-            return this.createConnectorURI(payload);
-        });
+        return data.map(image => this.getAbsolutePath(image, this.url).replace(/.{24}$/, ''));
     }
 
     async _handleConnectorURI(payload) {
