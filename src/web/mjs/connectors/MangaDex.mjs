@@ -57,14 +57,28 @@ export default class MangaDex extends Connector {
         let mangaList = [];
         // NOTE: Due to a limit of 10k results, it is necessary to permutate some filters in order to get as many results as possible
         const queries = [
-            { status: 'ongoing', order: 'asc' },
-            { status: 'ongoing', order: 'desc' },
-            { status: 'completed', order: 'asc' },
-            { status: 'completed', order: 'desc' },
-            { status: 'hiatus', order: 'asc' },
-            { status: 'hiatus', order: 'desc' },
-            { status: 'cancelled', order: 'asc' },
-            { status: 'cancelled', order: 'desc' }
+            { status: ['ongoing'], order: 'asc', publicationDemographic: ['none'],
+			  contentRating: ['none','safe','suggestive','erotica','pornographic'] },
+            { status: ['ongoing'], order: 'asc', publicationDemographic: ['shounen', 'shoujo', 'josei', 'seinen'],
+			  contentRating: ['safe','suggestive','erotica','pornographic'] },
+            { status: ['completed'], order: 'asc', publicationDemographic: ['none'],
+			  contentRating: ['safe'] },
+            { status: ['completed'], order: 'desc', publicationDemographic: ['none'],
+			  contentRating: ['safe'] },
+            { status: ['completed'], order: 'asc', publicationDemographic: ['shounen'],
+			  contentRating: ['safe'] },
+            { status: ['completed'], order: 'asc', publicationDemographic: ['shoujo'],
+			  contentRating: ['safe'] },
+            { status: ['completed'], order: 'asc', publicationDemographic: ['josei', 'seinen'],
+			  contentRating: ['safe'] },
+            { status: ['completed'], order: 'asc', publicationDemographic: ['none'],
+			  contentRating: ['pornographic'] },
+            { status: ['completed'], order: 'asc', publicationDemographic: ['shounen', 'shoujo', 'josei', 'seinen'],
+			  contentRating: ['pornographic'] },
+            { status: ['completed'], order: 'asc', publicationDemographic: [],
+			  contentRating: ['suggestive','erotica'] },
+            { status: ['hiatus', 'cancelled'], order: 'asc', publicationDemographic: [],
+			  contentRating: ['safe','suggestive','erotica','pornographic'] }
         ];
         for(let query of queries) {
             for(let page = 0, run = true; run; page++) {
@@ -86,13 +100,16 @@ export default class MangaDex extends Connector {
         const uri = new URL('/manga', this.api);
         uri.searchParams.set('limit', 100);
         uri.searchParams.set('offset', 100 * page);
-        uri.searchParams.set('status[]', query.status);
+		for (const queryStatus of query.status) {
+			uri.searchParams.append('status[]', queryStatus);
+		}
         uri.searchParams.set('order[createdAt]', query.order);
-        uri.searchParams.append('contentRating[]', 'none');
-        uri.searchParams.append('contentRating[]', 'safe');
-        uri.searchParams.append('contentRating[]', 'suggestive');
-        uri.searchParams.append('contentRating[]', 'erotica');
-        uri.searchParams.append('contentRating[]', 'pornographic');
+		for (const queryContentRating of query.contentRating) {
+			uri.searchParams.append('contentRating[]', queryContentRating);
+		}
+		for (const queryPublicationDemographic of query.publicationDemographic) {
+			uri.searchParams.append('publicationDemographic[]', queryPublicationDemographic);
+		}
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
         return !data.results ? [] : data.results.map(result => {
