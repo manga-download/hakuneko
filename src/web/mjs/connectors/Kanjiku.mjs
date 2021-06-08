@@ -48,12 +48,4 @@ export default class Kanjiku extends Connector {
         let data = await this.fetchDOM(request, 'div.container source');
         return data.map(image => this.getAbsolutePath(image, this.url).replace(/.{24}$/, ''));
     }
-
-    async _handleConnectorURI(payload) {
-        let request = new Request(payload.url, this.requestOptions);
-        request.headers.set('x-referer', payload.referer);
-        let response = await fetch(request);
-        let data = await response.blob();
-        return this._blobToBuffer(data);
-    }
 }
