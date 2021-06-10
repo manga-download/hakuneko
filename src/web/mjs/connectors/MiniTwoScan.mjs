@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class minitwoscan extends WordPressMadara {
+export default class MiniTwoScan extends WordPressMadara {
 
     constructor() {
         super();
