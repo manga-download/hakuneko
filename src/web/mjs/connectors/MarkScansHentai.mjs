@@ -6,7 +6,7 @@ export default class MarkScansHentai extends WordPressMadara {
         super();
         super.id = 'markscanshentai';
         super.label = 'Mark Scans Hentai';
-        this.tags = [ 'webtoon', 'portuguese' ];
+        this.tags = [ 'webtoon', 'portuguese', 'hentai' ];
         this.url = 'https://mhentais.com';
     }
 }
