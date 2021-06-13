@@ -1,7 +1,7 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
 // very similar to WordPressEManga
-export default class KoMBatch extends WordPressMadara {
+export default class KoMBatch extends WordPressMangastream {
 
     constructor() {
         super();
@@ -9,8 +9,7 @@ export default class KoMBatch extends WordPressMadara {
         super.label = 'KoMBatch';
         this.tags = [ 'manga', 'indonesian' ];
         this.url = 'https://kombatch.com';
-
-        this.queryChapters = 'li.wp-manga-chapter > a:first-child';
+        this.path = '/manga/list-mode/';
     }
 
 }

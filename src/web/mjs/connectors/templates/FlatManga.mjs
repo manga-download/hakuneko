@@ -25,7 +25,7 @@ export default class FlatManga extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangaTitle);
         let id = uri.pathname;
-        let title = (data[0].content || data[0].textContent).trim();
+        let title = (data[0].content || data[0].textContent).trim() || data[0].title || '';
         return new Manga(this, id, title);
     }
 
