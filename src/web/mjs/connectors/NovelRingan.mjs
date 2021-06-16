@@ -6,7 +6,7 @@ export default class NovelRingan extends Connector {
         super();
         super.id = 'novelringan';
         super.label = 'Novel Ringan';
-        this.tags = ['webtoon', 'indonesian'];
+        this.tags = ['novel', 'indonesian'];
         this.url = 'https://novelringan.com';
 
         this.novelContainerQuery = 'main.content';
