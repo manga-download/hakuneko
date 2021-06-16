@@ -17,14 +17,11 @@ export default class NovelRingan extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(
-            this.url + '/daftar-novel',
-            this.requestOptions
-        );
+        let request = new Request(this.url + '/daftar-novel', this.requestOptions);
         let data = await this.fetchDOM(request, 'div.blix ul li a');
-        return data.map((element) => {
+        return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim(),
             };
         });
@@ -33,16 +30,17 @@ export default class NovelRingan extends Connector {
     async _getChapters(manga) {
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.bxcl ul li a');
-        return data.map((element) => {
+        return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim(),
                 language: '',
             };
         });
     }
 
-    async _getPagesNovel(request) { //Adapted from Novelgo.mjs
+    async _getPages(chapter) {
+        let request = new Request(this.url + chapter.id, this.requestOptions);
         let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise(resolve => {
@@ -72,17 +70,12 @@ export default class NovelRingan extends Connector {
         return [await Engine.Request.fetchUI(request, script)];
     }
 
-    async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-        return this._getPagesNovel(request);
-    }
-
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'h1.entry-title');
-        console.log(data);
         let id = uri.pathname;
         let title = data[0].textContent.trim();
+
         return new Manga(this, id, title);
     }
 }
