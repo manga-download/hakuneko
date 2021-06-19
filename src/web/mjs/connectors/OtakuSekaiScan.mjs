@@ -7,6 +7,6 @@ export default class OtakuSekaiScan extends WordPressMadara {
         super.id = 'otakusekaiscan';
         super.label = 'OtakuSekai Scan';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://www.sekaiscan.com';
+        this.url = 'https://otkscanlator.xyz';
     }
 }
