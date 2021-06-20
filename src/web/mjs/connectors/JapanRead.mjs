@@ -86,6 +86,18 @@ export default class JapanRead extends Connector {
         `;
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(image => this.createConnectorURI({
+            url: image,
+            referer: request.url
+        }));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
