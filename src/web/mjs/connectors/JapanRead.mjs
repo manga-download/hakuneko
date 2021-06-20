@@ -74,7 +74,7 @@ export default class JapanRead extends Connector {
                 }
                 const info = document.querySelector('head meta[data-chapter-id]');
                 const uri = new URL('/api/?type=chapter&id=' + info.dataset.chapterId, window.location.origin);
-                var customHeaders = {
+                const customHeaders = {
                     headers: {"a":"Math.random().toString(16)"}
                 };
                 const response = await fetch(uri.href,customHeaders);
