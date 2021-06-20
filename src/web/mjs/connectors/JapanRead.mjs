@@ -7,7 +7,7 @@ export default class JapanRead extends Connector {
         super();
         super.id = 'japanread';
         super.label = 'Japanread';
-        this.tags = [ 'manga', 'webtoon', 'french' ];
+        this.tags = ['manga', 'webtoon', 'french'];
         this.url = 'https://www.japanread.cc';
     }
 
@@ -45,9 +45,9 @@ export default class JapanRead extends Connector {
         });
     }
 
-    async _getChapters(manga) {
+    async _getChaptersFromPage(manga, page) {
         const uri = new URL(manga.id, this.url);
-        const request = new Request(uri, this.requestOptions);
+        const request = new Request(`${uri}?page=${page}`, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.chapter-container div.chapter-row a.text-truncate');
         return data.map(element => {
             return {
@@ -55,6 +55,15 @@ export default class JapanRead extends Connector {
                 title: element.text.trim()
             };
         });
+    }
+
+    async _getChapters(manga) {
+        let chapList = [];
+        for (let page = 1, run = true; run; page++) {
+            let chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length ? chapList.push(...chapters) : run = false;
+        }
+        return chapList;
     }
 
     async _getPages(chapter) {
@@ -65,7 +74,10 @@ export default class JapanRead extends Connector {
                 }
                 const info = document.querySelector('head meta[data-chapter-id]');
                 const uri = new URL('/api/?type=chapter&id=' + info.dataset.chapterId, window.location.origin);
-                const response = await fetch(uri.href);
+                const customHeaders = {
+                    headers: {"a":"Math.random().toString(16)"}
+                };
+                const response = await fetch(uri.href,customHeaders);
                 const data = await response.json();
                 debugger
                 const images = data.page_array.map(page => new URL(data.baseImagesUrl + '/' + page, uri.href).href);
@@ -74,6 +86,18 @@ export default class JapanRead extends Connector {
         `;
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(image => this.createConnectorURI({
+            url: image,
+            referer: request.url
+        }));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
