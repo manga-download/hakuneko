@@ -154,7 +154,8 @@ export default class VizShonenJump extends Connector {
     async _getChapters(manga) {
         if (manga.id.startsWith("/shonenjump/chapters")) {
             return await this._getMangaChapters(manga);
-        } else if (manga.id.startsWith("/library")) {
+        } 
+        if (manga.id.startsWith("/library")) {
             return await this._getMangaVolumes(manga);
         }
     }
