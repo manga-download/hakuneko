@@ -143,10 +143,10 @@ export default class VizShonenJump extends Connector {
                 // free
                 return true;
             })
-            .map(chapter => {
+            .map(volume => {
                 return {
-                    id: chapter.href.replace("hakuneko://cache/", ""),
-                    title: 'Vol. ' + chapter.href.match(/-volume-([-_0-9]+)/)[1]
+                    id: this.getRootRelativeOrAbsoluteLink(volume, this.url).substring(1),
+                    title: 'Vol. ' + volume.href.match(/-volume-([-_0-9]+)/)[1]
                 };
             });
     }
