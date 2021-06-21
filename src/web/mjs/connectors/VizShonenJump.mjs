@@ -158,6 +158,8 @@ export default class VizShonenJump extends Connector {
         if (manga.id.startsWith("/library")) {
             return await this._getMangaVolumes(manga);
         }
+        
+        throw new Error(`Failed to get chapters/volumes for manga ${manga.id}, because the manga type is not supported!`);
     }
 
     async requestRegex(responseData, regex) {
