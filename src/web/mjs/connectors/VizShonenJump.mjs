@@ -68,13 +68,7 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getMangas() {
-        const mangaAvailibleByVolumes = await this._getMangasAvailibleByVolumes();
-        const mangaAvailibleByChapters = await this._getMangasAvailibleByChapters();
-        let both = mangaAvailibleByVolumes.concat(mangaAvailibleByChapters);
-
-        both.sort((a, b) => a.title > b.title && a.id > b.id );
-
-        return both;
+        return [ ...await this._getMangasAvailibleByVolumes(), ...await this._getMangasAvailibleByChapters() ];
     }
 
     async _getMangaChapters(manga) {
