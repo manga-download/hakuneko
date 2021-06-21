@@ -57,8 +57,6 @@ export default class VizShonenJump extends Connector {
             return;
         }
 
-        data = [...data.querySelectorAll('a.o_chapters-link')];
-
         data = [...data.querySelectorAll('div.o_sort_container div.o_sortable a.o_chapters-link')];
 
         return data.map(manga => {
