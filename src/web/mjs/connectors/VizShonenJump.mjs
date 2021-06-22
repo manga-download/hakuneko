@@ -36,7 +36,13 @@ export default class VizShonenJump extends Connector {
 
     async _getMangasAvailibleByVolumes() {
         const request = new Request(new URL('/library', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'table.purchase-table a');
+        let data = await this.fetchDOM(request);
+        
+        if ( data.innerText.includes('Log in to view your library') ) { // User isn't logged in, so there's no availible volumes
+            return [];
+        }
+
+        data = [...data.querySelectorAll('table.purchase-table a')];
 
         return data.map(manga => {
             return {
@@ -120,20 +126,14 @@ export default class VizShonenJump extends Connector {
     async _getMangaVolumes(manga) {
         let auth = await this._getUserInfo();
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request)
 
-        return [...await this.fetchDOM(request, '#o_products tr td:last-of-type a')]
-            .filter(element => {
-                // login required (e.g. age verification) => javascript:void('login to read');
-                if(/(?=javascript:)(?=.*login)/i.test(element.href)) {
-                    return auth.isLoggedIn && auth.isAdult;
-                }
-                // subscription required => javascript:void('join to read');
-                if(/(?=javascript:)(?=.*join)/i.test(element.href)) {
-                    return auth.isMember;
-                }
-                // free
-                return true;
-            })
+        if ( data.innerText.includes('Log in to view your library') ) {
+            alert('Lost your login cookie between fetching the manga list and now (fetching the volume list).', this.label, 'info');
+            return [];
+        }
+        
+        return [...data.querySelectorAll('#o_products tr td:last-of-type a')]
             .map(volume => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(volume, this.url).substring(1),
