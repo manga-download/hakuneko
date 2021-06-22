@@ -84,11 +84,11 @@ export default class VizShonenJump extends Connector {
         return [...data.querySelectorAll('div > a.o_chapter-container[data-target-url], tr.o_chapter td.ch-num-list-spacing a.o_chapter-container[data-target-url]')]
             .filter(element => {
                 // login required (e.g. age verification) => javascript:void('login to read');
-                if(/(?=javascript:)(?=.*login)/i.test(element.href)) {
+                if(/javascript:.*login/i.test(element.href)) {
                     return auth.isLoggedIn && auth.isAdult;
                 }
                 // subscription required => javascript:void('join to read');
-                if(/(?=javascript:)(?=.*join)/i.test(element.href)) {
+                if(/javascript:.*join/i.test(element.href)) {
                     return auth.isMember;
                 }
                 // free
