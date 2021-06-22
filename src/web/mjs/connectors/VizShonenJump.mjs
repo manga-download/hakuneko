@@ -137,7 +137,7 @@ export default class VizShonenJump extends Connector {
             .map(volume => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(volume, this.url).substring(1),
-                    title: 'Vol. ' + volume.href.match(/-volume-([-_0-9]+)/)[1]
+                    title: 'Vol. ' + volume.href.match(/-volume-([-_0-9]+)/i)[1]
                 };
             });
     }
