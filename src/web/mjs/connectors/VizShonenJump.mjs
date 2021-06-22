@@ -36,9 +36,7 @@ export default class VizShonenJump extends Connector {
 
     async _getMangasAvailibleByVolumes() {
         const request = new Request(new URL('/library', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request);
-
-        data = [...data.querySelectorAll('table.purchase-table a')];
+        let data = await this.fetchDOM(request, 'table.purchase-table a');
 
         return data.map(manga => {
             return {
