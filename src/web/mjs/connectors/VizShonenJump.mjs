@@ -161,7 +161,7 @@ export default class VizShonenJump extends Connector {
         let mangaID = 0;
 
         if (chapter.id.startsWith("read/manga")) {
-            pageCount = parseInt([...responseData.matchAll(/<div class="mar-b-md"><strong>Length<\/strong> (\d+) pages<\/div>/g)][0][1]);
+            pageCount = parseInt([...responseData.matchAll(/<div\s+class="mar-b-md">\s*<strong>\s*Length\s*<\/strong>\s+(\d+)\s+pages\s*<\/div>/g)][0][1]);
             mangaID = parseInt([...responseData.matchAll(/var\s+mangaCommonId\s*=\s*(\d+)/g)][0][1]);
         } else if (chapter.id.startsWith("/shonenjump")) {
             pageCount = parseInt([...responseData.matchAll(/var\s+pages\s*=\s*(\d+)/g)][0][1]);
