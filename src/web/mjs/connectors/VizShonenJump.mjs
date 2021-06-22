@@ -120,9 +120,8 @@ export default class VizShonenJump extends Connector {
     async _getMangaVolumes(manga) {
         let auth = await this._getUserInfo();
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request);
 
-        return [...data.querySelectorAll('#o_products tr td:last-of-type a')]
+        return [...await this.fetchDOM(request, '#o_products tr td:last-of-type a')]
             .filter(element => {
                 // login required (e.g. age verification) => javascript:void('login to read');
                 if(/(?=javascript:)(?=.*login)/i.test(element.href)) {
