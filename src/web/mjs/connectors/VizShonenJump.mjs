@@ -37,7 +37,7 @@ export default class VizShonenJump extends Connector {
     async _getMangasAvailibleByVolumes() {
         const request = new Request(new URL('/library', this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
-        
+
         if ( data.innerText.includes('Log in to view your library') ) { // User isn't logged in, so there's no availible volumes
             return [];
         }
@@ -124,15 +124,14 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getMangaVolumes(manga) {
-        let auth = await this._getUserInfo();
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request)
+        let data = await this.fetchDOM(request);
 
         if ( data.innerText.includes('Log in to view your library') ) {
             alert('Lost your login cookie between fetching the manga list and now (fetching the volume list).', this.label, 'info');
             return [];
         }
-        
+
         return [...data.querySelectorAll('#o_products tr td:last-of-type a')]
             .map(volume => {
                 return {
@@ -145,11 +144,11 @@ export default class VizShonenJump extends Connector {
     async _getChapters(manga) {
         if (manga.id.startsWith("/shonenjump/chapters")) {
             return await this._getMangaChapters(manga);
-        } 
+        }
         if (manga.id.startsWith("/library")) {
             return await this._getMangaVolumes(manga);
         }
-        
+
         throw new Error(`Failed to get chapters/volumes for manga ${manga.id}, because the manga type is not supported!`);
     }
 
