@@ -156,18 +156,6 @@ export default class VizShonenJump extends Connector {
         throw new Error(`Failed to get chapters/volumes for manga ${manga.id}, because the manga type is not supported!`);
     }
 
-    async requestRegex(responseData, regex) {
-        let regex2 = new RegExp(regex.source, regex.flags + "g");
-        let result = [];
-        let match = undefined;
-        // eslint-disable-next-line no-cond-assign
-        while(match = regex2.exec(responseData)) {
-            result.push(match[1]);
-        }
-
-        return result;
-    }
-
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url));
         let response = await fetch(request);
