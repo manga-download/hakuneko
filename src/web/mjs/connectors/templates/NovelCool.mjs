@@ -17,6 +17,13 @@ export default class Novelcool extends Connector {
         this.image_selector = 'div.pic_box source.manga_pic';
         this.uri_title_selector = 'div.bookinfo-info h1.bookinfo-title';
         this.text_novel_selector = 'p.chapter-start-mark';
+
+        this.novelContainerQuery = 'div.chapter-reading-section-list';
+        this.novelContentQuery = 'div.chapter-reading-section.position-relative';
+        this.novelObstaclesQuery = 'div.chapter-section-report.model-trigger';
+        this.novelFormat = 'image/png';
+        this.novelWidth = '56em';
+        this.novelPadding = '1.5em';
     }
 
     async _getMangas() {
@@ -64,8 +71,34 @@ export default class Novelcool extends Connector {
         data = this.createDOM( await data.text() );
 
         if ( data.querySelector(this.text_novel_selector) ) {
-            alert(`'${chapter.manga.title}' seems to be a text novel and can therefore not be viewed nor downloaded.`, this.label, 'info');
-            return;
+            let darkmode = Engine.Settings.NovelColorProfile();
+            let script = `
+                new Promise(resolve => {
+                    document.body.style.width = '${this.novelWidth}';
+                    let container = document.querySelector('${this.novelContainerQuery}');
+                    container.style.maxWidth = '${this.novelWidth}';
+                    container.style.padding = '0';
+                    container.style.margin = '0';
+                    let novel = document.querySelector('${this.novelContentQuery}');
+                    novel.style.padding = '${this.novelPadding}';
+                    [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
+                        ele.style.backgroundColor = '${darkmode.background}'
+                        ele.style.color = '${darkmode.text}'
+                    })
+                    novel.style.backgroundColor = '${darkmode.background}'
+                    novel.style.color = '${darkmode.text}'
+                    document.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
+                    let script = document.createElement('script');
+                    script.onload = async function() {
+                        let canvas = await html2canvas(novel);
+                        resolve(canvas.toDataURL('${this.novelFormat}'));
+                    }
+                    script.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js';
+                    document.body.appendChild(script);
+                });
+            `;
+
+            return [await Engine.Request.fetchUI(request, script)];
         } else {
             let page_links = data.querySelectorAll( this.page_selector );
             return [...page_links[0].querySelectorAll('option')].map( link => this.createConnectorURI(link.value) );
