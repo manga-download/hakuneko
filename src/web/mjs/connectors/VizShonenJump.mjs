@@ -128,7 +128,7 @@ export default class VizShonenJump extends Connector {
         let data = await this.fetchDOM(request);
 
         if ( data.innerText.includes('Log in to view your library') ) {
-            alert('Lost your login cookie between fetching the manga list and now (fetching the volume list).', this.label, 'info');
+            throw new Error('Lost your login cookie between fetching the manga list and now (fetching the volume list), please log back in.', this.label, 'info');
             return [];
         }
 
