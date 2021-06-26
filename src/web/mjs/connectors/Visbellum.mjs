@@ -6,7 +6,7 @@ export default class Visbellum extends WordPressMadara {
         super();
         super.id = 'visbellum';
         super.label = 'Visbellum';
-        this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
+        this.tags = [ 'webtoon', 'portuguese', 'scanlation' ];
         this.url = 'https://visbellum.com';
     }
 }
