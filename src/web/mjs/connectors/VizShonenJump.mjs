@@ -34,7 +34,21 @@ export default class VizShonenJump extends Connector {
         };
     }
 
-    async _getMangas() {
+    async _getMangasAvailibleByVolumes() {
+        const request = new Request(new URL('/library', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request);
+
+        data = [...data.querySelectorAll('table.purchase-table a')];
+
+        return data.map(manga => {
+            return {
+                id: manga.pathname,
+                title: manga.innerText.trim()
+            };
+        });
+    }
+
+    async _getMangasAvailibleByChapters() {
         const request = new Request(new URL('/shonenjump', this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
 
@@ -43,17 +57,29 @@ export default class VizShonenJump extends Connector {
             return;
         }
 
+        data = [...data.querySelectorAll('a.o_chapters-link')];
+
         data = [...data.querySelectorAll('div.o_sort_container div.o_sortable a.o_chapters-link')];
 
         return data.map(manga => {
             return {
                 id: manga.pathname,
-                title: manga.querySelector(':nth-child(2)').innerText.trim()
+                title: manga.innerText.trim()
             };
         });
     }
 
-    async _getChapters(manga) {
+    async _getMangas() {
+        const mangaAvailibleByVolumes = await this._getMangasAvailibleByVolumes();
+        const mangaAvailibleByChapters = await this._getMangasAvailibleByChapters();
+        let both = mangaAvailibleByVolumes.concat(mangaAvailibleByChapters);
+
+        both.sort((a, b) => a.title > b.title && a.id > b.id );
+
+        return both;
+    }
+
+    async _getMangaChapters(manga) {
         let auth = await this._getUserInfo();
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
@@ -101,16 +127,75 @@ export default class VizShonenJump extends Connector {
             });
     }
 
+    async _getMangaVolumes(manga) {
+        let auth = await this._getUserInfo();
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request);
+
+        return [...data.querySelectorAll('#o_products tr td:last-of-type a')]
+            .filter(element => {
+                // login required (e.g. age verification) => javascript:void('login to read');
+                if(/(?=javascript:)(?=.*login)/i.test(element.href)) {
+                    return auth.isLoggedIn && auth.isAdult;
+                }
+                // subscription required => javascript:void('join to read');
+                if(/(?=javascript:)(?=.*join)/i.test(element.href)) {
+                    return auth.isMember;
+                }
+                // free
+                return true;
+            })
+            .map(chapter => {
+                return {
+                    id: chapter.href.replace("hakuneko://cache/", ""),
+                    title: 'Vol. ' + chapter.href.match(/-volume-([-_0-9]+)/)[1]
+                };
+            });
+    }
+
+    async _getChapters(manga) {
+        if (manga.id.startsWith("/shonenjump/chapters")) {
+            return await this._getMangaChapters(manga);
+        } else if (manga.id.startsWith("/library")) {
+            return await this._getMangaVolumes(manga);
+        }
+    }
+
+    async requestRegex(responseData, regex) {
+        let regex2 = new RegExp(regex.source, regex.flags + "g");
+        let result = [];
+        let match = undefined;
+        // eslint-disable-next-line no-cond-assign
+        while(match = regex2.exec(responseData)) {
+            result.push(match[1]);
+        }
+
+        return result;
+    }
+
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url));
-        const data = await this.fetchRegex(request, /var\s+pages\s*=\s*(\d+)/g);
-        const pageCount = parseInt(data[0]);
-        const chapterID = chapter.id.match(/chapter\/(\d+)/)[1];
+        let response = await fetch(request);
+        let responseData = await response.text();
+
+        let pageCount = 0;
+        let mangaID = 0;
+
+        if (chapter.id.startsWith("read/manga")) {
+            const pageCountData = await this.requestRegex(responseData, /<div class="mar-b-md"><strong>Length<\/strong> (\d+) pages<\/div>/);
+            pageCount = parseInt(pageCountData[0]);
+            const mangaIdData = await this.requestRegex(responseData, /var\s+mangaCommonId\s*=\s*(\d+)/);
+            mangaID = parseInt(mangaIdData[0]);
+        } else if (chapter.id.startsWith("/shonenjump")) {
+            const data = await this.requestRegex(responseData, /var\s+pages\s*=\s*(\d+)/);
+            pageCount = parseInt(data[0]);
+            mangaID = chapter.id.match(/chapter\/(\d+)/)[1];
+        }
 
         return Array(pageCount+1).fill().map((_, index) => {
             let page = new URL('/manga/get_manga_url', this.url);
             page.searchParams.set('device_id', 3);
-            page.searchParams.set('manga_id', chapterID);
+            page.searchParams.set('manga_id', mangaID);
             page.searchParams.set('page', index);
             return this.createConnectorURI({ id: page.href, referer: chapter.id });
         });
