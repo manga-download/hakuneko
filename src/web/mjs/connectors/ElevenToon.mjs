@@ -26,7 +26,7 @@ export default class ElevenToon extends Connector {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, '#cover-info h2');
         const title = data[0].textContent.trim();
-        return new Manga(this, uri.pathname, title);
+        return new Manga(this, uri.pathname + uri.search, title);
     }
 
     async _getMangasFromPage(page) {
