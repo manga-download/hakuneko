@@ -7,9 +7,9 @@ export default class NetTruyen extends MojoPortalComic {
         super.id = 'nettruyen';
         super.label = 'NetTruyen';
         this.tags = [ 'manga', 'webtoon', 'vietnamese' ];
-        this.url = 'http://www.nettruyen.com';
+        this.url = 'http://www.nettruyentop.com';
         this.links = {
-            login: 'https://www.nettruyen.com/Secure/Login.aspx'
+            login: 'https://www.nettruyentop.com/Secure/Login.aspx'
         };
     }
 }
