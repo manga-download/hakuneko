@@ -1,12 +1,12 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class TopManhuaNet extends WordPressMadara {
+export default class LatestManga extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'topmanhuanet';
-        super.label = 'Top Manhua net';
+        super.label = 'LatestManga';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://topmanhwa.net';
+        this.url = 'https://latestmanga.net';
     }
 }
