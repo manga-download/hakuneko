@@ -1,6 +1,7 @@
-import Publus from './templates/Publus.mjs';
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-export default class GanGanOnline extends Publus {
+export default class GanGanOnline extends Connector {
 
     constructor() {
         super();
@@ -8,77 +9,68 @@ export default class GanGanOnline extends Publus {
         super.label = 'ガンガンONLINE (Gangan Online)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.ganganonline.com';
-        this.apiURL = 'https://web-ggo.tokyo-cdn.com';
-        this.protoTypes = '/mjs/connectors/GanGanOnline.proto';
-        this.rootType = 'GanGanOnline.Response';
+    }
+
+    async _getEmbeddedJSON(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const scripts = await this.fetchDOM(request, 'script#__NEXT_DATA__');
+        const data = JSON.parse(scripts[0].text);
+        return data.props.pageProps.data;
+    }
+
+    async _getMangaFromURI(uri) {
+        const data = await this._getEmbeddedJSON(uri);
+        return new Manga(this, data.default.titleId, data.default.titleName);
     }
 
     async _getMangas() {
         let mangaList = [];
-        for(let page of [
-            { path: '/contents/', queryLink: 'div#comicList ul li a.gn_link_cList', queryTitle: 'span.gn_cList_title' }
-            /*
-             *  archive contains comics + news => need to filter news
-             * { path: '/archive/', queryLink: 'div#gn_archive_newestList div.gn_archive_margin a.gn_link_archivelist', queryTitle: 'span.gn_top_whatslist_ttl' }
-             */
-        ]) {
-            let mangas = await this._getMangasFromPage(page);
+        const slugs = [ '/finish', '/rensai' ];
+        for(const slug of slugs) {
+            const mangas = await this._getMangasFromPage(slug);
             mangaList.push(...mangas);
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page) {
-        let request = new Request(new URL(page.path, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, page.queryLink);
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.querySelector(page.queryTitle).textContent.trim()
-            };
-        });
+    async _getMangasFromPage(path) {
+        const uri = new URL(path, this.url);
+        const data = await this._getEmbeddedJSON(uri);
+        return data.titleSections.reduce((accumulator, section) => {
+            const mangas = section.titles.map(title => {
+                return {
+                    id: title.titleId,
+                    title: title.header
+                };
+            });
+            return accumulator.concat(mangas);
+        }, []);
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-
-        let data = await this.fetchDOM(request, 'div.gn_detail_story_list dd ul');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('li.gn_detail_story_btn a.gn_link_btn:first-of-type'), this.url),
-                title: element.querySelector('li.gn_detail_story_list_ttl').textContent.trim(),
-                language: 'jp'
-            };
-        });
+        const uri = new URL('/title/' + manga.id, this.url);
+        const data = await this._getEmbeddedJSON(uri);
+        return data.default.chapters
+            .filter(chapter => {
+                if(!chapter.id) {
+                    return false;
+                }
+                if(chapter.status !== undefined && chapter.status < 4) {
+                    return false;
+                }
+                return true;
+            })
+            .map(chapter => {
+                return {
+                    id: chapter.id,
+                    title: chapter.mainText + (chapter.subText ? ' - ' + chapter.subText : '')
+                };
+            });
     }
 
     async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        let chapterID = uri.searchParams.get('chapterId');
-        if(uri.hostname === 'viewer.ganganonline.com' && chapterID) {
-            let request = new Request(new URL('/web_manga_data?chapter_id=' + chapterID, this.apiURL), {
-                method: 'POST',
-                body: uri.searchParams.toString(),
-                headers: {
-                    'Content-Type': 'application/octet-stream'
-                }
-            });
-            let data = await this.fetchPROTO(request, this.protoTypes, this.rootType);
-            return data.success.webMangaViewer.pages
-                .filter(page => !(page.image || page.linkImage).imageUrl.includes('extra_manga_page'))
-                .map(page => {
-                    let image = page.image || page.linkImage;
-                    image = Object.assign(image, {
-                        mode: image.encryptionKey ? 'xor' : 'raw',
-                        encryption: {
-                            pattern: null,
-                            key: image.encryptionKey
-                        }
-                    });
-                    return image.mode === 'raw' ? image.imageUrl : this.createConnectorURI(image);
-                });
-        } else {
-            return super._getPages(chapter);
-        }
+        const uri = new URL(`/title/${chapter.manga.id}/chapter/${chapter.id}`, this.url);
+        const data = await this._getEmbeddedJSON(uri);
+        return data.pages.map(page => this.getAbsolutePath((page.image || page.linkImage).imageUrl, uri.href));
     }
 }
