@@ -37,7 +37,6 @@ export default class OnePunchMan extends Connector {
         let data = await this.fetchDOM(request, 'source.lazyload');
 
         return data.map(element => {
-            console.log(element.dataset.src);
             return this.getAbsolutePath(element.dataset.src, request.url);
         });
     }
