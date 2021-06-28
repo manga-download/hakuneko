@@ -129,7 +129,6 @@ export default class VizShonenJump extends Connector {
 
         if ( data.innerText.includes('Log in to view your library') ) {
             throw new Error('Lost your login cookie between fetching the manga list and now (fetching the volume list), please log back in.', this.label, 'info');
-            return [];
         }
 
         return [...data.querySelectorAll('#o_products tr td:last-of-type a')]
