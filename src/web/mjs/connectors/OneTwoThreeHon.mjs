@@ -18,7 +18,7 @@ export default class OneTwoThreeHon extends SpeedBinb {
         const data = await this.fetchDOM(request, this.queryMangas);
         return data.map(link => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(link, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(link, this.url),
                 title: link.href.match(/(\w+)\/?$/)[1] // Rather crude, but there are no text titles on the listing
             };
         });
@@ -35,8 +35,6 @@ export default class OneTwoThreeHon extends SpeedBinb {
                     title: element.innerText.match(/\s*(.*?)\s+/)[1]
                 };
             }
-        }).filter(function( element ) {
-            return element !== undefined;
-        });
+        }).filter(element => element !== undefined);
     }
 }
