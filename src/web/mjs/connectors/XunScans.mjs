@@ -1,5 +1,4 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
-
 export default class XunScans extends WordPressMadara {
 
     constructor() {
@@ -7,6 +6,6 @@ export default class XunScans extends WordPressMadara {
         super.id = 'xunscans';
         super.label = 'XuNScans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
-        this.url = 'https://reader.xunscans.xyz';
+        this.url = 'https://xunscans.xyz';
     }
 }
