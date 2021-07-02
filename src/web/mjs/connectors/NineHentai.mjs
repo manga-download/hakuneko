@@ -8,9 +8,9 @@ export default class NineHentai extends Connector {
         super.id = '9hentai';
         super.label = '9hentai';
         this.tags = ['hentai', 'multi-lingual'];
-        this.url = 'https://9hentai.ru';
+        this.url = 'https://9hentai.to';
         this.links = {
-            login: 'https://9hentai.ru/login'
+            login: 'https://9hentai.to/login'
         };
     }
 
