@@ -60,7 +60,7 @@ export default class WordPressMangastream extends Connector {
                     setTimeout(() => {
                         try {
                             const images = [...document.querySelectorAll('${this.queryPages}')];
-                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.src));
+                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.getAttribute('original') ||  image.src));
                         } catch(error) {
                             reject(error);
                         }
