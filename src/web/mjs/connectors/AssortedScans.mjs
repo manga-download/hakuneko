@@ -19,7 +19,7 @@ export default class AssortedScans extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/reader/', this.url), this.requestOptions);
+        let request = new Request(new URL(/\/reader\//, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'section.series h2.series-title a');
         return data.map(element => {
                 return {
@@ -31,7 +31,7 @@ export default class AssortedScans extends Connector {
     }
 
     async _getChapters(manga) {
-        let id = manga.id.match('/reader/.*/?')[0];
+        let id = manga.id.match(/\/reader\/.*\/?/)[0];
         let request = new Request(new URL(id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.chapter a');
         return data
@@ -45,7 +45,7 @@ export default class AssortedScans extends Connector {
     }
 
     async _getMaxSite(chapter) {
-        let id = chapter.id.match('/reader/.*/?')[0];
+        let id = chapter.id.match(/\/reader\/.*\/?/)[0];
         let request = new Request(new URL(id + '1/', this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'li.dropdown-element.page-details:last-child a');
         let maxSite = data['0'].text.match(/Page (\d+)/)[1];
