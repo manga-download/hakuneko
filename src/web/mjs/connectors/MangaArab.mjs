@@ -59,7 +59,7 @@ export default class MangaArab extends Connector {
             .then(data => {
                 let chapterList = data.map(element => {
                     return {
-                        id: this.getRelativeLink(element).replace(/\d+\/?$/, '0/full'),
+                        id: this.getRelativeLink(element).replace(/\d+\/?$/, '0/fully'),
                         title: element.text.trim(),
                         language: 'ae'
                     };
