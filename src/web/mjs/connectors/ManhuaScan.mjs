@@ -13,6 +13,31 @@ export default class ManhuaScan extends FlatManga {
         this.queryChapters = 'div#tab-chapper div#list-chapters span.title a.chapter';
     }
 
+    async _getMangas() {
+        let mangaList = [];
+        const uri = new URL('/manga-list.html', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.pagination-wrap ul.pagination li:nth-last-of-type(2) a');
+        const pageCount = parseInt(data[0].text);
+        for(let page = 1; page <= pageCount; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const uri = new URL('/manga-list.html?page=' + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.media h3.media-heading a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
+    }
+
     // Same decryption as in HeroScan
     async _getPages(chapter) {
         const script = `
