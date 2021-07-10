@@ -56,13 +56,13 @@ export default class AssortedScans extends Connector {
 
     async _getPages(chapter) {
 
-        let id = this.getId(chapter.id);
-        let request = new Request(new URL(id + '1/', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'li.dropdown-element.page-details a');
-        return data
-            .map(element => element.text.match(/Page (\d+)/)[1])
-            .map(element => parseInt(element))
-            .map(element => this.createConnectorURI(this.url + id + element))
+        const id = this.getId(chapter.id);
+        const request = new Request(new URL(id + '1/', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'li.dropdown-element.page-details a');
+        return data.map(element => {
+                const maxPage = element.text.match(/Page (\d+)/)[1];
+                return this.createConnectorURI(this.url + id + maxPage)
+            });
     }
 
     async _handleConnectorURI(payload) {
