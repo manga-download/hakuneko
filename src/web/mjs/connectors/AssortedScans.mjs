@@ -66,18 +66,13 @@ export default class AssortedScans extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        let request = new Request(payload, this.requestOptions);
-        return this.fetchDOM(request, 'source#page-image')
-            .then(data => {
-                let link = this.getRootRelativeOrAbsoluteLink(data[0], request.url);
-                link = new URL(link, request.url).href;
-                return fetch(link, this.requestOptions);
-            })
-            .then(response => response.blob())
-            .then(data => this._blobToBuffer(data))
-            .then(data => {
-                this._applyRealMime(data);
-                return Promise.resolve(data);
-            })
+        const request = new Request(payload, this.requestOptions);
+        const data = await this.fetchDOM(request, 'source#page-image');
+        const link = this.getAbsolutePath(data[0], request.url);
+        const response = await fetch(link, this.requestOptions);
+        const blob = await response.blob();
+        const buffer = await this._blobToBuffer(blob);
+        this._applyRealMime(buffer);
+        return buffer;
     }
 }
