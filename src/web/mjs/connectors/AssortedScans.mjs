@@ -38,7 +38,7 @@ export default class AssortedScans extends Connector {
                 return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.title
-                }
+                };
             });
     }
 
@@ -61,7 +61,7 @@ export default class AssortedScans extends Connector {
         const data = await this.fetchDOM(request, 'li.dropdown-element.page-details a');
         return data.map(element => {
                 const maxPage = element.text.match(/Page (\d+)/)[1];
-                return this.createConnectorURI(this.url + id + maxPage)
+                return this.createConnectorURI(this.url + id + maxPage);
             });
     }
 
