@@ -11,16 +11,16 @@ export default class AssortedScans extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, '#series-title');
-        let title = data['0'].text.trim();
-        let id = uri.pathname + uri.search;
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, '#series-title');
+        const title = data['0'].text.trim();
+        const id = uri.pathname + uri.search;
         return Manga(this, id, title);
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/reader/', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.series h2.series-title a');
+        const request = new Request(new URL('/reader/', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'section.series h2.series-title a');
         return data.map(element => {
                 return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -30,9 +30,9 @@ export default class AssortedScans extends Connector {
     }
 
     async _getChapters(manga) {
-        let id = this.getId(manga.id);
-        let request = new Request(new URL(id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.chapter > a');
+        const id = this.getId(manga.id);
+        const request = new Request(new URL(id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.chapter > a');
         return data
             .map(element => {
                 return {
@@ -47,10 +47,10 @@ export default class AssortedScans extends Connector {
     }
 
     async _getMaxSite(chapterId) {
-        let id = this.getId(chapterId);
-        let request = new Request(new URL(id + '1/', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'li.dropdown-element.page-details:last-child a');
-        let maxSite = data['0'].text.match(/Page (\d+)/)[1];
+        const id = this.getId(chapterId);
+        const request = new Request(new URL(id + '1/', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'li.dropdown-element.page-details:last-child a');
+        const maxSite = data['0'].text.match(/Page (\d+)/)[1];
         return [id, parseInt(maxSite)];
     }
 
