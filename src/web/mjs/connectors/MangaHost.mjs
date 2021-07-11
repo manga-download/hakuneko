@@ -49,7 +49,11 @@ export default class MangaHost extends Connector {
     }
 
     _getChapterList(manga, callback) {
-        this.fetchDOM(this.url + manga.id, 'div.chapters div.card.pop div.pop-title span')
+        this.fetchDOM(
+            // https://regex101.com/r/2gZjlK/1
+            manga.id.match(/(https?:)?(\/\/|\/\\\\)/) ?
+                `${manga.id}?${Date.now()}` : `${this.url + manga.id}?${Date.now()}`,
+            'div.chapters div.card.pop div.pop-title span')
             .then(data => {
                 let chapterList = data.map(element => {
                     return {
