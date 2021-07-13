@@ -22,7 +22,7 @@ export default class AssortedScans extends Connector {
         const request = new Request(new URL('/reader/', this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'section.series h2.series-title a');
         return data.map(element => {
-                return {
+            return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim(),
             };
@@ -36,8 +36,8 @@ export default class AssortedScans extends Connector {
         return data
             .map(element => {
                 return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.title
+                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                    title: element.title
                 };
             });
     }
@@ -60,9 +60,9 @@ export default class AssortedScans extends Connector {
         const request = new Request(new URL(id + '1/', this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'li.dropdown-element.page-details a');
         return data.map(element => {
-                const maxPage = element.text.match(/Page (\d+)/)[1];
-                return this.createConnectorURI(this.url + id + maxPage);
-            });
+            const maxPage = element.text.match(/Page (\d+)/)[1];
+            return this.createConnectorURI(this.url + id + maxPage);
+        });
     }
 
     async _handleConnectorURI(payload) {
