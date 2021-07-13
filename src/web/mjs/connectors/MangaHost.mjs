@@ -25,7 +25,7 @@ export default class MangaHost extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, '.title');
-        return new Manga(this, uri.pathname, data[0].content.trim());
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     _getMangaListFromPages(mangaPageLinks, index) {
