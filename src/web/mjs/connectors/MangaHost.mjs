@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class MangaHost extends Connector {
 
@@ -8,6 +9,23 @@ export default class MangaHost extends Connector {
         super.label = 'MangaHost';
         this.tags = ['manga', 'portuguese'];
         this.url = 'https://mangahostz.com';
+    }
+
+    canHandleURI(uri) {
+        return /https?:\/\/(mangahost(ed|z|2|4)\.com|mangahost\.(net|site))/.test(uri.origin);
+    }
+
+    async _initializeConnector() {
+        let uri = new URL(this.url);
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, '.title');
+        return new Manga(this, uri.pathname, data[0].content.trim());
     }
 
     _getMangaListFromPages(mangaPageLinks, index) {
@@ -49,7 +67,9 @@ export default class MangaHost extends Connector {
     }
 
     _getChapterList(manga, callback) {
-        this.fetchDOM(this.url + manga.id, 'div.chapters div.card.pop div.pop-title span')
+        const url = new URL(manga.id, this.url);
+        url.searchParams.set('t', Date.now());
+        this.fetchDOM(url.href, 'div.chapters div.card.pop div.pop-title span')
             .then(data => {
                 let chapterList = data.map(element => {
                     return {
