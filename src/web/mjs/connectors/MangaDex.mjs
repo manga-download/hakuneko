@@ -36,10 +36,8 @@ export default class MangaDex extends Connector {
         return [
             /https?:\/\/mangadex\.org\/title\//,
             /https?:\/\/mangastack\.cf\/manga\//,
-            /https?:\/\/manga\.megu\.red\/manga\//,
             /https?:\/\/manga\.ayaya\.red\/manga\//,
             /https?:\/\/(www\.)?chibiview\.app\/manga\//,
-            /https?:\/\/simpledex\.github\.io\/#\/manga\//,
             /https?:\/\/cubari\.moe\/read\/mangadex\//
         ].some(regex => regex.test(uri.href));
     }
