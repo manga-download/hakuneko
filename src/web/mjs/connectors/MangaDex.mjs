@@ -10,7 +10,6 @@ export default class MangaDex extends Connector {
         this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
         this.url = 'https://mangadex.org';
         this.api = 'https://api.mangadex.org';
-        this.requestOptions.headers.set('x-cookie', 'mangadex_h_toggle=1; mangadex_title_mode=2');
         this.requestOptions.headers.set('x-referer', this.url);
         this.throttleGlobal = 100;
         this.licensedChapterGroups = [
