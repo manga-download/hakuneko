@@ -75,7 +75,8 @@ export default class ComicWalker extends Connector {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         this.fetchDOM( request, 'main#app' )
             .then( data => {
-                let uri = `${data[0].dataset.apiEndpointUrl}/api/v1/comicwalker/episodes/${data[0].dataset.episodeId}/frames`;
+                const endpoints = data[0].dataset.apiEndpointUrl ? data[0].dataset.apiEndpointUrl : JSON.parse(data[0].dataset.apiEndpointUrls);
+                let uri = `${endpoints.nc || endpoints.cw || endpoints}/api/v1/comicwalker/episodes/${data[0].dataset.episodeId}/frames`;
                 request = new Request( uri, this.requestOptions );
                 return this.fetchJSON( request );
             } )
