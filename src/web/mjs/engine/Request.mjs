@@ -489,6 +489,12 @@ export default class Request {
             delete details.requestHeaders['accept'];
         }
 
+        // Avoid detection of HakuNeko through lowercase accept header
+        if(details.requestHeaders['accept']) {
+            details.requestHeaders['Accept'] = details.requestHeaders['accept'];
+            delete details.requestHeaders['accept'];
+        }
+
         return details;
     }
 
