@@ -143,7 +143,7 @@ export default class MangaDex extends Connector {
                 title += ' [' + groups.map(group => groupMap[group.id]).join(', ') + ']';
             }
             // is any group for this chapter not in the list of licensed groups?
-            if(groups.some(group => !this.licensedChapterGroups.includes(group.id))) {
+            if(groups.length === 0 || groups.some(group => !this.licensedChapterGroups.includes(group.id))) {
                 return {
                     id: result.data.id,
                     title: title.trim(),
