@@ -6,7 +6,7 @@ export default class ArgosScan extends WordPressMadara {
         super.id = 'argosscan';
         super.label = 'Argos Scan';
         this.tags = [ 'manga', 'high-quality', 'portuguese', 'scanlation' ];
-        this.url = 'https://argosscan.com';
+        this.url = 'https://argosscan.net';
         this.language = 'pt';
     }
 }
