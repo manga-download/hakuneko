@@ -98,7 +98,7 @@ export default class Novelcool extends Connector {
                 });
             `;
 
-            return [await Engine.Request.fetchUI(request, script)];
+            return [await Engine.Request.fetchUI(request, script, 30000, true)];
         } else {
             let page_links = data.querySelectorAll( this.page_selector );
             return [...page_links[0].querySelectorAll('option')].map( link => this.createConnectorURI(link.value) );
