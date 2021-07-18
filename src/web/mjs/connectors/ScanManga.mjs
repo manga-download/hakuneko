@@ -109,7 +109,7 @@ export default class ScanManga extends Connector {
                 document.body.appendChild(script);
             });
         `;
-        return [await Engine.Request.fetchUI(request, script)];
+        return [await Engine.Request.fetchUI(request, script, 30000, true)];
     }
 
     _handleConnectorURI(payload) {
