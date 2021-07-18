@@ -1,7 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-export default class OnePunchMan extends Connector {
+export default class WanPaMan extends Connector {
 
     constructor() {
         super();

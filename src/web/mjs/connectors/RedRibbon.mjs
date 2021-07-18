@@ -6,7 +6,7 @@ export default class RedRibbon extends WordPressMadara {
         super();
         super.id = 'redribbon';
         super.label = 'Red Ribbon';
-        this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://redribbon.xyz';
+        this.tags = [ 'manga', 'portuguese', 'scanlation' ];
+        this.url = 'https://redribbon.site';
     }
 }

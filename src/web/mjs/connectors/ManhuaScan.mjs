@@ -8,9 +8,34 @@ export default class ManhuaScan extends FlatManga {
         super.label = 'ManhuaScan';
         this.tags = [ 'manga', 'webtoon', 'hentai', 'multi-lingual' ];
         this.url = 'https://manhuascan.com';
-        this.requestOptions.headers.set('x-referer', this.url);
+        this.requestOptions.headers.set('x-referer', this.url + '/');
 
         this.queryChapters = 'div#tab-chapper div#list-chapters span.title a.chapter';
+    }
+
+    async _getMangas() {
+        let mangaList = [];
+        const uri = new URL('/manga-list.html', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.pagination-wrap ul.pagination li:nth-last-of-type(2) a');
+        const pageCount = parseInt(data[0].text);
+        for(let page = 1; page <= pageCount; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const uri = new URL('/manga-list.html?page=' + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.media h3.media-heading a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
     // Same decryption as in HeroScan
@@ -32,8 +57,9 @@ export default class ManhuaScan extends FlatManga {
                 resolve(decrypted.split(','));
             });
         `;
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(link => this.createConnectorURI(link));
     }
 }

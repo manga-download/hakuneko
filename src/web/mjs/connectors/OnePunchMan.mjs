@@ -34,8 +34,10 @@ export default class OnePunchMan extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id), this.requestOptions);
-        let data = await this.fetchDOM(request, '.entry-content source');
+        let data = await this.fetchDOM(request, 'source.lazyload');
 
-        return data.map(element => this.getAbsolutePath(element, request.url));
+        return data.map(element => {
+            return this.getAbsolutePath(element.dataset.src, request.url);
+        });
     }
 }
