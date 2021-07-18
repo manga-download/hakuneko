@@ -42,7 +42,7 @@ export default class UraSunday extends Connector {
     async _getChapters(manga) {
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.title div.detail div.chapter ul li a');
-        return data.filter(element => !element.href.includes('info.php')).map(element => {
+        return data.filter(element => element.pathname.includes('/title/')).map(element => {
             let number = element.querySelector('div > div:first-of-type').textContent.trim();
             let title = element.querySelector('div > div:nth-of-type(2)').textContent.trim();
             return {
