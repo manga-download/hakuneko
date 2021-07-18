@@ -52,6 +52,6 @@ export default class ComicoNovel extends Connector {
 
         let uri = new URL(`/${chapter.manga.id}/${chapter.id}/`, this.url);
         let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        return Engine.Request.fetchUI(request, script, 30000, true);
     }
 }
