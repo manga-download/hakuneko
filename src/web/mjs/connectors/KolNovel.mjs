@@ -74,6 +74,6 @@ export default class KolNovel extends WordPressMangastream {
                 document.body.appendChild(script);
             });
         `;
-        return [ await Engine.Request.fetchUI(request, script) ];
+        return [ await Engine.Request.fetchUI(request, script, 30000, true) ];
     }
 }
