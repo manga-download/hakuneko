@@ -1,6 +1,6 @@
-import Genkan from './templates/Genkan.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class ReaperScans extends Genkan {
+export default class ReaperScans extends WordPressMadara {
 
     constructor() {
         super();
