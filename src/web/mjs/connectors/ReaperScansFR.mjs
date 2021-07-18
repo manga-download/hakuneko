@@ -6,7 +6,7 @@ export default class ReaperScansFR extends WordPressMangastream {
         super();
         super.id = 'reaperscansfr';
         super.label = 'Reaper Scans FR';
-        this.tags = ['webtoon', 'english'];
+        this.tags = ['webtoon', 'french'];
         this.url = 'https://reaperscans.fr';
     }
 }
