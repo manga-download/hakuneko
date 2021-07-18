@@ -13,6 +13,17 @@ export default class EHentai extends Connector {
             login: 'https://forums.e-hentai.org/index.php?act=Login&CODE=00'
         };
         this.requestOptions.headers.set('x-cookie', 'nw=1');
+
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests.',
+                input: 'numeric',
+                min: 250,
+                max: 1000,
+                value: 500
+            }
+        };
     }
 
     async _getMangaFromURI(uri) {
