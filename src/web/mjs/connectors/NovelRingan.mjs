@@ -67,7 +67,7 @@ export default class NovelRingan extends Connector {
             });
         `;
 
-        return [await Engine.Request.fetchUI(request, script)];
+        return [await Engine.Request.fetchUI(request, script, 30000, true)];
     }
 
     async _getMangaFromURI(uri) {
