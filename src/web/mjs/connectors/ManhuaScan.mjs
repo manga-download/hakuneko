@@ -8,7 +8,7 @@ export default class ManhuaScan extends FlatManga {
         super.label = 'ManhuaScan';
         this.tags = [ 'manga', 'webtoon', 'hentai', 'multi-lingual' ];
         this.url = 'https://manhuascan.com';
-        this.requestOptions.headers.set('x-referer', this.url);
+        this.requestOptions.headers.set('x-referer', this.url + '/');
 
         this.queryChapters = 'div#tab-chapper div#list-chapters span.title a.chapter';
     }
@@ -57,8 +57,9 @@ export default class ManhuaScan extends FlatManga {
                 resolve(decrypted.split(','));
             });
         `;
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(link => this.createConnectorURI(link));
     }
 }
