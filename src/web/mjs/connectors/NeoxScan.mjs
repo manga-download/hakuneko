@@ -12,6 +12,6 @@ export default class NeoxScan extends WordPressMadara {
     }
 
     canHandleURI(uri) {
-        return /https?:\/\/(xxx\.)?neoxscans\.(com|net)/.test(uri.origin);
+        return /https?:\/\/neoxscans\.(com|net)/.test(uri.origin);
     }
 }
