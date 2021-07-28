@@ -430,9 +430,10 @@ export default class Storage {
      */
     saveChapterPages( chapter, content ) {
         try {
+            let leadingZeroes = '0'.repeat( String(content.length).length - 1 );
             let pageData = content.map( ( page, index ) => {
                 return {
-                    name: this._pageFileName( index + 1, page.type ),
+                    name: this._pageFileName( index + 1, page.type, leadingZeroes ),
                     type: page.type,
                     data: page
                 };
@@ -793,8 +794,8 @@ export default class Storage {
     /**
      * Helper function to generate an entry name for a page (picture) depending on the given number and mime type
      */
-    _pageFileName( number, mimeType ) {
-        let fileName = ( '00' + number ).slice( -3 );
+    _pageFileName( number, mimeType, leadingZeroes ) {
+        let fileName = ( leadingZeroes + number ).slice( -( leadingZeroes.length + 1 ) );
         if( mimeType.indexOf( 'image/webp' ) > -1 ) {
             return fileName + '.webp';
         }
