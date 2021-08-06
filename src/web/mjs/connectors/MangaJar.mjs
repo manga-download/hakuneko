@@ -42,19 +42,21 @@ export default class MangaJar extends Connector {
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id.replace(/\/$/, '') + '/chaptersList', this.url));
         let pages = await this.fetchDOM(request, 'div.chapters-infinite-pagination ul.pagination a:last-of-type');
-        let pageCount = pages.length > 0 ? parseInt(pages[pages.length - 2].href.match(/p=(\d+)$/)[1]) : 1;
+        let pageCount = pages.length > 0 ? parseInt(pages.slice(-2)[0].href.match(/page=(\d+)$/)[1]) : 1;
         let chapterList = [];
+        const uri = new URL(manga.id + '/chaptersList', this.url);
         for (let page of new Array(pageCount).keys()) {
-            let request = new Request(new URL(this.url + manga.id.replace(/\/$/, '') + '/chaptersList' + '?page=' + (page + 1)), this.requestOptions);
+            uri.searchParams.set('page', page + 1);
+            let request = new Request(uri, this.requestOptions);
             let data = await this.fetchDOM(request, 'ul.list-group li.chapter-item a');
-            let mangas = data.map(element => {
+            let chapters = data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                     title: element.innerText.trim(),
                     language: ''
                 };
             });
-            chapterList = chapterList.concat(mangas);
+            chapterList = chapterList.concat(chapters);
         }
         return chapterList;
     }
