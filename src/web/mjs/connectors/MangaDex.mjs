@@ -12,6 +12,7 @@ export default class MangaDex extends Connector {
         this.api = 'https://api.mangadex.org';
         this.requestOptions.headers.set('x-referer', this.url);
         this.throttleGlobal = 100;
+        this.resultLimit = 10000;
         this.licensedChapterGroups = [
             '4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb' // MangaPlus
         ];
@@ -53,19 +54,33 @@ export default class MangaDex extends Connector {
     async _getMangas() {
         let mangaList = [];
         // NOTE: Due to a limit of 10k results, it is necessary to permutate some filters in order to get as many results as possible
-        const queries = [
-            // [none] => total: 19000 (@2021/07)
-            { publicationDemographic: 'none', order: 'asc' },
-            { publicationDemographic: 'none', order: 'desc' },
-            // [josei] => total: 2396 (@2021/07)
-            { publicationDemographic: 'josei', order: 'asc' },
-            // [seinen] => total: 6810 (@2021/07)
-            { publicationDemographic: 'seinen', order: 'asc' },
-            // [shoujo] => total: 7441 (@2021/07)
-            { publicationDemographic: 'shoujo', order: 'asc' },
-            // [shounen] => total: 7436 (@2021/07)
-            { publicationDemographic: 'shounen', order: 'asc' },
-        ];
+        // [none] => total: 27914 (@2021/08)
+        // [josei] => total: 2450 (@2021/08)
+        // [seinen] => total: 7287 (@2021/08)
+        // [shoujo] => total: 7462 (@2021/08)
+        // [shounen] => total: 7571 (@2021/08)
+        const publications = ['none', 'josei', 'seinen', 'shoujo', 'shounen'];
+        const ratings = ['safe', 'suggestive', 'erotica', 'pornographic'];
+        const statuses = ["ongoing", "completed", "hiatus", "cancelled"];
+        const orders = ['asc', 'desc'];
+        let queries = [];
+
+        // Filling in the queries array with necessary filters
+        for(let publication of publications) {
+            let query = { publicationDemographic: publication, order: orders[0] };
+            if(await this._addQueryToArray(queries, orders, query))
+                continue;
+            for(let ratingCurrent of ratings) {
+                query.rating = ratingCurrent;
+                if(await this._addQueryToArray(queries, orders, query))
+                    continue;
+                for(let statusCurrent of statuses) {
+                    query.status = statusCurrent;
+                    await this._addQueryToArray(queries, orders, query, true);
+                }
+            }
+        }
+
         for(let query of queries) {
             for(let page = 0, run = true; run; page++) {
                 let mangas = await this._getMangasFromPage(page, query);
@@ -75,24 +90,33 @@ export default class MangaDex extends Connector {
         return mangaList;
     }
 
+    /**
+     * Adds query to array of queries if conditions were met.
+     * @param  {Boolean} forceAdd Optional, default - false. Add query to array of queries without check.
+     * @return {Boolean}      Result of adding query.
+     */
+    async _addQueryToArray(queries, orders, query, forceAdd=false) {
+        const mangasTotal = (await this._getMangasDataFromPage(0, query, 0)).total;
+        if(mangasTotal <= this.resultLimit * 2 || forceAdd) {
+            queries.push({ ...query });
+            if(mangasTotal - this.resultLimit > 0) {
+                let queryDesc = { ...query };
+                queryDesc.order = orders[1];
+                queryDesc.mangasLimit = mangasTotal - this.resultLimit;
+                queries.push(queryDesc);
+            }
+            return true;
+        }
+        return false;
+    }
+
     async _getMangasFromPage(page, query) {
-        if(page > 99) {
+        if(page > 99 || query.mangasLimit != null && query.mangasLimit < 100 * page) {
             // NOTE: Current limit is 10000 entries (elastic search limit)
             //       => Do not throw an error but return gracefully instead, so at least the partial list is shown
             return [];
         }
-        await this.wait(this.throttleGlobal);
-        const uri = new URL('/manga', this.api);
-        uri.searchParams.set('limit', 100);
-        uri.searchParams.set('offset', 100 * page);
-        uri.searchParams.set('publicationDemographic[]', query.publicationDemographic);
-        uri.searchParams.set('order[createdAt]', query.order);
-        uri.searchParams.append('contentRating[]', 'safe');
-        uri.searchParams.append('contentRating[]', 'suggestive');
-        uri.searchParams.append('contentRating[]', 'erotica');
-        uri.searchParams.append('contentRating[]', 'pornographic');
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request, 3);
+        const data = await this._getMangasDataFromPage(page, query);
         return !data.results ? [] : data.results.map(result => {
             const title = document.createElement('div');
             title.innerHTML = result.data.attributes.title.en;
@@ -101,6 +125,31 @@ export default class MangaDex extends Connector {
                 title: title.textContent.trim()
             };
         });
+    }
+
+    async _getMangasDataFromPage(page, query, limit = 100) {
+        await this.wait(this.throttleGlobal);
+        const uri = new URL('/manga', this.api);
+        if(query.mangasLimit != null && Math.abs(query.mangasLimit - 100 * page) <= 100)
+            uri.searchParams.set('limit', Math.abs(query.mangasLimit - 100 * page));
+        else
+            uri.searchParams.set('limit', limit);
+        uri.searchParams.set('offset', 100 * page);
+        uri.searchParams.set('publicationDemographic[]', query.publicationDemographic);
+        uri.searchParams.set('order[createdAt]', query.order);
+        if(query.rating != null)
+            uri.searchParams.set('contentRating[]', query.rating);
+        else {
+            uri.searchParams.append('contentRating[]', 'safe');
+            uri.searchParams.append('contentRating[]', 'suggestive');
+            uri.searchParams.append('contentRating[]', 'erotica');
+            uri.searchParams.append('contentRating[]', 'pornographic');
+        }
+        if(query.status != null) {
+            uri.searchParams.set('status[]', query.status);
+        }
+        const request = new Request(uri, this.requestOptions);
+        return await this.fetchJSON(request, 3);
     }
 
     async _getChapters(manga) {
