@@ -7,7 +7,7 @@ export default class ManhwaTaro extends WordPressMangastream {
         super.id = 'manhwataro';
         super.label = 'ManhwaTaro';
         this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://manhwataro.xyz';
+        this.url = 'https://manhwaland.me';
         this.path = '/komik/list-mode/';
     }
 }
