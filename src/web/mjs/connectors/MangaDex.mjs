@@ -176,7 +176,9 @@ export default class MangaDex extends Connector {
                 const response = await fetch(request);
                 if(response.ok && response.status === 200) {
                     const data = await response.blob();
-                    return this._blobToBuffer(data);
+                    if(data.size > 1024) {
+                        return this._blobToBuffer(data);
+                    }
                 }
             } finally {/**/}
         }
