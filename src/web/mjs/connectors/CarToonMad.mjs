@@ -59,6 +59,21 @@ export default class CarToonMad extends Connector {
         const data = await this.fetchDOM(request, 'body');
         const maxpage = parseInt(data[0].querySelector('a:nth-last-of-type(2).pages').textContent);
         const pageone = data[0].querySelector('a > source[oncontextmenu]').src;
-        return [...new Array(maxpage)].map((_, int) => pageone.replace(/(\d+)$/, String(int+1).padStart(3, '0')));
+        return [...new Array(maxpage).keys()].map(index => {
+            return this.createConnectorURI({
+                url: pageone.replace(/(\d+)$/, String(index + 1).padStart(3, '0')),
+                referer: request.url
+            });
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        const request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        const response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
