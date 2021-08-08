@@ -148,6 +148,18 @@ export default class Request {
                     }
                 }
 
+                // Crunchyscan Re-Captcha
+                if(window.location.hostname.includes('crunchyscan')) {
+                    await new Promise(resolve => setTimeout(resolve, 5000));
+                    if(document.querySelector('div.g-recaptcha')) {
+                        const block = document.querySelector('#adblockbyspider');
+                        if(block) {
+                            block.style.display = 'none';
+                        }
+                        return handleUserInteractionRequired();
+                    }
+                }
+
                 // Default
                 handleNoRedirect();
             });
