@@ -47,7 +47,7 @@ export default class MangaDex extends Connector {
         const id = (uri.pathname.match(regexGUID) || uri.hash.match(regexGUID))[0].toLowerCase();
         const request = new Request(new URL('/manga/' + id, this.api), this.requestOptions);
         const data = await this.fetchJSON(request);
-        return new Manga(this, id, data.data.attributes.title.en);
+        return new Manga(this, id, data.data.attributes.title.en || Object.values(data.data.attributes.title).shift());
     }
 
     async _getMangas() {
@@ -95,7 +95,7 @@ export default class MangaDex extends Connector {
         const data = await this.fetchJSON(request, 3);
         return !data.results ? [] : data.results.map(result => {
             const title = document.createElement('div');
-            title.innerHTML = result.data.attributes.title.en;
+            title.innerHTML = result.data.attributes.title.en || Object.values(result.data.attributes.title).shift();
             return {
                 id: result.data.id,
                 title: title.textContent.trim()
@@ -174,9 +174,11 @@ export default class MangaDex extends Connector {
                 const uri = new URL(node + payload.hash + '/' + payload.file);
                 const request = new Request(uri, this.requestOptions);
                 const response = await fetch(request);
-                if(response.status === 200) {
+                if(response.ok && response.status === 200) {
                     const data = await response.blob();
-                    return this._blobToBuffer(data);
+                    if(data.size > 1024) {
+                        return this._blobToBuffer(data);
+                    }
                 }
             } finally {/**/}
         }
