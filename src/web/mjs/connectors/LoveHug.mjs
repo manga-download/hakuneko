@@ -1,13 +1,13 @@
 import FlatManga from './templates/FlatManga.mjs';
 
-export default class LoveHug extends FlatManga {
+export default class WeLoveManga extends FlatManga {
 
     constructor() {
         super();
         super.id = 'lovehug';
-        super.label = 'LoveHug';
+        super.label = 'WeLoveManga';
         this.tags = [ 'manga', 'hentai', 'raw', 'japanese' ];
-        this.url = 'https://lovehug.net';
+        this.url = 'https://welovemanga.net';
         this.path = '/manga-list.html';
         this.requestOptions.headers.set('x-referer', this.url);
 

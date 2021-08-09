@@ -1,14 +1,13 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class MangaBoruto extends WordPressMadara {
+export default class MangaBoruto extends WordPressMangastream {
 
     constructor() {
         super();
         super.id = 'mangaboruto';
         super.label = 'Manga Boruto';
-        this.tags = [ 'hentai', 'indonesian' ];
-        this.url = 'https://mangaboruto.xyz';
-
-        this.queryChapters = 'li.wp-manga-chapter > a:first-of-type';
+        this.tags = [ 'manga', 'webtoon', 'hentai', 'indonesian' ];
+        this.url = 'https://sensibleiowans.org';
+        this.path = '/manga/list-mode/';
     }
 }
