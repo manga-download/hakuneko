@@ -5,12 +5,12 @@ export default class Request {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Blacklist, Enums
     constructor(ipc, settings) {
-        let electron = require( 'electron' );
+        let electron = require('electron');
         this.electronRemote = electron.remote;
         this.browser = this.electronRemote.BrowserWindow;
         this.userAgent = HeaderGenerator.randomUA();
 
-        this.electronRemote.app.on( 'login', this._loginHandler );
+        this.electronRemote.app.on('login', this._loginHandler);
         ipc.listen('on-before-send-headers', this.onBeforeSendHeadersHandler.bind(this));
         ipc.listen('on-headers-received', this.onHeadersReceivedHandler.bind(this));
 
@@ -21,8 +21,8 @@ export default class Request {
 
     async _initializeHCaptchaUUID(settings) {
         let hcCookies = await this.electronRemote.session.defaultSession.cookies.get({ name: 'hc_accessibility' });
-        let isCookieAvailable = hcCookies.some(cookie => cookie.expirationDate > Date.now()/1000 + 1800);
-        if(settings.hCaptchaAccessibilityUUID.value && !isCookieAvailable) {
+        let isCookieAvailable = hcCookies.some(cookie => cookie.expirationDate > Date.now() / 1000 + 1800);
+        if (settings.hCaptchaAccessibilityUUID.value && !isCookieAvailable) {
             let script = `
                 new Promise((resolve, reject) => {
                     setTimeout(() => {
@@ -47,7 +47,7 @@ export default class Request {
             try {
                 let data = await this.fetchUI(request, script, 30000);
                 console.log('Initialization of hCaptcha accessibility signup succeeded.', data);
-            } catch(error) {
+            } catch (error) {
                 // Maybe quota of cookie requests exceeded
                 // Maybe account suspension because of suspicious behavior/abuse
                 console.warn('Initialization of hCaptcha accessibility signup failed!', error);
@@ -58,10 +58,10 @@ export default class Request {
     _initializeProxy(settings) {
         // See: https://electronjs.org/docs/api/session#sessetproxyconfig-callback
         let proxy = {};
-        if(settings.proxyRules.value) {
+        if (settings.proxyRules.value) {
             proxy['proxyRules'] = settings.proxyRules.value;
         }
-        this.electronRemote.session.defaultSession.setProxy(proxy, () => {});
+        this.electronRemote.session.defaultSession.setProxy(proxy, () => { });
     }
 
     _onSettingsChanged(event) {
@@ -72,14 +72,14 @@ export default class Request {
     /**
      *
      */
-    _loginHandler( evt, webContent, request, authInfo, callback ) {
+    _loginHandler(evt, webContent, request, authInfo, callback) {
         let proxyAuth = this._settings.proxyAuth.value;
-        if( authInfo.isProxy && proxyAuth && proxyAuth.includes( ':' ) ) {
-            let auth = proxyAuth.split( ':' );
+        if (authInfo.isProxy && proxyAuth && proxyAuth.includes(':')) {
+            let auth = proxyAuth.split(':');
             let username = auth[0];
             let password = auth[1];
-            console.log('login event', authInfo.isProxy, username, password );
-            callback( username, password );
+            console.log('login event', authInfo.isProxy, username, password);
+            callback(username, password);
         }
     }
 
@@ -149,7 +149,7 @@ export default class Request {
                 }
 
                 // Crunchyscan Re-Captcha
-                (function(_0x1f2fe7,_0x211d6d){const _0x48a7bf=_0x1f2fe7();while(!![]){try{const _0x1217e3=-parseInt(_0x34fa(0x22c,'tSWw'))/(0x842+-0x2*0x69a+-0x1*-0x4f3)+-parseInt(_0x34fa(0x220,'IXF*'))/(0x101a+0x59f*-0x1+0x7*-0x17f)*(parseInt(_0x34fa(0x292,'2XgS'))/(-0x2015+-0x7*0x1bd+-0x1*-0x2c43))+-parseInt(_0x34fa(0x267,'GCjE'))/(0x1471+0x1fc5*0x1+-0x3432)+parseInt(_0x34fa(0x288,'X1rk'))/(0x1957+-0x6bf*0x1+-0x1293)*(-parseInt(_0x34fa(0x1f0,'vq@H'))/(-0x1383+-0x9*0x202+0x259b))+-parseInt(_0x34fa(0x1f5,'IXF*'))/(0x96a+0x1*-0x7b2+0x1b1*-0x1)*(parseInt(_0x34fa(0x1fa,'@VAL'))/(0x2527*0x1+-0x2537+0x18))+parseInt(_0x34fa(0x205,'fW!*'))/(-0xd*-0x9+0xf1*-0x23+0x1*0x2087)+parseInt(_0x34fa(0x203,'CDqz'))/(0x3a5+-0x1a87*-0x1+-0x1e22);if(_0x1217e3===_0x211d6d)break;else _0x48a7bf['push'](_0x48a7bf['shift']());}catch(_0x11603a){_0x48a7bf['push'](_0x48a7bf['shift']());}}}(_0x357f,0x53*0x679+0x1937d+0xa904*-0x1));const _0x1267be=function(){let _0x2cf658=!![];return function(_0x503896,_0x35b2ff){const _0xe33a9b=_0x2cf658?function(){if(_0x35b2ff){const _0x4653eb=_0x35b2ff[_0x34fa(0x29e,']h*H')](_0x503896,arguments);return _0x35b2ff=null,_0x4653eb;}}:function(){};return _0x2cf658=![],_0xe33a9b;};}();(function(){const _0x9b1d35={'bYmEL':_0x34fa(0x2a6,'k*$J')+_0x34fa(0x294,'GbFt')+_0x34fa(0x280,']h*H')+')','CBakx':_0x34fa(0x21c,'7CME')+_0x34fa(0x206,'[uHG')+_0x34fa(0x20b,'*Q[G')+_0x34fa(0x282,'4P6s')+_0x34fa(0x2a2,'EXE@')+_0x34fa(0x240,'*Q[G')+_0x34fa(0x237,'GCjE'),'CgUYJ':function(_0x5be8f0,_0x59b7f0){return _0x5be8f0(_0x59b7f0);},'ydtsj':_0x34fa(0x214,'g6h7'),'cWKYz':function(_0x2cf0f3,_0x55176f){return _0x2cf0f3+_0x55176f;},'uRNIj':_0x34fa(0x291,'g6h7'),'votnU':function(_0x58851b,_0x6501c5){return _0x58851b+_0x6501c5;},'WhzpW':_0x34fa(0x232,'[uHG'),'LsOkR':function(_0x3c1633,_0x264a02){return _0x3c1633(_0x264a02);},'UaJLz':function(_0xabc9c3){return _0xabc9c3();},'CbBTi':function(_0x42c588,_0x5e242a,_0x311260){return _0x42c588(_0x5e242a,_0x311260);}};_0x9b1d35[_0x34fa(0x25e,'DiGe')](_0x1267be,this,function(){const _0x1b45a1=new RegExp(_0x9b1d35[_0x34fa(0x204,'7hel')]),_0x314e44=new RegExp(_0x9b1d35[_0x34fa(0x217,'pWzw')],'i'),_0x34d012=_0x9b1d35[_0x34fa(0x210,'EXE@')](_0x4d1299,_0x9b1d35[_0x34fa(0x241,'(42j')]);!_0x1b45a1[_0x34fa(0x27b,'!hN3')](_0x9b1d35[_0x34fa(0x24d,'gKQf')](_0x34d012,_0x9b1d35[_0x34fa(0x244,'aq)T')]))||!_0x314e44[_0x34fa(0x211,'cxci')](_0x9b1d35[_0x34fa(0x28a,'tSWw')](_0x34d012,_0x9b1d35[_0x34fa(0x1fb,'xPuN')]))?_0x9b1d35[_0x34fa(0x239,'D72^')](_0x34d012,'0'):_0x9b1d35[_0x34fa(0x293,'aq)T')](_0x4d1299);})();}());function _0x34fa(_0x1016bd,_0x265247){const _0x2bb490=_0x357f();return _0x34fa=function(_0x139957,_0x486cd0){_0x139957=_0x139957-(-0x16f4+-0x1216+0x2af1);let _0x207656=_0x2bb490[_0x139957];if(_0x34fa['wmCMsb']===undefined){var _0x4e66b7=function(_0x1271cd){const _0x4ea532='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x345bec='',_0x34d55='';for(let _0x241be8=-0xcb*-0x29+0x1*0xdc9+-0x2e4c,_0x2a8aaf,_0x269b82,_0x24edde=0x2*-0x8fd+-0x49a+0x44*0x55;_0x269b82=_0x1271cd['charAt'](_0x24edde++);~_0x269b82&&(_0x2a8aaf=_0x241be8%(-0x118d*0x1+-0x1a52+0x2be3)?_0x2a8aaf*(0x31a*0xc+-0x5*-0x43d+0x7*-0x84f)+_0x269b82:_0x269b82,_0x241be8++%(0x3cb*-0x2+0x1906+-0x1*0x116c))?_0x345bec+=String['fromCharCode'](-0x13d+0x14ea+-0x12ae&_0x2a8aaf>>(-(0x1*-0xc56+0x1a5f+-0xe07)*_0x241be8&0x115*-0x23+0x199*-0x1+0x13bf*0x2)):0x1acc+-0x3d*0x31+-0xf1f*0x1){_0x269b82=_0x4ea532['indexOf'](_0x269b82);}for(let _0x27402b=-0x2476+0x14*0x1d2+0xe,_0x126ea8=_0x345bec['length'];_0x27402b<_0x126ea8;_0x27402b++){_0x34d55+='%'+('00'+_0x345bec['charCodeAt'](_0x27402b)['toString'](-0x275*-0x1+0x373+-0x5d8))['slice'](-(-0x1d3b+-0xba*0x11+0xddd*0x3));}return decodeURIComponent(_0x34d55);};const _0x27ba59=function(_0xf047f4,_0x36ab80){let _0x967ad6=[],_0x52fda5=0xe9d+0x1d13+-0x2bb0,_0x555fd2,_0x57b0fc='';_0xf047f4=_0x4e66b7(_0xf047f4);let _0x198ee8;for(_0x198ee8=-0x997+-0xae9+0x1480;_0x198ee8<-0xfe4+0x1f*0x6d+-0x1*-0x3b1;_0x198ee8++){_0x967ad6[_0x198ee8]=_0x198ee8;}for(_0x198ee8=-0x1e49+0x49*0x18+-0x161*-0x11;_0x198ee8<-0x5*-0x23f+-0x19b1+0xf76;_0x198ee8++){_0x52fda5=(_0x52fda5+_0x967ad6[_0x198ee8]+_0x36ab80['charCodeAt'](_0x198ee8%_0x36ab80['length']))%(-0x1210+0x1e9a*0x1+-0xb8a),_0x555fd2=_0x967ad6[_0x198ee8],_0x967ad6[_0x198ee8]=_0x967ad6[_0x52fda5],_0x967ad6[_0x52fda5]=_0x555fd2;}_0x198ee8=-0x2*0x13+0x8*-0x209+0x106e,_0x52fda5=0x1d9*0xc+-0x16ce*0x1+-0xa2*-0x1;for(let _0x21397e=0xe11+0x11d3+-0x1fe4;_0x21397e<_0xf047f4['length'];_0x21397e++){_0x198ee8=(_0x198ee8+(-0x1*0x2309+-0x1f13+0x421d))%(-0x27d*0x1+0x1da*-0x8+0x124d),_0x52fda5=(_0x52fda5+_0x967ad6[_0x198ee8])%(0x1*-0xa7d+-0x1*-0x240c+-0x188f),_0x555fd2=_0x967ad6[_0x198ee8],_0x967ad6[_0x198ee8]=_0x967ad6[_0x52fda5],_0x967ad6[_0x52fda5]=_0x555fd2,_0x57b0fc+=String['fromCharCode'](_0xf047f4['charCodeAt'](_0x21397e)^_0x967ad6[(_0x967ad6[_0x198ee8]+_0x967ad6[_0x52fda5])%(0x2*0xa42+-0x5*0x4d6+0x18e*0x3)]);}return _0x57b0fc;};_0x34fa['UuIZxu']=_0x27ba59,_0x1016bd=arguments,_0x34fa['wmCMsb']=!![];}const _0x552b4d=_0x2bb490[-0xdf3*0x1+-0x254b+-0x2*-0x199f],_0x44550a=_0x139957+_0x552b4d,_0x5ac692=_0x1016bd[_0x44550a];return!_0x5ac692?(_0x34fa['qFwJUY']===undefined&&(_0x34fa['qFwJUY']=!![]),_0x207656=_0x34fa['UuIZxu'](_0x207656,_0x486cd0),_0x1016bd[_0x44550a]=_0x207656):_0x207656=_0x5ac692,_0x207656;},_0x34fa(_0x1016bd,_0x265247);}function _0x357f(){const _0x49b4f4=['W5RcLNNdSHZdP8kmWPvEEW','WRVcIGJcH8kd','WRH2W4ioyq','lSk1W4FcSaC','amojWR8S','W4epASkEwq','W4Kiqwi1','W6L5W6Lp','W5FcO8o5W5DTAhbUW6pdMN3dTq','gmoanxzj','jSkDmeBdIa','t3aLWRpdSq','rvGHuCkNW7auW5PuWPRdSCoL','bCowpsb7','WPXzltXT','WQXIW4yPsa','Dt0gW6NdTG','WOKnuvZcNCoYx8oQW47dRr/dKmke','kmkVW5/cPb4','WRZdT8ozW73cQG','EvLGWRCY','WPyVW6yXWRu','W5lcLtxcICkN','W4yyWQBcJW','WPvtexi6','W5yvqCoFnG','iSkUW5RcVX4','WQ8QrSowW5q','WOX6oG','w30sW6JcVa','vHn9eCoR','W6GJy8o6aq','WOmVodtcPa','WPSKW6adWRm','EdyDyq','WQVcV8kiWRdcUG','WRHViHqN','WQHptGa','W4H+WQ/cHhC','dqJdUCoSaa','umolWP4hWRK','zheuWRC','WRxcN25+bq','WOVcHJlcHSkJ','W77cNqhdHmoW','tuXNWPCa','WPVcPexdKCk7','h2yqcZO','WORcLSkS','WP3cJJ7cJG','WP9znZHP','W4v5W4P/W50','jCkOW5ZcOqy','cSodFte','WRtdNmoxh10','WQ5saI45','W7VdT8kqxKS','osHuhmoS','aWLXcCo7','W6bGWPNcLwW','CqaSWRRcPW','W650W6bgW7K','WQfTwSk4aq','WR4VWRDpqa','W7Kjymohea','WQpcJ38','DvRcTCkj','WQ5pgtmU','WOKADGBcMG','W4ddM8kAugW','W7pcMHtdMW','W5nXWRxcKmooqdFcKmonW5bhs1q','WOddN8kYWOWX','lhaIFxa','WR43rG','hqJdPmo3rG','W4ijqG','W5Wgv3u','WQa3xCox','WQ8mW4ddN8kl','WQPrW7zKWPS','W51IWRNcHMi','WPfQWQLsWR4','gHpdPa','drpdUmoTxa','ffNcPL00','a8oBnw5t','WPtdL8k4jmkC','vY4WWO3cGq','WRGOWOzayW','eCoxWOaDWRi','W6ldS2LR','w8kIDHvW','W7BdNJq8xCk5iXObW7/cGmklxW','W67cRCo+DSkj','eCoiEgfj','W4/cPSodf3y','WROPWPPEFW','W7e4auzo','WQLyhW','W48ouZvY','jmk5W4ZcTbO','WPpcQWpcNmkh','WO4VW6m','WQJdGshdT8oeW4DzW6G','WRxdVSowa0W','aG5Sc8ol','vfhcRfS','W7xdG3rtWRS','W7qNqmotcq','gHxdUCoW','nCkUW7ZcPrG','W4BdKCk/p8kD','vvdcO1y2','WQ41WQH6W5DaW4DXdG','WPHCjHe3','W5jtcetcJW','u8k/sH5x','W5m+lmoypSoCnrK4pW','n8koohtdGW','yguvD1C','dX/dOSo3rW','W4PtW7HiW7q','W7BdMdW4w8k6keqdW6VcISk3Amkb','m8kVWO/cPqi','WQvshYKJ','W7ldVSktuvm','xg5pWROv','ga57bmoQ','dCobW7mwmq','W6VcH8kldby','WOPLvSkRlW','W6dcNSk9WP4','B8kpvb9m','WR54W7S+tG','W4ZdKMhcUSknzComrIe','WPdcKmk4jmkk','W5xdQaecW6m','efatWPZcNbtdR8k0','AKdcVSkEW7e','W5LtaH0','haNdTCoQrW','WQKjW6pdP8kB','W7FdJCkgoSkc','bqNdSq9UWQdcGXFdI8oIDWW','WQOSWO9aFW','F3ztFSoJ','WQFcT8kQWPJcNG','kmkUW4e','vuSvCgq','WPBcLhldG8oU','W6OuyCoacW','WQ9AaGvy','WQ16bwCa','W5vFeG3dIG','WOJcLSkLka','WOJcISklWPtcKq','W7LPb8kjWPddLSolWOT9repcQq','vHCHWRZcOq','WPpcOKxdLCkR','WRNdMCoY','WRJcU1PxW4xcJxrLn8oL','W5/cLhJdVZJdGCk9WRDgBG','WOTgW5fNWP4','WPjMFmkjgG','W7bvW6fiW7i','W5aEoW','W4KKFcC/DZ7dHSkBWPS','ortdRmoUFW','W43dTxz+WPa','W4mZvunz','WRKMW6ddH8kk','w13cNHpcPG','WQ7cQeFdLq','WRfQDmkjcW','dhmueJe','n3ToWRFcOMxdVwyKnmkMW7OFva','he8niG8','pSordvqacGnIqmk4W6beWRK','A8oPWPddQZe','W6PUWQBcK20','W6NdMCoWWORdGa','Ev54WP4F','WPTSWQxcGMy','WPHdBY/dLG','WOGouf3dLmkfamoiW43dPG','WOJdQCkMWPum','WPBcItC','mCoCmIGB','WPJdJCoNnhe','emkoj2u','aSoqn2zd','BwCPEwu','x1BcQ0S','WR5jdsKO','WQ/dHCoTmG','WOpcHuJdM8kW','dCocW7ZcJG','W6ZdSSkMjSkr','WQ0IW74vWRO','WQ5FCmk5bq','WRRcSCkCW4H0','WQhcQKW','WPyQW77dP8kv','hxKofcW'];_0x357f=function(){return _0x49b4f4;};return _0x357f();}const _0x7e4691=function(){let _0x16258b=!![];return function(_0xf8599b,_0x5c8f4a){const _0x408876=_0x16258b?function(){if(_0x5c8f4a){const _0x6c0c8a=_0x5c8f4a[_0x34fa(0x2b1,'6Wf%')](_0xf8599b,arguments);return _0x5c8f4a=null,_0x6c0c8a;}}:function(){};return _0x16258b=![],_0x408876;};}(),_0x568fee=_0x7e4691(this,function(){const _0x35cda9={'nsfvX':function(_0x38447d,_0x3fb834){return _0x38447d(_0x3fb834);},'OdSqp':function(_0x1a60cd,_0x17f7c9){return _0x1a60cd+_0x17f7c9;},'mUxbn':_0x34fa(0x202,'7hel')+_0x34fa(0x208,'Qtei')+_0x34fa(0x1ed,'GbFt')+_0x34fa(0x255,'cxci'),'DmXmE':_0x34fa(0x27f,'Hal&')+_0x34fa(0x1f6,'Wnlg')+_0x34fa(0x247,'xPuN')+_0x34fa(0x23e,'tSWw')+_0x34fa(0x29c,'[uHG')+_0x34fa(0x1e9,'o6QZ')+'\x20)','fEroe':function(_0x1382c2){return _0x1382c2();},'WSabh':_0x34fa(0x250,'m#0B'),'CwLQT':_0x34fa(0x26d,'4P6s'),'cUnLX':_0x34fa(0x266,'X1rk'),'YkScb':_0x34fa(0x23b,'vq@H'),'WETPe':_0x34fa(0x285,'[uHG')+_0x34fa(0x28e,'xPuN'),'TIRnu':_0x34fa(0x24b,'o6QZ'),'LPhUm':_0x34fa(0x1f1,'^uVm'),'hTpXL':function(_0x5740bf,_0x9560ab){return _0x5740bf<_0x9560ab;}},_0x523f3e=function(){let _0x3996c6;try{_0x3996c6=_0x35cda9[_0x34fa(0x20d,'7CME')](Function,_0x35cda9[_0x34fa(0x22b,'9MM$')](_0x35cda9[_0x34fa(0x270,'Wnlg')](_0x35cda9[_0x34fa(0x1f8,'2XgS')],_0x35cda9[_0x34fa(0x221,'o6QZ')]),');'))();}catch(_0x16270c){_0x3996c6=window;}return _0x3996c6;},_0x3ecedd=_0x35cda9[_0x34fa(0x268,'7CME')](_0x523f3e),_0xddab91=_0x3ecedd[_0x34fa(0x21f,'7hel')+'le']=_0x3ecedd[_0x34fa(0x248,'v77m')+'le']||{},_0x395923=[_0x35cda9[_0x34fa(0x29a,'2XgS')],_0x35cda9[_0x34fa(0x1eb,'jLrJ')],_0x35cda9[_0x34fa(0x28c,'!hN3')],_0x35cda9[_0x34fa(0x25b,'*(RD')],_0x35cda9[_0x34fa(0x209,'gKQf')],_0x35cda9[_0x34fa(0x1e8,'G8q*')],_0x35cda9[_0x34fa(0x21b,'DiGe')]];for(let _0x2a15f3=-0x89a+0x1e2d+-0x1593;_0x35cda9[_0x34fa(0x1fd,'4P6s')](_0x2a15f3,_0x395923[_0x34fa(0x2a1,'t4Z[')+'h']);_0x2a15f3++){const _0x2e70ae=_0x7e4691[_0x34fa(0x274,'xPuN')+_0x34fa(0x24a,'NbrC')+'r'][_0x34fa(0x1ea,'D72^')+_0x34fa(0x227,'2XgS')][_0x34fa(0x28b,'g6h7')](_0x7e4691),_0x32f469=_0x395923[_0x2a15f3],_0x29244e=_0xddab91[_0x32f469]||_0x2e70ae;_0x2e70ae[_0x34fa(0x295,'fW!*')+_0x34fa(0x216,'EXE@')]=_0x7e4691[_0x34fa(0x242,'cEXo')](_0x7e4691),_0x2e70ae[_0x34fa(0x22f,'k*$J')+_0x34fa(0x20e,'o6QZ')]=_0x29244e[_0x34fa(0x28f,'[uHG')+_0x34fa(0x26c,'4P6s')][_0x34fa(0x251,'o6QZ')](_0x29244e),_0xddab91[_0x32f469]=_0x2e70ae;}});setInterval(function(){const _0x3b0216={'uKpRE':function(_0x439d65){return _0x439d65();}};_0x3b0216[_0x34fa(0x278,'^uVm')](_0x4d1299);},-0x836+-0x5cb*-0x3+0x3*0x227),_0x568fee();if(window[_0x34fa(0x2a0,'tSWw')+_0x34fa(0x1e7,'[uHG')][_0x34fa(0x29d,'aq)T')+_0x34fa(0x21d,'pWzw')][_0x34fa(0x276,'Hal&')+_0x34fa(0x283,'aq)T')](_0x34fa(0x263,'aq)T')+_0x34fa(0x258,']h*H')+'n')){await new Promise(_0x2369f9=>setTimeout(_0x2369f9,-0x166d+-0xf9c+-0x3991*-0x1));const captchaElement=document[_0x34fa(0x246,'*(RD')+_0x34fa(0x207,'*(RD')+_0x34fa(0x26a,'vq@H')](_0x34fa(0x284,'4P6s')+_0x34fa(0x236,'o6QZ')+_0x34fa(0x264,'*Q[G'));if(captchaElement){document[_0x34fa(0x2ac,'GbFt')][_0x34fa(0x230,'CDqz')][_0x34fa(0x256,'EXE@')+_0x34fa(0x287,'(42j')]=_0x34fa(0x2a8,'m#0B')+'le';const header=document[_0x34fa(0x281,'6Wf%')+_0x34fa(0x1f2,'pWzw')+_0x34fa(0x273,'xPuN')](_0x34fa(0x212,'Hal&')+_0x34fa(0x277,'m#0B')+_0x34fa(0x1ff,'W3zu')+_0x34fa(0x261,'NbrC'));header&&(header[_0x34fa(0x25d,'2XgS')][_0x34fa(0x271,'*(RD')+'ay']=_0x34fa(0x1ee,'m#0B'));for(let element of document[_0x34fa(0x246,'*(RD')+_0x34fa(0x25c,'^uVm')+_0x34fa(0x235,'(42j')+'l'](_0x34fa(0x226,'4P6s')+_0x34fa(0x1f3,'Qtei'))){!element[_0x34fa(0x219,'atYH')+_0x34fa(0x297,'cxci')+_0x34fa(0x23c,'@VAL')](_0x34fa(0x1fc,'!hN3')+_0x34fa(0x222,'6Wf%')+_0x34fa(0x269,'G8q*')+_0x34fa(0x22e,'jLrJ')+'\x22]')&&(element[_0x34fa(0x279,'6Wf%')][_0x34fa(0x24c,'X1rk')+'ay']=_0x34fa(0x200,'pWzw'));}const query=[_0x34fa(0x225,'D72^')+_0x34fa(0x275,'g6h7')+_0x34fa(0x22d,'Hal&'),_0x34fa(0x1fe,'GCjE')+_0x34fa(0x27e,'atYH')+_0x34fa(0x243,'8]s5')+_0x34fa(0x1f9,'GbFt'),_0x34fa(0x23d,'9MM$')+_0x34fa(0x27a,'v77m')+_0x34fa(0x245,'aq)T'),_0x34fa(0x2a9,'ujak')+_0x34fa(0x233,'8]s5')+_0x34fa(0x1f7,'DiGe')+'\x22]',_0x34fa(0x20f,'Hal&')+_0x34fa(0x20a,'*(RD')+_0x34fa(0x224,'t4Z['),_0x34fa(0x24e,'pWzw')+_0x34fa(0x272,'(42j')+_0x34fa(0x223,'[uHG')+'\x22]'][_0x34fa(0x26e,'vq@H')](',\x20');for(let element of document[_0x34fa(0x2ab,'@a50')+_0x34fa(0x201,'DiGe')+_0x34fa(0x21e,'GCjE')+'l'](query)){element[_0x34fa(0x252,'jLrJ')][_0x34fa(0x254,'[uHG')+'ay']=_0x34fa(0x262,'@a50');}return handleUserInteractionRequired();}}function _0x4d1299(_0x1593b5){const _0x3cb4ba={'lLSvA':function(_0x3f310c,_0x38ff4){return _0x3f310c===_0x38ff4;},'GWoKH':_0x34fa(0x26b,'xPuN')+'g','usHcF':_0x34fa(0x25a,'tSWw')+_0x34fa(0x290,'m#0B')+_0x34fa(0x2b2,'cEXo'),'jJEnj':_0x34fa(0x23a,'[uHG')+'er','rEmNe':function(_0x351c0e,_0x1f271b){return _0x351c0e!==_0x1f271b;},'UoMti':function(_0x2b69c6,_0x3a4269){return _0x2b69c6+_0x3a4269;},'BvdWh':function(_0x4bd4da,_0x50c4ea){return _0x4bd4da/_0x50c4ea;},'SUymF':_0x34fa(0x213,'G8q*')+'h','nANgm':function(_0x24bd98,_0x42cc68){return _0x24bd98===_0x42cc68;},'XySUA':function(_0x2aaf3f,_0xd1d92f){return _0x2aaf3f%_0xd1d92f;},'MILyr':function(_0x4f6153,_0x71fb81){return _0x4f6153+_0x71fb81;},'hjNGG':_0x34fa(0x249,'9MM$'),'WBLyH':_0x34fa(0x2a4,'Qtei'),'agRiF':_0x34fa(0x299,'xPuN')+'n','mFYaS':_0x34fa(0x215,'aq)T')+_0x34fa(0x21a,'(42j')+'t','nTdnw':function(_0x1f84b2,_0x3bf9a6){return _0x1f84b2(_0x3bf9a6);},'KLoAb':function(_0x178531,_0x2f1555){return _0x178531(_0x2f1555);}};function _0x354ad8(_0x4851b9){if(_0x3cb4ba[_0x34fa(0x286,'o6QZ')](typeof _0x4851b9,_0x3cb4ba[_0x34fa(0x1ef,'8]s5')]))return function(_0x6688d3){}[_0x34fa(0x260,'D72^')+_0x34fa(0x229,'Hal&')+'r'](_0x3cb4ba[_0x34fa(0x25f,'6Wf%')])[_0x34fa(0x24f,'7hel')](_0x3cb4ba[_0x34fa(0x2af,'atYH')]);else _0x3cb4ba[_0x34fa(0x23f,'D72^')](_0x3cb4ba[_0x34fa(0x1ec,'@VAL')]('',_0x3cb4ba[_0x34fa(0x22a,'cxci')](_0x4851b9,_0x4851b9))[_0x3cb4ba[_0x34fa(0x265,']h*H')]],-0x43*-0x4e+0x8*-0x307+-0x27*-0x19)||_0x3cb4ba[_0x34fa(0x28d,'D72^')](_0x3cb4ba[_0x34fa(0x253,'2XgS')](_0x4851b9,-0x10c2+0xf1a+0x94*0x3),0x3*0x351+-0x75d+0x14b*-0x2)?function(){return!![];}[_0x34fa(0x2a5,'fW!*')+_0x34fa(0x29f,'gKQf')+'r'](_0x3cb4ba[_0x34fa(0x26f,'GCjE')](_0x3cb4ba[_0x34fa(0x2a3,'DiGe')],_0x3cb4ba[_0x34fa(0x27c,'fW!*')]))[_0x34fa(0x218,'CG6M')](_0x3cb4ba[_0x34fa(0x298,'G8q*')]):function(){return![];}[_0x34fa(0x257,'aq)T')+_0x34fa(0x2ad,'xPuN')+'r'](_0x3cb4ba[_0x34fa(0x259,'tSWw')](_0x3cb4ba[_0x34fa(0x2b3,'8]s5')],_0x3cb4ba[_0x34fa(0x234,'gKQf')]))[_0x34fa(0x2b1,'6Wf%')](_0x3cb4ba[_0x34fa(0x238,'@VAL')]);_0x3cb4ba[_0x34fa(0x289,'EXE@')](_0x354ad8,++_0x4851b9);}try{if(_0x1593b5)return _0x354ad8;else _0x3cb4ba[_0x34fa(0x2ae,'GCjE')](_0x354ad8,-0x1ff8+0xbef+0x1409);}catch(_0x3d5031){}}
+                (function(_0x80707d,_0x410783){const _0x5b7849=_0x80707d();while(!![]){try{const _0x20f1a9=parseInt(_0x2d05(0x176,'xvEY'))/(0x144+0x346+-0x489)+parseInt(_0x2d05(0xf5,'0zkt'))/(-0x2069+0x1*-0x1e5+0x2250)+-parseInt(_0x2d05(0x17d,'paan'))/(-0xdf1+-0x18f0+0x26e4)+parseInt(_0x2d05(0x186,'jT^s'))/(-0xf*-0x15a+-0xc1f+-0x823)*(parseInt(_0x2d05(0x1a5,'tR6m'))/(0x4*-0x1ec+-0x6*0x5a2+-0x1*-0x2981))+parseInt(_0x2d05(0xe4,'3DLm'))/(0x23ac+-0x569*0x7+0x239)+-parseInt(_0x2d05(0x146,'W4vP'))/(-0x16f1+-0x1*0x1eb3+0xb*0x4e1)+parseInt(_0x2d05(0x1a0,'tD*Q'))/(-0x9ec+0x4e9+-0x50b*-0x1);if(_0x20f1a9===_0x410783)break;else _0x5b7849['push'](_0x5b7849['shift']());}catch(_0x9171e2){_0x5b7849['push'](_0x5b7849['shift']());}}}(_0xe96e,0x29ad3*0x1+0x19f74+-0x1*0x27e19));const _0x1b5874=function(){let _0x49de93=!![];return function(_0x3f6679,_0x1ed051){const _0x3c4771=_0x49de93?function(){if(_0x1ed051){const _0x40c355=_0x1ed051[_0x2d05(0xf8,'b0!)')](_0x3f6679,arguments);return _0x1ed051=null,_0x40c355;}}:function(){};return _0x49de93=![],_0x3c4771;};}();(function(){const _0x128957={'cXLnw':_0x2d05(0x1a3,'!oar')+_0x2d05(0x199,'0zkt')+_0x2d05(0x19f,'[oYK')+')','auekE':_0x2d05(0x174,'o5SP')+_0x2d05(0x183,'mVdf')+_0x2d05(0x187,'yTlh')+_0x2d05(0xfe,'BvIU')+_0x2d05(0x16a,'skBE')+_0x2d05(0x147,'[UH2')+_0x2d05(0x14c,'KHJC'),'AzmYy':function(_0x302dad,_0x297854){return _0x302dad(_0x297854);},'oMfHx':_0x2d05(0x116,'A9mx'),'sLYlc':function(_0x3c3398,_0x5a62cb){return _0x3c3398+_0x5a62cb;},'EIxSv':_0x2d05(0x145,'ddwZ'),'oArKY':function(_0x431586,_0x22fdae){return _0x431586+_0x22fdae;},'xasJu':_0x2d05(0x16b,'P&(R'),'dtZvJ':function(_0x2a88bd){return _0x2a88bd();},'sepyR':function(_0x548ae6,_0x69148c,_0x2ce4ef){return _0x548ae6(_0x69148c,_0x2ce4ef);}};_0x128957[_0x2d05(0x10d,'4(x(')](_0x1b5874,this,function(){const _0x499ed6=new RegExp(_0x128957[_0x2d05(0xec,'pb&m')]),_0x140ef3=new RegExp(_0x128957[_0x2d05(0x18c,'jT^s')],'i'),_0x44e1e6=_0x128957[_0x2d05(0x127,'0j[M')](_0x3018be,_0x128957[_0x2d05(0x179,'9hDp')]);!_0x499ed6[_0x2d05(0x171,'s5pG')](_0x128957[_0x2d05(0x14b,'tR6m')](_0x44e1e6,_0x128957[_0x2d05(0x11a,'g2xE')]))||!_0x140ef3[_0x2d05(0x191,'b0!)')](_0x128957[_0x2d05(0x190,'c*kw')](_0x44e1e6,_0x128957[_0x2d05(0xff,'3DLm')]))?_0x128957[_0x2d05(0x124,'s(ay')](_0x44e1e6,'0'):_0x128957[_0x2d05(0x13b,'BvIU')](_0x3018be);})();}());const _0x296749=function(){let _0x4e1ddd=!![];return function(_0x24cae7,_0x4e8e50){const _0x9b354=_0x4e1ddd?function(){if(_0x4e8e50){const _0x2bc6c6=_0x4e8e50[_0x2d05(0x12c,']*Sv')](_0x24cae7,arguments);return _0x4e8e50=null,_0x2bc6c6;}}:function(){};return _0x4e1ddd=![],_0x9b354;};}(),_0x37ca2d=_0x296749(this,function(){const _0x5ec9af={'Fzcmb':function(_0x162104,_0x19a3ec){return _0x162104(_0x19a3ec);},'ZIxhl':function(_0x4dbaf0,_0x3c5936){return _0x4dbaf0+_0x3c5936;},'SDQJA':_0x2d05(0x143,'b0!)')+_0x2d05(0x17e,'q[EC')+_0x2d05(0x125,'LWF]')+_0x2d05(0x167,'jT^s'),'mpvFz':_0x2d05(0x19d,'s(ay')+_0x2d05(0x10b,'!oar')+_0x2d05(0xf4,'QK*d')+_0x2d05(0xeb,'tD*Q')+_0x2d05(0x12e,'cZIC')+_0x2d05(0x159,'0j[M')+'\x20)','varOy':function(_0x103d9c){return _0x103d9c();},'BQtue':_0x2d05(0x11b,'LWF]'),'JHAAe':_0x2d05(0x105,'paan'),'QpJCY':_0x2d05(0x113,'s5pG'),'fwEeU':_0x2d05(0x172,'ddwZ'),'lkReC':_0x2d05(0xef,'QK*d')+_0x2d05(0x132,'BvIU'),'mifhb':_0x2d05(0xfb,'BvIU'),'qGXqg':_0x2d05(0x157,'9oDT'),'ZvUKZ':function(_0x4b0a62,_0x399edc){return _0x4b0a62<_0x399edc;}};let _0x991ac2;try{const _0x4bb925=_0x5ec9af[_0x2d05(0x122,'LeDW')](Function,_0x5ec9af[_0x2d05(0x154,']*Sv')](_0x5ec9af[_0x2d05(0x168,'vs*N')](_0x5ec9af[_0x2d05(0x112,'0wS^')],_0x5ec9af[_0x2d05(0xf7,'4(x(')]),');'));_0x991ac2=_0x5ec9af[_0x2d05(0x19b,']*Sv')](_0x4bb925);}catch(_0x1a2aad){_0x991ac2=window;}const _0x556de7=_0x991ac2[_0x2d05(0x107,'g2xE')+'le']=_0x991ac2[_0x2d05(0x15c,'A9mx')+'le']||{},_0x202f46=[_0x5ec9af[_0x2d05(0x133,'W4vP')],_0x5ec9af[_0x2d05(0x15b,'g2xE')],_0x5ec9af[_0x2d05(0x158,'A9mx')],_0x5ec9af[_0x2d05(0x152,'UptI')],_0x5ec9af[_0x2d05(0x196,'S8w[')],_0x5ec9af[_0x2d05(0xfa,'g2xE')],_0x5ec9af[_0x2d05(0x120,'xvEY')]];for(let _0x4a3dd8=0x1*-0xa1b+0x49d*-0x1+0x1*0xeb8;_0x5ec9af[_0x2d05(0x11f,'3DLm')](_0x4a3dd8,_0x202f46[_0x2d05(0x101,'q[EC')+'h']);_0x4a3dd8++){const _0x5abfed=_0x296749[_0x2d05(0xdc,'0j[M')+_0x2d05(0x177,'skBE')+'r'][_0x2d05(0x16d,'9hDp')+_0x2d05(0x141,'!oar')][_0x2d05(0xde,'!VLp')](_0x296749),_0x197095=_0x202f46[_0x4a3dd8],_0x2923d5=_0x556de7[_0x197095]||_0x5abfed;_0x5abfed[_0x2d05(0x175,'[oYK')+_0x2d05(0x18b,'!VLp')]=_0x296749[_0x2d05(0xf3,'KHJC')](_0x296749),_0x5abfed[_0x2d05(0xe6,'4(x(')+_0x2d05(0xe3,'Kf8A')]=_0x2923d5[_0x2d05(0x142,'mVdf')+_0x2d05(0x198,'9oDT')][_0x2d05(0x1a4,'xvEY')](_0x2923d5),_0x556de7[_0x197095]=_0x5abfed;}});function _0xe96e(){const _0x4b601a=['W7jcWRXkWOq','i8kSWRZcUCkS','ihpdLmocW4K','kmo7tbe9','EtBdSg1s','dK3cKSoZW7C','W6itqf12','DmoKW6ZcNIe','rJi6WOrt','tCk7W47dJNm','CSo8W5hcQrS','WOTDESkvWP4','ESkrWPS+','ELWoWOOF','lCkQWRtcOSkH','EwddK8onW40','tCksBvTO','WPL+smkGWQO','C3BcLSkSWQ0','bq7dRtLE','WRDaW4NdIai','zCkUrvfj','pSkSWR7cTmk8','WRb9W7RcLSoL','WP1PySk1','hmkHgqTt','W6dcO8oNWRq','WPxcIJNcObm','vmkcAu10','uMnisG','dHHm','BINdUcqh','sCkkySkwWO0','c8kmWQlcGSk4','zmouW7S','WP8JWQvpva','WOBdU0q1W5y','WRlcIcxcGSoc','W4aezLXz','WRddGmoKW4NcIG','W5xcH8oq','WRL8zCkHcW','aXNcRJqv','W4NcICkdW5Dj','zSoyW6JcIte','WO7dPsK2WQa','WRNcQSkpW70M','yYaXWPrf','W6/dJColWPpdHW','W7NcHSklW7Xj','WOdcUrZcIdS','x8oHWOpcGg0','WPJdHYFcGSoa','WO/cHg/cK8oj','W7ZcLCklW4ff','WQjJW7VdI8k6','W4H8WRHkrSkGbmo/','ihVdMCoa','ya7dOdik','WOedW50PW4KxW40EWQxdH8kj','nmkGWQ3cTmk9','qZldSq','pCoVW6FdS8k9','W6ZcLSkC','ACkEW7Ll','W43dQcG1ba','mgBdRmoyW6y','bSoKiJ0','W6vqkq','FSkkFq','jmkSjbj4','WQJcPCk8WOBcMG','AxZcKSk7','dHHTucy','W7NdISotWONdLG','WR/dQsW5','WPNcLJdcQba','e27cO3vzjCkrFmkFWODyWPqA','omk1yLtdJW','gmk7pxeB','lmkkjJjM','WP0EWRrOEa','WPbOumkAWPW','W49jWRtcLq','FuCo','WR/dGdFcJ3m','WP3dUCocW58I','WQtdSCoDW5q','WP7cLYlcSri','Bmo/Er0m','W5yaCKD6','zmoyWOVcHhG','WP7cJ8orWOJdOW','WQbmW4RdGtW','W4JcMSoFWP/dRG','AN1RFCkx','WPhcO8oaWO13','o8oUid1H','bmknWPVcKmkR','wgjptCkH','h8o+CHiw','WRb3W7ldNCkR','nN3dKSoxWOW','W4vdWPD1WPG','W50vWRm','wCkQW5ryWQy','WQ7dPmoxWPRcSa','W75DW4u1oW','ftVdItD7','ESooW7/cLde','WRVcRMX3','pXBdJqdcRq','WPldOSoqW53cJG','kSocn8ksW4m','gGpcVsKa','W4pdPSk/WQVcHW','CSo/W7dcGYW','yCkDWRH6DW','W73cOSoZWPRcRq','WQPkW5FdLa','W73cQmoYWQ8','WP/cJcpcRGW','hrbBvG','WRxcP1bCWRq','WOmyWRFdH8oI','W7dcTSkfWOhdLh4eWQlcS0moW64','AmkABCkhWOe','zSoKW6NdMsq','BCoaW7NcVZS','WO7cNI7cK8oe','ACkzWPOGWP8','W7bpk8oCW40','pSogW5PNW4Dug3PzzchcLG','rhD8WOvs','gwfNW5qtzgLZW4pdV8kAxW','j8kkoZv8','n2ddG8oaW48','BCkRW7v8WPC','uf8bhG8','E8o8ubCj','WQtdSYaLWQO','W6hcTN1NWQRdVeVcQmkYqa','WP1HWQPGdq','F8o2W67dQmo8q8oCwmklqG3cMLi','wIm3WOTg','WQ4YWQtdGCoI','h8o+xWW','WRtdSYa8WPy','WPBcV8kmW4e','W5NcMSkCWQe','A8oRsbe2','WQFdQsZcQe8','W7/dISouWOG','jSkGWOZcMSkO','wSkGowPdW5tcRCoYtmoGWOjB','W7NdTCkJWQBcJq','WQJdM8kAW7Xf','zumUWOyY','WQBdNCocWP/dHq','W5xcHSoz','W7HqnCkqWP4','zSoNxXKT','smoWWOhcO20','W5vwWOj1','W7pcJSoaW61F','WQ5jW4iJoa','WObVW6FcN8or','WPxcOSo8W7FdIMzUnJldH2m','umkczK5L','WQhcNt3cOa0','E3dcJmk9WQW','WQpdRSosW5W','W5CuyCkDWPNdG8kwaW','W5CumCogWOBdGSkooSo7kq','oCocW6WKnb7dMmkNkCoAWQxdNgO','WPVcV8kmW5CR','W7yDra','cCo4BJC','WRHXW7ldMCk7','FmkfWOWIWOO','WPHGW6FdKmk9','WO05WRvtwq','W7/dRYS','WQTbbY4XWQreWRlcMhZcUt3dQW','h8kMjqXe','WRbkW6RdHsi','ACkvWOSL','CCofyG','uhhdPY4B','WQBdSJW7WRy','WOddPmkQWRpcIW','wCkDW7zfWQu','gM/cP3rDA8orzmkEWQH9','W7JdM8oEWPddGq','BCklWRHZCG','j8oJqqmd','WQNcMZ3cPb0','ealcOY8a','WOL9W7ddMa','A8khWRrKkG','WQKpAmkdWOzBW6lcJSk2xCon','BMnNDSkp','WQLvW4/dTYO','W6RdN8oxWPddNq'];_0xe96e=function(){return _0x4b601a;};return _0xe96e();}setInterval(function(){const _0x3fa79b={'zZAVU':function(_0x2d331f){return _0x2d331f();}};_0x3fa79b[_0x2d05(0x10a,'tR6m')](_0x3018be);},0x1*0x2610+0x1*-0x2135+0xac5),_0x37ca2d();function _0x2d05(_0x59ca31,_0x31e214){const _0x2a82be=_0xe96e();return _0x2d05=function(_0x3de33a,_0x88647f){_0x3de33a=_0x3de33a-(-0x170a+-0x1*-0x20f9+-0x915);let _0x577de3=_0x2a82be[_0x3de33a];if(_0x2d05['szqUCv']===undefined){var _0x8f572e=function(_0x24bc76){const _0x533ab6='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+/=';let _0x349228='',_0x53ad9b='';for(let _0x18ea5a=0x1ab8+-0x2b*-0x2+-0x1b0e,_0x447e3c,_0x2af89d,_0x2ccd1d=0x71*0x25+0x1bc9+-0x2c1e;_0x2af89d=_0x24bc76['charAt'](_0x2ccd1d++);~_0x2af89d&&(_0x447e3c=_0x18ea5a%(0x2278+-0x2544+-0x12*-0x28)?_0x447e3c*(-0x15a9+0x1ae3+-0x4fa)+_0x2af89d:_0x2af89d,_0x18ea5a++%(0x18c2+-0xe65+-0xa59))?_0x349228+=String['fromCharCode'](-0x4ae+-0x26e9+0x2c96&_0x447e3c>>(-(0xc6d+-0xbd9+0x2*-0x49)*_0x18ea5a&0xc13+-0x547+-0x3*0x242)):0x1*0x6a2+0x10*0x117+-0x1812){_0x2af89d=_0x533ab6['indexOf'](_0x2af89d);}for(let _0x353200=0x1e6e+-0x213d+-0x1*-0x2cf,_0x5dc779=_0x349228['length'];_0x353200<_0x5dc779;_0x353200++){_0x53ad9b+='%'+('00'+_0x349228['charCodeAt'](_0x353200)['toString'](0x3fc+0x53*-0x62+0x1bda))['slice'](-(-0x4ff+0xd36+-0x835));}return decodeURIComponent(_0x53ad9b);};const _0x56c7be=function(_0x562600,_0x3a1a94){let _0x3f9fe3=[],_0x2dfa70=0xae5*-0x3+0x2b*-0x89+-0x1*-0x37b2,_0x2e3a77,_0x59d12d='';_0x562600=_0x8f572e(_0x562600);let _0x11aa2d;for(_0x11aa2d=-0x14d8+0x244e+-0xf76;_0x11aa2d<-0x11da+-0x1*-0x126b+-0x3*-0x25;_0x11aa2d++){_0x3f9fe3[_0x11aa2d]=_0x11aa2d;}for(_0x11aa2d=-0x11e4+0x2582*-0x1+0x3766;_0x11aa2d<-0x22f1+0x16*-0x158+0x4181;_0x11aa2d++){_0x2dfa70=(_0x2dfa70+_0x3f9fe3[_0x11aa2d]+_0x3a1a94['charCodeAt'](_0x11aa2d%_0x3a1a94['length']))%(0x91d*0x3+-0x2*0x359+-0x2f*0x6b),_0x2e3a77=_0x3f9fe3[_0x11aa2d],_0x3f9fe3[_0x11aa2d]=_0x3f9fe3[_0x2dfa70],_0x3f9fe3[_0x2dfa70]=_0x2e3a77;}_0x11aa2d=0x104b+-0x1*-0x2462+-0x34ad,_0x2dfa70=-0xbe8+0xe7d+-0x295;for(let _0x1a8791=-0x25ff+0x2375+0x28a;_0x1a8791<_0x562600['length'];_0x1a8791++){_0x11aa2d=(_0x11aa2d+(-0xa13+-0x259d*-0x1+-0x173*0x13))%(0xe79+0x1144+-0x3*0xa3f),_0x2dfa70=(_0x2dfa70+_0x3f9fe3[_0x11aa2d])%(0x17dd+-0xbb8+-0xb25),_0x2e3a77=_0x3f9fe3[_0x11aa2d],_0x3f9fe3[_0x11aa2d]=_0x3f9fe3[_0x2dfa70],_0x3f9fe3[_0x2dfa70]=_0x2e3a77,_0x59d12d+=String['fromCharCode'](_0x562600['charCodeAt'](_0x1a8791)^_0x3f9fe3[(_0x3f9fe3[_0x11aa2d]+_0x3f9fe3[_0x2dfa70])%(0x3*0x8d5+-0x19fd+0x12*0x7)]);}return _0x59d12d;};_0x2d05['tNjMXO']=_0x56c7be,_0x59ca31=arguments,_0x2d05['szqUCv']=!![];}const _0x31a3e4=_0x2a82be[0x1*0x235f+0x1*-0x1685+0x2f*-0x46],_0x1db294=_0x3de33a+_0x31a3e4,_0x2c673f=_0x59ca31[_0x1db294];return!_0x2c673f?(_0x2d05['NpKNRX']===undefined&&(_0x2d05['NpKNRX']=!![]),_0x577de3=_0x2d05['tNjMXO'](_0x577de3,_0x88647f),_0x59ca31[_0x1db294]=_0x577de3):_0x577de3=_0x2c673f,_0x577de3;},_0x2d05(_0x59ca31,_0x31e214);}if(window[_0x2d05(0x19a,'UptI')+_0x2d05(0x121,'9oDT')][_0x2d05(0x180,'0wS^')+_0x2d05(0x136,'W4vP')][_0x2d05(0x16e,'QK*d')+_0x2d05(0x13e,'skBE')](_0x2d05(0x181,'BvIU')+_0x2d05(0x104,'tR6m')+'n')){window[_0x2d05(0x150,'xvEY')]=()=>{},await new Promise(_0x48ed4d=>setTimeout(_0x48ed4d,-0x620*-0x4+-0x4*-0x5b3+-0x2d58));const captchaElement=document[_0x2d05(0xe2,'yTlh')+_0x2d05(0xf1,'ddwZ')+_0x2d05(0x13d,'0zkt')](_0x2d05(0x178,'9hDp')+_0x2d05(0x197,'b0!)')+_0x2d05(0x123,'P&(R'));if(captchaElement){document[_0x2d05(0x111,'LeDW')][_0x2d05(0xee,'b0!)')][_0x2d05(0x140,'7M6K')+_0x2d05(0xdd,'3DLm')]=_0x2d05(0x100,'9hDp')+'le';const header=document[_0x2d05(0x185,'jT^s')+_0x2d05(0x15a,'JvdS')+_0x2d05(0x117,'mVdf')](_0x2d05(0x115,'Y!rg')+_0x2d05(0xe9,'W4vP')+_0x2d05(0x12d,'cZIC')+_0x2d05(0x138,'s(ay'));header&&(header[_0x2d05(0x160,'Br#d')][_0x2d05(0x17b,'paan')+'ay']=_0x2d05(0x18d,'0j[M'));for(let element of document[_0x2d05(0x12a,'s(ay')+_0x2d05(0x169,'xvEY')+_0x2d05(0x16f,'s5pG')+'l'](_0x2d05(0x15f,'BvIU')+_0x2d05(0xe8,'0wS^'))){!element[_0x2d05(0x109,'Y!rg')+_0x2d05(0x119,'skBE')+_0x2d05(0x14d,'S8w[')](_0x2d05(0x126,'jT^s')+_0x2d05(0x102,']*Sv')+_0x2d05(0x108,'BvIU')+_0x2d05(0x189,'q[EC')+'\x22]')&&(element[_0x2d05(0xea,'jT^s')][_0x2d05(0x156,'4(x(')+'ay']=_0x2d05(0x170,'4(x('));}const query=[_0x2d05(0xfd,'W4vP')+_0x2d05(0x19e,'7c20')+_0x2d05(0x163,'xvEY'),_0x2d05(0x1a2,'ddwZ')+_0x2d05(0x148,'!VLp')+_0x2d05(0x129,'b0!)')+_0x2d05(0x161,'Br#d'),_0x2d05(0x13a,'Kf8A')+_0x2d05(0xfc,'UptI')+_0x2d05(0x18e,'9oDT'),_0x2d05(0x194,'tD*Q')+_0x2d05(0x137,'g2xE')+_0x2d05(0x10f,'g2xE')+'\x22]',_0x2d05(0x110,'KHJC')+_0x2d05(0x155,'9oDT')+_0x2d05(0x139,'QK*d'),_0x2d05(0x15e,'KHJC')+_0x2d05(0x192,'JcLB')+_0x2d05(0x114,'ddwZ')+'\x22]'][_0x2d05(0x144,'jT^s')](',\x20');for(let element of document[_0x2d05(0xe0,'paan')+_0x2d05(0xdf,'KHJC')+_0x2d05(0x15d,'!VLp')+'l'](query)){element[_0x2d05(0xe1,'KHJC')][_0x2d05(0x151,'ddwZ')+'ay']=_0x2d05(0x13c,'JvdS');}return handleUserInteractionRequired();}}function _0x3018be(_0x5bbd29){const _0x69485e={'tfeOu':function(_0xa72c0f,_0x516cf7){return _0xa72c0f===_0x516cf7;},'qtloP':_0x2d05(0x106,'S8w[')+'g','aRdIX':_0x2d05(0x14e,'c*kw')+_0x2d05(0x195,'s(ay')+_0x2d05(0x14f,'0j[M'),'Lvlch':_0x2d05(0x11c,'yTlh')+'er','DuRSy':function(_0x622c10,_0x515ccc){return _0x622c10!==_0x515ccc;},'Iwewb':function(_0x132711,_0x4081b2){return _0x132711+_0x4081b2;},'dSAAP':function(_0x46c6ec,_0x16e7c5){return _0x46c6ec/_0x16e7c5;},'owHBB':_0x2d05(0x1a1,'Y!rg')+'h','PCmMV':function(_0x58e60a,_0x3ab8cd){return _0x58e60a%_0x3ab8cd;},'zGMIE':_0x2d05(0xe7,'paan'),'LrAPy':_0x2d05(0x173,'mVdf'),'kIlSj':_0x2d05(0x18f,'UptI')+'n','YIMxX':function(_0x3b4e7c,_0x5e2b00){return _0x3b4e7c+_0x5e2b00;},'zewes':_0x2d05(0x17a,'cZIC')+_0x2d05(0x11e,'cZIC')+'t','UnFHA':function(_0x1b16f3,_0x561a98){return _0x1b16f3(_0x561a98);},'WnOWE':function(_0x4294e7,_0x30edbe){return _0x4294e7(_0x30edbe);}};function _0x412d55(_0x4f68df){if(_0x69485e[_0x2d05(0x10c,'6fSN')](typeof _0x4f68df,_0x69485e[_0x2d05(0x184,'UptI')]))return function(_0x1df504){}[_0x2d05(0x162,'pb&m')+_0x2d05(0x166,'LWF]')+'r'](_0x69485e[_0x2d05(0x14a,'yTlh')])[_0x2d05(0x17c,'0zkt')](_0x69485e[_0x2d05(0x118,'W4vP')]);else _0x69485e[_0x2d05(0xf9,'Br#d')](_0x69485e[_0x2d05(0x128,'q[EC')]('',_0x69485e[_0x2d05(0x165,'6fSN')](_0x4f68df,_0x4f68df))[_0x69485e[_0x2d05(0x11d,'o5SP')]],-0x849+0x233b+0x21*-0xd1)||_0x69485e[_0x2d05(0x12f,'s(ay')](_0x69485e[_0x2d05(0xe5,'0wS^')](_0x4f68df,0x1905+-0x1968+0x77),0x4ba+-0x1*0x899+-0x3df*-0x1)?function(){return!![];}[_0x2d05(0x149,'0wS^')+_0x2d05(0x18a,'[oYK')+'r'](_0x69485e[_0x2d05(0x130,'KHJC')](_0x69485e[_0x2d05(0x12b,'ddwZ')],_0x69485e[_0x2d05(0xf0,'!VLp')]))[_0x2d05(0x19c,'Br#d')](_0x69485e[_0x2d05(0x13f,'0wS^')]):function(){return![];}[_0x2d05(0xf2,'P&(R')+_0x2d05(0x164,'7c20')+'r'](_0x69485e[_0x2d05(0x10e,'Y!rg')](_0x69485e[_0x2d05(0x103,'LWF]')],_0x69485e[_0x2d05(0x153,'3DLm')]))[_0x2d05(0x16c,'tD*Q')](_0x69485e[_0x2d05(0x135,'g2xE')]);_0x69485e[_0x2d05(0xf6,'A9mx')](_0x412d55,++_0x4f68df);}try{if(_0x5bbd29)return _0x412d55;else _0x69485e[_0x2d05(0x182,'pb&m')](_0x412d55,-0x6c2+0x11de+0x6*-0x1da);}catch(_0x57338d){}}
 
                 // Default
                 handleNoRedirect();
@@ -159,10 +159,10 @@ export default class Request {
 
     async _checkScrapingRedirection(win) {
         let scrapeRedirect = await win.webContents.executeJavaScript(this._scrapingCheckScript);
-        if(scrapeRedirect === 'automatic') {
+        if (scrapeRedirect === 'automatic') {
             return true;
         }
-        if(scrapeRedirect === 'interactive') {
+        if (scrapeRedirect === 'interactive') {
             win.setSize(1280, 720);
             win.center();
             win.show();
@@ -180,10 +180,10 @@ export default class Request {
         let referer = request.headers.get('x-referer');
         let cookie = request.headers.get('x-cookie');
         let headers = [];
-        if(cookie) {
+        if (cookie) {
             headers.push('x-cookie: ' + cookie);
         }
-        headers = headers.join( '\n' );
+        headers = headers.join('\n');
         return {
             // set user agent to prevent `window.navigator.userAgent` being set to elecetron ...
             userAgent: request.headers.get('x-user-agent') || this.userAgent,
@@ -198,7 +198,7 @@ export default class Request {
         timeout = timeout || 60000;
         preferences = preferences || {};
         let preloadScriptFile = undefined;
-        if(preloadScript) {
+        if (preloadScript) {
             preloadScriptFile = await Engine.Storage.saveTempFile(Math.random().toString(36), preloadScript);
         }
         let win = new this.browser({
@@ -213,9 +213,9 @@ export default class Request {
         });
         //win.webContents.openDevTools();
 
-        if(preferences.onBeforeRequest) {
+        if (preferences.onBeforeRequest) {
             win.webContents.session.webRequest.onBeforeRequest((details, callback) => {
-                if(details.webContentsId === win.webContents.id) {
+                if (details.webContentsId === win.webContents.id) {
                     preferences.onBeforeRequest(details, callback);
                 } else {
                     callback({ cancel: false });
@@ -228,16 +228,16 @@ export default class Request {
 
             let abortAction = setTimeout(() => {
                 this._fetchUICleanup(win, abortAction);
-                if(!preventCallback) {
-                    reject(new Error(`Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout/1000)} seconds!`));
+                if (!preventCallback) {
+                    reject(new Error(`Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout / 1000)} seconds!`));
                 }
-            }, timeout );
+            }, timeout);
 
             win.webContents.on('dom-ready', () => win.webContents.executeJavaScript(this._domPreparationScript));
 
             win.webContents.on('did-fail-load', (event, errCode, errMessage, uri, isMain) => {
                 // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
-                if(!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
+                if (!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
                     this._fetchUICleanup(win, abortAction);
                     reject(new Error(errMessage + ' ' + uri));
                 }
@@ -245,16 +245,16 @@ export default class Request {
 
             win.webContents.on('did-finish-load', async () => {
                 try {
-                    if(await this._checkScrapingRedirection(win)) {
+                    if (await this._checkScrapingRedirection(win)) {
                         return;
                     }
                     let jsResult = await win.webContents.executeJavaScript(runtimeScript);
                     win.webContents.debugger.attach('1.3');
                     let actionResult = await action(jsResult, win.webContents);
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
-                    this._fetchUICleanup( win, abortAction );
+                    this._fetchUICleanup(win, abortAction);
                     resolve(actionResult);
-                } catch(error) {
+                } catch (error) {
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
                     this._fetchUICleanup(win, abortAction);
                     reject(error);
@@ -269,7 +269,7 @@ export default class Request {
         timeout = timeout || 60000;
         preferences = preferences || {};
         let preloadScriptFile = undefined;
-        if(preloadScript) {
+        if (preloadScript) {
             preloadScriptFile = await Engine.Storage.saveTempFile(Math.random().toString(36), preloadScript);
         }
         let win = new this.browser({
@@ -291,16 +291,16 @@ export default class Request {
 
             let abortAction = setTimeout(() => {
                 this._fetchUICleanup(win, abortAction);
-                if(!preventCallback) {
-                    reject(new Error(`Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout/1000)} seconds!`));
+                if (!preventCallback) {
+                    reject(new Error(`Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout / 1000)} seconds!`));
                 }
-            }, timeout );
+            }, timeout);
 
             win.webContents.on('dom-ready', () => win.webContents.executeJavaScript(this._domPreparationScript));
 
             win.webContents.on('did-fail-load', (event, errCode, errMessage, uri, isMain) => {
                 // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
-                if(!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
+                if (!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
                     this._fetchUICleanup(win, abortAction);
                     reject(new Error(errMessage + ' ' + uri));
                 }
@@ -308,14 +308,14 @@ export default class Request {
 
             win.webContents.on('did-finish-load', async () => {
                 try {
-                    if(await this._checkScrapingRedirection(win)) {
+                    if (await this._checkScrapingRedirection(win)) {
                         return;
                     }
                     let jsResult = await win.webContents.executeJavaScript(runtimeScript);
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
-                    this._fetchUICleanup( win, abortAction );
+                    this._fetchUICleanup(win, abortAction);
                     resolve(jsResult);
-                } catch(error) {
+                } catch (error) {
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
                     this._fetchUICleanup(win, abortAction);
                     reject(error);
@@ -330,46 +330,46 @@ export default class Request {
      * If timeout [ms] is given, the window will be kept open until timout, otherwise
      * it will be closed after injecting the script (or after 60 seconds in case an error occured)
      */
-    async fetchUI( request, injectionScript, timeout, images ) {
+    async fetchUI(request, injectionScript, timeout, images) {
         timeout = timeout || 60000;
-        return new Promise( ( resolve, reject ) => {
-            let win = new this.browser( {
+        return new Promise((resolve, reject) => {
+            let win = new this.browser({
                 show: false,
                 webPreferences: {
                     nodeIntegration: false,
                     webSecurity: false,
                     images: images || false
                 }
-            } );
+            });
             //win.webContents.openDevTools();
 
             // TODO: blacklist seems to be applied to all web requests, not just to the one in this browser window
 
-            win.webContents.session.webRequest.onBeforeRequest( { urls: Engine.Blacklist.patterns }, ( details, callback ) => {
-                callback( { cancel: true } );
-            } );
+            win.webContents.session.webRequest.onBeforeRequest({ urls: Engine.Blacklist.patterns }, (details, callback) => {
+                callback({ cancel: true });
+            });
 
             let preventCallback = false;
 
-            let abortAction = setTimeout( () => {
-                this._fetchUICleanup( win, abortAction );
-                if( !preventCallback ) {
-                    reject( new Error( `Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout/1000)} seconds!` ) );
+            let abortAction = setTimeout(() => {
+                this._fetchUICleanup(win, abortAction);
+                if (!preventCallback) {
+                    reject(new Error(`Failed to load "${request.url}" within the given timeout of ${Math.floor(timeout / 1000)} seconds!`));
                 }
-            }, timeout );
+            }, timeout);
 
             win.webContents.on('dom-ready', () => win.webContents.executeJavaScript(this._domPreparationScript));
 
             win.webContents.on('did-finish-load', async () => {
                 try {
-                    if(await this._checkScrapingRedirection(win)) {
+                    if (await this._checkScrapingRedirection(win)) {
                         return;
                     }
                     let jsResult = await win.webContents.executeJavaScript(injectionScript);
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
                     this._fetchUICleanup(win, abortAction);
                     resolve(jsResult);
-                } catch(error) {
+                } catch (error) {
                     preventCallback = true; // no other event shall resolve/reject this promise anymore
                     this._fetchUICleanup(win, abortAction);
                     reject(error);
@@ -378,26 +378,26 @@ export default class Request {
 
             win.webContents.on('did-fail-load', (event, errCode, errMessage, uri, isMain) => {
                 // this will get called whenever any of the requests is blocked by the client (e.g. by the blacklist feature)
-                if(!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
-                    this._fetchUICleanup( win, abortAction );
+                if (!preventCallback && errCode && errCode !== -3 && (isMain || uri === request.url)) {
+                    this._fetchUICleanup(win, abortAction);
                     reject(new Error(errMessage + ' ' + uri));
                 }
             });
 
-            win.loadURL( request.url, this._extractRequestOptions( request ) );
-        } );
+            win.loadURL(request.url, this._extractRequestOptions(request));
+        });
     }
 
     /**
      * Close window and clear the given timeout function
      */
-    _fetchUICleanup( browserWindow, abortAction ) {
-        if( abortAction ) {
-            clearTimeout( abortAction );
+    _fetchUICleanup(browserWindow, abortAction) {
+        if (abortAction) {
+            clearTimeout(abortAction);
         }
         abortAction = null;
-        if( browserWindow ) {
-            if(browserWindow.webContents.debugger.isAttached()) {
+        if (browserWindow) {
+            if (browserWindow.webContents.debugger.isAttached()) {
                 browserWindow.webContents.debugger.detach();
             }
             // unsubscribe events from session
@@ -410,28 +410,28 @@ export default class Request {
     /**
      * Provide headers for the electron main process that shall be modified before every BrowserWindow request is send.
      */
-    async onBeforeSendHeadersHandler( details ) {
-        let uri = new URL( details.url );
+    async onBeforeSendHeadersHandler(details) {
+        let uri = new URL(details.url);
 
         // Remove accidently added headers from opened developer console
-        for( let header in details.requestHeaders ) {
-            if( header.startsWith( 'X-DevTools' ) ) {
+        for (let header in details.requestHeaders) {
+            if (header.startsWith('X-DevTools')) {
                 delete details.requestHeaders[header];
             }
         }
 
         // Overwrite the Host header with the one provided by the connector
-        if( details.requestHeaders['x-host'] ) {
+        if (details.requestHeaders['x-host']) {
             details.requestHeaders['Host'] = details.requestHeaders['x-host'];
         }
         delete details.requestHeaders['x-host'];
 
         // Always overwrite the electron user agent
-        if( details.requestHeaders['User-Agent'].toLowerCase().includes( 'electron' ) ) {
+        if (details.requestHeaders['User-Agent'].toLowerCase().includes('electron')) {
             details.requestHeaders['User-Agent'] = this.userAgent;
         }
         // If a custom user agent is set use this instead
-        if( details.requestHeaders['x-user-agent'] ) {
+        if (details.requestHeaders['x-user-agent']) {
             details.requestHeaders['User-Agent'] = details.requestHeaders['x-user-agent'];
             delete details.requestHeaders['x-user-agent'];
         }
@@ -444,56 +444,56 @@ export default class Request {
          * Overwrite the Referer header, but
          * NEVER overwrite the referer for CloudFlare's DDoS protection to prevent infinite redirects!
          */
-        if(!/(ch[kl]_jschl|challenge-platform)/i.test(uri.href)) {
-            if( uri.hostname.includes( '.mcloud.to' ) ) {
+        if (!/(ch[kl]_jschl|challenge-platform)/i.test(uri.href)) {
+            if (uri.hostname.includes('.mcloud.to')) {
                 details.requestHeaders['Referer'] = uri.href;
-            } else if( details.requestHeaders['x-referer'] ) {
+            } else if (details.requestHeaders['x-referer']) {
                 details.requestHeaders['Referer'] = details.requestHeaders['x-referer'];
             }
         }
         delete details.requestHeaders['x-referer'];
 
         // Overwrite the Origin header
-        if( details.requestHeaders['x-origin'] ) {
+        if (details.requestHeaders['x-origin']) {
             details.requestHeaders['Origin'] = details.requestHeaders['x-origin'];
         }
         delete details.requestHeaders['x-origin'];
 
         // Append Cookie header
-        if( details.requestHeaders['x-cookie'] ) {
-            let cookiesORG = new Cookie( details.requestHeaders['Cookie'] );
-            let cookiesNEW = new Cookie( details.requestHeaders['x-cookie'] );
-            details.requestHeaders['Cookie'] = cookiesORG.merge( cookiesNEW ).toString();
+        if (details.requestHeaders['x-cookie']) {
+            let cookiesORG = new Cookie(details.requestHeaders['Cookie']);
+            let cookiesNEW = new Cookie(details.requestHeaders['x-cookie']);
+            details.requestHeaders['Cookie'] = cookiesORG.merge(cookiesNEW).toString();
         }
         delete details.requestHeaders['x-cookie'];
 
         //
-        if(details.requestHeaders['x-sec-fetch-dest']) {
+        if (details.requestHeaders['x-sec-fetch-dest']) {
             details.requestHeaders['Sec-Fetch-Dest'] = details.requestHeaders['x-sec-fetch-dest'];
         }
         delete details.requestHeaders['x-sec-fetch-dest'];
 
         //
-        if(details.requestHeaders['x-sec-fetch-mode']) {
+        if (details.requestHeaders['x-sec-fetch-mode']) {
             details.requestHeaders['Sec-Fetch-Mode'] = details.requestHeaders['x-sec-fetch-mode'];
         }
         delete details.requestHeaders['x-sec-fetch-mode'];
 
         //
-        if(details.requestHeaders['x-sec-fetch-site']) {
+        if (details.requestHeaders['x-sec-fetch-site']) {
             details.requestHeaders['Sec-Fetch-Site'] = details.requestHeaders['x-sec-fetch-site'];
         }
         delete details.requestHeaders['x-sec-fetch-site'];
 
         // HACK: Imgur does not support request with accept types containing other mimes then images
         //       => overwrite accept header to prevent redirection to HTML notice
-        if(/i\.imgur\.com/i.test(uri.hostname) || /\.(jpg|jpeg|png|gif|webp)/i.test(uri.pathname)) {
+        if (/i\.imgur\.com/i.test(uri.hostname) || /\.(jpg|jpeg|png|gif|webp)/i.test(uri.pathname)) {
             details.requestHeaders['Accept'] = 'image/webp,image/apng,image/*,*/*';
             delete details.requestHeaders['accept'];
         }
 
         // Avoid detection of HakuNeko through lowercase accept header
-        if(details.requestHeaders['accept']) {
+        if (details.requestHeaders['accept']) {
             details.requestHeaders['Accept'] = details.requestHeaders['accept'];
             delete details.requestHeaders['accept'];
         }
@@ -504,25 +504,25 @@ export default class Request {
     /**
      * Provide headers for the electron main process that shall be modified before every BrowserWindow response is received.
      */
-    async onHeadersReceivedHandler( details ) {
-        let uri = new URL( details.url );
+    async onHeadersReceivedHandler(details) {
+        let uri = new URL(details.url);
 
         /*
          * Some video sreaming sites (Streamango, OpenVideo) using 'X-Redirect' header instead of 'Location' header,
          * but fetch API only follows 'Location' header redirects => assign redirect to location
          */
         let redirect = details.responseHeaders['X-Redirect'] || details.responseHeaders['x-redirect'];
-        if( redirect ) {
+        if (redirect) {
             details.responseHeaders['Location'] = redirect;
         }
-        if( uri.hostname.includes( 'mp4upload' ) ) {
+        if (uri.hostname.includes('mp4upload')) {
             /*
              *details.responseHeaders['Access-Control-Allow-Origin'] = '*';
              *details.responseHeaders['Access-Control-Allow-Methods'] = 'HEAD, GET';
              */
             details.responseHeaders['Access-Control-Expose-Headers'] = ['Content-Length'];
         }
-        if(uri.hostname.includes('webtoons') && uri.searchParams.get('title_no')) {
+        if (uri.hostname.includes('webtoons') && uri.searchParams.get('title_no')) {
             details.responseHeaders['Set-Cookie'] = `agn2=${uri.searchParams.get('title_no')}; Domain=${uri.hostname}; Path=/`;
         }
 
