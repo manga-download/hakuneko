@@ -115,6 +115,7 @@ export default class Blacklist {
             '*://*.radarconsultation.com/*',
             '*://*.revcontent.com/*',
             '*://*.revrtb.net/*',
+            '*://*.rmcxyfqbm.com/*',
             '*://*.runative-syndicate.com/*',
             '*://*.runnersgunpowder.com/*',
             '*://*.sascdn.com/*',
@@ -138,6 +139,7 @@ export default class Blacklist {
             '*://*.yimg.com/*',
             '*://*.your-notice.com/*',
             '*://*.zap.buzz/*',
+            '*://*.zdaptrksg.com/*',
             '*://*.zeusadx.com/*',
             '*://*.zryydi.com/*',
         ];
