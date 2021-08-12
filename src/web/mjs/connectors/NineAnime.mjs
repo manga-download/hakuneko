@@ -137,8 +137,8 @@ export default class NineAnime extends Connector {
         let uri = new URL('/ajax/anime/episode?id=' + chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        const key = CryptoJS.enc.Utf8.parse(data.url.slice(0, 9));
-        const encrypted = CryptoJS.enc.Base64.parse(data.url.slice(9));
+        const key = CryptoJS.enc.Utf8.parse(data.url.slice(0, 16));
+        const encrypted = CryptoJS.enc.Base64.parse(data.url.slice(16));
         data = CryptoJS.RC4.decrypt({ ciphertext: encrypted }, key).toString(CryptoJS.enc.Utf8);
         await this.wait(500);
 
