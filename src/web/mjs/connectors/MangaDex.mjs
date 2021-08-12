@@ -59,27 +59,15 @@ export default class MangaDex extends Connector {
         // [seinen] => total: 7287 (@2021/08)
         // [shoujo] => total: 7462 (@2021/08)
         // [shounen] => total: 7571 (@2021/08)
-        const publications = ['none', 'josei', 'seinen', 'shoujo', 'shounen'];
-        const ratings = ['safe', 'suggestive', 'erotica', 'pornographic'];
-        const statuses = ["ongoing", "completed", "hiatus", "cancelled"];
-        const orders = ['asc', 'desc'];
-        let queries = [];
 
-        // Filling in the queries array with necessary filters
-        for(let publication of publications) {
-            let query = { publicationDemographic: publication, order: orders[0] };
-            if(await this._addQueryToArray(queries, orders, query))
-                continue;
-            for(let ratingCurrent of ratings) {
-                query.rating = ratingCurrent;
-                if(await this._addQueryToArray(queries, orders, query))
-                    continue;
-                for(let statusCurrent of statuses) {
-                    query.status = statusCurrent;
-                    await this._addQueryToArray(queries, orders, query, true);
-                }
-            }
-        }
+        // Order of filters make sense and have impact in queries count and estimated time
+        const filters = [
+            ['publicationDemographic', ['none', 'josei', 'seinen', 'shoujo', 'shounen']],
+            ['rating', ['safe', 'suggestive', 'erotica', 'pornographic']],
+            ['status', ['ongoing', 'completed', 'hiatus', 'cancelled']]
+        ];
+
+        let queries = await this._getMangaQueries({publicationDemographic: 'none', order: 'asc'}, filters);
 
         for(let query of queries) {
             for(let page = 0, run = true; run; page++) {
@@ -90,24 +78,55 @@ export default class MangaDex extends Connector {
         return mangaList;
     }
 
-    /**
-     * Adds query to array of queries if conditions were met.
-     * @param  {Boolean} forceAdd Optional, default - false. Add query to array of queries without check.
-     * @return {Boolean}      Result of adding query.
-     */
-    async _addQueryToArray(queries, orders, query, forceAdd=false) {
-        const mangasTotal = (await this._getMangasDataFromPage(0, query, 0)).total;
-        if(mangasTotal <= this.resultLimit * 2 || forceAdd) {
-            queries.push({ ...query });
-            if(mangasTotal - this.resultLimit > 0) {
-                let queryDesc = { ...query };
-                queryDesc.order = orders[1];
-                queryDesc.mangasLimit = mangasTotal - this.resultLimit;
-                queries.push(queryDesc);
-            }
-            return true;
+    async _getMangaSubQueries(query, filterName, values) {
+        // Getting all possible combinations of queries with filter values
+        let queries = [];
+        let filteredQuery = null;
+
+        for(let value of values) {
+            filteredQuery = { ...query };
+            filteredQuery[filterName] = value;
+            queries.push(filteredQuery);
         }
-        return false;
+        return queries;
+    }
+
+    async _getMangaQueries(baseQuery, filters) {
+        // Dividing big query to smaller parts (in loop)
+        // Big query - query that have lots of elements in response
+        // Smaller parts - queries that have acceptable (less than max offset) amount of elements in response
+        let processing = [baseQuery];
+        let postProcessing = [];
+        let localProcessing = null; // Preserves "processing" array from changing while enumeration
+        let result = [];
+        let mangasTotal = null;
+
+        for(let filter of filters) {
+            localProcessing = [];
+            for(let query of processing) {
+                mangasTotal = (await this._getMangasDataFromPage(0, query, 0)).total;
+                if(mangasTotal <= this.resultLimit * 2) {
+                    if(mangasTotal <= this.resultLimit)
+                        result.push(query);
+                    else {
+                        query.mangasLimit = mangasTotal - this.resultLimit;
+                        postProcessing.push(query);
+                    }
+                } else {
+                    localProcessing.push(
+                        ...await this._getMangaSubQueries(query, filter[0], filter[1])
+                    );
+                }
+            }
+            processing = localProcessing;
+        }
+        // If queries can't be splitted more by filters, try to get as much mangas as we can
+        postProcessing.push(...processing);
+
+        // Get big queries from both sides
+        for(let query of postProcessing)
+            result.push({ ...query, 'mangasLimit': this.resultLimit }, { ...query, 'order': 'desc' });
+        return result;
     }
 
     async _getMangasFromPage(page, query) {
