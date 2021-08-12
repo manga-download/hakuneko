@@ -74,6 +74,6 @@ export default class kakaopage extends Connector {
             return data.downloadData.members.files.map(element => data.downloadData.members.sAtsServerUrl + element.secureUrl);
         }
 
-        throw new Error('Can\'t fetch this ressource because it\'s protected');
+        throw new Error(`Can't fetch this ressource because it's protected`);
     }
 }
