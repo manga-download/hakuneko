@@ -1,15 +1,15 @@
 import SinMH from './templates/SinMH.mjs';
 
 export default class KokoMH extends SinMH {
-    
+
     constructor() {
         super();
         super.id = 'kokomh';
         super.label = '520漫画网 (KokoMH)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
-        this.url = 'https://www.kokomh.com/';
+        this.url = 'https://www.kokomh.com';
 
-        this.path = '/all/%PAGE%.html'
+        this.path = '/all/%PAGE%.html';
         this.queryManga = '.mh-date-info-name h4 a';
         this.queryMangasPageCount = 'div.NewPages ul li:last-child a';
         this.queryMangasPageCountMatch = /(\d+)(\/|\.html)?$/;
@@ -18,7 +18,7 @@ export default class KokoMH extends SinMH {
             new Promise(resolve => {
                 let chapters = [...document.querySelectorAll('ul#mh-chapter-list-ol-0 li a')].map(element => {
                     return {
-                        id: new URL(element.href, window.location).pathname,
+                        id: element.pathname,
                         title: element.text.trim()
                     };
                 });
