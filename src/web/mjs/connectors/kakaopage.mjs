@@ -17,8 +17,8 @@ export default class kakaopage extends Connector {
         uri = new URL(uri);
         const request = new Request(uri, this.requestOptions);
         let id = uri.searchParams.get('seriesId') || uri.pathname.split('/').filter(part => part).pop();
-        let data = await this.fetchDOM(request, 'h2.text-ellipsis.webfont', 3);
-        let title = data[0].textContent.trim();
+        let data = await this.fetchDOM(request, 'meta[property="og:title"]', 3);
+        let title = data[0].content.trim();
         return new Manga(this, id, title);
     }
 
@@ -70,6 +70,10 @@ export default class kakaopage extends Connector {
         this.requestOptions.method = 'GET';
         delete this.requestOptions.body;
         let data = await this.fetchJSON(request);
-        return data.downloadData.members.files.map(element => data.downloadData.members.sAtsServerUrl + element.secureUrl);
+        if (data.downloadData && data.downloadData.members) {
+            return data.downloadData.members.files.map(element => data.downloadData.members.sAtsServerUrl + element.secureUrl);
+        }
+
+        throw new Error(`Can't fetch this ressource because it's protected`);
     }
 }
