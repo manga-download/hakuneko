@@ -36,9 +36,9 @@ export default class WordPressMangastream extends Connector {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             this.adLinkDecrypt(element);
-            if(this.queryChaptersTitleBloat) {
+            if (this.queryChaptersTitleBloat) {
                 [...element.querySelectorAll(this.queryChaptersTitleBloat)].forEach(bloat => {
-                    if(bloat.parentElement) {
+                    if (bloat.parentElement) {
                         bloat.parentElement.removeChild(bloat);
                     }
                 });
@@ -54,7 +54,7 @@ export default class WordPressMangastream extends Connector {
     async _getPages(chapter) {
         const script = `
             new Promise((resolve, reject) => {
-                if(window.ts_reader) {
+                if(window.ts_reader && ts_reader.params.sources) {
                     resolve(ts_reader.params.sources.shift().images);
                 } else {
                     setTimeout(() => {

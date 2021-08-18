@@ -7,8 +7,8 @@ export default class MangaReader extends Connector {
         super();
         super.id = 'mangareader';
         super.label = 'MangaReader';
-        this.tags = [ 'manga', 'english' ];
-        this.url = 'https://www.mangareader.net';
+        this.tags = ['manga', 'english'];
+        this.url = 'https://mangareader.tv';
     }
 
     async _getMangaFromURI(uri) {

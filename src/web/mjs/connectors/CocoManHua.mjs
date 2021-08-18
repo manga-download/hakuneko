@@ -23,5 +23,34 @@ export default class CocoManHua extends ZYMK {
                 resolve(new Array(totalimg).fill().map((_, index) => new URL(__cr.getPicUrl(index + 1), window.location.origin).href));
             });
         `;
+
+        this.config.throttle = {
+            label: 'Throttle Requests [ms]',
+            description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests.',
+            input: 'numeric',
+            min: 50,
+            max: 1000,
+            value: 250
+        };
+    }
+
+    async _getPages(chapter) {
+        const images = await super._getPages(chapter);
+        return images.map(image => {
+            return this.createConnectorURI({
+                url: image,
+                referer: new URL(chapter.id, this.url).href
+            });
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        const request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        const response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
