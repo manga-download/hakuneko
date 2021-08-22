@@ -8,9 +8,28 @@ export default class Team1x1 extends Connector {
         super.id = 'team1x1';
         super.label = 'Team X';
         this.tags = ['webtoon', 'arabic'];
-        this.url = 'https://tqneplus.com';
 
+        this.config = {
+            url: {
+                label: 'URL',
+                description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
+                input: 'text',
+                value: 'https://team1x1.com'
+            }
+        };
     }
+
+    get url() {
+        return this.config.url.value;
+    }
+
+    set url(value) {
+        if (this.config && value) {
+            this.config.url.value = value;
+            Engine.Settings.save();
+        }
+    }
+
     canHandleURI(uri) {
         return /team1x\d*\.com|tqneplus\.com/.test(uri.hostname);
     }
@@ -36,7 +55,7 @@ export default class Team1x1 extends Connector {
         const data = await this.fetchDOM(request, 'div#page-manga div.container div.last-post-manga div.thumb div.info h3 a', 5);
         let mangaList = data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: element.pathname,
                 title: element.text.trim()
             };
         });
