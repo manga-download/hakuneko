@@ -7,7 +7,7 @@ export default class CocoManHua extends ZYMK {
         super.id = 'cocomanhua';
         super.label = 'Coco漫画';
         this.tags = [ 'webtoon', 'chinese' ];
-        this.url = 'https://www.cocomanhua.com';
+        this.url = 'https://www.cocomanga.com';
 
         this.path = '/show?page=';
         this.pathSuffix = '';
