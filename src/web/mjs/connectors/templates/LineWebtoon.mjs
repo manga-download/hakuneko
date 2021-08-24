@@ -50,7 +50,7 @@ export default class LineWebtoon extends Connector {
             let title = chapter ? chapter.textContent.trim() + ' - ' : '';
             title += element.querySelector('span.subj span').textContent.trim();
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.baseURL),
+                id: this.getRootRelativeOrAbsoluteLink(/'/.test(element.href) ? element.href.match(/'([^']+)'/)[1] : element, this.baseURL),
                 title: title,
                 language: ''
             };
