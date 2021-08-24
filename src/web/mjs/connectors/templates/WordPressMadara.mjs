@@ -74,7 +74,7 @@ export default class WordPressMadara extends Connector {
         }
     }
 
-    async _getChaptersAjaxNew(mangaID) {
+    async _getChaptersAjax(mangaID) {
         const uri = new URL(mangaID + 'ajax/chapters/', this.url);
         const request = new Request(uri, { method: 'POST' });
         const data = await this.fetchDOM(request, this.queryChapters);
@@ -93,7 +93,7 @@ export default class WordPressMadara extends Connector {
         let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
         if (placeholder) {
             const promises = await Promise.allSettled([
-                this._getChaptersAjaxNew(manga.id),
+                this._getChaptersAjax(manga.id),
                 this._getChaptersAjaxOld(placeholder.dataset.id)
             ]);
             data = promises.find(promise => /fulfilled/i.test(promise.status)).value;
