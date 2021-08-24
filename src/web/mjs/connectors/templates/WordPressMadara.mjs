@@ -56,6 +56,35 @@ export default class WordPressMadara extends Connector {
         });
     }
 
+    async _getChaptersAjaxOld(dataID) {
+        let uri = new URL(this.path + '/wp-admin/admin-ajax.php', this.url);
+        let request = new Request(uri, {
+            method: 'POST',
+            body: 'action=manga_get_chapters&manga=' + dataID,
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+                'x-referer': this.url
+            }
+        });
+        const data = await this.fetchDOM(request, this.queryChapters);
+        if(data.length) {
+            return data;
+        } else {
+            throw new Error('No chapters found (old ajax endpoint)!');
+        }
+    }
+
+    async _getChaptersAjax(mangaID) {
+        const uri = new URL(mangaID + 'ajax/chapters/', this.url);
+        const request = new Request(uri, { method: 'POST' });
+        const data = await this.fetchDOM(request, this.queryChapters);
+        if(data.length) {
+            return data;
+        } else {
+            throw new Error('No chapters found (new ajax endpoint)!');
+        }
+    }
+
     async _getChapters(manga) {
         let uri = new URL(manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
@@ -63,16 +92,11 @@ export default class WordPressMadara extends Connector {
         let data = [...dom.querySelectorAll(this.queryChapters)];
         let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
         if (placeholder) {
-            let uri = new URL(this.path + '/wp-admin/admin-ajax.php', this.url);
-            let request = new Request(uri, {
-                method: 'POST',
-                body: 'action=manga_get_chapters&manga=' + placeholder.dataset.id,
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded',
-                    'x-referer': this.url
-                }
-            });
-            data = await this.fetchDOM(request, this.queryChapters);
+            const promises = await Promise.allSettled([
+                this._getChaptersAjax(manga.id),
+                this._getChaptersAjaxOld(placeholder.dataset.id)
+            ]);
+            data = promises.find(promise => /fulfilled/i.test(promise.status)).value;
         }
         return data.map(element => {
             return {
