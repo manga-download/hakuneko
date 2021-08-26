@@ -286,7 +286,7 @@ export default class NineAnime extends Connector {
 
     async _getEpisodeMp4upload(link/*, resolution*/) {
         return {
-            video: await new MP4Upload(link.replace(/\.html.+$/, '.html')).getStream(),
+            video: await new MP4Upload(link).getStream(),
             subtitles: []
         };
     }
