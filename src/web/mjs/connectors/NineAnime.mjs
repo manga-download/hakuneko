@@ -138,6 +138,25 @@ export default class NineAnime extends Connector {
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         // extracted from 9anime
+        function decode(t) {
+            const alphabet = 'eST4kCjadnvlAm5b1BOGyLJzrE90Q6oKgRfhV+M8NDYtcxW3IP/qp2i7XHuwZFUs';
+            for (var r, x = '', u = 0, e = 0, c = 0; c < t.length; c++) {
+                u <<= 6;
+                u |= (r = alphabet.indexOf(t[c])) < 0 ? null : r;
+                if((e += 6) === 24) {
+                    x += String.fromCharCode((16711680 & u) >> 16);
+                    x += String.fromCharCode((65280 & u) >> 8);
+                    x += String.fromCharCode(255 & u);
+                    u = e = 0;
+                }
+            }
+            return 12 === e ? (u >>= 4,
+            x += String.fromCharCode(u)) : 18 === e && (u >>= 2,
+            x += String.fromCharCode((65280 & u) >> 8),
+            x += String.fromCharCode(255 & u)),
+            x;
+        }
+        // extracted from 9anime
         data = (function decrypt(t, n) {
             for (var i, r = [], u = 0, x = '', e = 256, o = 0; o < e; o += 1)
                 r[o] = o;
@@ -153,7 +172,8 @@ export default class NineAnime extends Connector {
                 r[u] = i,
                 x += String.fromCharCode(n.charCodeAt(c) ^ r[(r[o] + r[u]) % e]);
             return x;
-        })(data.url.slice(0, 16), atob(data.url.slice(16)));
+        })(data.url.slice(0, 16), decode(data.url.slice(16)));
+
         await this.wait(500);
 
         switch(true) {
