@@ -9,6 +9,7 @@ export default class HocVienTruyenTranh extends Connector {
         super.label = 'Hoc Vien Truyen Tranh';
         this.tags = [ 'manga', 'vietnamese', 'webtoon' ];
         this.url = 'https://hocvientruyentranh.net';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
@@ -54,6 +55,6 @@ export default class HocVienTruyenTranh extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.manga-container source.img-responsive');
-        return data.map(element => this.getAbsolutePath(element, this.url));
+        return data.map(element => this.createConnectorURI(this.getAbsolutePath(element, this.url)));
     }
 }
