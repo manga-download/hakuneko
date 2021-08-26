@@ -137,19 +137,30 @@ export default class NineAnime extends Connector {
         const chapterID = JSON.parse(chapter.id);
         const script = `
             new Promise((resolve, reject) => {
-                localStorage.setItem('player_autoplay', 0);
-                new MutationObserver(mutations => {
-                    for(const mutation of mutations) {
-                        for(const node of mutation.addedNodes) {
-                            if(/iframe/i.test(node.tagName)) {
-                                resolve(node.src);
-                            }
+                const timer = setInterval(() => {
+                    try {
+                        if(button = document.querySelector('ul.episodes li a.active')) {
+                            clearInterval(timer);
+                            localStorage.setItem('player_autoplay', 0);
+                            localStorage.setItem('_lastServerId', ${chapterID.server});
+                            new MutationObserver(mutations => {
+                                for(const mutation of mutations) {
+                                    for(const node of mutation.addedNodes) {
+                                        if(/iframe/i.test(node.tagName)) {
+                                            node.parentNode.removeChild(node);
+                                            resolve(node.src);
+                                        }
+                                    }
+                                }
+                            }).observe(document.querySelector('div#player'), {
+                                childList: true
+                            });
+                            button.click();
                         }
+                    } catch(error) {
+                        reject(error);
                     }
-                }).observe(document.querySelector('div#player'), {
-                    childList: true
-                });
-                document.querySelector('div.servers span[data-id="${chapterID.server}"]').click();
+                }, 250);
             });
         `;
         const uri = new URL(chapterID.episode, this.url);
