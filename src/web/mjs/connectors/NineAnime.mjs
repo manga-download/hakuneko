@@ -5,6 +5,7 @@ import Streamtape from '../videostreams/Streamtape.mjs';
 import MyCloud from '../videostreams/MyCloud.mjs';
 import Vidstream from '../videostreams/Vidstream.mjs';
 import HydraX from '../videostreams/HydraX.mjs';
+import MP4Upload from '../videostreams/MP4Upload.mjs';
 
 export default class NineAnime extends Connector {
 
@@ -138,8 +139,8 @@ export default class NineAnime extends Connector {
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         // extracted from 9anime
+        const alphabet = 'CpzSkaYEbo7JW3eDjRr5ls2/tQBFivHdAcI+UPGf48qwu16xngVOKmMLZTN0hXy9'; // TODO: alphabet changes in regular intervals (ecry hour?)
         function decode(t) {
-            const alphabet = 'eST4kCjadnvlAm5b1BOGyLJzrE90Q6oKgRfhV+M8NDYtcxW3IP/qp2i7XHuwZFUs';
             for (var r, x = '', u = 0, e = 0, c = 0; c < t.length; c++) {
                 u <<= 6;
                 u |= (r = alphabet.indexOf(t[c])) < 0 ? null : r;
@@ -292,15 +293,8 @@ export default class NineAnime extends Connector {
     }
 
     async _getEpisodeMp4upload(link/*, resolution*/) {
-        let script = `
-            new Promise(resolve => {
-                resolve(document.querySelector('div#player video').src);
-            });
-        `;
-        let request = new Request(link, this.requestOptions);
-        let stream = await Engine.Request.fetchUI(request, script);
         return {
-            video: stream,
+            video: await new MP4Upload(link.replace(/\.html.+$/, '.html')).getStream(),
             subtitles: []
         };
     }
@@ -322,10 +316,8 @@ export default class NineAnime extends Connector {
     }
 
     async _getEpisodeStreamtape(link/*, resolution*/) {
-        let streamtape = new Streamtape(link);
-        let stream = await streamtape.getStream();
         return {
-            video: stream,
+            video: await new Streamtape(link).getStream(),
             subtitles: []
         };
     }
