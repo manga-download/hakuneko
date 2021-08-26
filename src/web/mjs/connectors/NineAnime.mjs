@@ -100,22 +100,22 @@ export default class NineAnime extends Connector {
                 setInterval(() => {
                     try {
                         if(document.querySelector('div#episodes div.servers')) {
-                            let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
+                            const servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
                                 return {
                                     id: element.dataset.id,
                                     label: element.textContent.trim()
                                 };
                             });
-                            let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
+                            const episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
                                 return {
-                                    servers: JSON.parse(element.dataset.sources),
-                                    label: element.textContent.trim()
+                                    id: element.pathname,
+                                    label: element.text.trim()
                                 };
                             });
-                            let result = servers.reduce((accumulator, server) => {
+                            const result = servers.reduce((accumulator, server) => {
                                 return accumulator.concat(episodes.map(episode => {
                                     return {
-                                        id: episode.servers[server.id],
+                                        id: JSON.stringify({ server: server.id, episode: episode.id }),
                                         title: episode.label + ' [' + server.label + ']'
                                     };
                                 }));
@@ -133,47 +133,28 @@ export default class NineAnime extends Connector {
     }
 
     async _getPages(chapter) {
-
         const referer = this.url + chapter.manga.id;
-        let uri = new URL('/ajax/anime/episode?id=' + chapter.id, this.url);
+        const chapterID = JSON.parse(chapter.id);
+        const script = `
+            new Promise((resolve, reject) => {
+                localStorage.setItem('player_autoplay', 0);
+                new MutationObserver(mutations => {
+                    for(const mutation of mutations) {
+                        for(const node of mutation.addedNodes) {
+                            if(/iframe/i.test(node.tagName)) {
+                                resolve(node.src);
+                            }
+                        }
+                    }
+                }).observe(document.querySelector('div#player'), {
+                    childList: true
+                });
+                document.querySelector('div.servers span[data-id="${chapterID.server}"]').click();
+            });
+        `;
+        const uri = new URL(chapterID.episode, this.url);
         const request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        // extracted from 9anime
-        const alphabet = 'CpzSkaYEbo7JW3eDjRr5ls2/tQBFivHdAcI+UPGf48qwu16xngVOKmMLZTN0hXy9'; // TODO: alphabet changes in regular intervals (ecry hour?)
-        function decode(t) {
-            for (var r, x = '', u = 0, e = 0, c = 0; c < t.length; c++) {
-                u <<= 6;
-                u |= (r = alphabet.indexOf(t[c])) < 0 ? null : r;
-                if((e += 6) === 24) {
-                    x += String.fromCharCode((16711680 & u) >> 16);
-                    x += String.fromCharCode((65280 & u) >> 8);
-                    x += String.fromCharCode(255 & u);
-                    u = e = 0;
-                }
-            }
-            return 12 === e ? (u >>= 4,
-            x += String.fromCharCode(u)) : 18 === e && (u >>= 2,
-            x += String.fromCharCode((65280 & u) >> 8),
-            x += String.fromCharCode(255 & u)),
-            x;
-        }
-        // extracted from 9anime
-        data = (function decrypt(t, n) {
-            for (var i, r = [], u = 0, x = '', e = 256, o = 0; o < e; o += 1)
-                r[o] = o;
-            for (o = 0; o < e; o += 1)
-                u = (u + r[o] + t.charCodeAt(o % t.length)) % e,
-                i = r[o],
-                r[o] = r[u],
-                r[u] = i;
-            for (var c = u = o = 0; c < n.length; c += 1)
-                u = (u + r[o = (o + c) % e]) % e,
-                i = r[o],
-                r[o] = r[u],
-                r[u] = i,
-                x += String.fromCharCode(n.charCodeAt(c) ^ r[(r[o] + r[u]) % e]);
-            return x;
-        })(data.url.slice(0, 16), decode(data.url.slice(16)));
+        const data = await Engine.Request.fetchUI(request, script);
 
         await this.wait(500);
 
