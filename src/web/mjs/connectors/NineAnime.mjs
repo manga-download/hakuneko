@@ -5,6 +5,7 @@ import Streamtape from '../videostreams/Streamtape.mjs';
 import MyCloud from '../videostreams/MyCloud.mjs';
 import Vidstream from '../videostreams/Vidstream.mjs';
 import HydraX from '../videostreams/HydraX.mjs';
+import MP4Upload from '../videostreams/MP4Upload.mjs';
 
 export default class NineAnime extends Connector {
 
@@ -99,22 +100,22 @@ export default class NineAnime extends Connector {
                 setInterval(() => {
                     try {
                         if(document.querySelector('div#episodes div.servers')) {
-                            let servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
+                            const servers = [...document.querySelectorAll('div.servers span[id^="server"]')].map(element => {
                                 return {
                                     id: element.dataset.id,
                                     label: element.textContent.trim()
                                 };
                             });
-                            let episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
+                            const episodes = [...document.querySelectorAll('div.body ul.episodes li a')].map(element => {
                                 return {
-                                    servers: JSON.parse(element.dataset.sources),
-                                    label: element.textContent.trim()
+                                    id: element.pathname,
+                                    label: element.text.trim()
                                 };
                             });
-                            let result = servers.reduce((accumulator, server) => {
+                            const result = servers.reduce((accumulator, server) => {
                                 return accumulator.concat(episodes.map(episode => {
                                     return {
-                                        id: episode.servers[server.id],
+                                        id: JSON.stringify({ server: server.id, episode: episode.id }),
                                         title: episode.label + ' [' + server.label + ']'
                                     };
                                 }));
@@ -132,28 +133,40 @@ export default class NineAnime extends Connector {
     }
 
     async _getPages(chapter) {
-
         const referer = this.url + chapter.manga.id;
-        let uri = new URL('/ajax/anime/episode?id=' + chapter.id, this.url);
+        const chapterID = JSON.parse(chapter.id);
+        const script = `
+            new Promise((resolve, reject) => {
+                const timer = setInterval(() => {
+                    try {
+                        if(button = document.querySelector('ul.episodes li a.active')) {
+                            clearInterval(timer);
+                            localStorage.setItem('player_autoplay', 0);
+                            localStorage.setItem('_lastServerId', ${chapterID.server});
+                            new MutationObserver(mutations => {
+                                for(const mutation of mutations) {
+                                    for(const node of mutation.addedNodes) {
+                                        if(/iframe/i.test(node.tagName)) {
+                                            node.parentNode.removeChild(node);
+                                            resolve(node.src);
+                                        }
+                                    }
+                                }
+                            }).observe(document.querySelector('div#player'), {
+                                childList: true
+                            });
+                            button.click();
+                        }
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 250);
+            });
+        `;
+        const uri = new URL(chapterID.episode, this.url);
         const request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        // extracted from 9anime
-        data = (function decrypt(t, n) {
-            for (var i, r = [], u = 0, x = '', e = 256, o = 0; o < e; o += 1)
-                r[o] = o;
-            for (o = 0; o < e; o += 1)
-                u = (u + r[o] + t.charCodeAt(o % t.length)) % e,
-                i = r[o],
-                r[o] = r[u],
-                r[u] = i;
-            for (var c = u = o = 0; c < n.length; c += 1)
-                u = (u + r[o = (o + c) % e]) % e,
-                i = r[o],
-                r[o] = r[u],
-                r[u] = i,
-                x += String.fromCharCode(n.charCodeAt(c) ^ r[(r[o] + r[u]) % e]);
-            return x;
-        })(data.url.slice(0, 16), atob(data.url.slice(16)));
+        const data = await Engine.Request.fetchUI(request, script);
+
         await this.wait(500);
 
         switch(true) {
@@ -272,15 +285,8 @@ export default class NineAnime extends Connector {
     }
 
     async _getEpisodeMp4upload(link/*, resolution*/) {
-        let script = `
-            new Promise(resolve => {
-                resolve(document.querySelector('div#player video').src);
-            });
-        `;
-        let request = new Request(link, this.requestOptions);
-        let stream = await Engine.Request.fetchUI(request, script);
         return {
-            video: stream,
+            video: await new MP4Upload(link).getStream(),
             subtitles: []
         };
     }
@@ -302,10 +308,8 @@ export default class NineAnime extends Connector {
     }
 
     async _getEpisodeStreamtape(link/*, resolution*/) {
-        let streamtape = new Streamtape(link);
-        let stream = await streamtape.getStream();
         return {
-            video: stream,
+            video: await new Streamtape(link).getStream(),
             subtitles: []
         };
     }
