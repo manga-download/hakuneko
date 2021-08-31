@@ -16,8 +16,8 @@ export default class MangaDex extends Connector {
             '4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb' // MangaPlus
         ];
         this.serverNetwork = [
-            'http://s2.mangadex.org/data/',
-            'http://s5.mangadex.org/data/',
+            'https://s2.mangadex.org/data/',
+            'https://s5.mangadex.org/data/',
             'https://uploads.mangadex.org/data/'
         ];
     }
@@ -176,7 +176,7 @@ export default class MangaDex extends Connector {
                 const response = await fetch(request);
                 if(response.ok && response.status === 200) {
                     const data = await response.blob();
-                    if(data.size > 1024) {
+                    if(response.headers.get('content-length') == data.size) {
                         return this._blobToBuffer(data);
                     }
                 }
