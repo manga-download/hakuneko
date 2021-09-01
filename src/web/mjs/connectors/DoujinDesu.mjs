@@ -7,7 +7,7 @@ export default class DoujinDesu extends WordPressMangastream {
         super.id = 'doujindesu';
         super.label = 'DoujinDesu';
         this.tags = ['hentai', 'indonesian'];
-        this.url = 'https://doujindesu.info';
+        this.url = 'https://doujindesu.id';
         this.path = '/komik-list/?list';
 
         this.queryMangas = 'div.listttl ul li a';
