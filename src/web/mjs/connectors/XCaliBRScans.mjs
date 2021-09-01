@@ -9,6 +9,7 @@ export default class XCaliBRScans extends WordPressMangastream {
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://xcalibrscans.com';
         this.path = '/manga/list-mode/';
+        this.requestOptions.headers.set('x-referer', this.url);
 
         this.config = {
             throttle: {
@@ -20,5 +21,10 @@ export default class XCaliBRScans extends WordPressMangastream {
                 value: 1500
             }
         };
+    }
+
+    async _getPages(chapter) {
+        const images = await super._getPages(chapter);
+        return images.map(image => this.createConnectorURI(image));
     }
 }

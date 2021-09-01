@@ -5,8 +5,8 @@ export default class HeroManhua extends WordPressMadara {
     constructor() {
         super();
         super.id = 'heromanhua';
-        super.label = 'Hero Manhua';
+        super.label = 'HeroManhua ✕ Leveler';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://heromanhua.com';
+        this.url = 'https://levelerscans.xyz';
     }
 }
