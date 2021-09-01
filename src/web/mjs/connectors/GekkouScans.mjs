@@ -10,3 +10,5 @@ export default class GekkouScans extends WordPressMadara {
         this.url = 'https://gekkouscans.com.br';
         this.language = 'portuguese';
         this.queryChapters = 'li.wp-manga-chapter a';
+    }
+}
