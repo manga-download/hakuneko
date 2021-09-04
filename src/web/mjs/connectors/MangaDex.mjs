@@ -118,6 +118,10 @@ export default class MangaDex extends Connector {
         const uri = new URL('/chapter', this.api);
         uri.searchParams.set('limit', 100);
         uri.searchParams.set('offset', 100 * page);
+        uri.searchParams.append('contentRating[]', 'safe');
+        uri.searchParams.append('contentRating[]', 'suggestive');
+        uri.searchParams.append('contentRating[]', 'erotica');
+        uri.searchParams.append('contentRating[]', 'pornographic');
         uri.searchParams.set('manga', manga.id);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
