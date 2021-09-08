@@ -139,23 +139,15 @@ export default class NineAnime extends Connector {
             new Promise((resolve, reject) => {
                 const timer = setInterval(() => {
                     try {
-                        if(button = document.querySelector('ul.episodes li a.active')) {
+                        const iframe = document.querySelector('div#player iframe')
+
+                        if (iframe) {
                             clearInterval(timer);
                             localStorage.setItem('player_autoplay', 0);
                             localStorage.setItem('_lastServerId', ${chapterID.server});
-                            new MutationObserver(mutations => {
-                                for(const mutation of mutations) {
-                                    for(const node of mutation.addedNodes) {
-                                        if(/iframe/i.test(node.tagName)) {
-                                            node.parentNode.removeChild(node);
-                                            resolve(node.src);
-                                        }
-                                    }
-                                }
-                            }).observe(document.querySelector('div#player'), {
-                                childList: true
-                            });
-                            button.click();
+                            resolve(iframe.src)
+                        } else {
+                            window.location.reload()
                         }
                     } catch(error) {
                         reject(error);
