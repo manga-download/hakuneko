@@ -27,8 +27,13 @@ export default class SoftKomik extends Connector {
         let mangaList = [];
         for (let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
-            if(mangas.length < 27){
+            if(mangas.length == 0){
+                run = false;
+            }
+            else if (mangaList.length == 0 || mangas[mangas.length - 1].id !== mangaList[mangaList.length - 1].id){
+                mangaList.push(...mangas);
+            }
+            else{
                 run = false;
             }
         }
