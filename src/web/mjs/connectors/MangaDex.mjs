@@ -94,11 +94,11 @@ export default class MangaDex extends Connector {
         uri.searchParams.append('contentRating[]', 'pornographic');
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
-        return !data.results ? [] : data.results.map(result => {
+        return !data.data ? [] : data.data.map(result => {
             const title = document.createElement('div');
-            title.innerHTML = result.data.attributes.title.en || Object.values(result.data.attributes.title).shift();
+            title.innerHTML = result.attributes.title.en || Object.values(result.attributes.title).shift();
             return {
-                id: result.data.id,
+                id: result.id,
                 title: title.textContent.trim()
             };
         });
@@ -125,20 +125,20 @@ export default class MangaDex extends Connector {
         uri.searchParams.set('manga', manga.id);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
-        const groupMap = await this._getScanlationGroups(data.results);
-        return !data.results ? [] : data.results.map(result => {
+        const groupMap = await this._getScanlationGroups(data.data);
+        return !data.data ? [] : data.data.map(result => {
             let title = '';
-            if(result.data.attributes.volume) {
-                title += 'Vol.' + this._padNum(result.data.attributes.volume, 2);
+            if(result.attributes.volume) {
+                title += 'Vol.' + this._padNum(result.attributes.volume, 2);
             }
-            if(result.data.attributes.chapter) {
-                title += ' Ch.' + this._padNum(result.data.attributes.chapter, 4);
+            if(result.attributes.chapter) {
+                title += ' Ch.' + this._padNum(result.attributes.chapter, 4);
             }
-            if(result.data.attributes.title) {
-                title += (title ? ' - ' : '') + result.data.attributes.title;
+            if(result.attributes.title) {
+                title += (title ? ' - ' : '') + result.attributes.title;
             }
-            if(result.data.attributes.translatedLanguage) {
-                title += ' (' + result.data.attributes.translatedLanguage + ')';
+            if(result.attributes.translatedLanguage) {
+                title += ' (' + result.attributes.translatedLanguage + ')';
             }
             const groups = result.relationships.filter(r => r.type === 'scanlation_group');
             if(groups.length > 0) {
@@ -147,9 +147,9 @@ export default class MangaDex extends Connector {
             // is any group for this chapter not in the list of licensed groups?
             if(groups.length === 0 || groups.some(group => !this.licensedChapterGroups.includes(group.id))) {
                 return {
-                    id: result.data.id,
+                    id: result.id,
                     title: title.trim(),
-                    language: result.data.attributes.translatedLanguage
+                    language: result.attributes.translatedLanguage
                 };
             } else {
                 return false;
@@ -203,7 +203,7 @@ export default class MangaDex extends Connector {
             uri.search = new URLSearchParams([ [ 'limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
             const request = new Request(uri, this.requestOptions);
             const data = await this.fetchJSON(request, 3);
-            data.results.forEach(result => groupList[result.data.id] = result.data.attributes.name || 'unknown');
+            data.data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
         }
         return groupList;
     }
