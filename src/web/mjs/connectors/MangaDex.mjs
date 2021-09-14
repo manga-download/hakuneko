@@ -47,8 +47,8 @@ export default class MangaDex extends Connector {
         const regexGUID = /[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}/;
         const id = (uri.pathname.match(regexGUID) || uri.hash.match(regexGUID))[0].toLowerCase();
         const request = new Request(new URL('/manga/' + id, this.api), this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return new Manga(this, id, data.data.attributes.title.en || Object.values(data.data.attributes.title).shift());
+        const {data} = await this.fetchJSON(request);
+        return new Manga(this, id, data.attributes.title.en || Object.values(data.attributes.title).shift());
     }
 
     async _getMangas() {
@@ -93,8 +93,8 @@ export default class MangaDex extends Connector {
         uri.searchParams.append('contentRating[]', 'erotica');
         uri.searchParams.append('contentRating[]', 'pornographic');
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request, 3);
-        return !data.data ? [] : data.data.map(result => {
+        const {data} = await this.fetchJSON(request, 3);
+        return !data ? [] : data.map(result => {
             const title = document.createElement('div');
             title.innerHTML = result.attributes.title.en || Object.values(result.attributes.title).shift();
             return {
@@ -124,9 +124,9 @@ export default class MangaDex extends Connector {
         uri.searchParams.append('contentRating[]', 'pornographic');
         uri.searchParams.set('manga', manga.id);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request, 3);
-        const groupMap = await this._getScanlationGroups(data.data);
-        return !data.data ? [] : data.data.map(result => {
+        const {data} = await this.fetchJSON(request, 3);
+        const groupMap = await this._getScanlationGroups(data);
+        return !data ? [] : data.map(result => {
             let title = '';
             if(result.attributes.volume) {
                 title += 'Vol.' + this._padNum(result.attributes.volume, 2);
@@ -160,11 +160,11 @@ export default class MangaDex extends Connector {
     async _getPages(chapter) {
         const uri = new URL('/chapter/' + chapter.id, this.api);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request, 3);
+        const {data} = await this.fetchJSON(request, 3);
         const server = await this._getServerNode(chapter);
-        return data.data.attributes.data.map(file => this.createConnectorURI({
+        return data.attributes.data.map(file => this.createConnectorURI({
             networkNode: server, // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
-            hash: data.data.attributes.hash, // e.g. '1c41e55e32b21321ff11907469e5c323'
+            hash: data.attributes.hash, // e.g. '1c41e55e32b21321ff11907469e5c323'
             file: file // e.g. 'x1-216a1435.png'
         }));
     }
@@ -202,8 +202,8 @@ export default class MangaDex extends Connector {
             const uri = new URL('/group', this.api);
             uri.search = new URLSearchParams([ [ 'limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
             const request = new Request(uri, this.requestOptions);
-            const data = await this.fetchJSON(request, 3);
-            data.data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
+            const {data} = await this.fetchJSON(request, 3);
+            data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
         }
         return groupList;
     }
