@@ -30,9 +30,11 @@ export default class WebNovel extends Connector {
 
     _getMangaListFromPages( page ) {
         page = page || 1;
-        let uri = new URL( '/go/pcm/comic/listAjax', this.url );
+        let uri = new URL( '/go/pcm/category/categoryAjax', this.url );
         uri.searchParams.set( 'pageIndex', page );
         uri.searchParams.set( '_csrfToken', this.token );
+        uri.searchParams.set( 'categoryId', 0 );
+        uri.searchParams.set( 'categoryType', 2 );
         let request = new Request( uri.href, this.requestOptions );
         return this.fetchJSON( request )
             .then( data => {
