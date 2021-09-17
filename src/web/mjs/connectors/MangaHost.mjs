@@ -9,6 +9,17 @@ export default class MangaHost extends Connector {
         super.label = 'MangaHost';
         this.tags = ['manga', 'portuguese'];
         this.url = 'https://mangahostz.com';
+        
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests.',
+                input: 'numeric',
+                min: 250,
+                max: 2500,
+                value: 500
+            }
+        };
     }
 
     canHandleURI(uri) {
