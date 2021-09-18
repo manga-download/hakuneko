@@ -38,10 +38,10 @@ export default class WebNovel extends Connector {
         let request = new Request( uri.href, this.requestOptions );
         return this.fetchJSON( request )
             .then( data => {
-                let mangaList = data.data.comics.map( manga => {
+                let mangaList = data.data.items.map( manga => {
                     return {
-                        id: manga.comicId,
-                        title: manga.comicName
+                        id: manga.bookId,
+                        title: manga.bookName
                     };
                 } );
                 if( mangaList.length > 0 ) {
