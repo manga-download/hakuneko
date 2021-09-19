@@ -33,7 +33,7 @@ export default class KuManga extends Connector {
             });
         `;
         let mangaList = [];
-        let uri = new URL('/mangalist', this.url);
+        let uri = new URL('/mangalist?&page=1', this.url);
         let request = new Request(uri, this.requestOptions);
         let token = await Engine.Request.fetchUI(request, script);
         for(let page = 1, run = true; run; page++) {
@@ -92,17 +92,25 @@ export default class KuManga extends Connector {
     async _getPages(chapter) {
         let script = `
             new Promise(resolve => {
-                resolve(pUrl.map(page => page.imgURL));
+                resolve({
+                    referer: window.location.href,
+                    images: pUrl.map(page => new URL(page.imgURL, window.location.origin).href)
+                });
             });
         `;
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await Engine.Request.fetchUI(request, script);
-        let promises = data.map(async link => {
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await Engine.Request.fetchUI(request, script);
+        const promises = data.images.map(async link => {
             let redirector = new URL(link, this.url);
             if(redirector.pathname.endsWith('/img.php')) {
-                let controller = new AbortController();
-                let response = await fetch(new Request(redirector, { signal: controller.signal, ...this.requestOptions }));
+                const controller = new AbortController();
+                const redirect = new Request(redirector, {
+                    signal: controller.signal,
+                    ...this.requestOptions
+                });
+                redirect.headers.set('x-referer', data.referer);
+                const response = await fetch(redirect);
                 controller.abort();
                 return response.url;
             } else {
