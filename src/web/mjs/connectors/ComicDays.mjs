@@ -33,4 +33,15 @@ export default class ComicDays extends CoreView {
         // remove mangas with same title but different ID
         return mangaList.filter(manga => manga === mangaList.find(m => m.title === manga.title));
     }
+
+    async _getChapters(manga) {
+        if(/^\/magazine\/\d+$/.test(manga.id)) {
+            return [{
+                id: manga.id,
+                title: manga.title
+            }];
+        } else {
+            return super._getChapters(manga);
+        }
+    }
 }
