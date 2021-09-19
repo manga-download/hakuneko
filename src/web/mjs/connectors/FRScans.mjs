@@ -7,7 +7,7 @@ export default class FRScan extends MangaReaderCMS {
         super.id = 'frscan';
         super.label = 'Frscan';
         this.tags = [ 'manga', 'webtoon', 'french' ];
-        this.url = 'https://www.frscan.me';
+        this.url = 'https://www.frscan.cc';
 
         this.language = 'fr';
     }
