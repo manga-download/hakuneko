@@ -42,4 +42,24 @@ export default class WeLoveManga extends FlatManga {
             };
         });
     }
+
+    async _getPages(chapter) {
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => {
+            const link = Object.values({ ...element.dataset })
+                .map(value => {
+                    try {
+                        return atob(value);
+                    } catch(_) {
+                        return value;
+                    }
+                })
+                .find(value => {
+                    return /^http/.test(value);
+                });
+            return this.createConnectorURI(this.getAbsolutePath(link || element, request.url));
+        });
+    }
 }
