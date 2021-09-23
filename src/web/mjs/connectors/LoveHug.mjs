@@ -17,6 +17,12 @@ export default class WeLoveManga extends FlatManga {
         this.queryChapterTitle = 'div.chapter-name';
     }
 
+    async _initializeConnector() {
+        const uri = new URL('/0/', this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, '');
+    }
+
     async _getMangas() {
         let mangaList = [];
         const uri = new URL(this.path, this.url);
