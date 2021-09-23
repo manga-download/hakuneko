@@ -48,12 +48,13 @@ export default class WeLoveManga extends FlatManga {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
-            const link = Object.values({ ...element.dataset })
-                .map(value => {
+            const link = [ ...element.attributes]
+                .filter(attribute => !['src', 'class', 'alt'].includes(attribute.name))
+                .map(attribute => {
                     try {
-                        return atob(value);
+                        return atob(attribute.value.trim());
                     } catch(_) {
-                        return value;
+                        return attribute.value.trim();
                     }
                 })
                 .find(value => {
