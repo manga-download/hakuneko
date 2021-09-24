@@ -17,6 +17,12 @@ export default class WeLoveManga extends FlatManga {
         this.queryChapterTitle = 'div.chapter-name';
     }
 
+    async _initializeConnector() {
+        const uri = new URL('/0/', this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, '');
+    }
+
     async _getMangas() {
         let mangaList = [];
         const uri = new URL(this.path, this.url);
@@ -40,6 +46,27 @@ export default class WeLoveManga extends FlatManga {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
             };
+        });
+    }
+
+    async _getPages(chapter) {
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => {
+            const link = [ ...element.attributes]
+                .filter(attribute => !['src', 'class', 'alt'].includes(attribute.name))
+                .map(attribute => {
+                    try {
+                        return atob(attribute.value.trim());
+                    } catch(_) {
+                        return attribute.value.trim();
+                    }
+                })
+                .find(value => {
+                    return /^http/.test(value);
+                });
+            return this.createConnectorURI(this.getAbsolutePath(link || element, request.url));
         });
     }
 }

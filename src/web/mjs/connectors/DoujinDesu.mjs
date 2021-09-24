@@ -10,8 +10,9 @@ export default class DoujinDesu extends WordPressMangastream {
         this.url = 'https://doujindesu.id';
         this.path = '/komik-list/?list';
 
+        this.querMangaTitleFromURI = 'div#infoarea div.post-body h1.entry-title';
         this.queryMangas = 'div.listttl ul li a';
-        this.queryChapters = 'div#chapter_list span.eps a';
+        this.queryChapters = 'div#chapter_list div.epsleft span.lchx a';
         this.queryChaptersTitle = undefined;
         this.queryPages = 'div.reader-area img[src]:not([src=""])';
     }
