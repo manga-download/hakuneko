@@ -68,8 +68,11 @@ export default class ReadManga extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id + '?mtr=1', this.url), this.requestOptions);
-        let data = await this.fetchRegex(request, /init\s*\(\s*(\[\s*\[.*?\]\s*\])/g);
-        return JSON.parse(data[0].replace(/'/g, '"')).map(page => page[0] + page[2]);
+        const script = `
+            new Promise(resolve => resolve(rm_h.pics.map(pic => pic.url)));
+        `;
+        const uri = new URL(chapter.id + '?mtr=1', this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }

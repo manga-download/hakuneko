@@ -46,7 +46,7 @@ export default class WordPressMangastream extends Connector {
             const title = this.queryChaptersTitle ? element.querySelector(this.queryChaptersTitle).textContent : element.text;
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.replace(manga.title, '').trim()
+                title: title.replace(manga.title, '').trim() || manga.title
             };
         });
     }
@@ -78,8 +78,6 @@ export default class WordPressMangastream extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.querMangaTitleFromURI);
-        const title = data[0].textContent.trim();
-
-        return new Manga(this, uri, title);
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 }

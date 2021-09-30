@@ -20,9 +20,6 @@ export default class Ganma extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
     _getMangaList( callback ) {
         let request = new Request( this.url + '/api/2.2/top', this.requestOptions );
         this.fetchJSON( request )
@@ -44,44 +41,25 @@ export default class Ganma extends Connector {
             } );
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + '/api/2.0/magazines/' + manga.id, this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                let chapterList = data.root.items
-                    .filter( chapter => chapter.kind === 'free' )
-                    .map( ( chapter, index ) => {
-                        return {
-                            id: chapter.id,
-                            title: ( ( chapter.number || index + 1 ) + ': 【' + chapter.title + '】 ' + chapter.subtitle ).trim(),
-                            language: ''
-                        };
-                    } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        const uri = new URL('/api/1.0/magazines/web/' + manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSON(request);
+        return data.root.items
+            .filter(chapter => chapter.kind === 'free')
+            .map((chapter, index) => {
+                return {
+                    id: chapter.id,
+                    title: ((chapter.number || index + 1) + ': 【' + chapter.title + '】 ' + chapter.subtitle).trim()
+                };
+            });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + '/api/2.0/magazines/' + manga.id, this.requestOptions );
-        this.fetchJSON( request, 'div#viewer source' )
-            .then( data => {
-                data = data.root.items.find( item => item.id === chapter.id ).page;
-                let pageList = data.files.map( image => this.getAbsolutePath( image + '?' + data.token, data.baseUrl ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        const uri = new URL('/api/1.0/magazines/web/' + chapter.manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        data = data.root.items.find(item => item.id === chapter.id ).page;
+        return data.files.map(image => this.getAbsolutePath(image + '?' + data.token, data.baseUrl));
     }
 }

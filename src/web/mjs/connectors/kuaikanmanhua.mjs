@@ -7,7 +7,7 @@ export default class Kuaikanmanhua extends Connector {
         super();
         super.id = 'kuaikanmanhua';
         super.label = 'Kuaikanmanhua';
-        this.tags = ['manga', 'japanese'];
+        this.tags = ['manga', 'chinese'];
         this.url = 'https://www.kuaikanmanhua.com';
         this.list = '/tag/0';
     }

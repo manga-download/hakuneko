@@ -30,16 +30,18 @@ export default class WebNovel extends Connector {
 
     _getMangaListFromPages( page ) {
         page = page || 1;
-        let uri = new URL( '/apiajax/comic/listAjax', this.url );
+        let uri = new URL( '/go/pcm/category/categoryAjax', this.url );
         uri.searchParams.set( 'pageIndex', page );
         uri.searchParams.set( '_csrfToken', this.token );
+        uri.searchParams.set( 'categoryId', 0 );
+        uri.searchParams.set( 'categoryType', 2 );
         let request = new Request( uri.href, this.requestOptions );
         return this.fetchJSON( request )
             .then( data => {
-                let mangaList = data.data.comics.map( manga => {
+                let mangaList = data.data.items.map( manga => {
                     return {
-                        id: manga.comicId,
-                        title: manga.comicName
+                        id: manga.bookId,
+                        title: manga.bookName
                     };
                 } );
                 if( mangaList.length > 0 ) {
@@ -61,7 +63,7 @@ export default class WebNovel extends Connector {
     }
 
     _getChapterList( manga, callback ) {
-        let uri = new URL( '/apiajax/comic/getChapterList', this.url );
+        let uri = new URL( '/go/pcm/comic/getChapterList', this.url );
         uri.searchParams.set( 'comicId', manga.id );
         uri.searchParams.set( '_csrfToken', this.token );
         let request = new Request( uri.href, this.requestOptions );
@@ -83,7 +85,7 @@ export default class WebNovel extends Connector {
     }
 
     _getPageList( manga, chapter, callback ) {
-        let uri = new URL( '/apiajax/comic/getContent', this.url );
+        let uri = new URL( '/go/pcm/comic/getContent', this.url );
         uri.searchParams.set('width', 1920);
         uri.searchParams.set( 'comicId', manga.id );
         uri.searchParams.set( 'chapterId', chapter.id );

@@ -45,13 +45,9 @@ export default class MangaReader extends Connector {
     }
 
     async _getPages(chapter) {
-        let script = `
-            new Promise(resolve => {
-                resolve(document.mj.im.map(item => new URL(item.u, window.location.origin).href));
-            });
-        `;
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'source[data-id].img-loading');
+        return data.map(image => this.getAbsolutePath(image.dataset.src, request.url));
     }
 }

@@ -35,7 +35,7 @@ export default class TuMangaOnlineHentai extends Connector {
                 };
             });
             mangaList.push(...mangas);
-            hasNext = !document.querySelector('ul.pagination li:first-child + li[class*="disabled"]');
+            hasNext = !body.querySelector('ul.pagination li:first-child + li[class*="disabled"]');
         }
         return mangaList;
     }
