@@ -430,7 +430,7 @@ export default class Storage {
      */
     saveChapterPages(chapter, content) {
         try {
-            let leadingZeroes = String(content.length).length
+            let leadingZeroes = String(content.length).length;
             let pageData = content.map((page, index) => {
                 return {
                     name: this._pageFileName(index + 1, page.type, leadingZeroes),
