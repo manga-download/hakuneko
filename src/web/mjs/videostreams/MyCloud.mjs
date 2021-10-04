@@ -25,7 +25,12 @@ export default class MyCloud {
 
     async _extractStream(resolution, sources) {
         sources = sources.filter(source => source.file.endsWith('.mp4'));
-        return !resolution ? sources[0].file : sources.find(s => s.file.includes(resolution)).file;
+        if(resolution) {
+            sources = sources.filter(source => source.file.includes(resolution));
+        }
+        const other = sources.find(s => !s.file.includes('google'));
+        const gdrive = sources.find(s => s.file.includes('google'));
+        return (other || gdrive).file;
     }
 
     async getPlaylist(resolution) {
