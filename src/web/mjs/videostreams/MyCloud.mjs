@@ -24,8 +24,13 @@ export default class MyCloud {
     }
 
     async _extractStream(resolution, sources) {
-        sources = sources.filter(source => source.file.includes('.mp4'));
-        return sources.shift().file;
+        sources = sources.filter(source => source.file.endsWith('.mp4'));
+        if(resolution) {
+            sources = sources.filter(source => source.file.includes(resolution));
+        }
+        const other = sources.find(s => !s.file.includes('google'));
+        const gdrive = sources.find(s => s.file.includes('google'));
+        return (other || gdrive).file;
     }
 
     async getPlaylist(resolution) {
@@ -34,13 +39,13 @@ export default class MyCloud {
     }
 
     async _extractPlaylist(resolution, sources) {
-        sources = sources.filter(source => source.file.includes('.m3u8'));
-        const playlist = sources.shift().file;
+        sources = sources.filter(source => source.file.endsWith('.m3u8'));
+        const playlist = sources[0].file;
         const request = new Request(playlist);
         request.headers.set('x-referer', this._uri.href);
         const streams = await this._fetchRegex(request, /^(.*?\d+\.m3u8)$/gm);
-        const stream = (streams.find(s => s.includes(resolution)) || streams[0]).trim();
-        return playlist.replace(/[^/]+$/, stream);
+        const stream = !resolution ? streams[0] : streams.find(s => s.includes(resolution));
+        return playlist.replace(/[^/]+$/, stream.trim());
     }
 
     async getStreamAndPlaylist(resolution) {
@@ -49,12 +54,25 @@ export default class MyCloud {
         try {
             result['stream'] = await this._extractStream(resolution, sources);
         } catch(error) {
-            //
+            // Failed to find a matching MP4 stream for the given resolution
         }
         try {
             result['playlist'] = await this._extractPlaylist(resolution, sources);
         } catch(error) {
-            //
+            // Failed to find a matching HLS playlist for the given resolution
+        }
+        if(result['stream'] || result['playlist']) {
+            return result;
+        }
+        try {
+            result['stream'] = await this._extractStream(Number.NaN, sources);
+        } catch(error) {
+            // Failed to find any MP4 stream
+        }
+        try {
+            result['playlist'] = await this._extractPlaylist(Number.NaN, sources);
+        } catch(error) {
+            // Failed to find any HLS playlist
         }
         return result;
     }
