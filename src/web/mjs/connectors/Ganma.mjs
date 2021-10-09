@@ -46,7 +46,6 @@ export default class Ganma extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.root.items
-            .filter(chapter => chapter.kind === 'free')
             .map((chapter, index) => {
                 return {
                     id: chapter.id,
