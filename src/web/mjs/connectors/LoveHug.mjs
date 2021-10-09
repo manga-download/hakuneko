@@ -1,5 +1,6 @@
 import FlatManga from './templates/FlatManga.mjs';
 
+// Similar to WeLoMa
 export default class WeLoveManga extends FlatManga {
 
     constructor() {
@@ -11,7 +12,7 @@ export default class WeLoveManga extends FlatManga {
         this.path = '/manga-list.html';
         this.requestOptions.headers.set('x-referer', this.url);
 
-        this.queryMangaTitle = 'li:last-of-type a[itemprop="item"]';
+        this.queryMangaTitle = 'ul.manga-info h3';
         this.queryMangas = 'div.series-title a';
         this.queryChapters = 'ul.list-chapters > a';
         this.queryChapterTitle = 'div.chapter-name';
