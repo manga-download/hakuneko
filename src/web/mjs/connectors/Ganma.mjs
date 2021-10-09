@@ -13,7 +13,7 @@ export default class Ganma extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(this.url + '/api/2.0/magazines/' + uri.pathname.split('/').pop(), this.requestOptions);
+        let request = new Request(this.url + '/api/1.0/magazines/web/' + uri.pathname.split('/').pop(), this.requestOptions);
         let data = await this.fetchJSON(request);
         let id = data.root.id; // panel.alias, panel.link
         let title = data.root.title.trim();
