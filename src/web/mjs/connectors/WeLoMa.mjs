@@ -33,6 +33,7 @@ export default class WeLoMa extends FlatManga {
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
+            await this.wait(5000);
         }
         return mangaList;
     }
