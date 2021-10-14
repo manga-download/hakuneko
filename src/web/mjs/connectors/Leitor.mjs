@@ -67,7 +67,6 @@ export default class Leitor extends Connector {
         request.headers.set('X-Requested-With', 'XMLHttpRequest');
         let data = await this.fetchJSON(request);
         return !data.chapters ? [] : data.chapters.reduce((accumulator, chapter) => {
-            //const id = chapter.id_chapter;
             const title = chapter.chapter_name ? `${chapter.number} - ${chapter.chapter_name}` : chapter.number;
             const releases = Object.values(chapter.releases).map(release => {
                 const scanlators = release.scanlators.map(scanlator => scanlator.name).join(', ');
@@ -96,6 +95,10 @@ export default class Leitor extends Connector {
         const request = new Request(uri, this.requestOptions);
         request.headers.set('X-Requested-With', 'XMLHttpRequest');
         const data = await this.fetchJSON(request);
-        return data.images;
+        var links = []
+        for (let index = 0; index < data.images.length; index++) {
+            links.push(data.images[index].legacy)
+        }
+        return links;
     }
 }
