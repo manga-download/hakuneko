@@ -96,6 +96,6 @@ export default class Leitor extends Connector {
         const request = new Request(uri, this.requestOptions);
         request.headers.set('X-Requested-With', 'XMLHttpRequest');
         const data = await this.fetchJSON(request);
-        return data.images;
+        return data.images.map(image => image.legacy);
     }
 }
