@@ -21,7 +21,7 @@ export default class WeLoMa extends FlatManga {
     async _initializeConnector() {
         const uri = new URL('/0/', this.url);
         const request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, '');
+        return Engine.Request.fetchUI(request, '', 30000, true);
     }
 
     async _getMangas() {
