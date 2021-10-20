@@ -51,6 +51,23 @@ export default class WeLoMa extends FlatManga {
         });
     }
 
+    async _getChapters(manga) {
+        const script = `
+            new Promise(resolve => {
+                const chapters = [...document.querySelectorAll('ul.list-chapters > a')].map(element => {
+                    return {
+                        id: element.pathname,
+                        title: element.title
+                    };
+                });
+                resolve(chapters);
+            });
+        `;
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
+    }
+
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
