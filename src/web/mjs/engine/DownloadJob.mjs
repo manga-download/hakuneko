@@ -215,31 +215,36 @@ export default class DownloadJob extends EventTarget {
                     } );
             } )
         // download all packets
-            .then( packets => {
-                let promises = packets.map( ( packet, index ) => {
-                    return this._wait( index * this.throttle )
-                        .then( () => {
-                            let request = new Request(packet.source, this.requestOptions);
-                            if(episode.referer) {
-                                request.headers.set('x-referer', episode.referer);
-                            }
-                            return fetch(request);
-                        } )
-                        .then( response => {
-                            if( response.status !== 200 ) {
-                                throw new Error( 'Packet "' + packet.link + '" returned status: ' + response.status + ' - ' + response.statusText );
-                            }
-                            return response.arrayBuffer();
-                        } )
-                        .then( data => {
-                            return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: packet.target, data: new Uint8Array( data ) } );
-                        } )
-                        .then( () => {
-                            this.setProgress( this.progress + 100/packets.length );
-                        } );
-                } );
-                return Promise.all( promises );
-            } )
+            .then(packets => {
+                const packetDownload = async (packet, delay) => {
+                    await this._wait(delay);
+                    const request = new Request(packet.source, this.requestOptions);
+                    if(episode.referer) {
+                        request.headers.set('x-referer', episode.referer);
+                    }
+                    const response = await fetch(request);
+                    if(response.status !== 200) {
+                        throw new Error(`Packet "${packet.link}" returned status: '${response.status}' - '${response.statusText}`);
+                    }
+                    const data = await response.arrayBuffer();
+                    await Engine.Storage.saveChapterFileM3U8(this.chapter, { name: packet.target, data: new Uint8Array(data) });
+                    this.setProgress(this.progress + 100/packets.length);
+                };
+
+                if(Engine.Settings.useSequentialImageDownloads.value ) {
+                    return (async () => {
+                        for(let packet of packets) {
+                            await packetDownload(packet, this.throttle);
+                        }
+                    })();
+                } else {
+                    const promises = packets.map(async (packet, index) => {
+                        const throttle = this.throttle || 250;
+                        return packetDownload(packet, index * throttle);
+                    });
+                    return Promise.all(promises);
+                }
+            })
         // download all subtitles
             .then( () => {
                 let promises = episode.subtitles.map( ( subtitle, index ) => {
