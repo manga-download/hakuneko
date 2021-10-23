@@ -153,6 +153,13 @@ export default class Settings extends EventTarget {
             value: 90
         };
 
+        this.useSequentialImageDownloads = {
+            label: 'Disable Concurrent Downloads',
+            description: 'Images will be downloaded one after another instead of concurrently. Enable this in case of slow internet connection, or regualry encountering failed downloads due to network errors.',
+            input: types.checkbox,
+            value: false
+        };
+
         this.proxyRules = {
             label: 'Proxy Rules',
             description: [
