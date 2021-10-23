@@ -105,7 +105,7 @@ export default class DownloadJob extends EventTarget {
 
     async _downloadPages(pages, directory, callback) {
         try {
-            const content = Engine.Settings.useSequentialImageDownloads.value ? await this._downloadPagesSequential(pages) : await this._downloadPagesConcurrent(pages);
+            const content = Engine.Settings.useSequentialMediaDownloads.value ? await this._downloadPagesSequential(pages) : await this._downloadPagesConcurrent(pages);
             await Engine.Storage.saveChapterPages(this.chapter, content);
             this.setProgress(100);
             this.setStatus(statusDefinitions.completed);
@@ -231,7 +231,7 @@ export default class DownloadJob extends EventTarget {
                     this.setProgress(this.progress + 100/packets.length);
                 };
 
-                if(Engine.Settings.useSequentialImageDownloads.value ) {
+                if(Engine.Settings.useSequentialMediaDownloads.value ) {
                     return (async () => {
                         for(let packet of packets) {
                             await packetDownload(packet, this.throttle);
