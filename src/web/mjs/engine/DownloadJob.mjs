@@ -27,7 +27,7 @@ export default class DownloadJob extends EventTarget {
         this.requestOptions = chapter.manga.connector.requestOptions || {};
         // TODO: initialize requestOptions.headers = new Headers() if not set
         this.chunkSize = 8388608; // 8 MB
-        this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50;
+        this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 0;
         this.status = undefined;
         this.progress = 0;
         this.errors = [];
@@ -99,54 +99,57 @@ export default class DownloadJob extends EventTarget {
         } );
     }
 
-    /**
-     * Return a promise that will be resolved after the given amount of time in milliseconds
-     */
-    _wait( time ) {
-        return new Promise( resolve => {
-            setTimeout( resolve, time );
-        } );
+    async _wait(delay) {
+        return new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    /**
-     *
-     */
-    _downloadPages( pages, directory, callback ) {
+    async _downloadPages(pages, directory, callback) {
+        try {
+            const content = Engine.Settings.useSequentialImageDownloads.value ? await this._downloadPagesSequential(pages) : await this._downloadPagesConcurrent(pages);
+            await Engine.Storage.saveChapterPages(this.chapter, content);
+            this.setProgress(100);
+            this.setStatus(statusDefinitions.completed);
+            callback();
+        } catch(error) {
+            this.errors.push(error);
+            console.error(error, pages);
+            this.setProgress(100);
+            this.setStatus(statusDefinitions.failed);
+            callback();
+        }
+    }
+
+    async _downloadPagesSequential(pages) {
+        const result = [];
+        for(let page of pages) {
+            await this._wait(this.throttle);
+            const response = await fetch(page, this.requestOptions);
+            if(response.status !== 200) {
+                throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
+            }
+            result.push(await response.blob());
+            this.setProgress(this.progress + (pages.length ? 100/pages.length : 0));
+        }
+        return result;
+    }
+
+    async _downloadPagesConcurrent(pages) {
+        const throttle = this.throttle || 50;
         // get data for all pages of chapter
-        let promises = pages.map( ( page, index ) => {
-            return this._wait( index * this.throttle )
-                .then( () => fetch( page, this.requestOptions ) )
-                .then( response => {
-                    if( response.status !== 200 ) {
-                        throw new Error( 'Page "' + page + '" returned status: ' + response.status + ' - ' + response.statusText );
-                    }
-                    return response.blob();
-                } )
-                .then( data => {
-                    this.setProgress( this.progress + ( pages.length ? 100/pages.length : 0 ) );
-                    return Promise.resolve( data );
-                } );
-        } );
-        Promise.all( promises )
-            .then( values => {
-                return Engine.Storage.saveChapterPages( this.chapter, values );
-            } )
-            .then( () => {
-                this.setProgress( 100 );
-                this.setStatus( statusDefinitions.completed );
-                callback();
-            } )
-            .catch( error => {
-            /*
-             * TODO: abort/block all other page downloads that are still running for this job ...
-             * https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
-             */
-                this.errors.push( error );
-                console.error( error, pages );
-                this.setProgress( 100 );
-                this.setStatus( statusDefinitions.failed );
-                callback();
-            } );
+        let promises = pages.map(async (page, index) => {
+            await this._wait(index * throttle);
+            const response = await fetch(page, this.requestOptions);
+            if(response.status !== 200) {
+                throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
+            }
+            this.setProgress(this.progress + (pages.length ? 100/pages.length : 0));
+            return response.blob();
+        });
+        /*
+         * TODO: abort/block all other page downloads that are still running for this job ...
+         * https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
+         */
+        return Promise.all(promises);
     }
 
     /**
