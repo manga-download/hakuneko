@@ -27,7 +27,7 @@ export default class DownloadJob extends EventTarget {
         this.requestOptions = chapter.manga.connector.requestOptions || {};
         // TODO: initialize requestOptions.headers = new Headers() if not set
         this.chunkSize = 8388608; // 8 MB
-        this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 50;
+        this.throttle = chapter.manga.connector.config && chapter.manga.connector.config['throttle'] ? chapter.manga.connector.config['throttle'].value : 0;
         this.status = undefined;
         this.progress = 0;
         this.errors = [];
@@ -99,54 +99,57 @@ export default class DownloadJob extends EventTarget {
         } );
     }
 
-    /**
-     * Return a promise that will be resolved after the given amount of time in milliseconds
-     */
-    _wait( time ) {
-        return new Promise( resolve => {
-            setTimeout( resolve, time );
-        } );
+    async _wait(delay) {
+        return new Promise(resolve => setTimeout(resolve, delay));
     }
 
-    /**
-     *
-     */
-    _downloadPages( pages, directory, callback ) {
+    async _downloadPages(pages, directory, callback) {
+        try {
+            const content = Engine.Settings.useSequentialMediaDownloads.value ? await this._downloadPagesSequential(pages) : await this._downloadPagesConcurrent(pages);
+            await Engine.Storage.saveChapterPages(this.chapter, content);
+            this.setProgress(100);
+            this.setStatus(statusDefinitions.completed);
+            callback();
+        } catch(error) {
+            this.errors.push(error);
+            console.error(error, pages);
+            this.setProgress(100);
+            this.setStatus(statusDefinitions.failed);
+            callback();
+        }
+    }
+
+    async _downloadPagesSequential(pages) {
+        const result = [];
+        for(let page of pages) {
+            await this._wait(this.throttle);
+            const response = await fetch(page, this.requestOptions);
+            if(response.status !== 200) {
+                throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
+            }
+            result.push(await response.blob());
+            this.setProgress(this.progress + (pages.length ? 100/pages.length : 0));
+        }
+        return result;
+    }
+
+    async _downloadPagesConcurrent(pages) {
+        const throttle = this.throttle || 50;
         // get data for all pages of chapter
-        let promises = pages.map( ( page, index ) => {
-            return this._wait( index * this.throttle )
-                .then( () => fetch( page, this.requestOptions ) )
-                .then( response => {
-                    if( response.status !== 200 ) {
-                        throw new Error( 'Page "' + page + '" returned status: ' + response.status + ' - ' + response.statusText );
-                    }
-                    return response.blob();
-                } )
-                .then( data => {
-                    this.setProgress( this.progress + ( pages.length ? 100/pages.length : 0 ) );
-                    return Promise.resolve( data );
-                } );
-        } );
-        Promise.all( promises )
-            .then( values => {
-                return Engine.Storage.saveChapterPages( this.chapter, values );
-            } )
-            .then( () => {
-                this.setProgress( 100 );
-                this.setStatus( statusDefinitions.completed );
-                callback();
-            } )
-            .catch( error => {
-            /*
-             * TODO: abort/block all other page downloads that are still running for this job ...
-             * https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
-             */
-                this.errors.push( error );
-                console.error( error, pages );
-                this.setProgress( 100 );
-                this.setStatus( statusDefinitions.failed );
-                callback();
-            } );
+        let promises = pages.map(async (page, index) => {
+            await this._wait(index * throttle);
+            const response = await fetch(page, this.requestOptions);
+            if(response.status !== 200) {
+                throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
+            }
+            this.setProgress(this.progress + (pages.length ? 100/pages.length : 0));
+            return response.blob();
+        });
+        /*
+         * TODO: abort/block all other page downloads that are still running for this job ...
+         * https://stackoverflow.com/questions/31424561/wait-until-all-es6-promises-complete-even-rejected-promises
+         */
+        return Promise.all(promises);
     }
 
     /**
@@ -212,31 +215,36 @@ export default class DownloadJob extends EventTarget {
                     } );
             } )
         // download all packets
-            .then( packets => {
-                let promises = packets.map( ( packet, index ) => {
-                    return this._wait( index * this.throttle )
-                        .then( () => {
-                            let request = new Request(packet.source, this.requestOptions);
-                            if(episode.referer) {
-                                request.headers.set('x-referer', episode.referer);
-                            }
-                            return fetch(request);
-                        } )
-                        .then( response => {
-                            if( response.status !== 200 ) {
-                                throw new Error( 'Packet "' + packet.link + '" returned status: ' + response.status + ' - ' + response.statusText );
-                            }
-                            return response.arrayBuffer();
-                        } )
-                        .then( data => {
-                            return Engine.Storage.saveChapterFileM3U8( this.chapter, { name: packet.target, data: new Uint8Array( data ) } );
-                        } )
-                        .then( () => {
-                            this.setProgress( this.progress + 100/packets.length );
-                        } );
-                } );
-                return Promise.all( promises );
-            } )
+            .then(packets => {
+                const packetDownload = async (packet, delay) => {
+                    await this._wait(delay);
+                    const request = new Request(packet.source, this.requestOptions);
+                    if(episode.referer) {
+                        request.headers.set('x-referer', episode.referer);
+                    }
+                    const response = await fetch(request);
+                    if(response.status !== 200) {
+                        throw new Error(`Packet "${packet.link}" returned status: '${response.status}' - '${response.statusText}`);
+                    }
+                    const data = await response.arrayBuffer();
+                    await Engine.Storage.saveChapterFileM3U8(this.chapter, { name: packet.target, data: new Uint8Array(data) });
+                    this.setProgress(this.progress + 100/packets.length);
+                };
+
+                if(Engine.Settings.useSequentialMediaDownloads.value ) {
+                    return (async () => {
+                        for(let packet of packets) {
+                            await packetDownload(packet, this.throttle);
+                        }
+                    })();
+                } else {
+                    const promises = packets.map(async (packet, index) => {
+                        const throttle = this.throttle || 250;
+                        return packetDownload(packet, index * throttle);
+                    });
+                    return Promise.all(promises);
+                }
+            })
         // download all subtitles
             .then( () => {
                 let promises = episode.subtitles.map( ( subtitle, index ) => {
