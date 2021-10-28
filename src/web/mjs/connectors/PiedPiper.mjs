@@ -4,9 +4,9 @@ export default class PiedPiper extends WordPressMadara {
 
     constructor() {
         super();
-        super.id = 'piedpiperfb';
+        super.id = 'piedpiperfansub';
         super.label = 'Pied Piper';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://piedpiperfb.com';
+        this.url = 'https://piedpiperfansub.com';
     }
 }
