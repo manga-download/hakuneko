@@ -35,7 +35,7 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getMangasAvailibleByVolumes() {
-        const request = new Request(new URL('/library', this.url), this.requestOptions);
+        const request = new Request(new URL('/account/library', this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
 
         if ( data.innerText.includes('Log in to view your library') ) { // User isn't logged in, so there's no availible volumes
