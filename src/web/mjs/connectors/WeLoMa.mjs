@@ -13,15 +13,17 @@ export default class WeLoMa extends FlatManga {
         this.requestOptions.headers.set('x-referer', this.url);
 
         this.queryMangaTitle = 'ul.manga-info h3';
-        this.queryMangas = 'div.series-title a';
+        this.queryMangas = 'div.card-body div.series-title a';
         this.queryChapters = 'ul.list-chapters > a';
         this.queryChapterTitle = 'div.chapter-name';
     }
 
     async _initializeConnector() {
-        const uri = new URL('/0/', this.url);
-        const request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, '', 30000, true);
+        for(let path of [this.path, '/0/']) {
+            const uri = new URL(path, this.url);
+            const request = new Request(uri, this.requestOptions);
+            return Engine.Request.fetchUI(request, '', 30000, true);
+        }
     }
 
     async _getMangas() {
