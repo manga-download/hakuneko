@@ -43,7 +43,6 @@ export default class ComiKey extends Connector {
             let title = '';
             if (name.length > 0) {
                 title = name.shift().name;
-                console.log(title);
             }
             title = title ? ' - ' + title : '';
             return {
