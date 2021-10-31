@@ -137,7 +137,8 @@ export default class Request {
 
                 // DDoS Guard Checks
                 if(document.querySelector('div#link-ddg a[href*="ddos-guard"]')) { // Sample => https://manga-tr.com
-                    return handleAutomaticRedirect();
+                    await new Promise(resolve => setTimeout(resolve, 2500));
+                    return document.querySelector('div#h-captcha') ? handleUserInteractionRequired() : handleAutomaticRedirect();
                 }
 
                 // 9anime WAF re-captcha
