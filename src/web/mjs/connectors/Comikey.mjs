@@ -62,6 +62,6 @@ export default class ComiKey extends Connector {
         let data = await this.fetchJSON(chapterRequest);
         const request = new Request(data.href, this.requestOptions);
         const pageData = await this.fetchJSON(request);
-        return data.map(image => image.readingOrder.href);
+        return pageData.readingOrder.map(image => image.href);
     }
 }
