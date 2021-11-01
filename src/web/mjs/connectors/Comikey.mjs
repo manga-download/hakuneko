@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ComiKey extends Connector {
 
@@ -9,6 +10,12 @@ export default class ComiKey extends Connector {
         this.tags = ['manga', 'webtoon', 'english'];
         this.url = 'https://comikey.com';
         this.chapterUrl = 'https://relay-us.epub.rocks/consumer/COMIKEY/series/';
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request);
+        return new Manga(this, uri.pathname, data.querySelector('span.title').innerText);
     }
 
     async _getMangas() {
