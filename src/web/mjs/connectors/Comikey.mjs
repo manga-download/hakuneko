@@ -16,51 +16,56 @@ export default class ComiKey extends Connector {
         for (let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
-            mangas.length == 25 ? run = true : run = false;
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL('/sapi/comics', this.url);
+        let uri = new URL('/comics/', this.url);
+        uri.searchParams.set('order', 'name');
         uri.searchParams.set('page', page);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return data.results.map(manga => {
+        const data = await this.fetchDOM(request);
+
+        let mangaList = [...data.querySelectorAll('.series-listing.full-row[data-view="list"] > ul > li > div.series-data > span.title > a')];
+        return mangaList.map(manga => {
             return {
-                id: manga.id + ',' + manga.e4pid,
-                title: manga.name
+                id: this.getRootRelativeOrAbsoluteLink(manga, this.url),
+                title: manga.innerText
             };
         });
     }
 
     async _getChapters(manga) {
-        const uri = new URL(manga.id.split(',')[1] + '/content?clientid=dylMNK5a32of', this.chapterUrl);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return data.data.episodes.map(chapter => {
-            let name = chapter.name;
-            let title = '';
-            if (name.length > 0) {
-                title = name.shift().name;
-            }
-            title = title ? ' - ' + title : '';
+        let webUri = new URL(manga.id, this.url);
+        const webRequest = new Request(webUri, this.requestOptions);
+        const webData = await this.fetchDOM(webRequest);
+        const e4pid = JSON.parse(webData.querySelector('script#comic').innerText).e4pid;
+        let apiUri = new URL(e4pid + '/content?clientid=dylMNK5a32of', this.chapterUrl);
+        const apiRequest = new Request(apiUri, this.requestOptions);
+        const apiData = await this.fetchJSON(apiRequest);
+        let idTemplate = manga.id.split('/');
+        let idTemp = idTemplate.slice(0, idTemplate.length - 2).join('/') + '/';
+        let idTempFinal = idTemp.replace('comics', 'read');
+        return apiData.data.episodes.map(chapter => {
+            let chapterName = '';
+            chapter.name.length > 0 ? chapterName = chapter.name[0].name : '';
+            chapterName ? chapterName = " - " + chapterName : '';
             return {
-                id: chapter.id,
-                title: chapter.number + title,
+                id: idTempFinal + chapter.id.split('-')[1] + '/chapter-' + chapter.number.toString().replace('.', '-'),
+                title: 'Chapter ' + chapter.number.toString() + chapterName,
                 language: chapter.language
             };
         });
     }
 
     async _getPages(chapter) {
-        let uri = new URL('sapi/comics/' + chapter.manga.id.split(',')[0] + '/read', this.url);
-        uri.searchParams.set('format', 'json');
-        uri.searchParams.set('content', chapter.id);
-        let chapterRequest = new Request(uri.href, this.requestOptions);
-        let data = await this.fetchJSON(chapterRequest);
-        const request = new Request(data.href, this.requestOptions);
-        const pageData = await this.fetchJSON(request);
+        let uri = new URL(chapter.id, this.url);
+        let chapterRequest = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(chapterRequest);
+        const manifestUrl = JSON.parse(data.querySelector('script#reader-init').innerText).manifest;
+        const manifestRequest = new Request(manifestUrl, this.requestOptions);
+        const pageData = await this.fetchJSON(manifestRequest);
         return pageData.readingOrder.map(image => image.href);
     }
 }
