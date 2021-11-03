@@ -35,7 +35,7 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getMangasAvailibleByVolumes() {
-        const request = new Request(new URL('/library', this.url), this.requestOptions);
+        const request = new Request(new URL('/account/library', this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
 
         if ( data.innerText.includes('Log in to view your library') ) { // User isn't logged in, so there's no availible volumes
@@ -127,20 +127,40 @@ export default class VizShonenJump extends Connector {
             throw new Error('Lost your login cookie between fetching the manga list and now (fetching the volume list), please log back in.', this.label, 'info');
         }
 
-        return [...data.querySelectorAll('#o_products tr td:last-of-type a')]
+        let volumeNames = [...data.querySelectorAll('#o_products tr td:nth-child(3)')]
+            .map(volume => {
+                return volume.innerText;
+            });
+
+        let firstVolumeName = volumeNames[0].substring(0, volumeNames[0].indexOf("Vol."));
+        let allNamesMatch = volumeNames.every(volume => {
+            return volume.startsWith(firstVolumeName);
+        });
+
+        let volumes = [...data.querySelectorAll('#o_products tr td:last-of-type a')]
             .map(volume => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(volume, this.url).substring(1),
                     title: 'Vol. ' + volume.href.match(/-volume-([-_0-9]+)/i)[1]
                 };
             });
+
+        // We're dealing with a manga that contains multiple subseries, so we must give each volume the full name provided or else
+        // the user won't be able to differentiate between series, and would have conflicting volume numbers.
+        if (!allNamesMatch) {
+            for (let i = 0; i < volumes.length; i++) {
+                volumes[i].title = volumeNames[i];
+            }
+        }
+
+        return volumes;
     }
 
     async _getChapters(manga) {
         if (manga.id.startsWith("/shonenjump/chapters")) {
             return await this._getMangaChapters(manga);
         }
-        if (manga.id.startsWith("/library")) {
+        if (manga.id.startsWith("/account/library")) {
             return await this._getMangaVolumes(manga);
         }
 
