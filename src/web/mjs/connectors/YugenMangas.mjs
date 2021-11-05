@@ -1,6 +1,6 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class YugenMangas extends WordPressMangastream {
+export default class YugenMangas extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,6 +8,5 @@ export default class YugenMangas extends WordPressMangastream {
         super.label = 'YugenMangas';
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://yugenmangas.com';
-        this.path = '/manga/list-mode/';
     }
 }

@@ -10,8 +10,17 @@ export default class MangaTR extends FlatManga {
         this.url = 'https://manga-tr.com';
 
         this.queryMangaTitle = 'meta[property="og:title"]';
+        this.queryMangas = 'div.container a[data-toggle="mangapop"]';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-cookie', 'read_type=1');
+    }
+
+    async _initializeConnector() {
+        for(let path of [this.path, '/manga-list.html']) {
+            const uri = new URL(path, this.url);
+            const request = new Request(uri, this.requestOptions);
+            return Engine.Request.fetchUI(request, '', 30000, true);
+        }
     }
 
     async _getMangaFromURI(uri) {
