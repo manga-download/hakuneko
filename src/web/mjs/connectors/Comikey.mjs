@@ -67,12 +67,46 @@ export default class ComiKey extends Connector {
     }
 
     async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        let chapterRequest = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(chapterRequest);
-        const manifestUrl = JSON.parse(data.querySelector('script#reader-init').innerText).manifest;
-        const manifestRequest = new Request(manifestUrl, this.requestOptions);
-        const pageData = await this.fetchJSON(manifestRequest);
-        return pageData.readingOrder.map(image => image.href);
+        const script = `
+            new Promise(async (resolve, reject) => {
+                function getImage(page, base) {
+                    const uri = new URL(base);
+                    const image = page.alternate.sort((a, b) => a.height - b.height).pop().href;
+                    uri.pathname = [...uri.pathname.split('/').slice(0, -1), image].join('/');
+                    return uri.href;
+                }
+                try {
+                    let init = document.querySelector('script#reader-init');
+                    if(!init) {
+                        throw new Error('There was no content found for "${chapter.title}", make sure it is accessible (login, purchase, ...)!');
+                    }
+                    init = JSON.parse(init.text);
+                    const response = await fetch(init.manifest);
+                    if(response.headers.get('content-type').startsWith('application/json')) {
+                        // CASE 1: Manifest is not DRM protected
+                        const manifest = await response.json();
+                        const images = manifest.readingOrder.map(page => getImage(page, response.url));
+                        resolve(images);
+                    } else {
+                        // CASE 2: Manifest is DRM protected
+                        document.addEventListener('e4p_web_readyDRM', async event => {
+                            try {
+                                const manifest = JSON.parse(await event.detail);
+                                const images = manifest.readingOrder.map(page => getImage(page, response.url));
+                                resolve(images);
+                            } catch(error) {
+                                reject(error);
+                            }
+                        });
+                        document.dispatchEvent(new CustomEvent('e4p_web_initDRM', { detail: { data: await response.arrayBuffer(), seed: init.seed } }));
+                    }
+                } catch(error) {
+                    reject(error);
+                }
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script, 10000);
     }
 }
