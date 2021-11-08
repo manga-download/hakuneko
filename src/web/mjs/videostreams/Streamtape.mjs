@@ -6,16 +6,11 @@ export default class Streamtape {
 
     async getStream() {
         const script = `
-            new Promise(async (resolve, reject) => {
-                try {
-                    const uri = new URL(document.querySelector('div[id$=link]').textContent.trim(), window.location.origin);
-                    const response = await fetch(uri, {
-                        method: 'HEAD' // headers: { 'Range': 'bytes=0-0' }
-                    });
-                    resolve(response.url);
-                } catch (error) {
-                    reject(error);
+            new Promise(resolve => {
+                for(let count = 0; count < 3; count++) {
+                    document.querySelector('.plyr-overlay').click();
                 }
+                resolve(new URL(document.getElementById('mainvideo').src, window.location.origin).href);
             });
         `;
         const request = new Request(this._uri);
