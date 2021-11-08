@@ -44,7 +44,7 @@ export default class MangaRaw extends Connector {
     }
 
     async _getChapters(manga) {
-        const uri = new URL(manga.id, this.url);
+        const uri = new URL(manga.id + '/all-chapters/', this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'ul.chapter-list li a');
         return data.map(element => {
