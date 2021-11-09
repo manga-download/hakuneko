@@ -24,7 +24,9 @@ export default class MyCloud {
     }
 
     async _extractStream(resolution, sources) {
-        sources = sources.filter(source => source.file.endsWith('.mp4'));
+        // NOTE: There seems to be a dummy? M3U8 playlist under the subdomain 'https://pro[\d+].vidstream.pro/.../list.m3u8#.mp4' ending with '.mp4'
+        // => ignore for now
+        sources = sources.filter(source => /[^#]\.mp4$/.test(source.file));
         if(resolution) {
             sources = sources.filter(source => source.file.includes(resolution));
         }
@@ -39,8 +41,10 @@ export default class MyCloud {
     }
 
     async _extractPlaylist(resolution, sources) {
-        sources = sources.filter(source => source.file.endsWith('.m3u8'));
-        const playlist = sources[0].file;
+        // NOTE: There seems to be a dummy? M3U8 playlist under the subdomain 'https://pro[\d+].vidstream.pro/.../list.m3u8#.mp4' ending with '.mp4'
+        // => ignore for now
+        sources = sources.filter(source => /[^#]\.m3u8$/.test(source.file));
+        const playlist = sources.pop().file;
         const request = new Request(playlist);
         request.headers.set('x-referer', this._uri.href);
         const streams = await this._fetchRegex(request, /^(.*?\d+\.m3u8)$/gm);
