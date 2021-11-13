@@ -11,5 +11,6 @@ export default class LynxScans extends Genkan {
         this.links = {
             login: 'https://lynxscans.com/login'
         };
+        this.path = '/web/comics';
     }
 }

@@ -15,7 +15,12 @@ export default class AsuraScans extends WordPressMangastream {
     }
 
     async _getPages(chapter) {
+        const excludes = [
+            /panda_gif_large/i,
+            /2021\/04\/page100-10\.jpg/i,
+            /2021\/03\/20-ending-page-\.jpg/i
+        ];
         const images = await super._getPages(chapter);
-        return images.filter(link => !/panda_gif_large/i.test(link));
+        return images.filter(link => !excludes.some(rgx => rgx.test(link)));
     }
 }

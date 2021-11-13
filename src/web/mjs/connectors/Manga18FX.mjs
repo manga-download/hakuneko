@@ -54,7 +54,10 @@ export default class Manga18FX extends WordPressMadara {
 
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.read-manga div.read-content > source');
-        return data.map(image => this.getAbsolutePath(image, request.url));
+        const data = await this.fetchDOM(request, 'div.read-manga div.read-content > source, div.read-manga div.read-content div.page-break source');
+        return data.map(image => this.createConnectorURI({
+            url: this.getAbsolutePath(image, request.url),
+            referer: request.url
+        }));
     }
 }

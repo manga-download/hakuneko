@@ -1,14 +1,14 @@
 import FlatManga from './templates/FlatManga.mjs';
 
-// Similar to WeLoMa
-export default class WeLoveManga extends FlatManga {
+// Similar to LoveHug
+export default class WeLoMa extends FlatManga {
 
     constructor() {
         super();
-        super.id = 'lovehug';
+        super.id = 'weloma';
         super.label = 'WeLoveManga';
         this.tags = [ 'manga', 'hentai', 'raw', 'japanese' ];
-        this.url = 'https://welovemanga.net';
+        this.url = 'https://weloma.net';
         this.path = '/manga-list.html';
         this.requestOptions.headers.set('x-referer', this.url);
 
@@ -19,7 +19,7 @@ export default class WeLoveManga extends FlatManga {
     }
 
     async _initializeConnector() {
-        for(let path of [this.path, '/0/0/']) {
+        for(let path of [this.path, '/0/']) {
             const uri = new URL(path, this.url);
             const request = new Request(uri, this.requestOptions);
             return Engine.Request.fetchUI(request, '', 30000, true);
