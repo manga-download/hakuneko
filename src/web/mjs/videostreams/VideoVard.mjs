@@ -11,12 +11,18 @@ export default class VideoVard {
                     const file = window.location.pathname.split('/').pop();
                     const response = await fetch('https://videovard.sx/api/make/download/' + file);
                     const data = await response.json();
-                    const form = new FormData();
-                    form.append('cmd', 'download');
-                    form.append('file_code', file);
-                    form.append('hash', data.hash);
-                    form.append('version', data.version);
-                    const request = new Request('https://videovard.sx/api/front/download', { method: 'POST', body: form });
+                    const request = new Request('https://videovard.sx/api/front/download', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+                        },
+                        body: new URLSearchParams({
+                            cmd: 'download',
+                            file_code: file,
+                            hash: data.hash,
+                            version: data.version,
+                        }).toString()
+                    });
                     const timer = setInterval(async () => {
                         try {
                             const response = await fetch(request.clone());
@@ -40,12 +46,5 @@ export default class VideoVard {
         `;
         const request = new Request(this._uri);
         return Engine.Request.fetchUI(request, script);
-        // Referer: 'https://videovard.sx/'
-        /*
-        https://content-videovard-delivery-s11.videovard.to/ivs5xbbyvrypab7wfunyx5jigwrb6jlkxmh4e36xwwj3vpzp34p22zl4d2pa/e6740d0dc7acb5b1e853041fe2f5e774.mp4
-
-        https://content-videovard-delivery-s11.videovard.to/drm/hls/,ivs5xbbyvrypab7wfunyx5jigwrb6jlkxmh4e36xwwj37pzp34p7pk2vdfaa,.urlset/master.m3u8
-        => https://content-videovard-delivery-s11.videovard.to/drm/hls/ivs5xbbyvrypab7wfunyx5jigwrb6jlkxmh4e36xwwj37pzp34p7pk2vdfaa/index-v1-a1.m3u8
-        */
     }
 }
