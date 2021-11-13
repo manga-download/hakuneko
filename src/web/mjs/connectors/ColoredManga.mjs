@@ -1,4 +1,4 @@
-import WordPressMadara from './templates/WordPressMadara.mjs'
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
 export default class ColoredManga extends WordPressMadara {
 
