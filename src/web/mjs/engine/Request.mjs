@@ -531,6 +531,9 @@ export default class Request {
         if (uri.hostname.includes('webtoons') && uri.searchParams.get('title_no')) {
             details.responseHeaders['Set-Cookie'] = `agn2=${uri.searchParams.get('title_no')}; Domain=${uri.hostname}; Path=/`;
         }
+        if(uri.hostname.includes('comikey') && uri.pathname.includes('/read/')) {
+            delete details.responseHeaders['content-security-policy'];
+        }
 
         return details;
     }
