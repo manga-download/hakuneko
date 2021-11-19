@@ -70,7 +70,7 @@ export default class MangaDex extends Connector {
         return mangaList.map(ele => {
             return {
                 id: ele.id,
-                title: ele.attributes.title.en || Object.values(ele.attributes.title).shift()
+                title: (ele.attributes.title.en || Object.values(ele.attributes.title).shift()).trim()
             };
         });
     }
