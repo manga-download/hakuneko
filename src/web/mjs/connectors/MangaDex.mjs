@@ -11,7 +11,7 @@ export default class MangaDex extends Connector {
         this.url = 'https://mangadex.org';
         this.api = 'https://api.mangadex.org';
         this.requestOptions.headers.set('x-referer', this.url);
-        this.throttleGlobal = 200;
+        this.throttleGlobal = 100;
         this.licensedChapterGroups = [
             '4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb', // MangaPlus
             '8d8ecf83-8d42-4f8c-add8-60963f9f28d9' // Comikey
@@ -67,7 +67,12 @@ export default class MangaDex extends Connector {
                 nextAt = data3.nextAt;
             }
         }
-        return mangaList;
+        return mangaList.map(ele => {
+            return {
+                id: ele.id,
+                title: ele.attributes.title.en || Object.values(ele.attributes.title).shift()
+            };
+        });
     }
 
     async _getMangasFromPages(start, pages, nextAt) {
@@ -78,16 +83,10 @@ export default class MangaDex extends Connector {
             uri.searchParams.set('offset', 100 * page);
             uri.searchParams.set('order[createdAt]', 'asc');
             if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
-            const request = new Request(uri, this.requestOptions);
-            let tmp3 = await this.fetchJSON(request, 3);
+            const request = new Request(uri);
+            let data3 = await this.fetchJSON(request, 3);
             await this.wait(this.throttleGlobal);
-            let data3 = tmp3.data.map(ele => {
-                return {
-                    id: ele.id,
-                    title: ele.attributes.title.en || Object.values(ele.attributes.title).shift()
-                };
-            });
-            tmp = [...tmp, ...data3];
+            tmp = [...tmp, ...data3.data];
             if (page == pages) {
                 return {
                     data: tmp,
@@ -224,5 +223,27 @@ export default class MangaDex extends Connector {
             return '0'.repeat(Math.max(0, places - digits)) + chapter;
         });
         return range.join('-');
+    }
+
+    fetchJSON( request, retries ) {
+        retries = retries || 0;
+        if( typeof request === 'string' ) {
+            request = new Request( request, this.requestOptions );
+        }
+        // TODO: check if this will affect (replace) the input parameter?
+        if( request instanceof URL ) {
+            request = new Request( request.href, this.requestOptions );
+        }
+        return fetch( request )
+            .then( response => {
+                if( (response.status >= 500 || response.status == 404) && retries > 0 ) {
+                    return this.wait( 500 )
+                        .then( () => this.fetchJSON( request, retries - 1 ) );
+                }
+                if( response.status === 200 ) {
+                    return response.json();
+                }
+                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
+            } );
     }
 }
