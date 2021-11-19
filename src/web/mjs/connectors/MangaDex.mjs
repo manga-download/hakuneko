@@ -58,7 +58,7 @@ export default class MangaDex extends Connector {
         let nextAt = data1.nextAt;
 
         for (let i = 1; i <= data1.total / 10000; i += 1) {
-            let data2 = await this._getMangasFromPages(1, 1, nextAt);
+            let data2 = await this._getMangasFromPages(0, 0, nextAt);
             mangaList = [...mangaList, ...data2.data.slice(1)];
             let pages = Math.min(Math.floor(data2.total / 100), 99);
             if (pages > 0) {
