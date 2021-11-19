@@ -52,26 +52,26 @@ export default class MangaDex extends Connector {
     }
 
     async _getMangas() {
-        let mangaList = []
-        let data1 = await this._getMangasFromPages(0, 99)
-        mangaList = [...mangaList, ...data1.data]
-        nextAt = data1.nextAt
+        let mangaList = [];
+        let data1 = await this._getMangasFromPages(0, 99);
+        mangaList = [...mangaList, ...data1.data];
+        let nextAt = data1.nextAt;
 
         for (let i = 1; i <= data1.total / 10000; i += 1) {
-            let data2 = await this._getMangasFromPages(1, 1, nextAt)
-            mangaList = [...mangaList, ...data2.data.slice(1)]
-            let pages = Math.min(Math.floor(data2.total / 100), 99)
+            let data2 = await this._getMangasFromPages(1, 1, nextAt);
+            mangaList = [...mangaList, ...data2.data.slice(1)];
+            let pages = Math.min(Math.floor(data2.total / 100), 99);
             if (pages > 0) {
-                let data3 = await this._getMangasFromPages(1, pages, nextAt)
-                mangaList = [...mangaList, ...data3.data]
-                nextAt = data3.nextAt
+                let data3 = await this._getMangasFromPages(1, pages, nextAt);
+                mangaList = [...mangaList, ...data3.data];
+                nextAt = data3.nextAt;
             }
         }
-        return mangaList
+        return mangaList;
     }
 
     async _getMangasFromPages(start, pages, nextAt) {
-        let tmp = []
+        let tmp = [];
         for (let page = start; page <= pages; page += 1) {
             const uri = new URL('/manga', this.api);
             uri.searchParams.set('limit', 100);
@@ -85,15 +85,15 @@ export default class MangaDex extends Connector {
                 return {
                     id: ele.id,
                     title: ele.attributes.title.en || Object.values(ele.attributes.title).shift()
-                }
-            })
-            tmp = [...tmp, ...data3]
+                };
+            });
+            tmp = [...tmp, ...data3];
             if (page == pages) {
                 return {
                     data: tmp,
                     nextAt: data3.data[data3.data.length - 1].attributes.createdAt.match(/^\d{4}-[0-1]\d-([0-2]\d|3[0-1])T([0-1]\d|2[0-3]):[0-5]\d:[0-5]\d/)[0],
                     total: data3.total
-                }
+                };
             }
         }
     }
