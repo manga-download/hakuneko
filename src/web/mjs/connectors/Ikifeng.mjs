@@ -6,7 +6,7 @@ export default class Ikifeng extends WordPressMadara {
         super.id = "ikifeng";
         super.label = "Ikifeng";
         this.tags = ["manga", "webtoon", "hentai", "spanish"];
-        this.url = "https://ikifeng.com/";
+        this.url = "https://ikifeng.com";
     }
 
     canHandleURI(uri) {
