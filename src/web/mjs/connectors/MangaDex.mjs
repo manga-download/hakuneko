@@ -83,7 +83,7 @@ export default class MangaDex extends Connector {
             uri.searchParams.set('offset', 100 * page);
             uri.searchParams.set('order[createdAt]', 'asc');
             if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
-            const request = new Request(uri);
+            const request = new Request(uri, this.requestOptions);
             let data3 = await this.fetchJSON(request, 3);
             await this.wait(this.throttleGlobal);
             tmp = [...tmp, ...data3.data];
