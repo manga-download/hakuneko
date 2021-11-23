@@ -87,7 +87,7 @@ export default class MangaDex extends Connector {
             uri.searchParams.append('contentRating[]', 'erotica');
             uri.searchParams.append('contentRating[]', 'pornographic');
             if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
-            data100 = await this.fetchJSON(uri, 3);
+            data100 = await this.fetchJSON(uri, 30);
             await this.wait(this.throttleGlobal);
             tmp = [...tmp, ...data100.data];
         }
@@ -227,7 +227,7 @@ export default class MangaDex extends Connector {
         retries = retries || 0;
         let response = await fetch( request );
         if( (response.status >= 500 || /captcha-v3$/.test(response.url)) && retries > 0 ) {
-            await this.wait( 5000 );
+            await this.wait( 500 );
             return await this.fetchJSON( request, retries - 1 );
         }
         if( response.status === 200 ) {
