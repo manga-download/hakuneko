@@ -11,7 +11,7 @@ export default class MangaDex extends Connector {
         this.url = 'https://mangadex.org';
         this.api = 'https://api.mangadex.org';
         this.requestOptions.headers.set('x-referer', this.url);
-        this.throttleGlobal = 100;
+        this.throttleGlobal = 200;
         this.licensedChapterGroups = [
             '4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb', // MangaPlus
             '8d8ecf83-8d42-4f8c-add8-60963f9f28d9' // Comikey
@@ -227,7 +227,7 @@ export default class MangaDex extends Connector {
         retries = retries || 0;
         let response = await fetch( request );
         if( (response.status >= 500 || /captcha-v3$/.test(response.url)) && retries > 0 ) {
-            await this.wait( 500 );
+            await this.wait( 5000 );
             return await this.fetchJSON( request, retries - 1 );
         }
         if( response.status === 200 ) {
