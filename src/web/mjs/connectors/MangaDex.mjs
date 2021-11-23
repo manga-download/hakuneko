@@ -7,7 +7,7 @@ export default class MangaDex extends Connector {
         super();
         super.id = 'mangadex';
         super.label = 'MangaDex';
-        this.tags = ['manga', 'high-quality', 'multi-lingual'];
+        this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
         this.url = 'https://mangadex.org';
         this.api = 'https://api.mangadex.org';
         this.requestOptions.headers.set('x-referer', this.url);
@@ -46,25 +46,24 @@ export default class MangaDex extends Connector {
         // NOTE: The MangaDex website is still down, but there are some provisional frontends which can be used for search, copy & paste
         const regexGUID = /[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}/;
         const id = (uri.pathname.match(regexGUID) || uri.hash.match(regexGUID))[0].toLowerCase();
-        const request = new Request(new URL('/manga/' + id, this.api), this.requestOptions);
-        const { data } = await this.fetchJSON(request);
+        const {data} = await this.fetchJSON(new URL('/manga/' + id, this.api));
         return new Manga(this, id, data.attributes.title.en || Object.values(data.attributes.title).shift());
     }
 
     async _getMangas() {
         let mangaList = [];
-        let data1 = await this._getMangasFromPages(0, 99);
-        mangaList = [...mangaList, ...data1.data];
-        let nextAt = data1.nextAt;
+        let first10k = await this._getMangasFromPages(0, 99);
+        mangaList = [...mangaList, ...first10k.data];
+        let nextAt = first10k.nextAt;
 
-        for (let i = 1; i <= data1.total / 10000; i += 1) {
-            let data2 = await this._getMangasFromPages(0, 0, nextAt);
-            mangaList = [...mangaList, ...data2.data.slice(1)];
-            let pages = Math.min(Math.floor(data2.total / 100), 99);
+        for (let i = 1; i <= first10k.total / 10000; i += 1) {
+            let first100of10k = await this._getMangasFromPages(0, 0, nextAt);
+            mangaList = [...mangaList, ...first100of10k.data.slice(1)];
+            let pages = Math.min(Math.floor(first100of10k.total / 100), 99);
             if (pages > 0) {
-                let data3 = await this._getMangasFromPages(1, pages, nextAt);
-                mangaList = [...mangaList, ...data3.data];
-                nextAt = data3.nextAt;
+                let data = await this._getMangasFromPages(1, pages, nextAt);
+                mangaList = [...mangaList, ...data.data];
+                nextAt = data.nextAt;
             }
         }
         return mangaList.map(ele => {
@@ -77,29 +76,31 @@ export default class MangaDex extends Connector {
 
     async _getMangasFromPages(start, pages, nextAt) {
         let tmp = [];
+        let data100;
         for (let page = start; page <= pages; page += 1) {
             const uri = new URL('/manga', this.api);
             uri.searchParams.set('limit', 100);
             uri.searchParams.set('offset', 100 * page);
             uri.searchParams.set('order[createdAt]', 'asc');
+            uri.searchParams.append('contentRating[]', 'safe');
+            uri.searchParams.append('contentRating[]', 'suggestive');
+            uri.searchParams.append('contentRating[]', 'erotica');
+            uri.searchParams.append('contentRating[]', 'pornographic');
             if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
-            const request = new Request(uri, this.requestOptions);
-            let data3 = await this.fetchJSON(request, 3);
+            data100 = await this.fetchJSON(uri, 3);
             await this.wait(this.throttleGlobal);
-            tmp = [...tmp, ...data3.data];
-            if (page == pages) {
-                return {
-                    data: tmp,
-                    nextAt: data3.data[data3.data.length - 1].attributes.createdAt.match(/^\d{4}-[0-1]\d-([0-2]\d|3[0-1])T([0-1]\d|2[0-3]):[0-5]\d:[0-5]\d/)[0],
-                    total: data3.total
-                };
-            }
+            tmp = [...tmp, ...data100.data];
         }
+        return {
+            data: tmp,
+            nextAt: data100.data.pop().attributes.createdAt.replace('+00:00', ''),
+            total: data100.total
+        };
     }
 
     async _getChapters(manga) {
         let chapterList = [];
-        for (let page = 0, run = true; run; page++) {
+        for(let page = 0, run = true; run; page++) {
             let chapters = await this._getChaptersFromPage(manga, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
@@ -116,29 +117,28 @@ export default class MangaDex extends Connector {
         uri.searchParams.append('contentRating[]', 'erotica');
         uri.searchParams.append('contentRating[]', 'pornographic');
         uri.searchParams.set('manga', manga.id);
-        const request = new Request(uri, this.requestOptions);
-        const { data } = await this.fetchJSON(request, 3);
+        const {data} = await this.fetchJSON(uri, 3);
         const groupMap = await this._getScanlationGroups(data);
         return !data ? [] : data.map(result => {
             let title = '';
-            if (result.attributes.volume) {
+            if(result.attributes.volume) {
                 title += 'Vol.' + this._padNum(result.attributes.volume, 2);
             }
-            if (result.attributes.chapter) {
+            if(result.attributes.chapter) {
                 title += ' Ch.' + this._padNum(result.attributes.chapter, 4);
             }
-            if (result.attributes.title) {
+            if(result.attributes.title) {
                 title += (title ? ' - ' : '') + result.attributes.title;
             }
-            if (result.attributes.translatedLanguage) {
+            if(result.attributes.translatedLanguage) {
                 title += ' (' + result.attributes.translatedLanguage + ')';
             }
             const groups = result.relationships.filter(r => r.type === 'scanlation_group');
-            if (groups.length > 0) {
+            if(groups.length > 0) {
                 title += ' [' + groups.map(group => groupMap[group.id]).join(', ') + ']';
             }
             // is any group for this chapter not in the list of licensed groups?
-            if (groups.length === 0 || groups.some(group => !this.licensedChapterGroups.includes(group.id))) {
+            if(groups.length === 0 || groups.some(group => !this.licensedChapterGroups.includes(group.id))) {
                 return {
                     id: result.id,
                     title: title.trim(),
@@ -152,8 +152,7 @@ export default class MangaDex extends Connector {
 
     async _getPages(chapter) {
         const uri = new URL('/chapter/' + chapter.id, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const { data } = await this.fetchJSON(request, 3);
+        const {data} = await this.fetchJSON(uri, 3);
         const server = await this._getServerNode(chapter);
         return data.attributes.data.map(file => this.createConnectorURI({
             networkNode: server, // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
@@ -167,18 +166,18 @@ export default class MangaDex extends Connector {
             ...this.serverNetwork,
             payload.networkNode
         ];
-        for (let node of servers) {
+        for(let node of servers) {
             try {
                 const uri = new URL(node + payload.hash + '/' + payload.file);
                 const request = new Request(uri, this.requestOptions);
                 const response = await fetch(request);
-                if (response.ok && response.status === 200) {
+                if(response.ok && response.status === 200) {
                     const data = await response.blob();
-                    if (response.headers.get('content-length') == data.size) {
+                    if(response.headers.get('content-length') == data.size) {
                         return this._blobToBuffer(data);
                     }
                 }
-            } finally {/**/ }
+            } finally {/**/}
         }
         throw new Error('Failed to download image file from MangaDex@Home network!\n' + payload.networkNode);
     }
@@ -193,9 +192,8 @@ export default class MangaDex extends Connector {
         if (groupIDs.length > 0) {
             await this.wait(this.throttleGlobal);
             const uri = new URL('/group', this.api);
-            uri.search = new URLSearchParams([['limit', 100], ...groupIDs.map(id => ['ids[]', id])]).toString();
-            const request = new Request(uri, this.requestOptions);
-            const { data } = await this.fetchJSON(request, 3);
+            uri.search = new URLSearchParams([ ['limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
+            const {data} = await this.fetchJSON(uri, 3);
             data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
         }
         return groupList;
@@ -203,8 +201,7 @@ export default class MangaDex extends Connector {
 
     async _getServerNode(chapter) {
         const uri = new URL('/at-home/server/' + chapter.id, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request, 3);
+        const data = await this.fetchJSON(uri, 3);
         return data.baseUrl + '/data/';
     }
 
@@ -225,25 +222,17 @@ export default class MangaDex extends Connector {
         return range.join('-');
     }
 
-    fetchJSON( request, retries ) {
+    async fetchJSON( uri, retries ) {
+        const request = new Request( uri, this.requestOptions );
         retries = retries || 0;
-        if( typeof request === 'string' ) {
-            request = new Request( request, this.requestOptions );
+        let response = await fetch( request );
+        if( (response.status >= 500 || /captcha-v3$/.test(response.url)) && retries > 0 ) {
+            await this.wait( 500 );
+            return await this.fetchJSON( request, retries - 1 );
         }
-        // TODO: check if this will affect (replace) the input parameter?
-        if( request instanceof URL ) {
-            request = new Request( request.href, this.requestOptions );
+        if( response.status === 200 ) {
+            return response.json();
         }
-        return fetch( request )
-            .then( response => {
-                if( (response.status >= 500 || response.status == 404) && retries > 0 ) {
-                    return this.wait( 500 )
-                        .then( () => this.fetchJSON( request, retries - 1 ) );
-                }
-                if( response.status === 200 ) {
-                    return response.json();
-                }
-                throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
-            } );
+        throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
     }
 }
