@@ -7,6 +7,6 @@ export default class ImperioScans extends WordPressMadara {
         super.id = 'imperioscans';
         super.label = 'Império Scans';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://imperioscans.com';
+        this.url = 'https://imperioscans.com.br';
     }
 }

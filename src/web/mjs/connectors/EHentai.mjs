@@ -44,13 +44,14 @@ export default class EHentai extends Connector {
     }
 
     async _getPages(chapter) {
-        let pageLinks = [];
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.gtb table.ptt td:not(:first-child):not(:last-child) a');
-        for(let element of data) {
-            let uri = this.getAbsolutePath(element, request.url);
+        const pageLinks = [];
+        const uri = new URL(chapter.id, this.url);
+        let data = await this.fetchDOM(new Request(uri, this.requestOptions), 'div.gtb table.ptt td:nth-last-of-type(2) a');
+        const pageCount = parseInt(data.pop().text.trim());
+        for(let page = 0; page < pageCount; page++) {
+            uri.searchParams.set('p', page);
             data = await this.fetchDOM(new Request(uri, this.requestOptions), 'div#gdt a');
-            let pages = data.map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
+            const pages = data.map(element => this.createConnectorURI(this.getAbsolutePath(element, uri.href)));
             pageLinks.push(...pages);
         }
         return pageLinks;

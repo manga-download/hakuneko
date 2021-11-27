@@ -7,7 +7,7 @@ export default class GekkouScans extends MangaReaderCMS {
         super.id = 'gekkouscans';
         super.label = 'Gekkou Scans';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://leitor.gekkouscans.com.br';
+        this.url = 'https://www.gekkouscans.com.br';
 
         this.queryChapters = 'ul.grow li h5.chapter-title-rtl';
         this.language = 'portuguese';

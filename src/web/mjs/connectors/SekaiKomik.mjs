@@ -7,8 +7,9 @@ export default class SekaiKomik extends WordPressMangastream {
         super.id = 'sekaikomik';
         super.label = 'SekaiKomik';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://www.sekaikomik.xyz';
-        this.path = '/daftar-komik/?list';
+        this.url = 'https://www.sekaikomik.site';
+        this.path = '/manga/list-mode/';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _initializeConnector() {
@@ -18,5 +19,10 @@ export default class SekaiKomik extends WordPressMangastream {
             const request = new Request(uri, this.requestOptions);
             await Engine.Request.fetchUI(request, '', 25000, true);
         }
+    }
+
+    async _getPages(chapter) {
+        const images = await super._getPages(chapter);
+        return images.map(image => this.createConnectorURI(image));
     }
 }

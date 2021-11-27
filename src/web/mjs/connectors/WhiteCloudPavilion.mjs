@@ -8,7 +8,7 @@ export default class WhiteCloudPavilion extends MangaReaderCMS {
         super.label = 'White Cloud Pavilion';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://www.whitecloudpavilion.com';
-        this.path = '/manga/free/';
+        this.path = '/manga/patreon/';
 
         this.language = 'en';
     }

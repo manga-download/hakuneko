@@ -9,10 +9,11 @@ export default class Genkan extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
+        this.path = '/comics';
     }
 
     async _initializeConnector() {
-        let uri = new URL( this.url + '/comics/-/0/0' );
+        let uri = new URL( this.url + this.path + '/-/0/0' );
         let request = new Request( uri.href, this.requestOptions );
         return Engine.Request.fetchUI( request, '' );
     }
@@ -50,7 +51,7 @@ export default class Genkan extends Connector {
      *
      */
     _getMangaList( callback ) {
-        let request = new Request( this.url + '/comics?page=', this.requestOptions );
+        let request = new Request( this.url + this.path + '?page=', this.requestOptions );
         this.fetchDOM( request, 'ul.pagination li:nth-last-of-type(2) a.page-link' )
             .then( data => {
                 let pageCount = parseInt( data.length ? data[0].text : 1 );

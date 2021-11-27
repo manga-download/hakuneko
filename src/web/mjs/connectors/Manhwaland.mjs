@@ -7,14 +7,13 @@ export default class Manhwaland extends WordPressMangastream {
         super.id = 'manhwaland';
         super.label = 'Manhwaland';
         this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://manhwaland.cc';
-        this.path = '/manhwa-list/';
+        this.url = 'https://manhwaland.org';
+        this.path = '/series/list-mode/';
+    }
 
-        this.querMangaTitleFromURI = 'div.series-info div.series-titlex h1';
-        this.queryMangas = 'div.mangalist-blc ul li.Manhwa a.series';
-        this.queryChapters = 'div.series-chapter ul.series-chapterlist li div.flexch-infoz a';
-        this.queryChaptersTitle = 'span';
-        this.queryChaptersTitleBloat = 'span > span';
-        this.queryPages = 'div.reader-area img[src]:not([src=""])';
+    async _getMangaFromURI(uri) {
+        const manga = await super._getMangaFromURI(uri);
+        manga.title = manga.title.replace(/^(manga|manhwa|manhua)/i, '').trim();
+        return manga;
     }
 }
