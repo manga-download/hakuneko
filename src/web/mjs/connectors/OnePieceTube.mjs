@@ -6,7 +6,7 @@ export default class OnePieceTube extends Connector {
         super.id = 'onepiecetube';
         super.label = 'One Piece Tube';
         this.tags = ['manga', 'german'];
-        this.url = 'http://onepiece-tube.com/';
+        this.url = 'http://onepiece-tube.com';
     }
 
     async _getMangas() {
@@ -20,7 +20,7 @@ export default class OnePieceTube extends Connector {
 
     // eslint-disable-next-line no-unused-vars
     async _getChapters(manga) {
-        let request = new Request(this.url + 'kapitel-mangaliste#oben', this.requestOptions);
+        let request = new Request(`${this.url}/kapitel-mangaliste#oben`, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.sagatable table.list tbody tr');
 
         return data.filter(e => e.rowIndex !== 0).map(element => {
@@ -34,15 +34,14 @@ export default class OnePieceTube extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(`${this.url}${chapter.id}/1`, this.requestOptions);
+        let request = new Request(`${this.url}/${chapter.id}/1`, this.requestOptions);
         let data = await this.fetchDOM(request, 'td#tablecontrols a');
+        return data.map(d => this.createConnectorURI(this.getAbsolutePath(d.pathname, request.url)));
+    }
 
-        data = await Promise.all(data.map(d => {
-            const path = this.getAbsolutePath(d.pathname, request.url);
-            const r = new Request(path, this.requestOptions);
-            return this.fetchDOM(r, '#p');
-        }));
-
-        return data.map(r => r[0].src);
+    async _handleConnectorURI(payload) {
+        let request = new Request(new URL(payload, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, '#p');
+        return super._handleConnectorURI(this.getAbsolutePath(data[0].src, request.url));
     }
 }
