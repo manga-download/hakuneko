@@ -7,7 +7,7 @@ export default class NewType extends Connector {
         super();
         super.id = 'newtype';
         super.label = 'NewType';
-        this.tags = [ 'manga', 'japanese' ];
+        this.tags = ['manga', 'japanese'];
         this.url = 'https://comic.webnewtype.com';
     }
 
@@ -21,7 +21,7 @@ export default class NewType extends Connector {
 
     async _fetchJsonDOM(request, page, query) {
         let data = await this.fetchJSON(request);
-        if(data.next !== page) {
+        if (data.next !== page) {
             let blobURL = URL.createObjectURL(new Blob([data.html], { type: 'text/html' }));
             data = await this.fetchDOM(new Request(blobURL, this.requestOptions), query);
             URL.revokeObjectURL(blobURL);
@@ -33,7 +33,7 @@ export default class NewType extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page = 1, run = true; run; page++) {
+        for (let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
@@ -53,7 +53,7 @@ export default class NewType extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
-        for(let page = 1, run = true; run; page++) {
+        for (let page = 1, run = true; run; page++) {
             let chapters = await this._getChaptersFromPage(manga, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
@@ -78,6 +78,8 @@ export default class NewType extends Connector {
         let link = this.getAbsolutePath(data[0].dataset.url, request.url);
         data = await this.fetchJSON(new Request(link, this.requestOptions));
         return data.map(image => {
+            if (Array.isArray(image))
+                image = image.filter(url => url.startsWith('/'))[0];
             if (image.includes("/h1200"))
                 image = image.substr(0, image.indexOf("/h1200"));
             return this.getAbsolutePath(image, request.url);
