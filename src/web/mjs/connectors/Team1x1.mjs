@@ -14,7 +14,7 @@ export default class Team1x1 extends Connector {
                 label: 'URL',
                 description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
-                value: 'https://team1x1.com'
+                value: 'https://Teamxmanga.com'
             }
         };
     }
@@ -97,8 +97,8 @@ export default class Team1x1 extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
+        let request = new Request(this.url + chapter.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'div[id^="translationPageall"] embed');
-        return data.map(dat=> dat.src);
+        return data.map(dat => dat.src);
     }
 }
