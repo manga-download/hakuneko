@@ -11,29 +11,8 @@ export default class ReaperScans extends WordPressMadara {
         this.links = {
             login: 'https://reaperscans.com/login'
         };
-        this.queryChapters = 'li.wp-manga-chapter a';
-    }
-
-    async _getChapters(manga) {
-        let uri = new URL(manga.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let dom = (await this.fetchDOM(request, 'body'))[0];
-        let data = [...dom.querySelectorAll(this.queryChapters)];
-        let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
-        if (placeholder) {
-            const promises = await Promise.allSettled([
-                this._getChaptersAjax(manga.id),
-                this._getChaptersAjaxOld(placeholder.dataset.id)
-            ]);
-            data = promises.find(promise => /fulfilled/i.test(promise.status)).value;
-        }
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.querySelector('p').innerText.replace(manga.title, '').trim(),
-                language: ''
-            };
-        });
+        this.queryChapters = 'div.chapter-link > a';
+        this.queryChaptersTitleBloat = 'span.chapter-release-date';
     }
 
 }
