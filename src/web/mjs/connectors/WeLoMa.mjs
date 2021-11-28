@@ -7,19 +7,20 @@ export default class WeLoMa extends FlatManga {
         super();
         super.id = 'weloma';
         super.label = 'WeLoveManga';
-        this.tags = [ 'manga', 'hentai', 'raw', 'japanese' ];
+        this.tags = ['manga', 'hentai', 'raw', 'japanese'];
         this.url = 'https://weloma.net';
-        this.path = '/manga-list.html';
+        this.path = '/list-manga.html';
         this.requestOptions.headers.set('x-referer', this.url);
 
         this.queryMangaTitle = 'ul.manga-info h3';
         this.queryMangas = 'div.card-body div.series-title a';
         this.queryChapters = 'ul.list-chapters > a';
         this.queryChapterTitle = 'div.chapter-name';
+        this.queryPages = 'div.chapter-content embed';
     }
 
     async _initializeConnector() {
-        for(let path of [this.path, '/0/']) {
+        for (let path of [this.path, '/0/']) {
             const uri = new URL(path, this.url);
             const request = new Request(uri, this.requestOptions);
             return Engine.Request.fetchUI(request, '', 30000, true);
@@ -32,7 +33,7 @@ export default class WeLoMa extends FlatManga {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'ul.pagination li:nth-last-of-type(2) a');
         const pageCount = parseInt(data[0].text.trim());
-        for(let page = 1; page <= pageCount; page++) {
+        for (let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
             await this.wait(5000);
@@ -75,12 +76,12 @@ export default class WeLoMa extends FlatManga {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
-            const link = [ ...element.attributes]
+            const link = [...element.attributes]
                 .filter(attribute => !['src', 'class', 'alt'].includes(attribute.name))
                 .map(attribute => {
                     try {
                         return atob(attribute.value.trim());
-                    } catch(_) {
+                    } catch (_) {
                         return attribute.value.trim();
                     }
                 })
