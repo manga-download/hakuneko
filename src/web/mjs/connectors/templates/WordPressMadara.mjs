@@ -12,6 +12,7 @@ export default class WordPressMadara extends Connector {
 
         this.queryMangas = 'div.post-title h3 a, div.post-title h5 a';
         this.queryChapters = 'li.wp-manga-chapter > a';
+        this.queryChaptersTitleBloat = undefined;
         this.queryPages = 'div.page-break source';
         this.queryTitleForURI = 'head meta[property="og:title"]';
     }
@@ -67,7 +68,7 @@ export default class WordPressMadara extends Connector {
             }
         });
         const data = await this.fetchDOM(request, this.queryChapters);
-        if(data.length) {
+        if (data.length) {
             return data;
         } else {
             throw new Error('No chapters found (old ajax endpoint)!');
@@ -78,7 +79,7 @@ export default class WordPressMadara extends Connector {
         const uri = new URL(mangaID + 'ajax/chapters/', this.url);
         const request = new Request(uri, { method: 'POST' });
         const data = await this.fetchDOM(request, this.queryChapters);
-        if(data.length) {
+        if (data.length) {
             return data;
         } else {
             throw new Error('No chapters found (new ajax endpoint)!');
@@ -98,7 +99,15 @@ export default class WordPressMadara extends Connector {
             ]);
             data = promises.find(promise => /fulfilled/i.test(promise.status)).value;
         }
+
         return data.map(element => {
+            if (this.queryChaptersTitleBloat) {
+                [...element.querySelectorAll(this.queryChaptersTitleBloat)].forEach(bloat => {
+                    if (bloat.parentElement) {
+                        bloat.parentElement.removeChild(bloat);
+                    }
+                });
+            }
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.replace(manga.title, '').trim(),
@@ -114,7 +123,7 @@ export default class WordPressMadara extends Connector {
         let data = await this.fetchDOM(request, this.queryPages);
         // HACK: Some Madara websites have added the '?style=list' pattern as CloudFlare WAF rule
         //       => Try without style parameter to bypass CloudFlare matching rule
-        if(!data || !data.length) {
+        if (!data || !data.length) {
             uri.searchParams.delete('style');
             request = new Request(uri, this.requestOptions);
             data = await this.fetchDOM(request, this.queryPages);
@@ -128,7 +137,7 @@ export default class WordPressMadara extends Connector {
                 const uri = new URL(this.getAbsolutePath(element, request.url));
                 // HACK: bypass proxy for https://website.net/wp-content/webpc-passthru.php?src=https://website.net/wp-content/uploads/WP-manga/data/manga/chapter/001.jpg&nocache=1?ssl=1
                 const canonical = uri.searchParams.get('src');
-                if(canonical && /^https?:/.test(canonical)) {
+                if (canonical && /^https?:/.test(canonical)) {
                     uri.href = canonical;
                 }
                 return this.createConnectorURI({
