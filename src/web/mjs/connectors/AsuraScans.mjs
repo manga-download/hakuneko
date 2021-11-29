@@ -10,7 +10,7 @@ export default class AsuraScans extends WordPressMangastream {
         this.url = 'https://asurascans.com';
         this.path = '/manga/list-mode/';
 
-        this.queryPages = 'div#readerarea img.lazyload';
+        this.queryPages = 'div#readerarea p img';
         this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Linux; Android 9; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4026.0 Mobile Safari/537.36');
     }
 
