@@ -535,6 +535,10 @@ export default class Request {
             delete details.responseHeaders['content-security-policy'];
         }
 
+        if(details.responseHeaders['set-cookie'] || details.responseHeaders['Set-Cookie']) {
+            Cookie.applyCrossSiteCookies(details.responseHeaders);
+        }
+
         return details;
     }
 }
