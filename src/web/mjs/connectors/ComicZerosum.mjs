@@ -12,37 +12,26 @@ export default class ComicZerosum extends SpeedBinb {
     }
 
     async _getMangas() {
-        let mangaList = [];
-
-        const request = new Request(this.data_url + '/list/name.json', this.requestOptions);
+        const request = new Request(`${this.data_url}/list/name.json`, this.requestOptions);
         const data = await this.fetchJSON(request);
 
-        const stories = data.Stories;
-        for (let story of stories) {
-            let manga = {
+        return data.Stories.map(story => {
+            return {
                 id: story.Work.Tag,
                 title: story.Work.Name
             }
-            mangaList.push(manga);
-        }
-
-        return mangaList;
+        });
     }
 
     async _getChapters(manga) {
-        let chapters = [];
-
-        const request = new Request(this.data_url + '/works/' + manga.id + '.json', this.requestOptions);
+        const request = new Request(`${this.data_url}/works/${manga.id}.json`, this.requestOptions);
         const data = await this.fetchJSON(request);
 
-        const stories = data.Work.Stories;
-        for (let story of stories) {
-            let chapter = {
+        return data.Work.Stories.map(story => {
+            return {
                 id: story.Url,
                 title: story.Name
             }
-            chapters.push(chapter);
-        }
-        return chapters;
+        });
     }
 }
