@@ -37,4 +37,17 @@ export default class Cookie {
         }
         return result;
     }
+
+    static applyCrossSiteCookies(headers) {
+        let cookies = headers['set-cookie'] || headers['Set-Cookie'];
+        if(!cookies) {
+            return;
+        }
+        if(!Array.isArray(cookies)) {
+            cookies = [ cookies ];
+        }
+        for(let index in cookies) {
+            cookies[index] = [ ...cookies[index].split(';').map(part => part.trim()).filter(part => !/^SameSite=/i.test(part)), 'SameSite=None' ].join('; ');
+        }
+    }
 }
