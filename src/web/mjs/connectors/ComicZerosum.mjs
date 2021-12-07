@@ -19,7 +19,7 @@ export default class ComicZerosum extends SpeedBinb {
             return {
                 id: story.Work.Tag,
                 title: story.Work.Name
-            }
+            };
         });
     }
 
@@ -31,7 +31,7 @@ export default class ComicZerosum extends SpeedBinb {
             return {
                 id: story.Url,
                 title: story.Name
-            }
+            };
         });
     }
 }
