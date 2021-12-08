@@ -13,7 +13,7 @@ export default class MangaDex extends Connector {
         this.requestOptions.headers.set('x-referer', this.url);
         this.config = {
             throttle: {
-                label: 'Video Stream Throttle [ms]',
+                label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive requests.',
                 input: 'numeric',
                 min: 100,
