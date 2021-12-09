@@ -97,7 +97,7 @@ export default class MangaDex extends Connector {
             uri.searchParams.append('contentRating[]', 'pornographic');
             if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
             data100 = await this.fetchJSON(uri, 3);
-            await this.wait(this.config.throttle.value)
+            await this.wait(this.config.throttle.value);
             tmp = [...tmp, ...data100.data];
         }
         return {
@@ -117,7 +117,7 @@ export default class MangaDex extends Connector {
     }
 
     async _getChaptersFromPage(manga, page) {
-        await this.wait(this.config.throttle.value)
+        await this.wait(this.config.throttle.value);
         const uri = new URL('/chapter', this.api);
         uri.searchParams.set('limit', 100);
         uri.searchParams.set('offset', 100 * page);
@@ -199,7 +199,7 @@ export default class MangaDex extends Connector {
         }, []);
         groupIDs = Array.from(new Set(groupIDs));
         if (groupIDs.length > 0) {
-            await this.wait(this.config.throttle.value)
+            await this.wait(this.config.throttle.value);
             const uri = new URL('/group', this.api);
             uri.search = new URLSearchParams([ ['limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
             const {data} = await this.fetchJSON(uri, 3);
