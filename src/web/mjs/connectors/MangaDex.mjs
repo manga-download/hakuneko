@@ -11,7 +11,7 @@ export default class MangaDex extends Connector {
         this.url = 'https://mangadex.org';
         this.api = 'https://api.mangadex.org';
         this.requestOptions.headers.set('x-referer', this.url);
-        this.requestOptions.headers.set('x-sec-ch-ua','" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"')
+        this.requestOptions.headers.set('x-sec-ch-ua', '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"');
         this.config = {
             throttle: {
                 label: 'Throttle Requests [ms]',
