@@ -11,6 +11,7 @@ export default class MangaDex extends Connector {
         this.url = 'https://mangadex.org';
         this.api = 'https://api.mangadex.org';
         this.requestOptions.headers.set('x-referer', this.url);
+        this.requestOptions.headers.set('x-sec-ch-ua','" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"')
         this.config = {
             throttle: {
                 label: 'Throttle Requests [ms]',
@@ -18,7 +19,7 @@ export default class MangaDex extends Connector {
                 input: 'numeric',
                 min: 100,
                 max: 10000,
-                value: 2100
+                value: 200
             }
         };
         this.licensedChapterGroups = [
@@ -229,19 +230,5 @@ export default class MangaDex extends Connector {
             return '0'.repeat(Math.max(0, places - digits)) + chapter;
         });
         return range.join('-');
-    }
-
-    async fetchJSON( uri, retries ) {
-        const request = new Request( uri, this.requestOptions );
-        retries = retries || 0;
-        let response = await fetch( request );
-        if( (response.status >= 500 || /captcha-v3$/.test(response.url)) && retries > 0 ) {
-            await this.wait( 5000 );
-            return await this.fetchJSON( request, retries - 1 );
-        }
-        if( response.status === 200 ) {
-            return response.json();
-        }
-        throw new Error( `Failed to receive content from "${request.url}" (status: ${response.status}) - ${response.statusText}` );
     }
 }
