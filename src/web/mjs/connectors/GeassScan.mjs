@@ -1,13 +1,12 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class GeassScan extends WordPressMangastream {
+export default class GeassScan extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'geassscan';
         super.label = 'Geass Scan';
         this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
-        this.url = 'https://geassscan.xyz';
-        this.path = '/manga/list-mode/';
+        this.url = 'https://geassscan.net/';
     }
 }
