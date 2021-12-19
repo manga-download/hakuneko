@@ -1,12 +1,11 @@
 import Crunchyroll from './templates/Crunchyroll.mjs';
-import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
 export default class CrunchyManga extends Crunchyroll {
 
     constructor() {
         super();
-        this.url = "https://www.crunchyroll.com"
+        this.url = "https://www.crunchyroll.com";
         super.id = 'crunchymanga';
         super.label = 'Crunchyroll* (Manga)';
         this.tags = ['manga', 'high-quality', 'multi-lingual'];
