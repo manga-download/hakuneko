@@ -1,12 +1,15 @@
 import Crunchyroll from './templates/Crunchyroll.mjs';
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class CrunchyManga extends Crunchyroll {
 
     constructor() {
         super();
+        this.url = "https://www.crunchyroll.com"
         super.id = 'crunchymanga';
         super.label = 'Crunchyroll* (Manga)';
-        this.tags = [ 'manga', 'high-quality', 'multi-lingual' ];
+        this.tags = ['manga', 'high-quality', 'multi-lingual'];
         this.apiURL = 'https://api-manga.crunchyroll.com';
     }
 
@@ -18,7 +21,7 @@ export default class CrunchyManga extends Crunchyroll {
         return data.map(manga => {
             return {
                 id: manga.series_id,
-                title:  manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace(/^\//, '')
+                title: manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace(/^\//, '')
             };
         });
     }
@@ -61,7 +64,7 @@ export default class CrunchyManga extends Crunchyroll {
                 locale: page['image_url']
             };
             let culture = page.locale[this.config.locale.value] || page.locale.enUS;
-            if(culture) {
+            if (culture) {
                 links.locale = culture['encrypted_composed_image_url'] || culture['encrypted_mobile_image_url'];
             }
             return this.createConnectorURI(links);
@@ -72,10 +75,10 @@ export default class CrunchyManga extends Crunchyroll {
         let response;
         try {
             response = await fetch(new Request(payload.locale, this.requestOptions));
-            if(response.status !== 200) {
+            if (response.status !== 200) {
                 throw new Error('Failed to fetch localized image!');
             }
-        } catch(error) {
+        } catch (error) {
             response = await fetch(new Request(payload.invariant, this.requestOptions));
         }
         let data = await response.arrayBuffer();
@@ -88,9 +91,29 @@ export default class CrunchyManga extends Crunchyroll {
     _decryptImage(encrypted, key) {
         // create a view for the buffer
         let decrypted = new Uint8Array(encrypted);
-        for(let index in decrypted) {
+        for (let index in decrypted) {
             decrypted[index] ^= key;
         }
         return decrypted;
+    }
+
+    async _getMangaFromURI(uri) {
+        await this._login();
+        const request = new Request(uri, this.requestOptions);
+        let response = await this.fetchDOM(request);
+        let responseData = await fetch(request);
+        let responseDataText = await responseData.text();
+
+        let title;
+        let seriesId;
+
+        if (uri.href.match(/\/volumes/)) {
+            title = response.querySelector('title').innerText.replace('Crunchyroll - ', '');
+            seriesId = parseInt([...responseDataText.matchAll(/series_id:(\d+)/g)][0][1]);
+        } else {
+            title = response.querySelector('#template_body > section > header > h1 > a').innerText;
+            seriesId = parseInt([...responseDataText.matchAll(/seriesId:\s"(\d+)/g)][0][1]);
+        }
+        return new Manga(this, seriesId, title);
     }
 }
