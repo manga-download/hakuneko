@@ -100,24 +100,23 @@ export default class CrunchyManga extends Crunchyroll {
         await this._login();
         const request = new Request(uri, this.requestOptions);
         let response = await this.fetchDOM(request);
-        let responseData = await fetch(request);
-        let responseDataText = await responseData.text();
+        let responseDataText = response.innerHTML;
 
         let title;
         let seriesId;
         let seriesIdList = [...responseDataText.matchAll(/series_id:(\d+)/g)];
-
-        if (seriesIdList.length > 0) {
-            title = response.querySelector('title').innerText.replace('Crunchyroll - ', '');
-            seriesId = parseInt([...responseDataText.matchAll(/series_id:(\d+)/g)][0][1]);
+        if(seriesIdList.length > 0)
+        {
+            title = response.querySelector('div.queue-wrapper > a').title.trim();
+            seriesId = parseInt(seriesIdList[0][1]);
         }
-        else {
+        else
+        {
             let chapterLink = uri.href.replace('comics/manga', 'manga').replace('volumes', 'read/1');
             const chapterUrl = new Request(new URL(chapterLink, this.url), this.requestOptions);
             let chapterResponse = await this.fetchDOM(chapterUrl);
-            let chapterResponseData = await fetch(chapterUrl);
-            let chapterResponseDataText = await chapterResponseData.text();
-            title = chapterResponse.querySelector('#template_body > section > header > h1 > a').innerText;
+            let chapterResponseDataText = chapterResponse.innerHTML;
+            title = chapterResponse.querySelector('section.manga-reader-page a').innerText.trim();
             seriesId = parseInt([...chapterResponseDataText.matchAll(/seriesId:\s"(\d+)/g)][0][1]);
         }
         return new Manga(this, seriesId, title);
