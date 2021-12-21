@@ -104,11 +104,11 @@ export default class CrunchyManga extends Crunchyroll {
 
         let title;
         let seriesId;
-        let hasSeriesId = /series_id:(\d+)/g.exec(responseDataText)
+        let hasSeriesId = /series_id:(\d+)/g.exec(responseDataText);
 
         if (hasSeriesId) {
-            title = response.querySelector('div.queue-wrapper > a').title.trim()
-            seriesId = hasSeriesId[1]
+            title = response.querySelector('div.queue-wrapper > a').title.trim();
+            seriesId = hasSeriesId[1];
         } else {
             let chapterLink = uri.href.replace('comics/manga', 'manga').replace('volumes', 'read/1');
             const chapterUrl = new Request(new URL(chapterLink, this.url), this.requestOptions);
