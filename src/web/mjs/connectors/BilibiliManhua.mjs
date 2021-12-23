@@ -12,8 +12,8 @@ export default class BilibiliManhua extends Connector {
 
         this.config = {
             quality:  {
-                label: 'Preferred quality',
-                description: 'quality of images\nwebp is what the site displays as "raw"(lowest quality)\njpg is in the middle\npng is higher quality(and significantly larger file size)',
+                label: 'Preferred format',
+                description: 'format of images\nwebp (low)\njpg (medium)\npng (high))',
                 input: 'select',
                 options: [
                     { value: 'webp', name: 'webp' },
