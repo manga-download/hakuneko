@@ -56,7 +56,8 @@ export default class MangaDex extends Connector {
         // NOTE: The MangaDex website is still down, but there are some provisional frontends which can be used for search, copy & paste
         const regexGUID = /[a-fA-F0-9]{8}-([a-fA-F0-9]{4}-){3}[a-fA-F0-9]{12}/;
         const id = (uri.pathname.match(regexGUID) || uri.hash.match(regexGUID))[0].toLowerCase();
-        const {data} = await this.fetchJSON(new URL('/manga/' + id, this.api));
+        const request = new Request(new URL('/manga/' + id, this.api), this.requestOptions);
+        const {data} = await this.fetchJSON(request);
         return new Manga(this, id, data.attributes.title.en || Object.values(data.attributes.title).shift());
     }
 
@@ -97,7 +98,8 @@ export default class MangaDex extends Connector {
             uri.searchParams.append('contentRating[]', 'erotica');
             uri.searchParams.append('contentRating[]', 'pornographic');
             if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
-            data100 = await this.fetchJSON(uri, 3);
+            const request = new Request(uri, this.requestOptions);
+            data100 = await this.fetchJSON(request, 3);
             await this.wait(this.config.throttle.value);
             tmp = [...tmp, ...data100.data];
         }
@@ -127,8 +129,9 @@ export default class MangaDex extends Connector {
         uri.searchParams.append('contentRating[]', 'erotica');
         uri.searchParams.append('contentRating[]', 'pornographic');
         uri.searchParams.set('manga', manga.id);
-        const {data} = await this.fetchJSON(uri, 3);
-        const groupMap = await this._getScanlationGroups(data);
+        const request = new Request(uri, this.requestOptions);
+        const {data} = await this.fetchJSON(request, 3);
+         const groupMap = await this._getScanlationGroups(data);
         return !data ? [] : data.map(result => {
             let title = '';
             if(result.attributes.volume) {
@@ -162,7 +165,8 @@ export default class MangaDex extends Connector {
 
     async _getPages(chapter) {
         const uri = new URL('/chapter/' + chapter.id, this.api);
-        const {data} = await this.fetchJSON(uri, 3);
+        const request = new Request(uri, this.requestOptions);
+        const {data} = await this.fetchJSON(request, 3);
         const server = await this._getServerNode(chapter);
         return data.attributes.data.map(file => this.createConnectorURI({
             networkNode: server, // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
@@ -202,16 +206,18 @@ export default class MangaDex extends Connector {
         if (groupIDs.length > 0) {
             await this.wait(this.config.throttle.value);
             const uri = new URL('/group', this.api);
-            uri.search = new URLSearchParams([ ['limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
-            const {data} = await this.fetchJSON(uri, 3);
-            data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
+            uri.search = new URLSearchParams([ [ 'limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
+            const request = new Request(uri, this.requestOptions);
+            const {data} = await this.fetchJSON(request, 3);
+             data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
         }
         return groupList;
     }
 
     async _getServerNode(chapter) {
         const uri = new URL('/at-home/server/' + chapter.id, this.api);
-        const data = await this.fetchJSON(uri, 3);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSON(request, 3);
         return data.baseUrl + '/data/';
     }
 
