@@ -131,7 +131,7 @@ export default class MangaDex extends Connector {
         uri.searchParams.set('manga', manga.id);
         const request = new Request(uri, this.requestOptions);
         const {data} = await this.fetchJSON(request, 3);
-         const groupMap = await this._getScanlationGroups(data);
+        const groupMap = await this._getScanlationGroups(data);
         return !data ? [] : data.map(result => {
             let title = '';
             if(result.attributes.volume) {
@@ -203,13 +203,13 @@ export default class MangaDex extends Connector {
             return accumulator.concat(ids);
         }, []);
         groupIDs = Array.from(new Set(groupIDs));
-        if (groupIDs.length > 0) {
+        if(groupIDs.length > 0) {
             await this.wait(this.config.throttle.value);
             const uri = new URL('/group', this.api);
             uri.search = new URLSearchParams([ [ 'limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
             const request = new Request(uri, this.requestOptions);
             const {data} = await this.fetchJSON(request, 3);
-             data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
+            data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
         }
         return groupList;
     }
