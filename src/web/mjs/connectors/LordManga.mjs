@@ -1,4 +1,4 @@
-import WordPressMangastream from './templates/WordPressMadara.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
 export default class LordManga extends WordPressMadara {
 
