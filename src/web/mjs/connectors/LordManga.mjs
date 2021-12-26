@@ -1,6 +1,6 @@
 import WordPressMangastream from './templates/WordPressMadara.mjs';
 
-export default class LordManga extends WordPressMangastream {
+export default class LordManga extends WordPressMadara {
 
     constructor() {
         super();
