@@ -7,7 +7,7 @@ export default class LegacyScans extends WordPressMangastream {
         super.id = 'legacyscans';
         super.label = 'Legacy-Scans';
         this.tags = ['webtoon', 'french'];
-        this.url = 'https://legacy-scans.com/';
+        this.url = 'https://legacy-scans.com';
         this.path = '/manga/list-mode/';
     }
 }
