@@ -7,6 +7,6 @@ export default class LordManga extends WordPressMadara {
         super.id = 'lordmanga';
         super.label = 'Lord Manga';
         this.tags = ['webtoon', 'english'];
-        this.url = 'https://lordmanga.com/';
+        this.url = 'https://lordmanga.com';
     }
 }
