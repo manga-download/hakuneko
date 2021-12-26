@@ -158,13 +158,12 @@ export default class MangaDex extends Connector {
     }
 
     async _getPages(chapter) {
-        const uri = new URL('/chapter/' + chapter.id, this.api);
+        const uri = new URL('/at-home/server/' + chapter.id, this.api);
         const request = new Request(uri, this.requestOptions);
-        const {data} = await this.fetchJSON(request, 3);
-        const server = await this._getServerNode(chapter);
-        return data.attributes.data.map(file => this.createConnectorURI({
-            networkNode: server, // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
-            hash: data.attributes.hash, // e.g. '1c41e55e32b21321ff11907469e5c323'
+        const data = await this.fetchJSON(request, 3);
+        return data.chapter.data.map(file => this.createConnectorURI({
+            networkNode: data.baseUrl + '/data/', // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
+            hash: data.chapter.hash, // e.g. '1c41e55e32b21321ff11907469e5c323'
             file: file // e.g. 'x1-216a1435.png'
         }));
     }
@@ -206,13 +205,6 @@ export default class MangaDex extends Connector {
             data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
         }
         return groupList;
-    }
-
-    async _getServerNode(chapter) {
-        const uri = new URL('/at-home/server/' + chapter.id, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request, 3);
-        return data.baseUrl + '/data/';
     }
 
     _padNum(number, places) {
