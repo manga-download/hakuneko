@@ -9,6 +9,20 @@ export default class BilibiliManhua extends Connector {
         super.label = '哔哩哔哩 漫画 (Bilibili Manhua)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
+
+        this.config = {
+            quality:  {
+                label: 'Preferred format',
+                description: 'format of images\nwebp (low)\njpg (medium)\npng (high))',
+                input: 'select',
+                options: [
+                    { value: 'webp', name: 'webp' },
+                    { value: 'jpg', name: 'jpg' },
+                    { value: 'png', name: 'png' },
+                ],
+                value: 'png'
+            }
+        };
     }
 
     async _fetchTwirp(path, body) {
@@ -78,7 +92,7 @@ export default class BilibiliManhua extends Connector {
         const data = await this._fetchTwirp('/GetImageIndex', {
             ep_id: chapter.id
         });
-        let images = data.images.map(image => image.path + '@' + image.x + 'w.jpg');
+        let images = data.images.map(image => image.path + '@' + image.x + 'w.' + this.config.quality.value);
         images = await this._fetchTwirp('/ImageToken', {
             urls: JSON.stringify(images)
         });
