@@ -8,7 +8,7 @@ export default class WeLoMa extends FlatManga {
         super.id = 'weloma';
         super.label = 'WeLoveManga';
         this.tags = ['manga', 'hentai', 'raw', 'japanese'];
-        this.url = 'https://weloma.net';
+        this.url = 'https://weloma.art';
         this.path = '/manga-list.html';
         this.requestOptions.headers.set('x-referer', this.url);
 
