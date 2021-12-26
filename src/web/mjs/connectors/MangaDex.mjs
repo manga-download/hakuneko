@@ -13,9 +13,9 @@ export default class MangaDex extends Connector {
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-sec-ch-ua', '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"');
         this.config = {
-            throttle: {
+            throttleRequests: {
                 label: 'Throttle Requests [ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive requests.',
+                description: 'Enter the timespan in [ms] to delay consecuitive requests to the api.',
                 input: 'numeric',
                 min: 100,
                 max: 10000,
