@@ -6,7 +6,7 @@ export default class GogoManga extends WordPressMangastream {
         super();
         super.id = 'gogomanga';
         super.label = 'Gogomanga';
-        this.tags = ['webtoon', 'English', 'manga'];
+        this.tags = ['webtoon', 'english', 'manga'];
         this.url = 'https://gogomanga.org';
         this.path = '/manga/list-mode/';
     }
