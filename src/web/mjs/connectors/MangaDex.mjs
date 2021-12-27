@@ -11,7 +11,17 @@ export default class MangaDex extends Connector {
         this.url = 'https://mangadex.org';
         this.api = 'https://api.mangadex.org';
         this.requestOptions.headers.set('x-referer', this.url);
-        this.throttleGlobal = 100;
+        this.requestOptions.headers.set('x-sec-ch-ua', '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"');
+        this.config = {
+            throttleRequests: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive requests to the api.',
+                input: 'numeric',
+                min: 100,
+                max: 10000,
+                value: 200
+            }
+        };
         this.licensedChapterGroups = [
             '4f1de6a2-f0c5-4ac5-bce5-02c7dbb67deb', // MangaPlus
             '8d8ecf83-8d42-4f8c-add8-60963f9f28d9' // Comikey
@@ -53,55 +63,51 @@ export default class MangaDex extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        // NOTE: Due to a limit of 10k results, it is necessary to permutate some filters in order to get as many results as possible
-        const queries = [
-            // [none] => total: 19000 (@2021/07)
-            { publicationDemographic: 'none', order: 'asc' },
-            { publicationDemographic: 'none', order: 'desc' },
-            // [josei] => total: 2396 (@2021/07)
-            { publicationDemographic: 'josei', order: 'asc' },
-            // [seinen] => total: 6810 (@2021/07)
-            { publicationDemographic: 'seinen', order: 'asc' },
-            // [shoujo] => total: 7441 (@2021/07)
-            { publicationDemographic: 'shoujo', order: 'asc' },
-            // [shounen] => total: 7436 (@2021/07)
-            { publicationDemographic: 'shounen', order: 'asc' },
-        ];
-        for(let query of queries) {
-            for(let page = 0, run = true; run; page++) {
-                let mangas = await this._getMangasFromPage(page, query);
-                mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        let first10k = await this._getMangasFromPages(0, 99);
+        mangaList = [...mangaList, ...first10k.data];
+        let nextAt = first10k.nextAt;
+
+        for (let i = 1; i <= first10k.total / 10000; i += 1) {
+            let first100of10k = await this._getMangasFromPages(0, 0, nextAt);
+            mangaList = [...mangaList, ...first100of10k.data.slice(1)];
+            let pages = Math.min(Math.floor(first100of10k.total / 100), 99);
+            if (pages > 0) {
+                let data = await this._getMangasFromPages(1, pages, nextAt);
+                mangaList = [...mangaList, ...data.data];
+                nextAt = data.nextAt;
             }
         }
-        return mangaList;
-    }
-
-    async _getMangasFromPage(page, query) {
-        if(page > 99) {
-            // NOTE: Current limit is 10000 entries (elastic search limit)
-            //       => Do not throw an error but return gracefully instead, so at least the partial list is shown
-            return [];
-        }
-        await this.wait(this.throttleGlobal);
-        const uri = new URL('/manga', this.api);
-        uri.searchParams.set('limit', 100);
-        uri.searchParams.set('offset', 100 * page);
-        uri.searchParams.set('publicationDemographic[]', query.publicationDemographic);
-        uri.searchParams.set('order[createdAt]', query.order);
-        uri.searchParams.append('contentRating[]', 'safe');
-        uri.searchParams.append('contentRating[]', 'suggestive');
-        uri.searchParams.append('contentRating[]', 'erotica');
-        uri.searchParams.append('contentRating[]', 'pornographic');
-        const request = new Request(uri, this.requestOptions);
-        const {data} = await this.fetchJSON(request, 3);
-        return !data ? [] : data.map(result => {
-            const title = document.createElement('div');
-            title.innerHTML = result.attributes.title.en || Object.values(result.attributes.title).shift();
+        return mangaList.map(ele => {
             return {
-                id: result.id,
-                title: title.textContent.trim()
+                id: ele.id,
+                title: (ele.attributes.title.en || Object.values(ele.attributes.title).shift()).trim()
             };
         });
+    }
+
+    async _getMangasFromPages(start, pages, nextAt) {
+        let tmp = [];
+        let data100;
+        for (let page = start; page <= pages; page += 1) {
+            const uri = new URL('/manga', this.api);
+            uri.searchParams.set('limit', 100);
+            uri.searchParams.set('offset', 100 * page);
+            uri.searchParams.set('order[createdAt]', 'asc');
+            uri.searchParams.append('contentRating[]', 'safe');
+            uri.searchParams.append('contentRating[]', 'suggestive');
+            uri.searchParams.append('contentRating[]', 'erotica');
+            uri.searchParams.append('contentRating[]', 'pornographic');
+            if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
+            const request = new Request(uri, this.requestOptions);
+            data100 = await this.fetchJSON(request, 3);
+            await this.wait(this.config.throttle.value);
+            tmp = [...tmp, ...data100.data];
+        }
+        return {
+            data: tmp,
+            nextAt: data100.data.pop().attributes.createdAt.replace('+00:00', ''),
+            total: data100.total
+        };
     }
 
     async _getChapters(manga) {
@@ -114,7 +120,7 @@ export default class MangaDex extends Connector {
     }
 
     async _getChaptersFromPage(manga, page) {
-        await this.wait(this.throttleGlobal);
+        await this.wait(this.config.throttle.value);
         const uri = new URL('/chapter', this.api);
         uri.searchParams.set('limit', 100);
         uri.searchParams.set('offset', 100 * page);
@@ -198,7 +204,7 @@ export default class MangaDex extends Connector {
         }, []);
         groupIDs = Array.from(new Set(groupIDs));
         if(groupIDs.length > 0) {
-            await this.wait(this.throttleGlobal);
+            await this.wait(this.config.throttle.value);
             const uri = new URL('/group', this.api);
             uri.search = new URLSearchParams([ [ 'limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
             const request = new Request(uri, this.requestOptions);
