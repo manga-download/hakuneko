@@ -1,6 +1,5 @@
 import FlatManga from './templates/FlatManga.mjs';
 
-
 // Similar to LoveHug
 export default class WeLoMa extends FlatManga {
 
