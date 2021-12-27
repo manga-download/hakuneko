@@ -42,8 +42,9 @@ export default class MangaDex extends Connector {
     }
 
     async _initializeConnector() {
-        this.serverNetwork.push('https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network/data/');
-        this.serverNetwork.push('https://dj5jn4gz46ea6.xnvda7fch4zhr.mangadex.network/data/');
+        //this.serverNetwork.push('https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network/data/');
+        //this.serverNetwork.push('https://bddhaec337xvm.xnvda7fch4zhr.mangadex.network/data/');
+        this.serverNetwork.push('https://cache.ayaya.red/mdah/data/');
         console.log(`Added Network Seeds '[ ${this.serverNetwork.join(', ')} ]' to ${this.label}`);
         const request = new Request(this.url, this.requestOptions);
         return Engine.Request.fetchUI(request, '');
