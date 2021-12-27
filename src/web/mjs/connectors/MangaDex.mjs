@@ -14,12 +14,20 @@ export default class MangaDex extends Connector {
         this.requestOptions.headers.set('x-sec-ch-ua', '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"');
         this.config = {
             throttleRequests: {
-                label: 'Throttle Requests [ms]',
+                label: 'Throttle API Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive requests to the api.',
                 input: 'numeric',
                 min: 100,
                 max: 10000,
                 value: 200
+            },
+            throttle: {
+                label: 'Throttle Image Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests.',
+                input: 'numeric',
+                min: 50,
+                max: 5000,
+                value: 500
             }
         };
         this.licensedChapterGroups = [
