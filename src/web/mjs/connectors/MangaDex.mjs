@@ -194,7 +194,7 @@ export default class MangaDex extends Connector {
                 const response = await fetch(request);
                 if(response.ok && response.status === 200) {
                     const data = await response.blob();
-                    if(response.headers.get('content-length') == data.size) {
+                    if(response.headers.get('content-length') == data.size || await createImageBitmap(data)) {
                         return this._blobToBuffer(data);
                     }
                 }
