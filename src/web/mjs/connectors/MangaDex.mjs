@@ -100,7 +100,7 @@ export default class MangaDex extends Connector {
             if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
             const request = new Request(uri, this.requestOptions);
             data100 = await this.fetchJSON(request, 3);
-            await this.wait(this.config.throttle.value);
+            await this.wait(this.config.throttleRequests.value);
             tmp = [...tmp, ...data100.data];
         }
         return {
@@ -120,7 +120,7 @@ export default class MangaDex extends Connector {
     }
 
     async _getChaptersFromPage(manga, page) {
-        await this.wait(this.config.throttle.value);
+        await this.wait(this.config.throttleRequests.value);
         const uri = new URL('/chapter', this.api);
         uri.searchParams.set('limit', 100);
         uri.searchParams.set('offset', 100 * page);
@@ -204,7 +204,7 @@ export default class MangaDex extends Connector {
         }, []);
         groupIDs = Array.from(new Set(groupIDs));
         if(groupIDs.length > 0) {
-            await this.wait(this.config.throttle.value);
+            await this.wait(this.config.throttleRequests.value);
             const uri = new URL('/group', this.api);
             uri.search = new URLSearchParams([ [ 'limit', 100 ], ...groupIDs.map(id => [ 'ids[]', id ]) ]).toString();
             const request = new Request(uri, this.requestOptions);
