@@ -19,7 +19,7 @@ export default class MangaDex extends Connector {
                 input: 'numeric',
                 min: 100,
                 max: 10000,
-                value: 200
+                value: 2000
             }
         };
         this.licensedChapterGroups = [
