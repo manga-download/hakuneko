@@ -197,6 +197,23 @@ describe("HakuNeko Engine", () => {
             });
         });
 
+        describe('Baozimh', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'baozimh',
+                    mangaURL: 'https://www.baozimh.com/comic/nudiduolanyan-fuxiaolianmeng',
+                    chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'Baozimh',
+                    mangaID: '/comic/nudiduolanyan-fuxiaolianmeng',
+                    mangaTitle: '女帝多藍顏',
+                    chapterID: '/user/page_direct?comic_id=nudiduolanyan-fuxiaolianmeng&section_slot=0&chapter_slot=0',
+                    chapterTitle: '預告',
+                    pageCount: 46,
+                    pageMatcher: /^https:\/\/.*.baozimh.com\/scomic\/nudiduolanyan-fuxiaolianmeng\/\d\/.*\/(\d*).jpg$/
+                });
+            });
+        });
         describe('ReadM', () => {
             it('should get manga, chapters and page links', async () => {
                 await assertConnector(page, {
