@@ -14,12 +14,20 @@ export default class MangaDex extends Connector {
         this.requestOptions.headers.set('x-sec-ch-ua', '" Not A;Brand";v="99", "Chromium";v="96", "Google Chrome";v="96"');
         this.config = {
             throttleRequests: {
-                label: 'Throttle Requests [ms]',
+                label: 'Throttle API Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive requests to the api.',
                 input: 'numeric',
                 min: 100,
                 max: 10000,
                 value: 2000
+            },
+            throttle: {
+                label: 'Throttle Image Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests.',
+                input: 'numeric',
+                min: 50,
+                max: 5000,
+                value: 500
             }
         };
         this.licensedChapterGroups = [
@@ -34,8 +42,9 @@ export default class MangaDex extends Connector {
     }
 
     async _initializeConnector() {
-        this.serverNetwork.push('https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network/data/');
-        this.serverNetwork.push('https://dj5jn4gz46ea6.xnvda7fch4zhr.mangadex.network/data/');
+        //this.serverNetwork.push('https://reh3tgm2rs8sr.xnvda7fch4zhr.mangadex.network/data/');
+        //this.serverNetwork.push('https://bddhaec337xvm.xnvda7fch4zhr.mangadex.network/data/');
+        this.serverNetwork.push('https://cache.ayaya.red/mdah/data/');
         console.log(`Added Network Seeds '[ ${this.serverNetwork.join(', ')} ]' to ${this.label}`);
         const request = new Request(this.url, this.requestOptions);
         return Engine.Request.fetchUI(request, '');
@@ -164,13 +173,12 @@ export default class MangaDex extends Connector {
     }
 
     async _getPages(chapter) {
-        const uri = new URL('/chapter/' + chapter.id, this.api);
+        const uri = new URL('/at-home/server/' + chapter.id, this.api);
         const request = new Request(uri, this.requestOptions);
-        const {data} = await this.fetchJSON(request, 3);
-        const server = await this._getServerNode(chapter);
-        return data.attributes.data.map(file => this.createConnectorURI({
-            networkNode: server, // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
-            hash: data.attributes.hash, // e.g. '1c41e55e32b21321ff11907469e5c323'
+        const data = await this.fetchJSON(request, 3);
+        return data.chapter.data.map(file => this.createConnectorURI({
+            networkNode: data.baseUrl + '/data/', // e.g. 'https://foo.bar.mangadex.network:44300/token/data/'
+            hash: data.chapter.hash, // e.g. '1c41e55e32b21321ff11907469e5c323'
             file: file // e.g. 'x1-216a1435.png'
         }));
     }
@@ -187,7 +195,7 @@ export default class MangaDex extends Connector {
                 const response = await fetch(request);
                 if(response.ok && response.status === 200) {
                     const data = await response.blob();
-                    if(response.headers.get('content-length') == data.size) {
+                    if(response.headers.get('content-length') == data.size || await createImageBitmap(data)) {
                         return this._blobToBuffer(data);
                     }
                 }
@@ -212,13 +220,6 @@ export default class MangaDex extends Connector {
             data.forEach(result => groupList[result.id] = result.attributes.name || 'unknown');
         }
         return groupList;
-    }
-
-    async _getServerNode(chapter) {
-        const uri = new URL('/at-home/server/' + chapter.id, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request, 3);
-        return data.baseUrl + '/data/';
     }
 
     _padNum(number, places) {
