@@ -6,7 +6,7 @@ export default class AzoraWorld extends WordPressMadara {
         super();
         super.id = 'azoraworld';
         super.label = 'AzoraWorld';
-        this.tags = [ 'webtoon', 'turkish', 'manga' ];
+        this.tags = [ 'webtoon', 'arabic', 'manga' ];
         this.url = 'https://azoraworld.com';
     }
 }
