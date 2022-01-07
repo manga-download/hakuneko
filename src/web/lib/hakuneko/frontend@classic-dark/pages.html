@@ -116,7 +116,11 @@
                     &nbsp;
                     <i class="fas fa-search-plus fa-2x button" title="Zoom In (➕)" on-click="zoomIn"></i>
                     <i class="fas fa-search-minus fa-2x button" title="Zoom Out (➖)" on-click="zoomOut"></i>
-                    &nbsp
+                    &nbsp;
+                    <i class="fas fa-compress-arrows-alt fa-2x button" title="Default Image Width (*)" on-click="defaultZoom"></i>
+                    <i class="fas fa-expand-arrows-alt fa-2x button" title="Zoom to Fit Window (/)" on-click="fullWidthZoom"></i>
+                    &nbsp;
+                    <i>Image Width: [[ imageWidth ]]%</i>
                     <i class="fas fa-times-circle fa-2x button" title="Close (ESC)" on-click="hideViewer"></i>
                 </div>
                 <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
@@ -517,15 +521,29 @@
             /**
              *
              */
+            defaultZoom( event ) {
+                this.set( 'imageWidth', 75);
+            }
+
+            /**
+             *
+             */
+            fullWidthZoom( event ) {
+                 this.set( 'imageWidth', 100);
+            }
+
+            /**
+             *
+             */
             zoom( scale ) {
-                let previousHeight = this.$.container.scrollHeight;
-                let previousOffset = this.$.container.scrollTop;
-                this.set( 'imageWidth', scale );
-                // embed in timeout function to ensure layout is updated before adjusting offsetY
-                //setTimeout( function() {
-                    // adjust new offsetY depending on height changed ratio of container after scaling images
-                    this.$.container.scrollTop = previousOffset * this.$.container.scrollHeight / previousHeight;
-                //}.bind( this ), 0 );
+                    let previousHeight = this.$.container.scrollHeight;
+                    let previousOffset = this.$.container.scrollTop;
+                    this.set( 'imageWidth', scale );
+                    // embed in timeout function to ensure layout is updated before adjusting offsetY
+                    //setTimeout( function() {
+                        // adjust new offsetY depending on height changed ratio of container after scaling images
+                        this.$.container.scrollTop = previousOffset * this.$.container.scrollHeight / previousHeight;
+                    //}.bind( this ), 0 );
             }
 
             /**
