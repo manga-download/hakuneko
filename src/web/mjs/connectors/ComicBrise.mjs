@@ -7,7 +7,7 @@ export default class ComicBrise extends SpeedBinb {
         super();
         super.id = 'comicbrise';
         super.label = 'comicBrise';
-        this.tags = [ 'manga', 'japanese' ];
+        this.tags = ['manga', 'japanese'];
         this.url = 'https://comic-brise.com';
     }
 
@@ -34,11 +34,11 @@ export default class ComicBrise extends SpeedBinb {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, '.modal.modal-chapter .modal-body');
         return data.reverse()
-            .filter(e => e.querySelector(".banner-trial source").getAttribute("alt")=="FREE")
+            .filter(e => e.querySelector(".banner-trial source").getAttribute("alt") == "FREE")
             .map(element => {
                 return {
-                    id : element.querySelector('.banner-trial a').pathname,
-                    title : element.querySelector('.primary-title').textContent.trim()
+                    id: element.querySelector('.banner-trial a').pathname,
+                    title: element.querySelector('.primary-title').textContent.trim()
                 };
             });
     }
