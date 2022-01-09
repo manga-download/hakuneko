@@ -20,29 +20,26 @@ export default class ComicBrise extends SpeedBinb {
     }
 
     async _getMangas() {
-        const msg = 'This website does not support mangas/chapters, please copy and paste the links containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        const request = new Request(new URL('/titlelist', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, ".list-works a");
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
+                title: element.innerText.trim()
+            };
+        });
     }
-
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-		const dom = await this.fetchDOM(request);
-        const chaptersNames = dom.querySelectorAll('.modal.modal-chapter .modal-body .primary-title');
-        const chaptersLink = dom.querySelectorAll('.modal.modal-chapter .modal-body .banner-trial a');
-        const chaptersFree = dom.querySelectorAll('.modal.modal-chapter .modal-body .banner-trial source');
-		let data = []; 
-		for(let i = 0; i< chaptersNames.length; i++){
-			let chapterNames = chaptersNames[i];
-			let chapterLink = chaptersLink[i];
-			let chapterFree = chaptersFree[i];
-			if(chapterFree.getAttribute("alt")=="FREE"){
-				data.push({
-					id: this.getRootRelativeOrAbsoluteLink(chapterLink+"/", this.url),
-					title: chapterNames.innerText.trim(),
-				})
-			}
-		}
-		return data;
+        const data = await this.fetchDOM(request, '.modal.modal-chapter .modal-body');
+        return data.reverse()
+            .filter(e => e.querySelector(".banner-trial source").getAttribute("alt")=="FREE")
+            .map(element => {
+                return {
+                    id : element.querySelector('.banner-trial a').pathname,
+                    title : element.querySelector('.primary-title').textContent.trim()
+                };
+            });
     }
 }
