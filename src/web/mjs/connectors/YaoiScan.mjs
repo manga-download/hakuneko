@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class Yaoiscan extends WordPressMadara {
+export default class YaoiScan extends WordPressMadara {
 
     constructor() {
         super();
