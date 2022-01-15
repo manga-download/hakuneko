@@ -515,6 +515,12 @@ export default class Request {
         }
         delete details.requestHeaders['x-sec-fetch-site'];
 
+        //
+        if (details.requestHeaders['x-sec-ch-ua']) {
+            details.requestHeaders['sec-ch-ua'] = details.requestHeaders['x-sec-ch-ua'];
+        }
+        delete details.requestHeaders['x-sec-ch-ua'];
+
         // HACK: Imgur does not support request with accept types containing other mimes then images
         //       => overwrite accept header to prevent redirection to HTML notice
         if(/i\.imgur\.com/i.test(uri.hostname) || /\.(jpg|jpeg|png|gif|webp)/i.test(uri.pathname)) {
@@ -561,6 +567,13 @@ export default class Request {
         }
         if(uri.hostname.includes('webtoons') && uri.searchParams.get('title_no')) {
             details.responseHeaders['Set-Cookie'] = `agn2=${uri.searchParams.get('title_no')}; Domain=${uri.hostname}; Path=/`;
+        }
+        if(uri.hostname.includes('comikey') && uri.pathname.includes('/read/')) {
+            delete details.responseHeaders['content-security-policy'];
+        }
+
+        if(details.responseHeaders['set-cookie'] || details.responseHeaders['Set-Cookie']) {
+            Cookie.applyCrossSiteCookies(details.responseHeaders);
         }
 
         return details;
