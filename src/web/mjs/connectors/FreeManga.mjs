@@ -6,7 +6,7 @@ export default class FreeManga extends WordPressMadara {
         super();
         super.id = 'freemanga';
         super.label = 'Free Manga';
-        this.tags = ['webtoon', 'english', 'Manga'];
+        this.tags = ['webtoon', 'english', 'manga'];
         this.url = 'https://freemanga.me/';
     }
 }
