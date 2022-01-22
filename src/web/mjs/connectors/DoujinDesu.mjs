@@ -20,10 +20,8 @@ export default class DoujinDesu extends WordPressMangastream {
     // NOTE: Fallback to pagination since '/komik-list/?list' empty
     async _getMangas() {
         let mangaList = [];
-        let path;
         for(let page = 1, run = true; run; page++) {
-            path = this.path;
-            if(page == 1) path = '/komik-list/';
+            const path = page > 1 ? this.path : '/komik-list/';
             let mangas = await this._getMangasFromPage(path, page);
             mangas.length ? mangaList.push(...mangas) : run = false;
         }
