@@ -6,7 +6,7 @@ export default class MangaReaderTo extends Connector {
     constructor() {
         super();
         super.id = 'mangareaderto';
-        super.label = '!MangaReader.to';
+        super.label = 'MangaReader.to';
         this.tags = ['manga', 'english'];
         this.url = 'https://mangareader.to';
         this.path = '/az-list?page=%PAGE%';
@@ -72,8 +72,8 @@ export default class MangaReaderTo extends Connector {
         const readingId = data[0].getAttribute('data-reading-id');
 
         const script = await this._getImages(readingId);
-
         const images = await Engine.Request.fetchUI(request, script, 60000, true);
+
         return images.map(page => this.createConnectorURI(page));
     }
 
@@ -83,6 +83,7 @@ export default class MangaReaderTo extends Connector {
         uri.searchParams.set('quality', 'high');
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
+
         const dom = this.createDOM(data.html);
         const images = Array.from(dom.querySelectorAll('.iv-card'));
 
