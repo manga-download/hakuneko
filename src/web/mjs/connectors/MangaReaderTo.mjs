@@ -7,7 +7,7 @@ export default class MangaReaderTo extends Connector {
         super();
         super.id = 'mangareaderto';
         super.label = 'MangaReader.to';
-        this.tags = ['manga', 'english'];
+        this.tags = ['manga', 'webtoon', 'japanese', 'korean', 'english', 'chinese'];
         this.url = 'https://mangareader.to';
         this.path = '/az-list?page=';
 
@@ -55,7 +55,7 @@ export default class MangaReaderTo extends Connector {
         return data.map(element => {
             const link = this.getRootRelativeOrAbsoluteLink(element, this.url);
             const title = element.title.replace(/:(.*)/gi, '');
-            const lang = link.match(/(\/en\/)|(\/ja\/)/gi);
+            const lang = link.match(/(\/en\/)|(\/ja\/)|(\/ko\/)|(\/zh\/)/gi);
             const language = lang ? lang[0].replace(/\//gm, '').toUpperCase() : '';
             return {
                 id: link,
