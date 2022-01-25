@@ -76,7 +76,9 @@ async function assertConnector(browserPage, parameters, expectations) {
             return page;
         }
     });
-    pages.forEach(page => expect(page).toMatch(expectations.pageMatcher));
+    if(expectations.pageMatcher){
+        pages.forEach(page => expect(page).toMatch(expectations.pageMatcher));
+    }
 }
 
 describe("HakuNeko Engine", () => {
@@ -197,6 +199,22 @@ describe("HakuNeko Engine", () => {
             });
         });
 
+        describe('ComicBrise', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'comicbrise',
+                    mangaURL: 'https://comic-brise.com/contents/oshiai',
+                    chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'ComicBrise',
+                    mangaID: '/contents/oshiai',
+                    mangaTitle: '推しに認知してもらうためにアイドル始めました。',
+                    chapterID: '/comic_ep/oshiai_ep1/',
+                    chapterTitle: '第１話',
+                    pageCount: 49
+                });
+            });
+        });
         describe('ReadM', () => {
             it('should get manga, chapters and page links', async () => {
                 await assertConnector(page, {
