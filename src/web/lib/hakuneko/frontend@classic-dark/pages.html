@@ -108,8 +108,8 @@
             <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
                 <div id="buttons" tabindex="0" onblur="this.focus()" on-keydown="onKeyDown">
                     <span class="title">[[ selectedChapter.title ]]</span>
-                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down (ArrowLeft)" on-click="requestChapterDown"></i>
-                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up (ArrowRight)" on-click="requestChapterUp"></i>
+                    <i class="fas fa-chevron-left fa-2x button" title="Previous Chapter (ArrowLeft)" on-click="requestChapterDown"></i>
+                    <i class="fas fa-chevron-right fa-2x button" title="Next Chapter (ArrowRight)" on-click="requestChapterUp"></i>
                     &nbsp;
                     <i class="fas fa-compress fa-2x button" title="Decrease spacing between images (CTRL ➖)" on-click="decreaseImagePadding"></i>
                     <i class="fas fa-expand fa-2x button" title="Increase spacing between images (CTRL ➕)" on-click="increaseImagePadding"></i>
@@ -121,6 +121,7 @@
                     <i class="fas fa-expand-arrows-alt fa-2x button" title="Zoom to Fit Window (/)" on-click="fullWidthZoom"></i>
                     &nbsp;
                     <i>Image Width: [[ imageWidth ]]%</i>
+                    <i class="fas fa-angle-double-down fa-2x button" title="Magic Scroll Down (SPACEBAR)" on-click="scrollDown"></i>
                     <i class="fas fa-times-circle fa-2x button" title="Close (ESC)" on-click="hideViewer"></i>
                 </div>
                 <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
@@ -536,14 +537,14 @@
              *
              */
             zoom( scale ) {
-                    let previousHeight = this.$.container.scrollHeight;
-                    let previousOffset = this.$.container.scrollTop;
-                    this.set( 'imageWidth', scale );
-                    // embed in timeout function to ensure layout is updated before adjusting offsetY
-                    //setTimeout( function() {
-                        // adjust new offsetY depending on height changed ratio of container after scaling images
-                        this.$.container.scrollTop = previousOffset * this.$.container.scrollHeight / previousHeight;
-                    //}.bind( this ), 0 );
+                let previousHeight = this.$.container.scrollHeight;
+                let previousOffset = this.$.container.scrollTop;
+                this.set( 'imageWidth', scale );
+                // embed in timeout function to ensure layout is updated before adjusting offsetY
+                //setTimeout( function() {
+                    // adjust new offsetY depending on height changed ratio of container after scaling images
+                    this.$.container.scrollTop = previousOffset * this.$.container.scrollHeight / previousHeight;
+                //}.bind( this ), 0 );
             }
 
             /**
@@ -597,6 +598,13 @@
                         behavior: 'smooth' 
                     });
                 }
+            }
+
+            /**
+             *
+             */
+            scrollDown( event ) {
+                this.scrollMagic(window.innerHeight*0.80);
             }
 
         }
