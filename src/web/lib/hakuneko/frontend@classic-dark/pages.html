@@ -108,15 +108,20 @@
             <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
                 <div id="buttons" tabindex="0" onblur="this.focus()" on-keydown="onKeyDown">
                     <span class="title">[[ selectedChapter.title ]]</span>
-                    <i class="fas fa-chevron-down fa-2x button" title="Chapter Down (ArrowLeft)" on-click="requestChapterDown"></i>
-                    <i class="fas fa-chevron-up fa-2x button" title="Chapter Up (ArrowRight)" on-click="requestChapterUp"></i>
+                    <i class="fas fa-chevron-left fa-2x button" title="Previous Chapter (ArrowLeft)" on-click="requestChapterDown"></i>
+                    <i class="fas fa-chevron-right fa-2x button" title="Next Chapter (ArrowRight)" on-click="requestChapterUp"></i>
                     &nbsp;
                     <i class="fas fa-compress fa-2x button" title="Decrease spacing between images (CTRL ➖)" on-click="decreaseImagePadding"></i>
                     <i class="fas fa-expand fa-2x button" title="Increase spacing between images (CTRL ➕)" on-click="increaseImagePadding"></i>
                     &nbsp;
                     <i class="fas fa-search-plus fa-2x button" title="Zoom In (➕)" on-click="zoomIn"></i>
                     <i class="fas fa-search-minus fa-2x button" title="Zoom Out (➖)" on-click="zoomOut"></i>
-                    &nbsp
+                    &nbsp;
+                    <i class="fas fa-compress-arrows-alt fa-2x button" title="Default Image Width (*)" on-click="defaultZoom"></i>
+                    <i class="fas fa-expand-arrows-alt fa-2x button" title="Zoom to Fit Window (/)" on-click="fullWidthZoom"></i>
+                    &nbsp;
+                    <i>Image Width: [[ imageWidth ]]%</i>
+                    <i class="fas fa-angle-double-down fa-2x button" title="Magic Scroll Down (SPACEBAR)" on-click="scrollDown"></i>
                     <i class="fas fa-times-circle fa-2x button" title="Close (ESC)" on-click="hideViewer"></i>
                 </div>
                 <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
@@ -517,6 +522,20 @@
             /**
              *
              */
+            defaultZoom( event ) {
+                this.set( 'imageWidth', 75);
+            }
+
+            /**
+             *
+             */
+            fullWidthZoom( event ) {
+                 this.set( 'imageWidth', 100);
+            }
+
+            /**
+             *
+             */
             zoom( scale ) {
                 let previousHeight = this.$.container.scrollHeight;
                 let previousOffset = this.$.container.scrollTop;
@@ -579,6 +598,13 @@
                         behavior: 'smooth' 
                     });
                 }
+            }
+
+            /**
+             *
+             */
+            scrollDown( event ) {
+                this.scrollMagic(window.innerHeight*0.80);
             }
 
         }
