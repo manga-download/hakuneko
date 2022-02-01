@@ -740,7 +740,7 @@ export default class Connector {
 
     getFormatRegex() {
         return {
-            chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Bölüm|Chap|Chương|ตอนที่|Kapitel|Capitolo|Rozdział|Глава|Cap[ií]tulo|cap|episode|#):?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
+            chapterRegex: /\s*(?:^|ch\.?|ep\.?|chapter|chapitre|Bölüm|Chap|Chương|ตอนที่|Kapitel|Capitolo|Rozdział|Глава|Cap[ií]tulo|cap|[ée]pisode|Page|N゜|#)\s?:?\s*([\d.?\-?v?]+)(?:\s|:|$)+/i, // $ not working in character groups => [\s\:$]+ does not work
             volumeRegex: /\s*(?:vol\.?|volume|Sezon|Том|Band|Cilt|tome)\s*(\d+)/i
         };
     }

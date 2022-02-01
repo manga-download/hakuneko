@@ -16,7 +16,7 @@ export default class Naver extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#content div.comicinfo div.detail h2', 3);
+        let data = await this.fetchDOM(request, 'div#content div.comicinfo div.detail h2 span.title', 3);
         uri.searchParams.delete('page');
         let id = uri.pathname + uri.search;
         let title = data[0].childNodes[0].nodeValue.trim();
