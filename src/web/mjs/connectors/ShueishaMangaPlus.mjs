@@ -15,22 +15,10 @@ export default class ShueishaMangaPlus extends Publus {
     }
 
     _getLanguage(language) {
-        switch (language) {
-            case 1:
-                return ' [es]';
-            case 2:
-                return ' [fr]';
-            case 3:
-                return ' [id]';
-            case 4:
-                return ' [pt-br]';
-            case 5:
-                return ' [ru]';
-            case 6:
-                return ' [th]';
-            default:
-                return ' [en]';
-        }
+        const languages = {
+            1: '[es]', 2: '[fr]', 3: '[id]', 4: '[pt-br]', 5: '[ru]', 6: '[th]'
+        };
+        return languages[language] || '[en]';
     }
 
     async _getMangaFromURI(uri) {
@@ -40,7 +28,7 @@ export default class ShueishaMangaPlus extends Publus {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchPROTO(request, this.protoTypes, this.rootType);
         let title = data.success.titleDetailView.title;
-        title = title.name + this._getLanguage(title.language);
+        title = `${title.name} ${this._getLanguage(title.language)}`;
         return new Manga(this, id, title);
     }
 
@@ -50,7 +38,7 @@ export default class ShueishaMangaPlus extends Publus {
         return data.success.allTitlesView.titles.map(manga => {
             return {
                 id: manga.titleId,
-                title: manga.name + this._getLanguage(manga.language)
+                title: `${manga.name} ${this._getLanguage(manga.language)}`
             };
         });
     }
