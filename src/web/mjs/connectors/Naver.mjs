@@ -19,7 +19,7 @@ export default class Naver extends Connector {
         let data = await this.fetchDOM(request, 'div#content div.comicinfo div.detail h2 span.title', 3);
         uri.searchParams.delete('page');
         let id = uri.pathname + uri.search;
-        let title = data[0].childNodes[0].nodeValue.trim();
+        let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
