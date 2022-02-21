@@ -105,7 +105,7 @@ export default class Tsumino extends Connector {
                     } catch(error) {
                         reject(error);
                     }
-                }); 
+                });
             `;
             let request = new Request(link, this.requestOptions);
             request.headers.set('x-referer', referer.url);
