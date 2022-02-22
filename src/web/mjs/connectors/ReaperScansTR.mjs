@@ -7,7 +7,7 @@ export default class ReaperScansTR extends WordPressMadara {
         super.id = 'reaperscanstr';
         super.label = 'Reaper Scans TR';
         this.tags = ['webtoon', 'turkish'];
-        this.url = 'https://tr.reaperscans.com';
+        this.url = 'https://reaperscanstr.com';
         this.queryChapters = 'div.chapter-link > a';
     }
 }
