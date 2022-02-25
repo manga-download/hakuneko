@@ -59,7 +59,7 @@ export default class EHentai extends Connector {
 
     async _handleConnectorURI(payload) {
         let request = new Request(payload, this.requestOptions);
-        let data = await this.fetchDOM(request, 'source#img, a[href*="fullimg.php"]');
+        let data = (await this.fetchDOM(request, 'source#img, a[href*="fullimg.php"]')).reverse();
         let response = await fetch(this.getAbsolutePath(data[0], request.url), this.requestOptions);
         if(!response.headers.get('content-type').startsWith('image/')) {
             response = await fetch(this.getAbsolutePath(data[0], request.url), this.requestOptions);
