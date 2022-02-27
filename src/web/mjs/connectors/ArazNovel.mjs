@@ -1,12 +1,12 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMadaraNovel from './templates/WordPressMadaraNovel.mjs';
 
-export default class ArazNovel extends WordPressMadara {
+export default class ArazNovel extends WordPressMadaraNovel {
 
     constructor() {
         super();
         super.id = 'araznovel';
         super.label = 'ArazNovel';
-        this.tags = [ 'webtoon', 'turkish' ];
-        this.url = 'https://www.araznovel.com';
+        this.tags = [ 'webtoon', 'novel', 'turkish' ];
+        this.url = 'https://araznovel.com';
     }
 }
