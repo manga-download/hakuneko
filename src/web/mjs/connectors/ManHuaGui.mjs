@@ -39,6 +39,10 @@ export default class ManHuaGui extends SinMH {
         `;
     }
 
+    canHandleURI(uri) {
+        return /https?:\/\/(?:www\.)?(mhgui|manhuagui).com/.test(uri.origin);
+    }
+
     async _getMangas() {
         let msg = 'This function was disabled to prevent of being IP banned by the website owner, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
         throw new Error(msg);
