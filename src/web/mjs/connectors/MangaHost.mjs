@@ -11,7 +11,7 @@ export default class MangaHost extends Connector {
         this.url = 'https://mangahostz.com';
 
         this.config = {
-            throttle: {
+            mangaListThrottle: {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 403 errors during manga list update.',
                 input: 'numeric',
@@ -39,32 +39,22 @@ export default class MangaHost extends Connector {
         return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
-    async _getMangaListFromPages(mangaPageLinks, index) {
-        if (index === undefined) {
-            index = 0;
-        }
-        await this.wait(this.config.throttle.value);
-        const data = await this.fetchDOM(mangaPageLinks[index], 'a.manga-block-title-link', 5);
-
-        let mangaList = data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim()
-            };
-        });
-        if (index < mangaPageLinks.length - 1) {
-            return this._getMangaListFromPages(mangaPageLinks, index + 1)
-                .then(mangas => mangas.concat(mangaList));
-        } else {
-            return mangaList;
-        }
-    }
-
     async _getMangas() {
-        const data = await this.fetchDOM(this.url + '/mangas', 'div.paginador div.wp-pagenavi a.last');
-        let pageCount = parseInt(data[0].href.match(/(\d+)$/)[1]);
-        let pageLinks = [... new Array(pageCount).keys()].map(page => this.url + '/mangas/page/' + (page + 1));
-        return this._getMangaListFromPages(pageLinks);
+        const pageData = await this.fetchDOM(this.url + '/mangas', 'div.paginador div.wp-pagenavi a.last');
+        let pageCount = parseInt(pageData[0].href.match(/(\d+)$/)[1]);
+        let mangaList = [];
+        for (let page = 1; page <= pageCount; page++) {
+            const data = await this.fetchDOM(this.url + '/mangas/page/' + page, 'a.manga-block-title-link', 5);
+            const pageList = data.map(element => {
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                    title: element.text.trim()
+                };
+            });
+            await this.wait(this.config.mangaListThrottle.value);
+            mangaList.push(...pageList);
+        }
+        return mangaList;
     }
 
     async _getChapters(manga) {
@@ -81,7 +71,6 @@ export default class MangaHost extends Connector {
     }
 
     async _getPages(chapter) {
-        console.log(chapter.id);
         let request = new Request(chapter.id, this.requestOptions);
         return await this.fetchRegex(request, /<img\s+id='img_\d+'\s+src='(.*?)'/g);
     }
