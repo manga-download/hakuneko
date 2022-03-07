@@ -14,7 +14,7 @@ export default class wuqimh extends SinMH {
         this.queryMangasPageCount = 'div.pager-cont span.pager a:nth-last-of-type(2)';
         this.queryChapters = 'div.chapter-list ul li a';
         this.queryPagesScript =`
-            new Promise(resolve => resolve(cInfo.fs.map(img => 'http://' + pageConfig.host.auto + img)));   
+            new Promise(resolve => resolve(cInfo.fs.map(img => 'http://' + pageConfig.host.auto + img)));
         `;
     }
 }

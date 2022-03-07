@@ -6,7 +6,7 @@ export default class ComicEarthStar extends Publus {
     constructor() {
         super();
         super.id = 'comicearthstar';
-        super.label = 'コミック　アース・スター (Comic Earth Star)';
+        super.label = 'コミック アース・スター (Comic Earth Star)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://www.comic-earthstar.jp';
     }

@@ -66,8 +66,8 @@ export default class Dm5 extends Connector {
                         lastPage = parseInt([...document.querySelectorAll('div#chapterpager.chapterpager a')].pop().text.trim());
                         let pageList = [];
                         let ajaxResult = null;
-    
-                        for(let dmpage = 1, run = true; dmpage <= lastPage && run; dmpage++){               
+
+                        for(let dmpage = 1, run = true; dmpage <= lastPage && run; dmpage++) {
                                 if (ajaxResult != null) {
                                     ajaxResult.abort();
                                     ajaxResult = null;

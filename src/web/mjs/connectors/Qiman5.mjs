@@ -31,7 +31,7 @@ export default class Qiman5 extends SinMH {
                                 });
                                 resolve(chapterList);
                             } catch(error) {
-                                reject(error);        
+                                reject(error);
                             }
                         }, 6000);
                     } catch(error) {
