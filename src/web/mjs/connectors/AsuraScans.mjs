@@ -7,7 +7,7 @@ export default class AsuraScans extends WordPressMangastream {
         super.id = 'asurascans';
         super.label = 'Asura Scans';
         this.tags = ['webtoon', 'english'];
-        this.url = 'https://asurascans.com';
+        this.url = 'https://www.asurascans.com';
         this.path = '/manga/list-mode/';
 
         this.queryPages = 'div#readerarea p img';

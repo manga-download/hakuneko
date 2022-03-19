@@ -6,8 +6,8 @@ export default class AsuraScansTR extends AsuraScans {
         super();
         super.id = 'asurascans-tr';
         super.label = 'Asura Scans (TR)';
-        this.tags = [ 'webtoon', 'turkish' ];
-        this.url = 'https://tr.asurascans.com';
+        this.tags = ['webtoon', 'turkish'];
+        this.url = 'https://asurascanstr.com';
     }
 
     get icon() {
