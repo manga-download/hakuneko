@@ -6,25 +6,26 @@ export default class iqiyi extends MH {
         super();
         super.id = 'iqiyi';
         super.label = 'iqiyi';
-        this.tags = [ 'manga', 'webtoon', 'chinese' ];
+        this.tags = ['manga', 'webtoon', 'chinese'];
         this.url = 'https://www.iqiyi.com';
 
         this.path = '/manhua/category/%E5%85%A8%E9%83%A8_0_9_%PAGE%';
         this.queryMangasPageCount = 'div.mod-page a:nth-last-child(2)';
         this.pathMatch = /_0_9_(\d+)/;
+        this.queryMangaTitle = '.detail-tit h1';
         this.queryMangas = 'ul.cartoon-hot-ul li.cartoon-hot-list a.cartoon-cover';
-        this.queryChapter = 'div.chapter-container ol.chapter-fixhei li a';
         this.queryPages = 'ul.main-container li.main-item source';
 
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryChapter);
-        return data.map(element => {
+        let manhuaId = new URL(manga.id, this.url).href.match(/_(([a-z]|[0-9])*)/)[1];
+        let requestChaps = new Request("https://www.iqiyi.com/manhua/catalog/" + manhuaId + "/", this.requestOptions);
+        let data = await this.fetchJSON(requestChaps);
+        return data.data.episodes.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
-                title: element.text.trim()
+                id: "/manhua/reader/" + manhuaId + "_" + element.episodeId + ".html",
+                title: element.episodeOrder + " " + element.episodeTitle.trim()
             };
         });
     }
