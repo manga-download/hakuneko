@@ -24,8 +24,9 @@ export default class Hentai2Read extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'ul.pagination li:nth-last-child(2) a');
         const pageCount = parseInt(data[0].text.trim());
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
+        const mangaPromises = Array.from(new Array(pageCount), (_, index) => this._getMangasFromPage(index + 1));
+        for(let promise of mangaPromises) {
+            let mangas = await promise;
             mangaList.push(...mangas);
         }
         return mangaList;
