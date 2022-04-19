@@ -8,7 +8,7 @@ export default class ComicBrise extends SpeedBinb {
         super.id = 'comicbrise';
         super.label = 'comicBrise';
         this.tags = ['manga', 'japanese'];
-        this.url = 'https://comic-brise.com';
+        this.url = 'https://www.comic-brise.com';
     }
 
     async _getMangaFromURI(uri) {
