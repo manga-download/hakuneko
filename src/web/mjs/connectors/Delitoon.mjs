@@ -55,7 +55,7 @@ export default class Delitoon extends Connector {
                     id: this.getRootRelativeOrAbsoluteLink(link, request.url),
                     title: 'Episode ' + title
                 };
-            });
+            }).reverse();
     }
 
     async _getPages(chapter) {
