@@ -53,7 +53,7 @@ export default class MangaPill extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'picture source.lazy');
+        let data = await this.fetchDOM(request, 'source');
         return data.map(element => this.getAbsolutePath(element.dataset.src, request.url));
     }
 }

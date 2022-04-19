@@ -7,18 +7,20 @@ export default class GManga extends Connector {
         super();
         super.id = 'gmanga';
         super.label = 'GManga';
-        this.tags = [ 'manga', 'webtoon', 'arabic' ];
+        this.tags = ['manga', 'webtoon', 'arabic'];
         this.url = 'https://gmanga.me';
+        this.apiurl = 'https://api.gmanga.me';
 
         this.mangaSearch = {
             title: '',
             manga_types: {
-                include: [ '1', '2', '3', '4', '5', '6', '7', '8' ],
+                include: ['1', '2', '3', '4', '5', '6', '7', '8'],
                 exclude: []
             },
+            oneshot: { value: null },
             story_status: { include: [], exclude: [] },
-            translation_status: { include: [], exclude: [ 3 ] },
-            categories: { include: [ null ], exclude: [] },
+            translation_status: { include: [], exclude: ['3'] },
+            categories: { include: [], exclude: [] },
             chapters: { min: '', max: '' },
             dates: { start: null, end: null },
             page: 0
@@ -36,7 +38,7 @@ export default class GManga extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for(let page = 1, run = true; run; page++) {
+        for (let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
@@ -45,12 +47,12 @@ export default class GManga extends Connector {
 
     async _getMangasFromPage(page) {
         this._setMangaRequestOptions(page);
-        let request = new Request(new URL('/api/mangas/search', this.url), this.requestOptions);
+        let request = new Request(new URL('/api/mangas/search', this.apiurl), this.requestOptions);
         this._clearRequestOptions();
         let data = await this.fetchJSON(request);
         data = data['iv'] ? this._haqiqa(data.data) : data;
         data = data.mangas || [];
-        return data.map( manga => {
+        return data.map(manga => {
             return {
                 id: manga.id,
                 title: manga.title
@@ -63,7 +65,7 @@ export default class GManga extends Connector {
             // NOTE: As of today, the manga slug (e.g. 'how-to-fight') can be any arbitrary string
             return 'manga-slug'; // mangaTitle.replace(/\s+/g, '-').replace(/[^-\w]+/gi, '').toLowerCase();
         }
-        let request = new Request(new URL(`/api/mangas/${manga.id}/releases`, this.url), this.requestOptions);
+        let request = new Request(new URL(`/api/mangas/${manga.id}/releases`, this.apiurl), this.requestOptions);
         let data = await this.fetchJSON(request);
         data = data['iv'] ? this._haqiqa(data.data) : data;
         data = data['isCompact'] ? this._unpack(data) : data;
@@ -74,7 +76,7 @@ export default class GManga extends Connector {
             title += chapterization.title ? ' - ' + chapterization.title : '';
             title += team.name ? ' [' + team.name + ']' : '';
             return {
-                id: [ manga.id, getMangaSlug(manga.title), chapterization.chapter, team.name ].join('/'),
+                id: [manga.id, getMangaSlug(manga.title), chapterization.chapter, team.name].join('/'),
                 title: title,
                 language: ''
             };
@@ -88,7 +90,7 @@ export default class GManga extends Connector {
         let url = (data.globals.wla.configs.http_media_server || data.globals.wla.configs.media_server) + '/uploads/releases/';
         data = data.readerDataAction.readerData.release;
         let images = [];
-        if(data.pages && data.pages.length > 0) {
+        if (data.pages && data.pages.length > 0) {
             images = data.pages.map(page => '/hq/' + page);
         } else {
             images = data.webp_pages.map(page => '/hq_webp/' + page);
@@ -110,7 +112,7 @@ export default class GManga extends Connector {
         let lease = (parseInt(Date.now() / 1000) + 120).toString(36);
         uri.searchParams.set('ak3', lease);
         let data = await super._handleConnectorURI(uri.href);
-        if(data.mimeType === 'text/html') {
+        if (data.mimeType === 'text/html') {
             return super._handleConnectorURI(uri.href.replace('/hq', '/mq'));
         } else {
             return data;
@@ -138,20 +140,20 @@ export default class GManga extends Connector {
      */
 
     _r(t) {
-        return (this._r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(t) {
+        return (this._r = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (t) {
             return typeof t;
         }
-            : function(t) {
+            : function (t) {
                 return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : typeof t;
             }
         )(t);
     }
 
     _a(t) {
-        return (this._a = "function" == typeof Symbol && "symbol" === this._r(Symbol.iterator) ? function(t) {
+        return (this._a = "function" == typeof Symbol && "symbol" === this._r(Symbol.iterator) ? function (t) {
             return this._r(t);
         }.bind(this)
-            : function(t) {
+            : function (t) {
                 return t && "function" == typeof Symbol && t.constructor === Symbol && t !== Symbol.prototype ? "symbol" : this._r(t);
             }.bind(this)
         )(t);
@@ -195,7 +197,7 @@ export default class GManga extends Connector {
         if (t.isObject) {
             var o = {}
                 , i = 0;
-            return n.forEach(function(t) {
+            return n.forEach(function (t) {
                 o[t] = this._unpack(r[i], e + 1),
                 i += 1;
             }.bind(this)),
@@ -203,10 +205,10 @@ export default class GManga extends Connector {
         }
         if (t.isArray) {
             o = [];
-            return r.forEach(function(t) {
+            return r.forEach(function (t) {
                 var e = {}
                     , r = 0;
-                n.forEach(function(n) {
+                n.forEach(function (n) {
                     e[n] = t[r],
                     r += 1;
                 }),

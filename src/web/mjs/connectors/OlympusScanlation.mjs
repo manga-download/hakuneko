@@ -1,6 +1,6 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class OlympusScanlation extends WordPressMangastream {
+export default class OlympusScanlation extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,6 +8,5 @@ export default class OlympusScanlation extends WordPressMangastream {
         super.label = 'Olympus Scanlation';
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://olympusscanlation.com';
-        this.path = '/manga/list-mode/';
     }
 }

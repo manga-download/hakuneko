@@ -43,7 +43,7 @@ async function assertConnector(browserPage, parameters, expectations) {
 
     // get chapters for manga as reference to the remote instance
     let remoteChapters = await browserPage.evaluateHandle(manga => {
-        return new Promise( resolve => {
+        return new Promise(resolve => {
             manga.getChapters((_, chapters) => resolve(chapters));
         });
     }, remoteManga);
@@ -68,7 +68,7 @@ async function assertConnector(browserPage, parameters, expectations) {
     }, remoteChapter);
     expect(pages.length).toEqual(expectations.pageCount);
     pages = pages.map(page => {
-        if(page.startsWith('connector://' + parameters.connectorID)) {
+        if (page.startsWith('connector://' + parameters.connectorID)) {
             let payload = decodeURIComponent(page.split('payload=')[1]);
             payload = JSON.parse(Buffer.from(payload, 'base64').toString());
             return payload.url;
@@ -76,7 +76,7 @@ async function assertConnector(browserPage, parameters, expectations) {
             return page;
         }
     });
-    if(expectations.pageMatcher){
+    if (expectations.pageMatcher) {
         pages.forEach(page => expect(page).toMatch(expectations.pageMatcher));
     }
 }
@@ -109,7 +109,7 @@ describe("HakuNeko Engine", () => {
         try {
             await page.close();
             await browser.close();
-        } catch(error) {
+        } catch (error) {
             await new Promise(resolve => setTimeout(resolve, 5000));
             process.kill();
         }
@@ -198,7 +198,23 @@ describe("HakuNeko Engine", () => {
                 });
             });
         });
-
+        describe('Baozimh', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'baozimh',
+                    mangaURL: 'https://www.baozimh.com/comic/nudiduolanyan-fuxiaolianmeng',
+                    chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'Baozimh',
+                    mangaID: '/comic/nudiduolanyan-fuxiaolianmeng',
+                    mangaTitle: '女帝多藍顏',
+                    chapterID: '/user/page_direct?comic_id=nudiduolanyan-fuxiaolianmeng&section_slot=0&chapter_slot=0',
+                    chapterTitle: '預告',
+                    pageCount: 46,
+                    pageMatcher: /^https:\/\/.*.baozimh.com\/scomic\/nudiduolanyan-fuxiaolianmeng\/\d\/.*\/(\d*).jpg$/
+                });
+            });
+        });
         describe('ComicBrise', () => {
             it('should get manga, chapters and page links', async () => {
                 await assertConnector(page, {

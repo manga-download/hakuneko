@@ -6,7 +6,8 @@ export default class FirstKiss extends WordPressMadara {
         super();
         super.id = 'firstkiss';
         super.label = '1st Kiss Manga';
-        this.tags = [ 'webtoon', 'english' ];
+        this.tags = ['webtoon', 'english'];
         this.url = 'https://1stkissmanga.io';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 }

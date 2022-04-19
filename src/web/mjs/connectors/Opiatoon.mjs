@@ -7,6 +7,6 @@ export default class Opiatoon extends WordPressMadara {
         super.id = 'opiatoon';
         super.label = 'Opiatoon (Opia&Shipperland)';
         this.tags = [ 'manga', 'turkish', 'webtoon' ];
-        this.url = 'https://www.opiatoon.com';
+        this.url = 'https://www.opiatoon.net';
     }
 }

@@ -31,7 +31,7 @@ export default class MangaKatana extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/manga/page/' + page, this.url);
+        const uri = new URL('/manga/page/' + page + '?filter=1', this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div#book_list div.item div.text h3.title a');
         return data.map(element => {
