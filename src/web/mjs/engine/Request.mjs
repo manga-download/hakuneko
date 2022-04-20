@@ -510,6 +510,11 @@ export default class Request {
             delete details.requestHeaders['accept'];
         }
 
+        // Add referer when getting image from mangahere cdn (required for <img> previews)
+        if (/.*cdn\.mangahere\.org/i.test(uri.hostname) || /\.(jpg|jpeg|png|gif|webp)/i.test(uri.pathname)) {
+            details.requestHeaders['Referer'] = "https://www.mangahere.cc";
+        }
+
         return details;
     }
 

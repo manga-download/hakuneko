@@ -7,6 +7,7 @@ export default class MangaHere extends MangaFox {
         super.id = 'mangahere';
         super.label = 'MangaHere';
         this.url = 'https://www.mangahere.cc';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangas() {
