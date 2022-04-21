@@ -10,4 +10,4 @@ export default class InfernalVoidScans extends WordPressMangastream {
         this.url = 'https://infernalvoidscans.com';
         this.path = '/manga/list-mode/';
     }
-} 
+}

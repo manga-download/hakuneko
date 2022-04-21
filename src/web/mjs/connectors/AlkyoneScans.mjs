@@ -1,4 +1,3 @@
-
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
 export default class AlkyoneScans extends WordPressMangastream {

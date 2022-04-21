@@ -20,7 +20,7 @@ export default class ScyllaScans extends Connector {
             "sortBy": "id",
             "first": 1000,
             "offset": 0,
-            "languages": [0,1,2,3,4,5,6,7,8,9],
+            "languages": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
             "showHidden": true
         };
 
@@ -28,7 +28,7 @@ export default class ScyllaScans extends Connector {
         return data.works.map(work => ({
             id: `/work/${work.language_name}/${work.stub}`,
             title: work.name
-        }))
+        }));
     }
 
     async _getChapters(manga) {
@@ -37,7 +37,7 @@ export default class ScyllaScans extends Connector {
         const query = 'query chaptersByWork($workStub: String, $languages: [Int], $showHidden: Boolean) {\n  chaptersByWork(workStub: $workStub, languages: $languages, showHidden: $showHidden) {\n      volume\n      chapter\n      subchapter\n      read_path\n    \tlanguage_name\n  }\n}';
         const variables = {
             workStub,
-            languages: [0,1,2,3,4,5,6,7,8,9],
+            languages: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
             showHidden: true
         };
         const data = await this.fetchGraphQL(new URL('/graphql', this.apiUrl), operationName, query, variables);
@@ -55,7 +55,7 @@ export default class ScyllaScans extends Connector {
         var volume = parseInt(chapParts[4]);
         var [chap, subchapter] = chapParts[5].split('.').map(x => parseInt(x));
         const operationName = 'chapterByWorkAndChapter';
-        const query = 'query chapterByWorkAndChapter($workStub: String, $language: Int, $volume: Int, $chapter: Int, $subchapter: Int, $showHidden: Boolean) {\n  chapterByWorkAndChapter(workStub: $workStub, language: $language, volume: $volume, chapter: $chapter, subchapter: $subchapter, showHidden: $showHidden) {\n  \tuniqid\n    work { \n      uniqid\n    }\n    pages {\n      filename\n    }\n  }\n}'
+        const query = 'query chapterByWorkAndChapter($workStub: String, $language: Int, $volume: Int, $chapter: Int, $subchapter: Int, $showHidden: Boolean) {\n  chapterByWorkAndChapter(workStub: $workStub, language: $language, volume: $volume, chapter: $chapter, subchapter: $subchapter, showHidden: $showHidden) {\n  \tuniqid\n    work { \n      uniqid\n    }\n    pages {\n      filename\n    }\n  }\n}';
         const variables = {
             workStub,
             language,
@@ -74,7 +74,7 @@ export default class ScyllaScans extends Connector {
         if(chapterValues.volume != 0) {
             title += `Volume ${chapterValues.volume} `;
         }
-        title += `Chapter ${chapterValues.chapter}`
+        title += `Chapter ${chapterValues.chapter}`;
         if(chapterValues.subchapter != 0) {
             title += `.${chapterValues.subchapter}`;
         }

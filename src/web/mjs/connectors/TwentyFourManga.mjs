@@ -43,7 +43,7 @@ export default class TwentyFourManga extends Connector {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: title,
                 language: ''
-            }
+            };
         });
     }
 
@@ -52,7 +52,7 @@ export default class TwentyFourManga extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'figure > div > div > source');
         return data.map(element => {
-            return element.src.split('?')[0].replace(/https:\/\/i\d+.wp.com\//, 'http://')
+            return element.src.split('?')[0].replace(/https:\/\/i\d+.wp.com\//, 'http://');
         });
     }
 }

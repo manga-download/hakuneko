@@ -44,7 +44,7 @@ export default class ZeroScans extends Connector {
                 id: `${item.id}_${item.slug}`,
                 title: item.name.trim()
             };
-        })
+        });
     }
 
     async _getChapters(manga) {
@@ -67,7 +67,7 @@ export default class ZeroScans extends Connector {
                 id: item.id,
                 title: `Chapter ${item.name}`,
                 language: ''
-            }
+            };
         });
     }
 

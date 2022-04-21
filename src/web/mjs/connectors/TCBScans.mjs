@@ -2,11 +2,11 @@ import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
 export default class TCBScans extends Connector {
-    
+
     constructor() {
         super();
         super.id = 'tcbscans';
-        super.label = 'TCB Scans'
+        super.label = 'TCB Scans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
         this.url = 'https://onepiecechapters.com';
     }
