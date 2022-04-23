@@ -26,13 +26,13 @@ export default class ScyllaScans extends Connector {
 
         const data = await this.fetchGraphQL(new URL('/graphql', this.apiUrl), operationName, query, variables);
         return data.works.map(work => ({
-            id: `/work/${work.language_name}/${work.stub}`,
+            id: work.stub,
             title: work.name
         }));
     }
 
     async _getChapters(manga) {
-        const workStub = manga.id.split('/').pop();
+        const workStub = manga.id;
         const operationName = 'chaptersByWork';
         const query = 'query chaptersByWork($workStub: String, $languages: [Int], $showHidden: Boolean) {\n  chaptersByWork(workStub: $workStub, languages: $languages, showHidden: $showHidden) {\n      volume\n      chapter\n      subchapter\n      read_path\n    \tlanguage_name\n  }\n}';
         const variables = {
@@ -91,7 +91,7 @@ export default class ScyllaScans extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'h4.display-5');
-        const id = uri.pathname;
+        const id = uri.pathname.split('/').pop();
         const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }

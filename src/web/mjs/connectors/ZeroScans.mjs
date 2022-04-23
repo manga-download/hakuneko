@@ -25,11 +25,7 @@ export default class ZeroScans extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const script = `
-            new Promise(resolve => {
-                resolve(JSON.stringify(window.__ZEROSCANS__));
-            });
-        `;
+        const script = `new Promise(resolve => resolve(JSON.stringify(window.__ZEROSCANS__)));`;
         const { data } = await Engine.Request.fetchUI(request, script);
         const details = data[0].details;
         return new Manga(this, `${details.id}_${details.slug}`, details.name.trim());
