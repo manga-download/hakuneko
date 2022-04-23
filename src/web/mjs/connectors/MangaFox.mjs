@@ -114,7 +114,10 @@ export default class MangaFox extends Connector {
         if(lastImage && lastImage.naturalHeight === 563 && lastImage.naturalWidth === 1000) {
             pages.pop();
         }
-        return pages;
+        return pages.map(link => this.createConnectorURI({
+            url: link,
+            referer: this.url
+        }));
     }
 
     async _getPageListMobile(chapter) {
@@ -136,5 +139,13 @@ export default class MangaFox extends Connector {
             throw new Error('The manga is licensed and not available in your country!');
         }
         return [...dom.querySelectorAll('div#viewer source')].map(element => element.dataset.original);
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
