@@ -14,3 +14,4 @@ export default class ReaperScans extends WordPressMadara {
         this.queryChapters = 'div.chapter-link > a';
         this.queryChaptersTitleBloat = 'span.chapter-release-date';
     }
+}
