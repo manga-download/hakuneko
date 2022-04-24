@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class ReaperScans extends WordPressMadara {
+export default class ReaperScansFr extends WordPressMadara {
 
     constructor() {
         super();
