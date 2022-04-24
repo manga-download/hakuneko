@@ -29,7 +29,7 @@ export default class ComicValkyrie extends SpeedBinb {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'meta[property="og:title"]', 3);
         let id = uri.pathname.slice(1);
-        let title = data[0].content.trim();
+        let title = this.cleanMangaTitle(data[0].content);
         return new Manga(this, id, title);
     }
 
@@ -38,7 +38,11 @@ export default class ComicValkyrie extends SpeedBinb {
         let data = await this.fetchDOM(request, '.box_wrap .box');
         return data.map(element => ({
             id: new URL(element.querySelector('a').href).pathname.replace('/new.html', '').slice(1),
-            title: element.querySelector('.title').textContent.replace(/\s*THE COMIC\s*/i, ''),
+            title: this.cleanMangaTitle(element.querySelector('.title').textContent),
         }));
+    }
+
+    cleanMangaTitle(str) {
+        return str.replace(/\s*THE COMIC\s*/i, '').trim();
     }
 }
