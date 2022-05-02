@@ -34,7 +34,7 @@ export default class ComicBunch extends Connector {
         const uri = new URL('/comics/' + page, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, '#comics_list > dl');
-        return data.filter(element => element.querySelector('dd a').className.includes('read_more')).map(element => {
+        return data.filter(element => element.querySelector('dd a[class*="read_more"]')).map(element => {
             return {
                 id: element.querySelector('dd a.read_more').pathname,
                 title: element.querySelector('dd h3').textContent.trim()

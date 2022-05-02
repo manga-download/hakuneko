@@ -13,9 +13,9 @@ export default class MangaNexus extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const url = new URL(`/_next/data/${this.key}/manga/${uri.split('/').pop()}.json`, this.url);
-        const request = new Request(url, this.requestOptions);
         const id = uri.split('/').pop();
+        const url = new URL(`/_next/data/${this.key}/manga/${id}.json`, this.url);
+        const request = new Request(url, this.requestOptions);
         const { pageProps: data } = await this.fetchJSON(request);
         return new Manga(this, id, data.manga.name);
     }

@@ -15,6 +15,6 @@ export default class KomikuCOM extends WordPressMangastream {
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.querMangaTitleFromURI);
-        return new Manga(this, uri.pathname, data[0].textContent.trim().substr(6));
+        return new Manga(this, uri.pathname, data[0].textContent.trim().replace(/^Komik\s*/i, ''));
     }
 }

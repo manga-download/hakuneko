@@ -65,9 +65,6 @@ export default class XoxoComics extends Connector {
         const uri = new URL(chapter.id + '/all', this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.page-chapter source');
-        return data.map(element => {
-            element.src = element.dataset['original'] || element.src;
-            return element.src;
-        });
+        return data.map(element => element.dataset['original'] || element.src);
     }
 }
