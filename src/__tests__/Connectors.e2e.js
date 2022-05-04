@@ -248,5 +248,21 @@ describe("HakuNeko Engine", () => {
                 });
             });
         });
+        describe('Comic Valkyrie', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'comicvalkyrie',
+                    mangaURL: 'https://www.comic-valkyrie.com/isemaji',
+                    chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'ComicValkyrie',
+                    mangaID: 'isemaji',
+                    mangaTitle: '異世界魔術師は魔法を唱えない',
+                    chapterID: 'https://www.comic-valkyrie.com/samplebook/val_isemaji01/',
+                    chapterTitle: '第1話',
+                    pageCount: 34,
+                });
+            });
+        });
     });
 });
