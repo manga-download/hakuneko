@@ -49,7 +49,7 @@ export default class MonochromeScans extends Connector {
         const chapters = await this.fetchJSON(request);
         return chapters.map(chapter => {
             let title = '';
-            if(chapter.volume != null) {
+            if(chapter.volume) {
                 title += `Volume ${chapter.volume} `;
             }
             title += `Chapter ${parseInt(chapter.number) == chapter.number ? parseInt(chapter.number) : chapter.number}`;

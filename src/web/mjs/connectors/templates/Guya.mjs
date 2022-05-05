@@ -54,20 +54,7 @@ export default class Guya extends Connector {
 
     getPagesInfo(data, chapter) {
         const groups = data.chapters[chapter.id].groups;
-        const preferredGroups = data.preferred_sort.reduce((obj, group, index) => {
-            obj[group] = index;
-            return obj;
-        }, {});
-        const preferred = [];
-        const noPreference = [];
-        Object.keys(groups).forEach(group => {
-            const index = preferredGroups[group];
-            if (index != undefined)
-                preferred[index] = group;
-            else
-                noPreference.push(group);
-        });
-        const group = preferred.find(group => group != undefined) || noPreference.shift();
+        const group = data.preferred_sort.shift() || Object.keys(groups).shift();
         return [groups[group], group];
     }
 }
