@@ -5,8 +5,8 @@ export default class MangaMonarca extends WordPressMadara {
     constructor() {
         super();
         super.id = 'mangamonarca';
-        super.label = 'MangaMonarca';
+        super.label = 'Monarcamanga';
         this.tags = [ 'webtoon', 'spanish' ];
-        this.url = 'https://mangamonarca.xyz';
+        this.url = 'https://monarcamanga.com';
     }
 }
