@@ -10,4 +10,3 @@ export default class Eclypse extends WordPressMadara {
         this.url = 'https://eclypse-scan.com';
     }
 }
-
