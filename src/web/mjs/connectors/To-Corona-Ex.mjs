@@ -6,7 +6,7 @@ export default class toCoronaEx extends Connector {
         super();
         super.id = "to-corona-ex";
         super.label = "コロナ (to-corona-ex)";
-        this.tags = ["manga", "webtoon", "japanese"];
+        this.tags = ["manga", "japanese"];
         this.url = "https://to-corona-ex.com/";
     }
 
