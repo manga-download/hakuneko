@@ -13,7 +13,7 @@ export default class toCoronaEx extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, ".mi-text-xl.mi-font-semibold"); //title object
-        const id = uri.pathname;
+        const id = uri.pathname.split("/")[2];//just the id of the comic.
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -30,7 +30,7 @@ export default class toCoronaEx extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request("https://api.to-corona-ex.com/episodes?comic_id=" + manga.id.split("/")[2] + "&order=asc&sort=episode_order", this.requestOptions);
+        let request = new Request("https://api.to-corona-ex.com/episodes?comic_id=" + manga.id + "&order=asc&sort=episode_order", this.requestOptions);
 
         const data = await this.fetchJSON(request);
         let chapters = data.resources.filter(e => e.episode_status == 'free_viewing');
@@ -50,7 +50,7 @@ export default class toCoronaEx extends Connector {
         let drmhash = [];
         let imagelinks = [];
         for (let i = 0; i < chapterinfo.pages.length; i++) {
-            drmhash.push(chapterinfo.pages[i].drm_hash)
+            drmhash.push(chapterinfo.pages[i].drm_hash);
             imagelinks.push(this.createConnectorURI(chapterinfo.pages[i].page_image_url));
         }
         return imagelinks;
@@ -64,7 +64,6 @@ export default class toCoronaEx extends Connector {
 
             default:
                 return super._handleConnectorURI(payload);
-                break;
         }
         return promise.then(data => this._blobToBuffer(data))
             .then(data => {
@@ -87,7 +86,7 @@ export default class toCoronaEx extends Connector {
                 for (var t = atob(e), n = [], r = 0; r < t.length; r += 1) {
                     n[r] = t.charCodeAt(r);
                 }
-                return n
+                return n;
             }(key),
                 i = r[0],
                 o = r[1],
@@ -107,7 +106,7 @@ export default class toCoronaEx extends Connector {
                     m = Math.floor(h / i),
                     g = d % i,
                     v = Math.floor(d / i);
-                ctx.drawImage(bitmap, p * l, m * f, l, f, g * l, v * f, l, f)
+                ctx.drawImage(bitmap, p * l, m * f, l, f, g * l, v * f, l, f);
             }
             canvas.toBlob(data => {
                 resolve(data);
