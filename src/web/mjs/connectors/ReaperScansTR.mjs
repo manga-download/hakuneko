@@ -1,13 +1,15 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import ReaperScans from './ReaperScans.mjs';
 
-export default class ReaperScansTR extends WordPressMadara {
+export default class ReaperScansTR extends ReaperScans {
 
     constructor() {
         super();
         super.id = 'reaperscanstr';
-        super.label = 'Reaper Scans TR';
+        super.label = 'Reaper Scans (Turkish)';
         this.tags = ['webtoon', 'turkish'];
         this.url = 'https://reaperscanstr.com';
-        this.queryChapters = 'div.chapter-link > a';
+        this.links = {
+            login: 'https://reaperscanstr.com/login'
+        };
     }
 }
