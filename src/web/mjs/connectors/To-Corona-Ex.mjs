@@ -47,29 +47,18 @@ export default class toCoronaEx extends Connector {
             this.requestOptions
         );
         const chapterinfo = await this.fetchJSON(request);
-        let drmhash = [];
-        let imagelinks = [];
-        for (let i = 0; i < chapterinfo.pages.length; i++) {
-            drmhash.push(chapterinfo.pages[i].drm_hash);
-            imagelinks.push(this.createConnectorURI(chapterinfo.pages[i].page_image_url));
-        }
-        return imagelinks;
+        return chapterinfo.pages.map((element) => {
+            return this.createConnectorURI(element.page_image_url);
+        });
     }
-    _handleConnectorURI(payload) {
-        let promise;
-        switch (true) {
-            case payload.includes('https://cdn.to-corona-ex.com/pages/images/'):
-                promise = this.prepareForDescramble(payload);
-                break;
-
-            default:
-                return super._handleConnectorURI(payload);
+    async _handleConnectorURI(payload) {
+        if (!payload.includes('https://cdn.to-corona-ex.com/pages/images/')) {
+            return super._handleConnectorURI(payload);
         }
-        return promise.then(data => this._blobToBuffer(data))
-            .then(data => {
-                this._applyRealMime(data);
-                return Promise.resolve(data);
-            });
+        let data = await this.prepareForDescramble(payload);
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
     prepareForDescramble(scrambledImageURL) {
         let uri = new URL(scrambledImageURL);
