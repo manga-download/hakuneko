@@ -83,11 +83,11 @@ export default class toCoronaEx extends Connector {
     descramble(bitmap, key) {
         return new Promise(resolve => {
             var r = function (e) {
-                for (var t = atob(e), n = [], r = 0; r < t.length; r += 1) {
-                    n[r] = t.charCodeAt(r);
-                }
-                return n;
-            }(key),
+                    for (var t = atob(e), n = [], r = 0; r < t.length; r += 1) {
+                        n[r] = t.charCodeAt(r);
+                    }
+                    return n;
+                }(key),
                 i = r[0],
                 o = r[1],
                 a = r.slice(2),
