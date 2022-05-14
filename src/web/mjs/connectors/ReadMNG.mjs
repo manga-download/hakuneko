@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 /**
  *
@@ -17,73 +18,62 @@ export default class ReadMNG extends Connector {
         this.requestOptions.headers.set( 'x-referer', this.url );
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        Promise.resolve( '#abcdefghijklmnopqrstuvwxyz'.split( '' ) )
-            .then( pages => {
-                let promises = pages.map( page => {
-                    let request = new Request( this.url + '/manga-list/' + page, this.requestOptions );
-                    return this.fetchDOM( request, 'div.manga-list-box span.manga-item a' )
-                        .then( data => {
-                            let mangaList = data.map( element => {
-                                this.cfMailDecrypt( element );
-                                return {
-                                    id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                                    title: element.text.trim()
-                                };
-                            } );
-                            return Promise.resolve( mangaList );
-                        } );
-                } );
-                return Promise.all( promises );
-            } )
-            .then( mangas => {
-                callback( null, [].concat( ... mangas ) );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const id = uri.pathname;
+        const item = await this.fetchDOM(request, 'div.titleArea > h2');
+        const title = item[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'ul.chp_lst li a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    let title = element.querySelector( 'span.val' ).textContent.trim();
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: title.replace( manga.title, '' ).replace( /^\s*-\s*/, '' ).trim(),
-                        language: 'en'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        for (let page = 1, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id + '/all-pages', this.requestOptions );
-        this.fetchDOM( request, 'div.page_chapter source[class*="img-responsive"]' )
-            .then( data => {
-                let pageLinks = data.map( element => this.createConnectorURI( this.getAbsolutePath( element, request.url ) ) );
-                callback( null, pageLinks );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        const uri = new URL('/manga-list/' + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, '.mangaSliderCard a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('.postDetail h2').textContent.trim()
+            };
+        });
+    }
+
+    async _getChapters(manga) {
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'a.chnumber');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.match(/Chapter \d+/)[0],
+                language: ''
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        resolve(ts_reader.params.sources.shift().images);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }
