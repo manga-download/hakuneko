@@ -32,13 +32,6 @@ export default class Batoto extends AnyACG {
         return this.config.url.value;
     }
 
-    set url(value) {
-        if(this.config && value) {
-            this.config.url.value = value;
-            Engine.Settings.save();
-        }
-    }
-
     async _getPages(chapter) {
         let script = `
         new Promise(resolve => {
