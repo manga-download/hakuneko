@@ -97,7 +97,6 @@ export default class CrunchyManga extends Crunchyroll {
     }
 
     async _getMangaFromURI(uri) {
-        await this._login();
         const request = new Request(uri, this.requestOptions);
         let response = await this.fetchDOM(request);
         let title = response.querySelector('title').innerText.trim().replace('Crunchyroll - ', '');
