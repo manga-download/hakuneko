@@ -7,7 +7,6 @@ export default class Batoto extends AnyACG {
         super.id = 'batoto';
         super.label = 'Batoto (by AnyACG)';
         this.tags = [ 'manga', 'multi-lingual' ];
-        this.url = 'https://bato.to';
 
         this.path = '/browse?sort=title&page=';
         this.queryMangaTitle = 'h3.item-title';
@@ -18,6 +17,19 @@ export default class Batoto extends AnyACG {
         this.queryMangaLink = 'a.item-title';
         this.queryMangaFlag = 'span.item-flag';
         this.queryChapters = 'div.episode-list div.main a.visited';
+
+        this.config = {
+            url: {
+                label: 'URL',
+                description: `This website's main domain doesn't always work, but has alternate domains.\nThis is the default URL which can also be manually set by the user.`,
+                input: 'text',
+                value: 'https://bato.to'
+            }
+        };
+    }
+
+    get url() {
+        return this.config.url.value;
     }
 
     async _getPages(chapter) {

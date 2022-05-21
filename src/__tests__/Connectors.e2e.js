@@ -231,6 +231,22 @@ describe("HakuNeko Engine", () => {
                 });
             });
         });
+        describe('To-Corona-Ex', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'to-corona-ex',
+                    mangaURL: 'https://to-corona-ex.com/comics/20000000051530',
+                    chaptersAccessor: 'shift' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'toCoronaEx',
+                    mangaID: '20000000051530',
+                    mangaTitle: '悪役令嬢ですが攻略対象の様子が異常すぎる＠ＣＯＭＩＣ',
+                    chapterID: 20000000496345,
+                    chapterTitle: '第1話',
+                    pageCount: 34
+                });
+            });
+        });
         describe('ReadM', () => {
             it('should get manga, chapters and page links', async () => {
                 await assertConnector(page, {
