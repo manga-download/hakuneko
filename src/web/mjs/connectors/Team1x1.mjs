@@ -31,7 +31,7 @@ export default class Team1x1 extends Connector {
     }
 
     canHandleURI(uri) {
-        return /team1x\d*\.com|tqneplus\.com/.test(uri.hostname);
+        return /team1x\d*\.com|tqneplus\.com|teamx.fun/.test(uri.hostname);
     }
 
     async _initializeConnector() {
@@ -43,9 +43,9 @@ export default class Team1x1 extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.row > div.col-md-9 > h3');
+        const data = await this.fetchDOM(request, 'div.author-info-title > h1');
         const id = uri.pathname + uri.search;
-        const title = data[0].textContent;
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
@@ -59,46 +59,43 @@ export default class Team1x1 extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(`/manga/page/${page}/`, this.url);
+        const uri = new URL(`/series?page=${page}`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div#page-manga div.container div.last-post-manga div.thumb div.info h3 a');
+        const data = await this.fetchDOM(request, 'div.bs div.bsx a');
         return data.map(element => {
             return {
-                id: element.pathname,
-                title: element.text.trim()
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('.tt').textContent.trim()
             };
         });
     }
 
     async _getChapters(manga) {
         let chapterList = [];
-        const request = new Request(this.url + manga.id, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.pagination span.current');
-        const pageCount = parseInt(data[0].textContent.trim());
-        for (let page = 1; page <= pageCount; page++) {
-            let chapters = await this._getChaptersFromPage(page, manga);
-            chapterList.push(...chapters);
+        for (let page = 1, run = true; run; page++) {
+            const chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
         return chapterList;
     }
 
-    async _getChaptersFromPage(page, manga) {
-        const request = new Request(this.url + manga.id + '/page/' + page, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.single-manga-chapter div.container div.row div.col-md-12 a');
-        return data
-            .filter(element => element.href.startsWith(this.url))
-            .map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: element.text.replace(manga.title, '').trim(),
-                    language: ''
-                };
-            }).reverse();
+    async _getChaptersFromPage(manga, page) {
+        const uri = new URL(`${manga.id}?page=${page}`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.eplister ul li a:not([data-bs-toggle])');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('.epl-title').textContent.trim(),
+                language: ''
+            };
+        });
     }
 
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div[id^="translationPageall"] embed');
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, '.page-break source');
         return data.map(dat => dat.src);
     }
 }
