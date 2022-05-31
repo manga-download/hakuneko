@@ -212,7 +212,7 @@ describe('UpdateServerManager', function () {
                 await testee.getUpdateArchive({link: 'foobar'});
                 assert.fail('Expected error not thrown!');
             } catch(error) {
-                assert.equal(error.message, 'Invalid URL');
+                assert.equal(error.message, 'Invalid URL: foobar');
             }
         });
 
