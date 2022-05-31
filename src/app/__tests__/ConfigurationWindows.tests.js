@@ -178,5 +178,5 @@ var suite = function() {
 if(process.platform === 'win32') {
     describe('ConfigurationWindows', suite);
 } else {
-    describe.skip(`ConfigurationWindows @ ${process.platform}`, test.todo);
+    describe.skip(`ConfigurationWindows @ ${process.platform}`, suite);
 }

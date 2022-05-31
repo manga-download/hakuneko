@@ -31,4 +31,11 @@ export default class EpikManga extends FlatManga {
             };
         });
     }
+
+    async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => this.getAbsolutePath(element, request.url));
+    }
 }
