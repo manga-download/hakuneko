@@ -42,8 +42,8 @@ export default class Batoto extends AnyACG {
     async _getPages(chapter) {
         let script = `
         new Promise(resolve => {
-            const base = JSON.parse(CryptoJS.AES.decrypt(server, batojs).toString(CryptoJS.enc.Utf8));
-            resolve(images.map(data => new URL(base + data, window.location.origin).href));
+            const base = JSON.parse(CryptoJS.AES.decrypt(batoWord, batoPass).toString(CryptoJS.enc.Utf8));
+            resolve(imgHttpLis.map((data, index) => data + '?' + base[index]));
         });
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);
