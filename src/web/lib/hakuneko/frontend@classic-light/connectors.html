@@ -157,54 +157,54 @@
                 background-color: var(--connector-tag-selected) !important;
             }
         </style>
-        <input type="text" class="button" on-click="showPopup" value$="[[ selectedConnector.label ]]" readonly />
+        <input type="text" class="button" on-click="showPopup" value$="[[ getConnectorLabel(selectedConnector) ]]" readonly />
         <div class$="popup [[ getPopupClass(popupVisibility) ]]">
-            <div class="controls" title="Click to cancel the website selection">
+            <div class="controls" title$="[[ i18n('titleClose') ]]">
                 <i class="fas fa-times-circle fa-2x button" on-click="closePopup"></i>
             </div>
             <div class="content">
                 <div class="filters">
                     <div class="separator">
                         <i class="fas fa-plug"></i>
-                        <label>Website</label>
+                        <label>[[ i18n('labelWebsite') ]]</label>
                     </div>
-                    <input id="connectorPattern" class="pattern" type="text" value="{{ connectorPattern::input }}"  title="Show only websites with a name that matches the entered pattern (case-insensitive)"/>
+                    <input id="connectorPattern" class="pattern" type="text" value="{{ connectorPattern::input }}"  title$="[[ i18n('titleConnectorPattern') ]]"/>
                     <div class="separator">
                         <i class="fas fa-book"></i>
-                        <label>Manga</label>
+                        <label>[[ i18n('labelManga') ]]</label>
                     </div>
-                    <input id="mangaPattern" class="pattern" type="text" value="{{ mangaPattern::input }}" on-keyup="filterConnectorsByManga" title="Show only websites with a manga that matches the entered pattern (case-insensitive)&#10;Searches only in local synchronized manga lists&#10;Press ENTER to perform the search"/>
+                    <input id="mangaPattern" class="pattern" type="text" value="{{ mangaPattern::input }}" on-keyup="filterConnectorsByManga" title$="[[ i18n('titleMangaPattern') ]]"/>
                     <div class="separator">
-                        <i class="fas fa-tags" title="Show only websites containing the selected tags"></i>
-                        <label>Tags</label>
+                        <i class="fas fa-tags" title$="[[ i18n('titleTags') ]]"></i>
+                        <label>[[ i18n('labelTags') ]]</label>
                     </div>
                     <div class="scroll tags">
                         <template is="dom-repeat" items="[[ tags ]]">
-                            <span class$="tag button [[ getTagClass(selectedTags, item) ]]" on-click="toggleTag">[[ item.tag ]]</span>
+                            <span class$="tag button [[ getTagClass(selectedTags, item) ]]" on-click="toggleTag">[[ getTag(item.tag) ]]</span>
                         </template>
                     </div>
                 </div>
                 <div class="connectors">
                     <div class="separator">
-                        <i class="fas fa-times button clear" title="Reset all filters" on-click="clearFilters"></i>
-                        <label>Connectors</label>
+                        <i class="fas fa-times button clear" title$="[[ i18n('titleReset') ]]" on-click="clearFilters"></i>
+                        <label>[[ i18n('labelConnectors') ]]</label>
                     </div>
                     <div class="scroll">
                         <template is="dom-repeat" items="[[ connectorList ]]" filter="[[ filterConnectors(connectorPattern, selectedTags) ]]">
-                            <div class$="card [[ getConnectorClass(selectedConnector, item) ]]" title$="Click to show mangas from this website&#10;&#10;Label: [[ item.label ]]&#10;ID: [[ item.id ]]&#10;URL: [[ item.url ]]" on-click="selectConnector">
+                            <div class$="card [[ getConnectorClass(selectedConnector, item) ]]" title$="[[ i18n('titleSelectDesc') ]]&#10;&#10;[[ i18n('titleSelectLabel') ]]: [[ item.label ]]&#10;[[ i18n('titleSelectId') ]]: [[ item.id ]]&#10;[[ i18n('titleSelectURL') ]]: [[ item.url ]]" on-click="selectConnector">
                                 <img class="icon" src$="[[ item.icon ]]" onerror="this.src='/img/connectors/default';" />
                                 <div class="description">
                                     <div class="heading">
-                                        <div class="title">[[ item.label ]]</div>
+                                        <div class="title">[[ getConnectorLabel(item) ]]</div>
                                         <div class="control">
-                                            <i class$="fas fa-sign-in-alt link [[ getLoginClass(item.links) ]]" title="Click to open the login page" on-click="openLogin"></i>
-                                            <i class$="fas fa-coffee link [[ getDonationClass(item.links) ]]" title="Click to open the donation page" on-click="openDonation"></i>
-                                            <i class="fas fa-external-link-square-alt link active" title="Click to open the website in a new window&#10;This can be useful for various taks e.g.&#10;&#10;&#8226; Check / Investigate the website status&#10;&#8226; Bypass CloudFlare protection&#10;&#8226; Unlock a Captcha" on-click="openWebsite"></i>
+                                            <i class$="fas fa-sign-in-alt link [[ getLoginClass(item.links) ]]" title$="[[ i18n('titleLogin') ]]" on-click="openLogin"></i>
+                                            <i class$="fas fa-coffee link [[ getDonationClass(item.links) ]]" title$="[[ i18n('titleDonation') ]]" on-click="openDonation"></i>
+                                            <i class="fas fa-external-link-square-alt link active" title$="[[ i18n('titleOpen') ]]" on-click="openWebsite"></i>
                                         </div>
                                     </div>
                                     <div>
                                         <template is="dom-repeat" items="[[ item.tags ]]">
-                                            <span class="tag">[[ item ]]</span>
+                                            <span class="tag">[[ getTag(item) ]]</span>
                                         </template>
                                     </div>
                                 </div>
@@ -435,6 +435,26 @@
              */
             getDonationClass(links) {
                 return links && links.donation ? 'active' : 'disabled';
+            }
+
+            getConnectorLabel(item) {
+                var translation = Engine.LanguageManager.translate(`backend.connectors.${item.id}`);
+                if(translation != "" && typeof translation !== 'undefined') {
+                    return translation;
+                }
+                return item.label;
+            }
+
+            getTag(item) {
+                var translation = Engine.LanguageManager.translate(`backend.tags.${item}`);
+                if(translation != "" && typeof translation !== 'undefined') {
+                    return translation;
+                }
+                return item;
+            }
+
+            i18n(key, _default) {
+                return Engine.LanguageManager.translate('frontend.frontend@classic-light.connectors.' + key, _default);
             }
         }
         window.customElements.define(HakunekoConnectors.is, HakunekoConnectors);

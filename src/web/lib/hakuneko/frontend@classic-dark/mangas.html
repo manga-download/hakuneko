@@ -88,11 +88,11 @@
             <table border="0" cellpadding="0" cellspacing="0" width="100%">
                 <tr>
                     <td>
-                        Manga List
+                        [[ i18n('list') ]]
                     </td>
                     <td width="1">
                         <input id="paste" />
-                        <i class="fas fa-fw fa-paste button" on-click="onPasteClick" title="Click to paste manga links from the clipboard (CTRL + V)"></i>
+                        <i class="fas fa-fw fa-paste button" on-click="onPasteClick" title$="[[ i18n('titlePaste') ]]"></i>
                     </td>
                 </tr>
             </table>
@@ -100,18 +100,18 @@
         <table class="filter separator">
             <tr>
                 <td>
-                    <i class="fas fa-fw fa-plug fa-flip-horizontal" title="Select a website from which the manga list should be shown"></i>
+                    <i class="fas fa-fw fa-plug fa-flip-horizontal" title$="[[ i18n('titleConnector') ]]"></i>
                 </td>
                 <td style="width: 100%;">
                     <hakuneko-connectors selected-connector="{{ selectedConnector }}"></hakuneko-connectors>
                 </td>
                 <td>
-                    <i class$="fas fa-fw fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>
+                    <i class$="fas fa-fw fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="[[ i18n('titleUpdateList') ]] &lt;[[ selectedConnector.label ]]&gt;"></i>
                 </td>
             </tr>
             <tr>
                 <td>
-                    <i class="fas fa-fw fa-search" title="Enter a pattern (at least 3 characters) to filter the manga list by their titles"></i>
+                    <i class="fas fa-fw fa-search" title$="[[ i18n('titlePattern') ]]"></i>
                 </td>
                 <td>
                     <input type="text" value="{{ mangaPattern::input }}"/>
@@ -124,17 +124,17 @@
         <ul class="list" >
             <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
                 <li class="notification">
-                    Manga list is loading or empty<br>
-                    Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
-                    button to update list<br/>
+                    [[ i18n('emptyConnectorLoading') ]]<br>
+                    Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="[[ i18n('titleUpdateList') ]] &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
+                    [[ i18n('emptyConnectorToUpdate') ]]<br/>
                     <br/>
-                    <i class="fas fa-info-circle"></i> Some connectors are slow<br/>
-                    and may take more than 10mins<br/>
-                    If the icon is still spinning,<br/>
-                    it's still working<br/>
+                    <i class="fas fa-info-circle"></i> [[ i18n('emptyConnectorSlow') ]]<br/>
+                    [[ i18n('emptyConnectorTenMin') ]]<br/>
+                    [[ i18n('emptyConnectorSpinning') ]]<br/>
+                    [[ i18n('emptyConnectorWorking') ]]<br/>
                     <br/>
-                    To check the activity press F12<br/>
-                    and go to the network tab
+                    [[ i18n('emptyConnectorActivity') ]]<br/>
+                    [[ i18n('emptyConnectorNetwork') ]]
                 </li>
             </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
@@ -150,7 +150,7 @@
         </iron-list>
         -->
         <div class="footer">
-            <hakuneko-status id="status" message="Mangas: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"></hakuneko-status>
+            <hakuneko-status id="status" message="[[ i18n('shownNumbers') ]]: [[ mangaFilteredCount ]] / [[ mangaList.length ]]"></hakuneko-status>
         </div>
     </template>
 
@@ -209,7 +209,7 @@
                     this.set( 'mangaList', undefined );
                     return;
                 }
-                let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
+                let statusID = this.$.status.addToQueue( this.i18n('statusLoading') + ' (' + connector.label + ')' );
                 // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage) 
                 this.set( 'mangaList', [] );
                 connector.getMangas( ( error, mangas ) => {
@@ -229,7 +229,7 @@
                 if( !connector || connector.isUpdating ) {
                     return;
                 }
-                let statusID = this.$.status.addToQueue( 'Updating manga list (' + connector.label + ')' );
+                let statusID = this.$.status.addToQueue( this.i18n('statusUpdating') + ' (' + connector.label + ')' );
                 connector.updateMangas( ( error, mangas ) => {
                     // check if executing connector is still the selected connector (visible)
                     if( connector === this.selectedConnector ) {
@@ -241,7 +241,7 @@
                     }
                     this.$.status.removeFromQueue( statusID );
                     if( error ) {
-                        alert('Failed to update manga list for ' + connector.label + '\n\n' + error.message, 'HakuNeko - ' + connector.label, 'error');
+                        alert(this.i18n('updatingFailed') + connector.label + '\n\n' + error.message, 'HakuNeko - ' + connector.label, 'error');
                     }
                 } );
                 // trigger update for refresh button style (update started)
@@ -339,6 +339,10 @@
                     this.set('selectedConnector', clipboardConnector);
                     this.onUpdateMangaListClick(evt);
                 }
+            }
+
+            i18n(key) {
+                return Engine.LanguageManager.translate('frontend.frontend@classic-dark.mangas.' + key);
             }
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );

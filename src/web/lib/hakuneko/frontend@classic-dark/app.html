@@ -180,7 +180,7 @@
             /**
              *
              */
-             getContentPanelStyle(readerEnabled) {
+            getContentPanelStyle(readerEnabled) {
                 return ( readerEnabled ? '' : 'display: none;' );
             }
 
@@ -194,14 +194,14 @@
             /**
              *
              */
-             getStartPanelStyle(readerEnabled,chapter) {
-                return ( chapter!==undefined ? 'display: none;' : '' );
+            getStartPanelStyle(readerEnabled,chapter) {
+                return ( !readerEnabled || chapter!==undefined ? 'display: none;' : '' );
             }
 
             /**
              *
              */
-             onSettingsSaved(event) {
+            onSettingsSaved(event) {
                 this.readerEnabled = Engine.Settings.readerEnabled.value;
             }
         }

@@ -92,14 +92,14 @@
                             return ( bookmark.key.manga === manga.id && bookmark.key.connector === manga.connector.id );
                         } );
                         if( index > -1 ) {
-                            return 'Click to remove the selected manga from the bookmark list';
+                            return this.i18n('titleListRemove');
                         }
-                        return 'Click to add the selected manga to the bookmark list';
+                        return this.i18n('titleListAdd');
                     } else {
-                        return `Cannot bookmark mangas from this ${ manga.connector.label }!`;
+                        return `${this.i18n('titleError')} ${ manga.connector.label }!`;
                     }
                 }
-                return 'Please select a manga to use the bookmark feature';
+                return this.i18n('titleSelect');
             }
 
             /**
@@ -116,16 +116,20 @@
                     } else {
                         Engine.BookmarkManager.addBookmark( manga );
                     }
-                    return 'Click to add the selected manga to bookmarks';
+                    return this.i18n('bookmarks.titleAdd');
                 }
             }
 
             /**
              *
              */
-             onBookmarksChanged( e ) {
+            onBookmarksChanged( e ) {
                 this.bookmarkList = e.detail;
                 this.notifyPath( 'bookmarkList.length' );
+            }
+
+            i18n(key) {
+                return Engine.LanguageManager.translate('frontend.frontend@classic-light.bookmarks.' + key);
             }
         }
         window.customElements.define(HakunekoBookmarks.is, HakunekoBookmarks);

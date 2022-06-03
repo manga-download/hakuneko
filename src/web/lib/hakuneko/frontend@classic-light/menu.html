@@ -127,16 +127,16 @@
                 display: none;
             }
         </style>
-        <i class="fas fa-fw fa-bars fa-2x item button" title="Toggle menu" on-click="togglePopup"></i>
+        <i class="fas fa-fw fa-bars fa-2x item button" title$="[[ i18n('titleToggle') ]]" on-click="togglePopup"></i>
         <span class="title">HakuNeko</span>
         <span class="right">
-            <i class="far fa-fw fa-window-minimize item button" title="Minize HakuNeko" onclick="minimizeWindow()"></i>
-            <i class="far fa-fw fa-window-maximize item button" title="Maximize HakuNeko" onclick="maximizeWindow()"></i>
-            <i class="far fa-fw fa-2x fa-window-close item button" title="Close HakuNeko" onclick="closeWindow()"></i>
+            <i class="far fa-fw fa-window-minimize item button" title$="[[ i18n('titleMinimize') ]]" onclick="minimizeWindow()"></i>
+            <i class="far fa-fw fa-window-maximize item button" title$="[[ i18n('titleMaximize') ]]" onclick="maximizeWindow()"></i>
+            <i class="far fa-fw fa-2x fa-window-close item button" title$="[[ i18n('titleClose') ]]" onclick="closeWindow()"></i>
         </span>
         <div class$="popup [[ getPopupClass(popupVisibility) ]]">
             <div class="separator">
-                <label>About</label>
+                <label>[[ i18n('labelAbout') ]]</label>
             </div>
             <div class="about">
                 <div class="logo">
@@ -150,33 +150,33 @@
                                 HakuNeko
                             </a>
                             rev.
-                            <a class="link button" on-click="openWindow" title="Revision History" data-href$="[[ version.revision.link ]]">
+                            <a class="link button" on-click="openWindow" title$="[[ i18n('titleVersion') ]]" data-href$="[[ version.revision.link ]]">
                                 [[ version.branch.label ]]@[[ version.revision.label ]]
                             </a>
                             <hr>
                         </div>
                         <table class="people" cellpadding="2" cellspacing="0">
                             <tr>
-                                <td width="1">Development:</td>
+                                <td width="1">[[ i18n('typeDevelopment') ]]</td>
                                 <td>
-                                    <a class="link button" on-click="openWindow" data-href="https://github.com/orgs/manga-download/people">Maintainers</a><br>
-                                    <a class="link button" on-click="openWindow" data-href="https://github.com/manga-download/hakuneko/graphs/contributors">Contributors</a>
+                                    <a class="link button" on-click="openWindow" data-href="https://github.com/orgs/manga-download/people">[[ i18n('linkMaintainers') ]]</a><br>
+                                    <a class="link button" on-click="openWindow" data-href="https://github.com/manga-download/hakuneko/graphs/contributors">[[ i18n('linkContributors') ]]</a>
                                 </td>
                             </tr>
                             <tr>
-                                <td width="1">Artwork:</td>
+                                <td width="1">[[ i18n('typeArtwork') ]]</td>
                                 <td>
                                     <a class="link button" on-click="openWindow" data-href="https://www.deviantart.com/hakuneko3kune">HakuNeko3Kune</a>
                                 </td>
                             </tr>
                             <tr>
-                                <td width="1">Help & Info:</td>
+                                <td width="1">[[ i18n('typeHelp') ]]</td>
                                 <td style="font-size: 1.5em; padding-top: 0.25em;">
-                                    <i class="fas fa-fw fa-home button" on-click="openWindow" title="Visit the HakuNeko Homepage" data-href="https://hakuneko.download"></i>
-                                    <i class="fas fa-fw fa-book button" on-click="openWindow" title="Read the Online Documentation" data-href="https://hakuneko.download/docs/interface/"></i>
-                                    <i class="fas fa-fw fa-bug button" on-click="openWindow" title="Open a Ticket on GitHub" data-href="https://hakuneko.download/docs/troubleshoot/"></i>
-                                    <i class="fab fa-fw fa-discord fa-flip-horizontal button" on-click="openWindow" title="Login to the Community Support Channel" data-href="https://discordapp.com/invite/A5d3NDf"></i>
-                                    <i class="fas fa-fw fa-street-view button" on-click="openWindow" title="Show your external IP and Geolocation" data-href="https://ipinfo.io/json"></i>
+                                    <i class="fas fa-fw fa-home button" on-click="openWindow" title$="[[ i18n('titleHomepage') ]]" data-href="https://hakuneko.download"></i>
+                                    <i class="fas fa-fw fa-book button" on-click="openWindow" title$="[[ i18n('titleDocumentation') ]]" data-href="https://hakuneko.download/docs/interface/"></i>
+                                    <i class="fas fa-fw fa-bug button" on-click="openWindow" title$="[[ i18n('titleTroubleshoot') ]]" data-href="https://hakuneko.download/docs/troubleshoot/"></i>
+                                    <i class="fab fa-fw fa-discord fa-flip-horizontal button" on-click="openWindow" title$="[[ i18n('titleDiscord') ]]" data-href="https://discordapp.com/invite/A5d3NDf"></i>
+                                    <i class="fas fa-fw fa-street-view button" on-click="openWindow" title$="[[ i18n('titleGeoloc') ]]" data-href="https://ipinfo.io/json"></i>
                                 </td>
                             </tr>
                         </table>
@@ -184,23 +184,23 @@
                 </div>
             </div>
             <div class="separator">
-                <label>Settings</label>
+                <label>[[ i18n('labelSettings') ]]</label>
             </div>
             <div class="settings">
                 <table width="100%" cellpadding="0" cellspacing="0">
                     <template is="dom-repeat" items="[[ settingCategories ]]">
                         <tr>
                             <td colspan="2" class="group">
-                                <label>[[ item.category ]]</label>
+                                <label>[[ getCategoryName(item) ]]</label>
                             </td>
                         </tr>
-                        <template is="dom-repeat" items="[[ item.settings ]]">
+                        <template is="dom-repeat" items="[[ item.settings ]]" as="setting">
                             <tr>
                                 <td width="1">
-                                    <label title="[[ item.description ]]"><i class="fas fa-fw fa-info-circle"></i> [[ item.label ]]</label>
+                                    <label title="[[ getSettingDescription(item, index, setting) ]]"><i class="fas fa-fw fa-info-circle"></i> [[ getSettingLabel(item, index, setting) ]] </label>
                                 </td>
                                 <td>
-                                    <hakuneko-input item="{{ item }}"></hakuneko-input>
+                                    <hakuneko-input item="{{ setting }}" key="{{ getSettingKey(item, index, setting) }}"></hakuneko-input> 
                                 </td>
                             </tr>
                         </template>
@@ -209,12 +209,12 @@
             </div>
             <div class="buttons">
                 <div class="buttonsLeft">
-                    <i class="fas fa-file-import fa-2x item button" title="Import bookmarks" on-click="import"></i>
+                    <i class="fas fa-file-import fa-2x item button" title$="[[ i18n('titleImport') ]]" on-click="import"></i>
                     <input type="file" id="importFile" accept="application/x-sqlite3,.db,.db3" on-change="onImport" />
                 </div>
                 <div class="buttonsRight">
-                    <i class="fas fa-check-circle fa-2x item button" title="Save settings and close menu" on-click="closeSaveChanges"></i>
-                    <i class="fas fa-times-circle fa-2x item button" title="Close menu without saving settings" on-click="closeDiscardChanges"></i>
+                    <i class="fas fa-check-circle fa-2x item button" title$="[[ i18n('titleSave') ]]" on-click="closeSaveChanges"></i>
+                    <i class="fas fa-times-circle fa-2x item button" title$="[[ i18n('titleDiscard') ]]" on-click="closeDiscardChanges"></i>
                 </div>
             </div>
         </div>
@@ -308,6 +308,38 @@
                     // reset input file field or it cannot be used again
                     this.$.importFile.value = null;
                 }
+            }
+
+            getCategoryName(item) {
+                var translation = Engine.LanguageManager.translate('backend.settings.' + item.id + ".name");
+                if(translation != "" && typeof translation !== 'undefined') {
+                    return translation;
+                }
+                return item.category;
+            }
+
+            getSettingDescription(category, settingIndex, item) {
+                var translation = Engine.LanguageManager.translate(`backend.settings.${category.id}.${category.settingKeys[settingIndex]}.description`);
+                if(translation != "" && typeof translation !== 'undefined') {
+                    return translation;
+                }
+                return item.description;
+            }
+
+            getSettingLabel(category, settingIndex, item) {
+                var translation = Engine.LanguageManager.translate(`backend.settings.${category.id}.${category.settingKeys[settingIndex]}.label`);
+                if(translation != "" && typeof translation !== 'undefined') {
+                    return translation;
+                }
+                return item.label;
+            }
+
+            getSettingKey(category, settingIndex, item) {
+                return `backend.settings.${category.id}.${category.settingKeys[settingIndex]}`;
+            }
+
+            i18n(key) {
+                return Engine.LanguageManager.translate('frontend.frontend@classic-light.menu.' + key);
             }
         }
         window.customElements.define(HakunekoMenu.is, HakunekoMenu);

@@ -48,33 +48,33 @@
             }
         </style>
         <div id="container">
-           <h1>Welcome to HakuNeko</h1>
-           <div>
+            <h1>[[ i18n('welcomeTitle') ]]</h1>
+            <div>
                 <p class="border">
                     <img class="logo" src="./img/logo_s.png"  align="left"/>
-                    <strong>HakuNeko</strong> was made to help users who download media for circumstances that requires offline usage. <br/>
-                    The philosophy is <u>ad-hoc consumption</u>, get it when you want to read/watch it.<br/>
-                    Read the "how to use" documentation at hakuneko.download (link available in the menu)
+                    <strong>HakuNeko</strong> [[ i18n('descCircumstances') ]] <br/>
+                    [[ i18n('descPhilosophy') ]] <u>[[ i18n('descPhilosophyAdhoc') ]]</u>[[ i18n('descPhilosophyExpl') ]]<br/>
+                    [[ i18n('descDocumentation') ]]
                 </p>
             </div>
             <div>
-                <h3>Find a site to get the content you want to view</h3>
+                <h3>[[ i18n('instructionsTitle') ]]</h3>
                 <div class="border">
-                    <strong>HakuNeko</strong> is not hosting anything. Find a website on the internet that provides the content you want. Then :
+                    <strong>HakuNeko</strong> [[ i18n('instDisclaimer') ]]
                     <ol>
-                        <li><i class="fas fa-fw fa-plug fa-flip-horizontal" title="Select a website from which the manga list should be shown"></i> Select your connector (the website). Use the filters</li>
-                        <li><i class="fas fa-fw fa-sync" title="Select a website from which the manga list should be shown"></i> Click on the refresh button (can take minutes)</li>
-                        <li><i class="fas fa-fw fa-search" title="Filter the manga list by their titles"></i> Find a manga</li>
-                        <li><i class="fas fa-fw fa-language" title="Select a language to filter the chapter list"></i> Filter chapters by language (optional)</li>
-                        <li><i class="fas fa-fw fa-search" title="Filter the chapter list by their titles"></i> Select a chapter</li>
+                        <li><i class="fas fa-fw fa-plug fa-flip-horizontal" title$="[[ i18n('titleConnector') ]]"></i> [[ i18n('instConnector') ]]</li>
+                        <li><i class="fas fa-fw fa-sync" title$="[[ i18n('titleConnector') ]]"></i> [[ i18n('instRefresh') ]]</li>
+                        <li><i class="fas fa-fw fa-search" title$="[[ i18n('titleFind') ]]"></i> [[ i18n('instFind') ]]</li>
+                        <li><i class="fas fa-fw fa-language" title$="[[ i18n('titleFilter') ]]"></i> [[ i18n('instFilter') ]]</li>
+                        <li><i class="fas fa-fw fa-search" title$="[[ i18n('titleSelect') ]]"></i> [[ i18n('instSelect') ]]</li>
                     </ol >
-                    The connector you are looking for is not in the list ?<br/>
-                    👉 Create a website request on the github (issue)<br/>
-                    Use the copy/paste feature if you already have the manga link<br/>
-                    👉 See the documentation for details
+                    [[ i18n('faqMissingConn') ]]<br/>
+                    [[ i18n('faqAnsMissingConn') ]]<br/>
+                    [[ i18n('faqCopyPaste') ]]<br/>
+                    [[ i18n('faqAnsCopyPaste') ]]
                 </div>
-                <h3>Ready to go 🚀</h3>
-                <div class="border">Download, view, bookmark your favorite mangas 📚</div>
+                <h3>[[ i18n('readyTitle') ]]</h3>
+                <div class="border">[[ i18n('end') ]]</div>
             </div>
         </div>
     </template>
@@ -104,6 +104,9 @@
                 super.ready();
             }
 
+            i18n(key) {
+                return Engine.LanguageManager.translate('frontend.frontend@classic-dark.start.' + key);
+            }
         }
 
         window.customElements.define( HakunekoStart.is, HakunekoStart );

@@ -102,27 +102,27 @@
         <div id="container" style$="background-color: [[ getContainerColor(selectedMedia) ]];">
             <template is="dom-if" if="[[ thumbnailViewMode(media,selectedMedia) ]]">
                 <template is="dom-repeat" items="[[ media ]]">
-                    <div class="thumbnail" style$="background-image: url('[[ escapeBackgroundURI(item) ]]');" on-click="showViewer" title$="Page [[ index ]]"></div>
+                    <div class="thumbnail" style$="background-image: url('[[ escapeBackgroundURI(item) ]]');" on-click="showViewer" title$="[[ i18n('titlePage') ]] [[ index ]]"></div>
                 </template>
             </template>
             <template is="dom-if" if="[[ pageViewMode(media,selectedMedia) ]]">
                 <div id="buttons" tabindex="0" onblur="this.focus()" on-keydown="onKeyDown">
                     <span class="title">[[ selectedChapter.title ]]</span>
-                    <i class="fas fa-chevron-left fa-2x button" title="Previous Chapter (ArrowLeft)" on-click="requestChapterDown"></i>
-                    <i class="fas fa-chevron-right fa-2x button" title="Next Chapter (ArrowRight)" on-click="requestChapterUp"></i>
+                    <i class="fas fa-chevron-left fa-2x button" title$="[[ i18n('titleChapterDown') ]]" on-click="requestChapterDown"></i>
+                    <i class="fas fa-chevron-right fa-2x button" title$="[[ i18n('titleChapterUp') ]]" on-click="requestChapterUp"></i>
                     &nbsp;
-                    <i class="fas fa-compress fa-2x button" title="Decrease spacing between images (CTRL ➖)" on-click="decreaseImagePadding"></i>
-                    <i class="fas fa-expand fa-2x button" title="Increase spacing between images (CTRL ➕)" on-click="increaseImagePadding"></i>
+                    <i class="fas fa-compress fa-2x button" title$="[[ i18n('titleDecreasePadding') ]]" on-click="decreaseImagePadding"></i>
+                    <i class="fas fa-expand fa-2x button" title$="[[ i18n('titleIncreasePadding') ]]" on-click="increaseImagePadding"></i>
                     &nbsp;
-                    <i class="fas fa-search-plus fa-2x button" title="Zoom In (➕)" on-click="zoomIn"></i>
-                    <i class="fas fa-search-minus fa-2x button" title="Zoom Out (➖)" on-click="zoomOut"></i>
+                    <i class="fas fa-search-plus fa-2x button" title$="[[ i18n('titleZoomIn') ]]" on-click="zoomIn"></i>
+                    <i class="fas fa-search-minus fa-2x button" title$="[[ i18n('titleZoomOut') ]]" on-click="zoomOut"></i>
                     &nbsp;
-                    <i class="fas fa-compress-arrows-alt fa-2x button" title="Default Image Width (*)" on-click="defaultZoom"></i>
-                    <i class="fas fa-expand-arrows-alt fa-2x button" title="Zoom to Fit Window (/)" on-click="fullWidthZoom"></i>
+                    <i class="fas fa-compress-arrows-alt fa-2x button" title$="[[ i18n('titleDefaultZoom') ]]" on-click="defaultZoom"></i>
+                    <i class="fas fa-expand-arrows-alt fa-2x button" title$="[[ i18n('titleFullZoom') ]]" on-click="fullWidthZoom"></i>
                     &nbsp;
-                    <i>Image Width: [[ imageWidth ]]%</i>
-                    <i class="fas fa-angle-double-down fa-2x button" title="Magic Scroll Down (SPACEBAR)" on-click="scrollDown"></i>
-                    <i class="fas fa-times-circle fa-2x button" title="Close (ESC)" on-click="hideViewer"></i>
+                    <i>[[ i18n('imageWidth') ]]: [[ imageWidth ]]%</i>
+                    <i class="fas fa-angle-double-down fa-2x button" title$="[[ i18n('titleScrollDown') ]]" on-click="scrollDown"></i>
+                    <i class="fas fa-times-circle fa-2x button" title$="[[ i18n('titleClose') ]]" on-click="hideViewer"></i>
                 </div>
                 <template is="dom-repeat" items="[[ media ]]" style="margin-top: 1.5em;">
                     <img id$="page_[[ index ]]" class="image" src$="[[ item ]]" style$="width: [[ imageWidth ]]%; margin: [[ imagePadding ]]em;" onerror="imgError(this)"></div>
@@ -603,10 +603,13 @@
             /**
              *
              */
-             scrollDown( event ) {
+            scrollDown( event ) {
                 this.scrollMagic(window.innerHeight*0.80);
             }
 
+            i18n(key) {
+                return Engine.LanguageManager.translate('frontend.frontend@classic-light.pages.' + key);
+            }
         }
 
         window.customElements.define( HakunekoPages.is, HakunekoPages );

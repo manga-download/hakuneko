@@ -14,6 +14,7 @@ import Settings from './engine/Settings.mjs';
 import Storage from './engine/Storage.mjs';
 import Version from './VersionInfo.mjs';
 import DiscordPresence from './engine/DiscordPresence.mjs';
+import LanguageManager from './engine/LanguageManager.mjs';
 
 export default class HakuNeko {
 
@@ -31,6 +32,7 @@ export default class HakuNeko {
         this._request = new Request(ipc, this._settings);
         this._connectors = new Connectors(ipc);
         this._storage = new Storage();
+        this._languageManager = new LanguageManager(this._settings);
         this._bookmarkManager = new BookmarkManager(this._settings, new BookmarkImporter());
         this._chaptermarkManager = new ChaptermarkManager(this._settings);
         this._discordPresence = new DiscordPresence(this._settings);
@@ -53,6 +55,7 @@ export default class HakuNeko {
 
     async initialize() {
         await this._connectors.initialize();
+        await this._languageManager.initialize();
     }
 
     get Blacklist() {
@@ -77,6 +80,10 @@ export default class HakuNeko {
 
     get Enums() {
         return this._enums;
+    }
+
+    get LanguageManager() {
+        return this._languageManager;
     }
 
     get Request() {

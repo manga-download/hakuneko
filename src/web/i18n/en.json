@@ -1,0 +1,1162 @@
+{
+    "languageCode": "en",
+    "languageName": "English (English)",
+    "frontend": {
+        "frontend@classic-light": {
+            "bookmarks": {
+                "titleListRemove": "Click to remove the selected manga from the bookmark list",
+                "titleListAdd": "Click to add the selected manga to the bookmark list",
+                "titleError": "Cannot bookmark mangas from this",
+                "titleSelect": "Please select a manga to use the bookmark feature",
+                "titleAdd": "Click to add the selected manga to bookmarks"
+            },
+            "chapters": {
+                "list": "Chapter List",
+                "titleSortToggle": "Click to toggle chapter sorting",
+                "titleDownloadAll": "Click to download all chapters currently shown in the filtered and sorted list",
+                "titleLanguage": "Select a language to filter the chapter list",
+                "titlePattern": "Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles",
+                "titleRemoveMarked": "Click to remove the marked chapter",
+                "titleRecentlyReadId": "The chapter has been marked as \"recently read\" but is no longer available",
+                "titleShowPreview": "Show preview of chapter's pages",
+                "titleOpenFolder": "Doubleclick to open the folder with your file manager",
+                "shownNumbers": "Chapters",
+                "statusLoading": "Loading chapter list",
+                "tooltipUnavailable": "Chapter is not available",
+                "tooltipOffline": "OFFLINE\nThe chapter is only accessable from the manga directory",
+                "tooltipAvailable": "AVAILABLE\nClick to download chapter",
+                "tooltipQueued": "QUEUED\nClick to remove chapter from download manager",
+                "tooltipDownloading": "DOWNLOADING",
+                "tooltipCompleted": "DOWNLOADED\nClick to delete and re-download chapter",
+                "tooltipFailed": "DOWNLOAD FAILED\nCheck the exclamation mark in the joblist for details\nClick to delete and re-download the chapter",
+                "tooltipDefault": "No tooltip available!",
+                "markTooltipMarked": "Remove the \"recently read\" marker from this chapter",
+                "markTooltipUnmarked": "Mark this chapter as \"recently read\"",
+                "processNoAction": "No action available!",
+                "processRedownload": "Re-download existing chapter?",
+                "downloadAllClickDownload": "Download ",
+                "downloadAllClickChapterNumbers": " new chapter(s) from the current chapter list?"
+            },
+            "connectors": {
+                "titleClose": "Click to cancel the website selection",
+                "labelWebsite": "Website",
+                "labelManga": "Manga",
+                "labelTags": "Tags",
+                "labelConnectors": "Connectors",
+                "titleConnectorPattern": "Show only websites with a name that matches the entered pattern (case-insensitive)",
+                "titleMangaPattern" : "Show only websites with a manga that matches the entered pattern (case-insensitive)\nSearches only in local synchronized manga lists\nPress ENTER to perform the search",
+                "titleTags": "Show only websites containing the selected tags",
+                "titleReset": "Reset all filters",
+                "titleSelectDesc": "Click to show mangas from this website",
+                "titleSelectLabel": "Label",
+                "titleSelectURL": "URL",
+                "titleSelectId": "ID",
+                "titleLogin": "Click to open the login page",
+                "titleDonation": "Click to open the donation page",
+                "titleOpen": "Click to open the website in a new window\nThis can be useful for various taks e.g.\n\n• Check / Investigate the website status\n• Bypass CloudFlare protection\n• Unlock a Captcha"
+            },
+            "input": {
+                "titleDirectory": "Browse"
+            },
+            "jobs": {
+                "shownNumbers": "Download(s)",
+                "errorTitle": "Click to re-download\n",
+                "onCloseConfirm": "Downloads are still in progress.\nClose application anyway?"
+            },
+            "mangas": {
+                "list": "Manga List",
+                "titlePaste": "Click to paste manga links from the clipboard (CTRL + V)",
+                "titleConnector": "Select a website from which the manga list should be shown",
+                "titleUpdateList": "Synchronize local manga list with online list from",
+                "titlePattern": "Enter a pattern (at least 3 characters) to filter the manga list by their titles",
+                "emptyConnectorLoading": "Manga list is loading or empty",
+                "emptyConnectorClick": "Click",
+                "emptyConnectorToUpdate": "button to update list",
+                "emptyConnectorSlow": "Some connectors are slow",
+                "emptyConnectorTenMin": "and may take more than 10mins",
+                "emptyConnectorSpinning": "If the icon is still spinning,",
+                "emptyConnectorWorking": "it's still working",
+                "emptyConnectorActvity": "To check the activity press F12",
+                "emptyConnectorNetwork": "and go to the network tab",
+                "shownNumbers": "Mangas",
+                "statusLoading": "Loading manga list",
+                "statusUpdating": "Updating manga list",
+                "updatingFailed": "Failed to update manga list for "
+            },
+            "menu": {
+                "titleToggle": "Toggle menu",
+                "titleMinimize": "Minimize HakuNeko",
+                "titleMaximize": "Maximize HakuNeko",
+                "titleClose": "Close HakuNeko",
+                "labelAbout": "About",
+                "titleVersion": "Revision History",
+                "typeDevelopment": "Development:",
+                "typeArtwork": "Artwork:",
+                "typeHelp": "Help & Info:",
+                "linkMaintainers": "Maintainers",
+                "linkContributors": "Contributors",
+                "titleHomepage": "Visit the HakuNeko Homepage",
+                "titleDocumentation": "Read the Online Documentation",
+                "titleTroubleshoot": "Open a Ticket on GitHub",
+                "titleDiscord": "Login to the Community Support Channel",
+                "titleGeoloc": "Show your external IP and Geolocation",
+                "labelSettings": "Settings",
+                "titleImport": "Import bookmarks",
+                "titleSave": "Save settings and close menu",
+                "titleDiscard": "Close menu without saving settings"
+            },
+            "pages": {
+                "titlePage": "Page",
+                "titleChapterDown": "Previous Chapter (ArrowLeft)",
+                "titleChapterUp": "Next Chapter (ArrowRight)",
+                "titleDecreasePadding": "Decrease spacing between images (CTRL ➖)",
+                "titleIncreasePadding": "Increase spacing between images (CTRL ➕)",
+                "titleZoomIn": "Zoom In (➕)",
+                "titleZoomOut": "Zoom Out (➖)",
+                "titleDefaultZoom": "Default Image Width (*)",
+                "titleFullZoom": "Zoom to Fit Window (/)",
+                "titleScrollDown": "Magic Scroll Down (SPACEBAR)",
+                "titleClose": "Close (ESC)",
+                "imageWidth": "Image Width"
+            },
+            "start": {
+                "welcomeTitle": "Welcome to HakuNeko",
+                "descCircumstances": "was made to help users who download media for circumstances that requires offline usage.",
+                "descPhilosophy": "The philosophy is",
+                "descPhilosophyAdhoc": "ad-hoc consumption",
+                "descPhilosophyExpl": ", get it when you want to read/watch it.",
+                "descDocumentation": "Read the \"how to use\" documentation at hakuneko.download (link available in the menu)",
+                "instructionsTitle": "Find a site to get the content you want to view",
+                "instDisclaimer": "is not hosting anything. Find a website on the internet that provides the content you want. Then:",
+                "instConnector": "Select your connector (the website). Use the filters",
+                "titleConnector": "Select a website from which the manga list should be shown",
+                "instRefresh": "Click on the refresh button (can take minutes)",
+                "instFind": "Find a manga",
+                "titleFind": "Filter the manga list by their titles",
+                "instFilter": "Filter chapters by language (optional)",
+                "titleFilter": "Select a language to filter the chapter list",
+                "instSelect": "Select a chapter",
+                "titleSelect": "Filter the chapter list by their titles",
+                "faqMissingConn": "The connector you are looking for is not in the list?",
+                "faqAnsMissingConn": "👉 Create a website request on the github (issue)",
+                "faqCopyPaste": "Use the copy/paste feature if you already have the manga link",
+                "faqAnsCopyPaste": "👉 See the documentation for details",
+                "readyTitle": "Ready to go 🚀",
+                "end": "Download, view, bookmark your favorite mangas 📚"
+            }
+        },
+        "frontend@classic-dark": {
+            "bookmarks": {
+                "titleListRemove": "Click to remove the selected manga from the bookmark list",
+                "titleListAdd": "Click to add the selected manga to the bookmark list",
+                "titleError": "Cannot bookmark mangas from this",
+                "titleSelect": "Please select a manga to use the bookmark feature",
+                "titleAdd": "Click to add the selected manga to bookmarks"
+            },
+            "chapters": {
+                "list": "Chapter List",
+                "titleSortToggle": "Click to toggle chapter sorting",
+                "titleDownloadAll": "Click to download all chapters currently shown in the filtered and sorted list",
+                "titleLanguage": "Select a language to filter the chapter list",
+                "titlePattern": "Enter a pattern (regex support e.g. '/ch 001/i') to filter the chapter list by their titles",
+                "titleRemoveMarked": "Click to remove the marked chapter",
+                "titleRecentlyReadId": "The chapter has been marked as \"recently read\" but is no longer available",
+                "titleShowPreview": "Show preview of chapter's pages",
+                "titleOpenFolder": "Doubleclick to open the folder with your file manager",
+                "shownNumbers": "Chapters",
+                "statusLoading": "Loading chapter list",
+                "tooltipUnavailable": "Chapter is not available",
+                "tooltipOffline": "OFFLINE\nThe chapter is only accessable from the manga directory",
+                "tooltipAvailable": "AVAILABLE\nClick to download chapter",
+                "tooltipQueued": "QUEUED\nClick to remove chapter from download manager",
+                "tooltipDownloading": "DOWNLOADING",
+                "tooltipCompleted": "DOWNLOADED\nClick to delete and re-download chapter",
+                "tooltipFailed": "DOWNLOAD FAILED\nCheck the exclamation mark in the joblist for details\nClick to delete and re-download the chapter",
+                "tooltipDefault": "No tooltip available!",
+                "markTooltipMarked": "Remove the \"recently read\" marker from this chapter",
+                "markTooltipUnmarked": "Mark this chapter as \"recently read\"",
+                "processNoAction": "No action available!",
+                "processRedownload": "Re-download existing chapter?",
+                "downloadAllClickDownload": "Download ",
+                "downloadAllClickChapterNumbers": " new chapter(s) from the current chapter list?"
+            },
+            "connectors": {
+                "titleClose": "Click to cancel the website selection",
+                "labelWebsite": "Website",
+                "labelManga": "Manga",
+                "labelTags": "Tags",
+                "labelConnectors": "Connectors",
+                "titleConnectorPattern": "Show only websites with a name that matches the entered pattern (case-insensitive)",
+                "titleMangaPattern" : "Show only websites with a manga that matches the entered pattern (case-insensitive)\nSearches only in local synchronized manga lists\nPress ENTER to perform the search",
+                "titleTags": "Show only websites containing the selected tags",
+                "titleReset": "Reset all filters",
+                "titleSelectDesc": "Click to show mangas from this website",
+                "titleSelectLabel": "Label",
+                "titleSelectURL": "URL",
+                "titleSelectId": "ID",
+                "titleLogin": "Click to open the login page",
+                "titleDonation": "Click to open the donation page",
+                "titleOpen": "Click to open the website in a new window\nThis can be useful for various taks e.g.\n\n• Check / Investigate the website status\n• Bypass CloudFlare protection\n• Unlock a Captcha"
+            },
+            "input": {
+                "titleDirectory": "Browse"
+            },
+            "jobs": {
+                "shownNumbers": "Download(s)",
+                "errorTitle": "Click to re-download\n",
+                "onCloseConfirm": "Downloads are still in progress.\nClose application anyway?"
+            },
+            "mangas": {
+                "list": "Manga List",
+                "titlePaste": "Click to paste manga links from the clipboard (CTRL + V)",
+                "titleConnector": "Select a website from which the manga list should be shown",
+                "titleUpdateList": "Synchronize local manga list with online list from",
+                "titlePattern": "Enter a pattern (at least 3 characters) to filter the manga list by their titles",
+                "emptyConnectorLoading": "Manga list is loading or empty",
+                "emptyConnectorClick": "Click",
+                "emptyConnectorToUpdate": "button to update list",
+                "emptyConnectorSlow": "Some connectors are slow",
+                "emptyConnectorTenMin": "and may take more than 10mins",
+                "emptyConnectorSpinning": "If the icon is still spinning,",
+                "emptyConnectorWorking": "it's still working",
+                "emptyConnectorActvity": "To check the activity press F12",
+                "emptyConnectorNetwork": "and go to the network tab",
+                "shownNumbers": "Mangas",
+                "statusLoading": "Loading manga list",
+                "statusUpdating": "Updating manga list",
+                "updatingFailed": "Failed to update manga list for "
+            },
+            "menu": {
+                "titleToggle": "Toggle menu",
+                "titleMinimize": "Minimize HakuNeko",
+                "titleMaximize": "Maximize HakuNeko",
+                "titleClose": "Close HakuNeko",
+                "labelAbout": "About",
+                "titleVersion": "Revision History",
+                "typeDevelopment": "Development:",
+                "typeArtwork": "Artwork:",
+                "typeHelp": "Help & Info:",
+                "linkMaintainers": "Maintainers",
+                "linkContributors": "Contributors",
+                "titleHomepage": "Visit the HakuNeko Homepage",
+                "titleDocumentation": "Read the Online Documentation",
+                "titleTroubleshoot": "Open a Ticket on GitHub",
+                "titleDiscord": "Login to the Community Support Channel",
+                "titleGeoloc": "Show your external IP and Geolocation",
+                "labelSettings": "Settings",
+                "titleImport": "Import bookmarks",
+                "titleSave": "Save settings and close menu",
+                "titleDiscard": "Close menu without saving settings"
+            },
+            "pages": {
+                "titlePage": "Page",
+                "titleChapterDown": "Previous Chapter (ArrowLeft)",
+                "titleChapterUp": "Next Chapter (ArrowRight)",
+                "titleDecreasePadding": "Decrease spacing between images (CTRL ➖)",
+                "titleIncreasePadding": "Increase spacing between images (CTRL ➕)",
+                "titleZoomIn": "Zoom In (➕)",
+                "titleZoomOut": "Zoom Out (➖)",
+                "titleDefaultZoom": "Default Image Width (*)",
+                "titleFullZoom": "Zoom to Fit Window (/)",
+                "titleScrollDown": "Magic Scroll Down (SPACEBAR)",
+                "titleClose": "Close (ESC)",
+                "imageWidth": "Image Width"
+            },
+            "start": {
+                "welcomeTitle": "Welcome to HakuNeko",
+                "descCircumstances": "was made to help users who download media for circumstances that requires offline usage.",
+                "descPhilosophy": "The philosophy is",
+                "descPhilosophyAdhoc": "ad-hoc consumption",
+                "descPhilosophyExpl": ", get it when you want to read/watch it.",
+                "descDocumentation": "Read the \"how to use\" documentation at hakuneko.download (link available in the menu)",
+                "instructionsTitle": "Find a site to get the content you want to view",
+                "instDisclaimer": "is not hosting anything. Find a website on the internet that provides the content you want. Then:",
+                "instConnector": "Select your connector (the website). Use the filters",
+                "titleConnector": "Select a website from which the manga list should be shown",
+                "instRefresh": "Click on the refresh button (can take minutes)",
+                "instFind": "Find a manga",
+                "titleFind": "Filter the manga list by their titles",
+                "instFilter": "Filter chapters by language (optional)",
+                "titleFilter": "Select a language to filter the chapter list",
+                "instSelect": "Select a chapter",
+                "titleSelect": "Filter the chapter list by their titles",
+                "faqMissingConn": "The connector you are looking for is not in the list?",
+                "faqAnsMissingConn": "👉 Create a website request on the github (issue)",
+                "faqCopyPaste": "Use the copy/paste feature if you already have the manga link",
+                "faqAnsCopyPaste": "👉 See the documentation for details",
+                "readyTitle": "Ready to go 🚀",
+                "end": "Download, view, bookmark your favorite mangas 📚"
+            }
+        }
+    },
+    "backend": {
+        "connectors": {
+            "bookmarks": " 【Bookmarks】",
+            "clipboard": " 【Clipboard】",
+            "folder": " 【Folder Viewer】"
+        },
+        "tags": {
+            "animation": "animation",
+            "anime": "anime",
+            "arabic": "arabic",
+            "chinese": "chinese",
+            "comic": "comic",
+            "dubbed": "dubbed",
+            "english": "english",
+            "french": "french",
+            "german": "german",
+            "hentai": "hentai",
+            "high-quality": "high-quality",
+            "hosting": "hosting",
+            "indonesian": "indonesian",
+            "italian": "italian",
+            "japanese": "japanese",
+            "korean": "korean",
+            "manga": "manga",
+            "multi-lingual": "multi-lingual",
+            "novel": "novel",
+            "polish": "polish",
+            "porn": "porn",
+            "portuguese": "portuguese",
+            "raw": "raw",
+            "russian": "russian",
+            "scanlation": "scanlation",
+            "spanish": "spanish",
+            "subbed": "subbed",
+            "thai": "thai",
+            "turkish": "turkish",
+            "vietnamese": "vietnamese",
+            "webshow": "webshow",
+            "webtoon": "webtoon"
+        },
+        "settings": {
+            "general": {
+                "name": "General",
+                "frontend": {
+                    "label": "Frontend ⁽¹⁾",
+                    "description": "Select the UI frontend that should be used for the manga download engine.\n\n⁽¹⁾ Restart required to take affect",
+                    "options": {
+                        "frontend@classic-light": "Classic (Light)",
+                        "frontend@classic-dark": "Ken's Daedal Dark"
+                    }
+                },
+                "language": {
+                    "label": "Language ⁽¹⁾",
+                    "description": "Select the language that should be used for the manga download engine.\n\n⁽¹⁾ Restart required to take affect"
+                },
+                "readerEnabled": {
+                    "label": "Enable Reader",
+                    "description": "Show a preview panel and a basic reader for the chapters"
+                },
+                "baseDirectory": {
+                    "label": "Manga Directory",
+                    "description": "The base directory where all downloaded mangas will be stored"
+                },
+                "bookmarkDirectory": {
+                    "label": "Bookmarks Directory",
+                    "description": "The directory where the bookmark and chaptermark files will be stored.\nThis setting has no effect when the application is in portable mode!"
+                },
+                "useSubdirectory": {
+                    "label": "Use Sub-Directories",
+                    "description": "Create sub-directories for each website (e.g. \"/downloads/mangadex/...\")"
+                },
+                "chapterTitleFormat": {
+                    "label": "Chapter Title Format",
+                    "description": "Define the chapter name format.\nThis is an experimental feature, volume/chapter numbers are extracted directly from the original name.\nMay fail in some cases and also reduce performance!\n\nSupported placeholders:\n  %C% - Connector title\n  %M% - Manga title\n  %VOL% - Volume number\n  %CH% - Chapter number\n  %T% - Chapter title (without volume/chapter number)\n  %O% - Chapter title (original)"
+                },
+                "chapterFormat": {
+                    "label": "Chapter File Format",
+                    "description": "Store chapters in the selected file format",
+                    "options": {
+                        "img": "Folder with Images (*.jpg, *.png, *.webp)",
+                        "dotcbz": "Comic Book Archive (*.cbz)",
+                        "dotpdf": "Portable Document (*.pdf)",
+                        "dotepub": "Ebook Reader (*.epub)"
+                    }
+                },
+                "recompressionFormat": {
+                    "label": "De-Scrambling Format",
+                    "description": "Select the re-compression format that shall be used for scrambled images.\nOnly applies to scrambled images!\nUnscrambled images are stored natively (no re-compression will be applied).",
+                    "options": {
+                        "image/webp": "WEBP (*.webp)",
+                        "image/jpeg": "JPEG (*.jpg)",
+                        "image/png": "PNG (*.png)"
+                    }
+                },
+                "recompressionQuality": {
+                    "label": "De-Scrambling Quality",
+                    "description": "Select the re-compression quality that shall be used for scrambled images.\nOnly applies to WEBP and JPEG, has no effect on PNG (which is lossless)."
+                },
+                "useSequentialMediaDownloads": {
+                    "label": "Disable Concurrent Downloads",
+                    "description": "Media will be downloaded one after another instead of concurrently. Enable this in case of holding a slow internet connection, or regularly encountering failed downloads due to network errors."
+                },
+                "proxyRules": {
+                    "label": "Proxy Rules",
+                    "description": "Set the proxy servers that shall be used.\nLeave blank to ignore.\n\nExamples:\n  http=proxy.web:80\n  http=127.0.0.1:8080;https=127.0.0.1:8080;socks=127.0.0.1:8081\n\nMore info: https://git.io/hakuneko-proxy"
+                },
+                "proxyAuth": {
+                    "label": "Proxy Authentication",
+                    "description": "Set the username and password for the proxy server(s).\nUse \":\" as separator between both terms.\nOnly basic auth is supported!\n\nExamples:\n  username:password"
+                },
+                "hCaptchaAccessibilityUUID": {
+                    "label": "hCaptcha UUID",
+                    "description": "Provide your accessibility UUID for hCaptcha (CloudFlare protection).\nTherefore CloudFlare may only show a click box instead of an image challenge.\nSignup for accessibility by registering an email on https://cutt.ly/hcaptcha-signup\nCopy the UUID part from the verification link in the received confirmation mail.\n\nExample:\n  68e89cc3-4c2d-4539-b80b-49ba4bec76c4\n\nMore info: https://www.hcaptcha.com/accessibility"
+                },
+                "downloadHistoryLogFormat": {
+                    "label": "Download History Format",
+                    "description": "Log the history of completed chapter downloads.\nThe log file(s) can be found in HakuNeko's user data directory.",
+                    "options": {
+                        "": "Disabled"
+                    }
+                },
+                "postChapterDownloadCommand": {
+                    "label": "Post Command",
+                    "description": "This command will be executed after a chapter download is complete.\nThe working directory is the folder containing the downloaded chapter.\nLeave blank to ignore.\n\nSupported placeholders:\n  %PATH% - Path to downloaded chapter folder/file\n  %C% - Connector title\n  %M% - Manga title\n  %O% - Chapter title\n\nExamples:\n  convert \"%PATH%\\*.webp\" -scene 1 \"%PATH%\\%03d.png\"\n  md \"%O%_conv\" & convert \"%PATH%\\*.*\" -scene 1 \"%O%_conv\\%03d.png\""
+                },
+                "discordPresence": {
+                    "label": "Discord Presence",
+                    "description": "Provides what you are currently reading as discord activity\ninformation to the public.\n",
+                    "options": {
+                        "none": "No presence",
+                        "nohentai": "All, but NO hentai",
+                        "hentai": "All INCLUDING hentai"
+                    }
+                },
+                "NovelColorProfiles": {
+                    "label": "Light/Dark mode for Novels",
+                    "description": "Choose between light and dark mode for novels.\nThis changes the image itself not just the reader view.\nThis may not work for all connectors that support novels.",
+                    "options": {
+                        "Dark": "Dark",
+                        "Light": "Light"
+                    }
+                }
+            },
+            "folder": {
+                "name": " 【Folder Viewer】",
+                "path": {
+                    "label": "Manga Folder",
+                    "description": "A local directory from which mangas can be shown within HakuNeko with the  【Folder Viewer】 connector\nThe directory only works with top-level manga folders, nested manga folders are not supported!\nThe manga folders must also contain their chapters in the top-level!"
+                }
+            },
+            "1359mh": {
+                "name": "1359漫画网 (1359 ManhuaWeb)",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "": "default",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "": "default",
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "517mh": {
+                "name": "517漫画网 (517 ManhuaWeb)",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "": "default",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "": "default",
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "9anime": {
+                "name": "9ANIME",
+                "resolution": {
+                    "label": "Preferred Resolution",
+                    "description": "Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!",
+                    "options": {
+                        "480": "480p",
+                        "720": "720p",
+                        "1080": "1080p",
+                        "": "Mirror's Default"
+                    }
+                },
+                "throttle": {
+                    "label": "Video Stream Throttle [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading packets from the video stream.\nThe download may fail if there are too many packets requested within a certain interval."
+                }
+            },
+            "animepahe": {
+                "name": "animepahe",
+                "resolution": {
+                    "label": "Preferred Resolution",
+                    "description": "Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!",
+                    "options": {
+                        "720": "720p",
+                        "1080": "1080p",
+                        "": "Mirror's Default"
+                    }
+                },
+                "throttle": {
+                    "label": "Video Stream Throttle [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading packets from the video stream.\nThe download may fail if there are too many packets requested within a certain interval."
+                }
+            },
+            "batoto": {
+                "name": "Batoto (by AnyACG)",
+                "url": {
+                    "label": "URL",
+                    "description": "This website's main domain doesn't always work, but has alternate domains.\nThis is the default URL which can also be manually set by the user."
+                }
+            },
+            "bilibili-comics": {
+                "name": "Bilibili Comics",
+                "quality": {
+                    "label": "Preferred format",
+                    "description": "format of images\nwebp (low)\njpg (medium)\npng (high))",
+                    "options": {
+                        "webp": "webp",
+                        "jpg": "jpg",
+                        "png": "png"
+                    }
+                }
+            },
+            "cocomanhua": {
+                "name": "Coco漫画",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "": "default",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "": "default",
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                },
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests."
+                }
+            },
+            "comicboost": {
+                "name": "comicブースト (Comic Boost)",
+                "scrapeDelay": {
+                    "label": "Page Scrape Delay",
+                    "description": "Time to wait until the page initialization process is complete.\nIncrease the value if no pages are found for the chapter."
+                }
+            },
+            "copytoon": {
+                "name": "CopyToon",
+                "url": {
+                    "label": "URL",
+                    "description": "This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user."
+                }
+            },
+            "crunchyanime": {
+                "name": "Crunchyroll* (Anime)",
+                "device": {
+                    "label": "Device",
+                    "description": "Select what device should be pretended when connecting to Crunchyroll.",
+                    "options": {
+                        "windows": "Windows",
+                        "crunchyroid": "Crunchydroid",
+                        "android": "Android",
+                        "ios": "iOS"
+                    }
+                },
+                "locale": {
+                    "label": "Locale",
+                    "description": "Select what locale should be used when connecting to Crunchyroll.\nLocalized media will be preferred, if unavailable use English (US).",
+                    "options": {
+                        "enUS": "English (US)",
+                        "enGB": "English (GB)",
+                        "frFR": "French",
+                        "deDE": "German (DE)",
+                        "jaJP": "Japanese",
+                        "ptBR": "Portuguese (BR)",
+                        "ptPT": "Portuguese (PT)",
+                        "esES": "Spanish (ES)",
+                        "esLA": "Spanish (LA)"
+                    }
+                },
+                "username": {
+                    "label": "Username",
+                    "description": "Username for login with Crunchyroll premium account.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with Crunchyroll premium account.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time."
+                }
+            },
+            "crunchymanga": {
+                "name": "Crunchyroll* (Manga)",
+                "device": {
+                    "label": "Device",
+                    "description": "Select what device should be pretended when connecting to Crunchyroll.",
+                    "options": {
+                        "windows": "Windows",
+                        "crunchyroid": "Crunchydroid",
+                        "android": "Android",
+                        "ios": "iOS"
+                    }
+                },
+                "locale": {
+                    "label": "Locale",
+                    "description": "Select what locale should be used when connecting to Crunchyroll.\nLocalized media will be preferred, if unavailable use English (US).",
+                    "options": {
+                        "enUS": "English (US)",
+                        "enGB": "English (GB)",
+                        "frFR": "French",
+                        "deDE": "German (DE)",
+                        "jaJP": "Japanese",
+                        "ptBR": "Portuguese (BR)",
+                        "ptPT": "Portuguese (PT)",
+                        "esES": "Spanish (ES)",
+                        "esLA": "Spanish (LA)"
+                    }
+                },
+                "username": {
+                    "label": "Username",
+                    "description": "Username for login with Crunchyroll premium account.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with Crunchyroll premium account.\n\nDisclaimer: HakuNeko may drop Crunchyroll support at any time."
+                }
+            },
+            "ehentai": {
+                "name": "E-Hentai",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests."
+                }
+            },
+            "exhentai": {
+                "name": "ExHentai",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests."
+                }
+            },
+            "japscan": {
+                "name": "JapScan",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe image download may fail for to many consecuitive requests."
+                }
+            },
+            "jpm1234": {
+                "name": "jpm1234",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nChapters with lots of pages may require a longer delay"
+                }
+            },
+            "lectormanga": {
+                "name": "LectorManga",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe image download may fail for to many consecuitive requests."
+                }
+            },
+            "lezhin-en": {
+                "name": "Lezhin (english)",
+                "username": {
+                    "label": "E-Mail",
+                    "description": "E-Mail for login with your Lezhin account.\nAn account is required to access R-rated content."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your Lezhin account.\nAn account is required to access R-rated content."
+                },
+                "forceJPEG": {
+                    "label": "Force JPEG",
+                    "description": "Always use JPEG instead of WEBP images, even when WEBP images would be available.\nNote: The WEBP images are smaller in size but still provide the same or even slightly better quality."
+                }
+            },
+            "lezhin-ja": {
+                "name": "Lezhin (japanese)",
+                "username": {
+                    "label": "E-Mail",
+                    "description": "E-Mail for login with your Lezhin account.\nAn account is required to access R-rated content."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your Lezhin account.\nAn account is required to access R-rated content."
+                },
+                "forceJPEG": {
+                    "label": "Force JPEG",
+                    "description": "Always use JPEG instead of WEBP images, even when WEBP images would be available.\nNote: The WEBP images are smaller in size but still provide the same or even slightly better quality."
+                }
+            },
+            "lezhin-ko": {
+                "name": "Lezhin (korean)",
+                "username": {
+                    "label": "E-Mail",
+                    "description": "E-Mail for login with your Lezhin account.\nAn account is required to access R-rated content."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your Lezhin account.\nAn account is required to access R-rated content."
+                },
+                "forceJPEG": {
+                    "label": "Force JPEG",
+                    "description": "Always use JPEG instead of WEBP images, even when WEBP images would be available.\nNote: The WEBP images are smaller in size but still provide the same or even slightly better quality."
+                }
+            },
+            "linewebtoon-zh": {
+                "name": "Line Webtoon (Chinese)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "linewebtoon-en": {
+                "name": "Line Webtoon (English)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "linewebtoon-fr": {
+                "name": "Line Webtoon (French)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "linewebtoon-de": {
+                "name": "Line Webtoon (German)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "linewebtoon-id": {
+                "name": "Line Webtoon (Indonesian)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "linewebtoon-es": {
+                "name": "Line Webtoon (Spanish)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "linewebtoon-th": {
+                "name": "Line Webtoon (Thai)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "linewebtoon-translate": {
+                "name": "Line Webtoon (Translate)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "shueishamangaplus": {
+                "name": "MANGA Plus by Shueisha",
+                "scrapeDelay": {
+                    "label": "Page Scrape Delay",
+                    "description": "Time to wait until the page initialization process is complete.\nIncrease the value if no pages are found for the chapter."
+                }
+            },
+            "mangadex": {
+                "name": "MangaDex",
+                "throttleRequests": {
+                    "label": "Throttle API Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive requests to the api."
+                },
+                "throttle": {
+                    "label": "Throttle Image Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests."
+                }
+            },
+            "mangafast": {
+                "name": "Mangafast",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests."
+                }
+            },
+            "mangahost": {
+                "name": "MangaHost",
+                "mangaListThrottle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 403 errors during manga list update."
+                }
+            },
+            "mangasail": {
+                "name": "MangaSail",
+                "username": {
+                    "label": "Username",
+                    "description": "Username for login with your account.\nVarious chapters will only be accessable after login."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your account.\nVarious chapters will only be accessable after login."
+                }
+            },
+            "mangatail": {
+                "name": "MangaTail",
+                "username": {
+                    "label": "Username",
+                    "description": "Username for login with your account.\nVarious chapters will only be accessable after login."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your account.\nVarious chapters will only be accessable after login."
+                }
+            },
+            "manhuatai": {
+                "name": "ManhuaTai",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "mintmanga": {
+                "name": "MintManga",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 429 errors during manga list update."
+                }
+            },
+            "porncomix": {
+                "name": "PornComix",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may ban your IP for to many consecutive requests."
+                }
+            },
+            "rawmangatop": {
+                "name": "Raw Manga (生漫画)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "readmanga": {
+                "name": "ReadManga",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 429 errors during manga list update."
+                }
+            },
+            "selfmanga": {
+                "name": "SelfManga",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests.\nSlightly increase the value when getting 429 errors during manga list update."
+                }
+            },
+            "team1x1": {
+                "name": "Team X",
+                "url": {
+                    "label": "URL",
+                    "description": "This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user."
+                }
+            },
+            "tumangaonline": {
+                "name": "TuMangaOnline",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe image download may fail for to many consecuitive requests."
+                }
+            },
+            "unniegl": {
+                "name": "UnnieGL",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe image download may fail for to many consecuitive requests."
+                }
+            },
+            "vizshonenjump": {
+                "name": "Viz - Shonen Jump",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nImage links may expire too fast and therefore downloads may fail."
+                }
+            },
+            "vrv-crunchyroll": {
+                "name": "VRV (Crunchyroll)",
+                "username": {
+                    "label": "E-Mail",
+                    "description": "E-Mail for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time."
+                },
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting errors during episode/movie download."
+                }
+            },
+            "vrv-hidive": {
+                "name": "VRV (HiDive)",
+                "username": {
+                    "label": "E-Mail",
+                    "description": "E-Mail for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time."
+                },
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting errors during episode/movie download."
+                }
+            },
+            "vrv-roosterteeth": {
+                "name": "VRV (Rooster Teeth)",
+                "username": {
+                    "label": "E-Mail",
+                    "description": "E-Mail for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your VRV account.\nAn account is required to access R-rated content.\nA paid subscription is required to access premium content.\n\nDisclaimer: HakuNeko may drop support for VRV at any time."
+                },
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many concurrent requests.\nSlightly increase the value when getting errors during episode/movie download."
+                }
+            },
+            "wutopiacomics": {
+                "name": "Wutopia",
+                "username": {
+                    "label": "E-Mail",
+                    "description": "E-Mail for login with your Wutopia account."
+                },
+                "password": {
+                    "label": "Password",
+                    "description": "Password for login with your Wutopia account."
+                }
+            },
+            "xcalibrscans": {
+                "name": "xCaliBR Scans",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests."
+                }
+            },
+            "zeroscans": {
+                "name": "ZeroScans",
+                "quality": {
+                    "label": "Preferred quality",
+                    "description": "The preferred quality of the chapters",
+                    "options": {
+                        "good_quality": "Good Quality",
+                        "high_quality": "High Quality"
+                    }
+                }
+            },
+            "comicearthstar": {
+                "name": "コミック アース・スター (Comic Earth Star)",
+                "scrapeDelay": {
+                    "label": "Page Scrape Delay",
+                    "description": "Time to wait until the page initialization process is complete.\nIncrease the value if no pages are found for the chapter."
+                }
+            },
+            "jumpbookstore": {
+                "name": "ジャンプBOOKストア (Jump Book Store)",
+                "scrapeDelay": {
+                    "label": "Page Scrape Delay",
+                    "description": "Time to wait until the page initialization process is complete.\nIncrease the value if no pages are found for the chapter."
+                }
+            },
+            "icekr": {
+                "name": "冰氪漫画 (iceKr)",
+                "throttle": {
+                    "label": "Page Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading Pages.\nThe website may ban your IP for to many consecuitive requests."
+                }
+            },
+            "kaimanhua": {
+                "name": "凯漫画 (Kai Manhua)",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "dongmanmanhua": {
+                "name": "咚漫 (DongMan Manhua)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            },
+            "neteasecomic": {
+                "name": "哔哩哔哩 漫画 (Bilibili Manhua)",
+                "quality": {
+                    "label": "Preferred format",
+                    "description": "format of images\nwebp (low)\njpg (medium)\npng (high))",
+                    "options": {
+                        "webp": "webp",
+                        "jpg": "jpg",
+                        "png": "png"
+                    }
+                }
+            },
+            "soudongman": {
+                "name": "斗罗大陆 (SouDongMan)",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "zuimh": {
+                "name": "最漫画 (ZuiMH)",
+                "throttle": {
+                    "label": "Page Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading Pages.\nThe website may ban your IP for to many consecuitive requests."
+                }
+            },
+            "kanman": {
+                "name": "看漫画 (KanMan)",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "manhuagui": {
+                "name": "看漫画 (ManHuaGui)",
+                "throttle": {
+                    "label": "Page Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests while downloading Pages.\nThe website may ban your IP for to many consecuitive requests."
+                }
+            },
+            "zymk": {
+                "name": "知音漫客网 (ZYMK MangaWeb)",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "": "default",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "": "default",
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "taomanhua": {
+                "name": "神漫画 (Tao Manhua)",
+                "format": {
+                    "label": "Image Format",
+                    "description": "In general JPEG is considered for premium users, however in some mangas JPEG might still work.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Premium Only)"
+                    }
+                },
+                "quality": {
+                    "label": "Image Quality",
+                    "description": "High quality seems to be restricted, probably for premium only.",
+                    "options": {
+                        "low": "Low",
+                        "middle": "Medium",
+                        "high": "High (Premium Only)"
+                    }
+                }
+            },
+            "jmana1": {
+                "name": "제이마나 (Jaymana)",
+                "throttle": {
+                    "label": "Throttle Requests [ms]",
+                    "description": "Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests"
+                }
+            }
+        }
+    }
+}

@@ -58,7 +58,7 @@
             <div class="stretch">
                 <select value="{{ item.value::change }}">
                     <template is="dom-repeat" items="[[ item.options ]]" as="option">
-                        <option value="[[ option.value ]]" selected$="[[ isSelected(item.value, option.value) ]]">[[ option.name ]]</option>
+                        <option value="[[ option.value ]]" selected$="[[ isSelected(item.value, option.value) ]]">[[ getSettingOptionName(option) ]]</option>
                     </template>
                 </select>
             </div>
@@ -81,7 +81,7 @@
                 <input type="text" value="{{ item.value }}" disabled title$="[[ item.value ]]"/>
             </div>
             <div class="shrink">
-                <i class="fas fa-fw fa-folder-open item" title="Browse &hellip;" on-click="clickChooseDirectory"></i>
+                <i class="fas fa-fw fa-folder-open item" title$="[[ i18n('titleDirectory') ]] &hellip;" on-click="clickChooseDirectory"></i>
             </div>
         </template>
     </template>
@@ -103,6 +103,12 @@
                 return {
                     item: {
                         type: Object,
+                        value: undefined,
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                    },
+                    key: {
+                        type: String,
                         value: undefined,
                         notify: true, // enable upward data flow,
                         //readOnly: true, // prevent downward data flow
@@ -156,6 +162,18 @@
                 if(path) {
                     this.set('item.value', path);
                 }
+            }
+
+            getSettingOptionName(option) {
+                var translation = Engine.LanguageManager.translate(`${this.key}.options.${option.value.replace('.', 'dot')}`);
+                if(translation != "" && typeof translation !== 'undefined') {
+                    return translation;
+                }
+                return option.name;
+            }
+
+            i18n(key) {
+                return Engine.LanguageManager.translate('frontend.frontend@classic-light.input.' + key);
             }
         }
         window.customElements.define(HakunekoInput.is, HakunekoInput);

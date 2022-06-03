@@ -1,0 +1,1162 @@
+{
+    "languageCode": "hu",
+    "languageName": "Magyar (Hungarian)",
+    "frontend": {
+        "frontend@classic-light": {
+            "bookmarks": {
+                "titleListRemove": "Kattints erre, hogy kitöröld a választott képregényt a könyvjelző listából",
+                "titleListAdd": "Kattints erre, hogy hozzáadd a választott képregényt a könyvjelző listához",
+                "titleError": "Nem lehet könyvjelző az alábbi csatlakozónál:",
+                "titleSelect": "Kérlek válassz ki egy képregényt a könyvjelző funkció használatához",
+                "titleAdd": "Kattints erre, hogy hozzáadd a kiválasztott képregényt a könyvjelzőkhöz"
+            },
+            "chapters": {
+                "list": "Fejezetlista",
+                "titleSortToggle": "Kattints erre, hogy megváltoztasd a fejezet rendezést",
+                "titleDownloadAll": "Kattints erre, hogy letöltsd az összes jelenleg látható fejezetet",
+                "titleLanguage": "Válassz egy nyelvet, hogy szűkítsd a fejezetlistát",
+                "titlePattern": "Írj be egy mintát (regex támogatás, pl.: '/ch 001/i'), hogy szűkítsd a fejezetlistát cím szerint",
+                "titleRemoveMarked": "Kattints erre, hogy kitöröld a fejezet jelölést",
+                "titleRecentlyReadId": "Ez a fejezet meg van jelölve \"nemrég olvasott\"-ként, de már nem elérhető",
+                "titleShowPreview": "Mutasd meg a fejezet képeinek előnézetét",
+                "titleOpenFolder": "Kattints kétszer, hogy megnyisd a fájlkezelőddel a mappát",
+                "shownNumbers": "Fejezetek",
+                "statusLoading": "Fejezetlista betöltése",
+                "tooltipUnavailable": "Fejezet nem elérhető",
+                "tooltipOffline": "NEM ELÉRHETŐ\nA fejezet csak a könyvtárból elérhető el",
+                "tooltipAvailable": "ELÉRHETŐ\nKattints erre, hogy letöltsd a fejezetet",
+                "tooltipQueued": "SORBAN ÁLL\nKattints erre, hogy megszakítsd a letöltési kérést",
+                "tooltipDownloading": "LETÖLTŐDIK",
+                "tooltipCompleted": "LETÖLTŐDÖTT\nKattints erre, hogy kitöröld, és újra letöltsd a fejezetet",
+                "tooltipFailed": "LETÖLTÉS SIKERTELEN\nNézd meg a jelzést a munkalistán további információért\nKattints erre, hogy kitöröld, és újra letöltsd a fejezetet",
+                "tooltipDefault": "Nincs elérhető leírás!",
+                "markTooltipMarked": "\"Nemrég olvasott\" jelölés eltüntetése a fejezetről",
+                "markTooltipUnmarked": "\"Nemrég olvasott\" jelölés hozzáadása a fejezethez",
+                "processNoAction": "Nincs elérhető feladat!",
+                "processRedownload": "Letöltenéd újra a fejezetet?",
+                "downloadAllClickDownload": "Letöltenél ",
+                "downloadAllClickChapterNumbers": " új fejezetet a jelenlegi fejezetlistából?"
+            },
+            "connectors": {
+                "titleClose": "Kattints erre, hogy megszüntesd a weboldal választást",
+                "labelWebsite": "Weboldal",
+                "labelManga": "Képregény",
+                "labelTags": "Címkék",
+                "labelConnectors": "Csatlakozók",
+                "titleConnectorPattern": "Azon weboldalak mutatása, amelyeknek a neve az adott mintát követi (nem kis- és nagybetű érzékeny)",
+                "titleMangaPattern" : "Azon weboldalak mutatása, amelyeken van egy képregény, ami az adott mintát követi (nem kis- és nagybetű érzékeny)\nCsak a helyi szinkronizált képregénylistában keres\nNyomj ENTER-t, hogy elindítsd a keresést",
+                "titleTags": "Azon weboldalak mutatása, amelyekben megtalálhatóak a kiválasztott címkék",
+                "titleReset": "Szűrők kiűrítése",
+                "titleSelectDesc": "Kattints erre, hogy a képregényeket ellehessen érni",
+                "titleSelectLabel": "Címke",
+                "titleSelectURL": "Cím",
+                "titleSelectId": "Azonosító",
+                "titleLogin": "Kattints erre, hogy megnyisd a bejelentkezési oldalt",
+                "titleDonation": "Kattints erre, hogy megnyisd a támogatási oldalt",
+                "titleOpen": "Kattints erre, hogy megnyisd a weboldalt egy új ablakban\nEz hasznos bizonyos feladatokra, pl.:\n\n• A weboldal állapotának megnézése\n• CloudFlare védelem kikerülése\n• Captcha megoldása"
+            },
+            "input": {
+                "titleDirectory": "Tallózás"
+            },
+            "jobs": {
+                "shownNumbers": "letöltés",
+                "errorTitle": "Kattints erre, hogy újra letöltsd\n",
+                "onCloseConfirm": "Letöltések még folyamatban vannak.\nBezárod a programod?"
+            },
+            "mangas": {
+                "list": "Képregénylista",
+                "titlePaste": "Kattints erre, hogy bemásold a képregény linkeket a vágólapról (CTRL + V)",
+                "titleConnector": "Válassz ki egy weboldalt, ahonnan a képregénylista lenne mutatva",
+                "titleUpdateList": "Helyi képregénylista szinkronizálása az online listáról innen:",
+                "titlePattern": "Adj meg egy mintát (legalább 3 karakter) hogy leszűkítsd a képregénylistát a cím szerint",
+                "emptyConnectorLoading": "Képregénylista töltődik vagy üres",
+                "emptyConnectorClick": "Kattints a",
+                "emptyConnectorToUpdate": "gombra, hogy frissítsd a listát",
+                "emptyConnectorSlow": "Bizonyos csatlakozók lassúak",
+                "emptyConnectorTenMin": "és akár 10 percig töltődhetnek",
+                "emptyConnectorSpinning": "Ha az ikon még mindig pörög,",
+                "emptyConnectorWorking": "akkor még megy",
+                "emptyConnectorActvity": "Ahhoz, hogy megfigyeld az aktivitást, nyomd meg az F12-t",
+                "emptyConnectorNetwork": "és menj a Hálózatok lapra",
+                "shownNumbers": "Képregények",
+                "statusLoading": "Képregénylista betöltése",
+                "statusUpdating": "Képregénylista frissítése",
+                "updatingFailed": "Képregénylista frissítése sikertelen volt ezen a csatlakozón: "
+            },
+            "menu": {
+                "titleToggle": "Menü be/kikapcsolása",
+                "titleMinimize": "HakuNeko minimalizálása",
+                "titleMaximize": "HakuNeko maximalizálása",
+                "titleClose": "HakuNeko bezárása",
+                "labelAbout": "Rólunk",
+                "titleVersion": "Változási történet",
+                "typeDevelopment": "Fejlesztés:",
+                "typeArtwork": "Illusztráció:",
+                "typeHelp": "Segítség & info:",
+                "linkMaintainers": "Fenntartók",
+                "linkContributors": "Közreműködők",
+                "titleHomepage": "HakuNeko weboldalának megtekintése",
+                "titleDocumentation": "Online dokumentáció elolvasása",
+                "titleTroubleshoot": "Jegy megnyitása GitHub-on",
+                "titleDiscord": "Belépés a közösségi támogató csatornába",
+                "titleGeoloc": "A publikus IP címed és a földrajzi elhelyezkedésed",
+                "labelSettings": "Beállítások",
+                "titleImport": "Könyvjelzők importálása",
+                "titleSave": "Beállítások mentése és a menü bezárása",
+                "titleDiscard": "Menü bezárása a beállítások mentése nélkül"
+            },
+            "pages": {
+                "titlePage": "Oldal",
+                "titleChapterDown": "Előző fejezet (←)",
+                "titleChapterUp": "Következő fejezet (→)",
+                "titleDecreasePadding": "Távolság csökkentése a képek közt (CTRL ➖)",
+                "titleIncreasePadding": "Távolság növelése a képek közt (CTRL ➕)",
+                "titleZoomIn": "Nagyítás (➕)",
+                "titleZoomOut": "Kicsinyítés (➖)",
+                "titleDefaultZoom": "Alapértelmezett képszélesség (*)",
+                "titleFullZoom": "Átméretezés az ablakhoz illesztéshez (/)",
+                "titleScrollDown": "Képek közti automatikus görgetés (Szóköz)",
+                "titleClose": "Bezár (ESC)",
+                "imageWidth": "Képszélesség"
+            },
+            "start": {
+                "welcomeTitle": "Üdvözöllek a HakuNeko-ban",
+                "descCircumstances": "azok számára lett készítve, akik letöltenek médiaanyagot offline használatra.",
+                "descPhilosophy": "A filozófiája",
+                "descPhilosophyAdhoc": "alkalmi fogyasztás",
+                "descPhilosophyExpl": ", akkor szerezd be, amikor használni szeretnéd.",
+                "descDocumentation": "Olvasd el a \"hogyan használd\" dokumentációt hakuneko.download weboldalon (link elérhető a menüben)",
+                "instructionsTitle": "Találj egy weboldalt, ahonnan megszeretnéd szerezni a tartalmat",
+                "instDisclaimer": "nem tárol semmit se. Találj egy weboldalt az interneten amin megtalálható a tartalom amire neked szükséged van. Majd:",
+                "instConnector": "Válaszd ki a csatlakozót (a weboldalt). Használd a szűrőket",
+                "titleConnector": "Válszd ki a weboldalt, ahonnan a képregénylistát szeretnéd látni",
+                "instRefresh": "Kattints a frissítés gombra (akár percekig tarthat)",
+                "instFind": "Találj egy képregényt",
+                "titleFind": "Szűrd a képregénylistát cím szerint",
+                "instFilter": "Szűrd a fejezeteket nyelv szerint (opcionális)",
+                "titleFilter": "Válaszd ki a nyelvet, hogy szűrd a fejezetlistát",
+                "instSelect": "Válassz ki egy fejezetet",
+                "titleSelect": "Szűrd a fejezetlistát cím szerint",
+                "faqMissingConn": "A csatlakozó amit keresen nincs a listában?",
+                "faqAnsMissingConn": "👉 Hozz létre egy weboldalkérést GitHub-on (issue)",
+                "faqCopyPaste": "Használd a másolás/beillesztés funkciót, ha már megvan a képregény linkje",
+                "faqAnsCopyPaste": "👉 Nézd meg a dokumentációt a részletekért",
+                "readyTitle": "Készen állsz 🚀",
+                "end": "Töltsd le, nézd meg, könyvjelzőzd a kedvenc képregényeid 📚"
+            }
+        },
+        "frontend@classic-dark": {
+            "bookmarks": {
+                "titleListRemove": "Kattints erre, hogy kitöröld a választott képregényt a könyvjelző listából",
+                "titleListAdd": "Kattints erre, hogy hozzáadd a választott képregényt a könyvjelző listához",
+                "titleError": "Nem lehet könyvjelző az alábbi csatlakozónál:",
+                "titleSelect": "Kérlek válassz ki egy képregényt a könyvjelző funkció használatához",
+                "titleAdd": "Kattints erre, hogy hozzáadd a kiválasztott képregényt a könyvjelzőkhöz"
+            },
+            "chapters": {
+                "list": "Fejezetlista",
+                "titleSortToggle": "Kattints erre, hogy megváltoztasd a fejezet rendezést",
+                "titleDownloadAll": "Kattints erre, hogy letöltsd az összes jelenleg látható fejezetet",
+                "titleLanguage": "Válassz egy nyelvet, hogy szűkítsd a fejezetlistát",
+                "titlePattern": "Írj be egy mintát (regex támogatás, pl.: '/ch 001/i'), hogy szűkítsd a fejezetlistát cím szerint",
+                "titleRemoveMarked": "Kattints erre, hogy kitöröld a fejezet jelölést",
+                "titleRecentlyReadId": "Ez a fejezet meg van jelölve \"nemrég olvasott\"-ként, de már nem elérhető",
+                "titleShowPreview": "Mutasd meg a fejezet képeinek előnézetét",
+                "titleOpenFolder": "Kattints kétszer, hogy megnyisd a fájlkezelőddel a mappát",
+                "shownNumbers": "Fejezetek",
+                "statusLoading": "Fejezetlista betöltése",
+                "tooltipUnavailable": "Fejezet nem elérhető",
+                "tooltipOffline": "NEM ELÉRHETŐ\nA fejezet csak a könyvtárból elérhető el",
+                "tooltipAvailable": "ELÉRHETŐ\nKattints erre, hogy letöltsd a fejezetet",
+                "tooltipQueued": "SORBAN ÁLL\nKattints erre, hogy megszakítsd a letöltési kérést",
+                "tooltipDownloading": "LETÖLTŐDIK",
+                "tooltipCompleted": "LETÖLTŐDÖTT\nKattints erre, hogy kitöröld, és újra letöltsd a fejezetet",
+                "tooltipFailed": "LETÖLTÉS SIKERTELEN\nNézd meg a jelzést a munkalistán további információért\nKattints erre, hogy kitöröld, és újra letöltsd a fejezetet",
+                "tooltipDefault": "Nincs elérhető leírás!",
+                "markTooltipMarked": "\"Nemrég olvasott\" jelölés eltüntetése a fejezetről",
+                "markTooltipUnmarked": "\"Nemrég olvasott\" jelölés hozzáadása a fejezethez",
+                "processNoAction": "Nincs elérhető feladat!",
+                "processRedownload": "Letöltenéd újra a fejezetet?",
+                "downloadAllClickDownload": "Letöltenél ",
+                "downloadAllClickChapterNumbers": " új fejezetet a jelenlegi fejezetlistából?"
+            },
+            "connectors": {
+                "titleClose": "Kattints erre, hogy megszüntesd a weboldal választást",
+                "labelWebsite": "Weboldal",
+                "labelManga": "Képregény",
+                "labelTags": "Címkék",
+                "labelConnectors": "Csatlakozók",
+                "titleConnectorPattern": "Azon weboldalak mutatása, amelyeknek a neve az adott mintát követi (nem kis- és nagybetű érzékeny)",
+                "titleMangaPattern" : "Azon weboldalak mutatása, amelyeken van egy képregény, ami az adott mintát követi (nem kis- és nagybetű érzékeny)\nCsak a helyi szinkronizált képregénylistában keres\nNyomj ENTER-t, hogy elindítsd a keresést",
+                "titleTags": "Azon weboldalak mutatása, amelyekben megtalálhatóak a kiválasztott címkék",
+                "titleReset": "Szűrők kiűrítése",
+                "titleSelectDesc": "Kattints erre, hogy a képregényeket ellehessen érni",
+                "titleSelectLabel": "Címke",
+                "titleSelectURL": "Cím",
+                "titleSelectId": "Azonosító",
+                "titleLogin": "Kattints erre, hogy megnyisd a bejelentkezési oldalt",
+                "titleDonation": "Kattints erre, hogy megnyisd a támogatási oldalt",
+                "titleOpen": "Kattints erre, hogy megnyisd a weboldalt egy új ablakban\nEz hasznos bizonyos feladatokra, pl.:\n\n• A weboldal állapotának megnézése\n• CloudFlare védelem kikerülése\n• Captcha megoldása"
+            },
+            "input": {
+                "titleDirectory": "Tallózás"
+            },
+            "jobs": {
+                "shownNumbers": "letöltés",
+                "errorTitle": "Kattints erre, hogy újra letöltsd\n",
+                "onCloseConfirm": "Letöltések még folyamatban vannak.\nBezárod a programod?"
+            },
+            "mangas": {
+                "list": "Képregénylista",
+                "titlePaste": "Kattints erre, hogy bemásold a képregény linkeket a vágólapról (CTRL + V)",
+                "titleConnector": "Válassz ki egy weboldalt, ahonnan a képregénylista lenne mutatva",
+                "titleUpdateList": "Helyi képregénylista szinkronizálása az online listáról innen:",
+                "titlePattern": "Adj meg egy mintát (legalább 3 karakter) hogy leszűkítsd a képregénylistát a cím szerint",
+                "emptyConnectorLoading": "Képregénylista töltődik vagy üres",
+                "emptyConnectorClick": "Kattints a",
+                "emptyConnectorToUpdate": "gombra, hogy frissítsd a listát",
+                "emptyConnectorSlow": "Bizonyos csatlakozók lassúak",
+                "emptyConnectorTenMin": "és akár 10 percig töltődhetnek",
+                "emptyConnectorSpinning": "Ha az ikon még mindig pörög,",
+                "emptyConnectorWorking": "akkor még megy",
+                "emptyConnectorActvity": "Ahhoz, hogy megfigyeld az aktivitást, nyomd meg az F12-t",
+                "emptyConnectorNetwork": "és menj a Hálózatok lapra",
+                "shownNumbers": "Képregények",
+                "statusLoading": "Képregénylista betöltése",
+                "statusUpdating": "Képregénylista frissítése",
+                "updatingFailed": "Képregénylista frissítése sikertelen volt ezen a csatlakozón: "
+            },
+            "menu": {
+                "titleToggle": "Menü be/kikapcsolása",
+                "titleMinimize": "HakuNeko minimalizálása",
+                "titleMaximize": "HakuNeko maximalizálása",
+                "titleClose": "HakuNeko bezárása",
+                "labelAbout": "Rólunk",
+                "titleVersion": "Változási történet",
+                "typeDevelopment": "Fejlesztés:",
+                "typeArtwork": "Illusztráció:",
+                "typeHelp": "Segítség & info:",
+                "linkMaintainers": "Fenntartók",
+                "linkContributors": "Közreműködők",
+                "titleHomepage": "HakuNeko weboldalának megtekintése",
+                "titleDocumentation": "Online dokumentáció elolvasása",
+                "titleTroubleshoot": "Jegy megnyitása GitHub-on",
+                "titleDiscord": "Belépés a közösségi támogató csatornába",
+                "titleGeoloc": "A publikus IP címed és a földrajzi elhelyezkedésed",
+                "labelSettings": "Beállítások",
+                "titleImport": "Könyvjelzők importálása",
+                "titleSave": "Beállítások mentése és a menü bezárása",
+                "titleDiscard": "Menü bezárása a beállítások mentése nélkül"
+            },
+            "pages": {
+                "titlePage": "Oldal",
+                "titleChapterDown": "Előző fejezet (←)",
+                "titleChapterUp": "Következő fejezet (→)",
+                "titleDecreasePadding": "Távolság csökkentése a képek közt (CTRL ➖)",
+                "titleIncreasePadding": "Távolság növelése a képek közt (CTRL ➕)",
+                "titleZoomIn": "Nagyítás (➕)",
+                "titleZoomOut": "Kicsinyítés (➖)",
+                "titleDefaultZoom": "Alapértelmezett képszélesség (*)",
+                "titleFullZoom": "Átméretezés az ablakhoz illesztéshez (/)",
+                "titleScrollDown": "Képek közti automatikus görgetés (Szóköz)",
+                "titleClose": "Bezár (ESC)",
+                "imageWidth": "Képszélesség"
+            },
+            "start": {
+                "welcomeTitle": "Üdvözöllek a HakuNeko-ban",
+                "descCircumstances": "azok számára lett készítve, akik letöltenek médiaanyagot offline használatra.",
+                "descPhilosophy": "A filozófiája",
+                "descPhilosophyAdhoc": "alkalmi fogyasztás",
+                "descPhilosophyExpl": ", akkor szerezd be, amikor használni szeretnéd.",
+                "descDocumentation": "Olvasd el a \"hogyan használd\" dokumentációt hakuneko.download weboldalon (link elérhető a menüben)",
+                "instructionsTitle": "Találj egy weboldalt, ahonnan megszeretnéd szerezni a tartalmat",
+                "instDisclaimer": "nem tárol semmit se. Találj egy weboldalt az interneten amin megtalálható a tartalom amire neked szükséged van. Majd:",
+                "instConnector": "Válaszd ki a csatlakozót (a weboldalt). Használd a szűrőket",
+                "titleConnector": "Válszd ki a weboldalt, ahonnan a képregénylistát szeretnéd látni",
+                "instRefresh": "Kattints a frissítés gombra (akár percekig tarthat)",
+                "instFind": "Találj egy képregényt",
+                "titleFind": "Szűrd a képregénylistát cím szerint",
+                "instFilter": "Szűrd a fejezeteket nyelv szerint (opcionális)",
+                "titleFilter": "Válaszd ki a nyelvet, hogy szűrd a fejezetlistát",
+                "instSelect": "Válassz ki egy fejezetet",
+                "titleSelect": "Szűrd a fejezetlistát cím szerint",
+                "faqMissingConn": "A csatlakozó amit keresen nincs a listában?",
+                "faqAnsMissingConn": "👉 Hozz létre egy weboldalkérést GitHub-on (issue)",
+                "faqCopyPaste": "Használd a másolás/beillesztés funkciót, ha már megvan a képregény linkje",
+                "faqAnsCopyPaste": "👉 Nézd meg a dokumentációt a részletekért",
+                "readyTitle": "Készen állsz 🚀",
+                "end": "Töltsd le, nézd meg, könyvjelzőzd a kedvenc képregényeid 📚"
+            }
+        }
+    },
+    "backend": {
+        "connectors": {
+            "bookmarks": " 【Könyvjelzők】",
+            "clipboard": " 【Vágólap】",
+            "folder": " 【Könyvtár-néző】"
+        },
+        "tags": {
+            "animation": "animáció",
+            "anime": "anime",
+            "arabic": "arab",
+            "chinese": "kínai",
+            "comic": "képregény",
+            "dubbed": "szinkron",
+            "english": "angol",
+            "french": "francia",
+            "german": "német",
+            "hentai": "hentai",
+            "high-quality": "magas-minőségű",
+            "hosting": "tároló",
+            "indonesian": "indonéz",
+            "italian": "olasz",
+            "japanese": "japán",
+            "korean": "koreai",
+            "manga": "manga",
+            "multi-lingual": "több-nyelvű",
+            "novel": "regény",
+            "polish": "lengyel",
+            "porn": "pornó",
+            "portuguese": "portugál",
+            "raw": "fordítatlan",
+            "russian": "orosz",
+            "scanlation": "szfordítás",
+            "spanish": "spanyol",
+            "subbed": "feliratos",
+            "thai": "thai",
+            "turkish": "török",
+            "vietnamese": "vietnámi",
+            "webshow": "webshow",
+            "webtoon": "webtoon"
+        },
+        "settings": {
+            "general": {
+                "name": "Általános",
+                "frontend": {
+                    "label": "Téma ⁽¹⁾",
+                    "description": "Válaszd ki a megjelenítési témát, amit szeretnél használni.\n\n⁽¹⁾ Újra kell indítani, hogy működjön.",
+                    "options": {
+                        "frontend@classic-light": "Klasszikus (Világos)",
+                        "frontend@classic-dark": "KDD (Sötét)"
+                    }
+                },
+                "language": {
+                    "label": "Nyelv ⁽¹⁾",
+                    "description": "Válaszd ki a nyelvet, amit szeretnél használni.\n\n⁽¹⁾ Újra kell indítani, hogy működjön."
+                },
+                "readerEnabled": {
+                    "label": "Olvasó bekapcsolása",
+                    "description": "Előnézeti mező és egy alapvető olvasó a fejezetekhez"
+                },
+                "baseDirectory": {
+                    "label": "Képregény-könyvtár",
+                    "description": "A kezdőkönyvtár, ahol az összes letöltött képregény lesz tárolva"
+                },
+                "bookmarkDirectory": {
+                    "label": "Könyvjelzők-könyvtár",
+                    "description": "A könyvtár, ahol a könyvjelző és fejezetjelző fájlok lesznek tárolva.\nEz a beállítás hordozható módban nem használt!"
+                },
+                "useSubdirectory": {
+                    "label": "Alkönyvtárak használata",
+                    "description": "Alkönyvtárak létrehozása minden egyes weboldalhoz (pl. \"/downloads/mangadex/...\")"
+                },
+                "chapterTitleFormat": {
+                    "label": "Fejezet címformátum",
+                    "description": "Fejezet címformátum meghatározása.\nEz egy kísérleti funkció, kötet / fejezet számok közvetlen az eredeti címből vannak kiszedve.\nBizonyos esetekben hibás lehet és a teljesítmény csökkenhet!\n\nTámogatott kitöltők:\n  %C% - Weboldal név\n  %M% - Képregény-cím\n  %VOL% - Kötet-szám\n  %CH% - Fejezet szám\n  %T% - Fejezet-cím (kötet / fejezetszám nélkül)\n  %O% - Fejezet-cím (eredeti)"
+                },
+                "chapterFormat": {
+                    "label": "Fejezet fájlformátum",
+                    "description": "A fejezetek tárolása az alábbi fájlformátumban",
+                    "options": {
+                        "img": "Könyvtár képekkel (*.jpg, *.png, *.webp)",
+                        "dotcbz": "Comic Book Archive (*.cbz)",
+                        "dotpdf": "Portable Document (*.pdf)",
+                        "dotepub": "Ebook-olvasó (*.epub)"
+                    }
+                },
+                "recompressionFormat": {
+                    "label": "Dekódolási formátum",
+                    "description": "Válaszd ki az újratömörítési formátumot, ami használva lesz az összekevert képekhez.\nCsak összekevert képeken működik!\nNem összekevert képek a rendes módszerrel vannak tárolva (nem lesz újratömörítés alkalmazva).",
+                    "options": {
+                        "image/webp": "WEBP (*.webp)",
+                        "image/jpeg": "JPEG (*.jpg)",
+                        "image/png": "PNG (*.png)"
+                    }
+                },
+                "recompressionQuality": {
+                    "label": "Dekódolási minőség",
+                    "description": "Válaszd ki az újratömörítési minőséget, ami használva lesz az összekevert képekhez.\nCsak WEBP-re és JPEG-re hat ki, nincs hatása PNG-re (ami veszteségmentes)."
+                },
+                "useSequentialMediaDownloads": {
+                    "label": "Egyidejű letöltések kikapcsolása",
+                    "description": "A médiaanyagok egymás után lesznek letöltve, ahelyett, hogy egyidejűleg. Kapcsold be ezt, ha lassú az internet sebességed, vagy gyakran sikertelen letöltési problémáid vannak hálózati hibák miatt."
+                },
+                "proxyRules": {
+                    "label": "Proxy-szabályok",
+                    "description": "A használt proxy szerverek beállítása.\nHagyd üresen, ha kihagyd.\n\nPéldák:\n  http=proxy.web:80\n  http=127.0.0.1:8080;https=127.0.0.1:8080;socks=127.0.0.1:8081\n\nTöbb információ: https://git.io/hakuneko-proxy"
+                },
+                "proxyAuth": {
+                    "label": "Proxy hitelesítés",
+                    "description": "Állítsd be a felhasználónevet és jelszót a proxy szerver(ek) számára.\nHasználd a \":\" karaktert, hogy elválaszd a kettőt.\nCsak alapvető hitelesítés van támogatva!\n\nPélda:\n  username:password"
+                },
+                "hCaptchaAccessibilityUUID": {
+                    "label": "hCaptcha UUID",
+                    "description": "Add meg a hozzáférhetőségi UUID azonosítód a hCaptcha (CloudFlare védelem) számára.\nEzt kihasználva CloudFlare csak egy belekattintós dobozt mutathat egy képes kihívás helyett.\nRegisztrálj hozzáférhetőséghez az e-mail-ed regiszrálásával a https://cutt.ly/hcaptcha-signup weboldalon.\nMásold ki az UUID részt a megerősítési linkből a megkapott megerősítő e-mailben.\n\nPélda:\n  68e89cc3-4c2d-4539-b80b-49ba4bec76c4\n\nnTöbb információ: https://www.hcaptcha.com/accessibility"
+                },
+                "downloadHistoryLogFormat": {
+                    "label": "Letöltési történet formátum",
+                    "description": "Naplózd a történetét a befejezett fejezet-letöltéseknek.\nA naplófájl(ok) megtalálható(ak) a HakuNeko-nak a felhasználói adat könyvtárában.",
+                    "options": {
+                        "": "Letiltva"
+                    }
+                },
+                "postChapterDownloadCommand": {
+                    "label": "Utólagos parancs",
+                    "description": "Ez a parancs le lesz futtatva miután egy fejezetletöltés befejeződik.\nA futtatási hely a könyvtár, ahova a fejezet letöltődött.\nHagyd üresen, hogy kihagyd.\n\nTámogatott kitöltők:\n  %PATH% - Útvonal a letöltött fejezet könyvtárhoz / fájlhoz\n  %C% - Weboldal név\n  %M% - Képregény-cím\n  %O% - Fejezet-cím\n\nExamples:\n  convert \"%PATH%\\*.webp\" -scene 1 \"%PATH%\\%03d.png\"\n  md \"%O%_conv\" & convert \"%PATH%\\*.*\" -scene 1 \"%O%_conv\\%03d.png\""
+                },
+                "discordPresence": {
+                    "label": "Discord jelenlét",
+                    "description": "Elküldi azt, amit jelenleg olvasol egy Discord aktivitásként.\n",
+                    "options": {
+                        "none": "Nincs jelenlét",
+                        "nohentai": "Minden (Hentai nélkül)",
+                        "hentai": "Minden (Hentai is)"
+                    }
+                },
+                "NovelColorProfiles": {
+                    "label": "Világos/sötét mód a regényekhez",
+                    "description": "Válassz a világos és a sötét mód között a regényekhez.\nEz megváltoztatja a képet magát, nem csak az olvasó nézetét.\nNem minden regénnyel foglalkozó weboldalon működik.",
+                    "options": {
+                        "Dark": "Sötét",
+                        "Light": "Világos"
+                    }
+                }
+            },
+            "folder": {
+                "name": " 【Könyvtár-néző】",
+                "path": {
+                    "label": "Képregény-könyvtár",
+                    "description": "Egy helyi könyvtár, ahonnan a képregények mutathatók a HakuNeko-n belül a  【Könyvtár-néző】 csatlakozóban\nCsak a közvetlen képregény könyvtárakat ismeri fel!\nA képregény könyvtárakban a fejezetek is közvetlen a könyvtáron belül kell legyenek megtalálhatóak!"
+                }
+            },
+            "1359mh": {
+                "name": "1359 ManhuaWeb",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "": "Alapvető",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "": "Alapvető",
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "517mh": {
+                "name": "517 ManhuaWeb",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "": "Alapvető",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "": "Alapvető",
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "9anime": {
+                "name": "9ANIME",
+                "resolution": {
+                    "label": "Preferált minőség",
+                    "description": "Megpróbálja a kiválasztott minőségben letölteni a videót.\nHa a megadott minőség nincs támogatva, a tükörtől függően a letöltés vagy nem sikerül, vagy egy másik minőség lesz használva!",
+                    "options": {
+                        "480": "480p",
+                        "720": "720p",
+                        "1080": "1080p",
+                        "": "Tükör alapértelmezett"
+                    }
+                },
+                "throttle": {
+                    "label": "Videófolyam gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen, amikor a videófolyam letöltése megy.\nA letöltési sikertelen lehet, ha túl sok csomag lesz kérve a megadott intervallumon belül."
+                }
+            },
+            "animepahe": {
+                "name": "Animepahe",
+                "resolution": {
+                    "label": "Preferált minőség",
+                    "description": "Megpróbálja a kiválasztott minőségben letölteni a videót.\nHa a megadott minőség nincs támogatva, a tükörtől függően a letöltés vagy nem sikerül, vagy egy másik minőség lesz használva!",
+                    "options": {
+                        "720": "720p",
+                        "1080": "1080p",
+                        "": "Tükör alapértelmezett"
+                    }
+                },
+                "throttle": {
+                    "label": "Videófolyam gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen, amikor a videófolyam letöltése megy.\nA letöltési sikertelen lehet, ha túl sok csomag lesz kérve a megadott intervallumon belül."
+                }
+            },
+            "batoto": {
+                "name": "Batoto",
+                "url": {
+                    "label": "Cím",
+                    "description": "Ez a weboldal fő címe nem mindig múködik, de vannak alternatív címei.\nEz alapértelmezetten a fő cím, de ez manuálisan beállítható a felhasználó által."
+                }
+            },
+            "bilibili-comics": {
+                "name": "Bilibili Comics",
+                "quality": {
+                    "label": "Preferált formátum",
+                    "description": "képek formátuma\nwebp (alacsony)\njpg (közepes)\npng (magas)",
+                    "options": {
+                        "webp": "webp",
+                        "jpg": "jpg",
+                        "png": "png"
+                    }
+                }
+            },
+            "cocomanhua": {
+                "name": "Cocomanhua",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "": "Alapvető",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "": "Alapvető",
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                },
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "comicboost": {
+                "name": "Comic Boost",
+                "scrapeDelay": {
+                    "label": "Kiolvasási eltolás",
+                    "description": "Az idő amit várni kell, míg betöltődik a weboldal.\nNöveld meg az értéket, ha nem találhatóak képek a fejezethez."
+                }
+            },
+            "copytoon": {
+                "name": "CopyToon",
+                "url": {
+                    "label": "Cím",
+                    "description": "Ez a weboldal túl gyakran megváltoztatja az elérhetőségét.\nEz a legutóbb ismert cím, de ez manuálisan is beállítható a felhasználó által."
+                }
+            },
+            "crunchyanime": {
+                "name": "Crunchyroll* (Animáció)",
+                "device": {
+                    "label": "Eszköz",
+                    "description": "Válaszd ki, hogy milyen eszközt akarsz emulálni, amikor rácsatlakozol a Crunchyroll-ra.",
+                    "options": {
+                        "windows": "Windows",
+                        "crunchyroid": "Crunchydroid",
+                        "android": "Android",
+                        "ios": "iOS"
+                    }
+                },
+                "locale": {
+                    "label": "Nyelv",
+                    "description": "Válaszd ki, hogy milyen nyelvet akarsz használni, amikor rácsatlakozol a Crunyhroll-ra.\nA nyelvben található média lesz preferálva, ha pedig nincs, akkor Amerikai angolt használt.",
+                    "options": {
+                        "enUS": "Angol (Egyesült Államok)",
+                        "enGB": "Angol (Nagy-Britannia)",
+                        "frFR": "Francia",
+                        "deDE": "Német (Németország)",
+                        "jaJP": "Japán",
+                        "ptBR": "Portugál (Brazília)",
+                        "ptPT": "Portugál (Portugália)",
+                        "esES": "Spanyol (Spanyolország)",
+                        "esLA": "Spanyol (Latin-Amerika)"
+                    }
+                },
+                "username": {
+                    "label": "Felhasználónév",
+                    "description": "Felhasználónév, hogy bejelentkezz a Crunchyroll prémium felhasználódba.\n\nFigyelem: HakuNeko bármikor megszüntetheti a Crunchyroll támogatását."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó, hogy bejelentkezz a Crunchyroll prémium felhasználódba.\n\nFigyelem: HakuNeko bármikor megszüntetheti a Crunchyroll támogatását."
+                }
+            },
+            "crunchymanga": {
+                "name": "Crunchyroll* (Képregény)",
+                "device": {
+                    "label": "Eszköz",
+                    "description": "Válaszd ki, hogy milyen eszközt akarsz emulálni, amikor rácsatlakozol a Crunchyroll-ra.",
+                    "options": {
+                        "windows": "Windows",
+                        "crunchyroid": "Crunchydroid",
+                        "android": "Android",
+                        "ios": "iOS"
+                    }
+                },
+                "locale": {
+                    "label": "Nyelv",
+                    "description": "Válaszd ki, hogy milyen nyelvet akarsz használni, amikor rácsatlakozol a Crunyhroll-ra.\nA nyelvben található média lesz preferálva, ha pedig nincs, akkor Amerikai angolt használt.",
+                    "options": {
+                        "enUS": "Angol (Egyesült Államok)",
+                        "enGB": "Angol (Nagy-Britannia)",
+                        "frFR": "Francia",
+                        "deDE": "Német (Németország)",
+                        "jaJP": "Japán",
+                        "ptBR": "Portugál (Brazília)",
+                        "ptPT": "Portugál (Portugália)",
+                        "esES": "Spanyol (Spanyolország)",
+                        "esLA": "Spanyol (Latin-Amerika)"
+                    }
+                },
+                "username": {
+                    "label": "Felhasználónév",
+                    "description": "Felhasználónév, hogy bejelentkezz a Crunchyroll prémium felhasználódba.\n\nFigyelem: HakuNeko bármikor megszüntetheti a Crunchyroll támogatását."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó, hogy bejelentkezz a Crunchyroll prémium felhasználódba.\n\nFigyelem: HakuNeko bármikor megszüntetheti a Crunchyroll támogatását."
+                }
+            },
+            "ehentai": {
+                "name": "E-Hentai",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "exhentai": {
+                "name": "ExHentai",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "japscan": {
+                "name": "JapScan",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "jpm1234": {
+                "name": "jpm1234",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket.\nSok képes fejezetek esetén több időt kell várni."
+                }
+            },
+            "lectormanga": {
+                "name": "LectorManga",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA letöltés lehet, hogy meg lesz szakítva a túl gyakran jövő kérések esetén."
+                }
+            },
+            "lezhin-en": {
+                "name": "Lezhin (Angol)",
+                "username": {
+                    "label": "E-mail cím",
+                    "description": "E-mail cím a Lezhin felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó a Lezhin felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez."
+                },
+                "forceJPEG": {
+                    "label": "JPEG erőltetése",
+                    "description": "Mindig JPEG képek használata WEBP képek helyett, még akkor is, ha a WEBP képek elérhetők.\nMegjegyzés: WEBP képek kisebbek méretűek, de megtartják, vagy akár megnövelik a kép minőségét."
+                }
+            },
+            "lezhin-ja": {
+                "name": "Lezhin (Japán)",
+                "username": {
+                    "label": "E-mail cím",
+                    "description": "E-mail cím a Lezhin felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó a Lezhin felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez."
+                },
+                "forceJPEG": {
+                    "label": "JPEG erőltetése",
+                    "description": "Mindig JPEG képek használata WEBP képek helyett, még akkor is, ha a WEBP képek elérhetők.\nMegjegyzés: WEBP képek kisebbek méretűek, de megtartják, vagy akár megnövelik a kép minőségét."
+                }
+            },
+            "lezhin-ko": {
+                "name": "Lezhin (Koreai)",
+                "username": {
+                    "label": "E-mail cím",
+                    "description": "E-mail cím a Lezhin felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó a Lezhin felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez."
+                },
+                "forceJPEG": {
+                    "label": "JPEG erőltetése",
+                    "description": "Mindig JPEG képek használata WEBP képek helyett, még akkor is, ha a WEBP képek elérhetők.\nMegjegyzés: WEBP képek kisebbek méretűek, de megtartják, vagy akár megnövelik a kép minőségét."
+                }
+            },
+            "linewebtoon-zh": {
+                "name": "Line Webtoon (Kínai)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "linewebtoon-en": {
+                "name": "Line Webtoon (Angol)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "linewebtoon-fr": {
+                "name": "Line Webtoon (Francia)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "linewebtoon-de": {
+                "name": "Line Webtoon (Német)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "linewebtoon-id": {
+                "name": "Line Webtoon (Indonéz)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "linewebtoon-es": {
+                "name": "Line Webtoon (Spanyol)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "linewebtoon-th": {
+                "name": "Line Webtoon (Thai)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "linewebtoon-translate": {
+                "name": "Line Webtoon (Fordítás)",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "shueishamangaplus": {
+                "name": "MANGA Plus (Shueisha)",
+                "scrapeDelay": {
+                    "label": "Kiolvasási eltolás",
+                    "description": "Az idő amit várni kell, míg betöltődik a weboldal.\nNöveld meg az értéket, ha nem találhatóak képek a fejezethez."
+                }
+            },
+            "mangadex": {
+                "name": "MangaDex",
+                "throttleRequests": {
+                    "label": "API kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző API kérések közt elteljen."
+                },
+                "throttle": {
+                    "label": "Kép kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "mangafast": {
+                "name": "Mangafast",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "mangahost": {
+                "name": "MangaHost",
+                "mangaListThrottle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket.\nNöveld meg kicsit az értéket, ha 403-as hibát kapsz a képregénylista frissítésekor."
+                }
+            },
+            "mangasail": {
+                "name": "MangaSail",
+                "username": {
+                    "label": "Felhasználónév",
+                    "description": "Felhasználónév, hogy bejelentkezz a felhasználódba.\nBizonyos fejezetek csak bejelentkezés után elérhetőek."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó, hogy bejelentkezz a felhasználódba.\nBizonyos fejezetek csak bejelentkezés után elérhetőek."
+                }
+            },
+            "mangatail": {
+                "name": "MangaTail",
+                "username": {
+                    "label": "Felhasználónév",
+                    "description": "Felhasználónév, hogy bejelentkezz a felhasználódba.\nBizonyos fejezetek csak bejelentkezés után elérhetőek."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó, hogy bejelentkezz a felhasználódba.\nBizonyos fejezetek csak bejelentkezés után elérhetőek."
+                }
+            },
+            "manhuatai": {
+                "name": "ManhuaTai",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "mintmanga": {
+                "name": "MintManga",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket.\nNöveld meg kicsit az értéket, ha 429-es hibát kapsz a képregénylista frissítésekor."
+                }
+            },
+            "porncomix": {
+                "name": "PornComix",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "rawmangatop": {
+                "name": "Raw Manga",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "readmanga": {
+                "name": "ReadManga",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket.\nNöveld meg kicsit az értéket, ha 429-es hibát kapsz a képregénylista frissítésekor."
+                }
+            },
+            "selfmanga": {
+                "name": "SelfManga",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket.\nNöveld meg kicsit az értéket, ha 429-es hibát kapsz a képregénylista frissítésekor."
+                }
+            },
+            "team1x1": {
+                "name": "Team X",
+                "url": {
+                    "label": "Cím",
+                    "description": "Ez a weboldal túl gyakran megváltoztatja az elérhetőségét.\nEz a legutóbb ismert cím, de ez manuálisan is beállítható a felhasználó által."
+                }
+            },
+            "tumangaonline": {
+                "name": "TuMangaOnline",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA letöltés lehet, hogy meg lesz szakítva a túl gyakran jövő kérések esetén."
+                }
+            },
+            "unniegl": {
+                "name": "UnnieGL",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA letöltés lehet, hogy meg lesz szakítva a túl gyakran jövő kérések esetén."
+                }
+            },
+            "vizshonenjump": {
+                "name": "Viz - Shonen Jump",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nLehetséges, hogy a kép linkek túl gyorsan lejárnak, ezzel megszakítva a letöltést."
+                }
+            },
+            "vrv-crunchyroll": {
+                "name": "VRV (Crunchyroll)",
+                "username": {
+                    "label": "E-mail cím",
+                    "description": "E-mail cím a VRV felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez.\nA fizetett feliratkozás szükséges a prémium tartalom eléréshez.\n\nFigyelem: HakuNeko bármikor megszüntetheti a VRV támogatását."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó a VRV felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez.\nA fizetett feliratkozás szükséges a prémium tartalom eléréshez.\n\nFigyelem: HakuNeko bármikor megszüntetheti a VRV támogatását."
+                },
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy nem enged túl sok egyidejű kérést.\nNöveld meg kicsit az értéket, ha hibát kapsz epizód / film letöltéskor."
+                }
+            },
+            "vrv-hidive": {
+                "name": "VRV (HiDive)",
+                "username": {
+                    "label": "E-mail cím",
+                    "description": "E-mail cím a VRV felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez.\nA fizetett feliratkozás szükséges a prémium tartalom eléréshez.\n\nFigyelem: HakuNeko bármikor megszüntetheti a VRV támogatását."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó a VRV felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez.\nA fizetett feliratkozás szükséges a prémium tartalom eléréshez.\n\nFigyelem: HakuNeko bármikor megszüntetheti a VRV támogatását."
+                },
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy nem enged túl sok egyidejű kérést.\nNöveld meg kicsit az értéket, ha hibát kapsz epizód / film letöltéskor."
+                }
+            },
+            "vrv-roosterteeth": {
+                "name": "VRV (Rooster Teeth)",
+                "username": {
+                    "label": "E-mail cím",
+                    "description": "E-mail cím a VRV felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez.\nA fizetett feliratkozás szükséges a prémium tartalom eléréshez.\n\nFigyelem: HakuNeko bármikor megszüntetheti a VRV támogatását."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó a VRV felhasználóddal való belépéshez.\nSzükséges felnőtt tartalom eléréséhez.\nA fizetett feliratkozás szükséges a prémium tartalom eléréshez.\n\nFigyelem: HakuNeko bármikor megszüntetheti a VRV támogatását."
+                },
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy nem enged túl sok egyidejű kérést.\nNöveld meg kicsit az értéket, ha hibát kapsz epizód / film letöltéskor."
+                }
+            },
+            "wutopiacomics": {
+                "name": "Wutopia",
+                "username": {
+                    "label": "E-mail cím",
+                    "description": "E-mail cím, hogy bejelentkezz a Wutopia felhasználódba."
+                },
+                "password": {
+                    "label": "Jelszó",
+                    "description": "Jelszó, hogy bejelentkezz a Wutopia felhasználódba."
+                }
+            },
+            "xcalibrscans": {
+                "name": "xCaliBR Scans",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letilt képeket a túl gyakran jövő kérésekhez."
+                }
+            },
+            "zeroscans": {
+                "name": "ZeroScans",
+                "quality": {
+                    "label": "Preferált minőség",
+                    "description": "A fejezetek preferált minősége",
+                    "options": {
+                        "good_quality": "Jó minőség",
+                        "high_quality": "Magas minőség"
+                    }
+                }
+            },
+            "comicearthstar": {
+                "name": "Comic Earth Star",
+                "scrapeDelay": {
+                    "label": "Kiolvasási eltolás",
+                    "description": "Az idő amit várni kell, míg betöltődik a weboldal.\nNöveld meg az értéket, ha nem találhatóak képek a fejezethez."
+                }
+            },
+            "jumpbookstore": {
+                "name": "Jump Book Store",
+                "scrapeDelay": {
+                    "label": "Kiolvasási eltolás",
+                    "description": "Az idő amit várni kell, míg betöltődik a weboldal.\nNöveld meg az értéket, ha nem találhatóak képek a fejezethez."
+                }
+            },
+            "icekr": {
+                "name": "iceKr",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letiltja az IP címedet a túl gyakori kérések miatt."
+                }
+            },
+            "kaimanhua": {
+                "name": "Kai Manhua",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "dongmanmanhua": {
+                "name": "DongMan Manhua",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            },
+            "neteasecomic": {
+                "name": "Bilibili Manhua (Kínai)",
+                "quality": {
+                    "label": "Preferált formátum",
+                    "description": "képek formátuma\nwebp (alacsony)\njpg (közepes)\npng (magas)",
+                    "options": {
+                        "webp": "webp",
+                        "jpg": "jpg",
+                        "png": "png"
+                    }
+                }
+            },
+            "soudongman": {
+                "name": "SouDongMan",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "zuimh": {
+                "name": "ZuiMH",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letiltja az IP címedet a túl gyakori kérések miatt."
+                }
+            },
+            "kanman": {
+                "name": "KanMan",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "manhuagui": {
+                "name": "ManHuaGui",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy letiltja az IP címedet a túl gyakori kérések miatt."
+                }
+            },
+            "zymk": {
+                "name": "ZYMK MangaWeb",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "": "Alapvető",
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "": "Alapvető",
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "taomanhua": {
+                "name": "Tao Manhua",
+                "format": {
+                    "label": "Kép-formátum",
+                    "description": "Általában JPEG a prémium felhasználók számára van, de van olyan képregény, ahol működik anélkül is a JPEG formátum.",
+                    "options": {
+                        "webp": "WEBP",
+                        "jpg": "JPEG (Prémium tagok)"
+                    }
+                },
+                "quality": {
+                    "label": "Kép-minőség",
+                    "description": "Magas minőség le van zárva, valószínűleg prémium tagok számára van.",
+                    "options": {
+                        "low": "Alacsony",
+                        "middle": "Közepes",
+                        "high": "Magas (Prémium tagok)"
+                    }
+                }
+            },
+            "jmana1": {
+                "name": "Jaymana",
+                "throttle": {
+                    "label": "Kérések gátolása [ms]",
+                    "description": "Írd be az időtartamot ezredmásodpercben, ami a különböző HTTP kérések közt elteljen.\nA weboldal lehet, hogy elutasít túl gyakran jövő kéréseket."
+                }
+            }
+        }
+    }
+}
