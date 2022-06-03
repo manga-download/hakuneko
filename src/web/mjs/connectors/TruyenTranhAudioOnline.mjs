@@ -1,14 +1,12 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import TruyenTranhAudio from './TruyenTranhAudio.mjs';
 
-export default class TruyenTranhAudioOnline extends WordPressMadara {
+export default class TruyenTranhAudioOnline extends TruyenTranhAudio {
 
     constructor() {
         super();
         super.id = 'truyentranhaudioonline';
-        super.label = 'Truyện tranh audio';
+        super.label = 'Truyện Tranh Audio Online';
         this.tags = [ 'webtoon', 'vietnamese' ];
-        this.url = 'https://truyentranhaudio.online';
-
-        this.queryPages = 'div.reading-content source';
+        this.url = 'https://truyentranhaudio.online'; // mirror of https://truyentranhaudio.com
     }
 }
