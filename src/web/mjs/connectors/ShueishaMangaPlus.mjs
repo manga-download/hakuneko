@@ -57,7 +57,7 @@ export default class ShueishaMangaPlus extends Publus {
                 title: chapter.subTitle || chapter.name,
                 language: ''
             };
-        });
+        }).reverse();
     }
 
     async _getPages(chapter) {
