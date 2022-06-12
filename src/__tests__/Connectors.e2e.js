@@ -225,7 +225,7 @@ describe("HakuNeko Engine", () => {
                 }, {
                     connectorClass: 'toCoronaEx',
                     mangaID: '20000000051530',
-                    mangaTitle: '悪役令嬢ですが攻略対象の様子が異常すぎる＠ＣＯＭＩＣ',
+                    mangaTitle: '悪役令嬢ですが攻略対象の様子が異常すぎる@COMIC',
                     chapterID: 20000000496345,
                     chapterTitle: '第1話',
                     pageCount: 34
