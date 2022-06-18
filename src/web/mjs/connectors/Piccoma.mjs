@@ -47,8 +47,11 @@ export default class Piccoma extends Connector {
 
     async _getPages(chapter) {
         const request = new Request(`${this.url}/viewer/${chapter.id}`);
-        const _pdata = await Engine.Request.fetchUI(request, '_pdata_');
+        const _pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
         const { img, ...pdata } = _pdata;
+        if (img == null) {
+            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
+        }
         return img
             .filter(img => !!img.path)
             .map(img => img.path.startsWith('http') ? img.path : `https:${img.path}`)
