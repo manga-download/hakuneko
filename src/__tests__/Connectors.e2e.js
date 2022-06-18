@@ -223,7 +223,7 @@ describe("HakuNeko Engine", () => {
                     mangaURL: 'https://to-corona-ex.com/comics/20000000051530',
                     chaptersAccessor: 'shift' // first => shift, last => pop, index => Integer
                 }, {
-                    connectorClass: 'toCoronaEx',
+                    connectorClass: 'ToCoronaEx',
                     mangaID: '20000000051530',
                     mangaTitle: '悪役令嬢ですが攻略対象の様子が異常すぎる@COMIC',
                     chapterID: 20000000496345,

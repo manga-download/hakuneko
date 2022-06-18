@@ -40,7 +40,7 @@ export default class Baozimh extends Connector {
             new URL(chapter.id, this.url),
             this.requestOptions
         );
-        let data = await this.fetchDOM(request, ".comic-contain .chapter-img source.comic-contain__item");
-        return data.map(element => element.dataset['src']);
+        let data = await this.fetchDOM(request, ".comic-contain amp-img.comic-contain__item");
+        return data.map(element => element.getAttribute('src'));
     }
 }
