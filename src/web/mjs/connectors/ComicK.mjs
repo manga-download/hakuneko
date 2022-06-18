@@ -84,13 +84,7 @@ export default class ComicK extends Connector {
         const uri = new URL('/chapter/' + chapter.id, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSONEx(request);
-        return data.chapter.md_images.map(image => {
-            if(image.gpurl) {
-                return 'https://lh3.googleusercontent.com/' + image.gpurl + '=w0-h0';
-            } else {
-                return 'https://' + [ data.chapter.server, data.chapter.hash, image.name ].join('/');
-            }
-        });
+        return data.chapter.md_images.map(image => `https://meo.comick.pictures/${image.b2key}`);
     }
 
     async _getComicId(manga) {
