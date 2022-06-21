@@ -178,58 +178,35 @@ export default class Piccoma extends Connector {
 }
 
 // from https://github.com/webcaetano/shuffle-seed
-const _shuffleSeed_ = (function () {
-    function shuffleSeed(arr, seed) {
-        seed = seedify(seed) || 'none';
-        const size = arr.length;
-        const rng = _seedrandom_(seed);
-        const resp = [];
-        const keys = [];
-        for (let i = 0; i < size; i++) keys.push(i);
-        for (let i = 0; i < size; i++) {
-            const r = seedRand(rng, 0, keys.length - 1);
-            const g = keys[r];
-            keys.splice(r, 1);
-            resp.push(arr[g]);
-        }
-        return resp;
+function _shuffleSeed_(arr, seed) {
+    const size = arr.length;
+    const rng = _seedrandom_(seed);
+    const resp = [];
+    const keys = [];
+    for (let i = 0; i < size; i++) keys.push(i);
+    for (let i = 0; i < size; i++) {
+        const r = Math.floor(rng() * keys.length);
+        const g = keys[r];
+        keys.splice(r, 1);
+        resp.push(arr[g]);
     }
-
-    function seedify(seed) {
-        if (/(number|string)/i.test(Object.prototype.toString.call(seed).match(/^\[object (.*)\]$/)[1])) return seed;
-        if (isNaN(seed)) return Number(String(this.strSeed = seed).split('').map(x => x.charCodeAt(0)).join(''));
-        return seed;
-    }
-
-    function seedRand(func, min, max) {
-        return Math.floor(func() * (max - min + 1)) + min;
-    }
-    return shuffleSeed;
-})();
+    return resp;
+}
 
 // from https://github.com/davidbau/seedrandom
-const _seedrandom_ = (function (global, pool, math) {
-
+const _seedrandom_ = (function () {
     var width = 256,
         chunks = 6,
         digits = 52,
-        rngname = 'random',
-        startdenom = math.pow(width, chunks),
-        significance = math.pow(2, digits),
+        startdenom = Math.pow(width, chunks),
+        significance = Math.pow(2, digits),
         overflow = significance * 2,
-        mask = width - 1,
-        nodecrypto;
+        mask = width - 1;
 
-    function seedrandom(seed, options, callback) {
+    function seedrandom(seed) {
         var key = [];
-        options = options == true ? { entropy: true } : options || {};
-
-        var shortseed = mixkey(flatten(
-            options.entropy ? [seed, tostring(pool)] :
-                seed == null ? autoseed() : seed, 3), key);
-
+        mixkey(seed, key);
         var arc4 = new ARC4(key);
-
         var prng = function () {
             var n = arc4.g(chunks),
                 d = startdenom,
@@ -254,26 +231,7 @@ const _seedrandom_ = (function (global, pool, math) {
             return arc4.g(4) / 0x100000000;
         };
         prng.double = prng;
-
-        mixkey(tostring(arc4.S), pool);
-
-        return (options.pass || callback ||
-            function (prng, seed, is_math_call, state) {
-                if (state) {
-                    if (state.S) {
-                        copy(state, arc4);
-                    }
-                    prng.state = function () {
-                        return copy(arc4, {});
-                    };
-                }
-
-                if (is_math_call) {
-                    math[rngname] = prng; return seed;
-                } else {
-                    return prng;
-                }
-            })(prng, shortseed, 'global' in options ? options.global : this == math, options.state);
+        return prng;
     }
 
     function ARC4(key) {
@@ -304,61 +262,14 @@ const _seedrandom_ = (function (global, pool, math) {
         })(width);
     }
 
-    function copy(f, t) {
-        t.i = f.i;
-        t.j = f.j;
-        t.S = f.S.slice();
-        return t;
-    }
-
-    function flatten(obj, depth) {
-        var result = [], typ = typeof obj, prop;
-        if (depth && typ == 'object') {
-            for (prop in obj) {
-                try {
-                    result.push(flatten(obj[prop], depth - 1));
-                } catch (e) {
-                    // ignore
-                }
-            }
-        }
-        return result.length ? result : typ == 'string' ? obj : obj + '\0';
-    }
-
     function mixkey(seed, key) {
         var stringseed = seed + '', smear, j = 0;
         while (j < stringseed.length) {
             key[mask & j] =
                 mask & (smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++);
         }
-        return tostring(key);
+        return String.fromCharCode.apply(0, key);
     }
 
-    function autoseed() {
-        try {
-            var out;
-            if (nodecrypto && (out = nodecrypto.randomBytes)) {
-                out = out(width);
-            } else {
-                out = new Uint8Array(width);
-                (global.crypto || global.msCrypto).getRandomValues(out);
-            }
-            return tostring(out);
-        } catch (e) {
-            var browser = global.navigator,
-                plugins = browser && browser.plugins;
-            return [+new Date, global, plugins, global.screen, tostring(pool)];
-        }
-    }
-
-    function tostring(a) {
-        return String.fromCharCode.apply(0, a);
-    }
-
-    mixkey(math.random(), pool);
     return seedrandom;
-})(
-    typeof self !== 'undefined' ? self : this,
-    [],
-    Math
-);
+})();
