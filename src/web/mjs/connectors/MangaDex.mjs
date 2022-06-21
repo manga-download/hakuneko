@@ -125,7 +125,7 @@ export default class MangaDex extends Connector {
             let chapters = await this._getChaptersFromPage(manga, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
-        return chapterList;
+        return chapterList.reverse();
     }
 
     async _getChaptersFromPage(manga, page) {

@@ -21,10 +21,10 @@ export default class MangaRaw extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(this.url +'/browse/', this.requestOptions);
+        let request = new Request(this.url + '/browse-comics/', this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.pagination li:nth-child(2) a');
         let pageCount = parseInt(data[0].textContent);
-        for(let page = 1; page <= pageCount; page++) {
+        for (let page = 1; page <= pageCount; page++) {
             await this.wait(250);
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -33,7 +33,7 @@ export default class MangaRaw extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(`${this.url}/browse/?results=${page}`, this.requestOptions);
+        let request = new Request(`${this.url}/browse-comics/?results=${page}`, this.requestOptions);
         let data = await this.fetchDOM(request, 'li.novel-item a', 3);
         return data.map(element => {
             return {
