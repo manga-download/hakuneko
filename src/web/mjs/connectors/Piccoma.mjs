@@ -47,19 +47,21 @@ export default class Piccoma extends Connector {
 
     async _getPages(chapter) {
         const request = new Request(`${this.url}/viewer/${chapter.id}`);
-        const _pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
-        const { img, ...pdata } = _pdata;
-        if (img == null) {
+        const pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
+        const images = pdata.img;
+        if (images == null) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
-        return img
+        return images
             .filter(img => !!img.path)
-            .map(img => img.path.startsWith('http') ? img.path : `https:${img.path}`)
-            .map(link => this.createConnectorURI({
-                url: link,
-                key: this._getSeed(link),
-                pdata
-            }));
+            .map(img => {
+                const link = img.path.startsWith('http') ? img.path : `https:${img.path}`;
+                return this.createConnectorURI({
+                    url: link,
+                    key: this._getSeed(link),
+                    pdata
+                });
+            });
     }
 
     async _handleConnectorURI(payload) {
@@ -79,18 +81,10 @@ export default class Piccoma extends Connector {
 
     _getSeed(url) {
         const checksum = url.split('/').slice(-2)[0];
-        const expires = this._parseQs(url).expires;
+        const expires = new URL(url).searchParams.get('expires');
         const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
         const ch = total % checksum.length;
         return checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
-    }
-
-    _parseQs(query) {
-        return query.split('&').reduce((obj, q) => {
-            var keyval = q.split('=');
-            obj[keyval[0]] = keyval[1];
-            return obj;
-        }, {});
     }
 
     _loadImage(url) {
@@ -194,82 +188,70 @@ function _shuffleSeed_(arr, seed) {
 }
 
 // from https://github.com/davidbau/seedrandom
-const _seedrandom_ = (function () {
-    var width = 256,
-        chunks = 6,
-        digits = 52,
-        startdenom = Math.pow(width, chunks),
-        significance = Math.pow(2, digits),
-        overflow = significance * 2,
-        mask = width - 1;
+var width = 256,
+    chunks = 6,
+    digits = 52,
+    startdenom = Math.pow(width, chunks),
+    significance = Math.pow(2, digits),
+    overflow = significance * 2,
+    mask = width - 1;
 
-    function seedrandom(seed) {
-        var key = [];
-        mixkey(seed, key);
-        var arc4 = new ARC4(key);
-        var prng = function () {
-            var n = arc4.g(chunks),
-                d = startdenom,
-                x = 0;
-            while (n < significance) {
-                n = (n + x) * width;
-                d *= width;
-                x = arc4.g(1);
-            }
-            while (n >= overflow) {
-                n /= 2;
-                d /= 2;
-                x >>>= 1;
-            }
-            return (n + x) / d;
-        };
+function _seedrandom_(seed) {
+    var key = [];
+    mixkey(seed, key);
+    var arc4 = new ARC4(key);
+    var prng = function () {
+        var n = arc4.g(chunks),
+            d = startdenom,
+            x = 0;
+        while (n < significance) {
+            n = (n + x) * width;
+            d *= width;
+            x = arc4.g(1);
+        }
+        while (n >= overflow) {
+            n /= 2;
+            d /= 2;
+            x >>>= 1;
+        }
+        return (n + x) / d;
+    };
+    return prng;
+}
 
-        prng.int32 = function () {
-            return arc4.g(4) | 0;
-        };
-        prng.quick = function () {
-            return arc4.g(4) / 0x100000000;
-        };
-        prng.double = prng;
-        return prng;
+function ARC4(key) {
+    var t, keylen = key.length,
+        me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
+
+    if (!keylen) {
+        key = [keylen++];
     }
 
-    function ARC4(key) {
-        var t, keylen = key.length,
-            me = this, i = 0, j = me.i = me.j = 0, s = me.S = [];
-
-        if (!keylen) {
-            key = [keylen++];
-        }
-
-        while (i < width) {
-            s[i] = i++;
-        }
-        for (i = 0; i < width; i++) {
-            s[i] = s[j = mask & j + key[i % keylen] + (t = s[i])];
-            s[j] = t;
-        }
-
-        (me.g = function (count) {
-            var t, r = 0,
-                i = me.i, j = me.j, s = me.S;
-            while (count--) {
-                t = s[i = mask & i + 1];
-                r = r * width + s[mask & (s[i] = s[j = mask & j + t]) + (s[j] = t)];
-            }
-            me.i = i; me.j = j;
-            return r;
-        })(width);
+    while (i < width) {
+        s[i] = i++;
+    }
+    for (i = 0; i < width; i++) {
+        s[i] = s[j = mask & j + key[i % keylen] + (t = s[i])];
+        s[j] = t;
     }
 
-    function mixkey(seed, key) {
-        var stringseed = seed + '', smear, j = 0;
-        while (j < stringseed.length) {
-            key[mask & j] =
-                mask & (smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++);
+    (me.g = function (count) {
+        var t, r = 0,
+            i = me.i, j = me.j, s = me.S;
+        while (count--) {
+            t = s[i = mask & i + 1];
+            r = r * width + s[mask & (s[i] = s[j = mask & j + t]) + (s[j] = t)];
         }
-        return String.fromCharCode.apply(0, key);
-    }
+        me.i = i; me.j = j;
+        return r;
+    })(width);
+}
 
-    return seedrandom;
-})();
+function mixkey(seed, key) {
+    var stringseed = seed + '', smear, j = 0;
+    while (j < stringseed.length) {
+        key[mask & j] =
+            mask & (smear ^= key[mask & j] * 19) + stringseed.charCodeAt(j++);
+    }
+    return String.fromCharCode.apply(0, key);
+}
