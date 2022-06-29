@@ -28,7 +28,7 @@ export default class ThreeHentai extends Connector {
     }
 
     async _getChapters(manga) {
-        return [ Object.assign({ language: '' }, manga) ];
+        return [ { ...manga, language: '' } ];
     }
 
     async _getPages(chapter) {

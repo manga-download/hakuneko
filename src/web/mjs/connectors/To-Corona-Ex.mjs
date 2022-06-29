@@ -21,29 +21,61 @@ export default class ToCoronaEx extends Connector {
     }
 
     async _getMangas() {
-        let uri = new URL('/comics?order=asc&sort=title_yomigana', this.apiurl);
+        let mangaList = [];
+        let nextCursor = '/comics?order=asc&sort=title_yomigana';
+        for(let run = true; run;) {
+            const data = await this._getMangasFromPage(nextCursor);
+            nextCursor = data.nextCursor;
+            mangaList.push(...data.chapters);
+            if(nextCursor == null) {
+                run = false;
+            }
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(nextCursor) {
+        let uri = new URL(nextCursor, this.apiurl);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.resources.map(element => {
-            return {
-                id: element.id,
-                title: element.title.trim().replace('@COMIC', '')
-            };
-        });
+        return {
+            chapters: data.resources.map(element => {
+                return {
+                    id: element.id,
+                    title: element.title.trim().replace('@COMIC', '')
+                };
+            }),
+            nextCursor: data.next_cursor != null ? '/comics?order=asc&sort=title_yomigana&after_than=' + data.next_cursor : null
+        };
     }
 
     async _getChapters(manga) {
-        let uri = new URL(`/episodes?comic_id=${manga.id}&order=asc&sort=episode_order`, this.apiurl);
+        let chapterList = [];
+        let nextCursor = `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order`;
+        for(let run = true; run;) {
+            const data = await this._getChaptersFromPage(manga, nextCursor);
+            nextCursor = data.nextCursor;
+            chapterList.push(...data.chapters);
+            if(nextCursor == null) {
+                run = false;
+            }
+        }
+        return chapterList.reverse();
+    }
+
+    async _getChaptersFromPage(manga, nextCursor) {
+        let uri = new URL(nextCursor, this.apiurl);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.resources
-            .filter(chapter => chapter.episode_status == 'free_viewing')
-            .map(element => {
+        return {
+            chapters: data.resources.map(element => {
                 return {
                     id: element.id,
-                    title: element.title,
+                    title: element.title
                 };
-            });
+            }),
+            nextCursor: data.next_cursor != null ? `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order&after_than=${data.next_cursor}` : null
+        };
     }
 
     async _getPages(chapter) {
@@ -63,14 +95,13 @@ export default class ToCoronaEx extends Connector {
         return data;
     }
 
-    prepareForDescramble(scrambledImageURL) {
+    async prepareForDescramble(scrambledImageURL) {
         let uri = new URL(scrambledImageURL);
-
         let descrambleKey = uri.search.substring(10, uri.search.indexOf("&"));
-        return fetch(scrambledImageURL, this.requestOptions)
-            .then(response => response.blob())
-            .then(data => createImageBitmap(data))
-            .then(bitmap => this.descramble(bitmap, descrambleKey));
+        let res = await fetch(scrambledImageURL, this.requestOptions);
+        let data = await res.blob();
+        let bitmap = await createImageBitmap(data);
+        return await this.descramble(bitmap, descrambleKey);
     }
 
     descramble(bitmap, key) {

@@ -62,9 +62,9 @@ export default class ComicK extends Connector {
         return data.chapters.map(item => {
             let title = '';
             if(item.vol) {
-                title += `Volume ${item.vol} `;
+                title += `Vol. ${item.vol} `;
             }
-            title += `Chapter ${item.chap}`;
+            title += `Ch. ${item.chap}`;
             if(item.title) {
                 title += ` - ${item.title}`;
             }

@@ -21,23 +21,26 @@ export default class Mangabox extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let nextLink = undefined;
+        let nextLink = this.url + '/api/reader/episodes';
         for (let run = true; run;) {
             const data = await this._getMangasFromPage(nextLink);
             nextLink = data.nextLink;
-            nextLink ? mangaList.push(...data.chapters) : run = false;
+            mangaList.push(...data.mangas);
+            if(!nextLink) {
+                run = false;
+            }
         }
         return mangaList;
     }
 
     async _getMangasFromPage(nextLink) {
-        const uri = typeof nextLink === 'undefined' ? new URL('/api/reader/episodes', this.url) : new URL(nextLink);
+        const uri = new URL(nextLink);
         const request = new Request(uri, this.requestOptions);
         const res = await fetch(request);
         const data = await res.json();
         const links = this._parseLinkHeader(res.headers.get('Link') || '');
         var result = {
-            chapters: data.map(item => {
+            mangas: data.map(item => {
                 return {
                     id: item.manga.id,
                     title: item.manga.title,

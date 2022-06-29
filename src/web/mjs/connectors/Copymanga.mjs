@@ -27,7 +27,7 @@ export default class Copymanga extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         const pageCount = Math.ceil(data.results.total / 50);
-        for(let page = 1; page <= pageCount; page++) {
+        for(let page = 0; page < pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }
@@ -35,7 +35,7 @@ export default class Copymanga extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/api/v3/comics?ordering=-datetime_updated&limit=50&offset=' + (page - 1) * 50, this.apiurl);
+        const uri = new URL('/api/v3/comics?ordering=-datetime_updated&limit=50&offset=' + page * 50, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
         return data.results.list.map(element => {
@@ -56,20 +56,20 @@ export default class Copymanga extends Connector {
                     id: item.uuid,
                     title: item.name
                 };
-            });
+            }).reverse();
         } else {
             let mangaList = [];
             const pageCount = Math.ceil(data.results.total / 500);
-            for(let page = 1; page <= pageCount; page++) {
+            for(let page = 0; page < pageCount; page++) {
                 const mangas = await this._getChaptersFromPage(manga, page);
                 mangaList.push(...mangas);
             }
-            return mangaList;
+            return mangaList.reverse();
         }
     }
 
     async _getChaptersFromPage(manga, page) {
-        const uri = new URL(`/api/v3/comic/${manga.id}/group/default/chapters?limit=500&offset=${(page - 1) * 500}`, this.apiurl);
+        const uri = new URL(`/api/v3/comic/${manga.id}/group/default/chapters?limit=500&offset=${page * 500}`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.results.list.map(item => {
