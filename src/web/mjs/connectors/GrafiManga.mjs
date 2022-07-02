@@ -1,6 +1,6 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class GrafiManga extends MangaReaderCMS {
+export default class GrafiManga extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,7 +8,5 @@ export default class GrafiManga extends MangaReaderCMS {
         super.label = 'GrafiManga';
         this.tags = [ 'manga', 'webtoon', 'high-quality', 'spanish', 'scanlation' ];
         this.url = 'https://grafimanga.com';
-
-        this.queryChapters = 'div.chapters h3.chapter-title a';
     }
 }

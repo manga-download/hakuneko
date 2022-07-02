@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class ImperfectComic extends WordPressMadara {
+export default class ImperfectComic extends WordPressMangastream {
 
     constructor() {
         super();
