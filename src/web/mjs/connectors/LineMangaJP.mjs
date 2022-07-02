@@ -111,49 +111,47 @@ export default class LineMangaJP extends Connector {
     }
 
     // Copied from Line Manga
-    _getMediadoData(option) {
+    async _getMediadoData(option) {
         const contentUrl = option.mediado_contents_url;
         const contentFile = option.mediado_contents_file;
         const token = option.mediado_token;
         const mediadoUrl = `${contentUrl}${contentFile}?token=${token}`;
         NFBR.a8O.a8M();
-        return fetch(mediadoUrl, {
+        const res = await fetch(mediadoUrl, {
             headers: {
                 "Content-Type": "application/json",
                 "X-Requested-With": "XMLHttpRequest"
             }
-        })
-            .then((res) => res.json())
-            .then((mediadoData) => {
-                const { configuration } = mediadoData;
-                const pages = configuration.contents.map((item) => {
-                    return {
-                        data: mediadoData[item.file].FileLinkInfo.PageLinkInfoList[0].Page,
-                        file: item.file,
-                        index: item.index,
-                        dummyImg: item.dummyImg
-                    };
-                });
-                const images = pages.map((page) => {
-                    return {
-                        pageNum: page.index,
-                        url: `${contentUrl}${page.file}/0.jpeg?token=${token}`,
-                        height: page.data.Size.Height + page.data.DummyHeight,
-                        width: page.data.Size.Width + page.data.DummyWidth,
-                    };
-                });
-                const metaDataList = pages.map((page) => {
-                    return {
-                        ...page.data,
-                        imageFilePath: `${page.file}/0.jpeg`,
-                        side: mediadoData[page.file].FixedLayoutSpec.PageSide
-                    };
-                });
-                return {
-                    images,
-                    metaDataList,
-                };
-            });
+        });
+        const mediadoData = await res.json();
+        const { configuration } = mediadoData;
+        const pages = configuration.contents.map((item) => {
+            return {
+                data: mediadoData[item.file].FileLinkInfo.PageLinkInfoList[0].Page,
+                file: item.file,
+                index: item.index,
+                dummyImg: item.dummyImg
+            };
+        });
+        const images = pages.map((page) => {
+            return {
+                pageNum: page.index,
+                url: `${contentUrl}${page.file}/0.jpeg?token=${token}`,
+                height: page.data.Size.Height + page.data.DummyHeight,
+                width: page.data.Size.Width + page.data.DummyWidth,
+            };
+        });
+        const metaDataList = pages.map((page) => {
+            return {
+                ...page.data,
+                imageFilePath: `${page.file}/0.jpeg`,
+                side: mediadoData[page.file].FixedLayoutSpec.PageSide
+            };
+        });
+        return {
+            images,
+            metaDataList,
+        };
     }
 
     _drawImage(canvas, image, metaData) {
@@ -168,17 +166,18 @@ export default class LineMangaJP extends Connector {
         );
     }
 
-    _unscrambleMediadoImage(imageData, metaData, canvas) {
+    async _unscrambleMediadoImage(imageData, metaData, canvas) {
         return new Promise((resolve, reject) => {
             const image = new Image();
             image.onload = async () => {
-                resolve(image);
+                this._drawImage(canvas, image, metaData);
+                resolve();
             };
             image.onerror = (err) => {
                 reject(err);
             };
             image.src = imageData.url;
-        }).then((image) => this._drawImage(canvas, image, metaData));
+        });
     }
 }
 
