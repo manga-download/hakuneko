@@ -221,7 +221,7 @@ describe("HakuNeko Engine", () => {
                 await assertConnector(page, {
                     connectorID: 'to-corona-ex',
                     mangaURL: 'https://to-corona-ex.com/comics/20000000051530',
-                    chaptersAccessor: 'shift' // first => shift, last => pop, index => Integer
+                    chaptersAccessor: 'pop' // first => shift, last => pop, index => Integer
                 }, {
                     connectorClass: 'ToCoronaEx',
                     mangaID: '20000000051530',

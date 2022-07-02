@@ -26,7 +26,7 @@ export default class ToCoronaEx extends Connector {
         for(let run = true; run;) {
             const data = await this._getMangasFromPage(nextCursor);
             nextCursor = data.nextCursor;
-            mangaList.push(...data.chapters);
+            mangaList.push(...data.mangas);
             if(nextCursor == null) {
                 run = false;
             }
@@ -39,7 +39,7 @@ export default class ToCoronaEx extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         return {
-            chapters: data.resources.map(element => {
+            mangas: data.resources.map(element => {
                 return {
                     id: element.id,
                     title: element.title.trim().replace('@COMIC', '')
