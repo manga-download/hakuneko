@@ -1,6 +1,6 @@
-import TakeShobo from './templates/TakeShobo.mjs';
+import TakeShoboNew from './templates/TakeShoboNew.mjs';
 
-export default class WebComicGamma extends TakeShobo {
+export default class WebComicGamma extends TakeShoboNew {
 
     constructor() {
         super();

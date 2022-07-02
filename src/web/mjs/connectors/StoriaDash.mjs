@@ -1,6 +1,6 @@
-import TakeShobo from './templates/TakeShobo.mjs';
+import TakeShoboNew from './templates/TakeShoboNew.mjs';
 
-export default class StoriaDash extends TakeShobo {
+export default class StoriaDash extends TakeShoboNew {
 
     constructor() {
         super();
