@@ -43,7 +43,12 @@ export default class Batoto extends AnyACG {
         let script = `
         new Promise(resolve => {
             setTimeout(() => {
-                resolve(app.items.map(item => item.src || item.isrc));
+                if(typeof app.items !== 'undefined') {
+                    resolve(app.items.map(item => item.src || item.isrc));
+                } else {
+                    const params = JSON.parse(CryptoJS.AES.decrypt(batoWord, batoPass).toString(CryptoJS.enc.Utf8));
+                    resolve(imgHttpLis.map((data, i) => \`\${data}?\${params[i]}\`));
+                }
             }, 2500);
         });
         `;
