@@ -176,5 +176,5 @@ var suite = function() {
 if(process.platform === 'darwin') {
     describe('ConfigurationDarwin', suite);
 } else {
-    describe.skip(`ConfigurationDarwin @ ${process.platform}`, test.todo);
+    describe.skip(`ConfigurationDarwin @ ${process.platform}`, suite);
 }

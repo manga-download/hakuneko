@@ -34,6 +34,6 @@ export default class NHentai extends Connector {
     async _getPages(chapter) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         const data = await this.fetchDOM(request, 'div#thumbnail-container a.gallerythumb source.lazyload');
-        return data.map(element => element.dataset.src.replace('t.', 'i.').replace('t.', '.'));
+        return data.map(element => element.dataset.src.replace('t.', 'i.').replace(/\/t/g, '/i'));
     }
 }

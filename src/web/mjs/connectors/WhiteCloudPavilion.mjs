@@ -1,6 +1,6 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class WhiteCloudPavilion extends MangaReaderCMS {
+export default class WhiteCloudPavilion extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,8 +8,6 @@ export default class WhiteCloudPavilion extends MangaReaderCMS {
         super.label = 'White Cloud Pavilion';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://www.whitecloudpavilion.com';
-        this.path = '/manga/patreon/';
-
-        this.language = 'en';
+        this.path = '/read/list-mode/';
     }
 }
