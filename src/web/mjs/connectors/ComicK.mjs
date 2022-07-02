@@ -9,6 +9,7 @@ export default class ComicK extends Connector {
         super.label = 'ComicK';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://comick.fun';
+        this.apiurl = 'https://api.comick.fun';
     }
 
     async _getEmbeddedJSON(uri) {
@@ -20,12 +21,12 @@ export default class ComicK extends Connector {
 
     async _getMangaFromURI(uri) {
         const data = await this._getEmbeddedJSON(uri);
-        return new Manga(this, data.comic.id, data.comic.title.trim());
+        return new Manga(this, data.comic.slug, data.comic.title.trim());
     }
 
     async _getMangas() {
         let mangaList = [];
-        for (let page = 0, run = true; run; page++) {
+        for (let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
@@ -33,62 +34,74 @@ export default class ComicK extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/api/get_newest_chapters?page=' + page, this.url);
+        const uri = new URL('/search?page=' + page, this.apiurl);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return !data.data ? [] : data.data.map(item => {
+        const data = await this.fetchJSONEx(request);
+        return data.message ? [] : data.map(item => {
             return {
-                id: item.md_comics.id,
-                title: item.md_comics.title.trim()
+                id: item.slug,
+                title: item.title.trim()
             };
         });
     }
 
     async _getChapters(manga) {
         let chapterList = [];
+        const comicId = await this._getComicId(manga);
         for (let page = 1, run = true; run; page++) {
-            const chapters = await this._getChaptersFromPage(manga, page);
+            const chapters = await this._getChaptersFromPage(comicId, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
         return chapterList;
     }
 
-    async _getChaptersFromPage(manga, page) {
-        const uri = new URL('/api/get_chapters', this.url);
-        uri.searchParams.set('comicid', manga.id);
-        uri.searchParams.set('page', page);
+    async _getChaptersFromPage(comicId, page) {
+        const uri = new URL(`/comic/${comicId}/chapter?page=${page}`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return data.data.chapters.map(item => {
-            let title = [];
+        const data = await this.fetchJSONEx(request);
+        return data.chapters.map(item => {
+            let title = '';
             if(item.vol) {
-                title.push('Vol.', item.vol);
+                title += `Vol. ${item.vol} `;
             }
-            title.push('Ch.', item.chap);
+            title += `Ch. ${item.chap}`;
             if(item.title) {
-                title.push('-', item.title);
+                title += ` - ${item.title}`;
             }
-            title.push('(' + item.iso639_1 + ')');
-            if(item.md_groups && item.md_groups.length) {
-                title.push('[' + item.md_groups.map(g => g.title).join(', ') + ']');
+            title += ` (${item.lang})`;
+            if(item.group_name && item.group_name.length) {
+                title += ` [${item.group_name.join(', ')}]`;
             }
             return {
-                id: [ item.hid, 'chapter', item.chap, item.iso639_1 ].join('-'), // item.id
-                title: title.join(' '),
-                language: item.langName
+                id: item.hid,
+                title: title,
+                language: item.lang
             };
         });
     }
 
     async _getPages(chapter) {
-        const uri = new URL([ '', 'comic', chapter.manga.id, chapter.id ].join('/'), this.url);
-        const data = await this._getEmbeddedJSON(uri);
-        return data.chapter.md_images.map(image => {
-            if(image.gpurl) {
-                return 'https://lh3.googleusercontent.com/' + image.gpurl + '=w0-h0';
-            } else {
-                return 'https://' + [ data.chapter.server, data.chapter.hash, image.name ].join('/');
+        const uri = new URL('/chapter/' + chapter.id, this.apiurl);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSONEx(request);
+        return data.chapter.md_images.map(image => `https://meo.comick.pictures/${image.b2key}`);
+    }
+
+    async _getComicId(manga) {
+        const uri = new URL('/comic/' + manga.id, this.apiurl);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSONEx(request);
+        return data.comic.id;
+    }
+
+    async fetchJSONEx(request, retries) {
+        try {
+            var data = await this.fetchJSON(request, retries);
+            return data;
+        } catch(error) {
+            if(error.message.includes('status: 400')) {
+                return { message: 'not found' };
             }
-        });
+        }
     }
 }

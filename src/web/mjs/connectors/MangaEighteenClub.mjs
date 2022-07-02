@@ -11,6 +11,7 @@ export default class MangaEighteenClub extends MangaReaderCMS {
 
         this.queryChapters = 'ul li div.item a.chapter_num';
         this.queryPages = 'div.imageChap source.img-responsive';
+        this.queryTitleForURI = '.detail_name h1';
         this.language = 'en';
     }
 
@@ -33,5 +34,12 @@ export default class MangaEighteenClub extends MangaReaderCMS {
                 title: element.text.trim()
             };
         });
+    }
+
+    async _getPages(chapter) {
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'script[type="text/javascript"]:not([src])');
+        return JSON.parse("[" + data[0].textContent.match(/var slides_p_path = \[([^\]]*),\];/)[1] + "]").map(link => atob(link));
     }
 }

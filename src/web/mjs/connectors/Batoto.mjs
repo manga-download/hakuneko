@@ -33,7 +33,7 @@ export default class Batoto extends AnyACG {
     }
 
     set url(value) {
-        if(this.config && value) {
+        if (this.config && value) {
             this.config.url.value = value;
             Engine.Settings.save();
         }
@@ -42,8 +42,14 @@ export default class Batoto extends AnyACG {
     async _getPages(chapter) {
         let script = `
         new Promise(resolve => {
-            const params = JSON.parse(CryptoJS.AES.decrypt(batoWord, batoPass).toString(CryptoJS.enc.Utf8));
-            resolve(imgHttpLis.map((data, i) => \`\${data}?\${params[i]}\`));
+            setTimeout(() => {
+                if(typeof app.items !== 'undefined') {
+                    resolve(app.items.map(item => item.src || item.isrc));
+                } else {
+                    const params = JSON.parse(CryptoJS.AES.decrypt(batoWord, batoPass).toString(CryptoJS.enc.Utf8));
+                    resolve(imgHttpLis.map((data, i) => \`\${data}?\${params[i]}\`));
+                }
+            }, 2500);
         });
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);

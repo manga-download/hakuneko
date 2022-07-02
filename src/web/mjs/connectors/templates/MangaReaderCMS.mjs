@@ -1,4 +1,5 @@
 import Connector from '../../engine/Connector.mjs';
+import Manga from '../../engine/Manga.mjs';
 
 export default class MangaReaderCMS extends Connector {
 
@@ -13,7 +14,15 @@ export default class MangaReaderCMS extends Connector {
         this.queryMangas = 'ul.manga-list li a';
         this.queryChapters = 'ul.chapters li h5.chapter-title-rtl';
         this.queryPages = 'div#all source.img-responsive';
+        this.queryTitleForURI = 'h1.widget-title, h2.widget-title, h2.listmanga-header';
         this.language = '';
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const id = uri.pathname + uri.search;
+        const data = await this.fetchDOM(request, this.queryTitleForURI);
+        return new Manga(this, id, data[0].textContent.trim());
     }
 
     async _getMangas() {

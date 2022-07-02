@@ -5,7 +5,7 @@ export default class PornComixOnline extends WordPressMadara {
     constructor() {
         super();
         super.id = 'porncomixonline';
-        super.label = 'PornComix';
+        super.label = 'PornComixOnline';
         this.tags = [ 'porn', 'english' ];
         this.url = 'https://www.porncomixonline.net';
     }

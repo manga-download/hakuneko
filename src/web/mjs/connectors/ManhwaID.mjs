@@ -7,6 +7,6 @@ export default class ManhwaID extends WordPressMadara {
         super.id = 'manhwaid';
         super.label = 'Manhwaid';
         this.tags = [ 'manga', 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://manhwaid.org';
+        this.url = 'https://manhwaid.fun';
     }
 }
