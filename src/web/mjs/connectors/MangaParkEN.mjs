@@ -16,7 +16,7 @@ export default class MangaParkEN extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'meta[property="og:title"]');
-        return new Manga(this, uri.pathname, data[0].content.trim());
+        return new Manga(this, uri.pathname.match(/\/(\d+)\/?/)[1], data[0].content.trim());
     }
 
     async _getMangas() {
@@ -40,7 +40,7 @@ export default class MangaParkEN extends Connector {
             const a = element.querySelector('a.fw-bold');
             this.cfMailDecrypt(a);
             return {
-                id: this.getRootRelativeOrAbsoluteLink(a, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(a, request.url).match(/\/(\d+)\/?/)[1],
                 title: a.text.trim()
             };
         });
@@ -48,13 +48,12 @@ export default class MangaParkEN extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
-        const mangaId = manga.id.match(/\/(\d+)\/?/)[1];
         const uri = new URL('/ajax.reader.subject.episodes.by.latest', this.url);
         for (let page = '', run = true; run;) {
             const request = new Request(uri, {
                 method: 'POST',
                 body: JSON.stringify({
-                    iid: mangaId,
+                    iid: manga.id,
                     prevPos: page
                 }),
                 headers: {
@@ -63,11 +62,12 @@ export default class MangaParkEN extends Connector {
             });
             const data = await this.fetchJSON(request);
             const chapters = [...this.createDOM(data.html).querySelectorAll('div.episode-item > div > a.chapt')].map(element => {
-                let lang = this.getRootRelativeOrAbsoluteLink(element, this.url).match(/c[\d.]+-(\w+)-i\d+/)[1];
+                const link = this.getRootRelativeOrAbsoluteLink(element, this.url);
+                let lang = link.match(/c[\d.]+-(\w+)-i\d+/)[1];
                 if (lang)
                     lang = lang.replace(/\D(_)\D/g, (match, g1) => match.replace(g1, '-'));
                 return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                    id: link,
                     title: element.text.trim().replace(/\s+/g, ' ') + ` (${lang})`,
                     language: lang
                 };
