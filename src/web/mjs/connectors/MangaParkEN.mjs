@@ -21,25 +21,29 @@ export default class MangaParkEN extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        const uri = new URL('/ajax.reader.home.release', this.url);
-        for (let page = '', run = true; run;) {
-            const request = new Request(uri, {
-                method: 'POST',
-                body: JSON.stringify({ prevPos: page }),
-                headers: { 'content-type': 'application/json' }
-            });
-            const data = await this.fetchJSON(request);
-            const mangas = [...this.createDOM(data.html).querySelectorAll('div.item > div > a.fw-bold')].map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.text.trim()
-                };
-            });
+        const uri = new URL('/browse?sort=name', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'nav.d-md-block ul.pagination li:nth-last-child(2) a');
+        const pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
-            run = !data.isLast;
-            page = data.lastPos;
         }
         return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const uri = new URL('/browse?sort=name&page=' + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, '#subject-list div.item');
+        return data.map( element => {
+            const a = element.querySelector('a.fw-bold');
+            this.cfMailDecrypt(a);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(a, request.url),
+                title: a.text.trim()
+            };
+        });
     }
 
     async _getChapters(manga) {
