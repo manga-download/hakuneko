@@ -16,76 +16,85 @@ export default class MangaParkEN extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'meta[property="og:title"]');
-        return new Manga(this, uri.pathname, data[0].content.trim());
+        return new Manga(this, uri.pathname.match(/\/(\d+)\/?/)[1], data[0].content.trim());
     }
 
     async _getMangas() {
         let mangaList = [];
-        const uri = new URL('/ajax.reader.home.release', this.url);
-        for (let page = '', run = true; run;) {
-            const request = new Request(uri, {
-                method: 'POST',
-                body: JSON.stringify({ prevPos: page }),
-                headers: { 'content-type': 'application/json' }
-            });
-            const data = await this.fetchJSON(request);
-            const mangas = [...this.createDOM(data.html).querySelectorAll('div.item > div > a.fw-bold')].map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.text.trim()
-                };
-            });
+        const uri = new URL('/browse?sort=name', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'nav.d-md-block ul.pagination li:nth-last-child(2) a');
+        const pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
-            run = !data.isLast;
-            page = data.lastPos;
         }
         return mangaList;
     }
 
-    async _getChapters(manga) {
-        const uri = new URL(manga.id, this.url);
+    async _getMangasFromPage(page) {
+        const uri = new URL('/browse?sort=name&page=' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.episode-head');
-        return data
-            .map(element => {
-                const sid = manga.id.match(/\/(\d+)\//)[1];
-                const lang = element.getAttribute('@click').match(/'(\w+)'/)[1];
-                const language = element.querySelector('b').textContent.trim();
-                return { sid, lang, language };
-            })
-            .filter(folder => folder.lang)
-            .reduce(async (accumulator, folder) => {
-                const req = new Request(this.url + '/ajax.reader.subject.episodes.lang', {
-                    method: 'POST',
-                    body: JSON.stringify(folder),
-                    headers: {
-                        'Content-Type': 'application/json;charset=UTF-8'
-                    }
-                });
-                const data = await this.fetchJSON(req);
-                const dom = this.createDOM(data.html);
-                const chapters = [...dom.querySelectorAll('div.episode-item a.chapt')].map(element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                        title: element.text.trim() + ` [${folder.language}]`,
-                        language: folder.language
-                    };
-                });
-                return (await accumulator).concat(chapters);
-            }, Promise.resolve([]));
+        const data = await this.fetchDOM(request, '#subject-list div.item');
+        return data.map( element => {
+            const a = element.querySelector('a.fw-bold');
+            this.cfMailDecrypt(a);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(a, request.url).match(/\/(\d+)\/?/)[1],
+                title: a.text.trim()
+            };
+        });
+    }
+
+    async _getChapters(manga) {
+        let chapterList = [];
+        const uri = new URL('/ajax.reader.subject.episodes.by.latest', this.url);
+        for (let page = '', run = true; run;) {
+            const request = new Request(uri, {
+                method: 'POST',
+                body: JSON.stringify({
+                    iid: manga.id,
+                    prevPos: page
+                }),
+                headers: {
+                    'Content-Type': 'application/json;charset=UTF-8'
+                }
+            });
+            const data = await this.fetchJSON(request);
+            const chapters = [...this.createDOM(data.html).querySelectorAll('div.episode-item > div > a.chapt')].map(element => {
+                const link = this.getRootRelativeOrAbsoluteLink(element, this.url);
+                let lang = link.match(/c[\d.]+-(\w+)-i\d+/)[1];
+                if (lang)
+                    lang = lang.replace(/\D(_)\D/g, (match, g1) => match.replace(g1, '-'));
+                return {
+                    id: link,
+                    title: element.text.trim().replace(/\s+/g, ' ') + ` (${lang})`,
+                    language: lang
+                };
+            }).filter(chapter => chapter.language);
+            chapterList.push(...chapters);
+            run = data.isLast != null ? !data.isLast : false;
+            page = data.lastPos;
+        }
+        return chapterList;
     }
 
     async _getPages(chapter) {
-        const script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        resolve(app.items.map(item => item.isrc));
-                    } catch(error) {
-                        reject(error);
+        let script = `
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                try {
+                    if(typeof app.items !== 'undefined') {
+                        resolve(app.items.map(item => item.src || item.isrc));
+                    } else {
+                        const params = JSON.parse(CryptoJS.AES.decrypt(amWord, amPass).toString(CryptoJS.enc.Utf8));
+                        resolve(imgHostLis.map((data, i) => \`\${data}\${imgPathLis[i]}?\${params[i]}\`));
                     }
-                }, 2500);
-            });
+                } catch(error) {
+                    reject(error);
+                }
+            }, 2500);
+        });
         `;
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
