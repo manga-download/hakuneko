@@ -1,5 +1,4 @@
 import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
 
 export default class Manhwa18 extends Connector {
 
@@ -44,7 +43,6 @@ export default class Manhwa18 extends Connector {
     }
 
     async _getPages(chapter) {
-        // let request = new Request(this.url + chapter.id, this.requestOptions); //works here
         let request = new Request(this.url + chapter.id, this.requestOptions); 
         let data = await this.fetchDOM(request, 'div#chapter-content source.lazy');
         return data.map(element => this.getAbsolutePath(element.dataset.src || element, request.url));
