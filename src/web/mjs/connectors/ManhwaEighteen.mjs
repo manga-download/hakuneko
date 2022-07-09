@@ -14,7 +14,15 @@ export default class ManhwaEighteen extends FlatManga {
         let mangaList = [];
         for (let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            if (JSON.stringify(mangaList[mangaList.length - 1]) == undefined && mangas[mangas.length - 1] != undefined ) {
+                mangaList.push(...mangas);
+            } else if (JSON.stringify(mangaList[mangaList.length - 1].id) != JSON.stringify(mangas[mangas.length - 1].id)) {
+                if (mangas.length > 0) {
+                    mangaList.push(...mangas);
+                }
+            } else {
+                run = false;
+            }
         }
         return mangaList;
     }
