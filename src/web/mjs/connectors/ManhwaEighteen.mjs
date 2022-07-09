@@ -8,10 +8,6 @@ export default class ManhwaEighteen extends FlatManga {
         super.label = 'Manhwa 18 (.net)';
         this.tags = [ 'hentai', 'multi-lingual' ];
         this.url = 'https://manhwa18.net';
-        this.requestOptions.headers.set('x-referer', this.url);
-        this.requestOptions.headers.set('x-cookies', "cf_use_ob=0");
-        this.requestOptions.headers.set('x-cookies', "cf_ob_info=520:727ecb266cde4745:SIN");
-        // this.requestOptions.headers.set('x-cookies', "PHPSESSID=bnltt6cutg4g0d9moic50li5aj");
     }
 
     async _getMangas() {
@@ -35,6 +31,7 @@ export default class ManhwaEighteen extends FlatManga {
     }
 
     async _getChapters(manga) {
+
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.list-chapters a');
         return data.map(element => {
