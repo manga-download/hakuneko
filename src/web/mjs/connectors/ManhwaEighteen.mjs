@@ -1,6 +1,6 @@
-import FlatManga from './templates/FlatManga.mjs';
+import Connector from '../engine/Connector.mjs';
 
-export default class ManhwaEighteen extends FlatManga {
+export default class ManhwaEighteen extends Connector {
 
     constructor() {
         super();
