@@ -45,7 +45,7 @@ export default class ManhwaEighteen extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim(),
+                title: element.querySelector('div.chapter-name').textContent.trim(),
                 language: ''
             };
         });
