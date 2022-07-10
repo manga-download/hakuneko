@@ -12,17 +12,13 @@ export default class ManhwaEighteen extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        for (let page = 1, run = true; run; page++) {
+        const uri = new URL('/manga-list.html?listType=pagination&sort=name&sort_type=ASC', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.pagination-wrap ul.pagination li:nth-last-child(2) a');
+        const pageCount = parseInt(data[0].text.trim());
+        for (let page = 1; page <= pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
-            if (JSON.stringify(mangaList[mangaList.length - 1]) == undefined && mangas[mangas.length - 1] != undefined ) {
-                mangaList.push(...mangas);
-            } else if (JSON.stringify(mangaList[mangaList.length - 1].id) != JSON.stringify(mangas[mangas.length - 1].id)) {
-                if (mangas.length > 0) {
-                    mangaList.push(...mangas);
-                }
-            } else {
-                run = false;
-            }
+            mangaList.push(...mangas);
         }
         return mangaList;
     }
