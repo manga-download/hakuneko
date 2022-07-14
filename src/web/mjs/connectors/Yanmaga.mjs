@@ -89,7 +89,7 @@ export default class Yanmaga extends Connector {
         request.headers.set('x-referer', this.url);
         const res = await fetch(request);
         const blob = await res.blob();
-        const image = await this._blobToImage(blob);
+        const image = await createImageBitmap(blob);
         const canvas = this._descramble(image, payload.scramble);
         const blobFinally = await this._canvasToBlob(canvas);
         return this._blobToBuffer(blobFinally);
@@ -133,26 +133,6 @@ export default class Yanmaga extends Connector {
             }
         }
         return canvas;
-    }
-
-    async _blobToImage(blob) {
-        const dataUrl = await this._blobToDataUrl(blob);
-        return new Promise((resolve, reject) => {
-            const image = new Image();
-            image.crossOrigin = '';
-            image.onload = () => resolve(image);
-            image.onerror = error => reject(error);
-            image.src = dataUrl;
-        });
-    }
-
-    _blobToDataUrl(blob) {
-        return new Promise((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = error => reject(error);
-            reader.readAsDataURL(blob);
-        });
     }
 
     _canvasToBlob(canvas) {
