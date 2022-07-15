@@ -44,7 +44,7 @@ export default class Pixiv extends Connector {
         const uri = new URL(`series/${mangaId}?p=${page}&lang=en`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        if (data.body.thumbnails.illust.length == 4)
+        if (data.body.thumbnails.illust.length < 5)
             return [];
         return data.body.thumbnails.illust
             .filter(chapter => chapter.seriesId === mangaId)
