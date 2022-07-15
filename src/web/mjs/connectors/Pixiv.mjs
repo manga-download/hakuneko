@@ -35,19 +35,25 @@ export default class Pixiv extends Connector {
             const chapters = await this._getChaptersFromPage(manga.id, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
-        return chapterList;
+        return chapterList.reduce((accumulator, chapter) => {
+            return accumulator.find(item => item.id === chapter.id) ? accumulator : accumulator.concat([chapter]);
+        }, []);
     }
 
     async _getChaptersFromPage(mangaId, page) {
         const uri = new URL(`series/${mangaId}?p=${page}&lang=en`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        return data.body.thumbnails.illust.slice(0, -4).map(chapter => {
-            return {
-                id: chapter.id,
-                title: chapter.title.trim()
-            };
-        });
+        if (data.body.thumbnails.illust.length == 4)
+            return [];
+        return data.body.thumbnails.illust
+            .filter(chapter => chapter.seriesId === mangaId)
+            .map(chapter => {
+                return {
+                    id: chapter.id,
+                    title: chapter.title.trim()
+                };
+            });
     }
 
     async _getPages(chapter) {
