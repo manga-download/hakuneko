@@ -35,9 +35,9 @@ export default class Pixiv extends Connector {
             const chapters = await this._getChaptersFromPage(manga.id, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
-        return chapterList.reduce((accumulator, chapter) => {
-            return accumulator.find(item => item.id === chapter.id) ? accumulator : accumulator.concat([chapter]);
-        }, []);
+        return chapterList.filter((chapter, index) => {
+            return index === chapterList.findIndex(item => chapter.id === item.id);
+        });
     }
 
     async _getChaptersFromPage(mangaId, page) {
