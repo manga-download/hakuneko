@@ -7,6 +7,6 @@ export default class YaoiFanClube extends WordPressMadara {
         super.id = 'yaoifanclube';
         super.label = 'Yaoi Fan Clube';
         this.tags = [ 'webtoon', 'hentai', 'portuguese' ];
-        this.url = 'https://yaoifanclube.com.br';
+        this.url = 'https://yaoifanclube2.com';
     }
 }

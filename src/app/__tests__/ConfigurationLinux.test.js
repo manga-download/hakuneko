@@ -177,5 +177,5 @@ var suite = function() {
 if(process.platform === 'linux') {
     describe('ConfigurationLinux', suite);
 } else {
-    describe.skip(`ConfigurationLinux @ ${process.platform}`, test.todo);
+    describe.skip(`ConfigurationLinux @ ${process.platform}`, suite);
 }

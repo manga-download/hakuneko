@@ -1,13 +1,15 @@
 import Connector from "../engine/Connector.mjs";
 import Manga from "../engine/Manga.mjs";
 
-export default class toCoronaEx extends Connector {
+export default class ToCoronaEx extends Connector {
     constructor() {
         super();
         super.id = "to-corona-ex";
         super.label = "コロナ (to-corona-ex)";
         this.tags = ["manga", "japanese"];
         this.url = "https://to-corona-ex.com/";
+        this.apiurl = 'https://api.to-corona-ex.com';
+        this.cdnurl = 'https://cdn.to-corona-ex.com';
     }
 
     async _getMangaFromURI(uri) {
@@ -19,40 +21,72 @@ export default class toCoronaEx extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request('https://api.to-corona-ex.com/comics?order=asc&sort=title_yomigana', this.requestOptions);
+        let mangaList = [];
+        let nextCursor = '/comics?order=asc&sort=title_yomigana';
+        for(let run = true; run;) {
+            const data = await this._getMangasFromPage(nextCursor);
+            nextCursor = data.nextCursor;
+            mangaList.push(...data.mangas);
+            if(nextCursor == null) {
+                run = false;
+            }
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(nextCursor) {
+        let uri = new URL(nextCursor, this.apiurl);
+        let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.resources.map(element => {
-            return {
-                id: element.id,
-                title: element.title.trim()
-            };
-        });
+        return {
+            mangas: data.resources.map(element => {
+                return {
+                    id: element.id,
+                    title: element.title.trim().replace('@COMIC', '')
+                };
+            }),
+            nextCursor: data.next_cursor != null ? '/comics?order=asc&sort=title_yomigana&after_than=' + data.next_cursor : null
+        };
     }
 
     async _getChapters(manga) {
-        let request = new Request("https://api.to-corona-ex.com/episodes?comic_id=" + manga.id + "&order=asc&sort=episode_order", this.requestOptions);
+        let chapterList = [];
+        let nextCursor = `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order`;
+        for(let run = true; run;) {
+            const data = await this._getChaptersFromPage(manga, nextCursor);
+            nextCursor = data.nextCursor;
+            chapterList.push(...data.chapters);
+            if(nextCursor == null) {
+                run = false;
+            }
+        }
+        return chapterList.reverse();
+    }
 
-        const data = await this.fetchJSON(request);
-        let chapters = data.resources.filter(e => e.episode_status == 'free_viewing');
-        return chapters.map((element) => {
-            return {
-                id: element.id,
-                title: element.title,
-            };
-        });
+    async _getChaptersFromPage(manga, nextCursor) {
+        let uri = new URL(nextCursor, this.apiurl);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        return {
+            chapters: data.resources.map(element => {
+                return {
+                    id: element.id,
+                    title: element.title
+                };
+            }),
+            nextCursor: data.next_cursor != null ? `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order&after_than=${data.next_cursor}` : null
+        };
     }
+
     async _getPages(chapter) {
-        let request = new Request(
-            "https://api.to-corona-ex.com/episodes/" + chapter.id + "/begin_reading",
-            this.requestOptions
-        );
-        const chapterinfo = await this.fetchJSON(request);
-        return chapterinfo.pages.map((element) => {
-            return this.createConnectorURI(element.page_image_url);
-        });
+        let uri = new URL(`/episodes/${chapter.id}/begin_reading`, this.apiurl);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        return data.pages.map(element => this.createConnectorURI(element.page_image_url));
     }
+
     async _handleConnectorURI(payload) {
-        if (!payload.includes('https://cdn.to-corona-ex.com/pages/images/')) {
+        if (!payload.includes(`${this.cdnurl}/pages/images/`)) {
             return super._handleConnectorURI(payload);
         }
         let data = await this.prepareForDescramble(payload);
@@ -60,15 +94,16 @@ export default class toCoronaEx extends Connector {
         this._applyRealMime(data);
         return data;
     }
-    prepareForDescramble(scrambledImageURL) {
-        let uri = new URL(scrambledImageURL);
 
+    async prepareForDescramble(scrambledImageURL) {
+        let uri = new URL(scrambledImageURL);
         let descrambleKey = uri.search.substring(10, uri.search.indexOf("&"));
-        return fetch(scrambledImageURL, this.requestOptions)
-            .then(response => response.blob())
-            .then(data => createImageBitmap(data))
-            .then(bitmap => this.descramble(bitmap, descrambleKey));
+        let res = await fetch(scrambledImageURL, this.requestOptions);
+        let data = await res.blob();
+        let bitmap = await createImageBitmap(data);
+        return await this.descramble(bitmap, descrambleKey);
     }
+
     descramble(bitmap, key) {
         return new Promise(resolve => {
             var r = function (e) {

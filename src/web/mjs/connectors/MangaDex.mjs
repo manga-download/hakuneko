@@ -35,8 +35,6 @@ export default class MangaDex extends Connector {
             '8d8ecf83-8d42-4f8c-add8-60963f9f28d9' // Comikey
         ];
         this.serverNetwork = [
-            'https://s2.mangadex.org/data/',
-            'https://s5.mangadex.org/data/',
             'https://uploads.mangadex.org/data/'
         ];
     }

@@ -1,6 +1,6 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class LeoManga extends MangaReaderCMS {
+export default class LeoManga extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,7 +8,5 @@ export default class LeoManga extends MangaReaderCMS {
         super.label = 'LeoManga';
         this.tags = [ 'manga', 'spanish' ];
         this.url = 'https://leomanga.me';
-
-        this.queryChapters = 'div.capitulos-list table tr td:first-of-type a';
     }
 }

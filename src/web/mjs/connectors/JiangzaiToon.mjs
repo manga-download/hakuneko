@@ -7,6 +7,6 @@ export default class JiangzaiToon extends WordPressMadara {
         super.id = 'jiangzaitoon';
         super.label = 'Jiangzaitoon';
         this.tags = [ 'webtoon', 'hentai', 'turkish' ];
-        this.url = 'https://jiangzaitoon.org';
+        this.url = 'https://jiangzaitoon.biz';
     }
 }

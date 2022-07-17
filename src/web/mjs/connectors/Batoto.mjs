@@ -32,11 +32,24 @@ export default class Batoto extends AnyACG {
         return this.config.url.value;
     }
 
+    set url(value) {
+        if (this.config && value) {
+            this.config.url.value = value;
+            Engine.Settings.save();
+        }
+    }
+
     async _getPages(chapter) {
         let script = `
         new Promise(resolve => {
-            const base = JSON.parse(CryptoJS.AES.decrypt(server, batojs).toString(CryptoJS.enc.Utf8));
-            resolve(images.map(data => new URL(base + data, window.location.origin).href));
+            setTimeout(() => {
+                if(typeof app.items !== 'undefined') {
+                    resolve(app.items.map(item => item.src || item.isrc));
+                } else {
+                    const params = JSON.parse(CryptoJS.AES.decrypt(batoWord, batoPass).toString(CryptoJS.enc.Utf8));
+                    resolve(imgHttpLis.map((data, i) => \`\${data}?\${params[i]}\`));
+                }
+            }, 2500);
         });
         `;
         let request = new Request(this.url + chapter.id, this.requestOptions);

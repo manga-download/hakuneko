@@ -7,7 +7,7 @@ export default class KomikCast extends WordPressMangastream {
         super.id = 'komikcast';
         super.label = 'KomikCast';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://komikcast.com';
+        this.url = 'https://komikcast.me';
         this.path = '/daftar-komik/?list';
 
         this.queryMangas = 'div.text-mode_list-items ul li a.series, div.text-mode_list-items ul li a.text-mode_list-item';

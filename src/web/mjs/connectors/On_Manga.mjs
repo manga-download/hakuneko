@@ -9,6 +9,7 @@ export default class On_Manga extends MangaReaderCMS {
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
         this.url = 'https://onma.me';
 
+        this.queryTitleForURI = '.panel .panel-heading';
         this.language = 'ar';
     }
 }
