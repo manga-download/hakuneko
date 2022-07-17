@@ -18,7 +18,7 @@ export default class PixivComics extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(new URL('works/v3/' + uri.pathname.match(/\d+$/)[0], this.apiURL), this.requestOptions);
+        const request = new Request(new URL('works/v4/' + uri.pathname.match(/\d+$/)[0], this.apiURL), this.requestOptions);
         const data = await this.fetchJSON(request);
         const id = data.data.official_work.id;
         const title = data.data.official_work.name.trim();
@@ -39,19 +39,19 @@ export default class PixivComics extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('magazines/' + page, this.apiURL);
+        const uri = new URL(`magazines/v2/${page}/works`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.data.official_works.map(item => {
             return {
                 id: item.id,
-                title: item.name.trim()
+                title: item.title.trim()
             };
         });
     }
 
     async _getChapters(manga) {
-        const uri = new URL('works/v3/' + manga.id, this.apiURL);
+        const uri = new URL('works/v4/' + manga.id, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.data.official_work.stories
