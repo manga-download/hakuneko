@@ -32,8 +32,8 @@ export default class Cmoa extends SpeedBinb {
         for (let i = 0; i < totalPage; i++) {
             const uri = new URL(manga.id, this.url);
             uri.searchParams.set('page', i + 1);
-            const request = new Request(uri, this.requestOptions);
-            const data = await this.fetchDOM(request, '.title_vol_vox_vols .title_vol_vox_vols_i');
+            const pageRequest = new Request(uri, this.requestOptions);
+            const data = await this.fetchDOM(pageRequest, '.title_vol_vox_vols .title_vol_vox_vols_i');
             for (const element of data) {
                 const cartButton = element.querySelector('.cart_into_btn');
                 if (cartButton == null) {

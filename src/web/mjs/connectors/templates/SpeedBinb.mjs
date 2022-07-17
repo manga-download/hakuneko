@@ -207,7 +207,7 @@ export default class SpeedBinb extends Connector {
      *************************
      */
 
-    _getPageList_v016452( chapterID, apiURL ) {
+    async _getPageList_v016452( chapterID, apiURL ) {
         const cid = new URL( chapterID, this.baseURL ).searchParams.get( 'cid' );
         const u0 = new URL( chapterID, this.baseURL ).searchParams.get( 'u0' );
         const u1 = new URL( chapterID, this.baseURL ).searchParams.get( 'u1' );
@@ -220,12 +220,9 @@ export default class SpeedBinb extends Connector {
         uri.searchParams.set( 'u0', u0 );
         uri.searchParams.set( 'u1', u1 );
         const request = new Request( uri.href, this.requestOptions );
-        return fetch( request )
-            .then( response => response.json() )
-            .then( data => {
-                const params = { cid, sharingKey, u0, u1 };
-                return this._getPageLinks_v016452( data.items[0], params);
-            } );
+        const data = await this.fetchJSON( request );
+        const params = { cid, sharingKey, u0, u1 };
+        return this._getPageLinks_v016452( data.items[0], params);
     }
 
     _getPageLinks_v016452( configuration, params ) {
