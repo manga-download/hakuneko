@@ -9,10 +9,10 @@ export default class Yanmaga extends Connector {
         this.tags = ['manga', 'japanese'];
         this.url = 'https://yanmaga.jp';
         this.apiUrl = 'https://api2-yanmaga.comici.jp';
-        this.DEFAULT_ORDER = [];
-        for (let k = 0, i = 0; i < 4; i++) {
+        this.defaultOrder = [];
+        for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 4; j++) {
-                this.DEFAULT_ORDER[k++] = [i, j];
+                this.defaultOrder.push([i, j]);
             }
         }
     }
@@ -71,7 +71,7 @@ export default class Yanmaga extends Connector {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri);
         const [viewer] = await this.fetchDOM(request, '#comici-viewer');
-        if (viewer == null) {
+        if (!viewer) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
         const coord = await this._fetchCoordInfo(viewer);
@@ -107,8 +107,8 @@ export default class Yanmaga extends Connector {
     _decodeScrambleArray(scramble) {
         const decoded = [];
         const encoded = scramble.replace(/\s+/g, '').slice(1).slice(0, -1).split(',');
-        for (let i = 0; i < this.DEFAULT_ORDER.length; i++) {
-            decoded.push(this.DEFAULT_ORDER[encoded[i]]);
+        for (let i = 0; i < this.defaultOrder.length; i++) {
+            decoded.push(this.defaultOrder[encoded[i]]);
         }
         return decoded;
     }
