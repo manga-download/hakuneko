@@ -51,9 +51,6 @@ export default class MangaOvh extends Connector {
         const request = new Request(requestUrl, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
 
-        if (!data)
-            throw new Error('Could not fetch manga from URI');
-
         return new Manga(this, data.id, data.name.en || Object.values(data.name).shift());
     }
 
@@ -77,7 +74,7 @@ export default class MangaOvh extends Connector {
         return chapters.map(item => {
             return {
                 id: item.id,
-                title: `Vol. ${item.volume} Ch. ${item.number}  - ${item.name} ${branches.length > 1 ? `(${item.branchName})` : ''}`.trim(),
+                title: `Vol. ${item.volume} Ch. ${item.number} ${item.name ? `- ${item.name}` : ''} ${branches.length > 1 ? `(${item.branchName})` : ''}`.trim(),
             };
         })
     }
