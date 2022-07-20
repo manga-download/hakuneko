@@ -13,14 +13,13 @@ export default class CrunchyManga extends Crunchyroll {
     }
 
     async _getMangas() {
-        await this._login();
-        let uri = this._createURI(this.apiURL, '/series');
+        let uri = 'https://www.crunchyroll.com/comics/manga/alpha?group=all';
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
+        let data = await this.fetchDOM(request, '.videos-column-container.cf > .videos-column.left li');
         return data.map(manga => {
             return {
-                id: manga.series_id,
-                title: manga.locale && manga.locale.enUS ? manga.locale.enUS.name : manga.url.replace(/^\//, '')
+                id: manga.getAttribute('group_id').trim(),
+                title: manga.children[0].textContent.trim()
             };
         });
     }
