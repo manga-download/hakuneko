@@ -13,15 +13,37 @@ export default class CrunchyManga extends Crunchyroll {
     }
 
     async _getMangas() {
+        let mangaList = [];
+        let uriList = ['https://www.crunchyroll.com/comics/manga',
+        'https://www.crunchyroll.com/comics/manga/popular',
+        'https://www.crunchyroll.com/comics/manga/joint_promo',
+        'https://www.crunchyroll.com/comics/manga/simulpub',
+        'https://www.crunchyroll.com/comics/manga/updated'];
+
+        for (let uriIndex = 0; uriIndex < uriList.length; uriIndex++)
+        {
+            let scanUri = uriList[uriIndex];
+            let scanRequest = new Request(scanUri, this.requestOptions);
+            let scanData = await this.fetchDOM(scanRequest, '.portrait-grid.cf li');
+            mangaList.push(...scanData.map(manga => {
+                return {
+                    id: manga.getAttribute('group_id').trim(),
+                    title: manga.children[0].textContent.trim()
+                };
+            }));
+        }
+
         let uri = 'https://www.crunchyroll.com/comics/manga/alpha?group=all';
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, '.videos-column-container.cf > .videos-column.left li');
-        return data.map(manga => {
+        mangaList.push(...data.map(manga => {
             return {
                 id: manga.getAttribute('group_id').trim(),
                 title: manga.children[0].textContent.trim()
             };
-        });
+        }));
+
+        return mangaList;
     }
 
     async _getChapters(manga) {
