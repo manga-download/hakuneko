@@ -31,15 +31,15 @@ export default class ReManga extends Connector {
             mangaList.push(...mangas);
         }
 
-        return mangaList
+        return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        const requestUrl = new URL('/api/search/catalog/', this.api)
+        const requestUrl = new URL('/api/search/catalog/', this.api);
 
-        requestUrl.searchParams.set('ordering', '-rating')
-        requestUrl.searchParams.set('count', '30')
-        requestUrl.searchParams.set('page', page || '1')
+        requestUrl.searchParams.set('ordering', '-rating');
+        requestUrl.searchParams.set('count', '30');
+        requestUrl.searchParams.set('page', page || '1');
 
         const request = new Request(requestUrl, this.requestOptions);
         const { content } = await this.fetchJSON(request);
@@ -48,7 +48,7 @@ export default class ReManga extends Connector {
             return {
                 id: item.dir,
                 title: item.en_name || item.rus_name,
-            }
+            };
         });
     }
 
@@ -57,7 +57,7 @@ export default class ReManga extends Connector {
         const { content } = await this.fetchJSON(request, 3);
 
         const branch = content.branches[0];
-        const pagesCount = content.count_chapters > 60 ? Math.trunc(content.count_chapters / 60) : 1
+        const pagesCount = content.count_chapters > 60 ? Math.trunc(content.count_chapters / 60) : 1;
 
         let chapters = [];
         for (let i = 1; i <= pagesCount; i++) {
@@ -68,23 +68,23 @@ export default class ReManga extends Connector {
     }
 
     async _getChaptersFromPage(branchId, page) {
-        const requestUrl = new URL('/api/titles/chapters/', this.api)
+        const requestUrl = new URL('/api/titles/chapters/', this.api);
 
-        requestUrl.searchParams.set('branch_id', branchId)
-        requestUrl.searchParams.set('count', '60')
-        requestUrl.searchParams.set('ordering', '-index')
-        requestUrl.searchParams.set('user_data', '1')
-        requestUrl.searchParams.set('page', page || '1')
+        requestUrl.searchParams.set('branch_id', branchId);
+        requestUrl.searchParams.set('count', '60');
+        requestUrl.searchParams.set('ordering', '-index');
+        requestUrl.searchParams.set('user_data', '1');
+        requestUrl.searchParams.set('page', page || '1');
 
         const request = new Request(requestUrl, this.requestOptions);
         const data = await this.fetchJSON(request);
 
-        const filterPaidChapters = data.content.filter(item => !(item.is_paid && !item.is_bought))
+        const filterPaidChapters = data.content.filter(item => !(item.is_paid && !item.is_bought));
 
         return filterPaidChapters.map(item => {
             return {
                 id: item.id,
-                title: `Vol. ${item.tome} Ch. ${item.chapter} ${(item.name || item.name.length > 0) ? `- ${item.name}` : ''}`.trim()
+                title: `Vol. ${item.tome} Ch. ${item.chapter} ${item.name || item.name.length > 0 ? `- ${item.name}` : ''}`.trim()
             };
         });
     }
@@ -93,7 +93,7 @@ export default class ReManga extends Connector {
         const request = new Request(new URL(`/api/titles/chapters/${chapter.id}`, this.api), this.requestOptions);
         const { content } = await this.fetchJSON(request, 3);
 
-        let pages = []
+        let pages = [];
         for (let i = 0; i < content.pages.length; i++) {
             const page = content.pages[i];
             if (Array.isArray(page)) {
@@ -105,6 +105,6 @@ export default class ReManga extends Connector {
             }
         }
 
-        return pages.map(page => this.createConnectorURI(page))
+        return pages.map(page => this.createConnectorURI(page));
     }
 }
