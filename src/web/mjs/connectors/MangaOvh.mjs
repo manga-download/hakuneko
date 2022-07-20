@@ -13,7 +13,7 @@ export default class MangaOvh extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const requestUrl = new URL('/book', this.api)
+        const requestUrl = new URL('/book', this.api);
         requestUrl.searchParams.set('type', 'COMIC');
         requestUrl.searchParams.set('page', String(page));
 
@@ -24,7 +24,7 @@ export default class MangaOvh extends Connector {
             return {
                 id: item.id,
                 title: item.name.en || Object.values(item.name).shift(),
-            }
+            };
         });
     }
 
@@ -39,13 +39,13 @@ export default class MangaOvh extends Connector {
             mangaList.push(...mangas);
         }
 
-        return mangaList
+        return mangaList;
     }
 
     async _getMangaFromURI(uri) {
         const slug = uri.pathname.split('/').pop();
 
-        const requestUrl = new URL('/book/' + slug, this.api)
+        const requestUrl = new URL('/book/' + slug, this.api);
         requestUrl.searchParams.set('type', 'COMIC');
 
         const request = new Request(requestUrl, this.requestOptions);
@@ -66,7 +66,7 @@ export default class MangaOvh extends Connector {
         for (let i = 0; i < branches.length; i++) {
             const tmp = await this._getChaptersFromBranch(branches[i].id);
             tmp.map(chapter => chapter.branchName = branches[i].translators.map(translator => {
-                return translator.name
+                return translator.name;
             }).join(' & '));
             chapters.push(...tmp);
         }
@@ -76,7 +76,7 @@ export default class MangaOvh extends Connector {
                 id: item.id,
                 title: `Vol. ${item.volume} Ch. ${item.number} ${item.name ? `- ${item.name}` : ''} ${branches.length > 1 ? `(${item.branchName})` : ''}`.trim(),
             };
-        })
+        });
     }
 
     async _getChapters(manga) {
@@ -86,7 +86,7 @@ export default class MangaOvh extends Connector {
     async _getPages(chapter) {
         const request = new Request(new URL('/chapter/' + chapter.id, this.api), this.requestOptions);
         const data = await this.fetchJSON(request);
-        return data.pages.map(page => this.createConnectorURI(page.image))
+        return data.pages.map(page => this.createConnectorURI(page.image));
     }
 
     async _getChaptersFromBranch(branchId) {
