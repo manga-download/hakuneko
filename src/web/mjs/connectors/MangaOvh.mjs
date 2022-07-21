@@ -15,7 +15,7 @@ export default class MangaOvh extends Connector {
     async _getMangasFromPage(page) {
         const requestUrl = new URL('/book', this.api);
         requestUrl.searchParams.set('type', 'COMIC');
-        requestUrl.searchParams.set('page', String(page));
+        requestUrl.searchParams.set('page', page);
 
         const request = new Request(requestUrl, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
@@ -54,18 +54,15 @@ export default class MangaOvh extends Connector {
         return new Manga(this, data.id, data.name.en || Object.values(data.name).shift());
     }
 
-    async _getBranches(manga) {
-        const request = new Request(new URL('/book/' + manga.id + '/branches', this.api), this.requestOptions);
-        return this.fetchJSON(request);
-    }
+    async _getChapters(manga) {
+        const branchesRequest = new Request(new URL('/book/' + manga.id + '/branches', this.api), this.requestOptions);
+        const branches = await this.fetchJSON(branchesRequest);
 
-    async _getChaptersFromManga(manga) {
-        const branches = await this._getBranches(manga);
         let chapters = [];
 
-        for (let i = 0; i < branches.length; i++) {
-            const tmp = await this._getChaptersFromBranch(branches[i].id);
-            tmp.map(chapter => chapter.branchName = branches[i].translators.map(translator => {
+        for (const branch of branches) {
+            const tmp = await this._getChaptersFromBranch(branch.id);
+            tmp.forEach(chapter => chapter.branchName = branch.translators.map(translator => {
                 return translator.name;
             }).join(' & '));
             chapters.push(...tmp);
@@ -77,10 +74,6 @@ export default class MangaOvh extends Connector {
                 title: `Vol. ${item.volume} Ch. ${item.number} ${item.name ? `- ${item.name}` : ''} ${branches.length > 1 ? `(${item.branchName})` : ''}`.trim(),
             };
         });
-    }
-
-    async _getChapters(manga) {
-        return this._getChaptersFromManga(manga);
     }
 
     async _getPages(chapter) {
