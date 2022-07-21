@@ -25,7 +25,6 @@ export default class ReManga extends Connector {
     async _getMangas() {
         let mangaList = [];
 
-        // Of course, I can get the all manga, but it's over 20 000
         for (let page = 0; page <= 100; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -57,7 +56,7 @@ export default class ReManga extends Connector {
         const { content } = await this.fetchJSON(request, 3);
 
         const branch = content.branches[0];
-        const pagesCount = content.count_chapters > 60 ? Math.trunc(content.count_chapters / 60) : 1;
+        const pagesCount = content.count_chapters > 60 ? Math.trunc(content.count_chapters / 60) + 1 : 1;
 
         let chapters = [];
         for (let i = 1; i <= pagesCount; i++) {
@@ -71,7 +70,7 @@ export default class ReManga extends Connector {
         const requestUrl = new URL('/api/titles/chapters/', this.api);
 
         requestUrl.searchParams.set('branch_id', branchId);
-        requestUrl.searchParams.set('count', '60');
+        requestUrl.searchParams.set('count', '80');
         requestUrl.searchParams.set('ordering', '-index');
         requestUrl.searchParams.set('user_data', '1');
         requestUrl.searchParams.set('page', page || '1');
@@ -79,7 +78,7 @@ export default class ReManga extends Connector {
         const request = new Request(requestUrl, this.requestOptions);
         const data = await this.fetchJSON(request);
 
-        const filterPaidChapters = data.content.filter(item => !(item.is_paid && !item.is_bought));
+        const filterPaidChapters = data.content.filter(item => !item.is_paid && !item.is_bought);
 
         return filterPaidChapters.map(item => {
             return {
