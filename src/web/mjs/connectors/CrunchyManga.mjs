@@ -14,7 +14,6 @@ export default class CrunchyManga extends Crunchyroll {
 
     async _getMangas() {
         let mangaList = [];
-        
         let uriList = ['https://www.crunchyroll.com/comics/manga',
             'https://www.crunchyroll.com/comics/manga/popular',
             'https://www.crunchyroll.com/comics/manga/joint_promo',
