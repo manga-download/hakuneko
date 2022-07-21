@@ -61,11 +61,13 @@ export default class MangaOvh extends Connector {
         let chapters = [];
 
         for (const branch of branches) {
-            const tmp = await this._getChaptersFromBranch(branch.id);
-            tmp.forEach(chapter => chapter.branchName = branch.translators.map(translator => {
+            const branchChaptersRequest = new Request(new URL('/branch/' + branch.id + '/chapters', this.api), this.requestOptions);
+            const branchChapters = this.fetchJSON(branchChaptersRequest, 3);
+
+            branchChapters.forEach(chapter => chapter.branchName = branch.translators.map(translator => {
                 return translator.name;
             }).join(' & '));
-            chapters.push(...tmp);
+            chapters.push(...branchChapters);
         }
 
         return chapters.map(item => {
@@ -80,10 +82,5 @@ export default class MangaOvh extends Connector {
         const request = new Request(new URL('/chapter/' + chapter.id, this.api), this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.pages.map(page => this.createConnectorURI(page.image));
-    }
-
-    async _getChaptersFromBranch(branchId) {
-        const request = new Request(new URL('/branch/' + branchId + '/chapters', this.api), this.requestOptions);
-        return this.fetchJSON(request, 3);
     }
 }
