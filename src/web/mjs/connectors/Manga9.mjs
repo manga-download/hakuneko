@@ -55,7 +55,7 @@ export default class Manga9 extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.match(/【[^【】]+】/g).map(m => m.replace(/[【】]/g, '')).pop(),
+                title: element.text.match(/【([^【】]+)】\s*$/)[1],
                 language: ''
             };
         });
