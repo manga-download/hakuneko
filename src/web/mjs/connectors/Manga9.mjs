@@ -22,7 +22,7 @@ export default class Manga9 extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitle);
         const id = uri.pathname;
-        const title = data[0].textContent.replace('(Raw – Free)', '').trim();
+        const title = data[0].textContent.replace(/\(Raw( – Free)?\)/, '').trim();
         return new Manga(this, id, title);
     }
 
@@ -44,7 +44,7 @@ export default class Manga9 extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.title.replace('(Raw – Free)', '').trim()
+                title: element.title.replace(/\(Raw( – Free)?\)/, '').trim()
             };
         });
     }
