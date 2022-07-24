@@ -35,14 +35,16 @@ export default class Cmoa extends SpeedBinb {
             const pageRequest = new Request(uri, this.requestOptions);
             const data = await this.fetchDOM(pageRequest, '.title_vol_vox_vols .title_vol_vox_vols_i');
             for (const element of data) {
-                const cartButton = element.querySelector('.cart_into_btn');
-                if (cartButton == null) {
+                const chapterLink = element.querySelector('a[href^="/reader/"]')?.href;
+                if (!chapterLink) {
                     continue;
                 }
-                const id = cartButton.getAttribute('_content_id').trim();
+                const chapterUrl = new URL(chapterLink, this.url);
+                const id = chapterUrl.searchParams.get('content_id');
+                const u0 = chapterUrl.pathname.startsWith('/reader/sample') ? 1 : 0;
                 const title = element.querySelector('.title_details_title_name_h2').textContent.trim();
                 chapters.push({
-                    id: `/bib/speedreader/?cid=${id.slice(1, 11)}_jp_${id.slice(11, 15)}&u0=1&u1=0`,
+                    id: `/bib/speedreader/?cid=${id.slice(1, 11)}_jp_${id.slice(11, 15)}&u0=${u0}&u1=0`,
                     title: title.replace('NEW\n', '').trim(),
                 });
             }
