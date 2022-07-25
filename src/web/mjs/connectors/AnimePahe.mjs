@@ -58,32 +58,10 @@ export default class AnimePahe extends Connector {
         return mangaList;
     }
 
-    async _getRealMangaID(manga) {
-        const uri = new URL('/api', this.url);
-        uri.searchParams.set('m', 'search');
-        uri.searchParams.set('l', 8);
-        uri.searchParams.set('q', manga.title);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        if(data.data.length === 1) {
-            return data.data[0].id;
-        }
-        const matchesByTitle = data.data.filter(entry => entry.title === manga.title);
-        if(matchesByTitle.length === 1) {
-            return matchesByTitle[0].id;
-        }
-        const matchesBySession = data.data.filter(entry => entry.session === manga.id);
-        if(matchesBySession.length === 1) {
-            return matchesBySession[0].id;
-        }
-        throw new Error('Failed to find the real ID for the given anime!', manga);
-    }
-
     async _getChapters(manga) {
         let chapterList = [];
-        const mangaID = await this._getRealMangaID(manga);
         for(let page = 1, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(mangaID, page);
+            let chapters = await this._getChaptersFromPage(manga.id, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
         return chapterList;
@@ -93,7 +71,7 @@ export default class AnimePahe extends Connector {
         let uri = new URL('/api', this.url);
         uri.searchParams.set('m', 'release');
         uri.searchParams.set('id', mangaID);
-        uri.searchParams.set('session', mangaID);
+        //uri.searchParams.set('session', mangaID);
         uri.searchParams.set('page', page);
         //uri.searchParams.set('l', 30); // limit
         //uri.searchParams.set('sort', 'episode_desc');
@@ -115,11 +93,10 @@ export default class AnimePahe extends Connector {
     }
 
     async _getPages(chapter) {
-        const mangaID = await this._getRealMangaID(chapter.manga);
         let uri = new URL('/api', this.url);
         uri.searchParams.set('m', 'links');
-        uri.searchParams.set('id', mangaID);
-        uri.searchParams.set('session', chapter.id);
+        uri.searchParams.set('id', chapter.id);
+        //uri.searchParams.set('session', chapter.id);
         uri.searchParams.set('p', 'kwik');
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
