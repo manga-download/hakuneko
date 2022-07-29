@@ -41,8 +41,8 @@ export default class Yanmaga extends Connector {
         const request = new Request(uri);
         const dom = await this.fetchDOM(request);
         const csrfToken = dom.querySelector('meta[name=csrf-token]').content;
-        const episodeCount = dom.querySelector('#contents').dataset.count;
-        const count = Math.ceil(episodeCount / 50);
+        const contents = dom.querySelector('#contents');
+        const count = contents ? Math.ceil(contents.dataset.count / 50) : 1;
         const chapters = [];
         for (let i = 0; i < count; i++) {
             const epUri = new URL(`${manga.id}/episodes`, this.url);
