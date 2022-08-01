@@ -475,7 +475,7 @@ export default class Connector {
             request = new URL(request);
         }
 
-        const requestOptions = JSON.parse(JSON.stringify(this.requestOptions));
+        const requestOptions = { ...this.requestOptions };
         const graphQLRequest = new Request(request.href ? request.href : request.url, Object.assign(requestOptions, {
             method: 'POST',
             body: JSON.stringify({
