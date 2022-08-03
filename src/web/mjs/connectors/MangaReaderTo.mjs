@@ -11,7 +11,7 @@ export default class MangaReaderTo extends Connector {
         this.url = 'https://mangareader.to';
         this.path = '/az-list?page=';
 
-        this.querMangaTitleFromURI = 'div#ani_detail div.anisc-detail h2.manga-name';
+        this.queryMangaTitleFromURI = 'div#ani_detail div.anisc-detail h2.manga-name';
         this.queryMangas = '#main-content div.manga-detail h3 a';
         this.queryChapters = 'div.chapters-list-ul ul li a';
         this.queryPages = 'div#wrapper';
@@ -84,11 +84,14 @@ export default class MangaReaderTo extends Connector {
         const dom = this.createDOM(data.html);
         const imagesArr = Array.from(dom.querySelectorAll('.iv-card'));
 
+        if(!imagesArr.length || !imagesArr[0].className.includes('shuffled'))
+            return imagesArr.map(image => image.dataset.url);
+
         // Example: https://c-1.mreadercdn.ru/_v2/1/0dcb8f9eaacfd940603bd75c7c152919c72e45517dcfb1087df215e3be94206cfdf45f64815888ea0749af4c0ae5636fabea0abab8c2e938ab3ad7367e9bfa52/9d/32/9d32bd84883afc41e54348e396c2f99a/9d32bd84883afc41e54348e396c2f99a_1200.jpeg?t=4b419e2c814268686ff05d2c25965be9&amp;ttl=1642926021
         const imageData = JSON.stringify(imagesArr.map(image => image.dataset.url));
 
         const type = Engine.Settings.recompressionFormat.value;
-        const quality = parseFloat(Engine.Settings.recompressionQuality.value)/100;
+        const quality = parseFloat(Engine.Settings.recompressionQuality.value) / 100;
         const script = `
             new Promise(async (resolve, reject) => {
                 try {
