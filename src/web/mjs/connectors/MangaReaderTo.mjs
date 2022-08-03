@@ -83,9 +83,8 @@ export default class MangaReaderTo extends Connector {
 
         const dom = this.createDOM(data.html);
         const imagesArr = Array.from(dom.querySelectorAll('.iv-card'));
-        const shuffled = imagesArr.length > 0 ? imagesArr[0].className.includes('shuffled') : false;
 
-        if (!shuffled)
+        if(!imagesArr.length || !imagesArr[0].className.includes('shuffled'))
             return imagesArr.map(image => image.dataset.url);
 
         // Example: https://c-1.mreadercdn.ru/_v2/1/0dcb8f9eaacfd940603bd75c7c152919c72e45517dcfb1087df215e3be94206cfdf45f64815888ea0749af4c0ae5636fabea0abab8c2e938ab3ad7367e9bfa52/9d/32/9d32bd84883afc41e54348e396c2f99a/9d32bd84883afc41e54348e396c2f99a_1200.jpeg?t=4b419e2c814268686ff05d2c25965be9&amp;ttl=1642926021
