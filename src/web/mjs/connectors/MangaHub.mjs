@@ -13,6 +13,8 @@ export default class MangaHub extends Connector {
         this.cdnURL = 'https://img.mghubcdn.com/file/imghub/';
 
         this.path = 'm01';
+        this.requestOptions.headers.set('x-referer', this.url);
+        this.requestOptions.headers.set('x-origin', this.url);
     }
 
     async _getMangaFromURI(uri) {
@@ -68,6 +70,15 @@ export default class MangaHub extends Connector {
         }`;
         let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         data = JSON.parse(data.chapter.pages);
-        return Object.values(data).map(page => new URL(page, this.cdnURL).href);
+        return Object.values(data).map(page => this.createConnectorURI(new URL(page, this.cdnURL).href));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
