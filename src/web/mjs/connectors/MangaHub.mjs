@@ -13,8 +13,9 @@ export default class MangaHub extends Connector {
         this.cdnURL = 'https://img.mghubcdn.com/file/imghub/';
 
         this.path = 'm01';
-        this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-origin', this.url);
+        this.requestOptions.headers.set('x-referer', `${this.url}/`);
+        this.requestOptions.headers.set('Accept-Language', 'en-US,en;q=0.9');
     }
 
     async _getMangaFromURI(uri) {
