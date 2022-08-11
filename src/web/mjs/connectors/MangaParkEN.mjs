@@ -15,8 +15,11 @@ export default class MangaParkEN extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'main h3');
-        return new Manga(this, uri.pathname.match(/\/(\d+)\/?/)[1], data[0].textContent.trim());
+        let queryMangaTitleFromURI = 'meta[property="og:title"]';
+        if (/\/title\/\d+/.test(uri.pathname))
+            queryMangaTitleFromURI = 'main h3';
+        const data = await this.fetchDOM(request, queryMangaTitleFromURI);
+        return new Manga(this, uri.pathname.match(/\/(\d+)\/?/)[1], (data[0].textContent || data[0].content).trim());
     }
 
     async _getMangas() {
