@@ -76,6 +76,9 @@ export default class MangaHub extends Connector {
 
     async _handleConnectorURI(payload) {
         let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-sec-fetch-dest', 'image');
+        request.headers.set('x-sec-fetch-mode', 'no-cors');
+        request.headers.delete('x-origin');
         let response = await fetch(request);
         let data = await response.blob();
         data = await this._blobToBuffer(data);
