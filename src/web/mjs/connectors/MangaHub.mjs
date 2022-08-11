@@ -13,8 +13,9 @@ export default class MangaHub extends Connector {
         this.cdnURL = 'https://img.mghubcdn.com/file/imghub/';
 
         this.path = 'm01';
-        this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-origin', this.url);
+        this.requestOptions.headers.set('x-referer', `${this.url}/`);
+        this.requestOptions.headers.set('Accept-Language', 'en-US,en;q=0.9');
     }
 
     async _getMangaFromURI(uri) {
@@ -75,6 +76,9 @@ export default class MangaHub extends Connector {
 
     async _handleConnectorURI(payload) {
         let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-sec-fetch-dest', 'image');
+        request.headers.set('x-sec-fetch-mode', 'no-cors');
+        request.headers.delete('x-origin');
         let response = await fetch(request);
         let data = await response.blob();
         data = await this._blobToBuffer(data);
