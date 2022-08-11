@@ -35,13 +35,12 @@ export default class MangaParkEN extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL('/browse?sort=name&page=' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, '#subject-list div.item');
+        const data = await this.fetchDOM(request, '#subject-list div.item a.fw-bold');
         return data.map( element => {
-            const a = element.querySelector('a.fw-bold');
-            this.cfMailDecrypt(a);
+            this.cfMailDecrypt(element);
             return {
-                id: this.getRootRelativeOrAbsoluteLink(a, request.url).match(/\/(\d+)\/?/)[1],
-                title: a.text.trim()
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url).match(/\/(\d+)\/?/)[1],
+                title: element.text.trim()
             };
         });
     }
