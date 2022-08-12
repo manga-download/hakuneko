@@ -64,6 +64,16 @@ export default class Manga9 extends Connector {
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, this.queryPages);
-        return data.map(image => image.dataset.src);
+        return data.map(image => this.createConnectorURI(image.dataset.src));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-referer', `${this.url}/`);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
