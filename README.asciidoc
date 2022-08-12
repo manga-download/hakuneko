@@ -22,6 +22,7 @@ image:https://hakuneko.download/assets/images/discord-small.png[link=https://dis
 
 image:https://img.shields.io/github/downloads/manga-download/hakuneko/latest/total?label=HakuNeko%20%28Stable%29&logo=github[link=https://github.com/manga-download/hakuneko/releases/latest, title="Download the latest stable release of HakuNeko", window="_blank"]
 image:https://img.shields.io/github/downloads-pre/manga-download/hakuneko/latest/total?color=blue&label=HakuNeko%20%28Nightly%29&logo=azure-devops[link=https://github.com/manga-download/hakuneko/releases, title="Download the latest pre-release (nightly build) of HakuNeko", window="_blank"]
+image:https://img.shields.io/chocolatey/dt/hakunekonightly?color=blue&label=Chocolatey%20package[link=https://community.chocolatey.org/packages/hakunekonightly, window="_blank"]
 
 Yes, the download section comes first, because this is what most users are looking for anyway.
 You can download and run the installer/archive for your operating system from one of the mirror sites above.
