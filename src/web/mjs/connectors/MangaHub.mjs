@@ -18,8 +18,30 @@ export default class MangaHub extends Connector {
         this.requestOptions.headers.set('Accept-Language', 'en-US,en;q=0.9');
     }
 
+    async _initializeConnector() {
+        let script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        const key = document.cookie.split(';').map(s => { 
+                            return {key: s.substr(0, s.indexOf('=')).trim(), value: s.substr(s.indexOf('=') + 1).trim()}
+                        }).filter(e => e.key === 'mhub_access').pop()
+                        resolve(key.value);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
+        `;
+        const uri = new URL(this.url);
+        const request = new Request(uri, this.requestOptions);
+        const key = await Engine.Request.fetchUI(request, script);
+        this.requestOptions.headers.set('x-mhub-access', key);
+    }
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
+        request.headers.delete('x-mhub-access');
         let data = await this.fetchDOM(request, 'div#mangadetail div.container-fluid div.row h1');
         let id = uri.pathname.split('/').pop();
         let title = data[0].firstChild.textContent.trim();
@@ -79,6 +101,7 @@ export default class MangaHub extends Connector {
         request.headers.set('x-sec-fetch-dest', 'image');
         request.headers.set('x-sec-fetch-mode', 'no-cors');
         request.headers.delete('x-origin');
+        request.headers.delete('x-mhub-access');
         let response = await fetch(request);
         let data = await response.blob();
         data = await this._blobToBuffer(data);
