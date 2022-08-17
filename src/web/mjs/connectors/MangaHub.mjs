@@ -32,11 +32,11 @@ export default class MangaHub extends Connector {
         }
         const uri = new URL(path);
         const request = new Request(uri, this.requestOptions);
-        request.headers.delete('x-origin');
         request.headers.set('x-sec-fetch-dest', 'document');
         request.headers.set('x-sec-fetch-mode', 'navigate');
-        request.headers.delete('x-mhub-access');
         request.headers.set('Upgrade-Insecure-Requests', 1);
+        request.headers.delete('x-origin');
+        request.headers.delete('x-mhub-access');
         const response = await fetch(request);
         const cookie = new Cookie(response.headers.get('x-set-cookie'));
 
@@ -44,7 +44,7 @@ export default class MangaHub extends Connector {
             if (mangaSlug && chapterNumber) {
                 await this._fetchApiKey(mangaSlug, null);
                 return;
-            } else if (mangaSlug && !chapterNumber) {
+            } else if (mangaSlug) {
                 await this._fetchApiKey(null, null);
                 return;
             } else {
@@ -83,6 +83,10 @@ export default class MangaHub extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
+        request.headers.set('x-sec-fetch-dest', 'document');
+        request.headers.set('x-sec-fetch-mode', 'navigate');
+        request.headers.set('Upgrade-Insecure-Requests', 1);
+        request.headers.delete('x-origin');
         request.headers.delete('x-mhub-access');
         let data = await this.fetchDOM(request, 'div#mangadetail div.container-fluid div.row h1');
         let id = uri.pathname.split('/').pop();
