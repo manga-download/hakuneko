@@ -23,17 +23,17 @@ export default class MangaHub extends Connector {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    async _updateCookieInDocument(chapterNumber) {
+    async _updateCookies(chapterNumber) {
         const { remote } = require('electron');
 
         const now = new Date().getTime();
         if (chapterNumber > 1) {
             chapterNumber -= 1;
         }
-        const expireDateCookie = {
+        const recently = {
             url: this.url,
             name: 'recently',
-            value: encodeURIComponent(`{"${now - this._randomInteger(0, 120)}":{"mangaID":${this._randomInteger(1, 30000)},"number":${chapterNumber}}}`),
+            value: encodeURIComponent(`{"${now - this._randomInteger(0, 1200)}":{"mangaID":${this._randomInteger(1, 30000)},"number":${chapterNumber}}}`),
             path: '/',
             expirationDate: now + 2 * 31 * 24 * 60 * 60 * 1000
         };
@@ -43,14 +43,14 @@ export default class MangaHub extends Connector {
             value: '',
             path: '/'
         };
-        await remote.session.defaultSession.cookies.set(expireDateCookie);
+        await remote.session.defaultSession.cookies.set(recently);
         await remote.session.defaultSession.cookies.set(key);
     }
 
     async _fetchApiKey(mangaSlug, chapterNumber) {
         let path = '';
         if (mangaSlug && chapterNumber) {
-            await this._updateCookieInDocument(chapterNumber);
+            await this._updateCookies(chapterNumber);
             path = `${this.url}/manga/${mangaSlug}`;
         } else {
             path = `${this.url}/`;
@@ -91,7 +91,7 @@ export default class MangaHub extends Connector {
             const data = await this.fetchGraphQL(request, operationName, query, variables);
             return data;
         } catch(error) {
-            if (error.message.includes(' errors: ') && /(api)?\s*rate\s*limit\s*(excessed)?/i.test(error.message)) {
+            if (error.message.includes(' errors: ') && /(api)?\s*rate\s*limit\s*(excessed)?|api\s*key\s*(invalid)?/i.test(error.message)) {
                 let mangaSlug = query.match(/slug:\s*"(.+)"/);
                 if (mangaSlug) {
                     mangaSlug = mangaSlug[1];
