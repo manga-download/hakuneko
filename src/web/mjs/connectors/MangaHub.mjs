@@ -1,6 +1,5 @@
 import Connector from '../engine/Connector.mjs';
 import Cookie from '../engine/Cookie.mjs';
-import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 import Manga from '../engine/Manga.mjs';
 
 export default class MangaHub extends Connector {
@@ -20,6 +19,10 @@ export default class MangaHub extends Connector {
         this.requestOptions.headers.set('Accept-Language', 'en-US,en;q=0.9');
     }
 
+    _randomInteger(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
     async _updateCookieInDocument(chapterNumber) {
         const { remote } = require('electron');
 
@@ -31,7 +34,7 @@ export default class MangaHub extends Connector {
         const expireDateCookie = {
             url: this.url,
             name: 'recently',
-            value: encodeURIComponent(`{"${new Date() - HeaderGenerator._rn(0, 120)}":{"mangaID":${HeaderGenerator._rn(1, 30000)},"number":${chapterNumber}}}`),
+            value: encodeURIComponent(`{"${new Date() - this._randomInteger(0, 120)}":{"mangaID":${this._randomInteger(1, 30000)},"number":${chapterNumber}}}`),
             path: '/'
         };
         const key = {
