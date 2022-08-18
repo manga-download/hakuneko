@@ -67,9 +67,11 @@ export default class MangaHub extends Connector {
         const cookie = new Cookie(response.headers.get('x-set-cookie'));
 
         if (cookie.get('mhub_access') === '') {
+            const oldKey = this.requestOptions.headers.get('x-mhub-access');
             this.requestOptions.headers.set('x-mhub-access', '');
             await this._fetchApiKey(null, null);
             if (this.requestOptions.headers.get('x-mhub-access') === '') {
+                this.requestOptions.headers.set('x-mhub-access', oldKey);
                 throw new Error(`${this.label}: Can't update the API key!`);
             }
         } else {
