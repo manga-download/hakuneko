@@ -112,7 +112,7 @@ export default class MangaHub extends Connector {
         request.headers.delete('x-origin');
         request.headers.delete('x-mhub-access');
         let data = await this.fetchDOM(request, 'div#mangadetail div.container-fluid div.row h1');
-        let id = uri.pathname.split('/').pop();
+        let id = uri.pathname.split('/').filter(e => e).pop();
         let title = data[0].firstChild.textContent.trim();
         return new Manga(this, id, title);
     }
