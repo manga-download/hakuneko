@@ -20,17 +20,46 @@ export default class MangaHub extends Connector {
         this.requestOptions.headers.set('Accept-Language', 'en-US,en;q=0.9');
     }
 
+    async _updateCookieInDocument(chapterNumber) {
+        const now = new Date() - HeaderGenerator._rn(0, 120);
+        let expireDate = new Date();
+        expireDate.setDate(expireDate.getTime() + 2 * 31 * 24 * 60 * 60 * 1000);
+        if (chapterNumber > 1) {
+            chapterNumber -= 1;
+        }
+        const script = `
+            new Promise((resolve, reject) => {
+                try {
+                    const encodedString = encodeURIComponent(\`{"${now}":{"mangaID":${HeaderGenerator._rn(1, 30000)},"number":${chapterNumber}}}\`);
+                    document.cookie = \`recently=\${encodedString}; expires=${expireDate.toUTCString()}; Path=/;\`;
+                    document.cookie = 'mhub_access=; Path=/;';
+                    resolve();
+                } catch(error) {
+                    reject(error);
+                }
+            });
+        `;
+        const uri = new URL(this.url);
+        const request = new Request(uri, this.requestOptions);
+        request.headers.set('x-sec-fetch-dest', 'document');
+        request.headers.set('x-sec-fetch-mode', 'navigate');
+        request.headers.set('Upgrade-Insecure-Requests', 1);
+        request.headers.set('x-user-agent', HeaderGenerator._browserFirefox);
+        request.headers.delete('x-origin');
+        request.headers.delete('x-mhub-access');
+        return Engine.Request.fetchUI(request, script);
+    }
+
     async _fetchApiKey(mangaSlug, chapterNumber) {
-        this.requestOptions.headers.set('x-user-agent', HeaderGenerator.randomUA());
         let path = '';
         if (mangaSlug && chapterNumber) {
-            path = `${this.url}/chapter/${mangaSlug}/chapter-${chapterNumber}?reloadKey=1`;
-        } else if (mangaSlug) {
-            path = `${this.url}/manga/${mangaSlug}?reloadKey=1`;
+            await this._updateCookieInDocument(chapterNumber);
+            path = `${this.url}/manga/${mangaSlug}`;
         } else {
-            path = `${this.url}/?reloadKey=1`;
+            path = `${this.url}/`;
         }
         const uri = new URL(path);
+        uri.searchParams.append('reloadKey', '1');
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-sec-fetch-dest', 'document');
         request.headers.set('x-sec-fetch-mode', 'navigate');
@@ -40,22 +69,22 @@ export default class MangaHub extends Connector {
         const response = await fetch(request);
         const cookie = new Cookie(response.headers.get('x-set-cookie'));
 
-        if (cookie.get('mhub_access') === this.requestOptions.headers.get('x-mhub-access')) {
-            if (mangaSlug && chapterNumber) {
-                await this._fetchApiKey(mangaSlug, null);
-                return;
-            } else if (mangaSlug) {
-                await this._fetchApiKey(null, null);
-                return;
-            } else {
+        if (cookie.get('mhub_access') === '') {
+            this.requestOptions.headers.set('x-mhub-access', '');
+            await this._fetchApiKey(null, null);
+            if (this.requestOptions.headers.get('x-mhub-access') === '') {
                 throw new Error(`${this.label}: Can't update the API key!`);
             }
+        } else {
+            this.requestOptions.headers.set('x-mhub-access', cookie.get('mhub_access'));
         }
-        this.requestOptions.headers.set('x-mhub-access', cookie.get('mhub_access'));
     }
 
     async _initializeConnector() {
         await this._fetchApiKey(null, null);
+        if (this.requestOptions.headers.get('x-mhub-access') === '') {
+            throw new Error(`${this.label}: Can't initialize the API key! Try selecting another manga from this connector!`);
+        }
     }
 
     async _fetchGraphQLWithoutRateLimit(request, operationName, query, variables) {
