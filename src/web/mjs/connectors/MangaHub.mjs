@@ -26,16 +26,16 @@ export default class MangaHub extends Connector {
     async _updateCookieInDocument(chapterNumber) {
         const { remote } = require('electron');
 
-        let expireDate = new Date();
-        expireDate.setDate(expireDate.getTime() + 2 * 31 * 24 * 60 * 60 * 1000);
+        const now = new Date().getTime();
         if (chapterNumber > 1) {
             chapterNumber -= 1;
         }
         const expireDateCookie = {
             url: this.url,
             name: 'recently',
-            value: encodeURIComponent(`{"${new Date() - this._randomInteger(0, 120)}":{"mangaID":${this._randomInteger(1, 30000)},"number":${chapterNumber}}}`),
-            path: '/'
+            value: encodeURIComponent(`{"${now - this._randomInteger(0, 120)}":{"mangaID":${this._randomInteger(1, 30000)},"number":${chapterNumber}}}`),
+            path: '/',
+            expirationDate: now + 2 * 31 * 24 * 60 * 60 * 1000
         };
         const key = {
             url: this.url,
