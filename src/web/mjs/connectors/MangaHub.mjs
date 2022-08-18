@@ -21,33 +21,27 @@ export default class MangaHub extends Connector {
     }
 
     async _updateCookieInDocument(chapterNumber) {
-        const now = new Date() - HeaderGenerator._rn(0, 120);
+        const { remote } = require('electron');
+
         let expireDate = new Date();
         expireDate.setDate(expireDate.getTime() + 2 * 31 * 24 * 60 * 60 * 1000);
         if (chapterNumber > 1) {
             chapterNumber -= 1;
         }
-        const script = `
-            new Promise((resolve, reject) => {
-                try {
-                    const encodedString = encodeURIComponent(\`{"${now}":{"mangaID":${HeaderGenerator._rn(1, 30000)},"number":${chapterNumber}}}\`);
-                    document.cookie = \`recently=\${encodedString}; expires=${expireDate.toUTCString()}; Path=/;\`;
-                    document.cookie = 'mhub_access=; Path=/;';
-                    resolve();
-                } catch(error) {
-                    reject(error);
-                }
-            });
-        `;
-        const uri = new URL(this.url);
-        const request = new Request(uri, this.requestOptions);
-        request.headers.set('x-sec-fetch-dest', 'document');
-        request.headers.set('x-sec-fetch-mode', 'navigate');
-        request.headers.set('Upgrade-Insecure-Requests', 1);
-        request.headers.set('x-user-agent', HeaderGenerator._browserFirefox);
-        request.headers.delete('x-origin');
-        request.headers.delete('x-mhub-access');
-        return Engine.Request.fetchUI(request, script);
+        const expireDateCookie = {
+            url: this.url,
+            name: 'recently',
+            value: encodeURIComponent(`{"${new Date() - HeaderGenerator._rn(0, 120)}":{"mangaID":${HeaderGenerator._rn(1, 30000)},"number":${chapterNumber}}}`),
+            path: '/'
+        };
+        const key = {
+            url: this.url,
+            name: 'mhub_access',
+            value: '',
+            path: '/'
+        };
+        await remote.session.defaultSession.cookies.set(expireDateCookie);
+        await remote.session.defaultSession.cookies.set(key);
     }
 
     async _fetchApiKey(mangaSlug, chapterNumber) {
