@@ -8,7 +8,7 @@ export default class MangaParkEN extends Connector {
         super();
         super.id = 'mangapark-en';
         super.label = 'MangaPark';
-        this.tags = [ 'manga', 'english' ];
+        this.tags = [ 'manga', 'multi-lingual' ];
         this.url = 'https://mangapark.net';
         this.requestOptions.headers.set('x-cookie', 'set=h=1;');
     }

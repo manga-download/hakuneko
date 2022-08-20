@@ -8,7 +8,9 @@ export default class Toonily extends WordPressMadara {
         super.label = 'Toonily';
         this.tags = [ 'webtoon', 'hentai', 'english' ];
         this.url = 'https://toonily.com';
-        this.requestOptions.headers.set('x-cookie', 'wpmanga-adault=1');
+
+        this.queryTitleForURI = 'div.site-content div.post-title';
+        this.requestOptions.headers.set('x-cookie', 'toonily-mature=1');
     }
 
     async _getMangas() {
