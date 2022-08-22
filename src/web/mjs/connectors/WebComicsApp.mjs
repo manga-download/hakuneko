@@ -51,7 +51,7 @@ export default class WebComicsApp extends Connector {
         return data.map(element => {
             const mangaTitle = element.querySelector('h5').textContent.trim();
             return {
-                id: `${this.url}/comic/${mangaTitle.replace(this.titleRegex, '-')}/${this.getRelativeLink(element).match(/=(\w+)$/)[1]}`,
+                id: `/comic/${mangaTitle.replace(this.titleRegex, '-')}/${this.getRelativeLink(element).match(/=(\w+)$/)[1]}`,
                 title: mangaTitle
             };
         });
