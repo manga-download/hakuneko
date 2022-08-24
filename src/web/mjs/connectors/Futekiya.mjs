@@ -20,51 +20,57 @@ export default class Futekiya extends SpeedBinb {
     }
 
     async _getMangas() {
-        let maxpagecount = 1;
-        let manga = [];
-        for (let i = 1; i <= maxpagecount; i++) {
+        let maxPageCount = 1;
+        let mangas = [];
+        const request = new Request(new URL('/browse?page=1', this.url), this.requestOptions);
+        const newpagecount = await this.fetchDOM(request, ".pagination :nth-last-child(2)");
+        maxPageCount = parseInt(newpagecount[0].innerText.trim());
+        for (let i = 1; i <= maxPageCount; i++) {
             const request = new Request(new URL('/browse?page=' + i, this.url), this.requestOptions);
-            if (maxpagecount == 1) {
-                const newpagecount = await this.fetchDOM(request, ".pagination :nth-last-child(2)");
-                maxpagecount = parseInt(newpagecount[0].innerText.trim());
-            }
             const data = await this.fetchDOM(request, ".contents.comics .linkbox");
             for (let element of data) {
-                manga.push({
+                mangas.push({
                     id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a').pathname, this.url),
                     title: element.querySelector('h3').innerText.trim()
                 });
             }
         }
-        return manga;
+        return mangas;
     }
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, '#accordion div[id*="vol_"]');
-        let mangadownloads = [];
+        let chapters = [];
         for (let volume of data) {
             const title = volume.querySelector('h3').textContent.trim() + " - ";
 
             for (let chapter of [...volume.querySelectorAll(".list-group")].filter(e => e.querySelector('a') != null)) {
                 const origurl = /'([a-z0-9:/.?=]*)'/g.exec(chapter.querySelector('a').getAttribute("@click"))[1];
-                let url = "";
-                if (origurl.includes("/reader/")) {
-                    url = "/reader?cid=" + origurl.split("/").slice(-1)[0] + "&sk=1";
-                } else if (origurl.includes("/viewer/")) {
-                    url = "https://image.futekiya.com/viewer/" + origurl.split("/").slice(-1)[0];
+                //the chapter site gives different urls. sometimes you first get redirected to a login or 18+ restricted page other times not.
+                let chapid = origurl.split("/").slice(-1)[0];
+                if (chapid.includes("?")) {
+                    chapid = chapid.split("=").slice(-1)[0];//gets the id of the cid parameter
                 }
-                mangadownloads.push({
+                let url = "";
+                if (origurl.includes("/reader")) {
+                    url = "/reader?cid=" + chapid + "&sk=1";
+                } else if (origurl.includes("/viewer")) {
+                    url = "https://image.futekiya.com/viewer/" + chapid;
+                }
+                chapters.push({
                     id: url,
                     title: title + chapter.querySelector('span').innerText.trim()
                 });
             }
         }
 
-        return mangadownloads;
+        return chapters;
     }
     _getPageList(manga, chapter, callback) {
-        this.requestOptions.headers.set('x-referer', "https://read.futekiya.com/");
+        this.requestOptions.headers.set('x-referer', this.url + '/');
+        //add 18 plus cookie otherwise you can get redirected to a different page
+        this.requestOptions.headers.set('x-cookie', 'faconf=' + 18);
         let data = super._getPageList(manga, chapter, callback);
         const url = new URL(chapter.id, this.baseURL);
         this.requestOptions.headers.set('x-referer', url);
