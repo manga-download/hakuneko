@@ -7,7 +7,7 @@ export default class MangaReaderTo extends Connector {
         super();
         super.id = 'mangareaderto';
         super.label = 'MangaReader.to';
-        this.tags = ['manga', 'webtoon', 'japanese', 'korean', 'english', 'chinese'];
+        this.tags = ['manga', 'webtoon', 'japanese', 'korean', 'english', 'chinese', 'french'];
         this.url = 'https://mangareader.to';
         this.path = '/az-list?page=';
 
