@@ -47,12 +47,11 @@ export default class Futekiya extends SpeedBinb {
             const title = volume.querySelector('h3').textContent.trim() + " - ";
 
             for (let chapter of [...volume.querySelectorAll(".list-group")].filter(e => e.querySelector('a') != null)) {
-                const origurl = /'([a-z0-9:\/.?=]*)'/g.exec(chapter.querySelector('a').getAttribute("@click"))[1];
+                const origurl = /'([a-z0-9:/.?=]*)'/g.exec(chapter.querySelector('a').getAttribute("@click"))[1];
                 let url = "";
                 if (origurl.includes("/reader/")) {
                     url = "/reader?cid=" + origurl.split("/").slice(-1)[0] + "&sk=1";
-                }
-                else if (origurl.includes("/viewer/")) {
+                } else if (origurl.includes("/viewer/")) {
                     url = "https://image.futekiya.com/viewer/" + origurl.split("/").slice(-1)[0];
                 }
                 mangadownloads.push({
