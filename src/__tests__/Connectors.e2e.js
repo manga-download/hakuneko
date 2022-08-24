@@ -226,7 +226,7 @@ describe("HakuNeko Engine", () => {
                     connectorClass: 'ToCoronaEx',
                     mangaID: '20000000051530',
                     mangaTitle: '悪役令嬢ですが攻略対象の様子が異常すぎる@COMIC',
-                    chapterID: 20000000496345,
+                    chapterID: "20000000496345",
                     chapterTitle: '第1話',
                     pageCount: 34
                 });
@@ -262,6 +262,22 @@ describe("HakuNeko Engine", () => {
                     chapterID: 'https://www.comic-valkyrie.com/samplebook/val_isemaji01/',
                     chapterTitle: '第1話',
                     pageCount: 34,
+                });
+            });
+        });
+        describe('Futekiya', () => {
+            it('should get manga, chapters and page links', async () => {
+                await assertConnector(page, {
+                    connectorID: 'futekiya',
+                    mangaURL: 'https://read.futekiya.com/comic/5d13135038bcc',
+                    chaptersAccessor: 'shift' // first => shift, last => pop, index => Integer
+                }, {
+                    connectorClass: 'Futekiya',
+                    mangaID: '/comic/5d13135038bcc',
+                    mangaTitle: 'Mood Indigo',
+                    chapterID: "https://image.futekiya.com/viewer/5d13137ec6b1c",
+                    chapterTitle: 'Volume 1 - Chapter 1 Deeper than Blue',
+                    pageCount: 29
                 });
             });
         });
