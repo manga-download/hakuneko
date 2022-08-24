@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Cookie from '../engine/Cookie.mjs';
+import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 import Manga from '../engine/Manga.mjs';
 
 export default class MangaHub extends Connector {
@@ -48,6 +49,7 @@ export default class MangaHub extends Connector {
     }
 
     async _fetchApiKey(mangaSlug, chapterNumber) {
+        this.requestOptions.headers.set('x-user-agent', HeaderGenerator.randomUA());
         let path = '';
         if (mangaSlug && chapterNumber) {
             await this._updateCookies(chapterNumber);
@@ -66,22 +68,21 @@ export default class MangaHub extends Connector {
         const response = await fetch(request);
         const cookie = new Cookie(response.headers.get('x-set-cookie'));
 
-        if (cookie.get('mhub_access') === '') {
+        if (mangaSlug && chapterNumber && !cookie.get('mhub_access')) {
             const oldKey = this.requestOptions.headers.get('x-mhub-access');
-            this.requestOptions.headers.set('x-mhub-access', '');
             await this._fetchApiKey(null, null);
-            if (this.requestOptions.headers.get('x-mhub-access') === '') {
+            if (!this.requestOptions.headers.get('x-mhub-access')) {
                 this.requestOptions.headers.set('x-mhub-access', oldKey);
                 throw new Error(`${this.label}: Can't update the API key!`);
             }
         } else {
-            this.requestOptions.headers.set('x-mhub-access', cookie.get('mhub_access'));
+            this.requestOptions.headers.set('x-mhub-access', !cookie.get('mhub_access') ? '' : cookie.get('mhub_access'));
         }
     }
 
     async _initializeConnector() {
         await this._fetchApiKey(null, null);
-        if (this.requestOptions.headers.get('x-mhub-access') === '') {
+        if (!this.requestOptions.headers.get('x-mhub-access')) {
             throw new Error(`${this.label}: Can't initialize the API key! Try selecting another manga from this connector!`);
         }
     }
