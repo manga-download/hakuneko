@@ -54,12 +54,12 @@ export default class MangaReaderTo extends Connector {
         let data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
             const link = this.getRootRelativeOrAbsoluteLink(element.tagName.toLowerCase() === 'a' ? element : element.querySelector('a'), this.url);
-            const title = element.tagName.toLowerCase() === 'a' ? element.title.replace(/:(.*)/gi, '') : element.textContent.trim();
+            const title = element.tagName.toLowerCase() === 'a' ? element.title.replace(/([^:]*):(.*)/, (match, g1, g2) => g1.trim().toLowerCase() === g2.trim().toLowerCase() ? g1 : match).trim() : element.textContent.trim();
             const lang = link.match(/(\/en\/)|(\/ja\/)|(\/ko\/)|(\/zh\/)|(\/fr\/)/gi);
             const language = lang ? lang[0].replace(/\//gm, '').toUpperCase() : '';
             return {
                 id: link,
-                title: title.replace(manga.title, '').trim() + ` ${language}` || manga.title,
+                title: title.replace(manga.title, '').trim() + ` (${language})` || manga.title,
                 language
             };
         });
