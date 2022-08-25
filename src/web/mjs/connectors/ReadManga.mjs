@@ -106,7 +106,7 @@ export default class ReadManga extends Connector {
                 if (`${uri.origin}/` === server) {
                     continue;
                 }
-                request = new Request(new URL(server + uri.pathname), this.requestOptions);
+                request = new Request(new URL(uri.pathname, server), this.requestOptions);
                 response = await fetch(request);
                 if (response.status === 200) {
                     break;
