@@ -37,7 +37,7 @@ export default class WebComicsApp extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(new URL(uri), this.requestOptions);
+        const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitleFromURI);
         const id = uri.pathname;
         const title = data[0].textContent.trim();

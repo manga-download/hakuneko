@@ -17,7 +17,7 @@ export default class DynastyScans extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(new URL(uri), this.requestOptions);
+        const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div#main h2.tag-title > b');
         const id = uri.pathname;
         const title = data[0].textContent.trim();

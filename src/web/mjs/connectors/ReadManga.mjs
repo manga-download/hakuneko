@@ -28,7 +28,7 @@ export default class ReadManga extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(new URL(uri), this.requestOptions);
+        const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div#mangaBox h1.names span.name');
         const id = uri.pathname;
         const title = data[0].textContent.trim();
