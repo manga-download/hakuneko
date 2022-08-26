@@ -22,11 +22,11 @@ export default class Futekiya extends SpeedBinb {
     async _getMangas() {
         let maxPageCount = 1;
         let mangas = [];
-        const request = new Request(new URL('/browse?page=1', this.url), this.requestOptions);
+        let request = new Request(new URL('/browse?page=1', this.url), this.requestOptions);
         const newpagecount = await this.fetchDOM(request, ".pagination :nth-last-child(2)");
         maxPageCount = parseInt(newpagecount[0].innerText.trim());
         for (let i = 1; i <= maxPageCount; i++) {
-            const request = new Request(new URL('/browse?page=' + i, this.url), this.requestOptions);
+            request = new Request(new URL('/browse?page=' + i, this.url), this.requestOptions);
             const data = await this.fetchDOM(request, ".contents.comics .linkbox");
             for (let element of data) {
                 mangas.push({
