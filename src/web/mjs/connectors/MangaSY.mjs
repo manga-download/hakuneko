@@ -8,5 +8,7 @@ export default class MangaSY extends WordPressMadara {
         super.label = 'Manga SY';
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://www.mangasy.com';
+
+        this.queryTitleForURI = 'meta[property="og:title"]';
     }
 }
