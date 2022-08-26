@@ -57,7 +57,7 @@ export default class MangaKatana extends Connector {
     async _getPages(chapter) {
         const script = `
             new Promise(resolve => {
-                resolve(ytaw);
+                resolve(htnc);
             });
         `;
         const uri = new URL(chapter.id, this.url);
