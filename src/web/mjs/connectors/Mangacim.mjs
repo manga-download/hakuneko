@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class Mangacim extends WordPressMadara {
+export default class Mangacim extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,5 +8,6 @@ export default class Mangacim extends WordPressMadara {
         super.label = 'Mangacim';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
         this.url = 'https://www.mangacim.com';
+        this.path = '/manga/list-mode/';
     }
 }

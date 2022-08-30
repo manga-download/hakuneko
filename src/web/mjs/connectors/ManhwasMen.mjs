@@ -1,6 +1,6 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import ManhwasNet from './ManhwasNet.mjs';
 
-export default class ManhwasMen extends MangaReaderCMS {
+export default class ManhwasMen extends ManhwasNet {
 
     constructor() {
         super();
@@ -8,5 +8,6 @@ export default class ManhwasMen extends MangaReaderCMS {
         super.label = 'Manhwas Men';
         this.tags = [ 'webtoon', 'hentai', 'korean', 'english' ];
         this.url = 'https://manhwas.men';
+        this.path = '/manga-list';
     }
 }

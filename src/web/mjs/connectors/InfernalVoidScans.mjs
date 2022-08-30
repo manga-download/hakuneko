@@ -7,7 +7,7 @@ export default class InfernalVoidScans extends WordPressMangastream {
         super.id = 'infernalvoidscans';
         super.label = 'InfernalVoidScans';
         this.tags = [ 'webtoon', 'scanlation', 'english' ];
-        this.url = 'https://infernalvoidscans.com';
+        this.url = 'https://void-scans.com';
         this.path = '/manga/list-mode/';
     }
 }
