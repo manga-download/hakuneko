@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/manga.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class Team1x1 extends Connector {
 
@@ -14,7 +14,7 @@ export default class Team1x1 extends Connector {
                 label: 'URL',
                 description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
-                value: 'https://teamx.fun'
+                value: 'https://mnhaestate.com'
             }
         };
     }
@@ -31,7 +31,7 @@ export default class Team1x1 extends Connector {
     }
 
     canHandleURI(uri) {
-        return /team1x\d*\.com|tqneplus\.com|teamx.fun/.test(uri.hostname);
+        return /team1x\d*\.com|tqneplus\.com|teamx\.fun|mnhaestate\.com/.test(uri.hostname);
     }
 
     async _initializeConnector() {
