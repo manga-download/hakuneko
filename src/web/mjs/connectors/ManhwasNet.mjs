@@ -41,12 +41,14 @@ export default class ManhwasNet extends WordPressMadara {
     async _getPages(chapter) {
         let script = `
             new Promise((resolve, reject) => {
-                try {
-                    const images = [ ...document.querySelectorAll('${this.queryPages}') ].map(image => image.src);
-                    resolve(images);
-                } catch(error) {
-                    reject(error);
-                }
+                setTimeout(() => {
+                    try {
+                        const images = [ ...document.querySelectorAll('${this.queryPages}') ].map(image => image.src);
+                        resolve(images);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
             });
         `;
         const uri = new URL(chapter.id, this.url);
