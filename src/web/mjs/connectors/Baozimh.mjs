@@ -55,7 +55,7 @@ export default class Baozimh extends Connector {
             } else {
                 uri = null;
             }
-            pagesList.push( ...data.map(element => element.getAttribute('src')) );
+            pagesList.push( ...data.map(element => element.getAttribute('src')).filter(page => page) );
             run = uri != null;
         }
         return pagesList;
