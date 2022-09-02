@@ -9,8 +9,8 @@ export default class ShonenJumpPlus extends CoreView {
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://shonenjumpplus.com';
     }
-    
-	async _getChapters(manga) {
+
+    async _getChapters(manga) {
         if(/^\/magazine\/\d+$/.test(manga.id)) {
             return [{
                 id: manga.id,
@@ -20,4 +20,4 @@ export default class ShonenJumpPlus extends CoreView {
             return super._getChapters(manga);
         }
     }
-}	
+}
