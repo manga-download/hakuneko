@@ -56,8 +56,19 @@ export default class MangaKatana extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise(resolve => {
-                resolve(htnc);
+            new Promise((resolve, reject) => {
+                try {
+                    let images = [];
+                    if (typeof htnc !== 'undefined') {
+                        images = htnc;
+                    }
+                    if (typeof ytaw !== 'undefined' && ytaw.length >= images.length) {
+                        images = ytaw;
+                    }
+                    resolve(images);
+                } catch(error) {
+                    reject(error);
+                }
             });
         `;
         const uri = new URL(chapter.id, this.url);
