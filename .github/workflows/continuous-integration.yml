@@ -28,7 +28,7 @@ jobs:
       - name: Install NodeJS
         uses: actions/setup-node@v1
         with:
-          node-version: 12.x
+          node-version: 16
       - name: Install NPM Packages
         run: npm install
       - name: Lint
