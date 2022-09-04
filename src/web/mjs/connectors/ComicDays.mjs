@@ -6,10 +6,10 @@ export default class ComicDays extends CoreView {
         super();
         super.id = 'comicdays';
         super.label = 'コミックDAYS (Comic Days)';
-        this.tags = [ 'manga', 'japanese' ];
+        this.tags = ['manga', 'japanese'];
         this.url = 'https://comic-days.com';
 
-        this.path = [ '/oneshot', '/newcomer', '/daysneo' ];
+        this.path = ['/oneshot', '/newcomer', '/daysneo'];
         this.queryManga = 'div.yomikiri-container ul.yomikiri-items > li.yomikiri-item-box > a.yomikiri-link';
         this.queryMangaTitle = 'div.yomikiri-link-title h4';
     }
@@ -35,10 +35,12 @@ export default class ComicDays extends CoreView {
     }
 
     async _getChapters(manga) {
-        if(/^\/magazine\/\d+$/.test(manga.id)) {
+        if (/^\/magazine\/\d+$/.test(manga.id)) {
+            let request = new Request(new URL(this.url + manga.id), this.requestOptions);
+            let data = await this.fetchDOM(request, '.episode-header-title');
             return [{
                 id: manga.id,
-                title: manga.title
+                title: data[0].textContent.replace(manga.title, "").trim()
             }];
         } else {
             return super._getChapters(manga);
