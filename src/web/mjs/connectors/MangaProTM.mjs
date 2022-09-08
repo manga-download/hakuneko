@@ -4,10 +4,10 @@ export default class MangaProZ extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'mangaproz';
-        super.label = 'Manga Pro Z';
+        super.id = 'mangaprotm';
+        super.label = 'Manga Pro team';
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
-        this.url = 'https://mangaproz.com';
+        this.url = 'https://mangaprotm.com';
         this.path = '/manga/list-mode/';
     }
 }
