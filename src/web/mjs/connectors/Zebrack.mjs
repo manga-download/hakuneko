@@ -1,4 +1,3 @@
-//device_secret_key
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
