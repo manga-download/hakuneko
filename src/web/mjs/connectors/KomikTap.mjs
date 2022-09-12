@@ -10,4 +10,8 @@ export default class KomikTap extends WordPressMangastream {
         this.url = 'https://komiktap.in';
         this.path = '/manga/list-mode/';
     }
+
+    canHandleURI(uri) {
+        return /komiktap\.in|194\.233\.66\.232/.test(uri.hostname);
+    }
 }

@@ -5,10 +5,11 @@ export default class MorpheusFansub extends WordPressMadara {
     constructor() {
         super();
         super.id = 'morpheusfansub';
-        super.label = 'Morpheus Fansub';
+        super.label = 'Manga Bilgini';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://morpheus.animemangabilgileri.com';
+        this.url = 'https://mangabilgini.com/';
 
         this.queryTitleForURI = 'div.profile-manga div.post-title h1';
+        this.queryChapters = 'li[class*=wp-manga-chapter-] > a';
     }
 }
