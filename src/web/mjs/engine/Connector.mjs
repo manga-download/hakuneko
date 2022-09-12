@@ -475,15 +475,15 @@ export default class Connector {
             request = new URL(request);
         }
 
-        const requestOptions = JSON.parse(JSON.stringify(this.requestOptions));
-        const graphQLRequest = new Request(request.href ? request.href : request.url, Object.assign(requestOptions, {
+        const graphQLRequest = new Request(request.href ? request.href : request.url, {
+            ...this.requestOptions,
             method: 'POST',
             body: JSON.stringify({
                 operationName,
                 query,
                 variables,
             })
-        }));
+        });
         graphQLRequest.headers.set('content-type', 'application/json');
 
         return this.fetchJSON(graphQLRequest)

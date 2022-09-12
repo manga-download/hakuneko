@@ -6,8 +6,8 @@ export default class ManhuaScan extends FlatManga {
         super();
         super.id = 'manhuascan';
         super.label = 'ManhuaScan';
-        this.tags = [ 'manga', 'webtoon', 'hentai', 'multi-lingual' ];
-        this.url = 'https://manhuascan.com';
+        this.tags = ['manga', 'webtoon', 'hentai', 'multi-lingual'];
+        this.url = 'https://manhuascan.io';
         this.requestOptions.headers.set('x-referer', this.url + '/');
 
         this.queryChapters = 'div#tab-chapper div#list-chapters span.title a.chapter';
@@ -19,7 +19,7 @@ export default class ManhuaScan extends FlatManga {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.pagination-wrap ul.pagination li:nth-last-of-type(2) a');
         const pageCount = parseInt(data[0].text);
-        for(let page = 1; page <= pageCount; page++) {
+        for (let page = 1; page <= pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }

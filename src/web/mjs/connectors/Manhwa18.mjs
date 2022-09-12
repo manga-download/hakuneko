@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class Manhwa18 extends Connector {
 
@@ -36,7 +37,7 @@ export default class Manhwa18 extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim(),
+                title: element.querySelector('div.chapter-name').textContent.trim(),
                 language: ''
             };
         });
@@ -47,4 +48,13 @@ export default class Manhwa18 extends Connector {
         let data = await this.fetchDOM(request, 'div#chapter-content source.lazy');
         return data.map(element => this.getAbsolutePath(element.dataset.src || element, request.url));
     }
+
+    async _getMangaFromURI(uri) {
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, 'span.series-name');
+        let id = uri.pathname;
+        let title = (data[0].content || data[0].textContent).trim();
+        return new Manga(this, id, title);
+    }
+
 }

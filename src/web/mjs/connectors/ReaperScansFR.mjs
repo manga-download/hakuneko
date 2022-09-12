@@ -6,9 +6,9 @@ export default class ReaperScansFR extends ReaperScans {
         super.id = 'reaperscansfr';
         super.label = 'Reaper Scans (French)';
         this.tags = ['webtoon', 'french'];
-        this.url = 'https://new.reaperscans.fr';
+        this.url = 'https://reaperscans.fr';
         this.links = {
-            login: 'https://new.reaperscans.fr/login'
+            login: 'https://reaperscans.fr/login'
         };
     }
 }
