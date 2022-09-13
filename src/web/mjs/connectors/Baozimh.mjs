@@ -46,7 +46,7 @@ export default class Baozimh extends Connector {
         let run = true;
         while(run) {
             const request = new Request(uri, this.requestOptions);
-            let data = await this.fetchDOM(request, ".comic-contain amp-img.comic-contain__item, div:not(.chapter-main) > div.next_chapter a");
+            let data = await this.fetchDOM(request, '.comic-contain amp-img.comic-contain__item, div:not(.chapter-main) > div.next_chapter a');
             if (data[data.length - 1].tagName.toLowerCase() === 'a') {
                 uri = this.getRootRelativeOrAbsoluteLink(data.pop(), this.url);
                 if (!uri || uri.match(linkRegex) == null) {
