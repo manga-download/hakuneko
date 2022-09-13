@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class MorpheusFansub extends WordPressMadara {
+export default class MangaBilgini extends WordPressMadara {
 
     constructor() {
         super();
