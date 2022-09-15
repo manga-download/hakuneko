@@ -7,21 +7,21 @@ export default class DoujinDesu extends WordPressMangastream {
         super.id = 'doujindesu';
         super.label = 'DoujinDesu';
         this.tags = ['hentai', 'indonesian'];
-        this.url = 'https://doujindesu.xxx';
-        this.path = '/komik-list/page/%PAGE%/';
+        this.url = 'https://212.32.226.234';
+        this.path = '/manga/page/%PAGE%/';
 
-        this.querMangaTitleFromURI = 'div#infoarea div.post-body h1.entry-title';
-        this.queryMangas = '#main .relat .animepost .animposx a';
+        this.queryMangas = 'div.entries article.entry a';
         this.queryChapters = 'div#chapter_list div.epsleft span.lchx a';
+        this.queryPages = 'div.main div img[src]:not([src=""])';
         this.queryChaptersTitle = undefined;
-        this.queryPages = 'div.reader-area img[src]:not([src=""])';
+        this.querMangaTitleFromURI = 'section.metadata h1.title';
     }
 
-    // NOTE: Fallback to pagination since '/komik-list/?list' empty
+    // NOTE: Fallback to pagination since '/manga/?list' empty
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
-            const path = page > 1 ? this.path : '/komik-list/';
+            const path = page > 1 ? this.path : '/manga/';
             let mangas = await this._getMangasFromPage(path, page);
             mangas.length ? mangaList.push(...mangas) : run = false;
         }
