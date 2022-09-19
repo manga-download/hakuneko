@@ -23,11 +23,11 @@ export default class ToCoronaEx extends Connector {
     async _getMangas() {
         let mangaList = [];
         let nextCursor = '/comics?order=asc&sort=title_yomigana';
-        for(let run = true; run;) {
+        for (let run = true; run;) {
             const data = await this._getMangasFromPage(nextCursor);
             nextCursor = data.nextCursor;
             mangaList.push(...data.mangas);
-            if(nextCursor == null) {
+            if (nextCursor == null) {
                 run = false;
             }
         }
@@ -51,22 +51,40 @@ export default class ToCoronaEx extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
+        let hasSubscription = false;
+        try {
+            let suburl = `/users/me/subscription/status`;
+            let uri = new URL(suburl, this.apiurl);
+            let request = new Request(uri, this.requestOptions);
+            let subdata = await this.fetchJSON(request);
+            hasSubscription = subdata.subscription_service_status == "true";
+        } catch (_e) {
+            //page will give 401 if not loggedin
+            hasSubscription = false;
+        }
         let nextCursor = `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order`;
-        for(let run = true; run;) {
-            const data = await this._getChaptersFromPage(manga, nextCursor);
+        if (hasSubscription) {
+            nextCursor += "&episode_status=free_viewing%2Conly_for_subscription";
+        }
+        for (let run = true; run;) {
+            const data = await this._getChaptersFromPage(manga, nextCursor, hasSubscription);
             nextCursor = data.nextCursor;
             chapterList.push(...data.chapters);
-            if(nextCursor == null) {
+            if (nextCursor == null) {
                 run = false;
             }
         }
         return chapterList.reverse();
     }
 
-    async _getChaptersFromPage(manga, nextCursor) {
+    async _getChaptersFromPage(manga, nextCursor, hasSubscription) {
         let uri = new URL(nextCursor, this.apiurl);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
+        let extraparameters = "";
+        if (hasSubscription) {
+            extraparameters += "&episode_status=free_viewing%2Conly_for_subscription";
+        }
         return {
             chapters: data.resources.map(element => {
                 return {
@@ -74,7 +92,7 @@ export default class ToCoronaEx extends Connector {
                     title: element.title
                 };
             }),
-            nextCursor: data.next_cursor != null ? `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order&after_than=${data.next_cursor}` : null
+            nextCursor: data.next_cursor != null ? `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order&after_than=${data.next_cursor}` + extraparameters : null
         };
     }
 
