@@ -51,16 +51,20 @@ export default class ToCoronaEx extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
+        const getToken = await this.getToken();
         let hasSubscription = false;
-        try {
-            let suburl = `/users/me/subscription/status`;
-            let uri = new URL(suburl, this.apiurl);
-            let request = new Request(uri, this.requestOptions);
-            let subdata = await this.fetchJSON(request);
-            hasSubscription = subdata.subscription_service_status == "true";
-        } catch (_e) {
-            //page will give 401 if not loggedin
-            hasSubscription = false;
+        if (getToken) {
+            this.requestOptions.headers.set('authorization', 'Bearer ' + getToken);
+            try {
+                let suburl = `/users/me/subscription/status`;
+                let uri = new URL(suburl, this.apiurl);
+                let request = new Request(uri, this.requestOptions);
+                let subdata = await this.fetchJSON(request);
+                hasSubscription = subdata.subscription_service_status == "true";
+            } catch (_e) {
+                //page will give 401 if not loggedin
+                hasSubscription = false;
+            }
         }
         let nextCursor = `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order`;
         if (hasSubscription) {
@@ -75,6 +79,43 @@ export default class ToCoronaEx extends Connector {
             }
         }
         return chapterList.reverse();
+    }
+    //get auth token from indexedDB
+    async getToken() {
+        let script = `new Promise(resolve => {
+            setTimeout(() => {
+                try{
+                    let tRequest = window.indexedDB.open("firebaseLocalStorageDb", 1);
+                    tRequest.onerror = function (event) {
+                        resolve(undefined);
+                    };
+                    tRequest.onsuccess = function (e) {
+
+                        const db = e.target.result;
+                        const transaction = db.transaction("firebaseLocalStorage", 'readonly');
+                        const objectStore = transaction.objectStore("firebaseLocalStorage");
+
+                        if ('getAll' in objectStore) {
+                            objectStore.getAll().onsuccess = function (event) {
+                                if(event.target.result.length == 0){
+                                    resolve(undefined);
+                                }
+                                else{resolve(event.target.result[0].value.stsTokenManager.accessToken);
+                                    }
+                            };
+                            objectStore.getAll().onerror = function (event) {
+                                resolve(undefined);
+                            };
+                        }
+                        else{resolve(undefined);}
+                    }
+                }
+                catch(e){resolve(undefined);}
+            }, 2500);
+        });`;
+        const uri = new URL('/', this.url);
+        let request = new Request(uri, this.requestOptions);
+        return await Engine.Request.fetchUI(request, script);
     }
 
     async _getChaptersFromPage(manga, nextCursor, hasSubscription) {
@@ -125,11 +166,11 @@ export default class ToCoronaEx extends Connector {
     descramble(bitmap, key) {
         return new Promise(resolve => {
             var r = function (e) {
-                    for (var t = atob(e), n = [], r = 0; r < t.length; r += 1) {
-                        n[r] = t.charCodeAt(r);
-                    }
-                    return n;
-                }(key),
+                for (var t = atob(e), n = [], r = 0; r < t.length; r += 1) {
+                    n[r] = t.charCodeAt(r);
+                }
+                return n;
+            }(key),
                 i = r[0],
                 o = r[1],
                 a = r.slice(2),
