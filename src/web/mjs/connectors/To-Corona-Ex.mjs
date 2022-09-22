@@ -60,7 +60,7 @@ export default class ToCoronaEx extends Connector {
                 let uri = new URL(suburl, this.apiurl);
                 let request = new Request(uri, this.requestOptions);
                 let subdata = await this.fetchJSON(request);
-                hasSubscription = subdata.subscription_service_status == "true";
+                hasSubscription = subdata.subscription_service_status == "enabled";
             } catch (_e) {
                 //page will give 401 if not loggedin
                 hasSubscription = false;
@@ -166,11 +166,11 @@ export default class ToCoronaEx extends Connector {
     descramble(bitmap, key) {
         return new Promise(resolve => {
             var r = function (e) {
-                for (var t = atob(e), n = [], r = 0; r < t.length; r += 1) {
-                    n[r] = t.charCodeAt(r);
-                }
-                return n;
-            }(key),
+                    for (var t = atob(e), n = [], r = 0; r < t.length; r += 1) {
+                        n[r] = t.charCodeAt(r);
+                    }
+                    return n;
+                }(key),
                 i = r[0],
                 o = r[1],
                 a = r.slice(2),
@@ -183,6 +183,8 @@ export default class ToCoronaEx extends Connector {
             canvas.width = bitmap.width;
             canvas.height = bitmap.height;
             let ctx = canvas.getContext('2d');
+            //first the original images is set as baseline as parts outside of the jigsaw squares(that haven't been moved) are still in their original position.
+            ctx.drawImage(bitmap, 0, 0);
             for (var d = 0; d < c; d += 1) {
                 var h = a[d],
                     p = h % i,
