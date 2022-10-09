@@ -10,6 +10,9 @@ export default class Yanmaga extends Connector {
         this.url = 'https://yanmaga.jp';
         this.apiUrl = 'https://api2-yanmaga.comici.jp';
         this.defaultOrder = [];
+        this.links = {
+            login: 'https://yanmaga.jp/customers/sign-in'
+        };
         for (let i = 0; i < 4; i++) {
             for (let j = 0; j < 4; j++) {
                 this.defaultOrder.push([i, j]);
