@@ -68,7 +68,7 @@ export default class PixivComics extends Connector {
             .map(item => {
                 return {
                     id: item.episode.id, // this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: item.episode.numbering_title + ' - ' + item.episode.sub_title, // element.text.trim(),
+                    title: item.episode.numbering_title + (!item.episode.sub_title ? '' : ' - ' + item.episode.sub_title), // element.text.trim(),
                     language: ''
                 };
             });
