@@ -18,7 +18,7 @@ export default class PixivComics extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(new URL('works/v4/' + uri.pathname.match(/\d+$/)[0], this.apiURL), this.requestOptions);
+        const request = new Request(new URL('works/v5/' + uri.pathname.match(/\d+$/)[0], this.apiURL), this.requestOptions);
         const data = await this.fetchJSON(request);
         const id = data.data.official_work.id;
         const title = data.data.official_work.name.trim();
@@ -31,7 +31,7 @@ export default class PixivComics extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         const pages = data.data.magazines.map(item => item.id);
-        for(let page of pages) {
+        for (let page of pages) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }
@@ -51,15 +51,24 @@ export default class PixivComics extends Connector {
     }
 
     async _getChapters(manga) {
-        const uri = new URL('works/v4/' + manga.id, this.apiURL);
+        let chapterList = [];
+        for (let page = 1, run = true; run; page++) {
+            const chapters = await this._getChaptersFromPage(manga.id, page);
+            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(mangaId, page) {
+        const uri = new URL(`works/${mangaId}/episodes?page=${page}`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return data.data.official_work.stories
+        const { data } = await this.fetchJSON(request);
+        return data.episodes
             .filter(item => item.readable)
             .map(item => {
                 return {
-                    id: item.story.id, // this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: item.story.short_name + ' - ' + item.story.name, // element.text.trim(),
+                    id: item.episode.id, // this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: item.episode.numbering_title + (!item.episode.sub_title ? '' : ' - ' + item.episode.sub_title), // element.text.trim(),
                     language: ''
                 };
             });
