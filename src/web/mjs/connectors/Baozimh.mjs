@@ -42,7 +42,7 @@ export default class Baozimh extends Connector {
         let uri = new URL(chapter.id, this.url);
         const sectionSlot = uri.searchParams.get('section_slot');
         const chapterSlot = uri.searchParams.get('chapter_slot');
-        const linkRegex = new RegExp(`/${sectionSlot}_${chapterSlot}.*.html?$`, 'i');
+        const linkRegex = new RegExp(`/${sectionSlot}_${chapterSlot}.*\\.html?$`, 'i');
         let run = true;
         while(run) {
             const request = new Request(uri, this.requestOptions);

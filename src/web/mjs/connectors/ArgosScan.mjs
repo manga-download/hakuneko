@@ -1,7 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-// Similar to MangaHub
 export default class ArgosScan extends Connector {
     constructor() {
         super();
