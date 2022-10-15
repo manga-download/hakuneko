@@ -7,6 +7,6 @@ export default class MangaKomi extends WordPressMadara {
         super.id = 'mangakomi';
         super.label = 'Manga Komi';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://mangakomi.com';
+        this.url = 'https://mangakomi.io';
     }
 }

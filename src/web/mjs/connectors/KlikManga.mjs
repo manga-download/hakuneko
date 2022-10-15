@@ -7,6 +7,6 @@ export default class KlikManga extends WordPressMadara {
         super.id = 'klikmanga';
         super.label = 'KlikManga';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
-        this.url = 'https://klikmanga.com';
+        this.url = 'https://klikmanga.id';
     }
 }

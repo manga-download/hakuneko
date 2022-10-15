@@ -29,7 +29,7 @@ export default class KissComic extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL('/ComicList?page=' + page, this.url);
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'table.listing tr td > a');
+        let data = await this.fetchDOM(request, 'div.list-comic div.item a, div.item-list div.group div.col.info a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
