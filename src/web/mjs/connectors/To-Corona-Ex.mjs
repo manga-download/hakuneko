@@ -23,11 +23,11 @@ export default class ToCoronaEx extends Connector {
     async _getMangas() {
         let mangaList = [];
         let nextCursor = '/comics?order=asc&sort=title_yomigana';
-        for(let run = true; run;) {
+        for (let run = true; run;) {
             const data = await this._getMangasFromPage(nextCursor);
             nextCursor = data.nextCursor;
             mangaList.push(...data.mangas);
-            if(nextCursor == null) {
+            if (nextCursor == null) {
                 run = false;
             }
         }
@@ -51,22 +51,81 @@ export default class ToCoronaEx extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
+        const getToken = await this.getToken();
+        let hasSubscription = false;
+        if (getToken) {
+            this.requestOptions.headers.set('authorization', 'Bearer ' + getToken);
+            try {
+                let suburl = `/users/me/subscription/status`;
+                let uri = new URL(suburl, this.apiurl);
+                let request = new Request(uri, this.requestOptions);
+                let subdata = await this.fetchJSON(request);
+                hasSubscription = subdata.subscription_service_status == "enabled";
+            } catch (_e) {
+                //page will give 401 if not loggedin
+                hasSubscription = false;
+            }
+        }
         let nextCursor = `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order`;
-        for(let run = true; run;) {
-            const data = await this._getChaptersFromPage(manga, nextCursor);
+        if (hasSubscription) {
+            nextCursor += "&episode_status=free_viewing%2Conly_for_subscription";
+        }
+        for (let run = true; run;) {
+            const data = await this._getChaptersFromPage(manga, nextCursor, hasSubscription);
             nextCursor = data.nextCursor;
             chapterList.push(...data.chapters);
-            if(nextCursor == null) {
+            if (nextCursor == null) {
                 run = false;
             }
         }
         return chapterList.reverse();
     }
+    //get auth token from indexedDB
+    async getToken() {
+        let script = `new Promise(resolve => {
+            setTimeout(() => {
+                try{
+                    let tRequest = window.indexedDB.open("firebaseLocalStorageDb", 1);
+                    tRequest.onerror = function (event) {
+                        resolve(undefined);
+                    };
+                    tRequest.onsuccess = function (e) {
 
-    async _getChaptersFromPage(manga, nextCursor) {
+                        const db = e.target.result;
+                        const transaction = db.transaction("firebaseLocalStorage", 'readonly');
+                        const objectStore = transaction.objectStore("firebaseLocalStorage");
+
+                        if ('getAll' in objectStore) {
+                            objectStore.getAll().onsuccess = function (event) {
+                                if(event.target.result.length == 0){
+                                    resolve(undefined);
+                                }
+                                else{resolve(event.target.result[0].value.stsTokenManager.accessToken);
+                                    }
+                            };
+                            objectStore.getAll().onerror = function (event) {
+                                resolve(undefined);
+                            };
+                        }
+                        else{resolve(undefined);}
+                    }
+                }
+                catch(e){resolve(undefined);}
+            }, 2500);
+        });`;
+        const uri = new URL('/', this.url);
+        let request = new Request(uri, this.requestOptions);
+        return await Engine.Request.fetchUI(request, script);
+    }
+
+    async _getChaptersFromPage(manga, nextCursor, hasSubscription) {
         let uri = new URL(nextCursor, this.apiurl);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
+        let extraparameters = "";
+        if (hasSubscription) {
+            extraparameters += "&episode_status=free_viewing%2Conly_for_subscription";
+        }
         return {
             chapters: data.resources.map(element => {
                 return {
@@ -74,7 +133,7 @@ export default class ToCoronaEx extends Connector {
                     title: element.title
                 };
             }),
-            nextCursor: data.next_cursor != null ? `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order&after_than=${data.next_cursor}` : null
+            nextCursor: data.next_cursor != null ? `/episodes?comic_id=${manga.id}&order=asc&sort=episode_order&after_than=${data.next_cursor}` + extraparameters : null
         };
     }
 
@@ -124,6 +183,8 @@ export default class ToCoronaEx extends Connector {
             canvas.width = bitmap.width;
             canvas.height = bitmap.height;
             let ctx = canvas.getContext('2d');
+            //first the original images is set as baseline as parts outside of the jigsaw squares(that haven't been moved) are still in their original position.
+            ctx.drawImage(bitmap, 0, 0);
             for (var d = 0; d < c; d += 1) {
                 var h = a[d],
                     p = h % i,
