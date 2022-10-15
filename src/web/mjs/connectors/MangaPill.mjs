@@ -13,7 +13,7 @@ export default class MangaPill extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.container h1.text-header-primary');
+        const data = await this.fetchDOM(request, 'div.container h1');
         return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
@@ -30,7 +30,7 @@ export default class MangaPill extends Connector {
         let uri = new URL('/search?q=&type=&status=&genre=Action&genre=Adventure&genre=Cars&genre=Comedy&genre=Dementia&genre=Demons&genre=Doujinshi&genre=Drama&genre=Ecchi&genre=Fantasy&genre=Game&genre=Gender+Bender&genre=Harem&genre=Hentai&genre=Historical&genre=Horror&genre=Isekai&genre=Josei&genre=Kids&genre=Magic&genre=Martial+Arts&genre=Mecha&genre=Military&genre=Music&genre=Mystery&genre=Parody&genre=Police&genre=Psychological&genre=Romance&genre=Samurai&genre=School&genre=Sci-Fi&genre=Seinen&genre=Shoujo&genre=Shoujo+Ai&genre=Shounen&genre=Shounen+Ai&genre=Slice+of+Life&genre=Space&genre=Sports&genre=Super+Power&genre=Supernatural&genre=Thriller&genre=Vampire&genre=Yaoi&genre=Yuri', this.url);
         uri.searchParams.set('page', page);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.container div.grid div.mt-2 a');
+        const data = await this.fetchDOM(request, 'div.container a.mb-2');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),

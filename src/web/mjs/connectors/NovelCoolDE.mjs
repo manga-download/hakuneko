@@ -1,6 +1,6 @@
-import Novelcool from './templates/Novelcool.mjs';
+import NovelCool from './templates/NovelCool.mjs';
 
-export default class NovelcoolDE extends Novelcool {
+export default class NovelCoolDE extends NovelCool {
     constructor() {
         super();
         super.id = 'novelcool-de';

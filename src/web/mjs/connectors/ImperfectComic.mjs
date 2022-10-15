@@ -7,6 +7,7 @@ export default class ImperfectComic extends WordPressMangastream {
         super.id = 'imperfectcomic';
         super.label = 'Imperfect Comic';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://imperfectcomic.com';
+        this.url = 'https://imperfectcomic.org';
+        this.path = '/manga/list-mode/';
     }
 }

@@ -7,6 +7,6 @@ export default class DetectiveConanAR extends WordPressMadara {
         super.id = 'detectiveconanar';
         super.label = 'العربية  كونان (Conan Arabic)';
         this.tags = [ 'manga', 'arabic' ];
-        this.url = 'https://www.manga.detectiveconanar.com';
+        this.url = 'https://manga.detectiveconanar.com';
     }
 }

@@ -2,6 +2,7 @@ import Connector from "../engine/Connector.mjs";
 import Manga from "../engine/Manga.mjs";
 
 export default class Baozimh extends Connector {
+
     constructor() {
         super();
         super.id = "baozimh";
@@ -35,12 +36,28 @@ export default class Baozimh extends Connector {
             };
         });
     }
+
     async _getPages(chapter) {
-        let request = new Request(
-            new URL(chapter.id, this.url),
-            this.requestOptions
-        );
-        let data = await this.fetchDOM(request, ".comic-contain amp-img.comic-contain__item");
-        return data.map(element => element.getAttribute('src'));
+        let pagesList = [];
+        let uri = new URL(chapter.id, this.url);
+        const sectionSlot = uri.searchParams.get('section_slot');
+        const chapterSlot = uri.searchParams.get('chapter_slot');
+        const linkRegex = new RegExp(`/${sectionSlot}_${chapterSlot}.*\\.html?$`, 'i');
+        let run = true;
+        while(run) {
+            const request = new Request(uri, this.requestOptions);
+            let data = await this.fetchDOM(request, '.comic-contain amp-img.comic-contain__item, div:not(.chapter-main) > div.next_chapter a');
+            if (data[data.length - 1].tagName.toLowerCase() === 'a') {
+                uri = this.getRootRelativeOrAbsoluteLink(data.pop(), this.url);
+                if (!uri || uri.match(linkRegex) == null) {
+                    uri = null;
+                }
+            } else {
+                uri = null;
+            }
+            pagesList.push( ...data.map(element => element.getAttribute('src')).filter(page => page) );
+            run = uri != null;
+        }
+        return pagesList;
     }
 }

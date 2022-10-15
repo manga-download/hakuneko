@@ -9,7 +9,10 @@ export default class Manganelos extends AnyACG {
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'http://manganelos.com';
 
-        this.queryPages = 'div.chapter-content-inner p#arraydata';
+        this.queryPages = [
+            'div.chapter-content-inner p#arraydata', // manganelos
+            'div.reading-content p#arraydata', // manganatos
+        ].join(', ');
         this.queryMangaTitle = 'ol > li:nth-child(3)';
         this.queryMangaTitleText = 'a';
         this.queryChapters = '#examples a';

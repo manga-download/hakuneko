@@ -13,14 +13,25 @@ export default class xianman123 extends MH {
         this.queryMangasPageCount = 'div.page-pagination ul.pagination li:nth-last-child(3) a';
         this.pathMatch = /f-1-0-0-0-0-2-(\d+)/;
         this.queryChapter = 'div#chapterlistload ul#detail-list-select-1 li a';
-        this.queryPages = /picdata\s*=\s*(\[[^\]]+\])\s*;/g;
+
+        this.requestOptions.headers.set('x-referer', `${this.url}/`);
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchRegex(request, this.queryPages);
-        let imgDomain = await this.fetchRegex(request, /imgDomain\s*=\s*'([^']+)\s*'/g);
-        data = Object.values(JSON.parse(data));
-        return data.map(element => new URL(element, imgDomain[0]).href);
+        let script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        resolve([ picdata, imgDomain ]);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const [ picdata, imgDomain ] = await Engine.Request.fetchUI(request, script);
+        return picdata.map(element => this.createConnectorURI(new URL(element, imgDomain).href));
     }
 }

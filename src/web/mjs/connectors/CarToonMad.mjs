@@ -25,7 +25,7 @@ export default class CarToonMad extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const request = new Request(new URL('/comic99.'+String(page).padStart(2, '0')+'.html', this.url), this.requestOptions);
+        const request = new Request(new URL('/comic99.' + String(page).padStart(2, '0') + '.html', this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'a.a1', 0, 'big5');
         return data.map(element => {
             return {
@@ -61,7 +61,7 @@ export default class CarToonMad extends Connector {
         const pageone = data[0].querySelector('a > source[oncontextmenu]').src;
         return [...new Array(maxpage).keys()].map(index => {
             return this.createConnectorURI({
-                url: pageone.replace(/(\d+)$/, String(index + 1).padStart(3, '0')),
+                url: pageone.replace(/\d+(&|$)/g, (_match, g1) => String(index + 1).padStart(3, '0') + g1),
                 referer: request.url
             });
         });
