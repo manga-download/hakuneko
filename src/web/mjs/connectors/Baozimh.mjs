@@ -39,6 +39,8 @@ export default class Baozimh extends Connector {
 
     async _getPages(chapter) {
         let pagesList = [];
+        let pagesList2 = [];
+        let data2 = ''
         let uri = new URL(chapter.id, this.url);
         const sectionSlot = uri.searchParams.get('section_slot');
         const chapterSlot = uri.searchParams.get('chapter_slot');
@@ -55,8 +57,19 @@ export default class Baozimh extends Connector {
             } else {
                 uri = null;
             }
-            pagesList.push( ...data.map(element => element.getAttribute('src')).filter(page => page) );
+            data2 = data[data.length - 1].getAttribute('src');
+            pagesList2.push(data2);
+
             run = uri != null;
+        }
+        // let result = data2.substr(0, data2.lastIndexOf("/"));
+        const lastArray = pagesList2[pagesList2.length -1 ];
+        const ur2 = data2.substr(0, data2.lastIndexOf('/')+1);
+        const maxCount = data2.substr(data2.lastIndexOf('/') +1).split('.jpg')[0];
+        console.log(lastArray);
+        for (let i = 1; i < maxCount; i++) {
+            console.log(`${ur2}${i}.jpg`);
+            pagesList.push(`${ur2}${i}.jpg`);
         }
         return pagesList;
     }
