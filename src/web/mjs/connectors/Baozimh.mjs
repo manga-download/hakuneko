@@ -71,6 +71,8 @@ export default class Baozimh extends Connector {
             console.log(`${ur2}${i}.jpg`);
             pagesList.push(`${ur2}${i}.jpg`);
         }
-        return pagesList;
+        return pagesList.filter((page, index) => {
+            return index === pagesList.findIndex(item => page === item);
+        });
     }
 }
