@@ -38,14 +38,7 @@ export default class MangaHub extends Connector {
             path: '/',
             expirationDate: now + 2 * 31 * 24 * 60 * 60 * 1000
         };
-        const key = {
-            url: this.url,
-            name: 'mhub_access',
-            value: '',
-            path: '/'
-        };
         await remote.session.defaultSession.cookies.set(recently);
-        await remote.session.defaultSession.cookies.set(key);
     }
 
     async _fetchApiKey(mangaSlug, chapterNumber) {

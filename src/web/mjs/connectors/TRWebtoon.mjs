@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/manga.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class TRWebtoon extends Connector {
 
@@ -16,8 +16,8 @@ export default class TRWebtoon extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div#kt_content div.card div.card-body div.mr-3 a.font-size-h5');
-        return new Manga(this, uri.pathname, data[0].text.trim());
+        const data = await this.fetchDOM(request, 'div#movie-card h2.movie__title');
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     async _getMangas() {
@@ -32,7 +32,7 @@ export default class TRWebtoon extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL('/webtoon-listesi?page=' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div#kt_content div.card div.card-body div.table-responsive a.card-title');
+        const data = await this.fetchDOM(request, 'div.page-content div.card div.card-body div.table-responsive a.text-hover-primary');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -48,7 +48,7 @@ export default class TRWebtoon extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim()
+                title: element.textContent.replace(/\s{2,}/g, ' ').trim()
             };
         });
     }

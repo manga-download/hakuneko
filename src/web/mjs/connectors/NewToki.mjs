@@ -6,13 +6,9 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         super();
         super.id = 'newtoki';
         super.label = 'NewToki';
-        this.tags = [ 'manga', 'webtoon', 'korean' ];
-        this.url = 'https://newtoki95.com';
-        this.links = {
-            login: 'https://newtoki95.com/bbs/login.php'
-        };
+        this.tags = ['manga', 'webtoon', 'korean'];
 
-        this.path = [ '/webtoon', '/comic' ];
+        this.path = ['/webtoon', '/comic'];
         this.queryMangasPageCount = 'div.list-page ul.pagination li:last-child a';
         this.queryMangas = 'ul#webtoon-list-all li div.img-item div.in-lable a';
         this.queryManga = 'meta[name="subject"]';
@@ -24,6 +20,28 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
                 resolve(images.map(image => JSON.stringify(image.dataset).match(/"\\S{11}":"(.*)"/)[1]));
             });
         `;
+        this.config = {
+            url: {
+                label: 'URL',
+                description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
+                input: 'text',
+                value: 'https://newtoki154.com'
+            }
+        };
+        this.links = {
+            login: this.url + '/bbs/login.php'
+        };
+    }
+
+    get url() {
+        return this.config.url.value;
+    }
+
+    set url(value) {
+        if (this.config && value) {
+            this.config.url.value = value;
+            Engine.Settings.save();
+        }
     }
 
     canHandleURI(uri) {
@@ -40,12 +58,12 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
 
     async _getMangas() {
         let mangaList = [];
-        for(let path of this.path) {
+        for (let path of this.path) {
             let uri = new URL(path, this.url);
             let request = new Request(uri, this.requestOptions);
             let data = await this.fetchDOM(request, this.queryMangasPageCount);
             let pageCount = parseInt(data[0].href.match(/\d+$/)[0]);
-            for(let page = 1; page <= pageCount; page++) {
+            for (let page = 1; page <= pageCount; page++) {
                 await this.wait(2500);
                 let mangas = await this._getMangasFromPage(path + '/p' + page);
                 mangaList.push(...mangas);

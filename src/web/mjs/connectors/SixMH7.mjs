@@ -7,7 +7,7 @@ export default class SixMH7 extends SinMH {
         super.id = '6mh7';
         super.label = '6漫画 (6mh7)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
-        this.url = 'http://www.6mh7.com';
+        this.url = 'http://www.sixmh7.com';
 
         this.path = '/sort/1-%PAGE%.html';
         this.queryManga = 'div.cy_main div.cy_info div.cy_title h1';

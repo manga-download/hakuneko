@@ -9,7 +9,19 @@ export default class BeeToon extends WordPressZbulu {
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'http://beetoon.net';
         this.queryChaptersPageCount = 'div.pagination-container div.pagination a.next:last-of-type:not(#getcm)';
+        this.queryChapters = 'div#chapterList div.items-chapters a';
         this.queryChaptersName = 'div.r1 h2.chap';
+    }
+
+    canHandleURI(uri) {
+        return /(ww2\.)?beetoon\.net/.test(uri.hostname);
+    }
+
+    async _initializeConnector() {
+        let uri = new URL(this.url);
+        let request = new Request(uri.href, this.requestOptions);
+        this.url = await Engine.Request.fetchUI(request, `window.location.origin`);
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
     async _getChaptersFromPage(manga, page) {
