@@ -7,7 +7,7 @@ export default class MangaShip extends Connector {
         super.id = 'mangaship';
         super.label = 'Manga Ship';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://www.mangaship.com';
+        this.url = 'https://mangaship.net';
     }
 
     async _getMangas() {
