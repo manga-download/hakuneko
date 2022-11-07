@@ -8,6 +8,11 @@ export default class TappytoonFR extends Tappytoon {
         super.label = 'Tappytoon (French)';
         this.tags = [ 'webtoon', 'french' ];
         this.url = 'https://www.tappytoon.com/fr';
+        this.links = {
+            login: 'https://www.tappytoon.com/fr/login'
+        };
+
         this.lang = 'fr';
+        this.requestOptions.headers.set('Accept-Language', this.lang);
     }
 }
