@@ -7,6 +7,6 @@ export default class ComicHub extends WordPressMadara {
         super.id = 'comichub';
         super.label = 'ComicHub';
         this.tags = [ 'comic', 'english' ];
-        this.url = 'https://comichub.net';
+        this.url = 'https://comiconline.org/';
     }
 }
