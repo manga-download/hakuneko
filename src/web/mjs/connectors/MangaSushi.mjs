@@ -7,6 +7,6 @@ export default class MangaSushi extends WordPressMadara {
         super.id = 'mangasushi';
         super.label = 'Mangasushi';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://mangasushi.net';
+        this.url = 'https://mangasushi.org';
     }
 }
