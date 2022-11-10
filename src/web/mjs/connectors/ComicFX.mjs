@@ -50,7 +50,7 @@ export default class ComicFX extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div#lcanv source.img-responsive');
+        const data = await this.fetchDOM(request, 'div#lcanv source');
         return data.map(image => {
             let url = this.getAbsolutePath(image.dataset.src || image, request.url);
             try {
@@ -67,7 +67,7 @@ export default class ComicFX extends Connector {
                 .replace(/\/(w=\d+|h=\d+|q=\d+|f=auto)(,(w=\d+|h=\d+|q=\d+|f=auto))*\//, '/');
             return url.includes('img.comicfx.net') ? this.createConnectorURI(url) : url;
         }).filter(url => {
-            const adImageFiles = [ '/4WWje.jpg' ];
+            const adImageFiles = [ '/BPCzV.jpg' ];
             return adImageFiles.every(adImageFile => !url.endsWith(adImageFile));
         });
     }
