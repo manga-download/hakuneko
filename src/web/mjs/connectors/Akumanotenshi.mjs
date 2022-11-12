@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class KawaScans extends WordPressMadara {
+export default class AkumanoTenshi extends WordPressMadara {
 
     constructor() {
         super();
