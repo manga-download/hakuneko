@@ -66,7 +66,7 @@ export default class MangaTown extends Connector {
     }
 
     _handleConnectorURI( payload ) {
-        this.requestOptions.headers.set("x-referer","mangahere.com");
+        this.requestOptions.headers.set("x-referer", "mangahere.com");
         let request = new Request( payload, this.requestOptions );
         /*
          * TODO: only perform requests when from download manager
