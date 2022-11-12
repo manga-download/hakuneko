@@ -27,9 +27,7 @@ export default class YnJn extends SpeedBinb {
 
     async _getChapters(manga) {
         const chapters = [];
-        let hasNext = true;
-        let page = 1;
-        while (hasNext) {
+        for (let page = 1, hasNext = true; hasNext; page++) {
             const uri = new URL(`title/${manga.id}/episode`, this.apiUrl);
             uri.searchParams.set('id', manga.id);
             uri.searchParams.set('page', page);
@@ -43,7 +41,6 @@ export default class YnJn extends SpeedBinb {
                 });
             });
             hasNext = json.data.has_next;
-            page += 1;
         }
         return chapters;
     }
