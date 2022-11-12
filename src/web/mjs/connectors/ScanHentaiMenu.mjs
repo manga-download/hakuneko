@@ -8,6 +8,6 @@ export default class ScanHentaiMenu extends WordPressMadara {
         super.label = 'ScanHentaiMenu';
         this.tags = [ 'webtoon', 'english', 'hentai' ];
         this.url = 'https://scan.hentai.menu';
-				this.requestOptions.headers.set( 'x-referer', this.url );
+        this.requestOptions.headers.set( 'x-referer', this.url );
     }
 }
