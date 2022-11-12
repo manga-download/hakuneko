@@ -30,7 +30,7 @@ export default class VizShonenJump extends Connector {
         return {
             isLoggedIn: /user_id\s*=\s*[1-9]\d*/.test(data),
             isAdult: /adult\s*=\s*true/.test(data),
-            isMember: /is_wsj_subscriber\s*=\s*true/.test(data)
+            isMember: /is_sj_subscriber\s*=\s*true/.test(data)
         };
     }
 
