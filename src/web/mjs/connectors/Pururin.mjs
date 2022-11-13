@@ -47,7 +47,7 @@ export default class Pururin extends Connector {
     async _getPages(chapter) {
         let queryPicture = '';
         let pictures = [];
-        var myRegexp = new RegExp("gallery\/([0-9]+)", "g");
+        var myRegexp = new RegExp('gallery\/([0-9]+)', 'g');
         var match = myRegexp.exec(chapter.id);
         let mangaID = match[1];
         let params = '{"id":'+mangaID+',"type":2}';
@@ -66,15 +66,14 @@ export default class Pururin extends Connector {
         let pagesMax = data.gallery.total_pages;
         let extension = data.gallery.image_extension;
         //https://cdn.pururin.to/assets/images/data/<mangaid>/<i>.image_extension
-        for (var i = 1; i <= pagesMax; i++)
-        {
+        for (var i = 1; i <= pagesMax; i++) {
             let imageuri = this.CDN.replace('{1}', mangaID).replace('{2}', i).replace('{3}', extension);
             pictures.push(imageuri);
         }
         return pictures;
     }
     async _getMangaFromURI(uri) {
-        var myRegexp = new RegExp("gallery\/([0-9]+)", "g");
+        var myRegexp = new RegExp('gallery\/([0-9]+)', 'g');
         var match = myRegexp.exec(uri.href);
         let mangaID = match[1];
         let params = '{"id":'+mangaID+',"type":2}';
