@@ -45,10 +45,9 @@ export default class Pururin extends Connector {
         return chapters;
     }
     async _getPages(chapter) {
-        let queryPicture = '';
         let pictures = [];
-        var myRegexp = new RegExp('gallery\/([0-9]+)', 'g');
-        var match = myRegexp.exec(chapter.id);
+        const myRegexp = new RegExp(/gallery\/([0-9]+)/g);
+        let match = myRegexp.exec(chapter.id);
         let mangaID = match[1];
         let params = '{"id":'+mangaID+',"type":2}';
         const uri = new URL(this.api, this.url);
@@ -73,8 +72,8 @@ export default class Pururin extends Connector {
         return pictures;
     }
     async _getMangaFromURI(uri) {
-        var myRegexp = new RegExp('gallery\/([0-9]+)', 'g');
-        var match = myRegexp.exec(uri.href);
+        const myRegexp = new RegExp(/gallery\/([0-9]+)/g);
+        let match = myRegexp.exec(uri.href);
         let mangaID = match[1];
         let params = '{"id":'+mangaID+',"type":2}';
         const req = new URL(this.api, this.url);

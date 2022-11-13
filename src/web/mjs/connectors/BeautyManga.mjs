@@ -37,8 +37,7 @@ export default class BeautyManga extends WordPressMadara {
             throw new Error('No chapters found (new ajax endpoint)!');
         }
     }
-    async _getPages(chapter)
-    {
+    async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
