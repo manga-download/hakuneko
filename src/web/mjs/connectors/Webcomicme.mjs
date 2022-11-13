@@ -1,5 +1,5 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
-export default class MangaChill extends WordPressMadara {
+export default class WebComicMe extends WordPressMadara {
     constructor() {
         super();
         super.id = 'webcomicme';
