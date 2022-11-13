@@ -8,7 +8,7 @@ export default class MangaIro extends MangaNel {
         super.id = 'mangairo';
         super.label = 'Mangairo';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://m.mangairo.com';
+        this.url = 'https://w.mangairo.com';
 
         this.path = '/manga-list/type-latest/ctg-all/state-all/page-';
         this.queryMangaTitle = /name_title\s*=\s*['"](.+)['"]\s*;/g;
