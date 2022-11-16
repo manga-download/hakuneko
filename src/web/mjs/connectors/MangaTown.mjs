@@ -1,7 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-
 export default class MangaTown extends Connector {
-
     constructor() {
         super();
         super.id = 'mangatown';
@@ -9,7 +7,6 @@ export default class MangaTown extends Connector {
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://www.mangatown.com';
     }
-
     async _getMangas() {
         let mangaList = [];
         let request = new Request(this.url + '/directory/', this.requestOptions);
@@ -21,7 +18,6 @@ export default class MangaTown extends Connector {
         }
         return mangaList;
     }
-
     async _getMangasFromPage(page) {
         let request = new Request(this.url + '/directory/0-0-0-0-0-0/' + page + '.htm', this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.manga_pic_list li p.title a');
@@ -32,7 +28,6 @@ export default class MangaTown extends Connector {
             };
         });
     }
-
     async _getChapters(manga) {
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.chapter_list li');
@@ -44,7 +39,8 @@ export default class MangaTown extends Connector {
                 if(texts[i].getAttribute('class') != 'time') {
                     if(texts[i].textContent.match(/^Vol \d+/i)) {
                         title = '[' + texts[i].textContent + '] ' + title;
-                    } else {
+                    }
+                    else {
                         title = title + ' ' + texts[i].textContent;
                     }
                 }
@@ -56,23 +52,33 @@ export default class MangaTown extends Connector {
             };
         });
     }
-
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.manga_read_footer div.page_select select option');
-        return data
+        let imgpages = data
             .filter(option => !option.value.endsWith('featured.html'))
-            .map(element => this.createConnectorURI(this.getAbsolutePath(element.value, request.url)));
+            .map(element => (this.getAbsolutePath(element.value, request.url)));
+        //NOW we have all the pages, get the picture url from each page
+        //and create the payloads with mangahere referer
+        let imglist = [];
+        for (let i = 0;i<imgpages.length;i++ )
+        {
+            let request = new Request(imgpages[i], this.requestOptions);
+            data = await this.fetchDOM( request, 'source#image' );
+            let pic = this.createConnectorURI({
+                url: this.getAbsolutePath(data[0].src, request.url).replace('hakuneko://','https://'),
+                referer: 'mangahere.com',
+            });
+            imglist.push(pic);
+        }
+        return imglist;
     }
-
-    _handleConnectorURI( payload ) {
-        this.requestOptions.headers.set("x-referer", "mangahere.com");
-        let request = new Request( payload, this.requestOptions );
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        return this.fetchDOM( request, 'source#image' )
-            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
+    //Overload _handleConnectorURI to download pictures with payload referer
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        let response = await fetch(request);
+        let data = await response.blob();
+        return this._blobToBuffer(data);
     }
 }
