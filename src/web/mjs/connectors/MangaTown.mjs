@@ -1,5 +1,7 @@
 import Connector from '../engine/Connector.mjs';
+
 export default class MangaTown extends Connector {
+
     constructor() {
         super();
         super.id = 'mangatown';
@@ -7,6 +9,7 @@ export default class MangaTown extends Connector {
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://www.mangatown.com';
     }
+
     async _getMangas() {
         let mangaList = [];
         let request = new Request(this.url + '/directory/', this.requestOptions);
@@ -18,6 +21,7 @@ export default class MangaTown extends Connector {
         }
         return mangaList;
     }
+
     async _getMangasFromPage(page) {
         let request = new Request(this.url + '/directory/0-0-0-0-0-0/' + page + '.htm', this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.manga_pic_list li p.title a');
@@ -28,6 +32,7 @@ export default class MangaTown extends Connector {
             };
         });
     }
+
     async _getChapters(manga) {
         let request = new Request(this.url + manga.id, this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.chapter_list li');
@@ -51,32 +56,22 @@ export default class MangaTown extends Connector {
             };
         });
     }
+
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.manga_read_footer div.page_select select option');
-        let imgpages = data
+        return data
             .filter(option => !option.value.endsWith('featured.html'))
-            .map(element => this.getAbsolutePath(element.value, request.url));
-        //NOW we have all the pages, get the picture url from each page
-        //and create the payloads with mangahere referer
-        let imglist = [];
-        for (let i = 0; i<imgpages.length; i++ ) {
-            let request = new Request(imgpages[i], this.requestOptions);
-            data = await this.fetchDOM( request, 'source#image' );
-            let pic = this.createConnectorURI({
-                url: this.getAbsolutePath(data[0].src, request.url).replace('hakuneko://', 'https://'),
-                referer: 'mangahere.com',
-            });
-            imglist.push(pic);
-        }
-        return imglist;
+            .map(element => this.createConnectorURI(this.getAbsolutePath(element.value, request.url)));
     }
-    //Overload _handleConnectorURI to download pictures with payload referer
+
     async _handleConnectorURI(payload) {
-        let request = new Request(payload.url, this.requestOptions);
-        request.headers.set('x-referer', payload.referer);
-        let response = await fetch(request);
-        let data = await response.blob();
-        return this._blobToBuffer(data);
+        const pageData = await this.fetchDOM(new Request(payload, this.requestOptions), 'source#image');
+        const imageURL = this.getAbsolutePath(pageData[0].src, this.url).replace('hakuneko://', 'https://');
+        const request = new Request(imageURL, this.requestOptions);
+        request.headers.set('x-referer', 'mangahere.com');
+        const response = await fetch(request);
+        const imageData = await response.blob();
+        return this._blobToBuffer(imageData);
     }
 }
