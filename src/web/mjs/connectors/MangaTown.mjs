@@ -39,8 +39,7 @@ export default class MangaTown extends Connector {
                 if(texts[i].getAttribute('class') != 'time') {
                     if(texts[i].textContent.match(/^Vol \d+/i)) {
                         title = '[' + texts[i].textContent + '] ' + title;
-                    }
-                    else {
+                    } else {
                         title = title + ' ' + texts[i].textContent;
                     }
                 }
@@ -57,16 +56,15 @@ export default class MangaTown extends Connector {
         let data = await this.fetchDOM(request, 'div.manga_read_footer div.page_select select option');
         let imgpages = data
             .filter(option => !option.value.endsWith('featured.html'))
-            .map(element => (this.getAbsolutePath(element.value, request.url)));
+            .map(element => this.getAbsolutePath(element.value, request.url));
         //NOW we have all the pages, get the picture url from each page
         //and create the payloads with mangahere referer
         let imglist = [];
-        for (let i = 0;i<imgpages.length;i++ )
-        {
+        for (let i = 0; i<imgpages.length; i++ ) {
             let request = new Request(imgpages[i], this.requestOptions);
             data = await this.fetchDOM( request, 'source#image' );
             let pic = this.createConnectorURI({
-                url: this.getAbsolutePath(data[0].src, request.url).replace('hakuneko://','https://'),
+                url: this.getAbsolutePath(data[0].src, request.url).replace('hakuneko://', 'https://'),
                 referer: 'mangahere.com',
             });
             imglist.push(pic);
