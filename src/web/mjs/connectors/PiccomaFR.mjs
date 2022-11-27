@@ -8,13 +8,15 @@ export default class PiccomaFR extends Piccoma {
         super.id = 'piccoma-fr';
         super.label = 'Piccoma (French)';
         this.tags = ['webtoon', 'french'];
-        this.url = 'https://fr.piccoma.com/fr';
+        this.url = 'https://fr.piccoma.com';
+        this.requestOptions.headers.set('x-referer', 'https://fr.piccoma.com/fr');
     }
 
     async _getMangaFromURI(uri) {
         const id = uri.pathname.split('/').pop();
-        const request = new Request(uri);
-        const title = await Engine.Request.fetchUI(request, 'window.__NEXT_DATA__.props.pageProps.initialState.productDetail.productDetail.product.title');
+        const request = new Request(uri, this.requestOptions);
+        const data = await this._getNextData(request);
+        const title = data.props.pageProps.initialState.productDetail.productDetail.product.title;
         return new Manga(this, id, title);
     }
 
@@ -24,19 +26,28 @@ export default class PiccomaFR extends Piccoma {
     }
 
     async _getChapters(manga) {
-        const request = new Request(`${this.url}/product/episode/${manga.id}`);
-        const episodes = await Engine.Request.fetchUI(request, 'window.__NEXT_DATA__.props.pageProps.initialState.episode.episodeList.episode_list');
+        const uri = new URL(`fr/product/episode/${manga.id}`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const nextData = await this._getNextData(request);
+        const episodes = nextData.props.pageProps.initialState.episode.episodeList.episode_list;
         return episodes.map(ep => {
             return {
-                id: `${manga.id}/${ep.id}`,
+                id: `${nextData.buildId}/fr/viewer/${manga.id}/${ep.id}`,
                 title: ep.title,
             };
         });
     }
 
     async _getPages(chapter) {
-        const request = new Request(`${this.url}/viewer/${chapter.id}`);
-        const pdata = await Engine.Request.fetchUI(request, 'window.__NEXT_DATA__.props.pageProps.initialState.viewer.pData || {}');
+        const parts = chapter.id.split('/');
+        const productId = parts[3];
+        const episodeId = parts[4];
+        const uri = new URL(`fr/_next/data/${chapter.id}.json`, this.url);
+        uri.searchParams.set('productId', productId);
+        uri.searchParams.set('episodeId', episodeId);
+        const request = new Request(uri, this.requestOptions);
+        const result = await this.fetchJSON(request);
+        const pdata = result.pageProps.initialState.viewer.pData;
         const images = pdata.img;
         if (images == null) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
@@ -59,5 +70,10 @@ export default class PiccomaFR extends Piccoma {
         const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
         const ch = total % checksum.length;
         return checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
+    }
+
+    async _getNextData(request) {
+        const [data] = await this.fetchDOM(request, '#__NEXT_DATA__');
+        return JSON.parse(data.textContent);
     }
 }
