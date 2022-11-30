@@ -59,10 +59,20 @@ export default class EHentai extends Connector {
 
     async _handleConnectorURI(payload) {
         let request = new Request(payload, this.requestOptions);
-        let data = (await this.fetchDOM(request, 'source#img, a[href*="fullimg.php"]')).reverse();
+ 
+        //get full page body to avoir a request in case of failure
+        let dom = (await this.fetchDOM(request, 'body'))[0];
+        let data = [...dom.querySelectorAll('source#img, a[href*="fullimg.php"]')].reverse();        
+
         let response = await fetch(this.getAbsolutePath(data[0], request.url), this.requestOptions);
+        if(response.url.match(/bounce_login.php/)){
+             data = dom.querySelector('source#img')
+             response = await fetch(this.getAbsolutePath(data.src, request.url), this.requestOptions);
+         }
+
+
         if(!response.headers.get('content-type').startsWith('image/')) {
-            response = await fetch(this.getAbsolutePath(data[0], request.url), this.requestOptions);
+            //response = await fetch(this.getAbsolutePath(data[0], request.url), this.requestOptions);
             //console.log('Download Optimized:', response.url);
         } else {
             //console.log('Download Original:', response.url);
