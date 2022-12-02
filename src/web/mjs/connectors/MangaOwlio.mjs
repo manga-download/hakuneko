@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class Muctau extends WordPressMadara {
+export default class MangaOwlio extends WordPressMadara {
 
     constructor() {
         super();
