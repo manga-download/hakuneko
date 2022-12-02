@@ -1,0 +1,38 @@
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
+export default class MangaTepesi extends Connector {
+    constructor() {
+        super();
+        super.id = 'mangatepesi';
+        super.label = 'MangaTepesi';
+        this.tags = ['manga', 'webtoon', 'turkish', 'scanlation'];
+        this.url = 'https://www.mangatepesi.com';
+    }
+    async _getMangas() {
+        const request = new Request(new URL('/mangalistesi', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'article.manga-card > a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
+                title: element.querySelector('div.manga-card-mName').textContent.trim()
+            };
+        });
+    }
+    async _getChapters(manga) {
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#manga-chapters-item-list a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
+                title: element.querySelector('div.manga-chapters-item-title').textContent.trim()
+            };
+        });
+    }
+    async _getPages(chapter) {
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'source.read-manga-image:not([style])');
+        return data.map(image => {
+            return this.getAbsolutePath( image.src, this.url );
+        });
+    }
+}
