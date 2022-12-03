@@ -8,7 +8,7 @@ export default class Komiku extends Connector {
         super.label = 'Komiku';
         this.tags = ['manga', 'indonesian'];
         this.url = 'https://komiku.id';
-        this.paths = ['manga','manhua','manhwa'];
+        this.paths = ['manga', 'manhua', 'manhwa'];
     }
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
@@ -21,7 +21,7 @@ export default class Komiku extends Connector {
     async _getMangas() {
         //using the genres list because the full list isnt really full
         let mangaList = [];
-        for (let i = 0;i < this.paths.length;i++) {
+        for (let i = 0; i < this.paths.length; i++) {
             let request = new Request(new URL('/daftar-komik/?tipe='+this.paths[i], this.url), this.requestOptions);
             let data = await this.fetchDOM(request, 'div.ls4 div.ls4j h4 a');
             let mangas = data.map(element => {
@@ -34,6 +34,7 @@ export default class Komiku extends Connector {
         }
         return mangaList;
     }
+    
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
@@ -45,6 +46,7 @@ export default class Komiku extends Connector {
             };
         });
     }
+    
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
