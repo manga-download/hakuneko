@@ -11,7 +11,6 @@ export default class Lezhin extends Connector {
         // https://api.lezhin.com/v2
         this.cdnURL = 'https://cdn.lezhin.com';
         this.userID = undefined;
-        this.accessToken = '995dba2e-8c5d-4249-b601-38c5d3e092e5';
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = {
             username: {
@@ -69,7 +68,6 @@ export default class Lezhin extends Connector {
         let token = data.match(/token\s*:\s*['"]([^'"]+)['"]/);
         this.cdnURL = cdn ? cdn[1] : this.cdnURL;
         this.userID = user ? user[1] : undefined;
-        this.accessToken = token ? token[1] : this.accessToken;
         if(this.userID) {
             await fetch(this.url + '/adultkind?path=&sw=all', this.requestOptions);
         }
