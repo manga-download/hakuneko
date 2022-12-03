@@ -34,7 +34,7 @@ export default class Komiku extends Connector {
         }
         return mangaList;
     }
-    
+
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
@@ -46,7 +46,7 @@ export default class Komiku extends Connector {
             };
         });
     }
-    
+
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
