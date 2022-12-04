@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-import Cookie from '../engine/Cookie.mjs';
+//import Cookie from '../engine/Cookie.mjs';
 //import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 import Manga from '../engine/Manga.mjs';
 
@@ -34,7 +34,7 @@ export default class MangaHub extends Connector {
                 if (chapterNumber) {
                     chapterNumber = chapterNumber[1];
                 }
-               // await this._fetchApiKey(mangaSlug, chapterNumber);
+                // await this._fetchApiKey(mangaSlug, chapterNumber);
                 const data = await this.fetchGraphQL(request, operationName, query, variables);
                 return data;
             } else {
