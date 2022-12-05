@@ -1,6 +1,4 @@
 import Connector from '../engine/Connector.mjs';
-//import Cookie from '../engine/Cookie.mjs';
-//import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 import Manga from '../engine/Manga.mjs';
 
 export default class MangaHub extends Connector {
@@ -34,7 +32,6 @@ export default class MangaHub extends Connector {
                 if (chapterNumber) {
                     chapterNumber = chapterNumber[1];
                 }
-                // await this._fetchApiKey(mangaSlug, chapterNumber);
                 const data = await this.fetchGraphQL(request, operationName, query, variables);
                 return data;
             } else {
@@ -49,7 +46,6 @@ export default class MangaHub extends Connector {
         request.headers.set('x-sec-fetch-mode', 'navigate');
         request.headers.set('Upgrade-Insecure-Requests', 1);
         request.headers.delete('x-origin');
-        //request.headers.delete('x-mhub-access');
         let data = await this.fetchDOM(request, 'div#mangadetail div.container-fluid div.row h1');
         let id = uri.pathname.split('/').filter(e => e).pop();
         let title = data[0].firstChild.textContent.trim();
@@ -83,7 +79,6 @@ export default class MangaHub extends Connector {
         }`;
         let data = await this._fetchGraphQLWithoutRateLimit(this.apiURL, undefined, gql, undefined);
         return data.manga.chapters.map(chapter => {
-            // .padStart( 4, '0' )
             let title = `Ch. ${chapter.number} - ${chapter.title}`;
             return {
                 id: chapter.number, // chapter.id, chapter.slug,
@@ -109,7 +104,6 @@ export default class MangaHub extends Connector {
         request.headers.set('x-sec-fetch-dest', 'image');
         request.headers.set('x-sec-fetch-mode', 'no-cors');
         request.headers.delete('x-origin');
-        //request.headers.delete('x-mhub-access');
         let response = await fetch(request);
         let data = await response.blob();
         data = await this._blobToBuffer(data);
