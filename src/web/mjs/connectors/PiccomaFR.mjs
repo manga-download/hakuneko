@@ -36,18 +36,11 @@ export default class PiccomaFR extends Piccoma {
                 id: `${nextData.buildId}/fr/viewer/${productId}/${ep.id}`,
                 title: ep.title,
             };
-        });
+        }).reverse();
     }
 
     async _getPages(chapter) {
-        const parts = chapter.id.split('/');
-        const productId = parts[3];
-        const episodeId = parts[4];
-        const uri = new URL(`fr/_next/data/${chapter.id}.json`, this.url);
-        uri.searchParams.set('productId', productId);
-        uri.searchParams.set('episodeId', episodeId);
-        const request = new Request(uri, this.requestOptions);
-        const result = await this.fetchJSON(request);
+        const result = await this._fetchChapterNextData(chapter);
         const pdata = result.pageProps.initialState.viewer.pData;
         const images = pdata.img;
         if (images == null) {
@@ -76,5 +69,21 @@ export default class PiccomaFR extends Piccoma {
     async _getNextData(request) {
         const [data] = await this.fetchDOM(request, '#__NEXT_DATA__');
         return JSON.parse(data.textContent);
+    }
+
+    async _fetchChapterNextData(chapter) {
+        const parts = chapter.id.split('/');
+        const productId = parts[3];
+        const episodeId = parts[4];
+        const uri = new URL(`fr/_next/data/${chapter.id}.json`, this.url);
+        uri.searchParams.set('productId', productId);
+        uri.searchParams.set('episodeId', episodeId);
+        const request = new Request(uri, this.requestOptions);
+        try {
+            return await this.fetchJSON(request);
+        } catch (error) {
+            console.error(error);
+            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
+        }
     }
 }
