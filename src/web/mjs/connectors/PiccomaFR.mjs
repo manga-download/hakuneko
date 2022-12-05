@@ -13,10 +13,10 @@ export default class PiccomaFR extends Piccoma {
     }
 
     async _getMangaFromURI(uri) {
-        const id = uri.pathname.split('/').pop();
+        const id = uri.pathname;
         const request = new Request(uri, this.requestOptions);
         const data = await this._getNextData(request);
-        const title = data.props.pageProps.initialState.productDetail.productDetail.product.title;
+        const title = data.props.pageProps.initialState.productHome.productHome.product.title;
         return new Manga(this, id, title);
     }
 
@@ -26,13 +26,14 @@ export default class PiccomaFR extends Piccoma {
     }
 
     async _getChapters(manga) {
-        const uri = new URL(`fr/product/episode/${manga.id}`, this.url);
+        const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const nextData = await this._getNextData(request);
-        const episodes = nextData.props.pageProps.initialState.episode.episodeList.episode_list;
+        const episodes = nextData.props.pageProps.initialState.productHome.productHome.episode_list;
+        const productId = manga.id.split('/').pop();
         return episodes.map(ep => {
             return {
-                id: `${nextData.buildId}/fr/viewer/${manga.id}/${ep.id}`,
+                id: `${nextData.buildId}/fr/viewer/${productId}/${ep.id}`,
                 title: ep.title,
             };
         });
