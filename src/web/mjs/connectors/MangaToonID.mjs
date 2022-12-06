@@ -14,6 +14,6 @@ export default class MangaToonID extends MangaToon {
         super.label = 'MangaToon (Indonesian)';
         this.tags = [ 'webtoon', 'indonesian' ];
         this.url = 'https://mangatoon.mobi/id';
-        this.path = '/id/genre?page=';
+        this.path = '/id/genre/comic?page=';
     }
 }

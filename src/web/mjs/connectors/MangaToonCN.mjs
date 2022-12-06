@@ -14,6 +14,6 @@ export default class MangaToonCN extends MangaToon {
         super.label = 'MangaToon (Chinese)';
         this.tags = [ 'webtoon', 'chinese' ];
         this.url = 'https://mangatoon.mobi/cn';
-        this.path = '/cn/genre?page=';
+        this.path = '/cn/genre/comic?page=';
     }
 }
