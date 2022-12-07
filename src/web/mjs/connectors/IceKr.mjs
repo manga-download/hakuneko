@@ -8,6 +8,7 @@ export default class IceKr extends SinMH {
         super.label = '冰氪漫画 (iceKr)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://www.icekr.com';
+        this.requestOptions.headers.set( 'x-referer', this.url );
         this.config = {
             throttle: {
                 label: 'Page Throttle Requests [ms]',
