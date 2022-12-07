@@ -4,10 +4,10 @@ export default class GabutScans extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'gabutscans';
-        super.label = 'Gabut Scans';
+        super.id = 'duniakomik';
+        super.label = 'Dunia Komik';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://gabutscans.com';
+        this.url = 'https://duniakomik.id';
         this.path = '/manga/list-mode/';
     }
 }
