@@ -45,8 +45,7 @@ export default class Alphapolis extends Connector {
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'viewer-manga-horizontal');
-        try
-        {
+        try {
             const pages = JSON.parse(data[0].getAttribute('v-bind:pages'));
             let pagesList = [];
             pages.forEach(page => {
@@ -54,10 +53,8 @@ export default class Alphapolis extends Connector {
                     pagesList.push(page);
                 }
             });
-            return pagesList.filter(element => (!element.match('white_page')));
-        }
-        catch (e)
-        {
+            return pagesList.filter(element => !element.match('white_page'));
+        } catch (e) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
     }
