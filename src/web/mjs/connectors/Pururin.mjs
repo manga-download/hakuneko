@@ -45,7 +45,6 @@ export default class Pururin extends Connector {
         return chapters;
     }
     async _getPages(chapter) {
-        let pictures = [];
         let mangaID = chapter.id.match(/\/gallery\/([0-9]+)/)[1];
         const uri = new URL(this.api, this.url);
         const request = this.getApiRequest(uri, mangaID);
@@ -64,8 +63,7 @@ export default class Pururin extends Connector {
         const id = this.getRootRelativeOrAbsoluteLink(uri, this.url);
         return new Manga(this, id, title);
     }
-    getApiRequest(url, id)
-    {
+    getApiRequest(url, id) {
         let params = {
             id: id,
             type:2
