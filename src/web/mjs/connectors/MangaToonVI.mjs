@@ -14,6 +14,6 @@ export default class MangaToonVI extends MangaToon {
         super.label = 'MangaToon (Vietnamese)';
         this.tags = [ 'webtoon', 'vietnamese' ];
         this.url = 'https://mangatoon.mobi/vi';
-        this.path = '/vi/genre?page=';
+        this.path = '/vi/genre/comic?page=';
     }
 }
