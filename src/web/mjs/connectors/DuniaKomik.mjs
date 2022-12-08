@@ -1,6 +1,6 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class GabutScans extends WordPressMangastream {
+export default class DuniaKomik extends WordPressMangastream {
 
     constructor() {
         super();
