@@ -47,14 +47,8 @@ export default class Alphapolis extends Connector {
         const data = await this.fetchDOM(request, 'viewer-manga-horizontal');
         try {
             const pages = JSON.parse(data[0].getAttribute('v-bind:pages'));
-            let pagesList = [];
-            pages.forEach(page => {
-                if (typeof page != 'object') {
-                    pagesList.push(page);
-                }
-            });
-            return pagesList.filter(element => !element.match('white_page'));
-        } catch (e) {
+            return pages.filter(element => (typeof element != 'object') && (!element.match('white_page')));
+        } catch (error) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
     }
