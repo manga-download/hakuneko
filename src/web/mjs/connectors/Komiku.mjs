@@ -21,8 +21,8 @@ export default class Komiku extends Connector {
     async _getMangas() {
         //using the genres list because the full list isnt really full
         let mangaList = [];
-        for (let i = 0; i < this.paths.length; i++) {
-            let request = new Request(new URL('/daftar-komik/?tipe='+this.paths[i], this.url), this.requestOptions);
+        for (const genre of this.paths) {
+            let request = new Request(new URL('/daftar-komik/?tipe='+genre, this.url), this.requestOptions);
             let data = await this.fetchDOM(request, 'div.ls4 div.ls4j h4 a');
             let mangas = data.map(element => {
                 return {
