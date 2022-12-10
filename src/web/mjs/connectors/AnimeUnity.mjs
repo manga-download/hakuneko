@@ -12,7 +12,7 @@ export default class AnimeUnity extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         //strip episode part of url (website tends to add it)
-        uri = new URL(uri.href.split('/').slice(0,5).join("/"));
+        uri = new URL(uri.href.split('/').slice(0, 5).join("/"));
         const data = await this.fetchDOM(request, 'div.general h1.title');
         return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
@@ -81,7 +81,7 @@ export default class AnimeUnity extends Connector {
     async getToken() {
         if (!this.token) {
             const r = new Request(this.url, this.requestOptions);
-            let data = await this.fetchDOM(r,'meta[name=csrf-token]');
+            let data = await this.fetchDOM(r, 'meta[name=csrf-token]');
             this.token = data[0].content;
         }
         return this.token;
