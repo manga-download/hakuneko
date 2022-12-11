@@ -13,12 +13,11 @@ export default class Delitoon extends Connector {
         this.requestOptions.headers.set('x-balcony-id', 'DELITOON_COM');
         this.requestOptions.headers.set('x-balcony-timeZone', 'Europe/Paris');
         this.requestOptions.headers.set('x-platform', 'WEB');
-        this.requestOptions.headers.set('x-referer', this.url);  
-              
+        this.requestOptions.headers.set('x-referer', this.url);
     }
     async _getMangaFromURI(uri) {
         const mangaid = uri.href.match(/\/detail\/(\S+)/)[1];
-        const req = new URL('/api/balcony-api/contents/'+mangaid, this.url)
+        const req = new URL('/api/balcony-api/contents/'+mangaid, this.url);
         req.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(req, this.requestOptions);
         const data = await this.fetchJSON(request);
@@ -36,11 +35,11 @@ export default class Delitoon extends Connector {
             return {
                 id : element.alias,
                 title : element.title.trim()
-            }
+            };
         });
     }
     async _getChapters(manga) {
-        const uri = new URL('/api/balcony-api/contents/'+manga.id, this.url)
+        const uri = new URL('/api/balcony-api/contents/'+manga.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
@@ -48,28 +47,27 @@ export default class Delitoon extends Connector {
             let title = '';
             try{
                 let chapnum = parseInt(element.title);
-                title = 'Chapter '+ element.title.trim();
-            }
-            catch (error) {
+                title = 'Chapter '+ chapnum;
+            } catch (error) {
                 title = element.title.trim();
             }
-            title += (element.subtitle) ? element.subTitle.trim() : '';
+            title += element.subtitle ? element.subTitle.trim() : '';
             return {
                 id : element.alias,
                 title : title,
-            }
+            };
         }).reverse();
     }
     async _getPages(chapter) {
-        const uri = new URL('/api/balcony-api/contents/'+chapter.manga.id+'/'+chapter.id, this.url)
+        const uri = new URL('/api/balcony-api/contents/'+chapter.manga.id+'/'+chapter.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-
-        if (data.result == 'ERROR'){
+        if (data.result == 'ERROR') {
             switch (data.error.code) {
                 case 'NOT_LOGIN_USER':
-                    throw new Error('You must be logged/have paid to view this chapter !')
+                    throw new Error('You must be logged/have paid to view this chapter !');
+                    break;
                 default:
                     throw new Error('Unknown error : '+ data.error.code);
                     break;

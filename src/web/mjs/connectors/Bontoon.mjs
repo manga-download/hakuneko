@@ -11,9 +11,9 @@ export default class Bontoon extends Delitoon {
             login: 'https://www.bontoon.com/user/login'
         };
         this.requestOptions.headers.set('x-balcony-id', 'BONTOON_COM');
-        this.requestOptions.headers.set('x-referer', this.url);  
+        this.requestOptions.headers.set('x-referer', this.url);
     }
-     get icon() {
+    get icon() {
         return '/img/connectors/delitoon';
-    }   
+    }
 }

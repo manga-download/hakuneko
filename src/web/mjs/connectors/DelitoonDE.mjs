@@ -12,7 +12,6 @@ export default class DelitoonDE extends Delitoon {
             login: 'https://www.delitoon.de/user/login'
         };
         this.requestOptions.headers.set('x-balcony-id', 'DELITOON_DE');
-        this.requestOptions.headers.set('x-referer', this.url);  
-
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 }
