@@ -67,10 +67,8 @@ export default class Delitoon extends Connector {
             switch (data.error.code) {
                 case 'NOT_LOGIN_USER':
                     throw new Error('You must be logged/have paid to view this chapter !');
-                    break;
                 default:
                     throw new Error('Unknown error : '+ data.error.code);
-                    break;
             }
         }
         return data.data.images.map(element => element.imagePath);
