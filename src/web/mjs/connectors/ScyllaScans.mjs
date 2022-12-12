@@ -10,6 +10,7 @@ export default class ScyllaScans extends Connector {
         this.tags = [ 'manga', 'webtoon', 'english', 'scanlation' ];
         this.url = 'https://scyllascans.org';
         this.apiUrl = 'https://api.scyllascans.org';
+        this.requestOptions.headers.set('accept', '*/*');
     }
 
     async _getMangas() {
