@@ -74,7 +74,7 @@ export default class Dm5 extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script);
         return data.filter((item, index) => data.indexOf(item) === index).map(element => this.getAbsolutePath(element, request.url)).map(element => {
-            return this.createConnectorURI(element)
+            return this.createConnectorURI(element);
         });
     }
 
@@ -86,7 +86,7 @@ export default class Dm5 extends Connector {
         data = await this._blobToBuffer(data);
         this._applyRealMime(data);
         return data;
-    }    
+    }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
