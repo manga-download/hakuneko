@@ -82,8 +82,8 @@ export default class XCaliBRScans extends WordPressMangastream {
                 for(let i = 0; i < piclist.length-1; i+=2) {
                     puzzles.push(this.createConnectorURI({
                         picture1 : piclist[i],
-                        picture2 : piclist[i+1] ,
-                    scrambled : data.scrambled })
+                        picture2 : piclist[i+1],
+                        scrambled : data.scrambled })
                     );
                     count +=2;
                 }
@@ -101,11 +101,11 @@ export default class XCaliBRScans extends WordPressMangastream {
         switch(payload.scrambled) {
             case 1:
                 pictures.push(payload.picture);
-            break;
+                break;
             case 2:
                 pictures.push(payload.picture1);
                 pictures.push(payload.picture2);
-            break;
+                break;
         }
         let promises = pictures.map(async part => {
             let response = await fetch(new Request(part, this.requestOptions));
@@ -130,7 +130,7 @@ export default class XCaliBRScans extends WordPressMangastream {
                         resolve(data);
                     },
                     Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value)/100);
-            });
+                });
             case 2:
                 return new Promise(resolve => {
                     let canvas = document.createElement('canvas');
@@ -147,7 +147,7 @@ export default class XCaliBRScans extends WordPressMangastream {
                         resolve(data);
                     },
                     Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value)/100);
-            });
+                });
         }
     }
 }
