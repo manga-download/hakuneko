@@ -10,7 +10,7 @@ export default class MangaDoor extends MangaReaderCMS {
         this.url = 'http://mangadoor.com';
         this.language = 'es';
     }
-     async _getPages(chapter) {
+    async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
