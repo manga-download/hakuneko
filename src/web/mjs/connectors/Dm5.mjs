@@ -73,8 +73,7 @@ export default class Dm5 extends Connector {
         uri.hostname = uri.hostname.replace('www', 'm');
         const request = new Request(uri, this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script);
-        return data.filter((item, index) => data.indexOf(item) === index).map(element => this.getAbsolutePath(element, request.url)).map(element => {
-            return this.createConnectorURI(element);
+        return data.filter((item, index) => data.indexOf(item) === index).map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
         });
     }
 
