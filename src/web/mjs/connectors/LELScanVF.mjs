@@ -17,8 +17,7 @@ export default class LELScanVF extends MangaReaderCMS {
             try {
                 const src = element.dataset['src'].split('://').pop();
                 return this.createConnectorURI(decodeURIComponent(atob(src || undefined)));
-            }
-            catch(error) {
+            } catch(error) {
                 let src = (element.dataset['src'] || element.src).trim();
                 return this.createConnectorURI(new URL(src, request.url).href);
             }
