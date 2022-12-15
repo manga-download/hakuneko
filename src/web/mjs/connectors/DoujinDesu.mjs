@@ -9,7 +9,6 @@ export default class DoujinDesu extends WordPressMangastream {
         this.tags = ['hentai', 'indonesian'];
         this.url = 'https://212.32.226.234';
         this.path = '/manga/page/%PAGE%/';
-        this.requestOptions.headers.set('x-referer', this.url);
 
         this.queryMangas = 'div.entries article.entry a';
         this.queryChapters = 'div#chapter_list div.epsleft span.lchx a';
@@ -42,5 +41,15 @@ export default class DoujinDesu extends WordPressMangastream {
                 title: element.title.trim()
             };
         });
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-referer', this.url);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
