@@ -29,7 +29,7 @@ export default class LianScans extends WordPressMangastream {
     async _getMangasFromPage(page) {
         const uri = new URL('/manga/?page=' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.listupd div.bs div.bsx > a');
+        let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
