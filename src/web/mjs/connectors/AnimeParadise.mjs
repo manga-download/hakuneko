@@ -14,11 +14,11 @@ export default class AnimeParadise extends Connector {
                 description: 'Try to download video in the selected resolution.\nIf the resolution is not supported, depending on the mirror the download may fail, or a fallback resolution may be used!',
                 input: 'select',
                 options: [
-                { value: '', name: 'Mirror\'s Default' },
-                { value: '360p', name: '360p' },
-                { value: '480p', name: '480p' },
-                { value: '720p', name: '720p' },
-                { value: '1080p', name: '1080p' }
+                    { value: '', name: 'Mirror\'s Default' },
+                    { value: '360p', name: '360p' },
+                    { value: '480p', name: '480p' },
+                    { value: '720p', name: '720p' },
+                    { value: '1080p', name: '1080p' }
                 ],
                 value: ''
             }
@@ -32,7 +32,7 @@ export default class AnimeParadise extends Connector {
         return new Manga(this, id, title);
     }
     async _getMangas() {
-    	  //api and search are limited to 35 results no matter what i do, and they are not the same. Better not using them :/
+        //api and search are limited to 35 results no matter what i do, and they are not the same. Better not using them :/
         let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
@@ -53,7 +53,7 @@ export default class AnimeParadise extends Connector {
             return {
                 id : '/watch/'+episode.uid+'?origin='+episode.origin,
                 title : 'Episode '+ episode.number
-            }
+            };
         }).reverse();
     }
     async _getPages(chapter) {
@@ -64,7 +64,7 @@ export default class AnimeParadise extends Connector {
             return {
                 url : sub.src,
                 locale : sub.srclang
-            }
+            };
         });
         const epnumber = data.props.pageProps.episode.number;
         const drive = data.props.pageProps.animeData.drive;
