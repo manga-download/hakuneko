@@ -9,6 +9,7 @@ export default class BilibiliManhua extends Connector {
         super.label = '哔哩哔哩 漫画 (Bilibili Manhua)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
+        this.lang = 'cn';
 
         this.config = {
             quality:  {
@@ -29,6 +30,8 @@ export default class BilibiliManhua extends Connector {
         const uri = new URL('/twirp/comic.v1.Comic' + path, this.url);
         uri.searchParams.set('device', 'pc');
         uri.searchParams.set('platform', 'web');
+        uri.searchParams.set('lang', this.lang);
+        uri.searchParams.set('sys_lang', this.lang);
         const request = new Request(uri, {
             method: 'POST',
             body: JSON.stringify(body),
