@@ -8,7 +8,7 @@ export default class Piccoma extends Connector {
         super.id = 'piccoma';
         super.label = 'Piccoma';
         this.tags = ['manga', 'webtoon', 'japanese'];
-        this.url = 'https://piccoma.com/web';
+        this.url = 'https://piccoma.com';
     }
 
     async _getMangaFromURI(uri) {
@@ -23,7 +23,7 @@ export default class Piccoma extends Connector {
         const mangas = [];
         let totalPage = 1;
         for (let i = 1; i <= totalPage; i++) {
-            const request = new Request(`${this.url}/next_page/list?result_id=2&list_type=C&sort_type=N&page_id=${i}`, this.requestOptions);
+            const request = new Request(`${this.url}/web/next_page/list?result_id=2&list_type=C&sort_type=N&page_id=${i}`, this.requestOptions);
             const res = await this.fetchJSON(request);
             totalPage = res.data.total_page;
             const products = res.data.products;
@@ -35,7 +35,7 @@ export default class Piccoma extends Connector {
     }
 
     async _getChapters(manga) {
-        const request = new Request(`${this.url}/product/${manga.id}/episodes?etype=E`);
+        const request = new Request(`${this.url}/web/product/${manga.id}/episodes?etype=E`);
         const data = await this.fetchDOM(request, '.PCM-product_episodeList > a');
         return data.map(element => {
             return {
@@ -46,7 +46,7 @@ export default class Piccoma extends Connector {
     }
 
     async _getPages(chapter) {
-        const request = new Request(`${this.url}/viewer/${chapter.id}`);
+        const request = new Request(`${this.url}/web/viewer/${chapter.id}`);
         const pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
         const images = pdata.img;
         if (images == null) {
