@@ -8,7 +8,7 @@ export default class Mangajp extends WordPressMangastream {
         this.tags = ['manga', 'japanese'];
         this.url = 'https://mangajp.top';
         this.path = '/manga/list-mode/';
-        this.requestOptions.headers.set('x-referer', 'https://mangajp.top/');
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getPages(chapter) {
