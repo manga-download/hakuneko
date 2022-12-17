@@ -25,7 +25,7 @@ export default class DigitalMargaret extends SpeedBinb {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.querySelector('img').alt
+                title: element.querySelector('source').getAttribute('alt')
             };
         });
     }
