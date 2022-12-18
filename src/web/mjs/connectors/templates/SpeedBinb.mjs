@@ -88,7 +88,7 @@ export default class SpeedBinb extends Connector {
     /**
      *************************
      *** SpeedBinb v01.6061 ***
-     * ** Comic Meteor, Digital Margaret ***
+     * ** Comic Meteor       ***
      *************************
      */
 
@@ -96,7 +96,7 @@ export default class SpeedBinb extends Connector {
      *
      */
     _getPageList_v016061( imageConfigurtions, baseURL ) {
-        let pageLinks = imageConfigurtions.map( element => this.createConnectorURI( `${baseURL}/${element.dataset.ptimg}` ) );
+        let pageLinks = imageConfigurtions.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset.ptimg, baseURL ) ) );
         return Promise.resolve( pageLinks );
     }
 

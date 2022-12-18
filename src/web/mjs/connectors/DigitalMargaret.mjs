@@ -35,7 +35,7 @@ export default class DigitalMargaret extends SpeedBinb {
         const data = await this.fetchDOM(request, 'section#product div.list div.box div.number');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url) + '/',
                 title: element.querySelector('p').textContent.trim(),
             };
         });
