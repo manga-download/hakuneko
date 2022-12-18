@@ -15,6 +15,7 @@ export default class WordPressMadara extends Connector {
         this.queryChaptersTitleBloat = undefined;
         this.queryPages = 'div.page-break source';
         this.queryTitleForURI = 'head meta[property="og:title"]';
+        this.queryPlaceholder = '[id^="manga-chapters-holder"][data-id]';
     }
 
     _createMangaRequest(page) {
@@ -91,7 +92,7 @@ export default class WordPressMadara extends Connector {
         let request = new Request(uri, this.requestOptions);
         let dom = (await this.fetchDOM(request, 'body'))[0];
         let data = [...dom.querySelectorAll(this.queryChapters)];
-        let placeholder = dom.querySelector('[id^="manga-chapters-holder"][data-id]');
+        let placeholder = dom.querySelector(this.queryPlaceholder);
         if (placeholder) {
             const promises = await Promise.allSettled([
                 this._getChaptersAjax(manga.id),
