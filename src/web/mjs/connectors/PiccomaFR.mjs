@@ -7,7 +7,7 @@ export default class PiccomaFR extends Piccoma {
         super();
         super.id = 'piccoma-fr';
         super.label = 'Piccoma (French)';
-        this.tags = ['webtoon', 'french'];
+        this.tags = ['manga', 'webtoon', 'french'];
         this.url = 'https://fr.piccoma.com';
         this.requestOptions.headers.set('x-referer', 'https://fr.piccoma.com/fr');
     }
@@ -26,11 +26,13 @@ export default class PiccomaFR extends Piccoma {
     }
 
     async _getChapters(manga) {
-        const uri = new URL(manga.id, this.url);
+        const type = manga.id.split('/').slice(-2)[0];
+        const productId = manga.id.split('/').pop();
+        const path = type == 'product' ? `/fr/product/episode/${productId}` : manga.id;
+        const uri = new URL(path, this.url);
         const request = new Request(uri, this.requestOptions);
         const nextData = await this._getNextData(request);
-        const episodes = nextData.props.pageProps.initialState.productHome.productHome.episode_list;
-        const productId = manga.id.split('/').pop();
+        const episodes = nextData.props.pageProps.initialState.episode.episodeList.episode_list;
         return episodes.map(ep => {
             return {
                 id: `${nextData.buildId}/fr/viewer/${productId}/${ep.id}`,
