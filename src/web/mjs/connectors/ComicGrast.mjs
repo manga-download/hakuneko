@@ -1,83 +1,74 @@
-import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+import Connector from '../engine/Connector.mjs';
 
-export default class Piccoma extends Connector {
+export default class ComicGrast extends Connector {
 
     constructor() {
         super();
-        super.id = 'piccoma';
-        super.label = 'Piccoma';
-        this.tags = ['manga', 'webtoon', 'japanese'];
-        this.url = 'https://piccoma.com';
+        super.id = 'comicgrast';
+        super.label = 'comic グラスト (Comic Grast)';
+        this.tags = ['manga', 'japanese'];
+        this.url = 'https://novema.jp';
     }
 
     async _getMangaFromURI(uri) {
-        const id = uri.pathname.split('/')[3];
-        const request = new Request(uri.href);
-        const [data] = await this.fetchDOM(request, '.PCM-productTitle');
+        const id = uri.pathname;
+        const request = new Request(uri, this.requestOptions);
+        const [data] = await this.fetchDOM(request, 'dt.comicTit');
         const title = data.textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        const mangas = [];
-        let totalPage = 1;
-        for (let i = 1; i <= totalPage; i++) {
-            const request = new Request(`${this.url}/web/next_page/list?result_id=2&list_type=C&sort_type=N&page_id=${i}`, this.requestOptions);
-            const res = await this.fetchJSON(request);
-            totalPage = res.data.total_page;
-            const products = res.data.products;
-            mangas.push(...products.map(({ id, title }) => {
-                return { id, title };
-            }));
-        }
-        return mangas;
+        const request = new Request(new URL('/comic/serial', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'ul.comicList a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('dt p.line-clamp').textContent.trim()
+            };
+        });
     }
 
     async _getChapters(manga) {
-        const request = new Request(`${this.url}/web/product/${manga.id}/episodes?etype=E`);
-        const data = await this.fetchDOM(request, '.PCM-product_episodeList > a');
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.comicSerialList article a');
         return data.map(element => {
             return {
-                id: `${manga.id}/${element.dataset.episode_id}`,
-                title: element.querySelector('.PCM-epList_title').textContent.trim(),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('span.storyTitle').textContent.trim()
             };
         });
     }
 
     async _getPages(chapter) {
-        const request = new Request(`${this.url}/web/viewer/${chapter.id}`);
-        const pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
-        const images = pdata.img;
-        if (images == null) {
-            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
-        }
-        return images
-            .filter(img => !!img.path)
-            .map(img => {
-                const link = img.path.startsWith('http') ? img.path : `https:${img.path}`;
-                return this.createConnectorURI({
-                    url: link,
-                    key: this._getSeed(link),
-                    pdata
-                });
-            });
+        const comicData = await this._fetchComicData(chapter);
+        const comicContent = await this._fetchComicContent(comicData);
+        return comicContent.map(content => this.createConnectorURI({
+            data: comicData,
+            content,
+        }));
     }
 
     async _handleConnectorURI(payload) {
-        const image = await this._loadImage(payload.url);
-        if (payload.pdata.isScrambled) {
-            const canvas = this._unscramble(image, 50, payload.key);
-            const blob = await this._canvasToBlob(canvas);
-            return this._blobToBuffer(blob);
-        }
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext('2d');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
+        const uri = new URL(`/img/serial-comic/${payload.data.serial_comic_id}/${payload.data.story_number}/content/${payload.content.name}?t=${payload.data.story_updated_at}`, this.url);
+        const image = await this._loadImage(uri.href);
+        const size = Math.max(image.width, image.height) / payload.content.size;
+        const canvas = this._unscramble(image, size, payload.content.seed);
         const blob = await this._canvasToBlob(canvas);
         return this._blobToBuffer(blob);
+    }
+
+    async _fetchComicData(chapter) {
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const [data] = await this.fetchDOM(request, '#comic-data');
+        return JSON.parse(data.textContent);
+    }
+
+    async _fetchComicContent(comicData) {
+        const uri = new URL(`/img/serial-comic/${comicData.serial_comic_id}/${comicData.story_number}/content/index.json?t=${comicData.story_updated_at}`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return this.fetchJSON(request);
     }
 
     async _canvasToBlob(canvas) {
@@ -88,14 +79,6 @@ export default class Piccoma extends Connector {
         });
     }
 
-    _getSeed(url) {
-        const checksum = url.split('/').slice(-2)[0];
-        const expires = new URL(url).searchParams.get('expires');
-        const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
-        const ch = total % checksum.length;
-        return checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
-    }
-
     _loadImage(url) {
         return new Promise((resolve, reject) => {
             const image = new Image();
@@ -104,11 +87,11 @@ export default class Piccoma extends Connector {
             image.src = url;
         });
     }
-
     _unscramble(image, sliceSize, seed) {
         return unscrambleImg(image, sliceSize, seed);
     }
 }
+
 // from https://github.com/webcaetano/image-scramble/blob/master/unscrambleImg.js
 function unscrambleImg(img, sliceSize, seed) {
     const canvas = document.createElement("canvas");
