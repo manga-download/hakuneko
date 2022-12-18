@@ -8,7 +8,7 @@ export default class MangaRaw extends Connector {
         super.id = 'mangaraw';
         super.label = 'MangaRaw (Manga Raw Club)';
         this.tags = ['multi-lingual', 'manga', 'webtoon'];
-        this.url = 'https://www.manga-raw.club';
+        this.url = 'https://www.mreader.co';
     }
 
     async _getMangaFromURI(uri) {
