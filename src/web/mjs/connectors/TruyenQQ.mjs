@@ -4,10 +4,10 @@ import Manga from '../engine/Manga.mjs';
 export default class TruyenQQ extends Connector {
     constructor() {
         super();
-        super.id = "truyenqq";
-        super.label = "TruyenQQ";
-        this.tags = ["manga", "webtoon", "vietnamese"];
-        this.url = "https://truyenqqvip.com";
+        super.id = 'truyenqq';
+        super.label = 'TruyenQQ';
+        this.tags = ['manga', 'webtoon', 'vietnamese'];
+        this.url = 'https://truyenqqvip.com';
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
@@ -18,9 +18,9 @@ export default class TruyenQQ extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        const uri = new URL("/truyen-moi-cap-nhat/trang-1.html", this.url);
+        const uri = new URL('/truyen-moi-cap-nhat/trang-1.html', this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, "div.page_redirect a:last-child");
+        const data = await this.fetchDOM(request, 'div.page_redirect a:last-child');
         const pageCount = parseInt(data[0].href.match(/-(\d+).html/)[1]);
         for (let page = 1; page <= pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
@@ -32,7 +32,7 @@ export default class TruyenQQ extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL(`/truyen-moi-cap-nhat/trang-${page}.html`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, "ul.list_grid li h3 a");
+        const data = await this.fetchDOM(request, 'ul.list_grid li h3 a');
         return data.map((element) => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -46,7 +46,7 @@ export default class TruyenQQ extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(
             request,
-            "div.works-chapter-item div.name-chap a"
+            'div.works-chapter-item div.name-chap a'
         );
         return data.map((element) => {
             return {
@@ -59,16 +59,16 @@ export default class TruyenQQ extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, "div.page-chapter source.lazy");
+        const data = await this.fetchDOM(request, 'div.page-chapter source.lazy');
         return data.map((element) => {
             return this.createConnectorURI({
-                url: this.getAbsolutePath(element.dataset["original"], request.url),
+                url: this.getAbsolutePath(element.dataset['original'], request.url),
             });
         });
     }
     async _handleConnectorURI(payload) {
         let request = new Request(payload.url, this.requestOptions);
-        request.headers.set("x-referer", this.url);
+        request.headers.set('x-referer', this.url);
         let response = await fetch(request);
         let data = await response.blob();
         data = await this._blobToBuffer(data);
