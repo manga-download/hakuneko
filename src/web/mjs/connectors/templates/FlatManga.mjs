@@ -58,7 +58,8 @@ export default class FlatManga extends Connector {
             }
             let title = (this.queryChapterTitle ? element.querySelector(this.queryChapterTitle) : element).textContent.replace(manga.title, '');
             let mangaTitle = manga.title.replace(/\s*-\s*RAW$/, '');
-            title = title.replace(new RegExp(mangaTitle, 'i'), '');
+            //escape all special characters used in Javascript regexes
+            title = title.replace(new RegExp(mangaTitle.replace(/[\*\^\$\.\|\?\+\-\(\)\[\]\{\}\\\/]/g, '\\$&')), '');
             title = title.replace(/^\s*-\s*/, '');
             title = title.replace(/-\s*-\s*Read\s*Online\s*$/, '');
             title = title.trim();
