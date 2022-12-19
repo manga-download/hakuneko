@@ -43,6 +43,32 @@ export default class DoujinDesu extends WordPressMangastream {
         });
     }
 
+    async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                if(window.ts_reader && ts_reader.params.sources) {
+                    resolve(ts_reader.params.sources.shift().images);
+                } else {
+                    setTimeout(() => {
+                        try {
+                            const images = [...document.querySelectorAll('${this.queryPages}')];
+                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.getAttribute('original') ||  image.src));
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, 2500);
+                }
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await Engine.Request.fetchUI(request, script);
+        // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+        return data.map(link => {
+            return this.createConnectorURI(this.getAbsolutePath(link, request.url).replace(/\/i\d+\.wp\.com/, ''));
+        }).filter(link => !link.includes('histats.com'));
+    }
+
     async _handleConnectorURI(payload) {
         let request = new Request(payload, this.requestOptions);
         request.headers.set('x-referer', this.url);
