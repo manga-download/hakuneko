@@ -7,14 +7,14 @@ export default class DoujinDesu extends WordPressMangastream {
         super.id = 'doujindesu';
         super.label = 'DoujinDesu';
         this.tags = ['hentai', 'indonesian'];
-        this.url = 'https://doujindesu.xxx';
+        this.url = 'https://212.32.226.234';
         this.path = '/manga/page/%PAGE%/';
 
-        this.querMangaTitleFromURI = 'main#archive div.wrapper h1.title';
-        this.queryMangas = '#main .entries .entry > a';
+        this.queryMangas = 'div.entries article.entry a';
         this.queryChapters = 'div#chapter_list div.epsleft span.lchx a';
+        this.queryPages = 'div.main div img[src]:not([src=""])';
         this.queryChaptersTitle = undefined;
-        this.queryPages = 'main#reader div.main img[src]:not([src=""])';
+        this.querMangaTitleFromURI = 'section.metadata h1.title';
     }
 
     canHandleURI(uri) {
@@ -41,5 +41,41 @@ export default class DoujinDesu extends WordPressMangastream {
                 title: element.title.trim()
             };
         });
+    }
+
+    async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                if(window.ts_reader && ts_reader.params.sources) {
+                    resolve(ts_reader.params.sources.shift().images);
+                } else {
+                    setTimeout(() => {
+                        try {
+                            const images = [...document.querySelectorAll('${this.queryPages}')];
+                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.getAttribute('original') ||  image.src));
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, 2500);
+                }
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await Engine.Request.fetchUI(request, script);
+        // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+        return data.map(link => {
+            return this.createConnectorURI(this.getAbsolutePath(link, request.url).replace(/\/i\d+\.wp\.com/, ''));
+        }).filter(link => !link.includes('histats.com'));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-referer', this.url);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
