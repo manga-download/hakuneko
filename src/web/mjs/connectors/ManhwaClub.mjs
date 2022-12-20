@@ -54,3 +54,4 @@ export default class ManhwaClub extends Connector {
         const data = await this.fetchJSON(request);
         return data.images.map(element => element.source_url);
     }
+}
