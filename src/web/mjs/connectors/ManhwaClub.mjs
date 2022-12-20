@@ -32,7 +32,7 @@ export default class ManhwaClub extends Connector {
         const data = await this.fetchJSON(request);
         return data.data.map(element => {
             return {
-                id: element.slug, 
+                id: element.slug,
                 title: element.title.trim()
             };
         });
