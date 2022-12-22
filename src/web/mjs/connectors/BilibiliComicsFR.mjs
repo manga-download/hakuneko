@@ -4,7 +4,7 @@ export default class BilibiliComicsFR extends BilibiliManhua {
 
     constructor() {
         super();
-        super.id = 'bilibili-comicsfr';
+        super.id = 'bilibili-comics-fr';
         super.label = 'Bilibili Comics (French)';
         this.tags = [ 'webtoon', 'french' ];
         this.url = 'https://www.bilibilicomics.com';
