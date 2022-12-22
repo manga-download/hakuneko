@@ -17,8 +17,9 @@ export default class AnimeUnity extends Connector {
     }
     async _getMangas() {
         let mangaList = [];
+        const token = await this.getToken();
         for (let page = 0, run = true; run; page++) {
-            const mangas = await this._getMangasFromPage(page, await this.getToken());
+            const mangas = await this._getMangasFromPage(page, token);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
@@ -45,7 +46,7 @@ export default class AnimeUnity extends Connector {
                 'x-referer': this.url+ '/archivio',
                 'x-origin': this.url,
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': await this.getToken(),
+                'X-CSRF-TOKEN': token,
             }
         });
         const response = await fetch(request);
