@@ -85,7 +85,6 @@ export default class YugenMangas extends Connector {
                 })
                 novel.style.backgroundColor = '${darkmode.background}'
                 novel.style.color = '${darkmode.text}'
-                document.querySelectorAll('${this.novelObstaclesQuery}').forEach(element => element.style.display = 'none');
                 let script = document.createElement('script');
                 script.onerror = error => reject(error);
                 script.onload = async function() {
