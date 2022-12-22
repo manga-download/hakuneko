@@ -7,7 +7,6 @@ export default class AnimeUnity extends Connector {
         super.label = 'AnimeUnity';
         this.tags = [ 'anime', 'italian' ];
         this.url = 'https://www.animeunity.tv';
-        this.token = undefined;
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
@@ -18,14 +17,13 @@ export default class AnimeUnity extends Connector {
     }
     async _getMangas() {
         let mangaList = [];
-        this.token = undefined;
         for (let page = 0, run = true; run; page++) {
-            const mangas = await this._getMangasFromPage(page);
+            const mangas = await this._getMangasFromPage(page, await this.getToken());
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
-    async _getMangasFromPage(page) {
+    async _getMangasFromPage(page, token) {
         const uri = new URL('/archivio/get-animes', this.url);
         const body = {
             'title':false,
@@ -79,11 +77,8 @@ export default class AnimeUnity extends Connector {
         return { video : episode.link };
     }
     async getToken() {
-        if (!this.token) {
-            const r = new Request(this.url, this.requestOptions);
-            let data = await this.fetchDOM(r, 'meta[name=csrf-token]');
-            this.token = data[0].content;
-        }
-        return this.token;
+        const request = new Request(this.url, this.requestOptions);
+        const data = await this.fetchDOM(request, 'meta[name=csrf-token]');
+        return data[0].content;
     }
 }
