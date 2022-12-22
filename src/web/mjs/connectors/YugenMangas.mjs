@@ -104,8 +104,8 @@ export default class YugenMangas extends Connector {
             }
         });
         `;
-        const data = await Engine.Request.fetchUI(request, script, 30000, true) ;
-        return (data.pictures) ? data.pictures.map(picture => this.getAbsolutePath(picture, this.apiURL)) : [data.rendered];
+        const data = await Engine.Request.fetchUI(request, script, 30000, true);
+        return data.pictures ? data.pictures.map(picture => this.getAbsolutePath(picture, this.apiURL)) : [data.rendered];
     }
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
