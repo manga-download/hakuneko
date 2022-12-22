@@ -40,8 +40,7 @@ export default class Pururin extends Connector {
         });
     }
     async _getChapters(manga) {
-        const chapters = [{ id: manga.id, title: 'Chapter' }];
-        return chapters;
+        return [{ id: manga.id, title: 'Chapter' }];
     }
     async _getPages(chapter) {
         let mangaID = chapter.id.match(/\/gallery\/([0-9]+)/)[1];
