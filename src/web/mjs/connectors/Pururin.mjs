@@ -7,7 +7,7 @@ export default class Pururin extends Connector {
         super.label = 'Pururin';
         this.tags = ['manga', 'hentai', 'english'];
         this.url = 'https://pururin.to';
-        this.CDN = "https://cdn.pururin.to/assets/images/data/{1}/{2}.{3}";
+        this.CDN = "https://cdn.pururin.to/assets/images/data/";
         this.path = "/browse/title";
         this.api = "/api/contribute/gallery/info";
         this.queryMangasPageCount = 'ul.pagination.flex-wrap li:nth-last-of-type(2) a';
@@ -40,8 +40,7 @@ export default class Pururin extends Connector {
         });
     }
     async _getChapters(manga) {
-        let mid = this.getRootRelativeOrAbsoluteLink(manga.id, this.url);
-        const chapters = [{ id: mid, title: 'Chapter' }];
+        const chapters = [{ id: manga.id, title: 'Chapter' }];
         return chapters;
     }
     async _getPages(chapter) {
@@ -52,7 +51,7 @@ export default class Pururin extends Connector {
         let pagesMax = data.gallery.total_pages;
         let extension = data.gallery.image_extension;
         //https://cdn.pururin.to/assets/images/data/<mangaid>/<i>.image_extension
-        return new Array(pagesMax).fill().map((_, index) => new URL(this.CDN.replace('{1}', mangaID).replace('{2}', index+1).replace('{3}', extension)).href);
+        return new Array(pagesMax).fill().map((_, index) => new URL(`${this.CDN}/${mangaID}/${index + 1}.${extension}`).href);
     }
     async _getMangaFromURI(uri) {
         let mangaID = uri.href.match(/\/gallery\/([0-9]+)/)[1];
@@ -68,7 +67,7 @@ export default class Pururin extends Connector {
             id: id,
             type:2
         };
-        const request = new Request(url, {
+        return new Request(url, {
             method: 'POST',
             body: JSON.stringify(params),
             headers: {
@@ -78,6 +77,5 @@ export default class Pururin extends Connector {
                 'X-Requested-With': 'XMLHttpRequest',
             }
         });
-        return request;
     }
 }
