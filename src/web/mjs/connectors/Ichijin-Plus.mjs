@@ -9,5 +9,7 @@ export default class IchijinPlus extends ToCoronaEx {
         this.url = "https://ichijin-plus.com";
         this.apiurl = 'https://api.ichijin-plus.com';
         this.cdnurl = 'https://cdn.ichijin-plus.com';
+        this.apikey = 'GGXGejnSsZw-IxHKQp8OQKHH-NDItSbEq5PU0g2w1W4=';
+        this.requestOptions.headers.set('X-API-Environment-Key', this.apikey);
     }
 }
