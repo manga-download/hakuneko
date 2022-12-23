@@ -1,7 +1,7 @@
 import Connector from '../../engine/Connector.mjs';
 import Manga from '../../engine/Manga.mjs';
 
-export default class Novelcool extends Connector {
+export default class NovelCool extends Connector {
 
     constructor() {
         super();

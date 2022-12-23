@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/manga.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class TopToon extends Connector {
 

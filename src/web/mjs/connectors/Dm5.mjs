@@ -57,54 +57,6 @@ export default class Dm5 extends Connector {
         return this._getPagesMobile(chapter);
     }
 
-    async _getPagesDesktop(chapter) {
-        const script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        let lastPage = 1;
-                        lastPage = parseInt([...document.querySelectorAll('div#chapterpager.chapterpager a')].pop().text.trim());
-                        let pageList = [];
-                        let ajaxResult = null;
-
-                        for(let dmpage = 1, run = true; dmpage <= lastPage && run; dmpage++) {
-                                if (ajaxResult != null) {
-                                    ajaxResult.abort();
-                                    ajaxResult = null;
-                                }
-
-                                let mkey = '';
-                                let data;
-                                if ($("#dm5_key").length > 0) {
-                                    mkey = $("#dm5_key").val();
-                                }
-                                ajaxResult = $.ajax({
-                                    url: 'chapterfun.ashx',
-                                    async: false,
-                                    data: { cid: DM5_CID, page: dmpage, key: mkey, language: 1, gtk: 6, _cid: DM5_CID, _mid: DM5_MID, _dt: DM5_VIEWSIGN_DT, _sign: DM5_VIEWSIGN },
-                                    type: 'GET',
-                                    error: function (msg) {
-                                        reject(msg);
-                                    },
-                                    success: function (msg) {
-                                        data = eval(msg);
-                                    }
-                                });
-                                data.length ? pageList.push(...data) : run = false;
-                        }
-                        resolve(pageList);
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 1000);
-            });
-        `;
-        const uri = new URL(chapter.id, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await Engine.Request.fetchUI(request, script);
-        return data.filter((item, index) => data.indexOf(item) === index).map(element => this.getAbsolutePath(element, request.url));
-    }
-
     async _getPagesMobile(chapter) {
         const script = `
             new Promise((resolve, reject) => {
@@ -121,7 +73,17 @@ export default class Dm5 extends Connector {
         uri.hostname = uri.hostname.replace('www', 'm');
         const request = new Request(uri, this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script);
-        return data.filter((item, index) => data.indexOf(item) === index).map(element => this.getAbsolutePath(element, request.url));
+        return data.filter((item, index) => data.indexOf(item) === index).map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-referer', this.url);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 
     async _getMangaFromURI(uri) {
@@ -131,5 +93,4 @@ export default class Dm5 extends Connector {
         const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
-
 }

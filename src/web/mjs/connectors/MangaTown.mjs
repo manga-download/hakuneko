@@ -65,13 +65,13 @@ export default class MangaTown extends Connector {
             .map(element => this.createConnectorURI(this.getAbsolutePath(element.value, request.url)));
     }
 
-    _handleConnectorURI( payload ) {
-        let request = new Request( payload, this.requestOptions );
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        return this.fetchDOM( request, 'source#image' )
-            .then( data => super._handleConnectorURI( this.getAbsolutePath( data[0], request.url ) ) );
+    async _handleConnectorURI(payload) {
+        const pageData = await this.fetchDOM(new Request(payload, this.requestOptions), 'source#image');
+        const imageURL = this.getAbsolutePath(pageData[0].src, 'https//mangahere.com').replace('hakuneko://', 'https://');
+        const request = new Request(imageURL, this.requestOptions);
+        request.headers.set('x-referer', 'mangahere.com');
+        const response = await fetch(request);
+        const imageData = await response.blob();
+        return this._blobToBuffer(imageData);
     }
 }

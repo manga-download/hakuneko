@@ -9,6 +9,8 @@ export default class MangaKatana extends Connector {
         super.label = 'MangaKatana';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://mangakatana.com';
+
+        this.queryPages = '#imgs .wrap_img img[data-src]';
     }
 
     async _getMangaFromURI(uri) {
@@ -57,18 +59,13 @@ export default class MangaKatana extends Connector {
     async _getPages(chapter) {
         const script = `
             new Promise((resolve, reject) => {
-                try {
-                    let images = [];
-                    if (typeof htnc !== 'undefined') {
-                        images = htnc;
+                setTimeout(() => {
+                    try {
+                        resolve([ ...document.querySelectorAll('${this.queryPages}') ].map(element => element.dataset.src));
+                    } catch(error) {
+                        reject(error);
                     }
-                    if (typeof ytaw !== 'undefined' && ytaw.length >= images.length) {
-                        images = ytaw;
-                    }
-                    resolve(images);
-                } catch(error) {
-                    reject(error);
-                }
+                }, 2500);
             });
         `;
         const uri = new URL(chapter.id, this.url);

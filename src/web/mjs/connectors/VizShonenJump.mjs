@@ -30,7 +30,7 @@ export default class VizShonenJump extends Connector {
         return {
             isLoggedIn: /user_id\s*=\s*[1-9]\d*/.test(data),
             isAdult: /adult\s*=\s*true/.test(data),
-            isMember: /is_wsj_subscriber\s*=\s*true/.test(data)
+            isMember: /is_sj_subscriber\s*=\s*true/.test(data)
         };
     }
 
@@ -53,7 +53,7 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getMangasAvailibleByChapters() {
-        const request = new Request(new URL('/shonenjump', this.url), this.requestOptions);
+        const request = new Request(new URL('/read/shonenjump/section/free-chapters', this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
 
         if ( !data.innerText.includes('Latest free chapters') ) {

@@ -7,7 +7,7 @@ export default class HolyManga extends WordPressZbulu {
         super.id = 'holymanga';
         super.label = 'Holy Manga';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://holymanga.net';
+        this.url = 'https://w30.holymanga.net';
     }
 
     canHandleURI(uri) {

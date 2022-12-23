@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class UzayManga extends WordPressMadara {
+export default class UzayManga extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,6 +8,7 @@ export default class UzayManga extends WordPressMadara {
         super.label = 'Uzay Manga';
         this.tags = [ 'webtoon', 'turkish', 'scanlation' ];
         this.url = 'https://uzaymanga.com';
+        this.path = '/manga/list-mode/';
         this.requestOptions.headers.set('x-referer', this.url);
     }
 }

@@ -7,21 +7,24 @@ export default class DoujinDesu extends WordPressMangastream {
         super.id = 'doujindesu';
         super.label = 'DoujinDesu';
         this.tags = ['hentai', 'indonesian'];
-        this.url = 'https://doujindesu.xxx';
-        this.path = '/komik-list/page/%PAGE%/';
+        this.url = 'https://212.32.226.234';
+        this.path = '/manga/page/%PAGE%/';
 
-        this.querMangaTitleFromURI = 'div#infoarea div.post-body h1.entry-title';
-        this.queryMangas = '#main .relat .animepost .animposx a';
+        this.queryMangas = 'div.entries article.entry a';
         this.queryChapters = 'div#chapter_list div.epsleft span.lchx a';
+        this.queryPages = 'div.main div img[src]:not([src=""])';
         this.queryChaptersTitle = undefined;
-        this.queryPages = 'div.reader-area img[src]:not([src=""])';
+        this.querMangaTitleFromURI = 'section.metadata h1.title';
     }
 
-    // NOTE: Fallback to pagination since '/komik-list/?list' empty
+    canHandleURI(uri) {
+        return /doujindesu\.xxx|212\.32\.226\.234/.test(uri.hostname);
+    }
+
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
-            const path = page > 1 ? this.path : '/komik-list/';
+            const path = page > 1 ? this.path : '/manga/';
             let mangas = await this._getMangasFromPage(path, page);
             mangas.length ? mangaList.push(...mangas) : run = false;
         }
@@ -38,5 +41,41 @@ export default class DoujinDesu extends WordPressMangastream {
                 title: element.title.trim()
             };
         });
+    }
+
+    async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                if(window.ts_reader && ts_reader.params.sources) {
+                    resolve(ts_reader.params.sources.shift().images);
+                } else {
+                    setTimeout(() => {
+                        try {
+                            const images = [...document.querySelectorAll('${this.queryPages}')];
+                            resolve(images.map(image => image.dataset['lazySrc'] || image.dataset['src'] || image.getAttribute('original') ||  image.src));
+                        } catch(error) {
+                            reject(error);
+                        }
+                    }, 2500);
+                }
+            });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await Engine.Request.fetchUI(request, script);
+        // HACK: bypass 'i0.wp.com' image CDN to ensure original images are loaded directly from host
+        return data.map(link => {
+            return this.createConnectorURI(this.getAbsolutePath(link, request.url).replace(/\/i\d+\.wp\.com/, ''));
+        }).filter(link => !link.includes('histats.com'));
+    }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-referer', this.url);
+        let response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }

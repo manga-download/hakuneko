@@ -7,7 +7,7 @@ export default class Mangkomik extends WordPressMangastream {
         super.id = 'mangkomik';
         super.label = 'Mangkomik';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
-        this.url = 'https://mangkomik.com';
+        this.url = 'https://mangkomik.net';
         this.path = '/manga/list-mode/';
     }
 }

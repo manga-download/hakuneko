@@ -58,7 +58,7 @@ export default class WordPressZbulu extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
-        let request = new Request(this.url + manga.id, this.requestOptions);
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChaptersPageCount);
         let pageCount = data.length === 0 ? 1 : parseInt(data[0].href.match(/(\d+)$/)[1]);
         for(let page = 1; page <= pageCount; page++) {

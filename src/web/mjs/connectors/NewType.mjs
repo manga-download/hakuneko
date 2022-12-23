@@ -13,7 +13,7 @@ export default class NewType extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.Breadcrumb ul li:last-of-type');
+        let data = await this.fetchDOM(request, 'div.section_item--contents ul li h1.contents__ttl');
         let id = uri.pathname + uri.search;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
@@ -42,7 +42,7 @@ export default class NewType extends Connector {
 
     async _getMangasFromPage(page) {
         let request = new Request(new URL(`/contents/all/more/${page}/`, this.url), this.requestOptions);
-        let data = await this._fetchJsonDOM(request, page, 'li a div.OblongCard-content h3.OblongCard-title');
+        let data = await this._fetchJsonDOM(request, page, 'li a li.detail__txt--ttl h3');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.closest('a'), request.url),
@@ -57,12 +57,14 @@ export default class NewType extends Connector {
             let chapters = await this._getChaptersFromPage(manga, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
-        return chapterList;
+        return chapterList.filter((chapter, index) => {
+            return index === chapterList.findIndex(item => chapter.id === item.id);
+        });
     }
 
     async _getChaptersFromPage(manga, page) {
         let request = new Request(new URL(`${manga.id}/more/${page}/`, this.url), this.requestOptions);
-        let data = await this._fetchJsonDOM(request, page, 'li a div.description');
+        let data = await this._fetchJsonDOM(request, page, 'li a h2.detail__txt--ttl-sub');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.closest('a'), request.url),
