@@ -60,23 +60,41 @@ export default class Kuaikanmanhua extends Connector {
     }
 
     async _getChapterList(manga, callback) {
-        try {
-            let request = new Request(this.url + manga.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.TopicList div div.TopicItem div.title a');
-            let chapterList = data.map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                    title: element.text.trim(),
-                    language: ''
-                };
-            }).filter(chapter => chapter.id !== 'javascript:void(0);');
-            callback(null, chapterList);
-        } catch (error) {
-            console.error(error, manga);
-            callback(error, undefined);
+        let chapterList = await this.resolveChapterList(manga, 'comics');
+        if (chapterList.length < 1) {
+            chapterList = await this.resolveChapterList(manga, 'comicList');
         }
+        if (chapterList.length < 1) {
+            console.error('No chapters found !', this);
+            callback( error, undefined );
+            return;
+        }
+        callback(null, chapterList);
     }
-
+    
+    async resolveChapterList(manga, objname) {
+        let chapterList = [];
+        try {
+            let script = `
+            new Promise(resolve => {
+                let pages = __NUXT__.data[0].`+objname+`.map( comic => {
+                    return {
+                        id : '/web/comic/'+comic.id,
+                        title: comic.title.trim()
+                    };
+                }).reverse();
+                resolve(pages);
+            });
+            `;
+            let request = new Request(this.url + manga.id, this.requestOptions);
+            chapterList = await Engine.Request.fetchUI(request, script);
+        }
+        catch (error) {
+            console.error(error, manga);
+        }
+        return chapterList;
+    }
+    
     async _getPageList(manga, chapter, callback) {
         let newRequestOptions = Object.assign({}, this.requestOptions);
         newRequestOptions.headers.set(

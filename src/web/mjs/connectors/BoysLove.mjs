@@ -8,5 +8,6 @@ export default class BoysLove extends WordPressMadara {
         super.label = 'Boys Love';
         this.tags = [ 'manga', 'webtoon', 'hentai', 'english' ];
         this.url = 'https://boyslove.me';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 }
