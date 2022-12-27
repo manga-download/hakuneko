@@ -1,6 +1,5 @@
 import ZYMK from './templates/ZYMK.mjs';
 
-
 export default class CocoManHua extends ZYMK {
 
     constructor() {
