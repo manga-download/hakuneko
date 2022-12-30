@@ -9,18 +9,9 @@ export default class DelitoonDE extends Delitoon {
         this.tags = [ 'webtoon', 'german' ];
         this.url = 'https://www.delitoon.de';
         this.links = {
-            login: 'https://www.delitoon.de/connexion'
+            login: 'https://www.delitoon.de/user/login'
         };
+        this.requestOptions.headers.set('x-balcony-id', 'DELITOON_DE');
+        this.requestOptions.headers.set('x-referer', this.url);
     }
-
-    async _getMangas() {
-        let mangaList = [];
-        let genres = ['Romance', 'Boys%20Love', 'Drama', 'Sentimental', 'Historisch', 'Slice%20of%20Life', 'Fantasy', 'Komödie', 'Thriller', 'Action', 'Abenteuer', 'Sci-Fi'];
-        for(let genre of genres) {
-            let mangas = await this._getMangasFromPage(genre);
-            mangaList.push(...mangas);
-        }
-        return mangaList;
-    }
-
 }
