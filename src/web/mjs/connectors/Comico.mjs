@@ -73,14 +73,14 @@ export default class Comico extends Connector {
         //episode or volume?
         const element = data.data.episode.content != null ? data.data.episode.content : data.data.volume.content;
         return element.chapters
-        .filter(chapter => chapter.activity.rented || chapter.activity.unlocked || chapter.salesConfig.free)
-        .map(chapter => {
-            return {
-                id: chapter.id,
-                title: chapter.name,
-                language: ''
-            };
-        });
+            .filter(chapter => chapter.activity.rented || chapter.activity.unlocked || chapter.salesConfig.free)
+            .map(chapter => {
+                return {
+                    id: chapter.id,
+                    title: chapter.name,
+                    language: ''
+                };
+            });
     }
 
     async _getPages(chapter) {
