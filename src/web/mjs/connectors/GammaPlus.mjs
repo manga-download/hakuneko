@@ -1,4 +1,4 @@
-import TakeShobo from './templates/TakeShobo.mjs';
+import TakeShobo from './templates/TakeShoboNew.mjs';
 
 export default class GammaPlus extends TakeShobo {
 
