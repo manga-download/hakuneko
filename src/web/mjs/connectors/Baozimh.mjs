@@ -27,7 +27,10 @@ export default class Baozimh extends Connector {
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         //where can it find the chapters
-        const data = await this.fetchDOM(request, ".l-box #chapter-items > div > a, .l-box #chapters_other_list > div > a");
+        let data = await this.fetchDOM(request, ".l-box #chapter-items > div > a, .l-box #chapters_other_list > div > a");
+        if (data.length == 0) {
+            data = await this.fetchDOM(request, ".l-box .comics-chapters > a.comics-chapters__item");
+        }
         let chapters = data.reverse(); //get first chapters on top
         return chapters.map((element) => {
             return {
@@ -58,6 +61,8 @@ export default class Baozimh extends Connector {
             pagesList.push( ...data.map(element => element.getAttribute('src')).filter(page => page) );
             run = uri != null;
         }
-        return pagesList;
+        return pagesList.filter((page, index) => {
+            return index === pagesList.findIndex(item => item === page);
+        });
     }
 }

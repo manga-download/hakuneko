@@ -7,9 +7,9 @@ export default class UnionMangas extends Connector {
         super.id = 'unionmangas';
         super.label = 'UnionMangas';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://unionmangas.top';
+        this.url = 'https://orchidcommerce.com';
         this.links = {
-            login: 'https://unionmangas.top/login'
+            login: 'https://orchidcommerce.com/login'
         };
     }
 
@@ -49,7 +49,7 @@ export default class UnionMangas extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'source.img-manga');
+        const data = await this.fetchDOM(request, 'source.img-responsive');
         return data.map(element => this.getAbsolutePath(element, request.url)).filter(link => !link.includes('banner_'));
     }
 }
