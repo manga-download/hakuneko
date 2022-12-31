@@ -9,10 +9,9 @@ export default class NineMangaFR extends NineManga {
         this.tags = [ 'manga', 'french' ];
         this.url = 'https://fr.ninemanga.com';
     }
-    
+
     get icon() {
         return '/img/connectors/ninemanga-en';
-    }    
-    
-    
+    }
+
 }

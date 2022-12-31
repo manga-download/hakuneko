@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+
 export default class MangaTepesi extends Connector {
     constructor() {
         super();
@@ -8,6 +9,13 @@ export default class MangaTepesi extends Connector {
         this.tags = ['manga', 'webtoon', 'turkish', 'scanlation'];
         this.url = 'https://www.mangatepesi.com';
     }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.about-manga-info h2');
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
+    }
+
     async _getMangas() {
         const request = new Request(new URL('/mangalistesi', this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'article.manga-card > a');
@@ -18,6 +26,7 @@ export default class MangaTepesi extends Connector {
             };
         });
     }
+
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div#manga-chapters-item-list a');
@@ -28,6 +37,7 @@ export default class MangaTepesi extends Connector {
             };
         });
     }
+
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'source.read-manga-image:not([style])');

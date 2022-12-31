@@ -6,8 +6,8 @@ export default class MangaOwlio extends WordPressMadara {
         super();
         super.id = 'mangaowlio';
         super.label = 'MangaOwl.io';
-        this.tags = ['webtoon', 'english','manga' ];
+        this.tags = ['webtoon', 'english', 'manga' ];
         this.url = 'https://mangaowl.io';
     }
-   
+
 }

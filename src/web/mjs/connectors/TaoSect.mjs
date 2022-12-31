@@ -7,7 +7,7 @@ export default class TaoSect extends Connector {
         super.label = 'Tao Sect';
         this.tags = [ 'manga', 'portuguese', 'webtoon', 'scanlation' ];
         this.url = 'https://taosect.com';
-        this.paths = ['ativos','finalizados','oneshots','cancelados'];
+        this.paths = ['ativos', 'finalizados', 'oneshots', 'cancelados'];
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
@@ -18,13 +18,13 @@ export default class TaoSect extends Connector {
     }
     async _getMangas() {
         let mangaList = [];
-        for (let i = 0;i < this.paths.length;i++){
+        for (let i = 0; i < this.paths.length; i++) {
             let request = new Request(new URL('/situacao/'+this.paths[i], this.url), this.requestOptions);
             let [data] = await this.fetchDOM(request, 'div.post-list');
             let articles = data.querySelectorAll('article.post-projeto a');
             let popups = data.querySelectorAll('div.webui-popover-content.popover-projeto');
             let mangas =[];
-            for (let j = 0; j < articles.length; j++){
+            for (let j = 0; j < articles.length; j++) {
                 mangas.push({
                     id : this.getRootRelativeOrAbsoluteLink(articles[j], this.url),
                     title : popups[j].querySelector('h3.titulo-popover').textContent.trim()
@@ -51,6 +51,6 @@ export default class TaoSect extends Connector {
         data.querySelectorAll('option').forEach(element =>{
             pagelist.push(element.value);
         });
-        return(pagelist);
+        return pagelist;
     }
 }

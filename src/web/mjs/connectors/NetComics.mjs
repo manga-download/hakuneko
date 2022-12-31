@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+
 export default class NetComics extends Connector {
     constructor() {
         super();
@@ -14,6 +15,15 @@ export default class NetComics extends Connector {
             login: 'https://netcomics.com/login'
         };
     }
+
+    async _getMangaFromURI(uri) {
+        const slug = uri.pathname.split('/').pop();
+        const request = new Request(new URL('/api/v1/title/comic/'+slug, this.api), this.requestOptions);
+        const data = await this.fetchJSON(request);
+        const id = '/'+data.data.site+'/comic/'+data.data.title_id;
+        return new Manga(this, id, data.data.title_name);
+    }
+
     async _getMangas() {
         let mangaList = [];
         for (let page = 1, run = true; run; page++) {
@@ -55,8 +65,7 @@ export default class NetComics extends Connector {
                 id : '/viewer/'+mangaid+'/'+ chapter.chapter_id,
                 title: title
             };
-        })
-        .reverse();
+        }).reverse();
     }
     async _getPages(chapter) {
         //check if user is logged, otherwise nothing will work
@@ -64,7 +73,7 @@ export default class NetComics extends Connector {
         let ncxuserdata = await Engine.Request.fetchUI(request, 'localStorage.getItem("ncx.user.data") || ""');
         if (ncxuserdata == '') {
             throw Error('To see this chapter, please login to the website using Manual Interaction !');
-        };
+        }
         try{
             const mangaid = chapter.id.match(/\/viewer\/([\S]+)\//)[1];
             const chapterid = chapter.id.match(/\/([0-9]+)$/)[1];
@@ -76,9 +85,8 @@ export default class NetComics extends Connector {
                 let uri = new URL(image.image_url, request.url);
                 return this.createConnectorURI(uri.href);
             });
-        }
-        catch(e) {
+        } catch(e) {
             throw Error('You are not logged or chapter not purchased !');
-        };
+        }
     }
 }
