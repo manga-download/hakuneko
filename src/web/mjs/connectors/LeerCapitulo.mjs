@@ -41,7 +41,9 @@ export default class LeerCapitulo extends AnyACG {
         let chapters = [];
         for (let i = 1; i <= 3; i++) {
             await this.wait(500);
-            chapters = await super._getPages(chapter);
+            try {
+                chapters = await super._getPages(chapter);
+            } catch(error) {}
             if (chapters.length > 0) break;
         }
         return chapters;
