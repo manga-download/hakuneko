@@ -9,8 +9,8 @@ export default class Muctau extends WordPressMadara {
         this.tags = ['webtoon', 'english', ];
         this.url = 'https://bibimanga.com';
     }
-    
-   async _getMangas() {
+
+    async _getMangas() {
         let mangaList = [];
         let request = new Request(new URL('/manga', this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'a.last');
@@ -32,7 +32,5 @@ export default class Muctau extends WordPressMadara {
             };
         });
     }
-    
-    
-    
+
 }

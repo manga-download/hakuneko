@@ -36,7 +36,7 @@ export default class ManhwasNet extends WordPressMadara {
             };
         });
     }
-    
+
     async _getChapters(manga) {
         let uri = new URL(manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
@@ -47,9 +47,9 @@ export default class ManhwasNet extends WordPressMadara {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.querySelector('p span').textContent.trim(),
             };
-        })
+        });
 
-    }   
+    }
 
     async _getPages(chapter) {
         let script = `
@@ -74,5 +74,5 @@ export default class ManhwasNet extends WordPressMadara {
             });
         });
     }
-    
+
 }
