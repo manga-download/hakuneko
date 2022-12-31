@@ -38,16 +38,11 @@ export default class LeerCapitulo extends AnyACG {
         });
     }
     async _getPages(chapter) {
-        let counter = 0;
         let chapters = [];
-        while (chapters.length == 0 && counter < 3) {
-            try {
-                await this.wait(500);
-                chapters = await super._getPages(chapter);
-            } catch (error) {
-                /////
-            }
-            counter++;
+        for (let i = 1; i <= 3; i++) {
+            await this.wait(500);
+            chapters = await super._getPages(chapter);
+            if (chapters.length > 0) break;
         }
         return chapters;
     }
