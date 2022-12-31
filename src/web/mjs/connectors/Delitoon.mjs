@@ -1,6 +1,5 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-import Cookie from '../engine/Cookie.mjs';
 
 export default class Delitoon extends Connector {
     constructor() {
