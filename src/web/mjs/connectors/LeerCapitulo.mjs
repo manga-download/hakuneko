@@ -43,9 +43,12 @@ export default class LeerCapitulo extends AnyACG {
             await this.wait(500);
             try {
                 chapters = await super._getPages(chapter);
-            } catch(error) {}
+            } catch(error) {
+                //
+            }
             if (chapters.length > 0) break;
         }
         return chapters;
     }
+}
 }
