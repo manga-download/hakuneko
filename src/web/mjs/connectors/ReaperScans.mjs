@@ -15,7 +15,7 @@ export default class ReaperScans extends Connector {
         this.queryChapters = 'div[wire\\3A id] ul[role] li a';
         this.queryPages = 'source.max-w-full.mx-auto.display-block';
         this.queryMangaTitle = 'div.overflow-hidden h1';
-         this.config = {
+        this.config = {
             throttle: {
                 label: 'Chapter list Throttle [ms]',
                 description: 'Enter the timespan in [ms] to delay consecutive requests to the website api for Chapter list fetching',
@@ -24,7 +24,7 @@ export default class ReaperScans extends Connector {
                 max: 10000,
                 value: 1000
             }
-        };       
+        };
     }
     async _getMangas() {
         let mangaList = [];
@@ -42,7 +42,7 @@ export default class ReaperScans extends Connector {
             return{
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title : element.text.trim()
-            }
+            };
         });
     }
     async _getChapters(manga) {
@@ -84,7 +84,7 @@ export default class ReaperScans extends Connector {
             let data = await response.json();
             //data contains the html nodes with the chapters
             //and the informations needed to request the next page
-            doc = parser.parseFromString(data.effects.html,'text/html');
+            doc = parser.parseFromString(data.effects.html, 'text/html');
             chapters = this.getChaptersFromDoc(doc);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
             //update payload data using response data, for next fetch
@@ -98,7 +98,7 @@ export default class ReaperScans extends Connector {
         }
         return chapterList;
     }
-    getChaptersFromDoc(doc){
+    getChaptersFromDoc(doc) {
         let chapterList = [];
         //get chapters
         let data = doc.querySelectorAll(this.queryChapters);
@@ -106,16 +106,16 @@ export default class ReaperScans extends Connector {
             let chapter = {
                 id: element.pathname,
                 title : element.querySelector('p').textContent.trim()
-            }
+            };
             chapterList.push(chapter);
         });
         return chapterList;
     }
-    createPayloadForChapterPages(doc){
+    createPayloadForChapterPages(doc) {
         const token = doc.querySelector('meta[name="csrf-token"]').getAttribute("content");
-        const payloadid = (Math.random() + 1).toString(36).substring(8)
-        let wiredata = JSON.parse(doc.querySelector('.max-w-6xl div[wire\\:initial-data]').getAttribute("wire:initial-data"))
-        const referrer = wiredata.effects.path//of course the current url could be used too and i
+        const payloadid = (Math.random() + 1).toString(36).substring(8);
+        let wiredata = JSON.parse(doc.querySelector('.max-w-6xl div[wire\\:initial-data]').getAttribute("wire:initial-data"));
+        const referrer = wiredata.effects.path;//of course the current url could be used too and i
         delete wiredata.effects;
         wiredata.serverMemo.data.page = 1;
         wiredata.serverMemo.data.paginators.page = 1;
@@ -125,21 +125,21 @@ export default class ReaperScans extends Connector {
                 id: payloadid,
                 method: "gotoPage",
                 params: [
-                2,
-                "page"
+                    2,
+                    "page"
                 ]
             }
         }
         ];
         return {
-        payload : wiredata, token :token, referrer : referrer};
+            payload : wiredata, token :token, referrer : referrer};
     }
-    async _getPages(chapter){
+    async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
-            return this.getAbsolutePath(element.getAttribute('src'), this.url)
+            return this.getAbsolutePath(element.getAttribute('src'), this.url);
         });
     }
     async _getMangaFromURI(uri) {
@@ -147,5 +147,5 @@ export default class ReaperScans extends Connector {
         const id = uri.pathname;
         const title = (await this.fetchDOM(request, this.queryMangatitle))[0].textContent.trim();
         return new Manga(this, id, title);
-    }   
+    }
 }

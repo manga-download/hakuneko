@@ -20,12 +20,12 @@ export default class EarlyManga extends Connector {
         const uri = new URL('/api/search/advanced?page='+page, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return(data.data.map(item => {
+        return data.data.map(item => {
             return {
                 id: '/manga/' + item.slug.trim(),
                 title: item.title.trim()
             };
-        }));
+        });
     }
     async _getChapters(manga) {
         let chapterList = [];
@@ -40,22 +40,21 @@ export default class EarlyManga extends Connector {
         const uri = new URL('/api/manga/'+mangaid+'/chapterlist?page='+page, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return(data.data.map(item => {
+        return data.data.map(item => {
             return {
                 id: '/manga/' + mangaid + '/chapter-'+item.slug,
                 title: 'Chapter '+item.chapter_number
             };
-        }));
+        });
     }
     async _getPages(chapter) {
-        const slug = chapter.manga.id.match(/\/manga\/(\S+)/)[1];
         const uri = new URL('/api'+chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         let manga_id = data.chapter.manga_id;
-        return(data.chapter.images.map(item => {
+        return data.chapter.images.map(item => {
             return this.url+'/storage/uploads/manga/manga_'+manga_id+'/chapter_'+data.chapter.slug+'/'+item;
-        }));
+        });
     }
     async _getMangaFromURI(uri) {
         const mangaid = uri.href.match(/\/manga\/(\S+)/)[1];

@@ -71,7 +71,7 @@ export default class Kuaikanmanhua extends Connector {
         }
         callback(null, chapterList);
     }
-    
+
     async resolveChapterList(manga, objname) {
         let chapterList = [];
         try {
@@ -88,13 +88,12 @@ export default class Kuaikanmanhua extends Connector {
             `;
             let request = new Request(this.url + manga.id, this.requestOptions);
             chapterList = await Engine.Request.fetchUI(request, script);
-        }
-        catch (error) {
+        } catch (error) {
             console.error(error, manga);
         }
         return chapterList;
     }
-    
+
     async _getPageList(manga, chapter, callback) {
         let newRequestOptions = Object.assign({}, this.requestOptions);
         newRequestOptions.headers.set(

@@ -40,8 +40,7 @@ export default class LegionAsia extends WordPressMangastream {
             let lnk = this.getAbsolutePath(link, request.url);
             //HACK Extract the wp part of the server
             let realwp = link.match(/\/i\d+\.wp\.com/);
-            if (realwp != null)
-            {
+            if (realwp != null) {
                 //replace /ix.wp.com with /ix.wp.com/i0.wp.com
                 lnk = lnk.replace(realwp[0], realwp[0]+'/i0.wp.com');
             }

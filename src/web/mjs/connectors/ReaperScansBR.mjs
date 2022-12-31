@@ -1,7 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 export default class ReaperScansBR extends Connector {
-	
+
     constructor() {
         super();
         super.id = 'reaperscansbr';
@@ -48,7 +48,7 @@ export default class ReaperScansBR extends Connector {
             return{
                 id: '/series/'+this.getRootRelativeOrAbsoluteLink(element.series_slug, this.url),
                 title : element.title.trim()
-            }
+            };
         });
     }
     async _getChapters(manga) {
@@ -62,7 +62,7 @@ export default class ReaperScansBR extends Connector {
             };
         });
     }
-    async _getPages(chapter){
+    async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         let script = `
         new Promise(resolve => {
