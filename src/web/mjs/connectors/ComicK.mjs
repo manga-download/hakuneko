@@ -8,8 +8,8 @@ export default class ComicK extends Connector {
         super.id = 'comick';
         super.label = 'ComicK';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://comick.fun';
-        this.apiurl = 'https://api.comick.fun';
+        this.url = 'https://comick.app';
+        this.apiurl = 'https://api.comick.app';
     }
 
     async _getEmbeddedJSON(uri) {

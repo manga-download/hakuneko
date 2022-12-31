@@ -7,7 +7,7 @@ export default class Boosei extends WordPressMangastream {
         super.id = 'boosei';
         super.label = 'Boosei';
         this.tags = [ 'webtoon', 'indonesian' ];
-        this.url = 'https://boosei.com';
+        this.url = 'https://boosei.net';
         this.path = '/manga/list-mode/';
     }
 
