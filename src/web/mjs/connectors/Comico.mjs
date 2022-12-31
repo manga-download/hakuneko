@@ -59,7 +59,7 @@ export default class Comico extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let data = await this._fetchPOST('/all_comic/new_release?pageNo='+page +'&pageSize=10');
+        let data = await this._fetchPOST('/all_comic/new_release?pageNo='+page +'&pageSize=50');
         return !data.result ? [] : data.data.contents.map(manga => {
             return {
                 id: '/'+manga.type+'/'+manga.id,
