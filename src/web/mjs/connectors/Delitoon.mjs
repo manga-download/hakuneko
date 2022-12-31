@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+import Cookie from '../engine/Cookie.mjs';
 
 export default class Delitoon extends Connector {
     constructor() {
@@ -17,7 +18,7 @@ export default class Delitoon extends Connector {
         this.requestOptions.headers.set('x-referer', this.url);
     }
     async _getMangaFromURI(uri) {
-    	await this.getToken();
+        await this.getToken();
         const mangaid = uri.href.match(/\/detail\/(\S+)/)[1];
         const req = new URL('/api/balcony-api/contents/'+mangaid, this.url);
         req.searchParams.set('isNotLoginAdult', 'true');
@@ -26,7 +27,7 @@ export default class Delitoon extends Connector {
         return new Manga(this, mangaid, data.data.title.trim());
     }
     async _getMangas() {
-    	await this.getToken();
+        await this.getToken();
         const uri = new URL('/api/balcony-api-v2/contents/search', this.url);
         uri.searchParams.set('searchText', '');
         uri.searchParams.set('isCheckDevice', 'true');
@@ -42,7 +43,7 @@ export default class Delitoon extends Connector {
         });
     }
     async _getChapters(manga) {
-    	await this.getToken();
+        await this.getToken();
         const uri = new URL('/api/balcony-api/contents/'+manga.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
@@ -63,7 +64,7 @@ export default class Delitoon extends Connector {
         }).reverse();
     }
     async _getPages(chapter) {
-    	await this.getToken();
+        await this.getToken();
         const uri = new URL('/api/balcony-api/contents/'+chapter.manga.id+'/'+chapter.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
@@ -91,5 +92,4 @@ export default class Delitoon extends Connector {
             this.requestOptions.headers.delete('authorization');
         }
     }
-
 }
