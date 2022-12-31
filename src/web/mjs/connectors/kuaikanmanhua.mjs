@@ -20,62 +20,44 @@ export default class Kuaikanmanhua extends Connector {
         return new Manga(this, id, title);
     }
 
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangas() {
+        let mangaList = [];
+        const request = new Request(new URL(this.list, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'ul.pagination li:nth-last-child(2) a' );
+        const pageCount = parseInt( data[0].text.match( /\d+/ )[0] );
+        for(let page = 1; page <= pageCount; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'div.tagContent div a', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    this.cfMailDecrypt( element );
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + this.list, 'ul.pagination li:nth-last-child(2) a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.match( /\d+/ )[0] );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + this.list + '?page=' + ( page + 1 ) );
-                return this._getMangaListFromPages( pageLinks );
-            })
-            .then( data => {
-                callback( null, data );
-            })
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            });
+    async _getMangasFromPage(page) {
+        const uri = new URL(this.list + '?page='+ page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.tagContent div a', 5);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    async _getChapterList(manga, callback) {
+    async _getChapters(manga) {
         let chapterList = await this.resolveChapterList(manga, 'comics');
         if (chapterList.length < 1) {
             chapterList = await this.resolveChapterList(manga, 'comicList');
         }
         if (chapterList.length < 1) {
             console.error('No chapters found !', this);
-            callback( error, undefined );
-            return;
         }
-        callback(null, chapterList);
+        return chapterList;
     }
 
     async resolveChapterList(manga, objname) {
         let chapterList = [];
-        try {
-            let script = `
+        const script = `
             new Promise(resolve => {
                 let pages = __NUXT__.data[0].`+objname+`.map( comic => {
                     return {
@@ -86,33 +68,22 @@ export default class Kuaikanmanhua extends Connector {
                 resolve(pages);
             });
             `;
-            let request = new Request(this.url + manga.id, this.requestOptions);
-            chapterList = await Engine.Request.fetchUI(request, script);
-        } catch (error) {
-            console.error(error, manga);
-        }
+        let request = new Request(this.url + manga.id, this.requestOptions);
+        chapterList = await Engine.Request.fetchUI(request, script);
+
         return chapterList;
     }
 
-    async _getPageList(manga, chapter, callback) {
-        let newRequestOptions = Object.assign({}, this.requestOptions);
-        newRequestOptions.headers.set(
-            'x-user-agent',
-            'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1'
-        );
-
-        try {
-            let script = `
-            new Promise(resolve => {
-                let pages = __NUXT__.data[0].comicInfo.comic_images.map(img => img.url);
-                resolve(pages);
-            });`;
-            let request = new Request(this.url + chapter.id, newRequestOptions);
-            let pageList = await Engine.Request.fetchUI(request, script);
-            callback(null, pageList);
-        } catch (error) {
-            console.error(error, manga);
-            callback(error, undefined);
-        }
+    async _getPages(chapter) {
+        const script = `
+        new Promise(resolve => {
+            let pages = __NUXT__.data[0].comicInfo.comic_images.map(img => img.url);
+            resolve(pages);
+        });
+        `;
+        const request = new Request(this.url + chapter.id, this.requestOptions);
+        request.headers.set('x-user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1');
+        const pageList = await Engine.Request.fetchUI(request, script);
+        return pageList;
     }
 }
