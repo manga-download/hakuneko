@@ -51,4 +51,3 @@ export default class LeerCapitulo extends AnyACG {
         return chapters;
     }
 }
-}
