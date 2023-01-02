@@ -45,45 +45,46 @@ export default class Kuaikanmanhua extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = await this.resolveChapterList(manga, 'comics');
-        if (chapterList.length < 1) {
-            chapterList = await this.resolveChapterList(manga, 'comicList');
-        }
-        if (chapterList.length < 1) {
-            console.error('No chapters found !', this);
-        }
+        const chapterList = await this.resolveChapterList(manga);
+        if (chapterList.length < 1) console.error('No chapters found !', this);
         return chapterList;
     }
 
-    async resolveChapterList(manga, objname) {
-        let chapterList = [];
+    async resolveChapterList(manga) {
         const script = `
             new Promise(resolve => {
-                let pages = __NUXT__.data[0].`+objname+`.map( comic => {
-                    return {
-                        id : '/web/comic/'+comic.id,
-                        title: comic.title.trim()
-                    };
-                }).reverse();
+            	  let pages = [];
+	            	  try {
+		                pages = __NUXT__.data[0].comics.map( comic => {
+		                    return {
+		                        id : '/web/comic/'+comic.id,
+		                        title: comic.title.trim()
+		                    };
+		                }).reverse();
+            	  } catch(error) {
+		                pages = __NUXT__.data[0].comicList.map( comic => {
+		                    return {
+		                        id : '/web/comic/'+comic.id,
+		                        title: comic.title.trim()
+		                    };
+		                }).reverse();
+            	  }
+
                 resolve(pages);
             });
             `;
-        let request = new Request(this.url + manga.id, this.requestOptions);
-        chapterList = await Engine.Request.fetchUI(request, script);
-
-        return chapterList;
+        const request = new Request(this.url + manga.id, this.requestOptions);
+        return await Engine.Request.fetchUI(request, script);
     }
 
     async _getPages(chapter) {
         const script = `
         new Promise(resolve => {
-            let pages = __NUXT__.data[0].comicInfo.comic_images.map(img => img.url);
-            resolve(pages);
+            resolve( __NUXT__.data[0].comicInfo.comic_images.map(img => img.url));
         });
         `;
         const request = new Request(this.url + chapter.id, this.requestOptions);
         request.headers.set('x-user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1');
-        const pageList = await Engine.Request.fetchUI(request, script);
-        return pageList;
+        return await Engine.Request.fetchUI(request, script);
     }
 }
