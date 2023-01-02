@@ -19,9 +19,7 @@ export default class Allanimesite2 extends Allanimesite {
         const uri = new URL(this.path + this.varQueryMangas.replace('%PAGE%', page), this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        if (data.data == null) {
-            return {};
-        }
+        if (!data.data) return [];
         return data.data.shows.edges.map(element => {
             return {
                 id: '/anime/'+element._id,
@@ -33,8 +31,7 @@ export default class Allanimesite2 extends Allanimesite {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let script = `
         new Promise(resolve => {
-            let pages = __NUXT__;
-            resolve(pages);
+            resolve(__NUXT__);
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
@@ -68,25 +65,15 @@ export default class Allanimesite2 extends Allanimesite {
     }
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let script = `
+        const script = `
         new Promise(resolve => {
-            let pages = __NUXT__;
-            resolve(pages);
+            resolve(__NUXT__);
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
-        let sourcesArray = data.fetch[0].episodeSelections;
-        let goodSource = null;
-        sourcesArray.every(source => {
-            if (source.sourceName.indexOf('Default') > -1) {
-                goodSource = source;
-                return false;
-            }
-            return true;
-        });
-        if (goodSource == null) {
-            throw new Error('No Default source found !');
-        }
+        const sourcesArray = data.fetch[0].episodeSelections;
+        const goodSource = sourcesArray.find(source => source.sourceName == 'Default');
+        if (!goodSource) throw new Error('No Default source found !');
         let uri = new URL(goodSource.sourceUrl.replace('clock', 'clock.json'), 'https://blog.allanime.pro');
         request = new Request(uri, this.requestOptions);
         data = await this.fetchJSON(request);

@@ -45,9 +45,7 @@ export default class Allanimesite extends Connector {
         const uri = new URL(this.path + this.varQueryMangas.replace('%PAGE%', page), this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        if (data.data == null) {
-            return {};
-        }
+        if (!data.data) return [];
         return data.data.mangas.edges.map(element => {
             return {
                 id: '/manga/'+element._id,
@@ -81,24 +79,17 @@ export default class Allanimesite extends Connector {
     }
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let script = `
+        const script = `
         new Promise(resolve => {
-            let pages = __NUXT__;
-            resolve(pages);
+            resolve(__NUXT__);
         });
         `;
-        let data = await Engine.Request.fetchUI(request, script);
-        let sourcename = data.fetch[0].selectedSourceName;
-        let sourcesArray = data.fetch[0].chapters;
-        let goodSource = null;
-        sourcesArray.every(source => {
-            if (source.sourceName == sourcename) {
-                goodSource = source;
-                return false;
-            }
-            return true;
-        });
-        let pageslist = goodSource.pictureUrls.map( element => {
+        const data = await Engine.Request.fetchUI(request, script);
+        const sourcename = data.fetch[0].selectedSourceName;
+        const sourcesArray = data.fetch[0].chapters;
+        const goodSource = sourcesArray.find(source => source.sourceName == sourcename);
+
+        const pageslist = goodSource.pictureUrls.map( element => {
             return new URL(element.url, goodSource.pictureUrlHead).href;
         });
         return pageslist;
