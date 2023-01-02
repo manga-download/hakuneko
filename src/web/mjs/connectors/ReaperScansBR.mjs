@@ -64,15 +64,14 @@ export default class ReaperScansBR extends Connector {
     }
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let script = `
+        const script = `
         new Promise(resolve => {
-            let pages = __NEXT_DATA__;
-            resolve(pages);
+            resolve(__NEXT_DATA__);
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
-        let chapterid = data.props.pageProps.data.id;
-        let uri = new URL('/series/chapter/'+chapterid, this.api);
+        const chapterid = data.props.pageProps.data.id;
+        const uri = new URL('/series/chapter/'+chapterid, this.api);
         request = new Request(uri, this.requestOptions);
         request.headers.set('x-origin', this.url);
         data = await this.fetchJSON(request);
