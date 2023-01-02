@@ -23,8 +23,8 @@ export default class Ainzscans extends Connector {
     }
 
     async _getChapters(manga) {
-    	  const uri = new URL(manga.id, this.url);
-    	  let script = `
+        const uri = new URL(manga.id, this.url);
+        const script = `
           new Promise(resolve => {
             resolve(label_chapter);
         });
@@ -45,8 +45,8 @@ export default class Ainzscans extends Connector {
             });
     }
     async _getPages(chapter) {
-    	let uri = new URL(chapter.manga.id, this.url);
-    	  let script = `
+        let uri = new URL(chapter.manga.id, this.url);
+        const script = `
           new Promise(resolve => {
             resolve(label_chapter);
         });
