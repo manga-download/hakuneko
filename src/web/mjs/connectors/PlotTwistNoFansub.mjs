@@ -12,7 +12,7 @@ export default class PlotTwistNoFansub extends WordPressClarityMangaReader {
         this.paths = [ '/proyectos-finalizados-new/', '/proyectos-activosss/' ];
         this.queryMangas = 'div.vc_gitem-zone a.vc_gitem-link';
     }
-    
+
     async _getChapters( manga ) {
         const uri = new URL( manga.id, this.url );
         const request = new Request(uri.href, this.requestOptions );
