@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+
 export default class Delitoon extends Connector {
     constructor() {
         super();
@@ -16,6 +17,7 @@ export default class Delitoon extends Connector {
         this.requestOptions.headers.set('x-referer', this.url);
     }
     async _getMangaFromURI(uri) {
+        await this.getToken();
         const mangaid = uri.href.match(/\/detail\/(\S+)/)[1];
         const req = new URL('/api/balcony-api/contents/'+mangaid, this.url);
         req.searchParams.set('isNotLoginAdult', 'true');
@@ -24,6 +26,7 @@ export default class Delitoon extends Connector {
         return new Manga(this, mangaid, data.data.title.trim());
     }
     async _getMangas() {
+        await this.getToken();
         const uri = new URL('/api/balcony-api-v2/contents/search', this.url);
         uri.searchParams.set('searchText', '');
         uri.searchParams.set('isCheckDevice', 'true');
@@ -39,6 +42,7 @@ export default class Delitoon extends Connector {
         });
     }
     async _getChapters(manga) {
+        await this.getToken();
         const uri = new URL('/api/balcony-api/contents/'+manga.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
@@ -47,11 +51,11 @@ export default class Delitoon extends Connector {
             let title = '';
             try{
                 let chapnum = parseInt(element.title);
-                title = 'Chapter '+ chapnum;
+                !isNaN(chapnum) ? title = 'Chapter '+ chapnum : title = element.title.trim();
             } catch (error) {
                 title = element.title.trim();
             }
-            title += element.subtitle ? element.subTitle.trim() : '';
+            title += element.subTitle ? ' : ' + element.subTitle.trim() : '';
             return {
                 id : element.alias,
                 title : title,
@@ -59,6 +63,7 @@ export default class Delitoon extends Connector {
         }).reverse();
     }
     async _getPages(chapter) {
+        await this.getToken();
         const uri = new URL('/api/balcony-api/contents/'+chapter.manga.id+'/'+chapter.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
@@ -66,11 +71,24 @@ export default class Delitoon extends Connector {
         if (data.result == 'ERROR') {
             switch (data.error.code) {
                 case 'NOT_LOGIN_USER':
-                    throw new Error('You must be logged/have paid to view this chapter !');
+                    throw new Error('You must be logged to view this chapter !');
+                case 'UNAUTHORIZED_CONTENTS':
+                    throw new Error('You must unlock this chapter first !');
                 default:
                     throw new Error('Unknown error : '+ data.error.code);
             }
         }
         return data.data.images.map(element => element.imagePath);
+    }
+
+    async getToken() {
+        const uri = new URL('/api/auth/session', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSON(request);
+        if(data.user) {
+            this.requestOptions.headers.set('authorization', ' Bearer '+ data.user.accessToken.token);
+        } else {
+            this.requestOptions.headers.delete('authorization');
+        }
     }
 }
