@@ -14,6 +14,14 @@ export default class CocoManHua extends ZYMK {
         this.queryMangasPageCount = 'div.fed-page-info a.fed-show-sm-inline';
         this.queryMangas = 'ul.fed-list-info li.fed-list-item a.fed-list-title';
         this.queryChapters = 'div.all_data_list ul li a';
+        this.config.throttle = {
+            label: 'Throttle Requests [ms]',
+            description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests.',
+            input: 'numeric',
+            min: 50,
+            max: 1000,
+            value: 250
+        };
     }
 
     async _getPages(chapter) {
