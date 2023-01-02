@@ -1,5 +1,5 @@
-import WordPressMangaStream from './templates/WordPressMangaStream.mjs';
-export default class TsundokuTraducoes extends WordPressMangaStream {
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
+export default class TsundokuTraducoes extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'tsundokutraducoes';
