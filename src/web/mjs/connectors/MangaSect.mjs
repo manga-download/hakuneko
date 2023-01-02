@@ -57,12 +57,12 @@ export default class MangaSect extends Connector {
 
     async _getPages(chapter) {
         const referer = new URL(chapter.id, this.url);
-        let chapterid = chapter.id.match(/\/([\d]+)$/)[1];
+        const chapterid = chapter.id.match(/\/([\d]+)$/)[1];
         const uri = new URL ('/ajax/image/list/chap/' + chapterid, this.url);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-referer', referer);
         request.headers.set('X-Requested-With', 'XMLHttpRequest');
-        let response = await this.fetchJSON(request);
+        const response = await this.fetchJSON(request);
         const dom = this.createDOM(response.html);
         const data = dom.querySelectorAll('source[data-src]');
         return Array.from(data).map(image => this.getAbsolutePath(image.dataset['src'], request.url));
