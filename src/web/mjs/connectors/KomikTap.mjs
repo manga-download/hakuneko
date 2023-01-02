@@ -9,7 +9,6 @@ export default class KomikTap extends WordPressMangastream {
         this.tags = [ 'manga', 'webtoon', 'hentai', 'indonesian' ];
         this.url = 'https://komiktap.in';
         this.path = '/manga/list-mode/';
-        this.hostPattern = '';
     }
 
     async _initializeConnector() {
@@ -19,7 +18,7 @@ export default class KomikTap extends WordPressMangastream {
         this.hostPattern = newUrl.host;
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
-    canHandleURI(uri) {
-        return new RegExp(this.hostPattern).test(uri.hostname);
+    async canHandleURI(uri) {
+        return uri.href.includes(this.url);
     }
 }
