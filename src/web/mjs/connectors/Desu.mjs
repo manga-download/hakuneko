@@ -68,7 +68,7 @@ export default class Desu extends Connector {
         `;
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const picdata = await Engine.Request.fetchUI(request, script);
-        return picdata.map(element => this.getAbsolutePath(element.url, this.url));
+        const pages = await Engine.Request.fetchUI(request, script);
+        return pages.map(element => this.getAbsolutePath(element.url, this.url));
     }
 }
