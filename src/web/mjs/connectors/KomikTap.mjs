@@ -7,11 +7,11 @@ export default class KomikTap extends WordPressMangastream {
         super.id = 'komiktap';
         super.label = 'KomikTap';
         this.tags = [ 'manga', 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://92.87.6.124/';
+        this.url = 'https://komiktap.in/';
         this.path = '/manga/list-mode/';
     }
 
-    //canHandleURI(uri) {
-    //    return /komiktap\.in|194\.233\.66\.232/.test(uri.hostname);
-   // }
+    canHandleURI(uri) {
+        return /komiktap\.in|92\.87\.6\.124/.test(uri.hostname);
+   }
 }
