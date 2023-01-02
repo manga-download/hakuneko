@@ -8,7 +8,7 @@ export default class Streamtape {
         const script = `
             new Promise(resolve => {
                 for(let count = 0; count < 3; count++) {
-                    document.querySelector('.plyr-overlay').click();
+                    document.querySelector('[aria-label="Play"]').click();
                 }
                 resolve(new URL(document.getElementById('mainvideo').src, window.location.origin).href);
             });
