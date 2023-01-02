@@ -1,5 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+
 export default class ReaperScans extends Connector {
     constructor() {
         super();
@@ -100,8 +101,7 @@ export default class ReaperScans extends Connector {
     }
     getChaptersFromDoc(doc) {
         let chapterList = [];
-        //get chapters
-        let data = doc.querySelectorAll(this.queryChapters);
+        const data = doc.querySelectorAll(this.queryChapters);
         data.forEach(element => {
             let chapter = {
                 id: element.pathname,
@@ -129,15 +129,14 @@ export default class ReaperScans extends Connector {
                     "page"
                 ]
             }
-        }
-        ];
+        }];
         return {
             payload : wiredata, token :token, referrer : referrer};
     }
     async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryPages);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryPages);
         return data.map(element => {
             return this.getAbsolutePath(element.getAttribute('src'), this.url);
         });
