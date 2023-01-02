@@ -12,18 +12,20 @@ export default class PlotTwistNoFansub extends WordPressClarityMangaReader {
         this.paths = [ '/proyectos-finalizados-new/', '/proyectos-activosss/' ];
         this.queryMangas = 'div.vc_gitem-zone a.vc_gitem-link';
     }
-    async _getChapterList( manga, callback ) {
-        let uri = new URL( manga.id, this.url );
-        let request = new Request(uri.href, this.requestOptions );
-        let data = await this.fetchDOM(request, 'script#custompaginop-js-extra');
-        let mangaid = data[0].text.match(/manid":"([0-9]+)/)[1];
+    
+    async _getChapters( manga ) {
+        const uri = new URL( manga.id, this.url );
+        const request = new Request(uri.href, this.requestOptions );
+        const data = await this.fetchDOM(request, 'script#custompaginop-js-extra');
+        const mangaid = data[0].text.match(/manid":"([0-9]+)/)[1];
         let chapterList = [];
         for(let page = 1, run = true; run; page++) {
             let chapters = await this._getChaptersFromPage(mangaid, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
-        callback( null, chapterList );
+        return chapterList;
     }
+
     async _getChaptersFromPage(mangaid, page) {
         const uri = new URL('/wp-admin/admin-ajax.php', this.url);
         let params = 'pageNumber='+ page+'&manga_id='+mangaid+'&action=lcap';
