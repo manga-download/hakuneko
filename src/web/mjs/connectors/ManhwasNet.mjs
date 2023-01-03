@@ -10,10 +10,9 @@ export default class ManhwasNet extends WordPressMadara {
         this.url = 'https://manhwas.net';
         this.path = '/biblioteca';
 
-        this.queryTitleForURI = 'div.post-title h1';
-        this.queryMangas = 'div.row div.series-box a';
-        this.queryChapters = 'li.wp-manga-chapter div.chapter-link a';
-        this.queryChaptersTitleBloat = 'span.chapter-release-date';
+        this.queryTitleForURI = 'article.anime-single h1.title';
+        this.queryMangas = 'article.anime a';
+        this.queryChapters = 'li a.fa-book';
         this.queryPages = 'div#chapter_imgs img[src]:not([src=""])';
     }
 
@@ -33,9 +32,23 @@ export default class ManhwasNet extends WordPressMadara {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.trim()
+                title: element.querySelector('h3.title').textContent.trim()
             };
         });
+    }
+
+    async _getChapters(manga) {
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
+
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.querySelector('p span').textContent.trim(),
+            };
+        });
+
     }
 
     async _getPages(chapter) {
@@ -61,4 +74,5 @@ export default class ManhwasNet extends WordPressMadara {
             });
         });
     }
+
 }
