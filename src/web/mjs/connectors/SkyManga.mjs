@@ -7,6 +7,6 @@ export default class SkyManga extends WordPressMadara {
         super.id = 'skymanga';
         super.label = 'Sky Manga';
         this.tags = [ 'webtoon', 'hentai', 'english' ];
-        this.url = 'https://skymanga.co';
+        this.url = 'https://skymanga.xyz';
     }
 }
