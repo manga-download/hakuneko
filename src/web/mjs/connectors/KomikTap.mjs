@@ -18,7 +18,8 @@ export default class KomikTap extends WordPressMangastream {
         this.hostPattern = newUrl.host;
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
-    async canHandleURI(uri) {
+    canHandleURI(uri) {
+        super.initialize(); //make sure _initializeConnector has been called 
         return uri.href.includes(this.url);
     }
 }
