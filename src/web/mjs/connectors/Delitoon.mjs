@@ -23,7 +23,7 @@ export default class Delitoon extends Connector {
         req.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(req, this.requestOptions);
         const data = await this.fetchJSON(request);
-        return data.data.images.map(element => this.createConnectorURI(element.imagePath));
+        return new Manga(this, mangaid, data.data.title.trim());
     }
     async _getMangas() {
         await this.getToken();
@@ -78,7 +78,7 @@ export default class Delitoon extends Connector {
                     throw new Error('Unknown error : '+ data.error.code);
             }
         }
-        return data.data.images.map(element => element.imagePath);
+        return data.data.images.map(element => this.createConnectorURI(element.imagePath));
     }
 
     async getToken() {
