@@ -23,7 +23,7 @@ export default class Delitoon extends Connector {
         req.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(req, this.requestOptions);
         const data = await this.fetchJSON(request);
-        return new Manga(this, mangaid, data.data.title.trim());
+        return data.data.images.map(element => this.createConnectorURI(element.imagePath));
     }
     async _getMangas() {
         await this.getToken();
