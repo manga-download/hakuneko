@@ -19,7 +19,7 @@ export default class Delitoon extends Connector {
     async _getMangaFromURI(uri) {
         await this.getToken();
         const mangaid = uri.href.match(/\/detail\/(\S+)/)[1];
-        const req = new URL('/api/balcony-api/contents/'+mangaid, this.url);
+        const req = new URL('/api/balcony-api-v2/contents/'+mangaid, this.url);
         req.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(req, this.requestOptions);
         const data = await this.fetchJSON(request);
@@ -43,7 +43,7 @@ export default class Delitoon extends Connector {
     }
     async _getChapters(manga) {
         await this.getToken();
-        const uri = new URL('/api/balcony-api/contents/'+manga.id, this.url);
+        const uri = new URL('/api/balcony-api-v2/contents/'+manga.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
@@ -64,7 +64,7 @@ export default class Delitoon extends Connector {
     }
     async _getPages(chapter) {
         await this.getToken();
-        const uri = new URL('/api/balcony-api/contents/'+chapter.manga.id+'/'+chapter.id, this.url);
+        const uri = new URL('/api/balcony-api-v2/contents/'+chapter.manga.id+'/'+chapter.id, this.url);
         uri.searchParams.set('isNotLoginAdult', 'true');
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
