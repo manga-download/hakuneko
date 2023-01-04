@@ -78,7 +78,7 @@ export default class Delitoon extends Connector {
                     throw new Error('Unknown error : '+ data.error.code);
             }
         }
-        return data.data.images.map(element => element.imagePath);
+        return data.data.images.map(element => this.createConnectorURI(element.imagePath));
     }
 
     async getToken() {
