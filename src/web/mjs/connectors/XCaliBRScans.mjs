@@ -69,7 +69,6 @@ export default class XCaliBRScans extends WordPressMangastream {
         const piclist = data.imagz.map(link => this.getAbsolutePath(link, request.url).replace(/\/i\d+\.wp\.com/, '')).filter(link => !link.includes('histats.com'));
         switch (data.scrambled) {
             case 0: //do nothing
-                return piclist;
             case 1: //Flip each picture, no grouping
                 return piclist.map(element => {
                     return this.createConnectorURI({
@@ -99,21 +98,32 @@ export default class XCaliBRScans extends WordPressMangastream {
     async _handleConnectorURI(payload) {
         let pictures = [];
         switch(payload.scrambled) {
-            case 1:
+            case 0:{
+                const request = new Request(payload.picture, this.requestOptions);
+                request.headers.set('x-referer', this.url);
+                const response = await fetch(request);
+                const data = await response.blob();
+                return this._blobToBuffer(data);
+            }
+            case 1: {
                 pictures.push(payload.picture);
                 break;
-            case 2:
+            }
+            case 2: {
                 pictures.push(payload.picture1);
                 pictures.push(payload.picture2);
                 break;
+            }
         }
-        let promises = pictures.map(async part => {
-            let response = await fetch(new Request(part, this.requestOptions));
-            let data = await response.blob();
+        const promises = pictures.map(async part => {
+            const request = new Request(part, this.requestOptions);
+            request.headers.set('x-referer', this.url);
+            const response = await fetch(request);
+            const data = await response.blob();
             return createImageBitmap(data);
         });
-        let bitmaps = await Promise.all(promises);
-        let data = await this.composePuzzle(bitmaps, payload.scrambled);
+        const bitmaps = await Promise.all(promises);
+        const data = await this.composePuzzle(bitmaps, payload.scrambled);
         return this._blobToBuffer(data);
     }
     async composePuzzle(bitmaps, scramblemode) {

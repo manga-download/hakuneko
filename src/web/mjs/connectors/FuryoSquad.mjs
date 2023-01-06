@@ -7,25 +7,18 @@ export default class FuryoSquad extends Connector {
         super.id = 'furyosquad';
         super.label = 'Furyo Squad';
         this.tags = [ 'manga', 'french', 'high-quality' ];
-        this.url = 'http://www.furyosquad.com';
+        this.url = 'https://www.furyosquad.com';
     }
 
     async _getMangas() {
-        const categories = ['/', '/en-cours', '/termines', '/stoppes'];
-
-        let mangas = [];
-        for ( const category of categories) {
-            let request = new Request(new URL(category, this.url), this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.fs-chap-container div.grid-item-container div.media-body a');
-            mangas.push( ...data.map(manga => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(manga, this.url),
-                    title: manga.title.trim()
-                };
-            }));
-        }
-
-        return mangas;
+        const request = new Request(new URL('/mangas', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.fs-chap-container div.grid-item-container div.media-body a');
+        return data.map(manga => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(manga, this.url),
+                title: manga.title.trim()
+            };
+        });
     }
 
     async _getChapters(manga) {
