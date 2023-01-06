@@ -9,7 +9,11 @@ export default class BilibiliComicsES extends BilibiliManhua {
         this.tags = [ 'webtoon', 'spanish' ];
         this.url = 'https://www.bilibilicomics.com';
         this.lang = 'es';
+        this.links = {
+            login: 'https://www.bilibilicomics.com/account'
+        };
     }
+
     get icon() {
         return '/img/connectors/bilibili-comics';
     }

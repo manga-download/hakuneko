@@ -9,7 +9,11 @@ export default class BilibiliComicsID extends BilibiliManhua {
         this.tags = [ 'webtoon', 'indonesian' ];
         this.url = 'https://www.bilibilicomics.com';
         this.lang = 'id';
+        this.links = {
+            login: 'https://www.bilibilicomics.com/account'
+        };
     }
+
     get icon() {
         return '/img/connectors/bilibili-comics';
     }

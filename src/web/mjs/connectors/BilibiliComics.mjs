@@ -9,5 +9,8 @@ export default class BilibiliComics extends BilibiliManhua {
         this.tags = [ 'webtoon', 'english' ];
         this.url = 'https://www.bilibilicomics.com';
         this.lang = 'en';
+        this.links = {
+            login: 'https://www.bilibilicomics.com/account'
+        };
     }
 }
