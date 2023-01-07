@@ -10,9 +10,11 @@ export default class BilibiliManhua extends Connector {
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
         this.lang = 'cn';
-        this.access_token = undefined;
-        this.refresh_token = undefined;
-        this.token_expires_at = undefined;
+        this.token_expires_at = -1;
+        this.auth = {
+            accessToken : '',
+            refreshToken : '',
+        };
         this.config = {
             quality:  {
                 label: 'Preferred format',
@@ -28,34 +30,53 @@ export default class BilibiliManhua extends Connector {
         };
     }
 
-    async getToken() {
-        //First get auth token from cookies
+    async _initializeConnector() {
+        await this.getToken();
+        if(this.auth.refreshToken) await this.refreshToken();
+    }
+
+    async refreshToken() {
         try {
+            const now = Math.floor(Date.now() / 1000);
+            const data = await this._fetchWithAccessToken('/RefreshToken', {refresh_token : this.auth.refreshToken});
+            this.auth.accessToken = data.data.access_token;
+            this.auth.refreshToken = data.data.refresh_token;
+            this.token_expires_at = now + 60*10;//expires in 10 minutes
+        } catch (error) {
+            //
+        }
+
+    }
+
+    async getToken() {
+        try {
+
             const now = Math.floor(Date.now() / 1000);
             let cooki = require('electron');
             cooki = await cooki.remote.session.defaultSession.cookies.get({ url: this.url, name : "access_token" });
-            cooki = cooki[0].value;
-             
-            this.access_token = JSON.parse(decodeURIComponent(cooki)).accessToken;
-            this.refresh_token = JSON.parse(decodeURIComponent(cooki)).refreshToken;
-            if (!this.token_expires_at) this.token_expires_at = now + 60*5; //(tokens expire in 10 minutes)
 
-            if (this.access_token && this.token_expires_at < now) {
-                //renew auth token if expired https://us-user.bilibilicomics.com/twirp/global.v1.User/RefreshToken?device=pc&platform=web&lang=en&sys_lang=en
-                const data = await this._fetchGlobalUser('/RefreshToken', {refresh_token : this.refresh_token});
-                this.access_token = data.data.access_token;
-                this.refresh_token = data.data.refresh_token;
-                this.token_expires_at = now + 60*5;
-                await require('electron').remote.session.defaultSession.cookies.set({url : this.url, name : 'access_token', value : this.access_token});
-                await require('electron').remote.session.defaultSession.cookies.set({url : this.url, name : 'refresh_token', value : this.refresh_token});
+            //if there is no cookie user is disconnected, force cleanup
+            if (cooki.length == 0) throw new Error('User is not connected.');
+
+            //if token is not defined, get if from cookies
+            if (!this.auth.accessToken) {
+                const cookie_value = cooki[0].value;
+                this.auth.accessToken = JSON.parse(decodeURIComponent(cookie_value)).accessToken;
+                this.auth.refreshToken = JSON.parse(decodeURIComponent(cookie_value)).refreshToken;
+                this.token_expires_at = now + 60*10; //expires in 10 minutes
+                return;
+            }
+
+            //if token exists check if expired
+            if (this.auth.accessToken && this.token_expires_at < now) {
+                await this.refreshToken();
                 return;
             }
 
         } catch(error) {
-            this.access_token = undefined;
-            this.refresh_token = undefined;
-            this.token_expires_at = undefined;
-
+            this.auth.accessToken = '';
+            this.auth.refreshToken = '';
+            this.token_expires_at = -1;
         }
 
     }
@@ -76,7 +97,7 @@ export default class BilibiliManhua extends Connector {
                 'x-referer':  uri,
             }
         });
-        if (this.access_token) request.headers.set('Authorization', ' Bearer '+ this.access_token);
+        if (this.auth.accessToken) request.headers.set('Authorization', ' Bearer '+ this.auth.accessToken);
         const data = await this.fetchJSON(request);
         return data.data;
     }
@@ -134,15 +155,15 @@ export default class BilibiliManhua extends Connector {
         let data = null;
 
         //Using access_token from cookies, try to get token for unlocked chapter
-        if (this.access_token) {
-            credz = await this._fetchGlobalUser('/GetCredential', {
+        if (this.auth.accessToken) {
+            credz = await this._fetchWithAccessToken('/GetCredential', {
                 ep_id: chapter.id,
                 comic_id : chapter.manga.id,
                 type : 1
             });
         }
         //if we got chapter credentials, fetch full chapter using it
-        if (credz.data && credz.data.credential) {
+        if (credz && credz.data && credz.data.credential) {
             data = await this._fetchTwirp('/GetImageIndex', {
                 ep_id: chapter.id,
                 credential : credz.data.credential
@@ -161,7 +182,7 @@ export default class BilibiliManhua extends Connector {
         return images.map(image => image.url + '?token=' + image.token);
     }
 
-    async _fetchGlobalUser(path, body) {
+    async _fetchWithAccessToken(path, body) {
         const uri = new URL('/twirp/global.v1.User' + path, 'https://us-user.bilibilicomics.com');
         uri.searchParams.set('device', 'pc');
         uri.searchParams.set('platform', 'web');
@@ -176,10 +197,9 @@ export default class BilibiliManhua extends Connector {
                 'x-referer': 'https://us-user.bilibilicomics.com/',
                 'x-sec-fetch-site': 'same-site',
                 'Accept-Language': 'en-US,en;q=0.5',
-                'Authorization' : ' Bearer '+ this.access_token
+                'Authorization' : ' Bearer '+ this.auth.accessToken
             }
         });
         return await this.fetchJSON(request);
     }
-
 }
