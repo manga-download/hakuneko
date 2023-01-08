@@ -17,11 +17,9 @@ export default class Manga1001Top extends MadTheme {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'li option');
         return data.map(element => {
-            const link = element.value;
-            const title = element.text.trim();
             return {
-                id: link,
-                title: title,
+                id:  element.value,
+                title: element.text.trim()
             };
         });
     }
