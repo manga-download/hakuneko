@@ -46,11 +46,9 @@ export default class MadTheme extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'a');
         return data.map(element => {
-            const link = element.pathname;
-            const title = element.querySelector(this.queryChapterTitle).textContent.trim();
             return {
-                id: link,
-                title: title,
+                id: element.pathname,
+                title: element.querySelector(this.queryChapterTitle).textContent.trim()
             };
         });
     }
