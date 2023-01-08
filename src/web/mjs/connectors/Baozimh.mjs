@@ -61,8 +61,21 @@ export default class Baozimh extends Connector {
             pagesList.push( ...data.map(element => element.getAttribute('src')).filter(page => page) );
             run = uri != null;
         }
-        return pagesList.filter((page, index) => {
+        pagesList = pagesList.filter((page, index) => {
             return index === pagesList.findIndex(item => item === page);
         });
+
+        return pagesList.map(page => this.createConnectorURI(page));
+
+    }
+
+    async _handleConnectorURI(payload) {
+        const request = new Request(payload, this.requestOptions);
+        request.headers.set('x-referer', this.url);
+        const response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }
