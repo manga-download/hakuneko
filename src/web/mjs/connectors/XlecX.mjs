@@ -8,7 +8,7 @@ export default class XlecX extends Connector {
         super.id = 'xlecx';
         super.label = 'XlecX';
         this.tags = [ 'hentai', 'porn', 'english' ];
-        this.url = 'https://xlecx.org';
+        this.url = 'https://xlecx.one';
     }
 
     async _getMangaFromURI(uri) {
