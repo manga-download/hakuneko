@@ -1,7 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-
 export default class NHentaiCom extends Connector {
 
     constructor() {
@@ -31,12 +30,9 @@ export default class NHentaiCom extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const ch = uri.pathname.split('/');
-        const slug = ch[ch.length-1];
+        const slug = uri.pathname.split('/').pop();
         const request = new Request(new URL(`/api/comics/${slug}`, this.url), this.requestOptions);
         const data = await this.fetchJSON(request);
-        const id = data.slug;
-        const title = data.title;
-        return new Manga(this, id, title);
+        return new Manga(this, data.slug, data.title);
     }
 }
