@@ -18,7 +18,7 @@ export default class MangaTepesi extends Connector {
 
     async _getMangas() {
         const request = new Request(new URL('/mangalistesi', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'article.manga-card > a');
+        const data = await this.fetchDOM(request, 'article.manga-card > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
@@ -28,8 +28,8 @@ export default class MangaTepesi extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#manga-chapters-item-list a');
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#manga-chapters-item-list a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.href, this.url),
@@ -39,8 +39,8 @@ export default class MangaTepesi extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'source.read-manga-image:not([style])');
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'source.read-manga-image:not([style])');
         return data.map(image => {
             return this.getAbsolutePath( image.src, this.url );
         });
