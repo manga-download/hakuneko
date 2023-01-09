@@ -18,8 +18,8 @@ export default class TaoSect extends Connector {
     }
     async _getMangas() {
         let mangaList = [];
-        for (let i = 0; i < this.paths.length; i++) {
-            let request = new Request(new URL('/situacao/'+this.paths[i], this.url), this.requestOptions);
+        for (let path of this.paths) {
+            let request = new Request(new URL('/situacao/'+path, this.url), this.requestOptions);
             let [data] = await this.fetchDOM(request, 'div.post-list');
             let articles = data.querySelectorAll('article.post-projeto a');
             let popups = data.querySelectorAll('div.webui-popover-content.popover-projeto');
