@@ -11,9 +11,8 @@ export default class Manga1001Top extends MadTheme {
     }
 
     async _getChapters(manga) {
-        let mangaid = manga.id.split('/').pop();
-        mangaid = '/'+mangaid;//make sure to take last part of url for the api
-        const uri = new URL('/api/manga'+mangaid+'/chapters?source=detail', this.url);
+        const mangaid = manga.id.split('/').pop();
+        const uri = new URL('/api/manga/'+mangaid+'/chapters?source=detail', this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'li option');
         return data.map(element => {
