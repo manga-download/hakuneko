@@ -7,23 +7,13 @@ export default class CocoManHua extends ZYMK {
         super.id = 'cocomanhua';
         super.label = 'Coco漫画';
         this.tags = [ 'webtoon', 'chinese' ];
-        this.url = 'https://www.cocomanga.com';
-
+        this.url = 'https://www.colamanhua.com';
         this.path = '/show?page=';
         this.pathSuffix = '';
         this.queryMangaTitle = 'dl.fed-deta-info dd.fed-deta-content h1.fed-part-eone';
         this.queryMangasPageCount = 'div.fed-page-info a.fed-show-sm-inline';
         this.queryMangas = 'ul.fed-list-info li.fed-list-item a.fed-list-title';
         this.queryChapters = 'div.all_data_list ul li a';
-        this.queryPage = `
-            new Promise(resolve => {
-                // from manga.read.js __cr.showPic(...)
-                const script = 'dlSxHGdzZuE8IyExLyP0MucxL4M4ZmIzZ4gmN1ZhciB1aFSzVFhkQmVuayzmT0ZFd0nvVTVkQFQXTWwnMkQERX9uQkZ5TUcwclIpUmVXQl7vVm9RTVnxNDMuQ4wPZSUwMVUxeDSQWS9HYlwaaFMVVuBWVE9oTVQNU0YvdSQNa0jxZF0Sd0SqaEZUVz9zU0cwdV9qQkVTQUZhTkMzQFIoPjkiVTS3VzdWd4IqcSdjbXQMYjQQMSYxbE0iLj2xYUdRLkVSeShVVjIyT0QnU4HxNWhhbSH4WVhRWWLxLUZiaj3yY4rZME3pbEZZbj3KZSdqVkkWWj3uRS9oUkZRT0IFcSkXaygvUTMaclQrLWSLLuSPUTItekSpMX9WWE3pVDSWT0EyRj8UQVYyVUQJVFMrNVkNLlM2ZUV1eFS3NW8NVkk5T0QWUlIWRj8XQXM5YyH0QkIURTBKLU30U4rMekPvZSQZa0I9TVZZLWQETuBXQEk5ZW9FbU0XUkQULW81YuMRRVIERkBWLSYxYVhvUz3YWmVWelgxVlj3MlVraSBZelQOZEQNbk9pY1dWLzZYYyMvTWHvLU3aalhpYWrqUlIHPTIMVkZSUTMaQE3XNDQVa4g4YW3NTSQHbyQhbSZ3VWwjTkVHcGZQbmAxUzVqTj0FZGkXWEZFYuSjQE8URl0LLuVZWjdWTj8UaDQuQj31Y43RRSdSdErXbjZrYuBvbkZqaEQhVlqvVG9WQEzwTkhWQmBrVF0FWlLvbGdaajI3UjdjbE3FQmhRVmBtVWrvR0SXayBVLXBGT0haaFQsayVhV09VVW9ILlSHPXhiVjS3Wl0aTWSEQjkuLjZIY0hNRlMYVXIiL485WVZMd0QUPTIiVlh3T0hJTU3HaGVhayVzWlraMWSGQXhXVFQrTjU0elISNTVMVjYxVzdRclHyaDSkVU2zVl9Jdj0XdGkMaz30TjZNYVjxcFSNL4PwUzZjeVYxbFrVLj9RVkdjbSnwQlwWVlQ0VUcwd0ExLGkVWFh4ZUQCb4PwcS9uWEYvTUdjVWIoUmVNVE9HUyBJWE3XUlhUbE32ZWqwMkdETTQTQyPvUTAwclIqcErjVXhJYuBqeS9oQjdMbE9HYkQRPlIUQj0iVXQTVXkzeFVWbEIZLDVrVEhjQlVXeDQQVFr5VEVQLkdFWuSMVEIXYWj3Qj3sTl0jbXBYWlrjWkVFPjrLekn0RyIFbFHxb19TVkIsVuIteSSXQmIhL47wZSVFRlVqbFriREnwUWwRRj3FPuZiWSIVVSV2aVdXbShQVTVKZUVnTz3VNVhQWSS1U0QWR0ZGLU8hbUk5ZUhaeWVSMW9LelQ5VEdRTU8HbSIPVDA8Iyr4YXHgd1QlLu0fX4MjZWMxeXBzJGdzZuEqHEMxeXBzbz9TKlVsYx3CYXMkMuPscFSxc4Und4hhdSQnZUZ0Y4q9KmQtU1QxaW3mJEMxeXBzbz9TKlVsYx3VdFY2JRj6ZXZhbCh1dFYxJTq=';
-                const totalimg = mh_info.enc_code1 ? parseInt(eval(base64.decode(script))) : mh_info.totalimg;
-                resolve(new Array(totalimg).fill().map((_, index) => new URL(__cr.getPicUrl(index + 1), window.location.origin).href));
-            });
-        `;
-
         this.config.throttle = {
             label: 'Throttle Requests [ms]',
             description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block images for to many consecuitive requests.',
@@ -35,22 +25,109 @@ export default class CocoManHua extends ZYMK {
     }
 
     async _getPages(chapter) {
-        const images = await super._getPages(chapter);
-        return images.map(image => {
-            return this.createConnectorURI({
-                url: image,
-                referer: new URL(chapter.id, this.url).href
+        const script = `
+        new Promise((resolve, reject) => {
+            let decrypt = function (key, message) {
+                var s = CryptoJS.enc.Utf8.parse(key),
+                t = CryptoJS.AES.decrypt(message, s, {
+                    mode: CryptoJS.mode.ECB,
+                    padding: CryptoJS.pad.Pkcs7,
+                })
+                return CryptoJS.enc.Utf8.stringify(t).toString()
+            }
+            let totalimgs = 0;
+            try {
+                totalimgs = decrypt('hxPLjUZQgfZQT70x', CryptoJS.enc.Base64.parse(window.mh_info.enc_code1).toString(CryptoJS.enc.Utf8));
+                if (totalimgs == '') {
+                    totalimgs = decrypt('EJJFAD6P2BtTrEN3', CryptoJS.enc.Base64.parse(window.mh_info.enc_code1).toString(CryptoJS.enc.Utf8));
+                }
+                totalimgs = parseInt(totalimgs);
+                if (String(totalimgs) == 'NaN') {
+                    totalimgs = decrypt('EJJFAD6P2BtTrEN3', CryptoJS.enc.Base64.parse(window.mh_info.enc_code1).toString(CryptoJS.enc.Utf8));
+                }
+            }
+            catch (error) {
+                totalimgs = decrypt('EJJFAD6P2BtTrEN3', CryptoJS.enc.Base64.parse(window.mh_info.enc_code1).toString(CryptoJS.enc.Utf8));
+                totalimgs = parseInt(totalimgs);
+            }
+            let picz = [];
+            for( let i = 1 ; i <= totalimgs; i++) {
+                picz.push(__cr.getPicUrl(i));
+            }
+            //get key for picture decryption
+            let realKey = CryptoJS.enc.Utf8.parse(decrypt('EhhTOJE2zA9u7vYT', window.image_info.imgKey));
+            resolve({
+                images : picz, key : realKey
             });
         });
+        `;
+        const uri = new URL(chapter.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        const data = await Engine.Request.fetchUI(request, script, 30000);
+        return data.images.map(image => this.createConnectorURI( {
+            url : new URL(image, this.url).href, key : data.key})
+        );
     }
 
     async _handleConnectorURI(payload) {
         const request = new Request(payload.url, this.requestOptions);
-        request.headers.set('x-referer', payload.referer);
+        request.headers.set('x-referer', this.url);
+        request.headers.set('x-origin', this.url);
         const response = await fetch(request);
-        let data = await response.blob();
-        data = await this._blobToBuffer(data);
-        this._applyRealMime(data);
-        return data;
+        let buffer = undefined;
+        if (payload.key.sigBytes != 0) {
+            let encrypted = new Uint8Array(await response.arrayBuffer());
+            buffer = {
+                mimeType: response.headers.get('content-type'),
+                data: await this._decryptPicture(encrypted, payload.key)
+            };
+        } else {
+            buffer = await response.blob();
+            buffer = await this._blobToBuffer(buffer);
+        }
+        this._applyRealMime(buffer);
+        return buffer;
+    }
+
+    async _decryptPicture(data, key) {
+        let G = key;
+        let H = this.convertUint8ArrayToWordArray(new Uint8Array(data));
+        let I = {
+            'ciphertext' : H};
+        const options = {
+            iv : CryptoJS.enc.Utf8.parse('0000000000000000'),
+            mode : CryptoJS.mode.CBC,
+            padding : CryptoJS.pad.Pkcs7
+        };
+        return this.convertWordArrayToUint8Array(CryptoJS.AES.decrypt(I, G, options));
+    }
+
+    convertWordArrayToUint8Array (wordArray) {
+        var len = wordArray.words.length,
+            u8_array = new Uint8Array(len << 2),
+            offset = 0,
+            word,
+            i;
+        for (i = 0; i < len; i++) {
+            word = wordArray.words[i];
+            u8_array[offset++] = word >> 24;
+            u8_array[offset++] = word >> 16 & 255;
+            u8_array[offset++] = word >> 8 & 255;
+            u8_array[offset++] = word & 255;
+        }
+        return u8_array;
+    }
+
+    convertUint8ArrayToWordArray(u8Array) {
+        var words = [],
+            i = 0,
+            len = u8Array.length;
+        while (i < len) {
+            words.push(u8Array[i++] << 24 | u8Array[i++] << 16 | u8Array[i++] << 8 | u8Array[i++]);
+        }
+        return {
+            sigBytes: words.length * 4,
+            words: words
+        };
     }
 }
