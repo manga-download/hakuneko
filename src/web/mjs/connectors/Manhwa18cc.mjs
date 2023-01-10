@@ -24,8 +24,24 @@ export default class Manhwa18cc extends WordPressMadara {
         let mangaList = [];
         for (let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
-            run = mangaList[mangaList.length - 1] != mangas[mangas.length - 1].id;
+
+            //if mangalist is empty, fill it anyway
+            if (mangaList.length == 0 && mangas.length > 0) {
+                mangaList.push(...mangas);
+                continue;
+            }
+
+            //if we have no more mangas, stop right here
+            if (mangas.length == 0) {
+                run == false;
+                continue;
+            }
+            //now we have mangas, for sure, and mangalist not empty
+            //we can check for existing mangas to stop the loop or not
+            if (mangaList[mangaList.length - 1].id != mangas[mangas.length - 1].id) {
+                mangaList.push(...mangas);
+            } else run = false;
+
         }
         return mangaList;
     }
