@@ -74,7 +74,7 @@ export default class CocoManHua extends ZYMK {
         request.headers.set('x-referer', this.url);
         request.headers.set('x-origin', this.url);
         const response = await fetch(request);
-        let buffer = '';
+        let buffer = undefined;
         if (payload.key.sigBytes != 0) {
             let encrypted = new Uint8Array(await response.arrayBuffer());
             buffer = {
