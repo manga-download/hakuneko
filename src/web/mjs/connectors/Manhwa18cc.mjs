@@ -25,7 +25,7 @@ export default class Manhwa18cc extends WordPressMadara {
         for (let page = 1, run = true; run; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
-            run = mangas.length == this.mangaNumberPerPage;
+            run = mangaList[mangaList.length - 1] != mangas[mangas.length - 1].id;
         }
         return mangaList;
     }
