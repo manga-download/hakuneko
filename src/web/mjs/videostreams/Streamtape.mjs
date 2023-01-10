@@ -7,13 +7,11 @@ export default class Streamtape {
     async getStream() {
         const script = `
             new Promise(resolve => {
-                for(let count = 0; count < 3; count++) {
-                    document.querySelector('[aria-label="Play"]').click();
-                }
-                resolve(new URL(document.getElementById('mainvideo').src, window.location.origin).href);
+                resolve(document.getElementById('robotlink').textContent.trim());
             });
         `;
         const request = new Request(this._uri);
-        return Engine.Request.fetchUI(request, script);
+        const data = await Engine.Request.fetchUI(request, script);
+        return new URL(data, this._uri).href;
     }
 }
