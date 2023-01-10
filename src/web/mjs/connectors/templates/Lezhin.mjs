@@ -224,7 +224,8 @@ export default class Lezhin extends Connector {
             let response = await this.fetchJSON(request);
 
             //picture final url
-            let imageurl = new URL('/v2' + episode.scrollsInfo[i].path + '.webp', this.cdnURL);
+            const extension = this.config.forceJPEG.value ? '.jpg' : '.webp';
+            let imageurl = new URL('/v2' + episode.scrollsInfo[i].path + extension, this.cdnURL);
             imageurl.searchParams.set('purchased', subscribed || purchased);
             imageurl.searchParams.set('q', 40);
             imageurl.searchParams.set('updated', updatedAt);
