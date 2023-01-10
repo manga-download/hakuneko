@@ -12,6 +12,6 @@ export default class FileMoon {
             });
         `;
         const request = new Request(this._uri);
-        return Engine.Request.fetchUI(request, script);
+        return await Engine.Request.fetchUI(request, script);
     }
 }
