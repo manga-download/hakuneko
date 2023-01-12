@@ -36,18 +36,6 @@ export default class TenshiMoe extends Connector {
         };
 
     }
-    async _initializeConnector() {
-        //bypass DdoSS Guard
-        const request = new Request(this.url, this.requestOptions);
-        const script = `
-        new Promise((resolve, reject) => {
-            setTimeout(() => {
-                    resolve();
-            },7000); //wait to let DG set its cookies
-        });
-        `;
-        await Engine.Request.fetchUI(request, script, 30000, true); //need image support, DG script loads a fake image
-    }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
