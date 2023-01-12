@@ -18,7 +18,7 @@ export default class TenshiMoe extends Connector {
                     { value: 'SUB', name: 'Subbed' },
                     { value: 'DUB', name: 'Dubbed' }
                 ],
-                value: ''
+                value: 'SUB'
             },
             resolution: {
                 label: 'Preferred Resolution',
@@ -46,7 +46,7 @@ export default class TenshiMoe extends Connector {
             },7000); //wait to let DG set its cookies
         });
         `;
-        await Engine.Request.fetchUI(request, script, 300000, true); //need image support, DG script loads a fake image
+        await Engine.Request.fetchUI(request, script, 30000, true); //need image support, DG script loads a fake image
     }
 
     async _getMangaFromURI(uri) {
@@ -114,7 +114,6 @@ export default class TenshiMoe extends Connector {
             sourceUrl = data;
         } else {
             sourceUrl = this.findPreferedLanguage(data);
-            if(!sourceUrl) sourceUrl = data[0];
         }
 
         let uri = new URL(sourceUrl);
@@ -124,7 +123,7 @@ export default class TenshiMoe extends Connector {
         request = new Request(uri, this.requestOptions);
         data = await this.fetchDOM(request, 'video source');
         let video = data.find(element => element.getAttribute('size') == this.config.resolution.value);
-        if (!video) video = data [0];
+        video = !video ? data[0] : video;
         return {video : video.src, subtitles :[]}; //subtitles are forced
 
     }
