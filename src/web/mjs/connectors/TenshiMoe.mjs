@@ -98,8 +98,8 @@ export default class TenshiMoe extends Connector {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'ul.dropdown-menu a');
         let sourceUrl = '';
-        
-        sourceUrl = (data.length == 1) ? data : this.findPreferedLanguage(data);
+
+        sourceUrl = data.length == 1 ? data : this.findPreferedLanguage(data);
 
         let uri = new URL(sourceUrl);
         const videoid = uri.searchParams.get('v');
