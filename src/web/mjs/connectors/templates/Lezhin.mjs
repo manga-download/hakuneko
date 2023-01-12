@@ -1,6 +1,8 @@
 import Connector from '../../engine/Connector.mjs';
 import Manga from '../../engine/Manga.mjs';
+
 export default class Lezhin extends Connector {
+
     constructor() {
         super();
         super.id = undefined;
@@ -8,7 +10,6 @@ export default class Lezhin extends Connector {
         this.tags = [];
         this.url = undefined;
         this.apiURL = 'https://www.lezhinus.com';
-        // /lz-api/v2/
         this.cdnURL = 'https://cdn.lezhin.com';
         this.userID = undefined;
         this.mangasPerPage = 36;
@@ -33,6 +34,7 @@ export default class Lezhin extends Connector {
             }
         };
     }
+
     async _initializeAccount() {
         if(this.userID) {
 
@@ -41,14 +43,8 @@ export default class Lezhin extends Connector {
             const checkscript = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    try {
                         resolve(__LZ_CONFIG__);
-                    }
-                    catch(error) {
-                        reject(error);
-                    }
-                },
-                5000);
+                },5000);
             });
             `;
             const request = new Request(uri, this.requestOptions);
@@ -65,7 +61,7 @@ export default class Lezhin extends Connector {
         const password = this.config.password.value.replace("'", "\\'"); //escape the password, because if it contains a single quote the script will fail
         let script = `
         new Promise((resolve, reject) => {
-            try {
+            //try {
                 if($('#log-nav-email').length) {
                     return resolve();
                 }
@@ -79,10 +75,10 @@ export default class Lezhin extends Connector {
                     success: resolve,
                     error: reject
                 });
-            }
-            catch(error) {
-                reject(error);
-            }
+           // }
+          //  catch(error) {
+          //      reject(error);
+          //  }
         });
         `;
         let request = new Request(new URL(this.url + '/login'), this.requestOptions);
@@ -102,6 +98,7 @@ export default class Lezhin extends Connector {
         // => prevent a warning webpage that would appear otherwise when loading chapters / pages
         return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
     }
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.comicInfo__detail h2.comicInfo__title');
@@ -109,6 +106,7 @@ export default class Lezhin extends Connector {
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
+
     async _getMangas() {
         let mangaList = [];
         for (let page = 0, run = true; run; page++) {
@@ -117,8 +115,8 @@ export default class Lezhin extends Connector {
         }
         return mangaList;
     }
+
     async _getMangasFromPage(page) {
-        //https://www.lezhinus.com/lz-api/v2/contents?menu=general&limit=36&offset=0&order=popular
         const uri = new URL('/lz-api/v2/comics', this.apiURL);
         uri.searchParams.set('menu', 'general');
         uri.searchParams.set('limit', this.mangasPerPage);
@@ -142,7 +140,7 @@ export default class Lezhin extends Connector {
         new Promise((resolve, reject) => {
             // wait until episodes have been updated with purchase info ...
             setTimeout(() => {
-                try {
+              //  try {
                     let chapters = __LZ_PRODUCT__.all // __LZ_PRODUCT__.product.episodes
                     .filter(chapter => {
                         if(chapter.purchased) {
@@ -167,30 +165,20 @@ export default class Lezhin extends Connector {
                         };
                     });
                     resolve(chapters);
-                }
-                catch(error) {
-                    reject(error);
-                }
-            },
-            2500);
+            //    }
+            //    catch(error) {
+            //        reject(error);
+            //    }
+            }, 2500);
         });
         `;
         let request = new Request(new URL('/comic/' + manga.id, this.url), this.requestOptions);
         return Engine.Request.fetchUI(request, script);
     }
+
     async _getPages(chapter) {
         await this._initializeAccount();
 
-        /*
-        q  | Free  | Purchased
-        ----------------------
-        10 |  480w |  640w
-        20 |  640w |  720w
-        30 |  720w | 1080w
-        40 | 1080w | 1280w
-        */
-
-        //https://www.lezhin.com/lz-api/v2/inventory_groups/comic_viewer?platform=web&store=web&alias=angel&name=1&preload=false&type=comic_episode
         let uri = new URL('https://www.lezhin.com/lz-api/v2/inventory_groups/comic_viewer');
         uri.searchParams.set('platform', 'web');
         uri.searchParams.set('store', 'web');
@@ -201,44 +189,55 @@ export default class Lezhin extends Connector {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
 
+        return data.data.extra.episode.scrollsInfo.map(scroll => {
+            return this.createConnectorURI({url : scroll.path, infos : JSON.stringify(data)});
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        /*
+        q  | Free  | Purchased
+        ----------------------
+        10 |  480w |  640w
+        20 |  640w |  720w
+        30 |  720w | 1080w
+        40 | 1080w | 1280w
+        */
+
+        let data = JSON.parse(payload.infos);
         const episode = data.data.extra.episode;
+        const extension = this.config.forceJPEG.value ? '.jpg' : '.webp';
+        let imageurl = new URL('/v2' + payload.url + extension, this.cdnURL);
         let purchased = episode.coin == 0;
         //purchased = purchased || (episode.freedAt && episode.freedAt < Date.now());
         const subscribed = data.data.extra.subscribed;
         const updatedAt = episode.updatedAt;
 
-        let pictures = [];
+        let tokenuri = new URL('/lz-api/v2/cloudfront/signed-url/generate', this.apiURL);
+        tokenuri.searchParams.set('contentId', episode.idComic);
+        tokenuri.searchParams.set('episodeId', episode.id);
+        tokenuri.searchParams.set('purchased', subscribed || purchased);
+        tokenuri.searchParams.set('q', 40);
+        tokenuri.searchParams.set('firstCheckType', 'P');
 
-        for (let i = 0; i < episode.scrollsInfo.length; i++) {
+        //get parameters
+        let request = new Request( tokenuri, this.requestOptions );
+        request.headers.set('x-referer', this.apiURL);
+        let response = await this.fetchJSON(request);
 
-            let tokenuri = new URL('/lz-api/v2/cloudfront/signed-url/generate', this.apiURL);
-            tokenuri.searchParams.set('contentId', episode.idComic);
-            tokenuri.searchParams.set('episodeId', episode.id);
-            tokenuri.searchParams.set('purchased', subscribed || purchased);
-            tokenuri.searchParams.set('q', 40);
-            tokenuri.searchParams.set('firstCheckType', 'P');
+        //update image url
+        imageurl.searchParams.set('purchased', subscribed || purchased);
+        imageurl.searchParams.set('q', 40);
+        imageurl.searchParams.set('updated', updatedAt);
+        imageurl.searchParams.set('Policy', response.data.Policy);
+        imageurl.searchParams.set('Signature', response.data.Signature);
+        imageurl.searchParams.set('Key-Pair-Id', response.data['Key-Pair-Id']);
 
-            //get parameters
-            request = new Request( tokenuri, this.requestOptions );
-            request.headers.set('x-referer', this.apiURL);
-            let response = await this.fetchJSON(request);
-
-            //picture final url
-            const extension = this.config.forceJPEG.value ? '.jpg' : '.webp';
-            let imageurl = new URL('/v2' + episode.scrollsInfo[i].path + extension, this.cdnURL);
-            imageurl.searchParams.set('purchased', subscribed || purchased);
-            imageurl.searchParams.set('q', 40);
-            imageurl.searchParams.set('updated', updatedAt);
-
-            //add missing parameters to the image url
-            imageurl.searchParams.set('Policy', response.data.Policy);
-            imageurl.searchParams.set('Signature', response.data.Signature);
-            imageurl.searchParams.set('Key-Pair-Id', response.data['Key-Pair-Id']);
-            pictures.push(imageurl.href);
-        }
-
-        return pictures;
-
+        request = new Request(imageurl, this.requestOptions);
+        response = await fetch(request);
+        data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
-
 }
