@@ -1,7 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 import Manga from '../engine/Manga.mjs';
 
-
 export default class Toonily extends WordPressMadara {
 
     constructor() {
