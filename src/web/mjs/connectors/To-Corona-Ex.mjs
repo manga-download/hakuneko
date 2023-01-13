@@ -10,6 +10,8 @@ export default class ToCoronaEx extends Connector {
         this.url = "https://to-corona-ex.com/";
         this.apiurl = 'https://api.to-corona-ex.com';
         this.cdnurl = 'https://cdn.to-corona-ex.com';
+        this.apikey = 'K4FWy7Iqott9mrw37hDKfZ2gcLOwO-kiLHTwXT8ad1E=';
+        this.requestOptions.headers.set('X-API-Environment-Key', this.apikey);
     }
 
     async _getMangaFromURI(uri) {

@@ -1,79 +1,54 @@
 import Connector from '../engine/Connector.mjs';
-//dead?
-/**
- *
- */
+import Manga from '../engine/Manga.mjs';
+
 export default class NeuManga extends Connector {
 
-    /**
-     *
-     */
     constructor() {
         super();
-        // Public members for usage in UI (mandatory)
         super.id = 'neumanga';
         super.label = 'NeuManga';
         this.tags = [ 'manga', 'indonesian' ];
-        super.isLocked = false;
-        // Private members for internal usage only (convenience)
-        this.url = 'https://neumanga.tv';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
-        this.config = undefined;
+        this.url = 'https://neumanga.net';
+        this.path = '/manga-list';
+        this.queryMangas = 'div.mangalist-blc ul li.Manhwa a.series';
+        this.queryChapters = 'ul.series-chapterlist li div.flexch-infoz a';
+        this.queryPages = 'div.reader-area p source';
+        this.queryMangaTitle = 'div.series-title h2';
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/manga?mode=text', 'div.spl div.alplist li a.mg' )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.trim()
-                    };
-                } );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangaTitle);
+        const id = uri.pathname;
+        const title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'div.chapter div.item div.item-content a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ) + '/_/1',
-                        title: element.querySelector( 'h3' ).textContent.replace( manga.title, '' ).replace( /^\s*-\s*/, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getMangas() {
+        const request = new Request(new URL(this.path, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangas);
+        return data.map(element => {
+            return{
+                id: this.getRelativeLink( element ),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        this.fetchDOM( this.url + chapter.id, 'div.readarea source.imagechap' )
-            .then( data => {
-                let pageList = data.map( element => element.dataset['src'] );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryChapters);
+        return data.map(element => {
+            return{
+                id: this.getRelativeLink( element ),
+                title: element.querySelector('span').textContent.trim()
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryPages);
+        return data.map(element => this.getRootRelativeOrAbsoluteLink(element, this.url));
     }
 }

@@ -543,7 +543,6 @@ export default class Request {
 
         if(details.responseHeaders['set-cookie'] || details.responseHeaders['Set-Cookie']) {
             Cookie.applyCrossSiteCookies(details.responseHeaders);
-            details.responseHeaders['x-set-cookie'] = details.responseHeaders['set-cookie'] || details.responseHeaders['Set-Cookie'];
         }
 
         return details;

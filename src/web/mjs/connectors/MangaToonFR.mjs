@@ -8,6 +8,6 @@ export default class MangaToonTH extends MangaToon {
         super.label = 'MangaToon (French)';
         this.tags = [ 'webtoon', 'french' ];
         this.url = 'https://mangatoon.mobi/fr';
-        this.path = '/fr/genre?page=';
+        this.path = '/fr/genre/comic?page=';
     }
 }

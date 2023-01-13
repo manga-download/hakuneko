@@ -7,8 +7,8 @@ export default class Piccoma extends Connector {
         super();
         super.id = 'piccoma';
         super.label = 'Piccoma';
-        this.tags = ['webtoon', 'japanese'];
-        this.url = 'https://piccoma.com/web';
+        this.tags = ['manga', 'webtoon', 'japanese'];
+        this.url = 'https://piccoma.com';
     }
 
     async _getMangaFromURI(uri) {
@@ -23,7 +23,7 @@ export default class Piccoma extends Connector {
         const mangas = [];
         let totalPage = 1;
         for (let i = 1; i <= totalPage; i++) {
-            const request = new Request(`${this.url}/next_page/list?result_id=2&list_type=C&sort_type=N&page_id=${i}`, this.requestOptions);
+            const request = new Request(`${this.url}/web/next_page/list?result_id=2&list_type=C&sort_type=N&page_id=${i}`, this.requestOptions);
             const res = await this.fetchJSON(request);
             totalPage = res.data.total_page;
             const products = res.data.products;
@@ -35,7 +35,7 @@ export default class Piccoma extends Connector {
     }
 
     async _getChapters(manga) {
-        const request = new Request(`${this.url}/product/${manga.id}/episodes?etype=E`);
+        const request = new Request(`${this.url}/web/product/${manga.id}/episodes?etype=E`);
         const data = await this.fetchDOM(request, '.PCM-product_episodeList > a');
         return data.map(element => {
             return {
@@ -46,7 +46,7 @@ export default class Piccoma extends Connector {
     }
 
     async _getPages(chapter) {
-        const request = new Request(`${this.url}/viewer/${chapter.id}`);
+        const request = new Request(`${this.url}/web/viewer/${chapter.id}`);
         const pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
         const images = pdata.img;
         if (images == null) {
@@ -66,7 +66,16 @@ export default class Piccoma extends Connector {
 
     async _handleConnectorURI(payload) {
         const image = await this._loadImage(payload.url);
-        const canvas = this._unscramble(payload.pdata, image, 50, payload.key);
+        if (payload.pdata.isScrambled) {
+            const canvas = this._unscramble(image, 50, payload.key);
+            const blob = await this._canvasToBlob(canvas);
+            return this._blobToBuffer(blob);
+        }
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext('2d');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
         const blob = await this._canvasToBlob(canvas);
         return this._blobToBuffer(blob);
     }
@@ -96,79 +105,99 @@ export default class Piccoma extends Connector {
         });
     }
 
-    // Copied from Piccoma
-    _unscramble(pdata, image, num, seed) {
-        var global_n, global_r, global_e;
-        3 !== parseInt(pdata.category) || "P" !== pdata.scroll && "R" !== pdata.scroll ? (global_n = 0,
-        global_r = 0,
-        global_e = .01) : (global_n = 30,
-        global_r = 30,
-        global_e = 0);
-
-        var c = Math.ceil(image.width / num) * Math.ceil(image.height / num)
-            , f = [];
-        for (y = 0; y < c; y++)
-            f.push(y);
-        var a = document.createElement("canvas")
-            , s = a.getContext("2d");
-        a.width = image.width,
-        a.height = image.height + global_n + global_r;
-        if (!pdata.isScrambled) {
-            s.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
-            return a;
-        }
-        var l = Math.ceil(image.width / num)
-            , h = (image.height,
-            function (t) {
-                var n = {};
-                return n.slices = t.length,
-                n.cols = function (t) {
-                    if (1 == t.length)
-                        return 1;
-                    for (var n = "init", r = 0; r < t.length; r++)
-                        if ("init" == n && (n = t[r].y),
-                        n != t[r].y)
-                            return r;
-                    return r;
-                }(t),
-                n.rows = t.length / n.cols,
-                n.width = t[0].width * n.cols,
-                n.height = t[0].height * n.rows,
-                n.x = t[0].x,
-                n.y = t[0].y,
-                n;
-            }
-            )
-            , p = function () {
-                var n, r = {};
-                for (n = 0; n < c; n++) {
-                    var e = {}
-                        , i = Math.floor(n / l)
-                        , u = n - i * l;
-                    e.x = u * num,
-                    e.y = i * num,
-                    e.width = num - (e.x + num <= image.width ? 0 : e.x + num - image.width),
-                    e.height = num - (e.y + num <= image.height ? 0 : e.y + num - image.height),
-                    r[e.width + "-" + e.height] || (r[e.width + "-" + e.height] = []),
-                    r[e.width + "-" + e.height].push(e);
-                }
-                return r;
-            }();
-        for (var v in p) {
-            var y, d = h(p[v]), g = [];
-            for (y = 0; y < p[v].length; y++)
-                g.push(y);
-            for (g = _shuffleSeed_(g, seed),
-            y = 0; y < p[v].length; y++) {
-                var b = g[y]
-                    , m = Math.floor(b / d.cols)
-                    , x = (b - m * d.cols) * p[v][y].width
-                    , S = m * p[v][y].height;
-                s.drawImage(image, d.x + x, d.y + S, p[v][y].width, p[v][y].height + global_e, p[v][y].x, p[v][y].y + global_n, p[v][y].width, p[v][y].height);
-            }
-        }
-        return a;
+    _unscramble(image, sliceSize, seed) {
+        return unscrambleImg(image, sliceSize, seed);
     }
+}
+// from https://github.com/webcaetano/image-scramble/blob/master/unscrambleImg.js
+function unscrambleImg(img, sliceSize, seed) {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext('2d');
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const totalParts = Math.ceil(img.width / sliceSize) * Math.ceil(img.height / sliceSize);
+    const inds = [];
+    for (let i = 0; i < totalParts; i++) {
+        inds.push(i);
+    }
+
+    const slices = getSlices(img, sliceSize);
+    for (const g in slices) {
+        const group = getGroup(slices[g]);
+        let shuffleInd = [];
+        for (let i = 0; i < slices[g].length; i++) {
+            shuffleInd.push(i);
+        }
+        shuffleInd = _shuffleSeed_(shuffleInd, seed);
+        for (let i = 0; i < slices[g].length; i++) {
+            const s = shuffleInd[i];
+            const row = Math.floor(s / group.cols);
+            const col = s - row * group.cols;
+            const x = col * slices[g][i].width;
+            const y = row * slices[g][i].height;
+            ctx.drawImage(
+                img,
+                group.x + x,
+                group.y + y,
+                slices[g][i].width,
+                slices[g][i].height,
+                slices[g][i].x,
+                slices[g][i].y,
+                slices[g][i].width,
+                slices[g][i].height
+            );
+        }
+    }
+    return canvas;
+}
+
+function getGroup(slices) {
+    const self = {};
+    self.slices = slices.length;
+    self.cols = getColsInGroup(slices);
+    self.rows = slices.length / self.cols;
+    self.width = slices[0].width * self.cols;
+    self.height = slices[0].height * self.rows;
+    self.x = slices[0].x;
+    self.y = slices[0].y;
+    return self;
+}
+
+function getSlices(img, sliceSize) {
+    const totalParts = Math.ceil(img.width / sliceSize) * Math.ceil(img.height / sliceSize);
+    const verticalSlices = Math.ceil(img.width / sliceSize);
+    const slices = {};
+    for (let i = 0; i < totalParts; i++) {
+        const slice = {};
+        const row = Math.floor(i / verticalSlices);
+        const col = i - row * verticalSlices;
+        slice.x = col * sliceSize;
+        slice.y = row * sliceSize;
+        slice.width = sliceSize - (slice.x + sliceSize <= img.width ? 0 : slice.x + sliceSize - img.width);
+        slice.height = sliceSize - (slice.y + sliceSize <= img.height ? 0 : slice.y + sliceSize - img.height);
+        const key = `${slice.width}-${slice.height}`;
+        if (slices[key] == null) {
+            slices[key] = [];
+        }
+        slices[key].push(slice);
+    }
+    return slices;
+}
+
+function getColsInGroup(slices) {
+    if (slices.length == 1) {
+        return 1;
+    }
+    let t = 'init';
+    for (let i = 0; i < slices.length; i++) {
+        if (t == 'init') {
+            t = slices[i].y;
+        }
+        if (t != slices[i].y) {
+            return i;
+        }
+    }
+    return slices.length;
 }
 
 // from https://github.com/webcaetano/shuffle-seed
