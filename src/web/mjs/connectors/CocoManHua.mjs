@@ -1,4 +1,4 @@
-import Mangadig from './Mangadig.mjs';
+import Mangadig from './MangaDig.mjs';
 
 export default class CocoManHua extends Mangadig {
 
