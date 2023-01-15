@@ -6,9 +6,10 @@ export default class TenshiMoe extends Connector {
     constructor() {
         super();
         super.id = 'tenshimoe';
-        super.label = 'Tenshi.moe';
+        super.label = 'Marin.moe';
         this.tags = [ 'anime', 'english'];
-        this.url = 'https://tenshi.moe';
+        this.url = 'https://marin.moe';
+        this.version = '';
         this.config = {
             format: {
                 label: 'Language Settings',
@@ -26,10 +27,10 @@ export default class TenshiMoe extends Connector {
                 input: 'select',
                 options: [
                     { value: '', name: 'Mirror\'s Default' },
-                    { value: '360', name: '360p' },
-                    { value: '480', name: '480p' },
-                    { value: '720', name: '720p' },
-                    { value: '1080', name: '1080p' }
+                    { value: '360p', name: '360p' },
+                    { value: '480p', name: '480p' },
+                    { value: '720p', name: '720p' },
+                    { value: '1080p', name: '1080p' }
                 ],
                 value: ''
             }
@@ -39,18 +40,18 @@ export default class TenshiMoe extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'article.anime-entry header.entry-header h1');
-        const id = uri.pathname;
-        const title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        let data = await this.fetchDOM(request, 'div#app');
+        data = JSON.parse(data[0].dataset['page']);
+        return new Manga(this, data.props.anime.slug, data.props.anime.title.trim());
     }
 
     async _getMangas() {
         let mangaList = [];
         const uri = new URL('/anime', this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'ul.pagination li:nth-last-of-type(2) a');
-        const pageCount = parseInt(data[0].text);
+        let data = await this.fetchDOM(request, 'div#app');
+        data = JSON.parse(data[0].dataset['page']);
+        const pageCount = data.props.anime_list.meta.last_page;
         for(let page = 1; page <= pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -61,10 +62,11 @@ export default class TenshiMoe extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL('/anime?page=' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'ul.loop.anime-loop li a');
-        return data.map(element => {
+        let data = await this.fetchDOM(request, 'div#app');
+        data = JSON.parse(data[0].dataset['page']);
+        return data.props.anime_list.data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                id: element.slug,
                 title: element.title.trim()
             };
         });
@@ -72,67 +74,88 @@ export default class TenshiMoe extends Connector {
 
     async _getChapters(manga) {
         let chapterlist = [];
-        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, 'ul.pagination li:nth-last-of-type(2) a');
-        const pageCount = data.length > 0 ? parseInt(data[0].text): 1;
+        const uri = new URL('/anime/'+manga.id, this.url);
+        let request = new Request( uri.href, this.requestOptions );
+        let token = await Engine.Request.fetchUI( request,
+            `new Promise( resolve =>
+         resolve(document.cookie) 
+          )` );
+
+        token = decodeURIComponent(token.match(/XSRF-TOKEN=([\S]+)/)[1]);
+
+        request = new Request(new URL('/anime/'+manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#app');
+        data = JSON.parse(data[0].dataset['page']);
+        const pageCount = data.props.episode_list.meta.last_page;
+        this.version = data.version;
         for(let page = 1; page <= pageCount; page++) {
-            const chapters = await this._getchaptersFromPage(manga, page);
+            const chapters = await this._getchaptersFromPage(manga, page, token);
             chapterlist.push(...chapters);
         }
         return chapterlist.reverse();
     }
 
-    async _getchaptersFromPage(manga, page) {
-        const uri = new URL(manga.id +'?page='+ page, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'ul.loop.episode-loop li a');
-        return data.map(element => {
+    async _getchaptersFromPage(manga, page, token) {
+        const uri = new URL('/anime/'+manga.id, this.url);
+        const body = {
+            eps_page : page,
+            filter : {
+                episodes : true,
+                specials : true
+            }
+        };
+
+        const request = new Request(uri, {
+            method: 'POST',
+            headers: {
+                'Accept': 'text/html, application/xhtml+xml',
+                'Content-Type': 'application/json',
+                'x-origin' : this.url,
+                'x-referer' : uri,
+                'X-Inertia' : "true",
+                'X-Inertia-Partial-Component': 'AnimeDetail',
+                'X-Inertia-Partial-Data':'episode_list',
+                'X-Inertia-Version' : this.version,
+                'X-Requested-With' : 'XMLHttpRequest',
+                'X-XSRF-TOKEN' : token
+
+            },
+            body: JSON.stringify(body)
+        });
+
+        const response = await fetch(request);
+        const data = await response.json();
+        return data.props.episode_list.data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.querySelector('div.episode-number').textContent.trim()
+                id: '/anime/'+manga.id+'/'+element.slug,
+                title: element.slug + ' : '+ element.title.trim()
             };
         });
     }
 
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'ul.dropdown-menu a');
-        let sourceUrl = '';
 
-        sourceUrl = data.length == 1 ? data : this.findPreferedLanguage(data);
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div#app');
+        data = JSON.parse(data[0].dataset['page']);
 
-        let uri = new URL(sourceUrl);
-        const videoid = uri.searchParams.get('v');
-        uri = new URL('/embed', this.url);
-        uri.searchParams.set('v', videoid);
-        request = new Request(uri, this.requestOptions);
-        data = await this.fetchDOM(request, 'video source');
-        let video = data.find(element => element.getAttribute('size') == this.config.resolution.value);
-        video = !video ? data[0] : video;
-        return {video : video.src, subtitles :[]}; //subtitles are forced
+        let source = this.findPreferedLanguage(data.props.video_list.data);
+        let video = source.mirror.find(element => element.resolution == this.config.resolution.value);
+        video = !video ? source.mirror[0] : video;
+        return { video : video.code.file, subtitles : []};
 
     }
-
     findPreferedLanguage(data) {
-        //look for a span node with 'subtitle' without N/A
-        let hasSubtitle = false;
+        if (data.length == 1) return data[0];
 
-        for (const aNode of data) {
-            hasSubtitle = false;
-            const spanNodes = aNode.querySelectorAll('span');
-            for(const node of spanNodes) {
-                if(node.title.includes('Subtitle') && !node.title.includes('N/A')) {
-                    hasSubtitle = true;
-                }
-            }
-            if (this.config.format.value == 'SUB' && hasSubtitle) {
-                return aNode.href;
-            }
-            if (this.config.format.value == 'DUB' && !hasSubtitle) {
-                return aNode.href;
-            }
-
+        if (this.config.format.value == 'SUB') {
+            return data.find(element => element.subtitle.code != 'xx');
         }
-        return data[0].href;
+
+        if (this.config.format.value == 'DUB') {
+            return data.find(element => element.subtitle.code == 'xx');
+        }
+        return data[0];
+
     }
 }
