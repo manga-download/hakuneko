@@ -61,7 +61,6 @@ export default class Lezhin extends Connector {
         const password = this.config.password.value.replace("'", "\\'"); //escape the password, because if it contains a single quote the script will fail
         let script = `
         new Promise((resolve, reject) => {
-            //try {
                 if($('#log-nav-email').length) {
                     return resolve();
                 }
@@ -75,10 +74,6 @@ export default class Lezhin extends Connector {
                     success: resolve,
                     error: reject
                 });
-           // }
-          //  catch(error) {
-          //      reject(error);
-          //  }
         });
         `;
         let request = new Request(new URL(this.url + '/login'), this.requestOptions);
@@ -96,7 +91,7 @@ export default class Lezhin extends Connector {
         }
         // force user locale user setting to be the same as locale from the currently used website ...
         // => prevent a warning webpage that would appear otherwise when loading chapters / pages
-        return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
+        //return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
     }
 
     async _getMangaFromURI(uri) {
@@ -140,7 +135,6 @@ export default class Lezhin extends Connector {
         new Promise((resolve, reject) => {
             // wait until episodes have been updated with purchase info ...
             setTimeout(() => {
-              //  try {
                     let chapters = __LZ_PRODUCT__.all // __LZ_PRODUCT__.product.episodes
                     .filter(chapter => {
                         if(chapter.purchased) {
@@ -165,19 +159,28 @@ export default class Lezhin extends Connector {
                         };
                     });
                     resolve(chapters);
-            //    }
-            //    catch(error) {
-            //        reject(error);
-            //    }
             }, 2500);
         });
         `;
         let request = new Request(new URL('/comic/' + manga.id, this.url), this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        return await Engine.Request.fetchUI(request, script);
     }
 
     async _getPages(chapter) {
         await this._initializeAccount();
+
+        //check if chapter is purchased
+        let script = `
+        new Promise((resolve, reject) => {
+            // wait until episodes have been updated with purchase info ...
+            setTimeout(() => {
+                    let chapter = __LZ_PRODUCT__.all.filter(chapter => chapter.name == "${chapter.id}");
+                    resolve(chapter[0].purchased);
+            }, 5000);
+        });
+        `;
+        let request = new Request(new URL('/comic/' + chapter.manga.id, this.url), this.requestOptions);
+        const purchased = await Engine.Request.fetchUI(request, script);
 
         let uri = new URL('https://www.lezhin.com/lz-api/v2/inventory_groups/comic_viewer');
         uri.searchParams.set('platform', 'web');
@@ -186,11 +189,11 @@ export default class Lezhin extends Connector {
         uri.searchParams.set('name', chapter.id);
         uri.searchParams.set('preload', false);
         uri.searchParams.set('type', 'comic_episode');
-        let request = new Request(uri, this.requestOptions);
+        request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
 
         return data.data.extra.episode.scrollsInfo.map(scroll => {
-            return this.createConnectorURI({url : scroll.path, infos : JSON.stringify(data)});
+            return this.createConnectorURI({url : scroll.path, infos : JSON.stringify(data), purchased : purchased});
         });
     }
 
@@ -208,7 +211,7 @@ export default class Lezhin extends Connector {
         const episode = data.data.extra.episode;
         const extension = this.config.forceJPEG.value ? '.jpg' : '.webp';
         let imageurl = new URL('/v2' + payload.url + extension, this.cdnURL);
-        let purchased = episode.coin == 0;
+        let purchased = payload.purchased ? payload.purchased : false;
         //purchased = purchased || (episode.freedAt && episode.freedAt < Date.now());
         const subscribed = data.data.extra.subscribed;
         const updatedAt = episode.updatedAt;
