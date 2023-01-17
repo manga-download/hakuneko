@@ -10,8 +10,8 @@ export default class Lezhin extends Connector {
         this.tags = [];
         this.url = undefined;
         this.apiURL = 'https://www.lezhinus.com';
-        this.cdnURL = 'https://cdn.lezhin.com';
-        this.userID = undefined;
+        this.cdnURL = 'https://rcdn.lezhin.com';
+        this.token = undefined;
         this.mangasPerPage = 36;
         this.config = {
             username: {
@@ -35,27 +35,22 @@ export default class Lezhin extends Connector {
         };
     }
 
-    async _initializeAccount() {
-        if(this.userID) {
+    async _initializeConnector() {
+        const data = await this.getLzConfig();
+        this.cdnURL = data.contentsCdnUrl ? data.contentsCdnUrl : this.cdnURL;
+    }
 
+    async _initializeAccount() {
+        if(this.token) {
             //check if user disconnected
-            const uri = new URL(this.url);
-            const checkscript = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                        resolve(__LZ_CONFIG__);
-                },5000);
-            });
-            `;
-            const request = new Request(uri, this.requestOptions);
-            const data = await Engine.Request.fetchUI(request, checkscript);
+            const data = await this.getLzConfig();
             if (!data.token) {
                 this.requestOptions.headers.delete('Authorization');
-                this.userID = '';
+                this.token = '';
             }
         }
 
-        if(this.userID || !this.config.username.value || !this.config.password.value) {
+        if(this.token || !this.config.username.value || !this.config.password.value) {
             return;
         }
         const password = this.config.password.value.replace("'", "\\'"); //escape the password, because if it contains a single quote the script will fail
@@ -78,20 +73,14 @@ export default class Lezhin extends Connector {
         `;
         let request = new Request(new URL(this.url + '/login'), this.requestOptions);
         await Engine.Request.fetchUI(request, script);
-        let response = await fetch(new Request(new URL(this.url + '/account'), this.requestOptions));
-        let data = await response.text();
-        let cdn = data.match(/cdnUrl\s*:\s*['"]([^'"]+)['"]/);
-        let user = data.match(/userId\s*:\s*['"](\d+)['"]/);
-        let token = data.match(/token\s*:\s*['"]([^'"]+)['"]/);
-        this.requestOptions.headers.set('Authorization', 'Bearer '+token[1]);
-        this.cdnURL = cdn ? cdn[1] : this.cdnURL;
-        this.userID = user ? user[1] : undefined;
-        if(this.userID) {
-            await fetch(this.url + '/adultkind?path=&sw=all', this.requestOptions);
-        }
+
+        const data = await this.getLzConfig();
+        this.token = data.token;
+        this.requestOptions.headers.set('Authorization', 'Bearer '+ data.token);
+
         // force user locale user setting to be the same as locale from the currently used website ...
         // => prevent a warning webpage that would appear otherwise when loading chapters / pages
-        //return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
+        return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
     }
 
     async _getMangaFromURI(uri) {
@@ -176,7 +165,7 @@ export default class Lezhin extends Connector {
             setTimeout(() => {
                     let chapter = __LZ_PRODUCT__.all.filter(chapter => chapter.name == "${chapter.id}");
                     resolve(chapter[0].purchased);
-            }, 5000);
+            }, 2500);
         });
         `;
         let request = new Request(new URL('/comic/' + chapter.manga.id, this.url), this.requestOptions);
@@ -242,5 +231,18 @@ export default class Lezhin extends Connector {
         data = await this._blobToBuffer(data);
         this._applyRealMime(data);
         return data;
+    }
+
+    async getLzConfig() {
+        const uri = new URL(this.url);
+        const checkscript = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                        resolve(__LZ_CONFIG__);
+                },2500);
+            });
+            `;
+        const request = new Request(uri, this.requestOptions);
+        return await Engine.Request.fetchUI(request, checkscript);
     }
 }
