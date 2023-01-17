@@ -504,43 +504,52 @@ export default class Storage {
      * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
      */
     async _saveChapterPagesPDF(pdf, pageData) {
-        var doc = new PDFDocument({ autoFirstPage: false });
-        doc.pipe(this.fs.createWriteStream(pdf));
-        for (let page of pageData) {
-            await this._addImageToPDF(doc, page);
+        try {
+            var doc = new PDFDocument({ autoFirstPage: false });
+            doc.pipe(this.fs.createWriteStream(pdf));
+            for (let page of pageData) {
+                await this._addImageToPDF(doc, page);
+            }
+            doc.end();
+        } catch (error) {
+            throw error
         }
-        doc.end();
     }
 
     /**
      * Add a single image as PDF page to the given document.
      */
     async _addImageToPDF(pdfDocument, page) {
-        let bitmap = await new Promise(resolve => {
-            let img = new Image();
-            img.onload = () => resolve(img);
-            img.src = URL.createObjectURL(page.data);
-        });
-        let pdfImgType = this._pdfImageType(page);
-        let blob;
-        if (!pdfImgType) {
-            pdfImgType = 'JPEG';
-            let canvas = document.createElement('canvas');
-            canvas.width = bitmap.width;
-            canvas.height = bitmap.height;
-            let ctx = canvas.getContext('2d');
-            ctx.drawImage(bitmap, 0, 0);
-            blob = await new Promise(resolve => {
-                canvas.toBlob(data => resolve(data), 'image/jpeg', 0.90);
+        try {
+            let bitmap = await new Promise(resolve => {
+                let img = new Image();
+                img.onload = () => resolve(img);
+                img.src = URL.createObjectURL(page.data);
+                resolve(img)
             });
-        } else {
-            blob = page.data;
+            let pdfImgType = this._pdfImageType(page);
+            let blob;
+            if (!pdfImgType) {
+                pdfImgType = 'JPEG';
+                let canvas = document.createElement('canvas');
+                canvas.width = bitmap.width;
+                canvas.height = bitmap.height;
+                let ctx = canvas.getContext('2d');
+                ctx.drawImage(bitmap, 0, 0);
+                blob = await new Promise(resolve => {
+                    canvas.toBlob(data => resolve(data), 'image/jpeg', 0.90);
+                });
+            } else {
+                blob = page.data;
+            }
+    
+            let bytes = await this._blobToBytes(blob);
+            let pdfTargetWidth = this.pdfTargetHeight * bitmap.width / bitmap.height;
+            pdfDocument.addPage({ size: [pdfTargetWidth, this.pdfTargetHeight] });
+            pdfDocument.image(bytes.buffer, 0, 0, { width: pdfTargetWidth, height: this.pdfTargetHeight });
+        } catch (error) {
+            throw error
         }
-
-        let bytes = await this._blobToBytes(blob);
-        let pdfTargetWidth = this.pdfTargetHeight * bitmap.width / bitmap.height;
-        pdfDocument.addPage({ size: [pdfTargetWidth, this.pdfTargetHeight] });
-        pdfDocument.image(bytes.buffer, 0, 0, { width: pdfTargetWidth, height: this.pdfTargetHeight });
     }
 
     /**
