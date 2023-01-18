@@ -37,8 +37,8 @@ export default class AsmHentai extends Connector {
                 setTimeout(() => {
                     try {
                         const pages = parseInt($("#t_pages").val());
-                        const dir = $("#dir").val();
-                        const id = $("#id").val();
+                        const dir = $("#load_dir").val();
+                        const id = $("#load_id").val();
                         const images = [...new Array(pages)].map((_, index) => {
                             const file = (index + 1) + '.jpg';
                             return [ 'https://images.asmhentai.com', dir, id, file ].join('/');
