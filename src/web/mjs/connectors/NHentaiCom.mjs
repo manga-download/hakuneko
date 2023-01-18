@@ -12,7 +12,7 @@ export default class NHentaiCom extends Connector {
     }
     
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
+        let msg = 'This website provides a manga list that is to large to scrape, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
     
