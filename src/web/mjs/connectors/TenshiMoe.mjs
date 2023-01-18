@@ -127,7 +127,7 @@ export default class TenshiMoe extends Connector {
         const data = await response.json();
         return data.props.episode_list.data.map(element => {
             return {
-                id: `/anime/${manga.id}/${+element.slug}`,
+                id: `/anime/${manga.id}/${element.slug}`,
                 title: element.slug + ' : '+ element.title.trim()
             };
         });
