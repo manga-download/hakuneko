@@ -8,7 +8,10 @@ export default class AllHentai extends Connector {
         super.id = 'allhentai';
         super.label = 'AllHentai';
         this.tags = ['hentai', 'russian'];
-        this.url = 'http://allhentai.ru';
+        this.url = 'https://2023.allhen.online';
+        this.links = {
+            login: 'https://2023.allhen.online/internal/auth'
+        };
     }
 
     async _getMangaFromURI(uri) {
@@ -19,70 +22,61 @@ export default class AllHentai extends Connector {
         return new Manga(this, id, title);
     }
 
-    async _getMangaListFromPages(mangaPageLinks, index) {
-        index = index || 0;
-        let data = await this.fetchDOM(mangaPageLinks[index], 'div#mangaBox div.desc h3 a', 5);
-        let mangaList = data.map(element => {
+    async _getMangas() {
+        let mangaList = [];
+        for (let page = 0, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const uri = new URL('/list?offset=' + page*70, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#mangaBox div.desc h3 a');
+        return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.textContent.trim()
             };
         });
-        if(index < mangaPageLinks.length - 1) {
-            let mangas = await this._getMangaListFromPages(mangaPageLinks, index + 1);
-            return mangaList.concat(mangas);
-        } else {
-            return mangaList;
-        }
     }
 
-    async _getMangaList( callback ) {
-        try {
-            let request = new Request(this.url + '/list', this.requestOptions);
-            let data = await this.fetchDOM(request, 'span.pagination:first-of-type a.step');
-            let pageCount = parseInt(data.pop().text);
-            let pageLinks = [...new Array(pageCount).keys()].map(page => {
-                let uri = new URL('list', this.url);
-                uri.searchParams.set('offset', 70 * page);
-                return uri.href;
-            });
-            let mangaList = await this._getMangaListFromPages(pageLinks);
-            callback(null, mangaList);
-        } catch(error) {
-            console.error(error, this);
-            callback(error, undefined);
-        }
+    async _getChapters(manga) {
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.chapters-link table tr td a[title]');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title : element.text.replace(manga.title, '').trim(),
+            };
+        });
     }
 
-    async _getChapterList(manga, callback) {
-        try {
-            let request = new Request(this.url + manga.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div.chapters-link table tr td a[title]');
-            let chapterList = data.map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.text.replace(manga.title, '').trim(),
-                    language: ''
-                };
-            });
-            callback(null, chapterList);
-        } catch(error) {
-            console.error(error, manga);
-            callback(error, undefined);
-        }
-    }
+    async _getPages(chapter) {
+        //check if person is connected
+        let uri = new URL(this.url);
+        let request = new Request( uri, this.requestOptions );
+        let token = await Engine.Request.fetchUI( request,
+            `new Promise( resolve =>
+                 resolve(document.cookie) 
+          )`
+        );
 
-    async _getPageList(manga, chapter, callback) {
-        try {
-            let script = `new Promise(resolve => {
+        token = token.match(/gwt=([\S]+)/);
+        if(!token) throw new Error('You must be logged to view chapters pages !');
+
+        let script = `new Promise(resolve => {
                 resolve(rm_h.pics.map(picture => picture.url));
-            });`;
-            let request = new Request(this.url + chapter.id, this.requestOptions);
-            let data = await Engine.Request.fetchUI(request, script);
-            callback(null, data);
-        } catch(error) {
-            console.error(error, chapter);
-            callback(error, undefined);
-        }
+        });`;
+
+        uri = new URL(chapter.id, this.url);
+        request = new Request(uri, this.requestOptions);
+        const data = await Engine.Request.fetchUI( request, script);
+        return data.map(element => this.getAbsolutePath(element, this.url));
+
     }
+
 }
