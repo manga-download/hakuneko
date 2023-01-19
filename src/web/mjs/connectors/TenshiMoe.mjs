@@ -79,14 +79,16 @@ export default class TenshiMoe extends Connector {
         data = JSON.parse(data[0].dataset['page']);
         const pageCount = data.props.episode_list.meta.last_page;
         const version = data.version;
+        const token = await this.getToken(uri);
+
         for(let page = 1; page <= pageCount; page++) {
-            const chapters = await this._getchaptersFromPage(manga, page, version);
+            const chapters = await this._getchaptersFromPage(manga, page, version, token);
             chapterlist.push(...chapters);
         }
         return chapterlist.reverse();
     }
 
-    async _getchaptersFromPage(manga, page, version) {
+    async _getchaptersFromPage(manga, page, version, token) {
         const uri = new URL('/anime/'+manga.id, this.url);
         const body = {
             eps_page : page,
@@ -96,7 +98,7 @@ export default class TenshiMoe extends Connector {
             }
         };
 
-        const data = await this.fetchFromApi(uri, body, 'AnimeDetail', 'episode_list', version);
+        const data = await this.fetchFromApi(uri, body, 'AnimeDetail', 'episode_list', version, token);
         return data.props.episode_list.data.map(element => {
             return {
                 id: `/anime/${manga.id}/${element.slug}`,
@@ -120,7 +122,8 @@ export default class TenshiMoe extends Connector {
 
             //fetch good video source with another api call
             const body = {video : source.slug};
-            data = await this.fetchFromApi(uri, body, 'Episode', 'video', version);
+            const token = await this.getToken(uri);
+            data = await this.fetchFromApi(uri, body, 'Episode', 'video', version, token);
         }
 
         source = data.props.video.data;
@@ -134,29 +137,24 @@ export default class TenshiMoe extends Connector {
 
     findPreferedLanguage(data) {
         if (!Array.isArray(data)) return data;
+        if (data.length == 1) return data[0];
+
+        let result = undefined;
 
         if (this.config.format.value == 'SUB') {
-            return data.find(element => element.subtitle.code != 'xx');
+            result = data.find(element => element.subtitle.code != 'xx');
         }
 
         if (this.config.format.value == 'DUB') {
-            return data.find(element => element.subtitle.code == 'xx');
+            result = data.find(element => element.subtitle.code == 'xx');
         }
-        return data[0];
 
+        result = !result ? data[0] : result;
+        return result;
     }
 
-    async fetchFromApi(url, body, component, partialdata, version) {
-        //  First fetch token
-        let request = new Request(url, this.requestOptions );
-        let token = await Engine.Request.fetchUI( request,
-            `new Promise( resolve =>
-         resolve(document.cookie) 
-          )` );
-        token = decodeURIComponent(token.match(/XSRF-TOKEN=([\S]+)/)[1]);
-
-        //then use the api
-        request = new Request(url, {
+    async fetchFromApi(url, body, component, partialdata, version, token) {
+        const request = new Request(url, {
             method: 'POST',
             headers: {
                 'Accept': 'text/html, application/xhtml+xml',
@@ -176,4 +174,15 @@ export default class TenshiMoe extends Connector {
         const response = await fetch(request);
         return await response.json();
     }
+
+    async getToken(url) {
+        //  First fetch token
+        const request = new Request(url, this.requestOptions );
+        const token = await Engine.Request.fetchUI( request,
+            `new Promise( resolve =>
+         resolve(document.cookie) 
+          )` );
+        return decodeURIComponent(token.match(/XSRF-TOKEN=([\S]+)/)[1]);
+    }
+
 }
