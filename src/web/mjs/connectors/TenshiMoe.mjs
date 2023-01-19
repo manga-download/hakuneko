@@ -9,7 +9,6 @@ export default class TenshiMoe extends Connector {
         super.label = 'Marin.moe';
         this.tags = [ 'anime', 'english'];
         this.url = 'https://marin.moe';
-        this.version = '';
         this.config = {
             format: {
                 label: 'Language Settings',
@@ -87,15 +86,15 @@ export default class TenshiMoe extends Connector {
         let data = await this.fetchDOM(request, 'div#app');
         data = JSON.parse(data[0].dataset['page']);
         const pageCount = data.props.episode_list.meta.last_page;
-        this.version = data.version;
+        const version = data.version;
         for(let page = 1; page <= pageCount; page++) {
-            const chapters = await this._getchaptersFromPage(manga, page, token);
+            const chapters = await this._getchaptersFromPage(manga, page, token, version);
             chapterlist.push(...chapters);
         }
         return chapterlist.reverse();
     }
 
-    async _getchaptersFromPage(manga, page, token) {
+    async _getchaptersFromPage(manga, page, token, version) {
         const uri = new URL('/anime/'+manga.id, this.url);
         const body = {
             eps_page : page,
@@ -111,11 +110,11 @@ export default class TenshiMoe extends Connector {
                 'Accept': 'text/html, application/xhtml+xml',
                 'Content-Type': 'application/json',
                 'x-origin' : this.url,
-                'x-referer' : uri,
+                'x-referer' : uri.href,
                 'X-Inertia' : "true",
                 'X-Inertia-Partial-Component': 'AnimeDetail',
                 'X-Inertia-Partial-Data':'episode_list',
-                'X-Inertia-Version' : this.version,
+                'X-Inertia-Version' : version,
                 'X-Requested-With' : 'XMLHttpRequest',
                 'X-XSRF-TOKEN' : token
 
