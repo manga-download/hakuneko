@@ -516,9 +516,10 @@ export default class Storage {
      * Add a single image as PDF page to the given document.
      */
     async _addImageToPDF(pdfDocument, page) {
-        let bitmap = await new Promise(resolve => {
+        let bitmap = await new Promise((resolve, reject) => {
             let img = new Image();
             img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Failed to load image!'));
             img.src = URL.createObjectURL(page.data);
         });
         let pdfImgType = this._pdfImageType(page);
