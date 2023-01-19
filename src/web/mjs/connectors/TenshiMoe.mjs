@@ -74,27 +74,19 @@ export default class TenshiMoe extends Connector {
     async _getChapters(manga) {
         let chapterlist = [];
         const uri = new URL('/anime/'+manga.id, this.url);
-        let request = new Request( uri.href, this.requestOptions );
-        let token = await Engine.Request.fetchUI( request,
-            `new Promise( resolve =>
-         resolve(document.cookie) 
-          )` );
-
-        token = decodeURIComponent(token.match(/XSRF-TOKEN=([\S]+)/)[1]);
-
-        request = new Request(new URL('/anime/'+manga.id, this.url), this.requestOptions);
+        const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div#app');
         data = JSON.parse(data[0].dataset['page']);
         const pageCount = data.props.episode_list.meta.last_page;
         const version = data.version;
         for(let page = 1; page <= pageCount; page++) {
-            const chapters = await this._getchaptersFromPage(manga, page, token, version);
+            const chapters = await this._getchaptersFromPage(manga, page, version);
             chapterlist.push(...chapters);
         }
         return chapterlist.reverse();
     }
 
-    async _getchaptersFromPage(manga, page, token, version) {
+    async _getchaptersFromPage(manga, page, version) {
         const uri = new URL('/anime/'+manga.id, this.url);
         const body = {
             eps_page : page,
@@ -104,26 +96,7 @@ export default class TenshiMoe extends Connector {
             }
         };
 
-        const request = new Request(uri, {
-            method: 'POST',
-            headers: {
-                'Accept': 'text/html, application/xhtml+xml',
-                'Content-Type': 'application/json',
-                'x-origin' : this.url,
-                'x-referer' : uri.href,
-                'X-Inertia' : "true",
-                'X-Inertia-Partial-Component': 'AnimeDetail',
-                'X-Inertia-Partial-Data':'episode_list',
-                'X-Inertia-Version' : version,
-                'X-Requested-With' : 'XMLHttpRequest',
-                'X-XSRF-TOKEN' : token
-
-            },
-            body: JSON.stringify(body)
-        });
-
-        const response = await fetch(request);
-        const data = await response.json();
+        const data = await this.fetchFromApi(uri, body, 'AnimeDetail', 'episode_list', version);
         return data.props.episode_list.data.map(element => {
             return {
                 id: `/anime/${manga.id}/${element.slug}`,
@@ -133,19 +106,34 @@ export default class TenshiMoe extends Connector {
     }
 
     async _getPages(chapter) {
-
-        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div#app');
         data = JSON.parse(data[0].dataset['page']);
+        const version = data.version;
 
+        //Find the slug of the desired video type : SUB or DUB
         let source = this.findPreferedLanguage(data.props.video_list.data);
+
+        //if the desired source (SUB or DUB)is not the one on the page
+        if (source.slug != data.props.video.data.slug) {
+
+            //fetch good video source with another api call
+            const body = {video : source.slug};
+            data = await this.fetchFromApi(uri, body, 'Episode', 'video', version);
+        }
+
+        source = data.props.video.data;
+
+        //now choose resolution from mirrors
         let video = source.mirror.find(element => element.resolution == this.config.resolution.value);
-        video = !video ? source.mirror[0] : video;
+        video = !video ? source.mirror[0]: video;
         return { video : video.code.file, subtitles : []};
 
     }
+
     findPreferedLanguage(data) {
-        if (data.length == 1) return data[0];
+        if (!Array.isArray(data)) return data;
 
         if (this.config.format.value == 'SUB') {
             return data.find(element => element.subtitle.code != 'xx');
@@ -156,5 +144,36 @@ export default class TenshiMoe extends Connector {
         }
         return data[0];
 
+    }
+
+    async fetchFromApi(url, body, component, partialdata, version) {
+        //  First fetch token
+        let request = new Request(url, this.requestOptions );
+        let token = await Engine.Request.fetchUI( request,
+            `new Promise( resolve =>
+         resolve(document.cookie) 
+          )` );
+        token = decodeURIComponent(token.match(/XSRF-TOKEN=([\S]+)/)[1]);
+
+        //then use the api
+        request = new Request(url, {
+            method: 'POST',
+            headers: {
+                'Accept': 'text/html, application/xhtml+xml',
+                'Content-Type': 'application/json',
+                'x-origin' : this.url,
+                'x-referer' : url.href,
+                'X-Inertia' : 'true',
+                'X-Inertia-Partial-Component': component, //'AnimeDetail',
+                'X-Inertia-Partial-Data': partialdata, //'episode_list',
+                'X-Inertia-Version' : version,
+                'X-Requested-With' : 'XMLHttpRequest',
+                'X-XSRF-TOKEN' : token
+
+            },
+            body: JSON.stringify(body)
+        });
+        const response = await fetch(request);
+        return await response.json();
     }
 }
