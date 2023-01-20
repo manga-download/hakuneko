@@ -6,15 +6,18 @@ export default class BilibiliManhua extends Connector {
     constructor() {
         super();
         super.id = 'neteasecomic';
-        super.label = '哔哩哔哩 漫画 (Bilibili Manhua)';
+        super.label = 'Bilibili Manhua (Chinese)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
-        this.lang = 'cn';
         this.token_expires_at = -1;
         this.auth = {
             accessToken : '',
             refreshToken : '',
         };
+        this.links = {
+            login: 'https://passport.bilibili.com/login'
+        };
+        //default config doesnt need language switch, its fixed to CN
         this.config = {
             quality:  {
                 label: 'Preferred format',
@@ -26,7 +29,7 @@ export default class BilibiliManhua extends Connector {
                     { value: 'png', name: 'png' },
                 ],
                 value: 'png'
-            }
+            },
         };
     }
 
@@ -86,8 +89,8 @@ export default class BilibiliManhua extends Connector {
         const uri = new URL('/twirp/comic.v1.Comic' + path, this.url);
         uri.searchParams.set('device', 'pc');
         uri.searchParams.set('platform', 'web');
-        uri.searchParams.set('lang', this.lang);
-        uri.searchParams.set('sys_lang', this.lang);
+        uri.searchParams.set('lang', this.config.language ? this.config.language.value : 'cn');
+        uri.searchParams.set('sys_lang', this.config.language ? this.config.language.value : 'cn');
         let request = new Request(uri, {
             method: 'POST',
             body: JSON.stringify(body),
@@ -186,8 +189,8 @@ export default class BilibiliManhua extends Connector {
         const uri = new URL('/twirp/global.v1.User' + path, 'https://us-user.bilibilicomics.com');
         uri.searchParams.set('device', 'pc');
         uri.searchParams.set('platform', 'web');
-        uri.searchParams.set('lang', this.lang);
-        uri.searchParams.set('sys_lang', this.lang);
+        uri.searchParams.set('lang', this.config.language ? this.config.language.value : 'cn');
+        uri.searchParams.set('sys_lang', this.config.language ? this.config.language.value : 'cn');
         let request = new Request(uri, {
             method: 'POST',
             body: JSON.stringify(body),
@@ -196,7 +199,6 @@ export default class BilibiliManhua extends Connector {
                 'Content-Type': 'application/json;charset=utf-8',
                 'x-referer': 'https://us-user.bilibilicomics.com/',
                 'x-sec-fetch-site': 'same-site',
-                'Accept-Language': 'en-US,en;q=0.5',
                 'Authorization' : ' Bearer '+ this.auth.accessToken
             }
         });
