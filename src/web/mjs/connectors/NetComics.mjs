@@ -33,7 +33,7 @@ export default class NetComics extends Connector {
         return mangaList;
     }
     async _getMangasFromPage(page) {
-        let request = new Request(new URL('/api/v1/title/genre?no='+page+'&size=18&genre=', this.api), {
+        let request = new Request(new URL(`/api/v1/title/genre?no=${page}&size=18&genre=`, this.api), {
             method: 'GET',
             headers: {
                 'x-referer': this.url,
@@ -54,10 +54,9 @@ export default class NetComics extends Connector {
         });
     }
     async _getChapters(manga) {
-        //api/v1/chapter/order/17451/rent
         const mangaid = manga.id.match(/\/comic\/([0-9]+)/)[1];
-        let request = new Request(new URL('/api/v1/chapter/order/'+mangaid +'/rent', this.api), this.requestOptions);
-        let data = await this.fetchJSON(request);
+        const request = new Request(new URL(`/api/v1/chapter/order/${mangaid}/rent`, this.api), this.requestOptions);
+        const data = await this.fetchJSON(request);
         return data.data.map(chapter => {
             let title = 'Chapter '+ chapter.chapter_no+ ' ';
             title += chapter.chapter_name.trim();
@@ -67,17 +66,18 @@ export default class NetComics extends Connector {
             };
         }).reverse();
     }
+
     async _getPages(chapter) {
         //check if user is logged, otherwise nothing will work
         let request = new Request(this.url, this.requestOptions);
-        let ncxuserdata = await Engine.Request.fetchUI(request, 'localStorage.getItem("ncx.user.data") || ""');
+        const ncxuserdata = await Engine.Request.fetchUI(request, 'localStorage.getItem("ncx.user.data") || ""');
         if (ncxuserdata == '') {
             throw Error('To see this chapter, please login to the website using Manual Interaction !');
         }
         try{
             const mangaid = chapter.id.match(/\/viewer\/([\S]+)\//)[1];
             const chapterid = chapter.id.match(/\/([0-9]+)$/)[1];
-            let request = new Request(new URL('/api/v1/chapter/viewer/625/'+mangaid +'/'+ chapterid + '?otp=', this.api), this.requestOptions);
+            let request = new Request(new URL('/api/v1/chapter/viewer/625/${mangaid}/${chapterid}?otp=', this.api), this.requestOptions);
             let data = await this.fetchJSON(request);
             //the fetch request should return error 500 if you dont have acces to the chapter
             //hence the use of try catch
