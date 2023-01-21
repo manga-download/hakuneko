@@ -96,7 +96,7 @@ export default class BilibiliManhua extends Connector {
         uri.searchParams.set('device', 'pc');
         uri.searchParams.set('platform', 'web');
         uri.searchParams.set('lang', this.config.language.value);
-        uri.searchParams.set('sys_lang', this.config.language);
+        uri.searchParams.set('sys_lang', this.config.language.value);
         let request = new Request(uri, {
             method: 'POST',
             body: JSON.stringify(body),
@@ -196,7 +196,7 @@ export default class BilibiliManhua extends Connector {
         uri.searchParams.set('device', 'pc');
         uri.searchParams.set('platform', 'web');
         uri.searchParams.set('lang', this.config.language.value);
-        uri.searchParams.set('sys_lang', this.config.language);
+        uri.searchParams.set('sys_lang', this.config.language.value);
         let request = new Request(uri, {
             method: 'POST',
             body: JSON.stringify(body),
