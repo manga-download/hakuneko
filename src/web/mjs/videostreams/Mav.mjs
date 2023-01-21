@@ -6,8 +6,8 @@ export default class Mav {
         this.website = originwebsite;
     }
     async getStream(resolution) {
-        let uri = new URL('/api/source/'+this.videoid, this._uri.origin);
-        let body = {
+        const uri = new URL('/api/source/'+this.videoid, this._uri.origin);
+        const body = {
             'r': this.website,
             'd': this.hostname,
         };
@@ -23,7 +23,7 @@ export default class Mav {
             }
         });
         const response = await fetch(request);
-        let data = await response.json();
+        const data = await response.json();
         let vid = data.data.find(element => element.label == resolution);
         vid = !vid ? data.data[0] : vid;
 
