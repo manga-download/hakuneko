@@ -25,7 +25,7 @@ export default class Mav {
         const response = await fetch(request);
         let data = await response.json();
         let vid = data.data.find(element => element.label == resolution);
-        vid = (!vid) ? data.data[0] : vid;
+        vid = !vid ? data.data[0] : vid;
 
         return {
             file : vid.file,
