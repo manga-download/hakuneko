@@ -14,7 +14,7 @@ export default class MangaCross extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'head title');
-        let id = uri.pathname.split('/').pop();
+        let id = uri.pathname.split('/').filter(Boolean).pop();
         let title = data[0].textContent.split('|')[0].trim();
         return new Manga(this, id, title);
     }
