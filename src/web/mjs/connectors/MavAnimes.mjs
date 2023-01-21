@@ -78,17 +78,17 @@ export default class MavAnime extends Connector {
     }
 
     async getChapterPlayers(chapterNode, manga) {
-    	  const link = chapterNode.href ? chapterNode.href : chapterNode;
-    	  const title = chapterNode.text ? chapterNode.text.trim() : manga.title;
-        let request = new Request(link, this.requestOptions);
-        let scriptPages = `
+        const link = chapterNode.href ? chapterNode.href : chapterNode;
+        const title = chapterNode.text ? chapterNode.text.trim() : manga.title;
+        const request = new Request(link, this.requestOptions);
+        const scriptPages = `
         new Promise(resolve => {
             resolve([...document.querySelectorAll('iframe')].map(el => el.src));
         });
         `;
-        let data = await Engine.Request.fetchUI(request, scriptPages);
+        const data = await Engine.Request.fetchUI(request, scriptPages);
         return data.map(element => {
-            let sourcesite = this.getWebsiteTag(element);
+            const sourcesite = this.getWebsiteTag(element);
             return {
                 id: element,
                 title : sourcesite + ' '+ title.replace(':•', '').trim()
@@ -98,7 +98,7 @@ export default class MavAnime extends Connector {
 
     async _getPages(chapter) {
 
-        let sourcesite = this.getWebsiteTag(chapter.id);
+        const sourcesite = this.getWebsiteTag(chapter.id);
         switch(sourcesite) {
             case '[MAV]':
             {
