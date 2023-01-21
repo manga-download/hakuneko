@@ -1,23 +1,17 @@
-import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
+import BilibiliManhua from './BilibiliManhua.mjs';
 
-export default class BilibiliManhua extends Connector {
+export default class BilibiliComics extends BilibiliManhua {
 
     constructor() {
         super();
-        super.id = 'neteasecomic';
-        super.label = '哔哩哔哩 漫画 (Bilibili Manhua)';
-        this.tags = [ 'manga', 'webtoon', 'chinese' ];
-        this.url = 'https://manga.bilibili.com';
-        this.token_expires_at = -1;
-        this.auth = {
-            accessToken : '',
-            refreshToken : '',
-        };
+        super.id = 'bilibili-comics';
+        super.label = 'Bilibili Comics (Multi-lingual)';
+        this.tags = [ 'webtoon', 'multi-lingual' ];
+        this.url = 'https://www.bilibilicomics.com';
         this.links = {
-            login: 'https://passport.bilibili.com/login'
+            login: 'https://www.bilibilicomics.com/account'
         };
-        //default config doesnt need language switch, its fixed to CN
+        //override BilibiliManhua config as we need lanuage switch. Difference is handled in the main code with (this.config.language) ? : test
         this.config = {
             quality:  {
                 label: 'Preferred format',
@@ -30,178 +24,20 @@ export default class BilibiliManhua extends Connector {
                 ],
                 value: 'png'
             },
+            language: {
+                label: 'Language Settings',
+                description: 'Choose the language to use. This will affect available manga lists',
+                input: 'select',
+                options: [
+                    { value: 'fr', name: 'French' },
+                    { value: 'en', name: 'English' },
+                    { value: 'cn', name: 'Chinese' },
+                    { value: 'id', name: 'Indonesian' },
+                    { value: 'es', name: 'Spanish' },
+                ],
+                value: 'en'
+            },
         };
-    }
 
-    async _initializeConnector() {
-        await this.getToken();
-        if(this.auth.refreshToken) await this.refreshToken();
-    }
-
-    async refreshToken() {
-        try {
-            const now = Math.floor(Date.now() / 1000);
-            const data = await this._fetchWithAccessToken('/RefreshToken', {refresh_token : this.auth.refreshToken});
-            this.auth.accessToken = data.data.access_token;
-            this.auth.refreshToken = data.data.refresh_token;
-            this.token_expires_at = now + 60*10;//expires in 10 minutes
-        } catch (error) {
-            //
-        }
-
-    }
-
-    async getToken() {
-        try {
-
-            const now = Math.floor(Date.now() / 1000);
-            let cooki = require('electron');
-            cooki = await cooki.remote.session.defaultSession.cookies.get({ url: this.url, name : "access_token" });
-
-            //if there is no cookie user is disconnected, force cleanup
-            if (cooki.length == 0) throw new Error('User is not connected.');
-
-            //if token is not defined, get if from cookies
-            if (!this.auth.accessToken) {
-                const cookie_value = cooki[0].value;
-                this.auth.accessToken = JSON.parse(decodeURIComponent(cookie_value)).accessToken;
-                this.auth.refreshToken = JSON.parse(decodeURIComponent(cookie_value)).refreshToken;
-                this.token_expires_at = now + 60*10; //expires in 10 minutes
-                return;
-            }
-
-            //if token exists check if expired
-            if (this.auth.accessToken && this.token_expires_at < now) {
-                await this.refreshToken();
-                return;
-            }
-
-        } catch(error) {
-            this.auth.accessToken = '';
-            this.auth.refreshToken = '';
-            this.token_expires_at = -1;
-        }
-
-    }
-
-    async _fetchTwirp(path, body) {
-        await this.getToken();
-        const uri = new URL('/twirp/comic.v1.Comic' + path, this.url);
-        uri.searchParams.set('device', 'pc');
-        uri.searchParams.set('platform', 'web');
-        uri.searchParams.set('lang', this.config.language ? this.config.language.value : 'cn');
-        uri.searchParams.set('sys_lang', this.config.language ? this.config.language.value : 'cn');
-        let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=UTF-8',
-                'x-referer':  uri,
-            }
-        });
-        if (this.auth.accessToken) request.headers.set('Authorization', ' Bearer '+ this.auth.accessToken);
-        const data = await this.fetchJSON(request);
-        return data.data;
-    }
-
-    async _getMangaFromURI(uri) {
-        const data = await this._fetchTwirp('/ComicDetail', {
-            comic_id: parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
-        });
-        return new Manga(this, data.id, data.title);
-    }
-
-    async _getMangas() {
-        let mangaList = [];
-        for(let page = 1, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
-        }
-        return mangaList;
-    }
-
-    async _getMangasFromPage(page) {
-        const data = await this._fetchTwirp('/ClassPage', {
-            style_id: -1,
-            area_id: -1,
-            is_free: -1,
-            is_finish: -1,
-            order: 0,
-            page_size: 18,
-            page_num: page
-        });
-        return data.map(entry => {
-            return {
-                id: entry.season_id,
-                title: entry.title.trim()
-            };
-        });
-    }
-
-    async _getChapters(manga) {
-        const data = await this._fetchTwirp('/ComicDetail', {
-            comic_id: manga.id
-        });
-        return data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
-            return {
-                id: entry.id,
-                title: entry.short_title + ' - ' + entry.title,
-                language: ''
-            };
-        });
-    }
-
-    async _getPages(chapter) {
-        await this.getToken();
-        let credz = null;
-        let data = null;
-
-        //Using access_token from cookies, try to get token for unlocked chapter
-        if (this.auth.accessToken) {
-            credz = await this._fetchWithAccessToken('/GetCredential', {
-                ep_id: chapter.id,
-                comic_id : chapter.manga.id,
-                type : 1
-            });
-        }
-        //if we got chapter credentials, fetch full chapter using it
-        if (credz && credz.data && credz.data.credential) {
-            data = await this._fetchTwirp('/GetImageIndex', {
-                ep_id: chapter.id,
-                credential : credz.data.credential
-            });
-        } else {
-            //get only 2 picture for locked chapter or full pictures if free chapter
-            data = await this._fetchTwirp('/GetImageIndex', {
-                ep_id: chapter.id,
-            });
-        }
-
-        let images = data.images.map(image => image.path + '@' + image.x + 'w.' + this.config.quality.value);
-        images = await this._fetchTwirp('/ImageToken', {
-            urls: JSON.stringify(images)
-        });
-        return images.map(image => image.url + '?token=' + image.token);
-    }
-
-    async _fetchWithAccessToken(path, body) {
-        const uri = new URL('/twirp/global.v1.User' + path, 'https://us-user.bilibilicomics.com');
-        uri.searchParams.set('device', 'pc');
-        uri.searchParams.set('platform', 'web');
-        uri.searchParams.set('lang', this.config.language ? this.config.language.value : 'cn');
-        uri.searchParams.set('sys_lang', this.config.language ? this.config.language.value : 'cn');
-        let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=utf-8',
-                'x-referer': 'https://us-user.bilibilicomics.com/',
-                'x-sec-fetch-site': 'same-site',
-                'Authorization' : ' Bearer '+ this.auth.accessToken
-            }
-        });
-        return await this.fetchJSON(request);
     }
 }
