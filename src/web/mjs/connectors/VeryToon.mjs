@@ -29,7 +29,7 @@ export default class VeryToon extends Connector {
         }).reverse();
     }
     async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id), this.requestOptions);
+        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'source.lazyload');
         return data.map(element => {
             return this.getAbsolutePath(element.dataset.src, request.url);
