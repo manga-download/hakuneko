@@ -111,7 +111,8 @@ export default class MangaReaderTo extends Connector {
             });
         `;
 
-        const fixedImagesArr = await Engine.Request.fetchUI(requestChapter, script, 60000, true);
+        const timeout = requestChapter.url.includes('chapter') ? 60000 : 200 * imageData.length;//defaut timetout for chapter, variable for volume
+        const fixedImagesArr = await Engine.Request.fetchUI(requestChapter, script, timeout, true);
         let fixedArrIndex = 0;
         return imagesArr.map(image => {
             if (image.className.includes('shuffled')) {
