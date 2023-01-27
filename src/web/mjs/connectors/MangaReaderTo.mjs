@@ -104,16 +104,14 @@ export default class MangaReaderTo extends Connector {
         const type = Engine.Settings.recompressionFormat.value;
         const quality = parseFloat(Engine.Settings.recompressionQuality.value) / 100;
         let canvas = await this.imgReverser(payload);
-        const uri = canvas.toDataURL(type, quality);
-        let array = await this.base64toArraybuffer(uri);
-        return {data : array, mimetype: type};
-
+        const blob = await new Promise(resolve => {
+                canvas.toBlob(data => resolve(data), type, quality);
+            });  
+        let data = await this._blobToBuffer(blob);
+        this._applyRealMime(data);
+        return data;
     }
 
-    async base64toArraybuffer(dataURL) {
-        const arr = dataURL.split(',');
-        return Uint8Array.from(atob(arr[1]), c => c.charCodeAt(0));
-    }
 
     /**********************/
     /* Begin MangareaderTo*/
