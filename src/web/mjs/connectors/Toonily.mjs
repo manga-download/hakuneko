@@ -1,4 +1,5 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class Toonily extends WordPressMadara {
 
@@ -11,6 +12,19 @@ export default class Toonily extends WordPressMadara {
 
         this.queryTitleForURI = 'div.site-content div.post-title';
         this.requestOptions.headers.set('x-cookie', 'toonily-mature=1');
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(new URL(uri), this.requestOptions);
+        const data = await this.fetchDOM(request, );
+        const element = [...data].pop();
+        [...element.querySelectorAll('span.manga-title-badges')].forEach(bloat => {
+            if (bloat.parentElement) {
+                bloat.parentElement.removeChild(bloat);
+            }
+        });
+        const title = (element.content || element.textContent).trim();
+        return new Manga(this, uri, title);
     }
 
     async _getMangas() {

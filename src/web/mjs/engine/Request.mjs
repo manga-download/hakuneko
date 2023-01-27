@@ -136,8 +136,8 @@ export default class Request {
                 }
 
                 // DDoS Guard Checks
-                if(document.querySelector('div#link-ddg a[href*="ddos-guard"]')) { // Sample => https://manga-tr.com
-                    await new Promise(resolve => setTimeout(resolve, 2500));
+                if(document.querySelector('title') && document.querySelector('title').text == 'DDOS-GUARD') { // Sample => https://manga-tr.com, https://tenshi.moe
+                    await new Promise(resolve => setTimeout(resolve, 7000));
                     return document.querySelector('div#h-captcha') ? handleUserInteractionRequired() : handleAutomaticRedirect();
                 }
 

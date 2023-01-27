@@ -9,5 +9,6 @@ export default class FirstKiss extends WordPressMadara {
         this.tags = ['webtoon', 'english'];
         this.url = 'https://1stkissmanga.io';
         this.requestOptions.headers.set('x-referer', this.url);
+        this.requestOptions.headers.set('x-origin', this.url);
     }
 }
