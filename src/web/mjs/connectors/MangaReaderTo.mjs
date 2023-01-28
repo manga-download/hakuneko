@@ -110,6 +110,12 @@ export default class MangaReaderTo extends Connector {
         let data = await this._blobToBuffer(blob);
         this._applyRealMime(data);
         return data;
+
+    }
+
+    async base64toArraybuffer(dataURL) {
+        const arr = dataURL.split(',');
+        return Uint8Array.from(atob(arr[1]), c => c.charCodeAt(0));
     }
 
     /**********************/
@@ -127,6 +133,9 @@ export default class MangaReaderTo extends Connector {
         });
     }
 
+    //Slightly modified from Mangareader lambda that extends Math by adding Math.seedrandom  function.
+    //1) Modified because we dont want to mess with modules.exports (i bet they have a node application to scramble and unscramble their pics)
+    //2) Main purpose of init is to fill this.seedrandom with an adequate lambda to use for unscramblng pictures. Too lazy too debug all that maybe there is still useless code.
     init() {
         let _0xb2d0a3 = [];
         var _0x221936,
@@ -153,7 +162,7 @@ export default class MangaReaderTo extends Connector {
                 return (_0x16995d + _0x11164e) / _0x374e1e;
             }
             var _0x357c70 = [],
-                _0xd1c90b = _0x459744(
+                _0xd1c90b = _0x459744(// eslint-disable-line
                     (function _0x53f196(_0x598061, _0xa97de4) {
                         var _0x4cb136,
                             _0x588b46 = [],
@@ -306,24 +315,6 @@ export default class MangaReaderTo extends Connector {
         }
 
         this.seedrandom = _0x4b7e3b;
-
-        /*
-  if (
-    (_0x459744(Math.random(), _0xb2d0a3),
-    'object' == typeof module && module.exports)
-  ) {
-    module.exports = _0x4b7e3b
-    try {
-      _0x221936 = require('crypto')
-    } catch (_0x9f4a4e) {}
-  } else {
-    'function' == typeof define && define.amd
-      ? define(function () {
-          return _0x4b7e3b
-        })
-      : (Math.seedrandom = _0x4b7e3b)
-  }
-*/
     }
 
     extractSeed(a) {
@@ -448,7 +439,7 @@ export default class MangaReaderTo extends Connector {
     }
 
     toFinite(a) {
-        return a? (a = this.toNumber(a)) !== 1e400 && a !== -1e400? a == a ? a: 0: 1.7976931348623157e308 * (a < 0 ? -1 : 1): 0 === a? a: 0;
+        return a? (a = this.toNumber(a)) !== 1e400 && a !== -1e400? a == a ? a: 0: 1.7976931348623157e308 * (a < 0 ? -1 : 1): 0 === a? a: 0;// eslint-disable-line
     }
 
     createRange(a, b, c) {
