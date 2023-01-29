@@ -41,6 +41,7 @@
     "format:web": "npm run lint:web -- --fix",
     "build:app": "node build-app.js",
     "build:web": "node build-web.js",
+    "build:portable:64": "npm run build:web && npm run build:app build=portable arch=64 web=copy",
     "deploy:web": "npm run build:web && node deploy-web.js",
     "test": "jest --color --reporters=default --reporters=jest-junit",
     "test:app": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/app",

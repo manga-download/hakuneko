@@ -6,6 +6,7 @@ const https = require('https');
 const eol = require('os').EOL;
 const exec = require('child_process').exec;
 const config = require('./build-app.config');
+const configWeb = require('./build-web.config');
 
 /**
  * Base class for platform dependent electron packagers
@@ -567,6 +568,20 @@ class ElectronPackagerWindows extends ElectronPackager {
     /**
      *
      */
+    get _dirWebRoot() {
+        return configWeb.target || 'web';
+    }
+
+    /**
+     *
+     */
+    get _dirWebTargetRoot() {
+        return path.join(this._dirBuildRoot, 'cache');
+    }
+
+    /**
+     *
+     */
     get _stagingExecutableDirectory() {
         return this._dirBuildRoot;
     }
@@ -616,6 +631,10 @@ class ElectronPackagerWindows extends ElectronPackager {
         await this._bundleImageMagick(this._architecture.name);
         await this._bundleKindleGenerate(this._architecture.name);
         await this._editResource();
+
+        if (isValidArg('web', 'copy', true) && fs.pathExistsSync(this._dirWebRoot)) {
+            await fs.copy(this._dirWebRoot, this._dirWebTargetRoot);
+        }
 
         let zip = this._dirBuildRoot + '.zip';
         await fs.remove(zip);
@@ -875,16 +894,42 @@ class ElectronPackagerDarwin extends ElectronPackager {
     }
 }
 
+function isValidArg(key, value, strict = false) {
+    let option = process.argv.find(arg => arg.startsWith(key + '='));
+
+    if(option) {
+        let input = option.split('=')[1];
+
+        return input === value;
+    }
+
+    return !strict;
+}
+
 /**
  *
  */
 async function main() {
+    let isPortable =isValidArg('build', 'portable');
+    let isSetup =isValidArg('build', 'setup');
+
+    let isArch64 = isValidArg('arch', '64');
+    let isArch32 = isValidArg('arch', '32');
+
     if(process.platform === 'win32') {
         let packager = new ElectronPackagerWindows(config);
-        await packager.buildIS('64');
-        await packager.buildIS('32');
-        await packager.buildZIP('64');
-        await packager.buildZIP('32');
+        if (isPortable && isArch64) {
+            await packager.buildZIP('64');
+        }
+        if (isPortable && isArch32) {
+            await packager.buildZIP('32');
+        }
+        if (isSetup && isArch64) {
+            await packager.buildIS('64');
+        }
+        if (isSetup && isArch32) {
+            await packager.buildIS('32');
+        }
     }
     if(process.platform === 'linux') {
         let packager = new ElectronPackagerLinux(config);
