@@ -63,6 +63,12 @@
         }
 
         function loadClassicPolymer(identifier) {
+            // Handle old identifier
+            let oldIdentifier = identifier.split('-')
+            if (oldIdentifier.length > 1) {
+                identifier = oldIdentifier[1];
+            }
+
             // the entry tag for the web application
             let element = document.createElement('hakuneko-app');
             document.body.appendChild(element);
@@ -70,11 +76,19 @@
             let webcomponents = document.createElement('script');
             webcomponents.src = './lib/webcomponentsjs/webcomponents-loader.js';
             document.head.appendChild(webcomponents);
+
+            let frontendTheme = document.createElement('link');
+            frontendTheme.href = `./lib/hakuneko/themes/${identifier}.html`;
+            frontendTheme.rel = 'import';
+            document.head.appendChild(frontendTheme);
+
             // the hakuneko application polymer element
             let frontend = document.createElement('link');
-            frontend.href = `./lib/hakuneko/${identifier}/app.html`;
+            frontend.href = `./lib/hakuneko/app.html`;
             frontend.rel = 'import';
             document.head.appendChild(frontend);
+
+
         }
 
         function closeNotification() {

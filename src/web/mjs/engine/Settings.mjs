@@ -56,10 +56,10 @@ export default class Settings extends EventTarget {
             ].join('\n'),
             input: types.select,
             options: [
-                { value: 'frontend@classic-light', name: 'Classic (Light)' },
-                { value: 'frontend@classic-dark', name: 'Ken\'s Daedal Dark' }
+                { value: 'light', name: 'Classic (Light)' },
+                { value: 'dark', name: 'Ken\'s Daedal Dark' }
             ],
-            value: 'frontend@classic-light'
+            value: 'light'
         };
 
         this.readerEnabled = {
