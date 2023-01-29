@@ -119,8 +119,7 @@ export default class MangaReaderTo extends Connector {
 
     async _loadImage(url) {
         return new Promise((resolve, reject) => {
-            let uri = new URL(url);
-            uri.searchParams.delete('type');
+            const uri = new URL(url);
             let image = new Image();
             image.onload = () => resolve(image);
             image.onerror = error => reject(error);
