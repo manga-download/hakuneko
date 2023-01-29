@@ -113,11 +113,6 @@ export default class MangaReaderTo extends Connector {
 
     }
 
-    async base64toArraybuffer(dataURL) {
-        const arr = dataURL.split(',');
-        return Uint8Array.from(atob(arr[1]), c => c.charCodeAt(0));
-    }
-
     /**********************/
     /* Begin MangareaderTo*/
     /*********************/
