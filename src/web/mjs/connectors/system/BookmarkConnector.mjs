@@ -21,6 +21,7 @@ export default class BookmarkConnector {
         this.agent = undefined;
         // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
         this.config = undefined;
+        this.isUpdating = false;
     }
 
     /**
@@ -36,7 +37,7 @@ export default class BookmarkConnector {
      *
      */
     updateMangas( callback ) {
-        this._getMangaList( callback );
+        this._getMangaList( callback , true );
     }
 
     /**
@@ -49,12 +50,17 @@ export default class BookmarkConnector {
     /**
      *
      */
-    _getMangaList( callback ) {
+    async _getMangaList( callback , checkNewContent = false ) {
         /*
          * get mangas and check status
          * use a different approach to determine existence of manga, since it can be expected that
          * the bookmark list is way shorter than a manga list of a connector => no performance issues expected
          */
+        if( this.isUpdating ) {
+            return;
+        }
+        this.isUpdating = true;
+
         let mangas = Engine.BookmarkManager.bookmarks.map( bookmark => {
             let manga = new Manga( this._getConnectorByID( bookmark.key.connector ), bookmark.key.manga, bookmark.title.manga );
             // determine if manga directory exist on disk
@@ -70,6 +76,22 @@ export default class BookmarkConnector {
         mangas.sort( ( a, b ) => {
             return a.title.toLowerCase() < b.title.toLowerCase() ? -1 : 1;
         });
+
+        if (checkNewContent) {
+            mangas = await Promise.all(mangas.map((manga) => {
+                return new Promise((resolve, reject) => {
+                    manga.getChapters((error, chapters) => {
+                        if (error) {
+                            reject(error);
+                        } else {
+                            resolve(manga);
+                        }
+                    })
+                })
+            }));
+        }
+
+        this.isUpdating = false;
         callback( null, mangas );
     }
 }

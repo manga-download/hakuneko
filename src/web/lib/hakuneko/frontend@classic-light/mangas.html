@@ -76,6 +76,9 @@
                 color: var(--manga-refresh-button-color);
                 text-shadow: var(--manga-refresh-button-shadow);
             }
+            .new-content {
+                color: var(--manga-new-content-flag-color);
+            }
             .disabled {
                 color: var(--manga-button-disabled-color);
                 cursor: progress !important; /* wait */
@@ -138,7 +141,9 @@
                 </li>
             </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
-                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">
+                    <i class$="fas fa-sm [[ getMangaNewFlagClass(item) ]] new-content"  title$="New Content is available from &lt;[[ item.title ]]&gt;"></i> [[ item.title ]]
+                </li>
             </template>
         </ul>
         <!-- https://github.com/PolymerElements/iron-list/issues/536 -->
@@ -339,6 +344,13 @@
                     this.set('selectedConnector', clipboardConnector);
                     this.onUpdateMangaListClick(evt);
                 }
+            }
+
+            /**
+             *
+             */
+            getMangaNewFlagClass( manga ) {
+                return manga.hasNewChapters ? 'fa-circle' : '' ;
             }
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );

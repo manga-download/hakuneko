@@ -27,6 +27,7 @@ export default class Manga extends EventTarget {
         this.status = status;
         this.chapterCache = [];
         this.existingChapters = [];
+        this.hasNewChapters = false;
 
         if( !this.status ) {
             this.updateStatus();
@@ -103,6 +104,15 @@ export default class Manga extends EventTarget {
                         this.chapterCache.push( new Chapter( this, existingChapterTitle, existingChapterTitle, undefined, statusDefinitions.offline ) );
                     }
                 }
+
+                if (this.chapterCache.length > 0) {
+                    let chapter = this.chapterCache[0];
+                    let mark = Engine.ChaptermarkManager.getChaptermark(this);
+                    if (!Engine.ChaptermarkManager.isChapterMarked(chapter, mark)) {
+                        this.hasNewChapters = true;
+                    }
+                }
+
                 callback( null, this.chapterCache );
             } )
             .catch( error => {
