@@ -13,7 +13,11 @@ export default class BilibiliManhua extends Connector {
         this.auth = {
             accessToken : '',
             refreshToken : '',
+            area : 1
         };
+        this.areacode = { 1: 'us-user', 2: 'sg-user'};
+        this.credServer = 'https://%AREA%.bilibilicomics.com';
+
         this.links = {
             login: 'https://passport.bilibili.com/login'
         };
@@ -70,6 +74,7 @@ export default class BilibiliManhua extends Connector {
             //if token is not defined, get if from cookies
             if (!this.auth.accessToken) {
                 const cookie_value = cooki[0].value;
+                this.auth.area = JSON.parse(decodeURIComponent(cookie_value)).area;
                 this.auth.accessToken = JSON.parse(decodeURIComponent(cookie_value)).accessToken;
                 this.auth.refreshToken = JSON.parse(decodeURIComponent(cookie_value)).refreshToken;
                 this.token_expires_at = now + 60*10; //expires in 10 minutes
@@ -85,7 +90,9 @@ export default class BilibiliManhua extends Connector {
         } catch(error) {
             this.auth.accessToken = '';
             this.auth.refreshToken = '';
+            this.auth.area = 1;
             this.token_expires_at = -1;
+
         }
 
     }
@@ -192,7 +199,8 @@ export default class BilibiliManhua extends Connector {
     }
 
     async _fetchWithAccessToken(path, body) {
-        const uri = new URL('/twirp/global.v1.User' + path, 'https://us-user.bilibilicomics.com');
+        const server = this.credServer.replace('%AREA%', this.areacode[this.auth.area]);
+        const uri = new URL('/twirp/global.v1.User' + path, server);
         uri.searchParams.set('device', 'pc');
         uri.searchParams.set('platform', 'web');
         uri.searchParams.set('lang', this.config.language.value);
@@ -203,7 +211,7 @@ export default class BilibiliManhua extends Connector {
             headers: {
                 'x-origin': this.url,
                 'Content-Type': 'application/json;charset=utf-8',
-                'x-referer': 'https://us-user.bilibilicomics.com/',
+                'x-referer':  server,
                 'x-sec-fetch-site': 'same-site',
                 'Authorization' : ' Bearer '+ this.auth.accessToken
             }
