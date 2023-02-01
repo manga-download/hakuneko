@@ -96,7 +96,7 @@ export default class MangaHub extends Connector {
         }`;
         let data = await this._fetchGraphQLWithoutRateLimit(this.apiURL, undefined, gql, undefined);
         data = JSON.parse(data.chapter.pages);
-        return Object.values(data).map(page => this.createConnectorURI(new URL(page, this.cdnURL).href));
+        return data.i.map(page => this.createConnectorURI(new URL(data.p + page, this.cdnURL).href));
     }
 
     async _handleConnectorURI(payload) {
