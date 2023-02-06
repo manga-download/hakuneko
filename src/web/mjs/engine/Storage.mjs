@@ -855,9 +855,9 @@ export default class Storage {
         if (image.type === 'image/jpeg') {
             return 'JPEG';
         }
-        if (image.type === 'image/png') {
-            return 'PNG';
-        }
+        //if (image.type === 'image/png') {
+        //    return 'PNG';
+        //}
         return undefined;
     }
 
