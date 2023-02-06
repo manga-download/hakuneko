@@ -1,6 +1,6 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class LegacyScans extends WordPressMangastream {
+export default class LegacyScans extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,6 +8,5 @@ export default class LegacyScans extends WordPressMangastream {
         super.label = 'Legacy-Scans';
         this.tags = ['webtoon', 'french'];
         this.url = 'https://legacy-scans.com';
-        this.path = '/manga/list-mode/';
     }
 }
