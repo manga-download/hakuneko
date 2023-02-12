@@ -72,7 +72,7 @@ export default class MyAnimeListManga extends Connector {
     }
 
     async _getPages(chapter) {
-    	  //TODO : add support for light novels  : its modified Publus reader
+        //TODO : add support for light novels  : its modified Publus reader
         if (chapter.id.includes('novel_viewer')) {
             throw new Error('Light Novels are not supported :/');
         }
