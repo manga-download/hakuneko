@@ -58,6 +58,7 @@ export default class MyAnimeListManga extends Connector {
         const data = await this.fetchDOM(request, 'div.v-manga-store-purchase-bulk-button');
         const jObject= JSON.parse(data[0].dataset['items']);
         return jObject.filter(element => element.is_previewable || element.is_free || element.is_possessed)
+            .filter(element => !element.viewer_url.includes('novel_viewer'))
             .map(element => {
                 const isPossessed = !element.is_possessed ? false : element.is_possessed; //value can be null instead of false
                 const isFull = element.is_free || isPossessed;
@@ -73,9 +74,6 @@ export default class MyAnimeListManga extends Connector {
 
     async _getPages(chapter) {
         //TODO : add support for light novels  : its modified Publus reader
-        if (chapter.id.includes('novel_viewer')) {
-            throw new Error('Light Novels are not supported :/');
-        }
         const url = new URL(chapter.id, this.url);
         let request = new Request(url, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.v-manga-store-viewer');
