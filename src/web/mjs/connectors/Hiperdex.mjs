@@ -21,13 +21,6 @@ export default class Hiperdex extends WordPressMadara {
         return this.config.url.value;
     }
 
-    set url(value) {
-        if (this.config && value) {
-            this.config.url.value = value;
-            Engine.Settings.save();
-        }
-    }
-
     canHandleURI(uri) {
         return this.url.includes(uri.hostname);
     }
