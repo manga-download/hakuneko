@@ -4,7 +4,7 @@ export default class RRScans extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'RRScans';
+        super.id = 'rrscans';
         super.label = 'Romance Reader Scans';
         this.tags = [ 'manga', 'indonesian', 'webtoon', 'scanlation', 'manhua', 'manhwa' ];
         this.url = 'https://rrscans.my.id';
