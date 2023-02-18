@@ -1,6 +1,6 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class CosmicScans extends WordPressMangastream {
+export default class CosmicScansID extends WordPressMangastream {
 
     constructor() {
         super();

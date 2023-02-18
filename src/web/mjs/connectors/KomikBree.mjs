@@ -1,6 +1,6 @@
 import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class Aiinscan extends WordPressMadara {
+export default class KomikBree extends WordPressMadara {
 
     constructor() {
         super();
