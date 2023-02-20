@@ -8,7 +8,7 @@ export default class ReaperScansID extends WordPressMadara {
         this.tags = ['webtoon', 'indonesia', 'scanlation'];
         this.url = 'https://shinigami.id';
         this.queryChapters = 'div.chapter-link > a';
-        this.queryChaptersTitleBloat ='spa.chapter-release-date';
+        this.queryChaptersTitleBloat ='span.chapter-release-date';
 
         this.links = {
             login: 'https://shinigami.id/login'
