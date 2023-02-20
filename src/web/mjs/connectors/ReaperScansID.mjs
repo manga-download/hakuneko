@@ -6,12 +6,12 @@ export default class ReaperScansID extends WordPressMadara {
         super.id = 'reaperscansid';
         super.label = 'Reaper Scans (Indonesia)';
         this.tags = ['webtoon', 'indonesia', 'scanlation'];
-        this.url = 'https://reaperscans.id';
+        this.url = 'https://shinigami.id';
         this.queryChapters = 'div.chapter-link > a';
-        this.queryChaptersTitleBloat ='span.chapter-release-date';
+        this.queryChaptersTitleBloat ='spa.chapter-release-date';
 
         this.links = {
-            login: 'https://reaperscans.id/login'
+            login: 'https://shinigami.id/login'
         };
     }
     get icon() {
