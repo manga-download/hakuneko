@@ -6,41 +6,99 @@ export default class BilibiliManhua extends Connector {
     constructor() {
         super();
         super.id = 'neteasecomic';
-        super.label = 'Bilibili Manhua (Chinese)';
+        super.label = 'BilibiliManhua(Chinese)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
         this.token_expires_at = -1;
         this.auth = {
-            accessToken : '',
-            refreshToken : '',
-            area : 1
+            accessToken:'',
+            refreshToken:'',
+            area:1
         };
-        this.areacode = { 1: 'us-user', 2: 'sg-user'};
+        this.areacode = { 1:'us-user', 2:'sg-user'};
         this.credServer = 'https://%AREA%.bilibilicomics.com';
 
         this.links = {
-            login: 'https://passport.bilibili.com/login'
+            login:'https://passport.bilibili.com/login'
         };
         //default config doesnt need language switch, its fixed to CN
         this.config = {
-            quality:  {
-                label: 'Preferred format',
-                description: 'format of images\nwebp (low)\njpg (medium)\npng (high))',
-                input: 'select',
-                options: [
-                    { value: 'webp', name: 'webp' },
-                    { value: 'jpg', name: 'jpg' },
-                    { value: 'png', name: 'png' },
+            format:{
+                label:'Preferred format',
+                description:'Format of images\nwebp(low)\n jpg(medium)\n png(high))',
+                input:'select',
+                options:[
+                    { value:'webp', name:'webp' },
+                    { value:'jpg', name:'jpg' },
+                    { value:'png', name:'png' },
                 ],
-                value: 'png'
+                value:'png'
             },
-            language: {
-                label: 'Language Settings',
-                description: 'Choose the language to use. This will affect available manga lists',
-                input: 'disabled',
-                value : 'cn'
+            language:{
+                label:'Language Settings',
+                description:'Choose the language to use. This will affect available manga in list',
+                input:'disabled',
+                value:'cn'
+            },
+            picquality:{
+                label:'Quality Settings',
+                description:'Choose the prefered quality',
+                input:'select',
+                options:[
+                    { value:'veryhigh', name:'VeryHigh' },
+                    { value:'good', name:'Good' },
+                    { value:'normal', name:'Normal' },
+                    { value:'poor', name:'Poor' },
+                    { value:'verypoor', name:'VeryPoor' },
+                ],
+                value:'good'
+            },
+            forcepicturesize:{
+                label:'Force max quality (Experimental)',
+                description:'Force server to send pictures with maxsize. Override "quality settings"',
+                input:'checkbox',
+                value:false
             }
+
         };
+    }
+
+    getImageSizeByQuality(width) {
+        const V = { 1:"veryhigh", verypoor:0.4, "0.4":"verypoor", poor:0.5, "0.5":"poor", normal:0.7, "0.7":"normal", good:0.85, "0.85":"good", veryhigh:1 };
+        const J = { 350:"verypoor", 450:"poor", 800:"normal", 1100:"good", 1600:"veryhigh", verypoor:350, poor:450, normal:800, good:1100, veryhigh:1600 };
+
+        let o = {
+            w:width,
+            q:undefined
+        };
+
+        //sometimes pictures size from JSON are 0 in this case Bibili forcea 0.85 ratio ,"Good"quality.
+        if (width < 1) {
+            o.w = J.good;
+            return o;
+        }
+
+        let n = V[this.config.picquality.value];
+        let w = Math.floor(width * n); //0.85
+        switch(n) {
+            case V.verypoor:
+                w > J.verypoor && (o.w = J.verypoor);
+                break;
+            case V.Poor:
+                w > J.poor && (o.w = J.poor);
+                break;
+            case V.normal:
+                w > J.normal && (o.w = J.normal);
+                break;
+            case V.good:
+                w > J.good && (o.w = J.good);
+                break;
+            case V.veryhigh:
+                w > J.veryhigh && (o.w = J.veryhigh);
+        }
+
+        if (this.config.forcepicturesize.value) o.w = Math.max(o.w, width);
+        return o;
     }
 
     async _initializeConnector() {
@@ -51,7 +109,7 @@ export default class BilibiliManhua extends Connector {
     async refreshToken() {
         try {
             const now = Math.floor(Date.now() / 1000);
-            const data = await this._fetchWithAccessToken('/RefreshToken', {refresh_token : this.auth.refreshToken});
+            const data = await this._fetchWithAccessToken('/RefreshToken', {refresh_token:this.auth.refreshToken});
             this.auth.accessToken = data.data.access_token;
             this.auth.refreshToken = data.data.refresh_token;
             this.token_expires_at = now + 60*10;//expires in 10 minutes
@@ -66,18 +124,18 @@ export default class BilibiliManhua extends Connector {
 
             const now = Math.floor(Date.now() / 1000);
             let cooki = require('electron');
-            cooki = await cooki.remote.session.defaultSession.cookies.get({ url: this.url, name : "access_token" });
+            cooki = await cooki.remote.session.defaultSession.cookies.get({ url:this.url, name:"access_token" });
 
-            //if there is no cookie user is disconnected, force cleanup
-            if (cooki.length == 0) throw new Error('User is not connected.');
+            //if there is no cookie user is disconnected, forcecleanup
+            if (cooki.length == 0) throw new Error('Userisnotconnected.');
 
-            //if token is not defined, get if from cookies
+            //if token is not defined, get it from cookies
             if (!this.auth.accessToken) {
                 const cookie_value = cooki[0].value;
                 this.auth.area = JSON.parse(decodeURIComponent(cookie_value)).area;
                 this.auth.accessToken = JSON.parse(decodeURIComponent(cookie_value)).accessToken;
                 this.auth.refreshToken = JSON.parse(decodeURIComponent(cookie_value)).refreshToken;
-                this.token_expires_at = now + 60*10; //expires in 10 minutes
+                this.token_expires_at = now + 60*10;//expires in 10 minutes
                 return;
             }
 
@@ -105,22 +163,22 @@ export default class BilibiliManhua extends Connector {
         uri.searchParams.set('lang', this.config.language.value);
         uri.searchParams.set('sys_lang', this.config.language.value);
         let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=UTF-8',
-                'x-referer':  uri,
+            method:'POST',
+            body:JSON.stringify(body),
+            headers:{
+                'x-origin':this.url,
+                'Content-Type':'application/json;charset=UTF-8',
+                'x-referer':uri,
             }
         });
-        if (this.auth.accessToken) request.headers.set('Authorization', ' Bearer '+ this.auth.accessToken);
+        if (this.auth.accessToken) request.headers.set('Authorization', 'Bearer'+ this.auth.accessToken);
         const data = await this.fetchJSON(request);
         return data.data;
     }
 
     async _getMangaFromURI(uri) {
         const data = await this._fetchTwirp('/ComicDetail', {
-            comic_id: parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
+            comic_id:parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
         });
         return new Manga(this, data.id, data.title);
     }
@@ -136,31 +194,31 @@ export default class BilibiliManhua extends Connector {
 
     async _getMangasFromPage(page) {
         const data = await this._fetchTwirp('/ClassPage', {
-            style_id: -1,
-            area_id: -1,
-            is_free: -1,
-            is_finish: -1,
-            order: 0,
-            page_size: 18,
-            page_num: page
+            style_id:-1,
+            area_id:-1,
+            is_free:-1,
+            is_finish:-1,
+            order:0,
+            page_size:18,
+            page_num:page
         });
         return data.map(entry => {
             return {
-                id: entry.season_id,
-                title: entry.title.trim()
+                id:entry.season_id,
+                title:entry.title.trim()
             };
         });
     }
 
     async _getChapters(manga) {
         const data = await this._fetchTwirp('/ComicDetail', {
-            comic_id: manga.id
+            comic_id:manga.id
         });
         return data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
             return {
-                id: entry.id,
-                title: entry.short_title + ' - ' + entry.title,
-                language: ''
+                id:entry.id,
+                title:entry.short_title + '-' + entry.title,
+                language:''
             };
         });
     }
@@ -170,30 +228,36 @@ export default class BilibiliManhua extends Connector {
         let credz = null;
         let data = null;
 
-        //Using access_token from cookies, try to get token for unlocked chapter
+        //Using access_token from cookies, try to get token for unlocked chapters
         if (this.auth.accessToken) {
             credz = await this._fetchWithAccessToken('/GetCredential', {
-                ep_id: chapter.id,
-                comic_id : chapter.manga.id,
-                type : 1
+                ep_id:chapter.id,
+                comic_id:chapter.manga.id,
+                type:1
             });
         }
-        //if we got chapter credentials, fetch full chapter using it
+        //if we got chapter credentials, fetch full chapter using them
         if (credz && credz.data && credz.data.credential) {
             data = await this._fetchTwirp('/GetImageIndex', {
-                ep_id: chapter.id,
-                credential : credz.data.credential
+                ep_id:chapter.id,
+                credential:credz.data.credential
             });
         } else {
             //get only 2 picture for locked chapter or full pictures if free chapter
             data = await this._fetchTwirp('/GetImageIndex', {
-                ep_id: chapter.id,
+                ep_id:chapter.id,
             });
         }
 
-        let images = data.images.map(image => image.path + '@' + image.x + 'w.' + this.config.quality.value);
+        let images = data.images.map(image => {
+            const qualdata = this.getImageSizeByQuality(image.x);
+            let suffix = qualdata.w + 'w';
+            suffix += qualdata.q ? '_'+qualdata.q+'q': '';
+            return	image.path + '@' + suffix + '.'+this.config.format.value;
+        });
+
         images = await this._fetchTwirp('/ImageToken', {
-            urls: JSON.stringify(images)
+            urls:JSON.stringify(images)
         });
         return images.map(image => image.url + '?token=' + image.token);
     }
@@ -206,14 +270,14 @@ export default class BilibiliManhua extends Connector {
         uri.searchParams.set('lang', this.config.language.value);
         uri.searchParams.set('sys_lang', this.config.language.value);
         let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'x-origin': this.url,
-                'Content-Type': 'application/json;charset=utf-8',
-                'x-referer':  server,
-                'x-sec-fetch-site': 'same-site',
-                'Authorization' : ' Bearer '+ this.auth.accessToken
+            method:'POST',
+            body:JSON.stringify(body),
+            headers:{
+                'x-origin':this.url,
+                'Content-Type':'application/json;charset=utf-8',
+                'x-referer':server,
+                'x-sec-fetch-site':'same-site',
+                'Authorization':'Bearer'+ this.auth.accessToken
             }
         });
         return await this.fetchJSON(request);
