@@ -6,24 +6,24 @@ export default class BilibiliManhua extends Connector {
     constructor() {
         super();
         super.id = 'neteasecomic';
-        super.label = 'Bilibili Manhua(Chinese)';
+        super.label = 'Bilibili Manhua (Chinese)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
         this.token_expires_at = -1;
         this.auth = {
-            accessToken : '',
-            refreshToken : '',
-            area : 1
+            accessToken: '',
+            refreshToken: '',
+            area: 1
         };
-        this.areacode = { 1 : 'us-user', 2 : 'sg-user'};
+        this.areacode = { 1: 'us-user', 2: 'sg-user'};
         this.credServer = 'https://%AREA%.bilibilicomics.com';
 
         this.links = {
-            login:'https://passport.bilibili.com/login'
+            login: 'https://passport.bilibili.com/login'
         };
         //default config doesnt need language switch, its fixed to CN
         this.config = {
-            format:{
+            format: {
                 label:'Preferred format',
                 description:'Format of images\nwebp(low)\n jpg(medium)\n png(high))',
                 input:'select',
@@ -32,34 +32,33 @@ export default class BilibiliManhua extends Connector {
                     { value:'jpg', name:'jpg' },
                     { value:'png', name:'png' },
                 ],
-                value:'png'
+                value: 'png'
             },
-            language:{
-                label:'Language Settings',
-                description:'Choose the language to use. This will affect available manga in list',
-                input:'disabled',
-                value:'cn'
+            language: {
+                label: 'Language Settings',
+                description: 'Choose the language to use. This will affect available manga in list',
+                input: 'disabled',
+                value: 'cn'
             },
-            picquality:{
-                label:'Quality Settings',
-                description:'Choose the prefered quality',
-                input:'select',
-                options:[
-                    { value:'veryhigh', name:'VeryHigh' },
-                    { value:'good', name:'Good' },
-                    { value:'normal', name:'Normal' },
-                    { value:'poor', name:'Poor' },
-                    { value:'verypoor', name:'VeryPoor' },
+            picquality: {
+                label: 'Quality Settings',
+                description: 'Choose the prefered quality',
+                input: 'select',
+                options: [
+                    { value: 'veryhigh', name:'VeryHigh' },
+                    { value: 'good', name:'Good' },
+                    { value: 'normal', name:'Normal' },
+                    { value: 'poor', name:'Poor' },
+                    { value: 'verypoor', name:'VeryPoor' },
                 ],
-                value:'good'
+                value: 'good'
             },
-            forcepicturesize:{
-                label:'Force max quality (Experimental)',
-                description:'Force server to send pictures with maxsize. Override "quality settings"',
-                input:'checkbox',
-                value:false
+            forcepicturesize: {
+                label: 'Force max quality (Experimental)',
+                description: 'Force server to send pictures with maxsize. Override "quality settings"',
+                input: 'checkbox',
+                value: false
             }
-
         };
     }
 
@@ -109,7 +108,7 @@ export default class BilibiliManhua extends Connector {
     async refreshToken() {
         try {
             const now = Math.floor(Date.now() / 1000);
-            const data = await this._fetchWithAccessToken('/RefreshToken', {refresh_token:this.auth.refreshToken});
+            const data = await this._fetchWithAccessToken('/RefreshToken', {refresh_token : this.auth.refreshToken});
             this.auth.accessToken = data.data.access_token;
             this.auth.refreshToken = data.data.refresh_token;
             this.token_expires_at = now + 60*10;//expires in 10 minutes
@@ -124,10 +123,10 @@ export default class BilibiliManhua extends Connector {
 
             const now = Math.floor(Date.now() / 1000);
             let cooki = require('electron');
-            cooki = await cooki.remote.session.defaultSession.cookies.get({ url:this.url, name:"access_token" });
+            cooki = await cooki.remote.session.defaultSession.cookies.get({ url : this.url, name : "access_token" });
 
-            //if there is no cookie user is disconnected, forcecleanup
-            if (cooki.length == 0) throw new Error('Userisnotconnected.');
+            //if there is no cookie user is disconnected, force cleanup
+            if (cooki.length == 0) throw new Error('User is not connected.');
 
             //if token is not defined, get it from cookies
             if (!this.auth.accessToken) {
@@ -135,7 +134,7 @@ export default class BilibiliManhua extends Connector {
                 this.auth.area = JSON.parse(decodeURIComponent(cookie_value)).area;
                 this.auth.accessToken = JSON.parse(decodeURIComponent(cookie_value)).accessToken;
                 this.auth.refreshToken = JSON.parse(decodeURIComponent(cookie_value)).refreshToken;
-                this.token_expires_at = now + 60*10;//expires in 10 minutes
+                this.token_expires_at = now + 60*10; //expires in 10 minutes
                 return;
             }
 
