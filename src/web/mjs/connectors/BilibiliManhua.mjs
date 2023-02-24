@@ -11,9 +11,9 @@ export default class BilibiliManhua extends Connector {
         this.url = 'https://manga.bilibili.com';
         this.token_expires_at = -1;
         this.auth = {
-            accessToken: '',
-            refreshToken: '',
-            area: 1
+            accessToken : '',
+            refreshToken : '',
+            area : 1
         };
         this.areacode = { 1: 'us-user', 2: 'sg-user'};
         this.credServer = 'https://%AREA%.bilibilicomics.com';
@@ -123,7 +123,7 @@ export default class BilibiliManhua extends Connector {
 
             const now = Math.floor(Date.now() / 1000);
             let cooki = require('electron');
-            cooki = await cooki.remote.session.defaultSession.cookies.get({ url : this.url, name : "access_token" });
+            cooki = await cooki.remote.session.defaultSession.cookies.get({ url: this.url, name : "access_token" });
 
             //if there is no cookie user is disconnected, force cleanup
             if (cooki.length == 0) throw new Error('User is not connected.');
@@ -162,22 +162,22 @@ export default class BilibiliManhua extends Connector {
         uri.searchParams.set('lang', this.config.language.value);
         uri.searchParams.set('sys_lang', this.config.language.value);
         let request = new Request(uri, {
-            method:'POST',
-            body:JSON.stringify(body),
-            headers:{
-                'x-origin':this.url,
-                'Content-Type':'application/json;charset=UTF-8',
-                'x-referer':uri,
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                'x-origin': this.url,
+                'Content-Type': 'application/json;charset=UTF-8',
+                'x-referer': uri,
             }
         });
-        if (this.auth.accessToken) request.headers.set('Authorization', 'Bearer'+ this.auth.accessToken);
+        if (this.auth.accessToken) request.headers.set('Authorization', ' Bearer '+ this.auth.accessToken);
         const data = await this.fetchJSON(request);
         return data.data;
     }
 
     async _getMangaFromURI(uri) {
         const data = await this._fetchTwirp('/ComicDetail', {
-            comic_id:parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
+            comic_id: parseInt(uri.pathname.match(/\/mc(\d+)/)[1])
         });
         return new Manga(this, data.id, data.title);
     }
@@ -193,31 +193,31 @@ export default class BilibiliManhua extends Connector {
 
     async _getMangasFromPage(page) {
         const data = await this._fetchTwirp('/ClassPage', {
-            style_id:-1,
-            area_id:-1,
-            is_free:-1,
-            is_finish:-1,
-            order:0,
-            page_size:18,
-            page_num:page
+            style_id: -1,
+            area_id: -1,
+            is_free: -1,
+            is_finish: -1,
+            order: 0,
+            page_size: 18,
+            page_num: page
         });
         return data.map(entry => {
             return {
-                id:entry.season_id,
-                title:entry.title.trim()
+                id: entry.season_id,
+                title: entry.title.trim()
             };
         });
     }
 
     async _getChapters(manga) {
         const data = await this._fetchTwirp('/ComicDetail', {
-            comic_id:manga.id
+            comic_id: manga.id
         });
         return data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
             return {
-                id:entry.id,
-                title:entry.short_title + '-' + entry.title,
-                language:''
+                id: entry.id,
+                title: entry.short_title + '-' + entry.title,
+                language: ''
             };
         });
     }
@@ -230,21 +230,21 @@ export default class BilibiliManhua extends Connector {
         //Using access_token from cookies, try to get token for unlocked chapters
         if (this.auth.accessToken) {
             credz = await this._fetchWithAccessToken('/GetCredential', {
-                ep_id:chapter.id,
-                comic_id:chapter.manga.id,
-                type:1
+                ep_id: chapter.id,
+                comic_id : chapter.manga.id,
+                type : 1
             });
         }
         //if we got chapter credentials, fetch full chapter using them
         if (credz && credz.data && credz.data.credential) {
             data = await this._fetchTwirp('/GetImageIndex', {
-                ep_id:chapter.id,
-                credential:credz.data.credential
+                ep_id: chapter.id,
+                credential : credz.data.credential
             });
         } else {
             //get only 2 picture for locked chapter or full pictures if free chapter
             data = await this._fetchTwirp('/GetImageIndex', {
-                ep_id:chapter.id,
+                ep_id: chapter.id,
             });
         }
 
@@ -256,7 +256,7 @@ export default class BilibiliManhua extends Connector {
         });
 
         images = await this._fetchTwirp('/ImageToken', {
-            urls:JSON.stringify(images)
+            urls: JSON.stringify(images)
         });
         return images.map(image => image.url + '?token=' + image.token);
     }
