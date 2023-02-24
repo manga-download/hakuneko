@@ -167,7 +167,7 @@ export default class BilibiliManhua extends Connector {
             headers: {
                 'x-origin': this.url,
                 'Content-Type': 'application/json;charset=UTF-8',
-                'x-referer': uri,
+                'x-referer':  uri,
             }
         });
         if (this.auth.accessToken) request.headers.set('Authorization', ' Bearer '+ this.auth.accessToken);
@@ -216,7 +216,7 @@ export default class BilibiliManhua extends Connector {
         return data.ep_list.filter(entry => entry.is_in_free || !entry.is_locked).map(entry => {
             return {
                 id: entry.id,
-                title: entry.short_title + '-' + entry.title,
+                title: entry.short_title + ' - ' + entry.title,
                 language: ''
             };
         });
@@ -269,14 +269,14 @@ export default class BilibiliManhua extends Connector {
         uri.searchParams.set('lang', this.config.language.value);
         uri.searchParams.set('sys_lang', this.config.language.value);
         let request = new Request(uri, {
-            method:'POST',
-            body:JSON.stringify(body),
-            headers:{
-                'x-origin':this.url,
-                'Content-Type':'application/json;charset=utf-8',
-                'x-referer':server,
-                'x-sec-fetch-site':'same-site',
-                'Authorization':'Bearer'+ this.auth.accessToken
+            method: 'POST',
+            body: JSON.stringify(body),
+            headers: {
+                'x-origin': this.url,
+                'Content-Type': 'application/json;charset=utf-8',
+                'x-referer':  server,
+                'x-sec-fetch-site': 'same-site',
+                'Authorization' : ' Bearer '+ this.auth.accessToken
             }
         });
         return await this.fetchJSON(request);
