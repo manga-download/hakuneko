@@ -6,16 +6,16 @@ export default class BilibiliManhua extends Connector {
     constructor() {
         super();
         super.id = 'neteasecomic';
-        super.label = 'BilibiliManhua(Chinese)';
+        super.label = 'Bilibili Manhua(Chinese)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
         this.url = 'https://manga.bilibili.com';
         this.token_expires_at = -1;
         this.auth = {
-            accessToken:'',
-            refreshToken:'',
-            area:1
+            accessToken : '',
+            refreshToken : '',
+            area : 1
         };
-        this.areacode = { 1:'us-user', 2:'sg-user'};
+        this.areacode = { 1 : 'us-user', 2 : 'sg-user'};
         this.credServer = 'https://%AREA%.bilibilicomics.com';
 
         this.links = {
