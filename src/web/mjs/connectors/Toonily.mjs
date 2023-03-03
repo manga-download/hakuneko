@@ -16,7 +16,7 @@ export default class Toonily extends WordPressMadara {
 
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
-        const data = await this.fetchDOM(request, );
+        const data = await this.fetchDOM(request, this.queryTitleForURI);
         const element = [...data].pop();
         [...element.querySelectorAll('span.manga-title-badges')].forEach(bloat => {
             if (bloat.parentElement) {
