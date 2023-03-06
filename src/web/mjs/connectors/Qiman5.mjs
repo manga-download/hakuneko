@@ -13,7 +13,7 @@ export default class Qiman5 extends Connector {
                 label: 'URL',
                 description: `This website's main domain doesn't always work, but has alternate domains.\nThis is the default URL which can also be manually set by the user.`,
                 input: 'text',
-                value: 'https://www.qiman58.com'
+                value: 'https://www.qiman59.com'
             }
         };
         this.queryPagesScript = `
