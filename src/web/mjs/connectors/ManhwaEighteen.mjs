@@ -13,10 +13,10 @@ export default class ManhwaEighteen extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        const uri = new URL('/manga-list.html?listType=pagination&sort=name&sort_type=ASC', this.url);
+        const uri = new URL('/manga-list', this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.pagination-wrap ul.pagination li:nth-last-child(2) a');
-        const pageCount = parseInt(data[0].text.trim());
+        const data = await this.fetchDOM(request, 'a.paging_item.paging_prevnext.next');
+        const pageCount = parseInt(data[0].href.match(/page=([\d]+)/)[1]);
         for (let page = 1; page <= pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -25,7 +25,7 @@ export default class ManhwaEighteen extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(this.url + '/manga-list.html?listType=pagination&sort=name&sort_type=ASC&page=' + page, this.requestOptions);
+        let request = new Request(this.url + '/manga-list?page=' + page, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.series-title a');
         return data.map(element => {
             return {
@@ -50,13 +50,13 @@ export default class ManhwaEighteen extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.chapter-content source._lazy');
+        let data = await this.fetchDOM(request, 'div#chapter-content source.lazy');
         return data.map(element => this.getAbsolutePath(element.dataset.src || element, request.url));
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'nav ol li.active');
+        let data = await this.fetchDOM(request, 'meta[property="og:title"]');
         let id = uri.pathname;
         let title = (data[0].content || data[0].textContent).trim();
         return new Manga(this, id, title);
