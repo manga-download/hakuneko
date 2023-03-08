@@ -11,8 +11,6 @@ export default class MangaParkEN extends Connector {
         this.url = 'https://mangapark.net';
         this.apiURL = `${this.url}/apo/`;
 
-        this.queryMangaTitle = 'main h3 a';
-
         this.requestOptions.headers.set('x-origin', this.url);
         this.requestOptions.headers.set('x-referer', `${this.url}/`);
         this.requestOptions.headers.set('x-cookie', 'set=h=1;');
@@ -20,7 +18,8 @@ export default class MangaParkEN extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangaTitle);
+        const queryMangaTitle = /\/title\/\d+/.test(uri.pathname) ? 'main h3 a' : 'meta[property="og:title"]';
+        const data = await this.fetchDOM(request, queryMangaTitle);
         const id = uri.pathname.match(/\/(\d+)\/?/)[1];
         const title = (data[0].textContent || data[0].content).trim();
         return new Manga(this, id, title);
