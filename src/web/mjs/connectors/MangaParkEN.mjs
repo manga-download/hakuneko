@@ -20,21 +20,55 @@ export default class MangaParkEN extends Connector {
         const request = new Request(uri, this.requestOptions);
         const queryMangaTitle = /\/title\/\d+/.test(uri.pathname) ? 'main h3 a' : 'meta[property="og:title"]';
         const data = await this.fetchDOM(request, queryMangaTitle);
-        const id = uri.pathname.match(/\/(\d+)\/?/)[1];
+        const id = parseInt(uri.pathname.match(/\/(\d+)\/?/)[1]);
         const title = (data[0].textContent || data[0].content).trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
+        try {
+            return await this._getMangasV3();
+        } catch (error) {
+            return this._getMangasV5();
+        }
+    }
+
+    async _getMangasV3() {
+        let mangaList = [];
+        const uri = new URL('/browse?sort=name', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'nav.d-md-block ul.pagination li:nth-last-child(2) a');
+        const pageCount = parseInt(data[0].text.trim());
+        for(let page = 1; page <= pageCount; page++) {
+            let mangas = await this._getMangasFromPageV3(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPageV3(page) {
+        const uri = new URL(`/browse?sort=name&page=${page}`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, '#subject-list div.item a.fw-bold');
+        return data.map( element => {
+            this.cfMailDecrypt(element);
+            return {
+                id: parseInt(this.getRootRelativeOrAbsoluteLink(element, request.url).match(/\/(\d+)\/?/)[1]),
+                title: element.text.trim()
+            };
+        });
+    }
+
+    async _getMangasV5() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
-            const mangas = await this._getMangasFromPage(page);
+            const mangas = await this._getMangasFromPageV5(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page) {
+    async _getMangasFromPageV5(page) {
         const gql = `
             query get_content_browse_search($select: ComicSearchSelect) {
                 get_content_browse_search(select: $select) {
@@ -74,8 +108,64 @@ export default class MangaParkEN extends Connector {
     }
 
     async _getChapters(manga) {
+        try {
+            return await this._getChaptersV3(manga);
+        } catch (error) {
+            return this._getChaptersV5(manga);
+        }
+    }
+
+    async _getChaptersV3(manga) {
         let chapterList = [];
-        const chaptersSources = await this._getChaptersSources(parseInt(manga.id));
+        const uri = new URL('/ajax.reader.subject.episodes.by.latest', this.url);
+        for (let page = '', run = true; run;) {
+            const request = new Request(uri, {
+                method: 'POST',
+                body: JSON.stringify({
+                    iid: manga.id,
+                    prevPos: page
+                }),
+                headers: {
+                    'Content-Type': 'application/json;charset=UTF-8'
+                }
+            });
+            const data = await this.fetchJSON(request);
+            const chapters = [...this.createDOM(data.html).querySelectorAll('div.episode-item > div > a.chapt')].map(element => {
+                const link = this.getRootRelativeOrAbsoluteLink(element, this.url);
+                let lang = link.match(/c[\d.]+-(\w+)-i\d+/)[1];
+                switch (lang) {
+                    case 'zh_hk':
+                        lang = 'zh-Hans';
+                        break;
+                    case 'zh_tw':
+                        lang = 'zh-Hant';
+                        break;
+                    case 'pt_br':
+                        lang = 'pt-BR';
+                        break;
+                    case 'es_419':
+                        lang = 'es-419';
+                        break;
+                    case '_t':
+                        lang = 'other';
+                        break;
+                }
+                return {
+                    id: link,
+                    title: element.text.trim().replace(/\s+/g, ' ') + ` (${lang})`,
+                    language: lang
+                };
+            }).filter(chapter => chapter.language);
+            chapterList.push(...chapters);
+            run = data.isLast != null ? !data.isLast : false;
+            page = data.lastPos;
+        }
+        return chapterList;
+    }
+
+    async _getChaptersV5(manga) {
+        let chapterList = [];
+        const chaptersSources = await this._getChaptersSources(manga.id);
         for (const source of chaptersSources) {
             const chapters = await this._getChaptersFromSource(source);
             chapterList.push(...chapters);
@@ -102,7 +192,7 @@ export default class MangaParkEN extends Connector {
             }
         `;
         const vars = {
-            "comicId": mangaId,
+            "comicId": parseInt(mangaId),
             "dbStatuss": ["normal"],
             "haveChapter": true
         };
