@@ -158,15 +158,31 @@ export default class MangaParkEN extends Connector {
     }
 
     async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        if(typeof app !== 'undefined' && typeof app.items !== 'undefined') {
+                            resolve(app.items.map(item => item.src || item.isrc));
+                        } else if (typeof amWord !== 'undefined' && typeof amPass !== 'undefined' && typeof imgHostLis !== 'undefined' && typeof imgPathLis !== 'undefined') {
+                            const params = JSON.parse(CryptoJS.AES.decrypt(amWord, amPass).toString(CryptoJS.enc.Utf8));
+                            resolve(imgHostLis.map((data, i) => \`\${data}\${imgPathLis[i]}?\${params[i]}\`));
+                        } else {
+                            const images = __NEXT_DATA__.props.pageProps.dehydratedState.queries
+                                .map(query => {
+                                    const { httpLis, wordLis } = query.state.data.data.imageSet;
+                                    return httpLis.map((path, i) => \`\${path}?\${wordLis[i]}\`);
+                                });
+                            resolve([].concat(...images));
+                        }
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 2500);
+            });
+        `;
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'script#__NEXT_DATA__');
-        const json = JSON.parse(data[0].innerHTML);
-        const images = json.props.pageProps.dehydratedState.queries
-            .map(query => {
-                const { httpLis, wordLis } = query.state.data.data.imageSet;
-                return httpLis.map((path, i) => `${path}?${wordLis[i]}`);
-            });
-        return [].concat(...images);
+        return Engine.Request.fetchUI(request, script);
     }
 }
