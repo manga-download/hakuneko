@@ -1,7 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-// Very similar to AnyACG (e.g. bato.to)
 export default class MangaParkEN extends Connector {
 
     constructor() {
@@ -10,94 +9,164 @@ export default class MangaParkEN extends Connector {
         super.label = 'MangaPark';
         this.tags = [ 'manga', 'multi-lingual' ];
         this.url = 'https://mangapark.net';
+        this.apiURL = `${this.url}/apo/`;
+
+        this.queryMangaTitle = 'main h3 a';
+
+        this.requestOptions.headers.set('x-origin', this.url);
+        this.requestOptions.headers.set('x-referer', `${this.url}/`);
         this.requestOptions.headers.set('x-cookie', 'set=h=1;');
     }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const queryMangaTitle = /\/title\/\d+/.test(uri.pathname) ? 'main h3' : 'meta[property="og:title"]';
-        const data = await this.fetchDOM(request, queryMangaTitle);
-        return new Manga(this, uri.pathname.match(/\/(\d+)\/?/)[1], (data[0].textContent || data[0].content).trim());
+        const data = await this.fetchDOM(request, this.queryMangaTitle);
+        const id = uri.pathname.match(/\/(\d+)\/?/)[1];
+        const title = (data[0].textContent || data[0].content).trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
         let mangaList = [];
-        const uri = new URL('/browse?sort=name', this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'nav.d-md-block ul.pagination li:nth-last-child(2) a');
-        const pageCount = parseInt(data[0].text.trim());
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
+        for(let page = 1, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/browse?sort=name&page=' + page, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, '#subject-list div.item a.fw-bold');
-        return data.map( element => {
-            this.cfMailDecrypt(element);
+        const gql = `
+            query get_content_browse_search($select: ComicSearchSelect) {
+                get_content_browse_search(select: $select) {
+                    paging {
+                        pages
+                    }
+                    items {
+                        data {
+                            id, name
+                        }
+                    }
+                }
+            }
+        `;
+        const vars = {
+            "select": {
+                "word": "",
+                "sort": null,
+                "page": page,
+                "incGenres": [],
+                "excGenres": [],
+                "origLang": null,
+                "oficStatus": null,
+                "chapCount": null
+            }
+        };
+        const data = await this.fetchGraphQL(this.apiURL, 'get_content_browse_search', gql, vars);
+        if (data.get_content_browse_search.paging.pages < page) {
+            return [];
+        }
+        return data.get_content_browse_search.items.map(manga => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url).match(/\/(\d+)\/?/)[1],
-                title: element.text.trim()
+                id: manga.data.id,
+                title: manga.data.name
             };
         });
     }
 
     async _getChapters(manga) {
         let chapterList = [];
-        const uri = new URL('/ajax.reader.subject.episodes.by.latest', this.url);
-        for (let page = '', run = true; run;) {
-            const request = new Request(uri, {
-                method: 'POST',
-                body: JSON.stringify({
-                    iid: manga.id,
-                    prevPos: page
-                }),
-                headers: {
-                    'Content-Type': 'application/json;charset=UTF-8'
-                }
-            });
-            const data = await this.fetchJSON(request);
-            const chapters = [...this.createDOM(data.html).querySelectorAll('div.episode-item > div > a.chapt')].map(element => {
-                const link = this.getRootRelativeOrAbsoluteLink(element, this.url);
-                let lang = link.match(/c[\d.]+-(\w+)-i\d+/)[1];
-                if (lang)
-                    lang = lang.replace(/\D(_)\D/g, (match, g1) => match.replace(g1, '-'));
-                return {
-                    id: link,
-                    title: element.text.trim().replace(/\s+/g, ' ') + ` (${lang})`,
-                    language: lang
-                };
-            }).filter(chapter => chapter.language);
+        const chaptersSources = await this._getChaptersSources(parseInt(manga.id));
+        for (const source of chaptersSources) {
+            const chapters = await this._getChaptersFromSource(source);
             chapterList.push(...chapters);
-            run = data.isLast != null ? !data.isLast : false;
-            page = data.lastPos;
         }
-        return chapterList;
+        return chapterList
+            .sort((a, b) => b.creationDate - a.creationDate)
+            .map(chapter => {
+                return {
+                    id: chapter.id,
+                    title: chapter.title,
+                    language: chapter.language
+                };
+            });
+    }
+
+    async _getChaptersSources(mangaId) {
+        const gql = `
+            query get_content_comic_sources($comicId: Int!, $dbStatuss: [String] = [], $userId: Int, $haveChapter: Boolean, $sortFor: String) {
+                get_content_comic_sources(comicId: $comicId, dbStatuss: $dbStatuss, userId: $userId, haveChapter: $haveChapter, sortFor: $sortFor) {
+                    data {
+                        id, lang, srcTitle
+                    }
+                }
+            }
+        `;
+        const vars = {
+            "comicId": mangaId,
+            "dbStatuss": ["normal"],
+            "haveChapter": true
+        };
+        const data = await this.fetchGraphQL(this.apiURL, 'get_content_comic_sources', gql, vars);
+        return data.get_content_comic_sources.map(source => {
+            let language = source.data.lang;
+            switch (language) {
+                case 'zh_hk':
+                    language = 'zh-Hans';
+                    break;
+                case 'zh_tw':
+                    language = 'zh-Hant';
+                    break;
+                case 'pt_br':
+                    language = 'pt-BR';
+                    break;
+                case 'es_419':
+                    language = 'es-419';
+                    break;
+                case '_t':
+                    language = 'other';
+                    break;
+            }
+            return {
+                id: source.data.id,
+                lang: language,
+                srcTitle: source.data.srcTitle
+            };
+        });
+    }
+
+    async _getChaptersFromSource(source) {
+        const gql = `
+            query get_content_source_chapterList($sourceId: Int!) {
+                get_content_source_chapterList(sourceId: $sourceId) {
+                    data {
+                        id, dateCreate, dname, title, urlPath
+                    }
+                }
+            }
+        `;
+        const vars = {"sourceId": source.id};
+        const data = await this.fetchGraphQL(this.apiURL, 'get_content_source_chapterList', gql, vars);
+        return data.get_content_source_chapterList.map(chapter => {
+            return {
+                id: chapter.data.urlPath,
+                title: chapter.data.dname + (chapter.data.title == null || chapter.data.title.length == 0 ? '' : ` - ${chapter.data.title}`) + ` (${source.lang}) [${source.srcTitle}]`,
+                language: source.lang,
+                creationDate: chapter.data.dateCreate
+            };
+        });
     }
 
     async _getPages(chapter) {
-        let script = `
-        new Promise((resolve, reject) => {
-            setTimeout(() => {
-                try {
-                    if(typeof app.items !== 'undefined') {
-                        resolve(app.items.map(item => item.src || item.isrc));
-                    } else {
-                        const params = JSON.parse(CryptoJS.AES.decrypt(amWord, amPass).toString(CryptoJS.enc.Utf8));
-                        resolve(imgHostLis.map((data, i) => \`\${data}\${imgPathLis[i]}?\${params[i]}\`));
-                    }
-                } catch(error) {
-                    reject(error);
-                }
-            }, 2500);
-        });
-        `;
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const data = await this.fetchDOM(request, 'script#__NEXT_DATA__');
+        const json = JSON.parse(data[0].innerHTML);
+        const images = json.props.pageProps.dehydratedState.queries
+            .map(query => {
+                const { httpLis, wordLis } = query.state.data.data.imageSet;
+                return httpLis.map((path, i) => `${path}?${wordLis[i]}`);
+            });
+        return [].concat(...images);
     }
 }
