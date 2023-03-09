@@ -27,9 +27,13 @@ export default class MangaParkEN extends Connector {
 
     async _getMangas() {
         try {
-            return await this._getMangasV3();
+            const mangaList = await this._getMangasV3();
+            if (mangaList.length == 0) {
+                throw new Error('Got 0 mangas from site using v3 version! Using v5 version as a fallback!');
+            }
+            return mangaList;
         } catch (error) {
-            return this._getMangasV5();
+            return await this._getMangasV5();
         }
     }
 
@@ -109,9 +113,13 @@ export default class MangaParkEN extends Connector {
 
     async _getChapters(manga) {
         try {
-            return await this._getChaptersV3(manga);
+            const chapterList = await this._getChaptersV3(manga);
+            if (chapterList.length == 0) {
+                throw new Error('Got 0 chapters from site using v3 version! Using v5 version as a fallback!');
+            }
+            return chapterList;
         } catch (error) {
-            return this._getChaptersV5(manga);
+            return await this._getChaptersV5(manga);
         }
     }
 
