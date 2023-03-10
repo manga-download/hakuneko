@@ -56,21 +56,19 @@ export default class PeanuToon extends Connector {
 
         let request = new Request(this.url + '/ko/days', this.requestOptions);
 
-        return new Promise((resolve, reject) => {
-            return Engine.Request.fetchUI(request, script).then((data) => {
-                const genre_manga = data.map(element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink(element.url, this.url),
-                        title: element.title
-                    };
-                });
 
-                resolve(genre_manga);
-            }).fail(error => {
-                reject(error);
-            });
+		return Engine.Request.fetchUI(request, script).then((data) => {
+			const genre_manga = data.map(element => {
+				return {
+					id: this.getRootRelativeOrAbsoluteLink(element.url, this.url),
+					title: element.title
+				};
+			});
 
-        });
+			return genre_manga;
+		});
+
+
     }
 
     async _getGenreMangas() {
@@ -108,21 +106,17 @@ export default class PeanuToon extends Connector {
                         }, ${this.config.scrapeDelay.value});`;
 
         let request = new Request(this.url + '/ko/genre?로맨스', this.requestOptions);
-        return new Promise((resolve, reject) => {
-            return Engine.Request.fetchUI(request, script).then((data) => {
-                const genre_manga = data.map(element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink(element.url, this.url),
-                        title: element.title
-                    };
-                });
 
-                resolve(genre_manga);
-            }).fail(error => {
-                reject(error);
-            });
+		return Engine.Request.fetchUI(request, script).then((data) => {
+			const genre_manga = data.map(element => {
+				return {
+					id: this.getRootRelativeOrAbsoluteLink(element.url, this.url),
+					title: element.title
+				};
+			});
 
-        });
+			return genre_manga
+		});
     }
 
     async _getMangas() {
