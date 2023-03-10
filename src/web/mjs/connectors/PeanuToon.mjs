@@ -54,7 +54,7 @@ export default class PeanuToon extends Connector {
                                             
                         }, ${this.config.scrapeDelay.value});`;
 
-        let request = new Request(this.url + '/ko/days', this.requestOptions);
+        const request = new Request(this.url + '/ko/days', this.requestOptions);
 
 
 		return Engine.Request.fetchUI(request, script).then((data) => {
@@ -121,16 +121,16 @@ export default class PeanuToon extends Connector {
 
     async _getMangas() {
 
-        let days_manga = await this._getDaysMangas();
-        let genre_manga = await this._getGenreMangas();
+        const days_manga = await this._getDaysMangas();
+        const genre_manga = await this._getGenreMangas();
 
         console.log(Array.prototype.concat(days_manga, genre_manga));
         return Array.prototype.concat(days_manga, genre_manga);
     }
 
     async _getChapters(manga) {
-        let request = new Request(this.url + manga.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.detail_area a');
+        const request = new Request(this.url + manga.id, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.detail_area a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -175,10 +175,10 @@ export default class PeanuToon extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.info_title h2');
-        let id = uri.pathname;
-        let title = data[0].innerText.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.info_title h2');
+        const id = uri.pathname;
+        const title = data[0].innerText.trim();
         return new Manga(this, id, title);
     }
 }
