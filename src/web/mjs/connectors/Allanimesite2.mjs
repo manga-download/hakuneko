@@ -26,8 +26,8 @@ export default class Allanimesite2 extends Allanimesite {
 
         const jsonVariables = {
             search : {
-                allowAdult : false,
-                allowUnknown : false
+                allowAdult : true,
+                allowUnknown : true
             },
             limit : 26, //no matter what i do, changing variable is useless as i suspect query is determined by the hash
             page : page,
