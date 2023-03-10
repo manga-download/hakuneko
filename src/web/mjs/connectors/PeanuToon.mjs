@@ -19,6 +19,9 @@ export default class PeanuToon extends Connector {
                 value: 2500
             }
         };
+		this.links = {
+			login : 'https://www.peanutoon.com/ko/login'
+			};
     }
 
     async _getDaysMangas() {
@@ -134,44 +137,22 @@ export default class PeanuToon extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title:  element.querySelectorAll('div')[7].textContent.trim().split("\n")[0].trim() + " " + element.querySelectorAll('div')[7].textContent.trim().split("\n")[3].trim(),
+                title:  element.querySelectorAll('div.detail_work_list div div:not([class])')[0].textContent.trim() + " " + element.querySelectorAll('div.detail_work_list div div:not([class])')[1].textContent.trim(),
                 language: ''
             };
         });
     }
-
+	
     async _getPages(chapter) {
-        const script = `new Promise((resolve, reject) => {
-                        setTimeout(async () => {
-                                            function getSrc(element) {
-                                                return element.getAttribute('data-src') ? element.getAttribute('data-src') : element.getAttribute('src');
-                                            }; 
-                                            
-                                            if( document.querySelectorAll("img[alt*='성인 표시 이미지']").length > 0){
-                                                //This is an adult work and the current user has not verified their age
-                                                reject();
-                                            }
-                                            
-                                            let data = document.querySelectorAll("img.info-v5-2__image");
-                                            const pages = Array.from(data).map(element => getSrc(element));
-                                            resolve(pages);
-                                            
-                        }, ${this.config.scrapeDelay.value});
-                    });`;
-
         if(chapter.id.includes("/#payment"))
             throw new Error(`The paid chapter '${chapter.title}' has not been purchased!`);
         else if(chapter.id.includes("/login"))
             throw new Error(`The chapter '${chapter.title}' requires login!`);
-
-        const uri = new URL( chapter.id, this.url );
-
-        const request = new Request( uri.href, this.requestOptions );
-        const data = await Engine.Request.fetchUI(request, script);
-        if(data)
-            return data.map(element => this.getAbsolutePath(element, request.url));
-        else
-            throw new Error(`The adult chapter '${chapter.title}' requires age verification!`);
+		
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'section#viewer-list source.lazyload');
+        return data.map(element => this.getAbsolutePath(element.dataset['src'], request.url));
     }
 
     async _getMangaFromURI(uri) {
