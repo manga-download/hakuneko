@@ -50,8 +50,8 @@ export default class Allanimesite extends Connector {
         const jsonVariables = {
             search : {
                 isManga : true,
-                allowAdult : false,
-                allowUnknown : false
+                allowAdult : true,
+                allowUnknown : true
             },
             limit : 26, //no matter what i do, changing variable is useless as i suspect query is determined by the hash
             page : page,
