@@ -1,22 +1,49 @@
 import Allanimesite from './Allanimesite.mjs';
+import Manga from '../engine/Manga.mjs';
+
 export default class Allanimesite2 extends Allanimesite {
     constructor() {
         super();
         super.id = 'allanimesite2';
         super.label = 'AllAnime.site (Animes)';
         this.tags = ['anime', 'multi-lingual'];
-        this.url = 'https://allanime.site';
-        this.path = '/allanimeapi';
-        this.varQueryMangas = '?variables={"search":{"allowAdult":true,"allowUnknown":true},"limit":100,"page":%PAGE%,"countryOrigin":"ALL"}&extensions={"persistedQuery":{"version":1,"sha256Hash":"9c7a8bc1e095a34f2972699e8105f7aaf9082c6e1ccd56eab99c2f1a971152c6"}}';
     }
     get icon() {
         return '/img/connectors/allanimesite';
     }
     canHandleURI(uri) {
-        return /(www\.)?allanime\.site\/anime/.test(uri);
+        return /(www\.)?allanime\.to\/anime/.test(uri);
     }
+    async _getMangaFromURI(uri) {
+        const request = new Request(new URL(uri), this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangaTitleFromURI);
+        const id = uri.pathname;
+        const title = data[0].textContent.trim();
+        return new Manga(this, id, title);
+    }
+
     async _getMangasFromPage(page) {
-        const uri = new URL(this.path + this.varQueryMangas.replace('%PAGE%', page), this.url);
+
+        const jsonVariables = {
+            search : {
+                allowAdult : true,
+                allowUnknown : true
+            },
+            limit : 26, //no matter what i do, changing variable is useless as i suspect query is determined by the hash
+            page : page,
+            translationType : "sub",
+            countryOrigin : "ALL"
+        };
+
+        const jsonExtensions = {
+            persistedQuery : {
+                version  : 1,
+                sha256Hash : "c4305f3918591071dfecd081da12243725364f6b7dd92072df09d915e390b1b7"
+            }
+        };
+
+        const params = new URLSearchParams({ variables : JSON.stringify(jsonVariables), extensions : JSON.stringify(jsonExtensions) });
+        const uri = new URL(this.path + '?'+ params.toString(), this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         if (!data.data) return [];
@@ -36,11 +63,11 @@ export default class Allanimesite2 extends Allanimesite {
         `;
         let data = await Engine.Request.fetchUI(request, script);
         let chapterlist = [];
-        const mangaid = data.fetch[0].show._id;
+        const mangaid = manga.id.replace('/anime/', '/watch/');
         let subchapters = data.fetch[0].show.availableEpisodesDetail.sub;
         subchapters.forEach(chapter => {
             chapterlist.push({
-                id : '/watch/'+mangaid+'/episode-'+chapter+'-sub',
+                id : mangaid+'/episode-'+chapter+'-sub',
                 title : 'Episode '+ chapter+' [SUB]',
                 language : 'SUB',
             });
@@ -48,7 +75,7 @@ export default class Allanimesite2 extends Allanimesite {
         let rawchapters = data.fetch[0].show.availableEpisodesDetail.raw;
         rawchapters.forEach(chapter => {
             chapterlist.push({
-                id : '/watch/'+mangaid+'/episode-'+chapter+'-raw',
+                id : mangaid+'/episode-'+chapter+'-raw',
                 title : 'Episode '+ chapter+' [RAW]',
                 language : 'RAW',
             });
@@ -56,7 +83,7 @@ export default class Allanimesite2 extends Allanimesite {
         let dubchapters = data.fetch[0].show.availableEpisodesDetail.dub;
         dubchapters.forEach(chapter => {
             chapterlist.push({
-                id : '/watch/'+mangaid+'/episode-'+chapter+'-dub',
+                id : mangaid+'/episode-'+chapter+'-dub',
                 title : 'Episode '+ chapter+' [DUB]',
                 language : 'DUB',
             });
@@ -73,7 +100,7 @@ export default class Allanimesite2 extends Allanimesite {
         let data = await Engine.Request.fetchUI(request, script);
         const sourcesArray = data.fetch[0].episodeSelections;
         const goodSource = sourcesArray.find(source => source.sourceName == 'Default');
-        if (!goodSource) throw new Error('No Default source found !');
+        if (!goodSource) throw new Error('No Default source found ! Hakuneko supports only default video source.');
         let uri = new URL(goodSource.sourceUrl.replace('clock', 'clock.json'), 'https://blog.allanime.pro');
         request = new Request(uri, this.requestOptions);
         data = await this.fetchJSON(request);

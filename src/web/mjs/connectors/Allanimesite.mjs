@@ -6,10 +6,8 @@ export default class Allanimesite extends Connector {
         super.id = 'allanimesite';
         super.label = 'AllAnime.site (Mangas)';
         this.tags = ['manga', 'webtoon', 'multi-lingual'];
-        this.url = 'https://allanime.site';
+        this.url = 'https://allanime.to';
         this.path = '/allanimeapi';
-        this.varQueryMangas = '?variables={"search":{"isManga":true,"allowAdult":true,"allowUnknown":true},"limit":100,"page":%PAGE%,"countryOrigin":"ALL"}&extensions={"persistedQuery":{"version":1,"sha256Hash":"0cf12b2c7e4c571ef8aaae655276b646f485e5022900dd9d721d3bf902d7ef76"}}';
-        this.varQueryChapters ='?variables={"_id":"%MANGAID%"}&extensions={"persistedQuery":{"version":1,"sha256Hash":"fbf62e4a2030ecf8bfb9540e0a8a14a300a531cafd82ebb4331e5a3a4a3a4e4e"}}';
         this.queryMangaTitleFromURI = 'ol.breadcrumb li.breadcrumb-item span';
         this.config = {
             throttle: {
@@ -23,12 +21,12 @@ export default class Allanimesite extends Connector {
         };
     }
     canHandleURI(uri) {
-        return /(www\.)?allanime\.site\/manga/.test(uri);
+        return /(www\.)?allanime\.to\/manga/.test(uri);
     }
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitleFromURI);
-        const id = uri.pathname.replace(/$\//, '');
+        const id = uri.pathname.match(/\/manga\/([\S]+)\//)[1];
         const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -37,40 +35,71 @@ export default class Allanimesite extends Connector {
         for(let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
             await this.wait(this.config.throttle.value);
-            mangas.length ? mangaList.push(...mangas) : run = false;
+            if(mangas.length == 0) {
+                run = false;
+            } else if (mangaList.length == 0 || mangas[mangas.length - 1].id !== mangaList[mangaList.length - 1].id) {
+                mangaList.push(...mangas);
+            } else {
+                run = false;
+            }
         }
         return mangaList;
     }
     async _getMangasFromPage(page) {
-        const uri = new URL(this.path + this.varQueryMangas.replace('%PAGE%', page), this.url);
+
+        const jsonVariables = {
+            search : {
+                isManga : true,
+                allowAdult : true,
+                allowUnknown : true
+            },
+            limit : 26, //no matter what i do, changing variable is useless as i suspect query is determined by the hash
+            page : page,
+            translationType : "sub",
+            countryOrigin : "ALL"
+        };
+
+        const jsonExtensions = {
+            persistedQuery : {
+                version  : 1,
+                sha256Hash : "523a882834b6c1e5cb67c15222aa6ff2b85fb0383b9abd9e3417e1aeaa0e1b74"
+            }
+        };
+
+        const params = new URLSearchParams({ variables : JSON.stringify(jsonVariables), extensions : JSON.stringify(jsonExtensions) });
+        const uri = new URL(this.path + '?'+ params.toString(), this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         if (!data.data) return [];
         return data.data.mangas.edges.map(element => {
             return {
-                id: '/manga/'+element._id,
+                id: element._id,
                 title: element.englishName ? element.englishName : element.name,
             };
         });
     }
     async _getChapters(manga) {
-        let mangaid = manga.id.replace('/manga/', '');
-        let uri = new URL(this.path+ this.varQueryChapters.replace('%MANGAID%', mangaid), this.url);
-        let request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
+
+        const request = new Request(new URL('/manga/'+manga.id, this.url), this.requestOptions);
+        const script = `
+        new Promise(resolve => {
+            resolve(__NUXT__);
+        });
+        `;
+        const data = await Engine.Request.fetchUI(request, script);
         let chapterlist = [];
-        let subchapters = data.data.manga.availableChaptersDetail.sub;
+        let subchapters = data.fetch[0].manga.availableChaptersDetail.sub;
         subchapters.forEach(chapter => {
             chapterlist.push({
-                id : '/read/'+mangaid+'/chapter-'+chapter+'-sub',
+                id : '/read/'+manga.id+'/chapter-'+chapter+'-sub',
                 title : 'Chapter '+ chapter+' [SUB]',
                 language : 'SUB',
             });
         });
-        let rawchapters = data.data.manga.availableChaptersDetail.raw;
+        let rawchapters = data.fetch[0].manga.availableChaptersDetail.raw;
         rawchapters.forEach(chapter => {
             chapterlist.push({
-                id : '/read/'+mangaid+'/chapter-'+chapter+'-raw',
+                id : '/read/'+manga.id+'/chapter-'+chapter+'-raw',
                 title : 'Chapter '+ chapter +' [RAW]',
                 language : 'RAW',
             });
