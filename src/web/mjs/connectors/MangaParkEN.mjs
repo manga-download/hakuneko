@@ -14,6 +14,14 @@ export default class MangaParkEN extends Connector {
         this.requestOptions.headers.set('x-origin', this.url);
         this.requestOptions.headers.set('x-referer', `${this.url}/`);
         this.requestOptions.headers.set('x-cookie', 'set=h=1;');
+
+        this.languages = {
+            'zh_hk': 'zh-Hans',
+            'zh_tw': 'zh-Hant',
+            'pt_br': 'pt-BR',
+            'es_419': 'es-419',
+            '_t': 'other'
+        };
     }
 
     async _getMangaFromURI(uri) {
@@ -141,23 +149,7 @@ export default class MangaParkEN extends Connector {
             const chapters = [...this.createDOM(data.html).querySelectorAll('div.episode-item > div > a.chapt')].map(element => {
                 const link = this.getRootRelativeOrAbsoluteLink(element, this.url);
                 let lang = link.match(/c[\d.]+-(\w+)-i\d+/)[1];
-                switch (lang) {
-                    case 'zh_hk':
-                        lang = 'zh-Hans';
-                        break;
-                    case 'zh_tw':
-                        lang = 'zh-Hant';
-                        break;
-                    case 'pt_br':
-                        lang = 'pt-BR';
-                        break;
-                    case 'es_419':
-                        lang = 'es-419';
-                        break;
-                    case '_t':
-                        lang = 'other';
-                        break;
-                }
+                lang = this.languages[lang] || lang;
                 return {
                     id: link,
                     title: element.text.trim().replace(/\s+/g, ' ') + ` (${lang})`,
@@ -206,27 +198,9 @@ export default class MangaParkEN extends Connector {
         };
         const data = await this.fetchGraphQL(this.apiURL, 'get_content_comic_sources', gql, vars);
         return data.get_content_comic_sources.map(source => {
-            let language = source.data.lang;
-            switch (language) {
-                case 'zh_hk':
-                    language = 'zh-Hans';
-                    break;
-                case 'zh_tw':
-                    language = 'zh-Hant';
-                    break;
-                case 'pt_br':
-                    language = 'pt-BR';
-                    break;
-                case 'es_419':
-                    language = 'es-419';
-                    break;
-                case '_t':
-                    language = 'other';
-                    break;
-            }
             return {
                 id: source.data.id,
-                lang: language,
+                lang: this.languages[source.data.lang] || source.data.lang,
                 srcTitle: source.data.srcTitle
             };
         });
