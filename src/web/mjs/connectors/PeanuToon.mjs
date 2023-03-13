@@ -73,14 +73,12 @@ export default class PeanuToon extends Connector {
 
         let request = new Request(this.url + path, this.requestOptions);
 
-        return Engine.Request.fetchUI(request, script).then((data) => {
-            return data.map(element => {
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element.url, this.url),
-                    title: element.title
-                };
-            });
-
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element.url, this.url),
+                title: element.title
+            };
         });
     }
 
