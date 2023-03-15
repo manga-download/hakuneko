@@ -9,8 +9,17 @@ export default class MangaKatana extends Connector {
         super.label = 'MangaKatana';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://mangakatana.com';
-
         this.queryPages = '#imgs .wrap_img img[data-src]';
+        this.config = {
+            throttle: {
+                label: 'Manga list Throttle [ms]',
+                description: 'Enter the timespan in [ms] to delay consecutive requests to the website for Manga list fetching',
+                input: 'numeric',
+                min: 100,
+                max: 10000,
+                value: 1000
+            }
+        };
     }
 
     async _getMangaFromURI(uri) {
@@ -27,6 +36,7 @@ export default class MangaKatana extends Connector {
         let pageCount = parseInt(data[0].href.match(/\/(\d+)$/)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
+            await this.wait(this.config.throttle.value);
             mangaList.push(...mangas);
         }
         return mangaList;
