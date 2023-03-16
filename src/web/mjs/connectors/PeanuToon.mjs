@@ -9,16 +9,6 @@ export default class PeanuToon extends Connector {
         super.label = 'Peanutoon (피너툰)';
         this.tags = [ 'webtoon', 'korean' ];
         this.url = 'https://www.peanutoon.com';
-        this.config = {
-            scrapeDelay: {
-                label: 'Page Scrape Delay',
-                description: 'Time to wait until the page initialization process is complete.\nIncrease the value if no pages are found for the chapter.',
-                input: 'numeric',
-                min: 100,
-                max: 10000,
-                value: 2500
-            }
-        };
         this.links = {
             login : 'https://www.peanutoon.com/ko/login'
         };
