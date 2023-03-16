@@ -25,61 +25,32 @@ export default class PeanuToon extends Connector {
     }
 
     async _getMangas() {
+        const genres = ['BL', 'GL', '로맨스', '드라마', '코믹', '성인', '소설'];
+        const days = ['월', '화', '수', '목', '금', '토', '일', '열흘', '기타'];
         const mangalist = [];
-
-        mangalist.push(... await this._getMangasJS ('div article div.g-py-10 a', 'ul#comic-nav-tabs li.nav-item a', '/ko/genre?성인'));
-        mangalist.push(... await this._getMangasJS ('div.serialization_work_cnt a', 'ul#comic-nav-tabs a', '/ko/days'));
-        mangalist.push(... await this._getMangasJS ('div.tab-content div.g-pt-8 a', 'div.lnb-tabs a.nav-link', '/ko/original'));
-
+        mangalist.push(... await this._getmangaFromPage(genres, 'genre'));
+        mangalist.push(... await this._getmangaFromPage(days, 'days'));
         return mangalist;
+
     }
 
-    async _getMangasJS(menuCSSSelector, tabCSSselector, path) {
-        const script = `new Promise(async (resolve, reject) => {
-                            async function wait( time ) {
-                                return new Promise( resolve => {
-                                    setTimeout( resolve, time );
-                                } );
-                            };
-                            function getTitleAndUrl(element) {
-                                return {
-                                    url: element.href,
-                                    title: element.text.trim()
-                                };
-                            }; 
-                             function getMangasForMenu(element) {
-                                return ([...document.querySelectorAll('${menuCSSSelector}')].map(element => getTitleAndUrl(element)));
-                                };         
+    async _getmangaFromPage (tabs, category) {
+        const mangalist = [];
+        for (const menuName of tabs) {
+            const url = new URL(`/api/comic/tab?which=${category}&locale=ko&menuName=${menuName}&start=&count=`, this.url);
+            const request = new Request (url, this.requestOptions);
+            request.headers.set('X-Requested-With', 'XMLHttpRequest');
+            const data = await this.fetchJSON(request);
+            const mangas = data.response.result.map(manga => {
+                return {
+                    id : `/ko/comic/detail/${manga.idx}/`,
+                    title: `${manga.title}`,
+                };
+            });
+            mangalist.push(...mangas);
+        }
 
-
-                            let promise = Promise.resolve();
-                            [...document.querySelectorAll('${tabCSSselector}')].forEach((tab, index) => {
-                                promise = promise.then(async prom => {
-                                    // For the genre page, we can't click on the adult tab or it will take us to another page
-                                    // if the user cannot access adult material.
-                                    // But, if we load the page with /ko/genre?성인 then it will load the tab without content
-                                    // If the user can access adult material, then the tab will load normally
-                                    if(tab.innerText != "성인")
-                                        tab.click();
-                                    await wait(1000);
-                                    return getMangasForMenu(tab);
-                                });
-                            });
-
-                            const result = await promise;
-                            resolve(result);
-                                            
-                        }, ${this.config.scrapeDelay.value});`;
-
-        let request = new Request(this.url + path, this.requestOptions);
-
-        const data = await Engine.Request.fetchUI(request, script);
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element.url, this.url),
-                title: element.title
-            };
-        });
+        return mangalist;
     }
 
     async _getChapters(manga) {
