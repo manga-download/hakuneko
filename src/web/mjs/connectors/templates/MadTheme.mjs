@@ -55,7 +55,7 @@ export default class MadTheme extends Connector {
         let scriptPages = `
         new Promise(resolve => {
             let images = window.chapImages.split(',');
-            resolve(images.map(image => window.mainServer+image));
+            resolve(images.map(image => window.mainServer ? window.mainServer+image : image));
         });
         `;
         const request = new Request(this.url + chapter.id, this.requestOptions);
