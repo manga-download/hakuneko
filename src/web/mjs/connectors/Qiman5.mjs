@@ -1,21 +1,45 @@
-import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
+import SinMH from './templates/SinMH.mjs';
 
-export default class Qiman5 extends Connector {
+export default class Qiman5 extends SinMH {
 
     constructor() {
         super();
         super.id = 'qiman5';
         super.label = '奇漫屋 (Qiman5)';
         this.tags = [ 'webtoon', 'chinese'];
-        this.config = {
-            url: {
-                label: 'URL',
-                description: `This website's main domain doesn't always work, but has alternate domains.\nThis is the default URL which can also be manually set by the user.`,
-                input: 'text',
-                value: 'https://www.qiman59.com'
-            }
-        };
+        this.url = 'http://qimanw.com';
+
+        this.path = '/rank/1-%PAGE%.html';
+        this.queryMangas = 'div.mainForm div.updateList div.bookList_3 div.ib p.title a';
+        this.queryChapters = 'div.chapterList div#chapter-list1 a.ib';
+        this.queryManga = 'div.container div.mainForm div.comicInfo div.ib.info h1';
+        this.queryChaptersScript = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        let button = document.querySelector('.moreChapter');
+                        if(button) {
+                            button.click();
+                        }
+                        setTimeout(() => {
+                            try {
+                                let chapterList = [...document.querySelectorAll('${this.queryChapters}')].map(element => {
+                                    return {
+                                        id: element.pathname,
+                                        title: element.text.trim()
+                                    };
+                                });
+                                resolve(chapterList);
+                            } catch(error) {
+                                reject(error);
+                            }
+                        }, 6000);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 1000);
+            });
+        `;
         this.queryPagesScript = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
@@ -29,97 +53,39 @@ export default class Qiman5 extends Connector {
         `;
     }
 
-    get url() {
-        return this.config.url.value;
+    canHandleURI(uri) {
+        super.initialize()
+            .then(() => {
+                return uri.href.includes(this.url);
+            });
     }
 
-    set url(value) {
-        if (this.config && value) {
-            this.config.url.value = value;
-            Engine.Settings.save();
-        }
+    async _initializeConnector() {
+        const request = new Request(this.url, this.requestOptions);
+        this.url = (await this.fetchDOM(request, 'a#href')).pop().href;
+        console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
-    async _getMangaFromURI(uri) {
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'header span.comic-name');
-        const id = uri.href.match(/([\d]+)\//)[1];
-        const title = data[0].textContent.trim();
-        return new Manga(this, id, title);
-    }
-
+    // NOTE: Website doesn't provide full manga list
     async _getMangas() {
         let mangaList = [];
-        for (let page = 1, run = true; run; page++) {
-            const mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        for(let page = 1, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(`/ajaxf/?page_num=${page}&type=1`, this.url);
+        const uri = new URL(this.path.replace('%PAGE%', page), this.url);
         const request = new Request(uri, this.requestOptions);
-        request.headers.set('x-referer', this.url);
-        request.headers.set('X-Requested-With', 'XMLHttpRequest');
-        try {
-            //website doesnt return JSON on last page , so, try catch
-            const data = await this.fetchJSON(request);
-            return data.map(element => {
-                return {
-                    id: element.id,
-                    title: element.name.trim()
-                };
-            });
-        } catch(error) {
-            return [];
-        }
-    }
-
-    async _getChapters(manga) {
-        let chaptersList = [];
-        for (let page = 1, run = true; run; page++) {
-            const chapters = await this._getChaptersFromPage(manga, page);
-            chapters.length > 0 ? chaptersList.push(...chapters) : run = false;
-        }
-        return chaptersList;
-    }
-
-    async _getChaptersFromPage(manga, page) {
-        const uri = new URL('/bookchapter/', this.url);
-
-        const request = new Request(uri, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                'x-referer': uri.href,
-                'x-origin': this.url,
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: new URLSearchParams({
-                id: manga.id,
-                id2 : page
-            }).toString()
+        const data = await this.fetchDOM(request, this.queryMangas);
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.title.trim()
+            };
         });
-
-        try {
-            //website doesnt return JSON on last page , so, try catch
-            const data = await this.fetchJSON(request);
-            return data.map(element => {
-                return {
-                    id: +element.id,
-                    title: element.name.trim()
-                };
-            });
-        } catch(error) {
-            return [];
-        }
-    }
-
-    async _getPages(chapter) {
-        const uri = new URL(`/${chapter.manga.id}/${chapter.id}.html`, this.url);
-        const request = new Request(uri, this.requestOptions);
-        return await Engine.Request.fetchUI(request, this.queryPagesScript);
     }
 
 }
