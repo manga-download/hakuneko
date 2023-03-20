@@ -5,9 +5,9 @@ export default class ScansMangasxyz extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'scansmangasxyz';
-        super.label = 'ScansMangas (WS)';
+        super.label = 'ScansMangas (ME)';
         this.tags = [ 'manga', 'french' ];
-        this.url = 'https://scansmangas.ws';
+        this.url = 'https://scansmangas.me';
         this.path = '/tous-nos-mangas/';
         this.queryMangas = 'div.bigor > a';
         this.queryChapters = 'span.lchx.desktop > a';
