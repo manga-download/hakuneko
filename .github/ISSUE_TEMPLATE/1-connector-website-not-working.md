@@ -10,7 +10,7 @@ assignees: ''
 **Did you read [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/)**
 Yes/No
 
-**Did you try Nightly Build ?**
+**Did you [try Nightly Build](https://github.com/manga-download/hakuneko/releases) ?**
 Yes/No
 
 **Is the website of the connector working properly / are you able to see the manga within your browser**
