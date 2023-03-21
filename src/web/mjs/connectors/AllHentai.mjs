@@ -67,7 +67,7 @@ export default class AllHentai extends Connector {
             data = await Engine.Request.fetchUI( request, script);
             return data.map(element => this.getAbsolutePath(element, this.url));
         } catch (error) {
-            throw new Error('No pictures found, make sure you are logged to the website !')
+            throw new Error('No pictures found, make sure you are logged to the website !');
         }
 
     }
