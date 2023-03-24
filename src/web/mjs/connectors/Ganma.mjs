@@ -7,7 +7,7 @@ export default class Ganma extends Connector {
         super();
         super.id = 'ganma';
         super.label = 'GANMA!';
-        this.tags = ['manga', 'japanese'];
+        this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://ganma.jp';
         this.requestOptions.headers.set('x-from', this.url);
     }
@@ -71,7 +71,7 @@ export default class Ganma extends Connector {
         const uri = new URL('/api/1.0/magazines/web/' + chapter.manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        data = data.root.items.find(item => item.id === chapter.id).page;
+        data = data.root.items.find(item => item.id === chapter.id ).page;
         return data.files.map(image => this.getAbsolutePath(image + '?' + data.token, data.baseUrl));
     }
 }
