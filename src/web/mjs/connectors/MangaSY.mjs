@@ -11,4 +11,18 @@ export default class MangaSY extends WordPressMadara {
 
         this.queryTitleForURI = 'meta[property="og:title"]';
     }
+
+    async _getPages(chapter) {
+        const url = new URL(chapter.id, this.url);
+        const request = new Request(url, this.requestOptions);
+        const script = `
+            new Promise((resolve, reject) => {
+                var imgdata = JSON.parse(CryptoJS.AES.decrypt(chapter_data, wpmangaprotectornonce, {
+                    format: CryptoJSAesJson
+                }).toString(CryptoJS.enc.Utf8));
+                resolve(JSON.parse(imgdata));
+            });
+        `;
+        return await Engine.Request.fetchUI(request, script);
+    }
 }
