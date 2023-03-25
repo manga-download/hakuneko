@@ -20,10 +20,9 @@ export default class MangaSY extends WordPressMadara {
                 var imgdata = JSON.parse(CryptoJS.AES.decrypt(chapter_data, wpmangaprotectornonce, {
                     format: CryptoJSAesJson
                 }).toString(CryptoJS.enc.Utf8));
-                resolve(imgdata);
+                resolve(JSON.parse(imgdata));
             });
         `;
-        return JSON.parse(await Engine.Request.fetchUI(request, script));
-
+        return await Engine.Request.fetchUI(request, script);
     }
 }
