@@ -39,7 +39,7 @@ export default class MangaFire extends Connector {
         const data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
             return {
-                id: element.href.match(this.idRegex)[1],
+                id: element.pathname.match(this.idRegex)[1],
                 title: element.title.trim()
             };
         });
@@ -90,7 +90,7 @@ export default class MangaFire extends Connector {
         const quality = parseFloat(Engine.Settings.recompressionQuality.value) / 100;
         let canvas = await this.reverseImage(payload);
         const blob = await new Promise(resolve => {
-            canvas.toBlob(data => resolve(data), type, quality);
+            canvas.toBlob(resolve, type, quality);
         });
         let data = await this._blobToBuffer(blob);
         this._applyRealMime(data);
