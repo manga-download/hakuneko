@@ -5,6 +5,6 @@ export default class MangaChill extends WordPressMadara {
         super.id = 'mangachill';
         super.label = 'MangaChill';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://manga-chill.com';
+        this.url = 'https://toonchill.com';
     }
 }
