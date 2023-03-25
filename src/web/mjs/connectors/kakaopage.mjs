@@ -76,18 +76,6 @@ export default class kakaopage extends Connector {
                       startCursor
                       __typename
                     }
-                    selectedSortOption {
-                      id
-                      name
-                      param
-                      __typename
-                    }
-                    sortOptionList {
-                      id
-                      name
-                      param
-                      __typename
-                    }
                     edges {
                       cursor
                       node {
@@ -104,17 +92,9 @@ export default class kakaopage extends Connector {
                   id
                   type
                   thumbnail
-                  showPlayerIcon
                   isCheckMode
                   isChecked
                   scheme
-                  row1 {
-                    badgeList
-                    title
-                    __typename
-                  }
-                  row2
-                  row3
                   single {
                     productId
                     ageGrade
@@ -123,68 +103,10 @@ export default class kakaopage extends Connector {
                     thumbnail
                     title
                     slideType
-                    operatorProperty {
-                      isTextViewer
-                      __typename
-                    }
                     __typename
                   }
                   isViewed
                   purchaseInfoText
-                  eventLog {
-                    ...EventLogFragment
-                    __typename
-                  }
-                }
-
-                fragment EventLogFragment on EventLog {
-                  fromGraphql
-                  click {
-                    layer1
-                    layer2
-                    setnum
-                    ordnum
-                    copy
-                    imp_id
-                    imp_provider
-                    __typename
-                  }
-                  eventMeta {
-                    id
-                    name
-                    subcategory
-                    category
-                    series
-                    provider
-                    series_id
-                    type
-                    __typename
-                  }
-                  viewimp_contents {
-                    type
-                    name
-                    id
-                    imp_area_ordnum
-                    imp_id
-                    imp_provider
-                    imp_type
-                    layer1
-                    layer2
-                    __typename
-                  }
-                  customProps {
-                    landing_path
-                    view_type
-                    toros_imp_id
-                    toros_file_hash_key
-                    toros_event_meta_id
-                    content_cnt
-                    event_series_id
-                    event_ticket_type
-                    play_url
-                    banner_uid
-                    __typename
-                  }
                 }
                 `
         };
@@ -200,229 +122,10 @@ export default class kakaopage extends Connector {
             },
             query: `query viewerInfo($seriesId: Long!, $productId: Long!) {
                 viewerInfo(seriesId: $seriesId, productId: $productId) {
-                  item {
-                    ...SingleFragment
-                    __typename
-                  }
-                  seriesItem {
-                    ...SeriesFragment
-                    __typename
-                  }
-                  prevItem {
-                    ...NearItemFragment
-                    __typename
-                  }
-                  nextItem {
-                    ...NearItemFragment
-                    __typename
-                  }
                   viewerData {
-                    ...TextViewerData
-                    ...TalkViewerData
-                    ...ImageViewerData
-                    ...VodViewerData
+                     ...ImageViewerData
                     __typename
                   }
-                  displayAd {
-                    ...DisplayAd
-                    __typename
-                  }
-                  __typename
-                }
-              }
-              
-              fragment SingleFragment on Single {
-                id
-                productId
-                seriesId
-                title
-                thumbnail
-                badge
-                isFree
-                ageGrade
-                state
-                slideType
-                lastReleasedDate
-                size
-                pageCount
-                isHidden
-                remainText
-                isWaitfreeBlocked
-                saleState
-                series {
-                  ...SeriesFragment
-                  __typename
-                }
-                serviceProperty {
-                  ...ServicePropertyFragment
-                  __typename
-                }
-                operatorProperty {
-                  ...OperatorPropertyFragment
-                  __typename
-                }
-                assetProperty {
-                  ...AssetPropertyFragment
-                  __typename
-                }
-              }
-              
-              fragment SeriesFragment on Series {
-                id
-                seriesId
-                title
-                thumbnail
-                categoryUid
-                category
-                subcategoryUid
-                subcategory
-                badge
-                isAllFree
-                isWaitfree
-                isWaitfreePlus
-                is3HoursWaitfree
-                ageGrade
-                state
-                onIssue
-                authors
-                pubPeriod
-                freeSlideCount
-                lastSlideAddedDate
-                waitfreeBlockCount
-                waitfreePeriodByMinute
-                bm
-                saleState
-                serviceProperty {
-                  ...ServicePropertyFragment
-                  __typename
-                }
-                operatorProperty {
-                  ...OperatorPropertyFragment
-                  __typename
-                }
-                assetProperty {
-                  ...AssetPropertyFragment
-                  __typename
-                }
-              }
-              
-              fragment ServicePropertyFragment on ServiceProperty {
-                viewCount
-                readCount
-                ratingCount
-                ratingSum
-                commentCount
-                pageContinue {
-                  ...ContinueInfoFragment
-                  __typename
-                }
-                todayGift {
-                  ...TodayGift
-                  __typename
-                }
-                waitfreeTicket {
-                  ...WaitfreeTicketFragment
-                  __typename
-                }
-                isAlarmOn
-                isLikeOn
-                ticketCount
-                purchasedDate
-                lastViewInfo {
-                  ...LastViewInfoFragment
-                  __typename
-                }
-                purchaseInfo {
-                  ...PurchaseInfoFragment
-                  __typename
-                }
-              }
-              
-              fragment ContinueInfoFragment on ContinueInfo {
-                title
-                isFree
-                productId
-                lastReadProductId
-                scheme
-                continueProductType
-                hasNewSingle
-                hasUnreadSingle
-              }
-              
-              fragment TodayGift on TodayGift {
-                id
-                uid
-                ticketType
-                ticketKind
-                ticketCount
-                ticketExpireAt
-                ticketExpiredText
-                isReceived
-              }
-              
-              fragment WaitfreeTicketFragment on WaitfreeTicket {
-                chargedPeriod
-                chargedCount
-                chargedAt
-              }
-              
-              fragment LastViewInfoFragment on LastViewInfo {
-                isDone
-                lastViewDate
-                rate
-                spineIndex
-              }
-              
-              fragment PurchaseInfoFragment on PurchaseInfo {
-                purchaseType
-                rentExpireDate
-                expired
-              }
-              
-              fragment OperatorPropertyFragment on OperatorProperty {
-                thumbnail
-                copy
-                torosImpId
-                torosFileHashKey
-                isTextViewer
-              }
-              
-              fragment AssetPropertyFragment on AssetProperty {
-                bannerImage
-                cardImage
-                cardTextImage
-                cleanImage
-                ipxVideo
-              }
-              
-              fragment NearItemFragment on NearItem {
-                productId
-                slideType
-                ageGrade
-                isFree
-                title
-                thumbnail
-              }
-              
-              fragment TextViewerData on TextViewerData {
-                type
-                atsServerUrl
-                metaSecureUrl
-                contentsList {
-                  chapterId
-                  contentId
-                  secureUrl
-                  __typename
-                }
-              }
-              
-              fragment TalkViewerData on TalkViewerData {
-                type
-                talkDownloadData {
-                  dec
-                  host
-                  path
-                  talkViewerType
                   __typename
                 }
               }
@@ -454,26 +157,7 @@ export default class kakaopage extends Connector {
                 width
                 height
               }
-              
-              fragment VodViewerData on VodViewerData {
-                type
-                vodDownloadData {
-                  contentId
-                  drmType
-                  endpointUrl
-                  width
-                  height
-                  duration
-                  __typename
-                }
-              }
-              
-              fragment DisplayAd on DisplayAd {
-                sectionUid
-                bannerUid
-                treviUid
-                momentUid
-              }
+
            `
         };
         try {
