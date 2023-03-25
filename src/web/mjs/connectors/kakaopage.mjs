@@ -28,52 +28,459 @@ export default class kakaopage extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
-        for(let page = 0, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(manga, page);
-            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        let nextCursor = '';
+        const chapterList = [];
+        for (let run = true; run;) {
+            const data = await this._getChaptersFromPage(manga, nextCursor);
+
+            const chapters = data.contentHomeProductList.edges.map(chapter => {
+                return {
+                    id : chapter.node.single.productId,
+                    title : chapter.node.single.title.replace(manga.title, '').trim()
+                };
+            });
+
+            nextCursor = data.contentHomeProductList.pageInfo.hasNextPage ? data.contentHomeProductList.pageInfo.endCursor : null;
+            chapterList.push(...chapters);
+            if (nextCursor == null) {
+                run = false;
+            }
         }
         return chapterList;
     }
 
-    async _getChaptersFromPage(manga, page) {
-        let form = new FormData();
-        form.append('seriesid', manga.id);
-        form.append('page', page);
-        form.append('direction', 'desc');
-        form.append('page_size', 20);
-        form.append('without_hidden', true);
-        let request = new Request('https://api2-page.kakao.com/api/v5/store/singles', {
-            ...this.requestOptions,
-            method: 'POST',
-            body: form
-        });
-        let data = await this.fetchJSON(request);
-        return data.singles.map(ele => {
-            return{
-                id: ele.id,
-                title: ele.title.trim()
-            };
-        });
+    async _getChaptersFromPage(manga, nextCursor) {
+        const gql = {
+            operationName: 'contentHomeProductList',
+            variables: {
+                boughtOnly: false,
+                seriesId : manga.id,
+                sortType : 'asc',
+                after : nextCursor,
+            },
+            query: `query contentHomeProductList($after: String, $before: String, $first: Int, $last: Int, $seriesId: Long!, $boughtOnly: Boolean, $sortType: String) {
+                  contentHomeProductList(
+                    seriesId: $seriesId
+                    after: $after
+                    before: $before
+                    first: $first
+                    last: $last
+                    boughtOnly: $boughtOnly
+                    sortType: $sortType
+                  ) {
+                    totalCount
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                      hasPreviousPage
+                      startCursor
+                      __typename
+                    }
+                    selectedSortOption {
+                      id
+                      name
+                      param
+                      __typename
+                    }
+                    sortOptionList {
+                      id
+                      name
+                      param
+                      __typename
+                    }
+                    edges {
+                      cursor
+                      node {
+                        ...SingleListViewItem
+                        __typename
+                      }
+                      __typename
+                    }
+                    __typename
+                  }
+                }
+
+                fragment SingleListViewItem on SingleListViewItem {
+                  id
+                  type
+                  thumbnail
+                  showPlayerIcon
+                  isCheckMode
+                  isChecked
+                  scheme
+                  row1 {
+                    badgeList
+                    title
+                    __typename
+                  }
+                  row2
+                  row3
+                  single {
+                    productId
+                    ageGrade
+                    id
+                    isFree
+                    thumbnail
+                    title
+                    slideType
+                    operatorProperty {
+                      isTextViewer
+                      __typename
+                    }
+                    __typename
+                  }
+                  isViewed
+                  purchaseInfoText
+                  eventLog {
+                    ...EventLogFragment
+                    __typename
+                  }
+                }
+
+                fragment EventLogFragment on EventLog {
+                  fromGraphql
+                  click {
+                    layer1
+                    layer2
+                    setnum
+                    ordnum
+                    copy
+                    imp_id
+                    imp_provider
+                    __typename
+                  }
+                  eventMeta {
+                    id
+                    name
+                    subcategory
+                    category
+                    series
+                    provider
+                    series_id
+                    type
+                    __typename
+                  }
+                  viewimp_contents {
+                    type
+                    name
+                    id
+                    imp_area_ordnum
+                    imp_id
+                    imp_provider
+                    imp_type
+                    layer1
+                    layer2
+                    __typename
+                  }
+                  customProps {
+                    landing_path
+                    view_type
+                    toros_imp_id
+                    toros_file_hash_key
+                    toros_event_meta_id
+                    content_cnt
+                    event_series_id
+                    event_ticket_type
+                    play_url
+                    banner_uid
+                    __typename
+                  }
+                }
+                `
+        };
+        return await this.fetchGraphQL(this.url+'/graphql', gql.operationName, gql.query, gql.variables );
     }
 
     async _getPages(chapter) {
-        let form = new FormData();
-        form.append('productId', chapter.id);
-        this.requestOptions.method = 'POST';
-        this.requestOptions.body = form;
-        let request = new Request('https://api2-page.kakao.com/api/v1/inven/get_download_data/web', {
-            ...this.requestOptions,
-            method: 'POST',
-            body: form
-        });
-        this.requestOptions.method = 'GET';
-        delete this.requestOptions.body;
-        let data = await this.fetchJSON(request);
-        if (data.downloadData && data.downloadData.members) {
-            return data.downloadData.members.files.map(element => data.downloadData.members.sAtsServerUrl + element.secureUrl);
+        const gql = {
+            operationName: 'viewerInfo',
+            variables: {
+                productId: chapter.id,
+                seriesId : parseInt(chapter.manga.id)
+            },
+            query: `query viewerInfo($seriesId: Long!, $productId: Long!) {
+                viewerInfo(seriesId: $seriesId, productId: $productId) {
+                  item {
+                    ...SingleFragment
+                    __typename
+                  }
+                  seriesItem {
+                    ...SeriesFragment
+                    __typename
+                  }
+                  prevItem {
+                    ...NearItemFragment
+                    __typename
+                  }
+                  nextItem {
+                    ...NearItemFragment
+                    __typename
+                  }
+                  viewerData {
+                    ...TextViewerData
+                    ...TalkViewerData
+                    ...ImageViewerData
+                    ...VodViewerData
+                    __typename
+                  }
+                  displayAd {
+                    ...DisplayAd
+                    __typename
+                  }
+                  __typename
+                }
+              }
+              
+              fragment SingleFragment on Single {
+                id
+                productId
+                seriesId
+                title
+                thumbnail
+                badge
+                isFree
+                ageGrade
+                state
+                slideType
+                lastReleasedDate
+                size
+                pageCount
+                isHidden
+                remainText
+                isWaitfreeBlocked
+                saleState
+                series {
+                  ...SeriesFragment
+                  __typename
+                }
+                serviceProperty {
+                  ...ServicePropertyFragment
+                  __typename
+                }
+                operatorProperty {
+                  ...OperatorPropertyFragment
+                  __typename
+                }
+                assetProperty {
+                  ...AssetPropertyFragment
+                  __typename
+                }
+              }
+              
+              fragment SeriesFragment on Series {
+                id
+                seriesId
+                title
+                thumbnail
+                categoryUid
+                category
+                subcategoryUid
+                subcategory
+                badge
+                isAllFree
+                isWaitfree
+                isWaitfreePlus
+                is3HoursWaitfree
+                ageGrade
+                state
+                onIssue
+                authors
+                pubPeriod
+                freeSlideCount
+                lastSlideAddedDate
+                waitfreeBlockCount
+                waitfreePeriodByMinute
+                bm
+                saleState
+                serviceProperty {
+                  ...ServicePropertyFragment
+                  __typename
+                }
+                operatorProperty {
+                  ...OperatorPropertyFragment
+                  __typename
+                }
+                assetProperty {
+                  ...AssetPropertyFragment
+                  __typename
+                }
+              }
+              
+              fragment ServicePropertyFragment on ServiceProperty {
+                viewCount
+                readCount
+                ratingCount
+                ratingSum
+                commentCount
+                pageContinue {
+                  ...ContinueInfoFragment
+                  __typename
+                }
+                todayGift {
+                  ...TodayGift
+                  __typename
+                }
+                waitfreeTicket {
+                  ...WaitfreeTicketFragment
+                  __typename
+                }
+                isAlarmOn
+                isLikeOn
+                ticketCount
+                purchasedDate
+                lastViewInfo {
+                  ...LastViewInfoFragment
+                  __typename
+                }
+                purchaseInfo {
+                  ...PurchaseInfoFragment
+                  __typename
+                }
+              }
+              
+              fragment ContinueInfoFragment on ContinueInfo {
+                title
+                isFree
+                productId
+                lastReadProductId
+                scheme
+                continueProductType
+                hasNewSingle
+                hasUnreadSingle
+              }
+              
+              fragment TodayGift on TodayGift {
+                id
+                uid
+                ticketType
+                ticketKind
+                ticketCount
+                ticketExpireAt
+                ticketExpiredText
+                isReceived
+              }
+              
+              fragment WaitfreeTicketFragment on WaitfreeTicket {
+                chargedPeriod
+                chargedCount
+                chargedAt
+              }
+              
+              fragment LastViewInfoFragment on LastViewInfo {
+                isDone
+                lastViewDate
+                rate
+                spineIndex
+              }
+              
+              fragment PurchaseInfoFragment on PurchaseInfo {
+                purchaseType
+                rentExpireDate
+                expired
+              }
+              
+              fragment OperatorPropertyFragment on OperatorProperty {
+                thumbnail
+                copy
+                torosImpId
+                torosFileHashKey
+                isTextViewer
+              }
+              
+              fragment AssetPropertyFragment on AssetProperty {
+                bannerImage
+                cardImage
+                cardTextImage
+                cleanImage
+                ipxVideo
+              }
+              
+              fragment NearItemFragment on NearItem {
+                productId
+                slideType
+                ageGrade
+                isFree
+                title
+                thumbnail
+              }
+              
+              fragment TextViewerData on TextViewerData {
+                type
+                atsServerUrl
+                metaSecureUrl
+                contentsList {
+                  chapterId
+                  contentId
+                  secureUrl
+                  __typename
+                }
+              }
+              
+              fragment TalkViewerData on TalkViewerData {
+                type
+                talkDownloadData {
+                  dec
+                  host
+                  path
+                  talkViewerType
+                  __typename
+                }
+              }
+              
+              fragment ImageViewerData on ImageViewerData {
+                type
+                imageDownloadData {
+                  ...ImageDownloadData
+                  __typename
+                }
+              }
+              
+              fragment ImageDownloadData on ImageDownloadData {
+                files {
+                  ...ImageDownloadFile
+                  __typename
+                }
+                totalCount
+                totalSize
+                viewDirection
+                gapBetweenImages
+                readType
+              }
+              
+              fragment ImageDownloadFile on ImageDownloadFile {
+                no
+                size
+                secureUrl
+                width
+                height
+              }
+              
+              fragment VodViewerData on VodViewerData {
+                type
+                vodDownloadData {
+                  contentId
+                  drmType
+                  endpointUrl
+                  width
+                  height
+                  duration
+                  __typename
+                }
+              }
+              
+              fragment DisplayAd on DisplayAd {
+                sectionUid
+                bannerUid
+                treviUid
+                momentUid
+              }
+           `
+        };
+        try {
+            const data = await this.fetchGraphQL(this.url+'/graphql', gql.operationName, gql.query, gql.variables );
+            return data.viewerInfo.viewerData.imageDownloadData.files.map(page => page.secureUrl);
+        } catch( error ) {
+            throw new Error('Chapter is protected '+ error);
         }
-
-        throw new Error(`Can't fetch this ressource because it's protected`);
     }
 }
