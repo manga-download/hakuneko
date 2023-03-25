@@ -6,6 +6,6 @@ export default class GDScans extends WordPressMadara {
         super.id = 'gdscans';
         super.label = 'GD Scans';
         this.tags = [ 'manga', 'scanlation', 'english' ];
-        this.url = 'https://gdscan.xyz';
+        this.url = 'https://gdscans.com';
     }
 }
