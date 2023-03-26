@@ -63,40 +63,40 @@ export default class BilibiliManhua extends Connector {
     }
 
     getImageSizeByQuality(width) {
-        const V = { 1:"veryhigh", verypoor:0.4, "0.4":"verypoor", poor:0.5, "0.5":"poor", normal:0.7, "0.7":"normal", good:0.85, "0.85":"good", veryhigh:1 };
-        const J = { 350:"verypoor", 450:"poor", 800:"normal", 1100:"good", 1600:"veryhigh", verypoor:350, poor:450, normal:800, good:1100, veryhigh:1600 };
+        const ratioArray = { "verypoor":0.4, "poor":0.5, "normal":0.7, "good":0.85, "veryhigh":1 };
+        const widthArray = { verypoor:350, poor:450, normal:800, good:1100, veryhigh:1600 };
 
         let o = {
-            w:width,
-            q:undefined
+            imgWidth:width,
+            quality:undefined
         };
 
         //sometimes pictures size from JSON are 0 in this case Bibili forcea 0.85 ratio ,"Good"quality.
         if (width < 1) {
-            o.w = J.good;
+            o.imgWidth = widthArray.good;
             return o;
         }
 
-        let n = V[this.config.picquality.value];
-        let w = Math.floor(width * n); //0.85
-        switch(n) {
-            case V.verypoor:
-                w > J.verypoor && (o.w = J.verypoor);
+        const choosedQuality = ratioArray[this.config.picquality.value];
+        const calcWidth = Math.floor(width * choosedQuality); //0.85
+        switch(choosedQuality) {
+            case ratioArray.verypoor:
+                calcWidth > widthArray.verypoor && (o.imgWidth = widthArray.verypoor);
                 break;
-            case V.Poor:
-                w > J.poor && (o.w = J.poor);
+            case ratioArray.poor:
+                calcWidth > widthArray.poor && (o.imgWidth = widthArray.poor);
                 break;
-            case V.normal:
-                w > J.normal && (o.w = J.normal);
+            case ratioArray.normal:
+                calcWidth > widthArray.normal && (o.imgWidth = widthArray.normal);
                 break;
-            case V.good:
-                w > J.good && (o.w = J.good);
+            case ratioArray.good:
+                calcWidth > widthArray.good && (o.imgWidth = widthArray.good);
                 break;
-            case V.veryhigh:
-                w > J.veryhigh && (o.w = J.veryhigh);
+            case ratioArray.veryhigh:
+                calcWidth > widthArray.veryhigh && (o.imgWidth = widthArray.veryhigh);
         }
 
-        if (this.config.forcepicturesize.value) o.w = Math.max(o.w, width);
+        if (this.config.forcepicturesize.value) o.imgWidth = Math.max(o.imgWidth, width);
         return o;
     }
 
@@ -250,9 +250,9 @@ export default class BilibiliManhua extends Connector {
 
         let images = data.images.map(image => {
             const qualdata = this.getImageSizeByQuality(image.x);
-            let suffix = qualdata.w + 'w';
-            suffix += qualdata.q ? '_'+qualdata.q+'q': '';
-            return	image.path + '@' + suffix + '.'+this.config.format.value;
+            let suffix = qualdata.imgWidth + 'w';
+            suffix += qualdata.quality ? '_' + qualdata.quality + 'q' : '';
+            return image.path + '@' + suffix + '.'+this.config.format.value;
         });
 
         images = await this._fetchTwirp('/ImageToken', {
