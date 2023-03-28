@@ -25,27 +25,23 @@ export default class Copymanga extends Connector {
                 label: 'Website URL',
                 description: 'This website may change their URL.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
-                value: 'https://www.copymanga.site'
+                value: 'https://www.copymanga.site',
             },
             format:  {
                 label: 'Preferred format',
                 description: 'format of images\nwebp \njpg',
                 input: 'select',
                 options: [
-                    { value: "0", name: 'jpg' },
-                    { value: "1", name: 'webp' },
+                    { value: 0, name: 'jpg' },
+                    { value: 1, name: 'webp' },
                 ],
-                value: "0"
+                value: 0,
             },
             useGlobalCDN: {
                 label: 'Use Global CDN',
                 description: 'Requesting from the Global CDN',
-                input: 'select',
-                options: [
-                    { value: "0", name: 'Yes' },
-                    { value: "1", name: 'No' },
-                ],
-                value: "0"
+                input: 'checkbox',
+                value: true, // true for 0, false for 1
             }
         };
         this.requestOptions.headers.delete('accept');
@@ -65,7 +61,7 @@ export default class Copymanga extends Connector {
     updateHeaders() {
         this.requestOptions.headers.set("Referer", this.url);
         this.requestOptions.headers.set("webp", this.config.format.value);
-        this.requestOptions.headers.set("region", this.config.useGlobalCDN.value);
+        this.requestOptions.headers.set("region", this.config.useGlobalCDN.value ? 0 : 1);
     }
 
     async _getMangaFromURI(uri) {
@@ -145,6 +141,16 @@ export default class Copymanga extends Connector {
         const uri = new URL(`/api/v3/comic/${chapter.manga.id}/chapter2/${chapter.id}?platform=3`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        return data.results.chapter.contents.map(item => item.url);
+        /**
+         * Copymanga now messes up the order of images,
+         * but in the API data, there's a chapter.words array that contains the correct page order.
+         */
+        const imageUrls = data.results.chapter.contents.map(item => item.url);
+        const imageOrder = data.results.chapter.words;
+        const orderedPages = [];
+        imageOrder.forEach((order, index) => {
+            orderedPages[order] = imageUrls[index];
+        });
+        return orderedPages;
     }
 }
