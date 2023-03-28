@@ -56,7 +56,7 @@ export default class Connector {
     async _initializeConnector() {
         let uri = new URL(this.url);
         let request = new Request(uri.href, this.requestOptions);
-        return Engine.Request.fetchUI(request, '');
+        return Engine.Request.fetchUI(request, '', 60000, true);// 60sec is default timeout from fetchUI, and we need images=true for DDOS-GUARD
     }
 
     async initialize() {

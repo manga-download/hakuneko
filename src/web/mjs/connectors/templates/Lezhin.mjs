@@ -9,11 +9,10 @@ export default class Lezhin extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
-        this.apiURL = 'https://www.lezhin.com/api/v2'; // https://api.lezhin.com/v2
+        this.apiURL = 'https://www.lezhinus.com';
         this.cdnURL = 'https://cdn.lezhin.com';
         this.userID = undefined;
-        this.accessToken = '995dba2e-8c5d-4249-b601-38c5d3e092e5';
-        // Private members for internal use that can be configured by the user through settings menu (set to undefined or false to hide from settings menu!)
+        this.mangasPerPage = 36;
         this.config = {
             username: {
                 label: 'E-Mail',
@@ -37,29 +36,50 @@ export default class Lezhin extends Connector {
     }
 
     async _initializeAccount() {
+        if(this.userID) {
+
+            //check if user disconnected
+            const uri = new URL(this.url);
+            const checkscript = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                        resolve(__LZ_CONFIG__);
+                },5000);
+            });
+            `;
+            const request = new Request(uri, this.requestOptions);
+            const data = await Engine.Request.fetchUI(request, checkscript);
+            if (!data.token) {
+                this.requestOptions.headers.delete('Authorization');
+                this.userID = '';
+            }
+        }
+
         if(this.userID || !this.config.username.value || !this.config.password.value) {
             return;
         }
+        const password = this.config.password.value.replace("'", "\\'"); //escape the password, because if it contains a single quote the script will fail
         let script = `
-            new Promise((resolve, reject) => {
-                try {
-                    if($('#log-nav-email').length) {
-                        return resolve();
-                    }
-                    const form = $('form#email');
-                    form.find('input#login-email').val('${this.config.username.value}');
-                    form.find('input#login-password').val('${this.config.password.value}');
-                    $.ajax({
-                        type: 'POST',
-                        url: form.prop('action'),
-                        data: form.serialize(),
-                        success: resolve,
-                        error: reject
-                    });
-                } catch(error) {
-                    reject(error);
+        new Promise((resolve, reject) => {
+            //try {
+                if($('#log-nav-email').length) {
+                    return resolve();
                 }
-            });
+                const form = $('form#email');
+                form.find('input#login-email').val('${this.config.username.value}');
+                form.find('input#login-password').val('${password}');
+                $.ajax({
+                    type: 'POST',
+                    url: form.prop('action'),
+                    data: form.serialize(),
+                    success: resolve,
+                    error: reject
+                });
+           // }
+          //  catch(error) {
+          //      reject(error);
+          //  }
+        });
         `;
         let request = new Request(new URL(this.url + '/login'), this.requestOptions);
         await Engine.Request.fetchUI(request, script);
@@ -68,9 +88,9 @@ export default class Lezhin extends Connector {
         let cdn = data.match(/cdnUrl\s*:\s*['"]([^'"]+)['"]/);
         let user = data.match(/userId\s*:\s*['"](\d+)['"]/);
         let token = data.match(/token\s*:\s*['"]([^'"]+)['"]/);
+        this.requestOptions.headers.set('Authorization', 'Bearer '+token[1]);
         this.cdnURL = cdn ? cdn[1] : this.cdnURL;
         this.userID = user ? user[1] : undefined;
-        this.accessToken = token ? token[1] : this.accessToken;
         if(this.userID) {
             await fetch(this.url + '/adultkind?path=&sw=all', this.requestOptions);
         }
@@ -87,103 +107,70 @@ export default class Lezhin extends Connector {
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaFromPage( offset, limit ) {
-        offset = offset || 0;
-        limit = limit || 500;
-        let uri = new URL( this.apiURL + '/comics' );
-        uri.searchParams.set( 'offset', offset );
-        uri.searchParams.set( 'limit', limit );
-        uri.searchParams.set( 'country_code', '' );
-        uri.searchParams.set( 'store', 'web' );
-        uri.searchParams.set( 'adult_kind', 'all' );
-        uri.searchParams.set( 'filter', 'all' );
-        //uri.searchParams.set( '_', Date.now() );
-        return fetch( uri.href, this.requestOptions )
-            .then( response => response.json() )
-            .then( data => {
-                if( data.code ) {
-                    throw new Error( data.description );
-                }
-                let mangaList = data.data.map( manga => {
-                    return {
-                        id: manga.alias, // manga.id
-                        title: manga.title
-                    };
-                } );
-                if( data.hasNext ) {
-                    return this._getMangaFromPage( offset + limit, limit )
-                        .then( mangas => mangaList.concat( mangas ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+    async _getMangas() {
+        let mangaList = [];
+        for (let page = 0, run = true; run; page++) {
+            let mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this._getMangaFromPage()
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        const uri = new URL('/lz-api/v2/comics', this.apiURL);
+        uri.searchParams.set('menu', 'general');
+        uri.searchParams.set('limit', this.mangasPerPage);
+        uri.searchParams.set('offset', page * this.mangasPerPage);
+        uri.searchParams.set('order', 'popular');
+        uri.searchParams.set('adult_kind', 'all');
+
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSON(request);
+        return data.data.map( manga => {
+            return {
+                id: manga.alias, // manga.id
+                title: manga.title
+            };
+        });
     }
 
     async _getChapters(manga) {
         await this._initializeAccount();
-        /*
-         *let purchased = [];
-         *let subscription = false;
-         *if(this.accessToken) {
-         *    let uri = new URL(`${this.apiURL}/users/${this.userID}/contents/${mangaiD}`);
-         *    let request = new Request(uri, this.requestOptions);
-         *    request.headers.set('authorization', 'Bearer ' + this.accessToken);
-         *    let data = await this.fetchJSON(request);
-         *    purchased = data.data.purchased;
-         *    subscription = data.data.subscribed;
-         *}
-         */
         let script = `
-            new Promise((resolve, reject) => {
-                // wait until episodes have been updated with purchase info ...
-                setTimeout(() => {
-                    try {
-                        let chapters = __LZ_PRODUCT__.all // __LZ_PRODUCT__.product.episodes
-                        .filter(chapter => {
-                            if(chapter.purchased) {
-                                return true;
-                            }
-                            if(chapter.coin === 0) {
-                                return true;
-                            }
-                            if(chapter.freedAt && chapter.freedAt < Date.now()) {
-                                return true;
-                            }
-                            if(chapter.prefree && chapter.prefree.closeTimer && chapter.prefree.closeTimer.expiredAt > Date.now()) {
-                                return true;
-                            }
-                            return false;
-                        })
-                        .map(chapter => {
-                            return {
-                                id: chapter.name, // chapter.id,
-                                title: chapter.display.displayName + ' - ' + chapter.display.title,
-                                language: '${this.locale}'
-                            };
-                        });
-                        resolve(chapters);
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 2500);
-            });
+        new Promise((resolve, reject) => {
+            // wait until episodes have been updated with purchase info ...
+            setTimeout(() => {
+              //  try {
+                    let chapters = __LZ_PRODUCT__.all // __LZ_PRODUCT__.product.episodes
+                    .filter(chapter => {
+                        if(chapter.purchased) {
+                            return true;
+                        }
+                        if(chapter.coin === 0) {
+                            return true;
+                        }
+                        if(chapter.freedAt && chapter.freedAt < Date.now()) {
+                            return true;
+                        }
+                        if(chapter.prefree && chapter.prefree.closeTimer && chapter.prefree.closeTimer.expiredAt > Date.now()) {
+                            return true;
+                        }
+                        return false;
+                    })
+                    .map(chapter => {
+                        return {
+                            id: chapter.name, // chapter.id,
+                            title: chapter.display.displayName + ' - ' + chapter.display.title,
+                            language: '${this.locale}'
+                        };
+                    });
+                    resolve(chapters);
+            //    }
+            //    catch(error) {
+            //        reject(error);
+            //    }
+            }, 2500);
+        });
         `;
         let request = new Request(new URL('/comic/' + manga.id, this.url), this.requestOptions);
         return Engine.Request.fetchUI(request, script);
@@ -191,42 +178,66 @@ export default class Lezhin extends Connector {
 
     async _getPages(chapter) {
         await this._initializeAccount();
-        /*
-            q  | Free  | Purchased
-            ----------------------
-            10 |  480w |  640w
-            20 |  640w |  720w
-            30 |  720w | 1080w
-            40 | 1080w | 1280w
-        */
-        const script = `
-            new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    try {
-                        if(window.location.pathname.includes('/login')) {
-                            throw new Error('You need to be logged in to access the content of this chapter!');
-                        }
-                        const subscribed = __LZ_DATA__.product && __LZ_DATA__.product.subscribed;
-                        const purchased = __LZ_DATA__.purchased && __LZ_DATA__.purchased.includes(__LZ_DATA__.episode.id);
-                        const hasOnlyJPEG = !!__LZ_DATA__.episode.d2;
-                        const images = __LZ_DATA__.episode.scrollsInfo.map(x => {
-                            const extension = ${this.config.forceJPEG.value} || hasOnlyJPEG ? '.jpg' : '.webp';
-                            const uri = new URL('/v2' + x.path + extension, __LZ_CONFIG__.cdnUrl);
-                            uri.searchParams.set('access_token', '${this.accessToken}');
-                            uri.searchParams.set('purchased', subscribed || purchased);
-                            uri.searchParams.set('q', 40);
-                            return uri.href;
-                        });
-                        resolve(images);
-                    } catch(error) {
-                        reject(error);
-                    }
-                }, 2500);
-            });
-        `;
 
-        const uri = new URL(`${this.url}/comic/${chapter.manga.id}/${chapter.id}`);
-        const request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        let uri = new URL('https://www.lezhin.com/lz-api/v2/inventory_groups/comic_viewer');
+        uri.searchParams.set('platform', 'web');
+        uri.searchParams.set('store', 'web');
+        uri.searchParams.set('alias', chapter.manga.id);
+        uri.searchParams.set('name', chapter.id);
+        uri.searchParams.set('preload', false);
+        uri.searchParams.set('type', 'comic_episode');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+
+        return data.data.extra.episode.scrollsInfo.map(scroll => {
+            return this.createConnectorURI({url : scroll.path, infos : JSON.stringify(data)});
+        });
+    }
+
+    async _handleConnectorURI(payload) {
+        /*
+        q  | Free  | Purchased
+        ----------------------
+        10 |  480w |  640w
+        20 |  640w |  720w
+        30 |  720w | 1080w
+        40 | 1080w | 1280w
+        */
+
+        let data = JSON.parse(payload.infos);
+        const episode = data.data.extra.episode;
+        const extension = this.config.forceJPEG.value ? '.jpg' : '.webp';
+        let imageurl = new URL('/v2' + payload.url + extension, this.cdnURL);
+        let purchased = episode.coin == 0;
+        //purchased = purchased || (episode.freedAt && episode.freedAt < Date.now());
+        const subscribed = data.data.extra.subscribed;
+        const updatedAt = episode.updatedAt;
+
+        let tokenuri = new URL('/lz-api/v2/cloudfront/signed-url/generate', this.apiURL);
+        tokenuri.searchParams.set('contentId', episode.idComic);
+        tokenuri.searchParams.set('episodeId', episode.id);
+        tokenuri.searchParams.set('purchased', subscribed || purchased);
+        tokenuri.searchParams.set('q', 40);
+        tokenuri.searchParams.set('firstCheckType', 'P');
+
+        //get parameters
+        let request = new Request( tokenuri, this.requestOptions );
+        request.headers.set('x-referer', this.apiURL);
+        let response = await this.fetchJSON(request);
+
+        //update image url
+        imageurl.searchParams.set('purchased', subscribed || purchased);
+        imageurl.searchParams.set('q', 40);
+        imageurl.searchParams.set('updated', updatedAt);
+        imageurl.searchParams.set('Policy', response.data.Policy);
+        imageurl.searchParams.set('Signature', response.data.Signature);
+        imageurl.searchParams.set('Key-Pair-Id', response.data['Key-Pair-Id']);
+
+        request = new Request(imageurl, this.requestOptions);
+        response = await fetch(request);
+        data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 }

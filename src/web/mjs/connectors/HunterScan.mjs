@@ -7,6 +7,6 @@ export default class HunterScan extends WordPressMadara {
         super.id = 'hunterscan';
         super.label = 'Hunters Scan';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://www.hunterscan.tk';
+        this.url = 'https://huntersscan.xyz/';
     }
 }

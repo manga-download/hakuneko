@@ -80,7 +80,7 @@ export default class ReadManga extends Connector {
         const script = `
             new Promise(resolve => {
                 const payload = {
-                    pics: rm_h.pics.map(pic => pic.url),
+                    pics: rm_h.pics.map(pic => rm_h.reader.preparePicUrl(pic.url)),
                     servers: rm_h.servers.map(server => server.path)
                 };
                 resolve(payload);

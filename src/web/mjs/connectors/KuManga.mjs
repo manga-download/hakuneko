@@ -79,7 +79,7 @@ export default class KuManga extends Connector {
 
     async _getChaptersFromPage(manga, page) {
         let request = new Request( this.url + manga.id + '/p/' + page, this.requestOptions );
-        let data = await this.fetchDOM(request, 'table.table tr td h4.title > a');
+        let data = await this.fetchDOM(request, 'div.media-body h5 > a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url).replace('/c/', '/leer/'),

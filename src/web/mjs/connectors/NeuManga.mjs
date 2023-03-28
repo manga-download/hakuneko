@@ -10,7 +10,7 @@ export default class NeuManga extends Connector {
         this.tags = [ 'manga', 'indonesian' ];
         this.url = 'https://neumanga.net';
         this.path = '/manga-list';
-        this.queryMangas = 'div.mangalist-blc ul li.Manhwa a.series';
+        this.queryMangas = 'div.mangalist-blc ul li a.series';
         this.queryChapters = 'ul.series-chapterlist li div.flexch-infoz a';
         this.queryPages = 'div.reader-area p source';
         this.queryMangaTitle = 'div.series-title h2';

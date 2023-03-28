@@ -22,7 +22,7 @@ export default class Yanmaga extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri);
-        const [data] = await this.fetchDOM(request, '.detail-header-title');
+        const [data] = await this.fetchDOM(request, '.detailv2-outline-title');
         const id = uri.pathname;
         const title = data.textContent.trim();
         return new Manga(this, id, title);
