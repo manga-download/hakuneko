@@ -3,11 +3,7 @@ import Manga from '../engine/Manga.mjs';
 
 function formatDate() {
     // Example: 2023.03.27
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = now.getMonth() + 1;
-    const day = now.getDate();
-    return `${year}.${month < 10 ? "0" : ""}${month}.${day}`;
+    return new Date().toISOString().replace(/-/g, ".").split('T').shift();
 }
 
 const API_HEADERS = {
@@ -23,6 +19,7 @@ export default class Copymanga extends Connector {
         super.id = 'copymanga';
         super.label = '拷貝漫畫 (Copymanga)';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
+        this.apiurl = 'https://api.copymanga.org';
         this.config = {
             url: {
                 label: 'Website URL',
@@ -30,91 +27,49 @@ export default class Copymanga extends Connector {
                 input: 'text',
                 value: 'https://www.copymanga.site'
             },
-            apiurl: {
-                label: 'API URL',
-                description: 'This website may change their API URL.\nThis is the last known API URL which can also be manually set by the user.',
-                input: 'text',
-                value: 'https://api.copymanga.org'
-            },
             format:  {
                 label: 'Preferred format',
                 description: 'format of images\nwebp \njpg',
                 input: 'select',
                 options: [
-                    { value: 'webp', name: 'webp' },
-                    { value: 'jpg', name: 'jpg' },
+                    { value: "0", name: 'jpg' },
+                    { value: "1", name: 'webp' },
                 ],
-                value: 'webp'
+                value: "0"
             },
-            useOverseaCDN: {
-                label: 'Use Oversea CDN',
-                description: 'Requesting from the Oversea CDN',
+            useGlobalCDN: {
+                label: 'Use Global CDN',
+                description: 'Requesting from the Global CDN',
                 input: 'select',
                 options: [
-                    { value: 'yes', name: 'Yes' },
-                    { value: 'no', name: 'No' },
+                    { value: "0", name: 'Yes' },
+                    { value: "1", name: 'No' },
                 ],
-                value: 'yes'
+                value: "0"
             }
         };
         this.requestOptions.headers.delete('accept');
         Object.keys(API_HEADERS).forEach(key => {
-            this.requestOptions.headers.append(key, API_HEADERS[key]);
+            this.requestOptions.headers.set(key, API_HEADERS[key]);
         });
-        this.requestOptions.headers.append("Referer", this.url);
-        this.requestOptions.headers.append("webp", this.format === "webp" ? 1 : 0);
-        this.requestOptions.headers.append("region", this.useOverseaCDN === "yes" ? 0 : 1);
+        this.updateHeaders();
     }
 
     get url() {
         return this.config.url.value;
     }
 
-    set url(value) {
-        if (this.config && value) {
-            this.config.url.value = value;
-            Engine.Settings.save();
-        }
-    }
-
-    get apiurl() {
-        return this.config.apiurl.value;
-    }
-
-    set apiurl(value) {
-        if (this.config && value) {
-            this.config.apiurl.value = value;
-            Engine.Settings.save();
-        }
-    }
-
-    get format() {
-        return this.config.format.value;
-    }
-
-    set format(value) {
-        if (this.config && value) {
-            this.config.format.value = value;
-            Engine.Settings.save();
-        }
-    }
-
-    get useOverseaCDN() {
-        return this.config.useOverseaCDN.value;
-    }
-
-    set useOverseaCDN(value) {
-        if (this.config && value) {
-            this.config.useOverseaCDN.value = value;
-            Engine.Settings.save();
-        }
-    }
-
-    canHandleURI(uri) {
-        return /copymanga/.test(uri.origin);
+    /**
+     * Update request headers with real-time config values
+     */
+    updateHeaders() {
+        this.requestOptions.headers.set("Referer", this.url);
+        this.requestOptions.headers.set("webp", this.config.format.value);
+        this.requestOptions.headers.set("region", this.config.useGlobalCDN.value);
     }
 
     async _getMangaFromURI(uri) {
+        this.updateHeaders();
         const id = uri.pathname.split('/').pop();
         const apiUri = new URL('/api/v3/comic2/' + id, this.apiurl);
         const request = new Request(apiUri, this.requestOptions);
@@ -123,6 +78,7 @@ export default class Copymanga extends Connector {
     }
 
     async _getMangas() {
+        this.updateHeaders();
         let mangaList = [];
         const uri = new URL('/api/v3/comics', this.apiurl);
         const request = new Request(uri, this.requestOptions);
@@ -136,6 +92,7 @@ export default class Copymanga extends Connector {
     }
 
     async _getMangasFromPage(page) {
+        this.updateHeaders();
         const uri = new URL('/api/v3/comics?ordering=-datetime_updated&limit=50&offset=' + page * 50, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request, 3);
@@ -148,6 +105,7 @@ export default class Copymanga extends Connector {
     }
 
     async _getChapters(manga) {
+        this.updateHeaders();
         const uri = new URL(`/api/v3/comic/${manga.id}/group/default/chapters?limit=500`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
@@ -170,6 +128,7 @@ export default class Copymanga extends Connector {
     }
 
     async _getChaptersFromPage(manga, page) {
+        this.updateHeaders();
         const uri = new URL(`/api/v3/comic/${manga.id}/group/default/chapters?limit=500&offset=${page * 500}`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
@@ -182,6 +141,7 @@ export default class Copymanga extends Connector {
     }
 
     async _getPages(chapter) {
+        this.updateHeaders();
         const uri = new URL(`/api/v3/comic/${chapter.manga.id}/chapter2/${chapter.id}?platform=3`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
