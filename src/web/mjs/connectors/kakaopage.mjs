@@ -28,52 +28,143 @@ export default class kakaopage extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
-        for(let page = 0, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(manga, page);
-            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        let nextCursor = '';
+        const chapterList = [];
+        for (let run = true; run;) {
+            const data = await this._getChaptersFromPage(manga, nextCursor);
+
+            const chapters = data.contentHomeProductList.edges.map(chapter => {
+                return {
+                    id : chapter.node.single.productId,
+                    title : chapter.node.single.title.replace(manga.title, '').trim()
+                };
+            });
+
+            nextCursor = data.contentHomeProductList.pageInfo.hasNextPage ? data.contentHomeProductList.pageInfo.endCursor : null;
+            chapterList.push(...chapters);
+            if (nextCursor == null) {
+                run = false;
+            }
         }
         return chapterList;
     }
 
-    async _getChaptersFromPage(manga, page) {
-        let form = new FormData();
-        form.append('seriesid', manga.id);
-        form.append('page', page);
-        form.append('direction', 'desc');
-        form.append('page_size', 20);
-        form.append('without_hidden', true);
-        let request = new Request('https://api2-page.kakao.com/api/v5/store/singles', {
-            ...this.requestOptions,
-            method: 'POST',
-            body: form
-        });
-        let data = await this.fetchJSON(request);
-        return data.singles.map(ele => {
-            return{
-                id: ele.id,
-                title: ele.title.trim()
-            };
-        });
+    async _getChaptersFromPage(manga, nextCursor) {
+        const gql = {
+            operationName: 'contentHomeProductList',
+            variables: {
+                boughtOnly: false,
+                seriesId : manga.id,
+                sortType : 'asc',
+                after : nextCursor,
+            },
+            query: `query contentHomeProductList($after: String, $before: String, $first: Int, $last: Int, $seriesId: Long!, $boughtOnly: Boolean, $sortType: String) {
+                  contentHomeProductList(
+                    seriesId: $seriesId
+                    after: $after
+                    before: $before
+                    first: $first
+                    last: $last
+                    boughtOnly: $boughtOnly
+                    sortType: $sortType
+                  ) {
+                    totalCount
+                    pageInfo {
+                      hasNextPage
+                      endCursor
+                      hasPreviousPage
+                      startCursor
+                      __typename
+                    }
+                    edges {
+                      cursor
+                      node {
+                        ...SingleListViewItem
+                        __typename
+                      }
+                      __typename
+                    }
+                    __typename
+                  }
+                }
+
+                fragment SingleListViewItem on SingleListViewItem {
+                  id
+                  type
+                  thumbnail
+                  isCheckMode
+                  isChecked
+                  scheme
+                  single {
+                    productId
+                    ageGrade
+                    id
+                    isFree
+                    thumbnail
+                    title
+                    slideType
+                    __typename
+                  }
+                  isViewed
+                  purchaseInfoText
+                }
+                `
+        };
+        return await this.fetchGraphQL(this.url+'/graphql', gql.operationName, gql.query, gql.variables );
     }
 
     async _getPages(chapter) {
-        let form = new FormData();
-        form.append('productId', chapter.id);
-        this.requestOptions.method = 'POST';
-        this.requestOptions.body = form;
-        let request = new Request('https://api2-page.kakao.com/api/v1/inven/get_download_data/web', {
-            ...this.requestOptions,
-            method: 'POST',
-            body: form
-        });
-        this.requestOptions.method = 'GET';
-        delete this.requestOptions.body;
-        let data = await this.fetchJSON(request);
-        if (data.downloadData && data.downloadData.members) {
-            return data.downloadData.members.files.map(element => data.downloadData.members.sAtsServerUrl + element.secureUrl);
-        }
+        const gql = {
+            operationName: 'viewerInfo',
+            variables: {
+                productId: chapter.id,
+                seriesId : parseInt(chapter.manga.id)
+            },
+            query: `query viewerInfo($seriesId: Long!, $productId: Long!) {
+                viewerInfo(seriesId: $seriesId, productId: $productId) {
+                  viewerData {
+                     ...ImageViewerData
+                    __typename
+                  }
+                  __typename
+                }
+              }
+              
+              fragment ImageViewerData on ImageViewerData {
+                type
+                imageDownloadData {
+                  ...ImageDownloadData
+                  __typename
+                }
+              }
+              
+              fragment ImageDownloadData on ImageDownloadData {
+                files {
+                  ...ImageDownloadFile
+                  __typename
+                }
+                totalCount
+                totalSize
+                viewDirection
+                gapBetweenImages
+                readType
+              }
+              
+              fragment ImageDownloadFile on ImageDownloadFile {
+                no
+                size
+                secureUrl
+                width
+                height
+              }
 
-        throw new Error(`Can't fetch this ressource because it's protected`);
+           `
+        };
+        try {
+            const data = await this.fetchGraphQL(this.url+'/graphql', gql.operationName, gql.query, gql.variables );
+            return data.viewerInfo.viewerData.imageDownloadData.files.map(page => page.secureUrl);
+        } catch( error ) {
+            throw new Error('Chapter is protected '+ error);
+        }
     }
 }
