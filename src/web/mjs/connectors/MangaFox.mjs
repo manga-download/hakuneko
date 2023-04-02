@@ -14,6 +14,9 @@ export default class MangaFox extends Connector {
 
         // this script uses chapterfun.ashx instead of chapter_bar.js as in MangaHere
         this.scriptSource = 'chapterfun.ashx';
+
+        //ads pictures SHA256 hashes to remove from the pages list
+        this.adsHashes = ['7dbfad65d99112b79a3e344b665dbcdea09c5dcfa0e70b6cc057aa4b3565abbb'];
     }
 
     get script() {
@@ -94,51 +97,31 @@ export default class MangaFox extends Connector {
     }
 
     async _getPages(chapter) {
-        return this._getPagesDesktop(chapter);
-        //return this._getPageListMobile(chapter);
-    }
-
-    async _getPagesDesktop(chapter) {
-        let uri = new URL(chapter.id, this.url);
+        const uri = new URL(chapter.id, this.url);
         let request = new Request(uri, this.requestOptions);
+        const pages = await Engine.Request.fetchUI(request, this.script);
 
-        let pages = await Engine.Request.fetchUI(request, this.script);
-        //Get Meta informations from last Image
-        let lastImage = await new Promise(resolve => {
-            const img = new Image();
-            img.onload = () => resolve(img);
-            img.onerror = () => resolve(null);
-            img.src = pages.slice(-1);
-        });
-        //Check if the last image seems to be the usual ad
-        if(lastImage && lastImage.naturalHeight === 563 && lastImage.naturalWidth === 1000) {
-            pages.pop();
+        try {
+        //fetch last image data
+            request = new Request(pages.slice('-1'));
+            request.headers.set('x-referer', uri);
+            const response = await fetch(request);
+            const data = CryptoJS.lib.WordArray.create(await response.arrayBuffer());
+
+            //hash picture data
+            const hash = CryptoJS.SHA256(data).toString(CryptoJS.enc.Hex);
+
+            //if picture hash is a known ad hash, remove picture
+            if (this.adsHashes.includes(hash)) {
+                pages.pop();
+            }
+        } catch (error) {
+            //in case of error, just download all pictures
         }
         return pages.map(link => this.createConnectorURI({
             url: link,
             referer: this.url
         }));
-    }
-
-    async _getPageListMobile(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        uri.hostname = 'm.' + uri.hostname;
-        uri.pathname = uri.pathname.replace('/manga/', '/roll_manga/');
-        let response = await fetch(uri.href, this.requestOptions);
-        // FIXME: very dangerous, might end up in endless recursion !!!
-        if(response.status === 503 || response.status === 504) {
-            await this.wait(this.pageLoadDelay);
-            return this._getPageListMobile(chapter);
-        }
-        if(response.status !== 200) {
-            throw new Error(`Failed to receive page list (status: ${response.status}) - ${response.statusText}`);
-        }
-        let data = await response.text();
-        let dom = this.createDOM(data);
-        if(dom.querySelector('span.fwb') && data.indexOf('licensed') > -1) {
-            throw new Error('The manga is licensed and not available in your country!');
-        }
-        return [...dom.querySelectorAll('div#viewer source')].map(element => element.dataset.original);
     }
 
     async _handleConnectorURI(payload) {
