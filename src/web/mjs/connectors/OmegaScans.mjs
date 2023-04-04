@@ -10,7 +10,14 @@ export default class OmegaScans extends Connector {
         this.tags = [ 'webtoon', 'scanlation', 'english', 'hentai'];
         this.url = 'https://omegascans.org';
         this.api = 'https://api.omegascans.org';
-        this.nextInstance = 'kfEvdmBL_oiYIy2CuPAgV';
+        this.nextInstance = 'Uzf9L765by7rm6wVbv5Sb';
+    }
+
+    async _initializeConnector() {
+        const uri = new URL(this.url);
+        const request = new Request(uri.href, this.requestOptions);
+        this.nextInstance = await Engine.Request.fetchUI(request, `__NEXT_DATA.buildId`);
+        console.log(`OmegaScans nextInstance is  ${this.nextInstance}`);
     }
 
     async _getMangaFromURI(uri) {
@@ -75,5 +82,4 @@ export default class OmegaScans extends Connector {
         return data.content.images.map(element => new URL(element, this.api).href);
 
     }
-
 }
