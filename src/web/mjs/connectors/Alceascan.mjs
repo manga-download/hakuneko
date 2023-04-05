@@ -6,7 +6,7 @@ export default class Alceascan extends WordPressMangastream {
         super();
         super.id = 'alceascan';
         super.label = 'Alceascan';
-        this.tags = ['manga', 'indonesian'];
+        this.tags = ['manga', 'indonesian', 'scanlation'];
         this.url = 'https://alceascan.my.id';
         this.path = '/manga/list-mode/';
     }

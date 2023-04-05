@@ -1,4 +1,5 @@
 import ToCoronaEx from "./To-Corona-Ex.mjs";
+import Manga from '../engine/Manga.mjs';
 
 export default class IchijinPlus extends ToCoronaEx {
     constructor() {
@@ -11,5 +12,16 @@ export default class IchijinPlus extends ToCoronaEx {
         this.cdnurl = 'https://cdn.ichijin-plus.com';
         this.apikey = 'GGXGejnSsZw-IxHKQp8OQKHH-NDItSbEq5PU0g2w1W4=';
         this.requestOptions.headers.set('X-API-Environment-Key', this.apikey);
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const script = `
+        new Promise((resolve, reject) => {
+            resolve({id : __NEXT_DATA__.props.pageProps.comicId, title : __NEXT_DATA__.props.pageProps.fallbackData.comicResponse.title.trim() });
+        });
+        `;
+        const data = await Engine.Request.fetchUI(request, script, 500);
+        return new Manga(this, data.id, data.title);
     }
 }
