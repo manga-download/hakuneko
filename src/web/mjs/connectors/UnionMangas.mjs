@@ -58,7 +58,7 @@ export default class UnionMangas extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        request.headers.set('x-cookie', `modoLeitura=2; path=${manga.id}` ); //in case cookie is needed to get all pictures
+        request.headers.set('x-cookie', `modoLeitura=2; path=${chapter.manga.id}` ); //in case cookie is needed to get all pictures
         const data = await this.fetchDOM(request, 'source.img-responsive');
         return data.map(element => this.getAbsolutePath(element, request.url)).filter(link => !link.includes('banner_'));
     }
