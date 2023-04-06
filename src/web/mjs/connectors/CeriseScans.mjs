@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMadaraNovel from './templates/WordPressMadaraNovel.mjs';
 
-export default class CeriseScans extends WordPressMadara {
+export default class CeriseScans extends WordPressMadaraNovel {
 
     constructor() {
         super();
@@ -9,8 +9,16 @@ export default class CeriseScans extends WordPressMadara {
         this.tags = [ 'webtoon', 'portuguese', 'scanlation' ];
         this.url = 'https://cerisescan.com';
     }
-    //WP MangaProtector
+
     async _getPages(chapter) {
+        let uri = new URL(chapter.id, this.url);
+        uri.searchParams.set('style', 'list');
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.novelContentQuery);
+        return data.length > 0 ? this._getPagesNovel(request) : this._getWProtectedPages(chapter);
+    }
+
+    async _getWProtectedPages(chapter) {
         const url = new URL(chapter.id, this.url);
         const request = new Request(url, this.requestOptions);
         const script = `
@@ -23,4 +31,5 @@ export default class CeriseScans extends WordPressMadara {
         `;
         return await Engine.Request.fetchUI(request, script);
     }
+
 }
