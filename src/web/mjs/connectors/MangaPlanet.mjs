@@ -8,9 +8,9 @@ export default class MangaPlanet extends SpeedBinb {
         super.id = 'mangaplanet';
         super.label = 'Manga Planet';
         this.tags = ['manga', 'english'];
-        this.url = 'https://read.mangaplanet.com';
+        this.url = 'https://mangaplanet.com';
         this.requestOptions.headers.set('x-referer', this.url + '/');
-        this.requestOptions.headers.set('x-cookie', 'faconf=' + 18);
+        this.requestOptions.headers.set('x-cookie', 'mpaconf=' + 18);
 
     }
 
