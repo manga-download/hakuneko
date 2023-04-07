@@ -19,22 +19,6 @@ export default class Agitoon extends Connector {
     }
 
     async _getNeededValues() {
-        //https://agit185.com/data/azitoon.js?v=0.42317244219852657
-        //contains
-
-        /*
-        var img_domain = "https://blacktoonimg.com/";
-        var img_domain2 = "https://img.blacktoonimg.com/";
-        var img_domain3 = "https://image.blacktoonimg.com/";
-        var img_domain4 = "https://image2.blackmanaimg.com/";
-        var img_domain5 = "https://image3.blackmanaimg.com/";
-        var img_per = "5";
-        var img_per2 = "20";
-        var img_per3 = "5";
-        var img_per4 = "35";
-        var img_per5 = "35";
-        */
-
         const uri = new URL(`/data/azitoon.js?v=${Math.random()}`, this.url);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-referer', this.url);
@@ -43,12 +27,14 @@ export default class Agitoon extends Connector {
 
         let matches = undefined;
         const imgRgx = /var img_domain\d?\s*=\s*"([\S]+)";/g;
+        this.cdns = [];
         // eslint-disable-next-line no-cond-assign
         while (matches = imgRgx.exec(response)) {
             this.cdns.push(matches[1]);
         }
 
         const img_perRgx = /var img_per\d?\s*=\s*"([\S]+)";/g;
+        this.img_per = [];
         // eslint-disable-next-line no-cond-assign
         while (matches= img_perRgx.exec(response)) {
             this.img_per.push(parseInt(matches[1]));
