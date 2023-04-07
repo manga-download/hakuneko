@@ -16,7 +16,7 @@ export default class OmegaScans extends Connector {
     async _initializeConnector() {
         const uri = new URL(this.url);
         const request = new Request(uri.href, this.requestOptions);
-        this.nextInstance = await Engine.Request.fetchUI(request, `__NEXT_DATA.buildId`);
+        this.nextInstance = await Engine.Request.fetchUI(request, `__NEXT_DATA__.buildId`);
     }
 
     async _getMangaFromURI(uri) {
