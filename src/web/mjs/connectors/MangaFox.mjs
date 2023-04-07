@@ -101,27 +101,24 @@ export default class MangaFox extends Connector {
         let request = new Request(uri, this.requestOptions);
         const pages = await Engine.Request.fetchUI(request, this.script);
 
-        try {
-        //fetch last image data
-            request = new Request(pages.slice('-1'));
-            request.headers.set('x-referer', uri);
-            const response = await fetch(request);
-            const data = CryptoJS.lib.WordArray.create(await response.arrayBuffer());
-
-            //hash picture data
-            const hash = CryptoJS.SHA256(data).toString(CryptoJS.enc.Hex);
-
-            //if picture hash is a known ad hash, remove picture
-            if (this.adsHashes.includes(hash)) {
-                pages.pop();
-            }
-        } catch (error) {
-            //in case of error, just download all pictures
-        }
-        return pages.map(link => this.createConnectorURI({
+        const pageList = pages.map(link => this.createConnectorURI({
             url: link,
             referer: this.url
         }));
+
+        const lastImage = await super._handleConnectorURI(pageList.slice(-1));
+        // perform advertisement check and may remove last image: pageList.pop()
+        const data = CryptoJS.lib.WordArray.create(lastImage.data);
+
+        //hash picture data
+        const hash = CryptoJS.SHA256(data).toString(CryptoJS.enc.Hex);
+
+        //if picture hash is a known ad hash, remove picture
+        if (this.adsHashes.includes(hash)) {
+            pageList.pop();
+        }
+
+        return pageList;
     }
 
     async _handleConnectorURI(payload) {
