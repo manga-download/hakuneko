@@ -13,6 +13,14 @@ export default class Qiman5 extends SinMH {
         this.queryMangas = 'div.mainForm div.updateList div.bookList_3 div.ib p.title a';
         this.queryChapters = 'div.chapterList div#chapter-list1 a.ib';
         this.queryManga = 'div.container div.mainForm div.comicInfo div.ib.info h1';
+        this.urlscript = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(window.origin);
+                }, 10000);
+            });
+
+        `;
         this.queryChaptersScript = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
@@ -54,15 +62,12 @@ export default class Qiman5 extends SinMH {
     }
 
     canHandleURI(uri) {
-        super.initialize()
-            .then(() => {
-                return uri.href.includes(this.url);
-            });
+         return uri.href.includes(this.url);
     }
 
     async _initializeConnector() {
         const request = new Request(this.url, this.requestOptions);
-        this.url = (await this.fetchDOM(request, 'a#href')).pop().href;
+        this.url = await Engine.Request.fetchUI(request,this.urlscript);
         console.log(`Assigned URL '${this.url}' to ${this.label}`);
     }
 
