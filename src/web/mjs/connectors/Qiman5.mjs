@@ -92,5 +92,4 @@ export default class Qiman5 extends SinMH {
             };
         });
     }
-
 }
