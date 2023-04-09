@@ -78,7 +78,6 @@ export default class OmegaScans extends Connector {
     async _getPages(chapter) {
         const uri = new URL(`/series/chapter/${chapter.id}`, this.api);
         const data = await this.fetchJSON(new Request(uri, this.requestOptions));
-        return data.content.images.map(element => new URL(element, this.api).href);
-
+        return data.content.images.map(element => this.createConnectorURI(new URL(element, this.api).href));
     }
 }
