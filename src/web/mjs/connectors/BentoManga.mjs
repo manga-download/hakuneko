@@ -13,7 +13,7 @@ export default class bentomanga extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'h1'); 
+        let data = await this.fetchDOM(request, 'div.component-manga-title_main h1'); 
         let id = uri.pathname + uri.search;
         let title = data[0].textContent.trim(); 
         return new Manga(this, id, title);
