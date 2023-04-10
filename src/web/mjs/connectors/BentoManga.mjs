@@ -51,7 +51,7 @@ export default class bentomanga extends Connector {
                 const info = document.querySelector('head meta[data-chapter-id]');
                 const uri = new URL('/api/?type=chapter&id=' + info.dataset.chapterId, window.location.origin);
                 const customHeaders = {
-                    headers: {"a":"Math.random().toString(16)"}
+                    headers: {'X-Requested-With' : 'XMLHttpRequest'}
                 };
                 const response = await fetch(uri.href,customHeaders);
                 const data = await response.json();
