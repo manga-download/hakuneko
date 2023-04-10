@@ -36,7 +36,7 @@ export default class bentomanga extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.querySelector('span.manga_nb_chapter').innerText.trim() + ' ' + element.querySelector('span.manga_title').innerText.trim(),
+                title: element.querySelector('span.chapter_volume').innerText.trim() + ' ' + element.querySelector('span.chapter_title').innerText.trim(),
                 language: ''
             };
         });
