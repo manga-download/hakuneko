@@ -30,8 +30,8 @@ export default class bentomanga extends Connector {
         });
     }    
     async _getListPage(path, page) {
-        let paginatorNumber = page - 1; // page count starts with 0.
-        let request = new Request(this.url + path + '?limit=' + paginatorNumber + '&cb=1681162683562', this.requestOptions);
+        let listNumber = page - 1; // page count starts with 0.
+        let request = new Request(this.url + path + '?limit=' + listNumber, this.requestOptions);
         request.headers.set('X-Requested-With', 'XMLHttpRequest'); // set nessecary header to get json api response.
         const data = await this.fetchJSON(request);
         return data;
