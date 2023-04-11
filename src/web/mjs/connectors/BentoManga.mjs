@@ -1,7 +1,7 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-export default class bentomanga extends Connector {
+export default class BentoManga extends Connector {
 
     constructor() {
         super();
@@ -16,16 +16,18 @@ export default class bentomanga extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.component-manga-title_main h1');
-        let id = uri.pathname;
-        let title = data[0].textContent.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.component-manga-title_main h1');
+        const id = uri.pathname;
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        let mangaList = [];
-        const pageCount = await this._getListPageCount('/manga_list');
+        const mangaList = [];
+        const request = new Request(new URL('/manga_list', this.url), this.requestOptions );
+        let pageCount = await this.fetchDOM(request, 'p.paginator');
+        pageCount = pageCount.length > 0 ? parseInt(pageCount[0].dataset['max_limit']) : 1;
         for (let page = 1; page <= pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
@@ -34,10 +36,12 @@ export default class bentomanga extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const path = '/manga_list';
-        const dom = await this._getListPage(path, page);
-        const data = [...dom.querySelectorAll('div.div-manga_cover a')];
-        return data.map((element) => {
+        const request = new Request(new URL('/manga_list?limit='+ (page-1) + '&cb='+ Date.now(), this.url), this.requestOptions );
+        request.headers.set('X-Requested-With', 'XMLHttpRequest');
+        let data = await this.fetchJSON(request);
+        const dom = this.createDOM(data.mangas);
+        const nodes = [...dom.querySelectorAll('a.component-manga-cover')];
+        return nodes.map((element) => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
@@ -46,8 +50,10 @@ export default class bentomanga extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
-        const pageCount = await this._getListPageCount(manga.id);
+        const chapterList = [];
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions );
+        let pageCount = await this.fetchDOM(request, 'p.paginator');
+        pageCount = pageCount.length > 0 ? parseInt(pageCount[0].dataset['max_limit']) : 1;
         for (let page = 1; page <= pageCount; page++) {
             const chapters = await this._getChaptersFromPage(manga.id, page);
             chapterList.push(...chapters);
@@ -56,31 +62,18 @@ export default class bentomanga extends Connector {
     }
 
     async _getChaptersFromPage(id, page) {
-        const dom = await this._getListPage(id, page);
-        let data = [...dom.querySelectorAll('div.component-chapter-title > a')];
-        return data.map((element) => {
+        const request = new Request( new URL(id+'?limit='+ (page-1) + '&cb='+ Date.now(), this.url), this.requestOptions );
+        request.headers.set('X-Requested-With', 'XMLHttpRequest');
+        const data = await this.fetchJSON(request);
+        const dom = this.createDOM(data.datas);
+        const nodes = [...dom.querySelectorAll('div.component-chapter-title > a')];
+        return nodes.map((element) => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.querySelector('span.chapter_volume').innerText.trim() + ' ' + element.querySelector('span.chapter_title').innerText.trim(),
                 language: ''
             };
         });
-    }
-
-    async _getListPageCount(path) {
-        const request = new Request(this.url + path, this.requestOptions); // make GET request without query params. BentoManga doesn't respond with the paginator in a _getListPage() request for HakuNeko, but does for my Firefox browser.
-        const data = await this.fetchDOM(request, 'p.paginator');
-        const pageCount = data[0].dataset.max_limit ? parseInt(data[0].dataset.max_limit) : 1;
-        return pageCount;
-    }
-
-    async _getListPage(path, page) {
-        let pageNumber = page - 1; // page count starts with 0.
-        let request = new Request(this.url + path + '?limit=' + pageNumber, this.requestOptions);
-        request.headers.set('X-Requested-With', 'XMLHttpRequest'); // set nessecary header to get json api response.
-        const data = await this.fetchJSON(request);
-        const dom = this.createDOM(data.mangas || data.datas); // json has html data in manga "mangas" or chapter "datas" string.
-        return dom;
     }
 
     async _getPages(chapter) {
@@ -97,8 +90,8 @@ export default class bentomanga extends Connector {
                 resolve(images);
             });
         `;
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
         const data = await Engine.Request.fetchUI(request, script);
         return data.map(image => this.createConnectorURI({
             url: image,
@@ -107,10 +100,10 @@ export default class bentomanga extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        let request = new Request(payload.url, this.requestOptions);
+        const request = new Request(payload.url, this.requestOptions);
         request.headers.set('x-referer', payload.referer);
-        let response = await fetch(request);
-        let data = await response.blob();
+        const response = await fetch(request);
+        const data = await response.blob();
         return this._blobToBuffer(data);
     }
 }
