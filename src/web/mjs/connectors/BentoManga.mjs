@@ -39,7 +39,7 @@ export default class bentomanga extends Connector {
         const data = [...dom.querySelectorAll('div.div-manga_cover a')];
         return data.map((element) => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, path),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.text.trim()
             };
         });
