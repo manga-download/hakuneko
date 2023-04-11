@@ -11,6 +11,10 @@ export default class bentomanga extends Connector {
         this.url = 'https://bentomanga.com';
     }
 
+    canHandleURI(uri) {
+        return /^https?:\/\/(www)?\.bentomanga\.com\/manga/.test(uri);
+    }
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.component-manga-title_main h1');
