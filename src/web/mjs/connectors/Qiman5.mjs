@@ -62,7 +62,7 @@ export default class Qiman5 extends SinMH {
     }
 
     canHandleURI(uri) {
-         return uri.href.includes(this.url);
+        return uri.href.includes(this.url);
     }
 
     async _initializeConnector() {
