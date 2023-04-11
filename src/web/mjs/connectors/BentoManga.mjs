@@ -60,7 +60,7 @@ export default class bentomanga extends Connector {
         let data = [...dom.querySelectorAll('div.component-chapter-title > a')];
         return data.map((element) => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url + id),
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.querySelector('span.chapter_volume').innerText.trim() + ' ' + element.querySelector('span.chapter_title').innerText.trim(),
                 language: ''
             };
