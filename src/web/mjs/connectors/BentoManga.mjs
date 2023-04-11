@@ -67,7 +67,11 @@ export default class bentomanga extends Connector {
 		const request = new Request(this.url + path, this.requestOptions); // make GET request without query params. BentoManga doesn't respond with the paginator in a _getListPage() request for HakuNeko, but does for my Firefox browser.
 		const data = await this.fetchDOM(request, 'p.paginator');
 		const pageCount = parseInt(data[0]?.dataset?.max_limit);
-		return pageCount;
+		if (pageCount >= 0) { // check if there are multiple pages, return a hardcoded 1 if there is only 1 page. Should only occur for chapter lists.
+			return pageCount;
+		} else {
+			return 1;
+		}
 	}
 
 	async _getListPage(path, page) {
