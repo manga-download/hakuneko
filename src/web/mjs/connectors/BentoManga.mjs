@@ -20,11 +20,23 @@ export default class bentomanga extends Connector {
     }
 
     async _getMangas() {
-        let request = new Request(this.url + '/manga_list', this.requestOptions); 
-        let data = await this.fetchDOM(request, 'div.div-manga_cover a'); 
-        return data.map(element => {
+        let mangaList = [];
+        const pageCount = await this._getListPageCount('/manga_list');
+        for(let page = 1; page <= pageCount; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const path = '/manga_list';
+        const dom = await this._getListPage(path, page);
+        const data = [...dom.querySelectorAll('div.div-manga_cover a')];
+        console.log(data); 
+        return data.map((element) => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, (this.url + path + '?limit=' + (page - 1))),
                 title: element.text.trim()
             };
         });
