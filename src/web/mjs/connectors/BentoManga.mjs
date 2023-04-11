@@ -38,15 +38,42 @@ export default class bentomanga extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(this.url + manga.id, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.component-chapter-title > a');
-        return data.map(element => {
+        let chapterList = [];
+        const pageCount = await this._getListPageCount(manga.id);
+        for(let page = 1; page <= pageCount; page++) {
+            const chapters = await this._getChaptersFromPage(manga.id, page);
+            chapterList.push(...chapters);
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(id, page) {
+        const dom = await this._getListPage(id, page);
+        let data = [...dom.querySelectorAll('div.component-chapter-title > a')];
+        console.log(data);
+        return data.map((element) => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, (this.url + id)),
                 title: element.querySelector('span.chapter_volume').innerText.trim() + ' ' + element.querySelector('span.chapter_title').innerText.trim(),
                 language: ''
             };
         });
+    }
+
+    async _getListPageCount(path) {
+        const request = new Request(this.url + path, this.requestOptions); // make GET request without query params. BentoManga doesn't respond with the paginator in a _getListPage() request for HakuNeko, but does for my Firefox browser.
+        const data = await this.fetchDOM(request, 'p.paginator');
+        const pageCount = parseInt(data[0]?.dataset?.max_limit);
+        return pageCount;
+    }
+
+    async _getListPage(path, page) {
+        let pageNumber = page - 1; // page count starts with 0.
+        let request = new Request(this.url + path + '?limit=' + pageNumber, this.requestOptions);
+        request.headers.set('X-Requested-With', 'XMLHttpRequest'); // set nessecary header to get json api response.
+        const data = await this.fetchJSON(request);
+        const dom = this.createDOM(data?.mangas || data?.datas); // json has html data in manga "mangas" or chapter "datas" string.
+        return dom;
     }
 
     async _getPages(chapter) {
