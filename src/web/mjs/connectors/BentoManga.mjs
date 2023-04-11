@@ -86,9 +86,6 @@ export default class bentomanga extends Connector {
 	async _getPages(chapter) {
 		const script = `
             new Promise(async (resolve, reject) => {
-                if(document.querySelector('form#captcha-form')) {
-                    return reject(new Error('The chapter is protected by reCaptcha! Use the manual website interaction to solve the Captcha for an arbitrary chapter before downloading any other chapter from this website.'));
-                }
                 const info = document.querySelector('head meta[data-chapter-id]');
                 const uri = new URL('/api/?type=chapter&id=' + info.dataset.chapterId, window.location.origin);
                 const customHeaders = {
@@ -96,7 +93,6 @@ export default class bentomanga extends Connector {
                 };
                 const response = await fetch(uri.href,customHeaders);
                 const data = await response.json();
-                debugger
                 const images = data.page_array.map(page => new URL(data.baseImagesUrl + '/' + page, uri.href).href);
                 resolve(images);
             });
