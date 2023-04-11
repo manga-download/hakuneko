@@ -75,7 +75,7 @@ export default class bentomanga extends Connector {
         let request = new Request(this.url + path + '?limit=' + pageNumber, this.requestOptions);
         request.headers.set('X-Requested-With', 'XMLHttpRequest'); // set nessecary header to get json api response.
         const data = await this.fetchJSON(request);
-        const dom = this.createDOM(data.mangas || data.datas || null); // json has html data in manga "mangas" or chapter "datas" string.
+        const dom = this.createDOM(data.mangas || data.datas); // json has html data in manga "mangas" or chapter "datas" string.
         return dom;
     }
 
