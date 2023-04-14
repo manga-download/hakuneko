@@ -7,6 +7,6 @@ export default class AstralManga extends WordPressMadara {
         super.id = 'astralmanga';
         super.label = 'Astral-manga';
         this.tags = [ 'manga', 'webtoons', 'french' ];
-        this.url = 'https://astral-manga.fr/';
+        this.url = 'https://astral-manga.fr';
     }
 }
