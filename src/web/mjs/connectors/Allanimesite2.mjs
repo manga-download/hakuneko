@@ -38,7 +38,7 @@ export default class Allanimesite2 extends Allanimesite {
         const jsonExtensions = {
             persistedQuery : {
                 version  : 1,
-                sha256Hash : "c4305f3918591071dfecd081da12243725364f6b7dd92072df09d915e390b1b7"
+                sha256Hash : "b645a686b1988327795e1203867ed24f27c6338b41e5e3412fc1478a8ab6774e"
             }
         };
 
@@ -64,7 +64,7 @@ export default class Allanimesite2 extends Allanimesite {
         let data = await Engine.Request.fetchUI(request, script);
         let chapterlist = [];
         const mangaid = manga.id.replace('/anime/', '/watch/');
-        let subchapters = data.fetch[0].show.availableEpisodesDetail.sub;
+        let subchapters = data.fetch['anime:0'].show.availableEpisodesDetail.sub;
         subchapters.forEach(chapter => {
             chapterlist.push({
                 id : mangaid+'/episode-'+chapter+'-sub',
@@ -72,7 +72,7 @@ export default class Allanimesite2 extends Allanimesite {
                 language : 'SUB',
             });
         });
-        let rawchapters = data.fetch[0].show.availableEpisodesDetail.raw;
+        let rawchapters = data.fetch['anime:0'].show.availableEpisodesDetail.raw;
         rawchapters.forEach(chapter => {
             chapterlist.push({
                 id : mangaid+'/episode-'+chapter+'-raw',
@@ -80,7 +80,7 @@ export default class Allanimesite2 extends Allanimesite {
                 language : 'RAW',
             });
         });
-        let dubchapters = data.fetch[0].show.availableEpisodesDetail.dub;
+        let dubchapters = data.fetch['anime:0'].show.availableEpisodesDetail.dub;
         dubchapters.forEach(chapter => {
             chapterlist.push({
                 id : mangaid+'/episode-'+chapter+'-dub',
@@ -98,7 +98,7 @@ export default class Allanimesite2 extends Allanimesite {
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
-        const sourcesArray = data.fetch[0].episodeSelections;
+        const sourcesArray = data.fetch['episode:0'].episodeSelections;
         const goodSource = sourcesArray.find(source => source.sourceName == 'Default');
         if (!goodSource) throw new Error('No Default source found ! Hakuneko supports only default video source.');
         let uri = new URL(goodSource.sourceUrl.replace('clock', 'clock.json'), 'https://blog.allanime.pro');
