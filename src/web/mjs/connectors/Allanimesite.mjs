@@ -62,7 +62,7 @@ export default class Allanimesite extends Connector {
         const jsonExtensions = {
             persistedQuery : {
                 version  : 1,
-                sha256Hash : "523a882834b6c1e5cb67c15222aa6ff2b85fb0383b9abd9e3417e1aeaa0e1b74"
+                sha256Hash : "edbe1fb23e711aa2bf493874a2d656a5438fe9b0b3a549c4b8a831cc2e929bae"
             }
         };
 
@@ -88,7 +88,7 @@ export default class Allanimesite extends Connector {
         `;
         const data = await Engine.Request.fetchUI(request, script);
         let chapterlist = [];
-        let subchapters = data.fetch[0].manga.availableChaptersDetail.sub;
+        let subchapters = data.fetch['manga:0'].manga.availableChaptersDetail.sub;
         subchapters.forEach(chapter => {
             chapterlist.push({
                 id : '/read/'+manga.id+'/chapter-'+chapter+'-sub',
@@ -96,7 +96,7 @@ export default class Allanimesite extends Connector {
                 language : 'SUB',
             });
         });
-        let rawchapters = data.fetch[0].manga.availableChaptersDetail.raw;
+        let rawchapters = data.fetch['manga:0'].manga.availableChaptersDetail.raw;
         rawchapters.forEach(chapter => {
             chapterlist.push({
                 id : '/read/'+manga.id+'/chapter-'+chapter+'-raw',
@@ -114,8 +114,8 @@ export default class Allanimesite extends Connector {
         });
         `;
         const data = await Engine.Request.fetchUI(request, script);
-        const sourcename = data.fetch[0].selectedSourceName;
-        const sourcesArray = data.fetch[0].chapters;
+        const sourcename = data.fetch['chapter:0'].selectedSourceName;
+        const sourcesArray = data.fetch['chapter:0'].chapters;
         const goodSource = sourcesArray.find(source => source.sourceName == sourcename);
 
         const pageslist = goodSource.pictureUrls.map( element => {
