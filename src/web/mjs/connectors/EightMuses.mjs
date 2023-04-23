@@ -27,11 +27,20 @@ export default class EightMuses extends Connector {
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div#top-menu div.top-menu-breadcrumb ol li a');
-        return [ {
-            id: manga.id,
-            title: data.slice(2).map(element => element.text.trim()).join(' → '),
-            language: ''
-        } ];
+        /*8muses code changes from fetching chapters from album URL start*/
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim(),
+                language: ''
+            };
+        });
+        /*8muses code changes from fetching chapters from album URL end*/
+//         return [ {
+//             id: manga.id,
+//             title: data.slice(2).map(element => element.text.trim()).join(' → '),
+//             language: ''
+//         } ];
     }
 
     async _getPages(chapter) {
