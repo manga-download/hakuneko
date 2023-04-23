@@ -68,42 +68,42 @@ export default class CyComi extends Connector {
         });
         return [chapters, response.nextCursor];
     }
-    
+
     s(e, t) {
-      let n = (e=>{
-        let t = new Uint8Array(256);
-        t.forEach((e, n) =>{
-          t[n] = n
-        });
-        let n = 0;
-        return t.forEach((i, r) =>{
-          n = (n + t[r] + e.charCodeAt(r % e.length)) % 256;
-          let l = t[r];
-          t[r] = t[n],
-          t[n] = l
-        }),
-        t
-      }) (t),
-      i = 0,
-      r = 0,
-      l = new Uint8Array(e.length);
-      for (let t = 0, a = e.length; t < a; t++) {
-        r = (r + n[i = (i + 1) % 256]) % 256;
-        let a = n[i % 256];
-        n[i % 256] = n[r],
-        n[r] = a;
-        let o = n[(n[i] + n[r]) % 256];
-        l[t] = o ^ e[t]
-      }
-      return l
+        let n = (e=>{
+                let t = new Uint8Array(256);
+                t.forEach((e, n) =>{
+                    t[n] = n;
+                });
+                let n = 0;
+                return t.forEach((i, r) =>{
+                    n = (n + t[r] + e.charCodeAt(r % e.length)) % 256;
+                    let l = t[r];
+                    t[r] = t[n],
+                    t[n] = l;
+                }),
+                t;
+            }) (t),
+            i = 0,
+            r = 0,
+            l = new Uint8Array(e.length);
+        for (let t = 0, a = e.length; t < a; t++) {
+            r = (r + n[i = (i + 1) % 256]) % 256;
+            let a = n[i % 256];
+            n[i % 256] = n[r],
+            n[r] = a;
+            let o = n[(n[i] + n[r]) % 256];
+            l[t] = o ^ e[t];
+        }
+        return l;
     }
-    
+
     d(e) {
         return new Promise((t, n) =>{
-          let i = new FileReader;
-          i.addEventListener('error', n),
-          i.addEventListener('load', () =>t(i.result)),
-          i.readAsDataURL(new Blob([e]))
+            let i = new FileReader;
+            i.addEventListener('error', n),
+            i.addEventListener('load', () =>t(i.result)),
+            i.readAsDataURL(new Blob([e]));
         });
     }
 
@@ -119,7 +119,7 @@ export default class CyComi extends Connector {
         const response = await this.fetchJSON(request);
         const pages = response.data.pages;
         const promises = pages.filter(page => page.type == "image")
-                              .map(page => this._getPage(page.image));
+            .map(page => this._getPage(page.image));
         const results = await Promise.all(promises);
         return results.filter(x => !x.skip).map(x => x.uri);
     }
@@ -134,7 +134,7 @@ export default class CyComi extends Connector {
         if (!key) return {"skip": true, "uri": uri};
         const dec = this.s(enc, key);
         let dataURL = await this.d(dec);
-        dataURL = ['data:image/jpeg;base64',dataURL.split(',') [1]].join(',');
+        dataURL = ['data:image/jpeg;base64', dataURL.split(',') [1]].join(',');
         return {"skip": false, "uri": dataURL};
     }
 }
