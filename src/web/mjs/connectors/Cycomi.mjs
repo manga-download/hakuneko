@@ -13,8 +13,7 @@ export default class CyComi extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const path = uri.pathname.split("/");
-        const id = path[path.length-1];
+        const id = uri.pathname.split("/").pop();
         const title = (await this.fetchDOM(request, 'h2.css-m40re5'))[0].textContent.trim();
         return new Manga(this, id, title);
     }
@@ -25,7 +24,7 @@ export default class CyComi extends Connector {
         const response = await this.fetchJSON(request, 'div.card-content > a.card');
         const mangaList = [];
         for(let page = 0; page < 8; page += 1) {
-            const mangas = response.data.serialization[""+page].titles.map(title => {
+            const mangas = response.data.serialization[page].titles.map(title => {
                 return {
                     id: title.titleId,
                     title: title.titleName
@@ -49,7 +48,7 @@ export default class CyComi extends Connector {
 
     async _getChaptersFromCursor(manga, cursor) {
         const params = new URLSearchParams({
-            limit: 20,
+            limit: 40,
             titleId: manga.id,
             sort: 2,
         });
@@ -69,7 +68,7 @@ export default class CyComi extends Connector {
         return [chapters, response.nextCursor];
     }
 
-    s(e, t) {
+    decrypt(e, t) {
         let n = (e=>{
                 let t = new Uint8Array(256);
                 t.forEach((e, n) =>{
@@ -98,15 +97,6 @@ export default class CyComi extends Connector {
         return l;
     }
 
-    d(e) {
-        return new Promise((t, n) =>{
-            let i = new FileReader;
-            i.addEventListener('error', n),
-            i.addEventListener('load', () =>t(i.result)),
-            i.readAsDataURL(new Blob([e]));
-        });
-    }
-
     async _getPages(chapter) {
         const uri = new URL("/api/chapter/page/list", this.url);
         const options = {
@@ -117,24 +107,24 @@ export default class CyComi extends Connector {
         };
         const request = new Request(uri, options);
         const response = await this.fetchJSON(request);
-        const pages = response.data.pages;
-        const promises = pages.filter(page => page.type == "image")
-            .map(page => this._getPage(page.image));
-        const results = await Promise.all(promises);
-        return results.filter(x => !x.skip).map(x => x.uri);
+        let pages = response.data.pages.filter(page => page.type == "image");
+        const r = new RegExp(/\/([0-9a-zA-Z]{32})\//);
+        pages = pages.filter(page=> r.test(page.image));
+        return pages.map(page => this.createConnectorURI(page.image));
     }
 
-    async _getPage(uri) {
-        const request = new Request(uri, this.requestOptions);
+    async _handleConnectorURI(payload) {
+        const request = new Request(payload, this.requestOptions);
         const response = await fetch(request);
         const data = await response.arrayBuffer();
         const enc = new Uint8Array(data);
-        const m = uri.match(/\/([0-9a-zA-Z]{32})\//);
-        const key = null === m || void 0 === m ? void 0 : m[1];
-        if (!key) return {"skip": true, "uri": uri};
-        const dec = this.s(enc, key);
-        let dataURL = await this.d(dec);
-        dataURL = ['data:image/jpeg;base64', dataURL.split(',') [1]].join(',');
-        return {"skip": false, "uri": dataURL};
+        const key = payload.match(/\/([0-9a-zA-Z]{32})\//)[1];
+        const buffer = {
+            mimeType : response.headers.get('content-type'),
+            data : this.decrypt(enc, key)
+        };
+        this._applyRealMime(buffer);
+        return buffer;
     }
+
 }
