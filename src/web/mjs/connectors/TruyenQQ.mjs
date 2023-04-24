@@ -7,7 +7,7 @@ export default class TruyenQQ extends Connector {
         super.id = 'truyenqq';
         super.label = 'TruyenQQ';
         this.tags = ['manga', 'webtoon', 'vietnamese'];
-        this.url = 'https://truyenqqvip.com';
+        this.url = 'https://truyenqqmoi.com';
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
