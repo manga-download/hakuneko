@@ -27,8 +27,8 @@ export default class Okru {
         const request = new Request(this._uri);
         const response = await Engine.Request.fetchUI(request, script, 10000);
         const data = JSON.parse(JSON.parse(response).flashvars.metadata);
-        let video = (data.videos.find(video => video.name == resolution));
-        (video) ? video = video.url : video = data.videos[0].url;
+        let video = data.videos.find(video => video.name == resolution);
+        video ? video = video.url : video = data.videos[0].url;
         return video;
     }
 }

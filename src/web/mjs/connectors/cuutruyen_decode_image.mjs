@@ -1,9 +1,6 @@
-import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
-const { BrowserWindow } = require('electron');
-const { ipcMain } = require('electron');
-
-function imageDecode(drmData) {
+const electron = require('electron');
+const { BrowserWindow } = electron;
+export function imageDecode(drmData) {
     let fastestSmallestTextEncoderDecoderJs =
     '\'use strict\';(function(r){function x(){}function y(){}var z=String.fromCharCode,v={}.toString,A=v.call(r.SharedArrayBuffer),B=v(),q=r.Uint8Array,t=q||Array,w=q?ArrayBuffer:t,C=w.isView||function(g){return g&&"length"in g},D=v.call(w.prototype);w=y.prototype;var E=r.TextEncoder,a=new (q?Uint16Array:t)(32);x.prototype.decode=function(g){if(!C(g)){var l=v.call(g);if(l!==D&&l!==A&&l!==B)throw TypeError("Failed to execute \'decode\' on \'TextDecoder\': The provided value is not of type \'(ArrayBuffer or ArrayBufferView)\'");g=q?new t(g):g||[]}for(var f=l="",b=0,c=g.length|0,u=c-32|0,e,d,h=0,p=0,m,k=0,n=-1;b<c;){for(e=b<=u?32:c-b|0;k<e;b=b+1|0,k=k+1|0){d=g[b]&255;switch(d>>4){case 15:m=g[b=b+1|0]&255;if(2!==m>>6||247<d){b=b-1|0;break}h=(d&7)<<6|m&63;p=5;d=256;case 14:m=g[b=b+1|0]&255,h<<=6,h|=(d&15)<<6|m&63,p=2===m>>6?p+4|0:24,d=d+256&768;case 13:case 12:m=g[b=b+1|0]&255,h<<=6,h|=(d&31)<<6|m&63,p=p+7|0,b<c&&2===m>>6&&h>>p&&1114112>h?(d=h,h=h-65536|0,0<=h&&(n=(h>>10)+55296|0,d=(h&1023)+56320|0,31>k?(a[k]=n,k=k+1|0,n=-1):(m=n,n=d,d=m))):(d>>=8,b=b-d-1|0,d=65533),h=p=0,e=b<=u?32:c-b|0;default:a[k]=d;continue;case 11:case 10:case 9:case 8:}a[k]=65533}f+=z(a[0],a[1],a[2],a[3],a[4],a[5],a[6],a[7],a[8],a[9],a[10],a[11],a[12],a[13],a[14],a[15],a[16],a[17],a[18],a[19],a[20],a[21],a[22],a[23],a[24],a[25],a[26],a[27],a[28],a[29],a[30],a[31]);32>k&&(f=f.slice(0,k-32|0));if(b<c){if(a[0]=n,k=~n>>>31,n=-1,f.length<l.length)continue}else-1!==n&&(f+=z(n));l+=f;f=""}return l};w.encode=function(g){g=void 0===g?"":""+g;var l=g.length|0,f=new t((l<<1)+8|0),b,c=0,u=!q;for(b=0;b<l;b=b+1|0,c=c+1|0){var e=g.charCodeAt(b)|0;if(127>=e)f[c]=e;else{if(2047>=e)f[c]=192|e>>6;else{a:{if(55296<=e)if(56319>=e){var d=g.charCodeAt(b=b+1|0)|0;if(56320<=d&&57343>=d){e=(e<<10)+d-56613888|0;if(65535<e){f[c]=240|e>>18;f[c=c+1|0]=128|e>>12&63;f[c=c+1|0]=128|e>>6&63;f[c=c+1|0]=128|e&63;continue}break a}e=65533}else 57343>=e&&(e=65533);!u&&b<<1<c&&b<<1<(c-7|0)&&(u=!0,d=new t(3*l),d.set(f),f=d)}f[c]=224|e>>12;f[c=c+1|0]=128|e>>6&63}f[c=c+1|0]=128|e&63}}return q?f.subarray(0,c):f.slice(0,c)};E||(r.TextDecoder=x,r.TextEncoder=y)})(""+void 0==typeof global?""+void 0==typeof self?this:self:global);';
     let cuudrmJs1 =
@@ -21,97 +18,26 @@ function imageDecode(drmData) {
     let cuudrmJs5 =
     '{if(eA=lA(r,e),(0|(R=b[h+8>>2]))==b[h>>2])l:{W=r=(W=m=W-16|0)-32|0,yA=m+8|0,P=0,R>>>0>(e=R+1|0)>>>0||(e=(V=(e=e>>>0<(V=(j=b[h>>2])<<1)>>>0?V:e)>>>0<=4?4:e)<<2,cA=(V>>>0<536870912)<<2,j?(K=b[h+4>>2],b[r+24>>2]=4,b[r+20>>2]=j<<2,b[r+16>>2]=K):b[r+24>>2]=0,BA(r,e,cA,r+16|0),e=b[r+4>>2],P=b[r+8>>2],b[r>>2]||(b[h>>2]=V,b[h+4>>2]=e,P=-2147483647)),b[yA+4>>2]=P,b[yA>>2]=e,W=r+32|0;C:{if(-2147483647!=(0|(r=b[m+12>>2]))){if(!r)break C;or(b[m+8>>2],r),o()}W=m+16|0;break l}DA(),o()}if(b[b[h+4>>2]+(R<<2)>>2]=eA,b[h+8>>2]=R+1,U(y,X),e=b[y+4>>2],!(r=b[y>>2]))break}W=y+16|0,b[A+8>>2]=b[T>>2],r=b[Z+20>>2],b[A>>2]=b[Z+16>>2],b[A+4>>2]=r}else b[A+8>>2]=0,b[A>>2]=0,b[A+4>>2]=4;if(W=Z+112|0,b[i+8>>2]=b[A+8>>2],r=b[A+4>>2],b[i>>2]=b[A>>2],b[i+4>>2]=r,i=i+12|0,Y=Y+1|0,(0|(nA=nA+8|0))==(0|gA))break}b[x>>2]=Y,W=A+176|0,W=J+16|0,b[(A=p+72|0)>>2]&&L(b[A+4>>2]),RA(p+56|0),RA(p+40|0),RA(LA),W=p+256|0;break n}break B}A=b[p+176>>2],b[p+88>>2]=b[p+172>>2],b[p+92>>2]=A,QA(1049152,45,p+88|0,1049044,1049208),o()}b[p+184>>2]=r,b[p+180>>2]=e,b[p+176>>2]=J,b[p+168>>2]=A,b[p+172>>2]=i,QA(1049240,51,p+168|0,1049060,1049292),o()}EA(1049e3,43,1049312),o()}er(1,0,1048780),o()}wA(nA,Y,1049224),o()}QA(1048836,55,p+248|0,1048892,1048984),o()}er(A,40,1059024),o()}er(Y,40,1059024),o()}wA(r,40,1059024),o()}wA(i,40,1059024),o()}if(!JA(b[Q+68>>2],UA,1049407,28)){e=b[Q+88>>2],A=b[Q+84>>2];break e}if(r=0|M(b[G>>2]),!(e=b[Q+88>>2]))break r;for(A=b[Q+84>>2],Y=g(e,12),NA=+(r>>>0),r=0;;){if((i=b[(h=(Z=A+r|0)+8|0)>>2])>>>0<=1)break i;if(W=i=W-16|0,J=b[(Z=Z+4|0)>>2],KA=+u[J+4>>2],D(b[_>>2],b[G>>2],0,+(qA>>>0),+NA,+KA,0,+u[J>>2],+NA,+KA),hA(i+8|0),J=b[i+12>>2],b[Q>>2]=b[i+8>>2],b[Q+4>>2]=J,W=i+16|0,b[Q>>2])break a;if((i=b[h>>2])>>>0<=1)break f;if(qA=b[b[Z>>2]+4>>2]+qA|0,(0|Y)==(0|(r=r+12|0)))break}break e;case 1:break k;default:break A}if((r=b[Q+52>>2])>>>0<36)break A;E(0|r);break A}ir(1049348,19,1049368),o()}ir(1049348,19,1049384),o()}wA(1,i,1049436),o()}b[Q+96>>2]=b[Q+4>>2],QA(1049076,43,Q+96|0,1049136,1049452),o()}wA(1,i,1049468),o()}if(e)for(r=g(e,12);b[A>>2]&&L(b[A+4>>2]),A=A+12|0,r=r-12|0;);}b[(A=Q+80|0)>>2]&&L(b[A+4>>2]),RA(Q- -64|0),(A=b[Q+60>>2])>>>0>=36&&E(0|A),A=0}(r=b[Q+44>>2])>>>0>=36&&E(0|r),(r=b[Q+40>>2])>>>0>=36&&E(0|r),A&&RA(v),W=Q+112|0,W=s+48|0},__wbindgen_malloc:function(A){if(!((A|=0)>>>0>2147483644)){if(!A)return 4;if(A=xA(A,(A>>>0<2147483645)<<2))return 0|A}o()},__wbindgen_realloc:function(A,r,e){return A|=0,e|=0,(r|=0)>>>0<=2147483644&&(A=jA(A,r,4,e))||o(),0|A},__wbindgen_exn_store:function(A){A|=0,b[265112]=A,f[1060444]=1}}}({"./cuudrm_bg.js":e}),B=u.memory,g=u.render_image,Q=u.__wbindgen_malloc,w=u.__wbindgen_realloc,s=u.__wbindgen_exn_store;const E=new Array(32).fill(void 0);let l=[];function C(A){return E[A]}E.push(void 0,null,!0,!1);let d=E.length;function I(A){const r=C(A);return function(A){A<36||(E[A]=d,d=A)}(A),r}function D(A){const r=typeof A;if("number"==r||"boolean"==r||null==A)return`${A}`;if("string"==r)return`"${A}"`;if("symbol"==r){const r=A.description;return null==r?"Symbol":`Symbol(${r})`}if("function"==r){const r=A.name;return"string"==typeof r&&r.length>0?`Function(${r})`:"Function"}if(Array.isArray(A)){const r=A.length;let e="[";r>0&&(e+=D(A[0]));for(let f=1;f<r;f++)e+=", "+D(A[f]);return e+="]",e}const e=/\\[object ([^\\]]+)\\]/.exec(toString.call(A));let f;if(!(e.length>1))return toString.call(A);if(f=e[1],"Object"==f)try{return"Object("+JSON.stringify(A)+")"}catch(A){return"Object"}return A instanceof Error?`${A.name}: ${A.message}\\n${A.stack}`:f}let M=0,v=null;function G(){return null!==v&&v.buffer===B.buffer||(v=new Uint8Array(B.buffer)),v}let _=new("undefined"==typeof TextEncoder?(0,module.require)("util").TextEncoder:TextEncoder)("utf-8");const Y="function"==typeof _.encodeInto?function(A,r){return _.encodeInto(A,r)}:function(A,r){const e=_.encode(A);return r.set(e),{read:A.length,written:e.length}};function h(A,r,e){if(void 0===e){const e=_.encode(A),f=r(e.length);return G().subarray(f,f+e.length).set(e),M=e.length,f}let f=A.length,a=r(f);const i=G();let b=0;for(;b<f;b++){const r=A.charCodeAt(b);if(r>127)break;i[a+b]=r}if(b!==f){0!==b&&(A=A.slice(b)),a=e(a,f,f=b+3*A.length);const r=G().subarray(a+b,a+f);b+=Y(A,r).written}return M=b,a}let Z=null;function y(){return null!==Z&&Z.buffer===B.buffer||(Z=new Int32Array(B.buffer)),Z}let F=new("undefined"==typeof TextDecoder?(0,module.require)("util").TextDecoder:TextDecoder)("utf-8",{ignoreBOM:!0,fatal:false});function J(A,r){return F.decode(G().subarray(A,A+r))}F.decode();let m=32;function W(A){if(1==m)throw new Error("out of js stack");return E[--m]=A,m}function N(A,r,e){try{l=[];var f=h(e,Q,w),a=M;g(W(A),W(r),f,a)}finally{E[m++]=void 0,E[m++]=void 0}return l}function R(A){d===E.length&&E.push(E.length+1);const r=d;return d=E[r],E[r]=A,r}function z(A,r){try{return A.apply(this,r)}catch(A){s(R(A))}}function X(A){I(A)}function L(){return z((function(A,r,e,f,a,i,b,k,n,c){l.push([e,f,a,i,b,k,n,c])}),arguments)}function H(A){return 1115}function U(A){return R(!0)}function j(){return z((function(){return R({})}),arguments)}function V(A,r,e){return z((function(){return R({})}),arguments)}function O(A,r,e){var f=h("unionize-assume-swarthy-polo",Q,w),a=M;y()[A/4+1]=a,y()[A/4+0]=f}function x(){return z((function(){return R({})}),arguments)}function p(){return z((function(){return R({})}),arguments)}function T(){return z((function(){return R({})}),arguments)}function S(){return z((function(){return R({})}),arguments)}function P(A){return R(!1)}function K(){return R(new Error)}function q(A,r){var e=h(C(r).stack,Q,w),f=M;y()[A/4+1]=f,y()[A/4+0]=e}function $(A){return R(C(A))}function AA(A,r){try{console.error(J(A,r))}finally{(void 0)(A,r)}}function rA(A,r){var e=h(D(C(r)),Q,w),f=M;y()[A/4+1]=f,y()[A/4+0]=e}function eA(A,r){throw new Error(J(A,r))}return A.__wbg_document_1c64944725c0d81d=j,A.__wbg_drawImage_6d85246495d68bc3=L,A.__wbg_error_09919627ac0992f5=AA,A.__wbg_globalThis_3f735a5746d41fbd=T,A.__wbg_global_1bc0b39582740e95=S,A.__wbg_innerHTML_f2c91e18a4bf9c97=O,A.__wbg_instanceof_Window_c4b70662a0d2c5ec=U,A.__wbg_new_693216e109162396=K,A.__wbg_querySelector_b92a6c73bcfe671b=V,A.__wbg_self_c6fbdfc2918d5e58=x,A.__wbg_stack_0ddaca5d1abfb52f=q,A.__wbg_width_dd6eae8d0018c715=H,A.__wbg_window_baec038b5ab35c54=p,A.__wbindgen_debug_string=rA,A.__wbindgen_is_undefined=P,A.__wbindgen_object_clone_ref=$,A.__wbindgen_object_drop_ref=X,A.__wbindgen_throw=eA,A.render_image=N,Object.defineProperty(A,"__esModule",{value:!0}),A}({});';
 
-    const browser = Engine.newBrowser();
-    ipcMain.on('execute-js', (code) => {
-        browser.webContents.executeJavaScript(code);
+    let browser = BrowserWindow.create();
+
+    browser.webContents.on('did-finish-load', function () {
+        browser.webContents.executeJavaScript(
+            fastestSmallestTextEncoderDecoderJs +
+        cuudrmJs1 +
+        cuudrmJs2 +
+        cuudrmJs3 +
+        cuudrmJs4 +
+        cuudrmJs5 +
+        "let decrypt=[],drm=JSON.parse('" +
+        drmData +
+        "');drm.forEach(r=>{decrypt.push(cuudrm.render_image(void 0,void 0,r))}),document.body.innerHTML=JSON.stringify(decrypt);",
+            1000
+        );
     });
-    ipcMain.send('execute-js', `${fastestSmallestTextEncoderDecoderJs}  ${cuudrmJs1}  ${cuudrmJs2}  ${cuudrmJs3}  ${cuudrmJs4}  ${cuudrmJs5}` + "let decrypt=[],drm=JSON.parse('" + drmData + + "');drm.forEach(r=>{decrypt.push(cuudrm.render_image(void 0,void 0,r))}),document.body.innerHTML=JSON.stringify(decrypt);");
+
+    browser.loadFile('about:blank');
+
     let doc = browser.webContents.generatePDF();
     browser.close();
     return doc.toString();
-}
-
-export default class Cuutruyen extends Connector {
-
-    constructor() {
-        super();
-        super.id = 'cuutruyen';
-        super.label = 'Cuutruyen';
-        this.tags = [ 'manga', 'vietnamese' ];
-        this.url = 'https://cuutruyen.net';
-        this.api = 'https://kakarot.cuutruyen.net';
-    }
-    async _getMangaFromURI(uri) {
-        const mangaid = uri.href.match(/\/mangas\/([0-9]+)/)[1];
-        const req = new URL('/api/v1/mangas/'+mangaid, this.api);
-        const request = new Request(req, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return new Manga(this, mangaid, data.data.attributes.name.trim());
-    }
-    async _getMangas() {
-        let mangaList = [];
-        for (let page = 1, run = true; run; page++) {
-            const mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
-        }
-        return mangaList;
-    }
-    async _getMangasFromPage(page) {
-        const uri = new URL('/api/v1/mangas?page[size]=50&page[number]='+page, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return data.data.map(element => {
-            return {
-                id: element.id,
-                title: element.attributes.name.trim()
-            };
-        });
-    }
-    async _getChapters(manga) {
-        const uri = new URL('/api/v1/chapter_listings/'+manga.id, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        const chapters = JSON.parse(data.data.attributes.chapters);
-        return chapters.map(element => {
-            return {
-                id: element.id,
-                title: 'Chapter '+ element.number + ' '+ element.name.trim()
-            };
-        });
-    }
-
-    // async _getPages(chapter) {
-    //     const uri = new URL('/api/v2/chapters/'+chapter.id, this.api);
-    //     const request = new Request(uri, this.requestOptions);
-    //     const data = await this.fetchJSON(request);
-    //     console.log(data);
-    //     const pages = JSON.parse(data.data.attributes.pages);
-    //     return pages.map(image => this.getAbsolutePath(image.imageUrl, request.url));
-    // }
-    async _getPages(chapter) {
-        const uri = new URL('/api/v2/chapters/'+chapter.id, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        let page = data.data.pages;
-        console.log(data);
-        let drmData = [];
-        page.forEach(item => {
-            drmData.push(item.drm_data.replace(/\n/g, "\\n"));
-        });
-        console.log(drmData);
-        const decryptedData = JSON.parse(imageDecode(JSON.stringify(drmData)));
-        const pages = JSON.parse(data.data.attributes.pages);
-        return pages.map((image, index) => {
-            return {
-                url: this.getAbsolutePath(image.imageUrl, request.url),
-                script: `
-                    let canvas = document.createElement('canvas');
-                    canvas.width = ${image.width};
-                    canvas.height = ${image.height};
-                    let ctx = canvas.getContext('2d');
-                    ${decryptedData[index].map(part => {
-        return `ctx.drawImage(image, ${part[0]}, ${part[1]}, ${part[3]}, ${part[7]}, ${part[4]}, ${part[5]}, ${part[6]}, ${part[8]});`;}).join('\n')} return canvas.toDataURL('image/png');`};
-        });
-    }
-
 }
