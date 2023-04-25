@@ -11,7 +11,6 @@ export default class S2Manga extends WordPressMadara {
     }
 
     _createMangaRequest(page) {
-        const request = new Request(new URL(`/manga/page/${page}/`, this.url), this.requestOptions);
-        return request;
+        return new Request(new URL(`/manga/page/${page}/`, this.url), this.requestOptions);
     }
 }
