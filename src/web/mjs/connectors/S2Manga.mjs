@@ -9,4 +9,9 @@ export default class S2Manga extends WordPressMadara {
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://s2manga.com';
     }
+
+    _createMangaRequest(page) {
+        const request = new Request(new URL(`/manga/page/${page}/`, this.url), this.requestOptions);
+        return request;
+    }
 }
