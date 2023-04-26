@@ -74,7 +74,7 @@ export default class YoungChampion extends Connector {
     }
 
     async _fetchCoordInfo(viewer) {
-    	  //first request get page count
+        //first request get page count
         let uri = new URL('/book/contentsInfo', this.url);
         uri.searchParams.set('comici-viewer-id', viewer.getAttribute('comici-viewer-id'));
         uri.searchParams.set('user-id', viewer.dataset['memberJwt']);
