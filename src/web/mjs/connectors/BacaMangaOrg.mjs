@@ -1,6 +1,6 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class MangaTale extends WordPressMangastream {
+export default class BacaMangaOrg extends WordPressMangastream {
 
     constructor() {
         super();
