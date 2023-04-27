@@ -34,9 +34,9 @@ export default class MangaPlanet extends SpeedBinb {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/browse?page=' + page, this.url);
+        const uri = new URL('/browse/title?ttlpage=' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, '.contents.comics .linkbox');
+        const data = await this.fetchDOM(request, 'div#Title .row.book-list');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a').pathname, this.url),
