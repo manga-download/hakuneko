@@ -12,6 +12,10 @@ export default class LeviatanScans extends WordPressMadara {
         this.requestOptions.headers.set('x-referer', `${this.url}/`);
     }
 
+    _createMangaRequest(page) {
+        return new Request(new URL(`/ranking/page/${page}/`, this.url), this.requestOptions);
+    }
+
     async _handleConnectorURI(payload) {
         let request = new Request(payload.url, this.requestOptions);
         request.headers.set('x-referer', payload.referer);
