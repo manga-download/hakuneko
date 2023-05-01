@@ -10,4 +10,9 @@ export default class NightScans extends WordPressMangastream {
         this.url = 'https://nightscans.org';
         this.path = '/manga/list-mode/';
     }
+
+    async _getPages(chapter) {
+        return (await super.getPages(chapter)).map(picture => this.createConnectorURI(picture));
+    }
+
 }
