@@ -1,6 +1,5 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-import Cookie from '../engine/Cookie.mjs';
 import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 const { remote } = require('electron');
 
@@ -141,10 +140,16 @@ export default class MangaHub extends Connector {
         request.headers.set('Upgrade-Insecure-Requests', 1);
         request.headers.delete('x-origin');
         request.headers.delete('x-mhub-access');
-        const response = await fetch(request);
-        const cookie = new Cookie(response.headers.get('x-set-cookie'));
+        await fetch(request);
 
-        if (mangaSlug && chapterNumber && !cookie.get('mhub_access')) {
+        let mhub_access = await remote.session.defaultSession.cookies.get({
+            url: this.url,
+            name: 'mhub_access',
+            path: '/',
+        });
+        mhub_access = mhub_access.shift();
+
+        if (mangaSlug && chapterNumber && !mhub_access) {
             const oldKey = this.requestOptions.headers.get('x-mhub-access');
             await this._fetchApiKey(null, null);
             if (!this.requestOptions.headers.get('x-mhub-access')) {
@@ -152,7 +157,7 @@ export default class MangaHub extends Connector {
                 throw new Error(`${this.label}: Can't update the API key!`);
             }
         } else {
-            this.requestOptions.headers.set('x-mhub-access', !cookie.get('mhub_access') ? '' : cookie.get('mhub_access'));
+            this.requestOptions.headers.set('x-mhub-access', !mhub_access ? '' : mhub_access.value);
         }
     }
 
