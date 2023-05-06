@@ -6,7 +6,7 @@ export default class SheaManga extends WordPressMangastream {
         super();
         super.id = 'sheamanga';
         super.label = 'Shea Manga';
-        this.tags = [ 'webtoon', 'indonesian' ];
+        this.tags = [ 'webtoon', 'hentai', 'indonesian' ];
         this.url = 'http://62.171.176.78/';
         this.path = '/manga/list-mode/';
     }
