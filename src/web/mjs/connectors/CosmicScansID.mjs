@@ -6,7 +6,7 @@ export default class CosmicScansID extends WordPressMangastream {
         super();
         super.id = 'cosmicscansid';
         super.label = 'Cosmic Scans ID';
-        this.tags = ['manga', 'indonesia', 'webtoon', 'scanlation'];
+        this.tags = ['manga', 'indonesian', 'webtoon', 'scanlation'];
         this.url = 'https://cosmicscans.id';
         this.path = '/manga/list-mode';
     }

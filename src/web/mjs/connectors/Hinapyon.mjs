@@ -6,8 +6,8 @@ export default class Hinapyon extends WordPressMangastream {
         super();
         super.id = 'hinapyon';
         super.label = 'HinaPyon';
-        this.tags = [ 'hentai', 'indonesia' ];
-        this.url = 'https://hinapyon.fun';
+        this.tags = [ 'hentai', 'indonesian' ];
+        this.url = 'https://hinapyon.top';
         this.path = '/list-doujin/?list';
 
         this.queryMangas = 'div#container div.listpst ul li a';
