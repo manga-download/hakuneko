@@ -12,7 +12,7 @@ export default class NightScans extends WordPressMangastream {
     }
 
     async _getPages(chapter) {
-        return (await super.getPages(chapter)).map(picture => this.createConnectorURI(picture));
+        return (await super._getPages(chapter)).map(picture => this.createConnectorURI(picture));
     }
 
 }
