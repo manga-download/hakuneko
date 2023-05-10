@@ -31,7 +31,7 @@ export default class VizShonenJump extends Connector {
             isLoggedIn: /user_id\s*=\s*[1-9]\d*/.test(data),
             isAdult: /adult\s*=\s*true/.test(data),
             isMember: /is_sj_subscriber\s*=\s*true/.test(data),
-			isVizManga: /is_vm_subscriber\s*=\s*true/.test(data)
+            isVizManga: /is_vm_subscriber\s*=\s*true/.test(data)
         };
     }
 
