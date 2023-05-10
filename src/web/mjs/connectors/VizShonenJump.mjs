@@ -71,8 +71,27 @@ export default class VizShonenJump extends Connector {
         });
     }
 
+    async _getMangasAvailibleByVizMangaChapters() {
+        const request = new Request(new URL('/read/vizmanga/section/free-chapters', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request);
+
+        if ( !data.innerText.includes('Latest free chapters') ) {
+            alert('This website is geolocked. It can only be accessed from the USA.\nYou may use MANGA Plus instead.', this.label, 'info');
+            return;
+        }
+
+        data = [...data.querySelectorAll('div.o_sort_container div.o_sortable a.o_chapters-link')];
+
+        return data.map(manga => {
+            return {
+                id: manga.pathname,
+                title: manga.innerText.trim()
+            };
+        });
+    }
+
     async _getMangas() {
-        return [ ...await this._getMangasAvailibleByVolumes(), ...await this._getMangasAvailibleByChapters() ];
+        return [ ...await this._getMangasAvailibleByVolumes(), ...await this._getMangasAvailibleByChapters(), ...await this._getMangasAvailibleByVizMangaChapters() ];
     }
 
     async _getMangaChapters(manga) {
@@ -157,7 +176,11 @@ export default class VizShonenJump extends Connector {
     }
 
     async _getChapters(manga) {
+		console.log(manga.id);
         if (manga.id.startsWith("/shonenjump/chapters")) {
+            return await this._getMangaChapters(manga);
+        }
+        if (manga.id.startsWith("/vizmanga/chapters")) {
             return await this._getMangaChapters(manga);
         }
         if (manga.id.startsWith("/account/library")) {
@@ -179,6 +202,9 @@ export default class VizShonenJump extends Connector {
             pageCount = parseInt([...responseData.matchAll(/<div\s+class="mar-b-md">\s*<strong>\s*Length\s*<\/strong>\s+(\d+)\s+pages\s*<\/div>/g)][0][1]);
             mangaID = parseInt([...responseData.matchAll(/var\s+mangaCommonId\s*=\s*(\d+)/g)][0][1]);
         } else if (chapter.id.startsWith("/shonenjump")) {
+            pageCount = parseInt([...responseData.matchAll(/var\s+pages\s*=\s*(\d+)/g)][0][1]);
+            mangaID = chapter.id.match(/chapter\/(\d+)/)[1];
+        } else if (chapter.id.startsWith("/vizmanga")) {
             pageCount = parseInt([...responseData.matchAll(/var\s+pages\s*=\s*(\d+)/g)][0][1]);
             mangaID = chapter.id.match(/chapter\/(\d+)/)[1];
         }
