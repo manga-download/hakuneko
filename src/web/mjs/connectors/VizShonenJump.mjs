@@ -178,7 +178,6 @@ export default class VizShonenJump extends Connector {
 
     async _getVizMangaChapters(manga) {
         let auth = await this._getUserInfo();
-		console.log(auth);
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request);
 
