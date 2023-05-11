@@ -52,7 +52,7 @@ export default class YugenMangas extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const jsonObj = (await this.getNextData(uri)).props.pageProps;
+        const jsonObj = (await this.getNextData(request)).props.pageProps;
         return jsonObj.series.chapters.map(element => {
             return {
                 id: JSON.stringify({slug : element.chapter_slug, id : element.id}),
