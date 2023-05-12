@@ -132,6 +132,7 @@ export default class MangaHub extends Connector {
         } else {
             path = `${this.url}/`;
         }
+
         const uri = new URL(path);
         uri.searchParams.append('reloadKey', '1');
         const request = new Request(uri, this.requestOptions);
@@ -140,12 +141,14 @@ export default class MangaHub extends Connector {
         request.headers.set('Upgrade-Insecure-Requests', 1);
         request.headers.delete('x-origin');
         request.headers.delete('x-mhub-access');
+
+        await remote.session.defaultSession.cookies.remove(this.url, 'mhub_access');
         await fetch(request);
 
         let mhub_access = await remote.session.defaultSession.cookies.get({
             url: this.url,
             name: 'mhub_access',
-            path: '/',
+            path: '/'
         });
         mhub_access = mhub_access.shift();
 
