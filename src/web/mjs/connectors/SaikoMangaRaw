@@ -1,0 +1,12 @@
+import WordPressMadara from './templates/WordPressMadara.mjs';
+
+export default class SaikoMangaRaw extends WordPressMadara {
+
+    constructor() {
+        super();
+        super.id = 'saikomangaraw';
+        super.label = 'SaikoMangaRaw';
+        this.tags = [ 'webtoon', 'japanế' ];
+        this.url = 'https://saikomangaraw.com';
+    }
+}
