@@ -5,9 +5,9 @@ export default class KomikLab extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'komiklab';
-        super.label = 'KomikLab';
+        super.label = 'Soul Scans';
         this.tags = ['manga', 'indonesian'];
-        this.url = 'https://komiklab.net';
+        this.url = 'https://soulscans.my.id';
         this.path = '/manga/list-mode/';
     }
 }
