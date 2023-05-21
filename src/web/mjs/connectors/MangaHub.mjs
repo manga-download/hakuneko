@@ -176,22 +176,34 @@ export default class MangaHub extends Connector {
     }
 
     async fetchGraphQL(request, operationName, query, variables) {
-        try {
-            return await super.fetchGraphQL(request, operationName, query, variables);
-        } catch(error) {
-            if (error.message.includes(' errors: ') && /(api)?\s*rate\s*limit\s*(excessed)?|api\s*key\s*(invalid)?/i.test(error.message)) {
-                let mangaSlug = query.match(/slug:\s*"(.+)"/);
-                if (mangaSlug) {
-                    mangaSlug = mangaSlug[1];
-                }
-                let chapterNumber = query.match(/number:\s*(\d+)/);
-                if (chapterNumber) {
-                    chapterNumber = chapterNumber[1];
-                }
-                await this._fetchApiKey(mangaSlug, chapterNumber);
+        const initReloadKeyValue = this.useReloadKeyParam;
+
+        for (let i = 0; i < 3; i++) {
+            try {
                 return await super.fetchGraphQL(request, operationName, query, variables);
-            } else {
-                throw new Error(error.message);
+            } catch(error) {
+                if (error.message.includes(' errors: ') && /(api)?\s*rate\s*limit\s*(excessed)?|api\s*key\s*(invalid)?/i.test(error.message)) {
+                    // In case they will give different expired API keys in cookies
+                    if (i > 0 && initReloadKeyValue === this.useReloadKeyParam) {
+                        this.useReloadKeyParam = !this.useReloadKeyParam;
+                    } else if (i > 0) {
+                        // We tried to update with and without 'reloadKey' parameter
+                        // Therefore, we're throwing an error!
+                        throw new Error(error.message);
+                    }
+
+                    let mangaSlug = query.match(/slug:\s*"(.+)"/);
+                    if (mangaSlug) {
+                        mangaSlug = mangaSlug[1];
+                    }
+                    let chapterNumber = query.match(/number:\s*(\d+)/);
+                    if (chapterNumber) {
+                        chapterNumber = chapterNumber[1];
+                    }
+                    await this._fetchApiKey(mangaSlug, chapterNumber);
+                } else {
+                    throw new Error(error.message);
+                }
             }
         }
     }
