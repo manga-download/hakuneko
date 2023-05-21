@@ -18,6 +18,8 @@ export default class MangaHub extends Connector {
         this.requestOptions.headers.set('x-origin', this.url);
         this.requestOptions.headers.set('x-referer', `${this.url}/`);
         this.requestOptions.headers.set('Accept-Language', 'en-US,en;q=0.9');
+
+        this.useReloadKeyParam = false;
     }
 
     async _initializeConnector() {
@@ -48,7 +50,7 @@ export default class MangaHub extends Connector {
                 }
             }
         }`;
-        const data = await this._fetchGraphQLWithoutRateLimit(this.apiURL, undefined, gql, undefined);
+        const data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         return data.search.rows.map(manga => {
             return {
                 id: manga.slug, // manga.id
@@ -65,7 +67,7 @@ export default class MangaHub extends Connector {
                 }
             }
         }`;
-        const data = await this._fetchGraphQLWithoutRateLimit(this.apiURL, undefined, gql, undefined);
+        const data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         return data.manga.chapters.map(chapter => {
             const title = `Ch. ${chapter.number} - ${chapter.title}`;
             return {
@@ -82,7 +84,7 @@ export default class MangaHub extends Connector {
                 pages
             }
         }`;
-        let data = await this._fetchGraphQLWithoutRateLimit(this.apiURL, undefined, gql, undefined);
+        let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
         data = JSON.parse(data.chapter.pages);
         return data.i.map(page => this.createConnectorURI(new URL(data.p + page, this.cdnURL).href));
     }
@@ -123,7 +125,17 @@ export default class MangaHub extends Connector {
         await remote.session.defaultSession.cookies.set(recently);
     }
 
-    async _fetchApiKey(mangaSlug, chapterNumber) {
+    async _getCookieValue(name) {
+        let cookie = await remote.session.defaultSession.cookies.get({
+            url: this.url,
+            name: name,
+            path: '/'
+        });
+        cookie = cookie.shift();
+        return !cookie ? null : cookie.value;
+    }
+
+    async _fetchApiKey(mangaSlug, chapterNumber, stop = false) {
         this.requestOptions.headers.set('x-user-agent', HeaderGenerator.randomUA());
         let path = '';
         if (mangaSlug && chapterNumber) {
@@ -134,7 +146,8 @@ export default class MangaHub extends Connector {
         }
 
         const uri = new URL(path);
-        uri.searchParams.append('reloadKey', '1');
+        if (this.useReloadKeyParam)
+            uri.searchParams.append('reloadKey', '1');
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-sec-fetch-dest', 'document');
         request.headers.set('x-sec-fetch-mode', 'navigate');
@@ -142,45 +155,55 @@ export default class MangaHub extends Connector {
         request.headers.delete('x-origin');
         request.headers.delete('x-mhub-access');
 
+        const oldMhubAccess = await this._getCookieValue('mhub_access');
+
         await remote.session.defaultSession.cookies.remove(this.url, 'mhub_access');
         await fetch(request);
 
-        let mhub_access = await remote.session.defaultSession.cookies.get({
-            url: this.url,
-            name: 'mhub_access',
-            path: '/'
-        });
-        mhub_access = mhub_access.shift();
+        const mhubAccess = await this._getCookieValue('mhub_access');
 
-        if (mangaSlug && chapterNumber && !mhub_access) {
+        if (!stop && (!mhubAccess || oldMhubAccess === mhubAccess)) {
             const oldKey = this.requestOptions.headers.get('x-mhub-access');
-            await this._fetchApiKey(null, null);
+            this.useReloadKeyParam = !this.useReloadKeyParam;
+            await this._fetchApiKey(null, null, true);
             if (!this.requestOptions.headers.get('x-mhub-access')) {
                 this.requestOptions.headers.set('x-mhub-access', oldKey);
                 throw new Error(`${this.label}: Can't update the API key!`);
             }
         } else {
-            this.requestOptions.headers.set('x-mhub-access', !mhub_access ? '' : mhub_access.value);
+            this.requestOptions.headers.set('x-mhub-access', mhubAccess);
         }
     }
 
-    async _fetchGraphQLWithoutRateLimit(request, operationName, query, variables) {
-        try {
-            return await this.fetchGraphQL(request, operationName, query, variables);
-        } catch(error) {
-            if (error.message.includes(' errors: ') && /(api)?\s*rate\s*limit\s*(excessed)?|api\s*key\s*(invalid)?/i.test(error.message)) {
-                let mangaSlug = query.match(/slug:\s*"(.+)"/);
-                if (mangaSlug) {
-                    mangaSlug = mangaSlug[1];
+    async fetchGraphQL(request, operationName, query, variables) {
+        const initReloadKeyValue = this.useReloadKeyParam;
+
+        for (let i = 0; i < 3; i++) {
+            try {
+                return await super.fetchGraphQL(request, operationName, query, variables);
+            } catch(error) {
+                if (error.message.includes(' errors: ') && /(api)?\s*rate\s*limit\s*(excessed)?|api\s*key\s*(invalid)?/i.test(error.message)) {
+                    // In case they will give different expired API keys in cookies
+                    if (i > 0 && initReloadKeyValue === this.useReloadKeyParam) {
+                        this.useReloadKeyParam = !this.useReloadKeyParam;
+                    } else if (i > 0) {
+                        // We tried to update with and without 'reloadKey' parameter
+                        // Therefore, we're throwing an error!
+                        throw new Error(error.message);
+                    }
+
+                    let mangaSlug = query.match(/slug:\s*"(.+)"/);
+                    if (mangaSlug) {
+                        mangaSlug = mangaSlug[1];
+                    }
+                    let chapterNumber = query.match(/number:\s*(\d+)/);
+                    if (chapterNumber) {
+                        chapterNumber = chapterNumber[1];
+                    }
+                    await this._fetchApiKey(mangaSlug, chapterNumber);
+                } else {
+                    throw new Error(error.message);
                 }
-                let chapterNumber = query.match(/number:\s*(\d+)/);
-                if (chapterNumber) {
-                    chapterNumber = chapterNumber[1];
-                }
-                await this._fetchApiKey(mangaSlug, chapterNumber);
-                return await this.fetchGraphQL(request, operationName, query, variables);
-            } else {
-                throw new Error(error.message);
             }
         }
     }
