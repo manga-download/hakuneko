@@ -42,4 +42,9 @@ export default class ComicBrise extends SpeedBinb {
                 };
             });
     }
+    _getPageList_v016061( imageConfigurtions, baseURL ) {
+        baseURL += baseURL.endsWith('/') ? '' : '/';
+        let pageLinks = imageConfigurtions.map( element => this.createConnectorURI( this.getAbsolutePath( element.dataset.ptimg, baseURL ) ) );
+        return Promise.resolve( pageLinks );
+    }
 }

@@ -56,26 +56,19 @@ export default class AllHentai extends Connector {
     }
 
     async _getPages(chapter) {
-        //check if person is connected
-        let uri = new URL(this.url);
-        let request = new Request( uri, this.requestOptions );
-        let token = await Engine.Request.fetchUI( request,
-            `new Promise( resolve =>
-                 resolve(document.cookie) 
-          )`
-        );
-
-        token = token.match(/gwt=([\S]+)/);
-        if(!token) throw new Error('You must be logged to view chapters pages !');
-
-        let script = `new Promise(resolve => {
+        const script = `new Promise(resolve => {
                 resolve(rm_h.pics.map(picture => picture.url));
         });`;
 
-        uri = new URL(chapter.id, this.url);
-        request = new Request(uri, this.requestOptions);
-        const data = await Engine.Request.fetchUI( request, script);
-        return data.map(element => this.getAbsolutePath(element, this.url));
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        let data = [];
+        try {
+            data = await Engine.Request.fetchUI( request, script);
+            return data.map(element => this.getAbsolutePath(element, this.url));
+        } catch (error) {
+            throw new Error('No pictures found, make sure you are logged to the website !');
+        }
 
     }
 

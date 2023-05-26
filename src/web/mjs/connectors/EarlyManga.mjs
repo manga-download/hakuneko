@@ -27,26 +27,20 @@ export default class EarlyManga extends Connector {
             };
         });
     }
+
     async _getChapters(manga) {
-        let chapterList = [];
         const mangaid = manga.id.match(/\/manga\/(\S+)/)[1];
-        for(let page = 1, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPages(page, mangaid);
-            chapters.length ? chapterList.push(...chapters) : run = false;
-        }
-        return chapterList;
-    }
-    async _getChaptersFromPages(page, mangaid) {
-        const uri = new URL('/api/manga/'+mangaid+'/chapterlist?page='+page, this.url);
+        const uri = new URL('/api/manga/'+mangaid+'/chapterlist', this.url);
         const request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        return data.data.map(item => {
+        const data = await this.fetchJSON(request);
+        return data.map(item => {
             return {
                 id: '/manga/' + mangaid + '/chapter-'+item.slug,
                 title: 'Chapter '+item.chapter_number
             };
         });
     }
+
     async _getPages(chapter) {
         const uri = new URL('/api'+chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);

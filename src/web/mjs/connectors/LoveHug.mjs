@@ -8,7 +8,7 @@ export default class WeLoveManga extends FlatManga {
         super.id = 'lovehug';
         super.label = 'WeLoveManga';
         this.tags = [ 'manga', 'hentai', 'raw', 'japanese' ];
-        this.url = 'https://welovemanga.net';
+        this.url = 'https://welovemanga.one';
         this.path = '/manga-list.html';
         this.requestOptions.headers.set('x-referer', this.url);
 

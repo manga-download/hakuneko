@@ -62,7 +62,7 @@ export default class Ganma extends Connector {
             .map((chapter, index) => {
                 return {
                     id: chapter.id,
-                    title: ((chapter.number || index + 1) + ': 【' + chapter.title + '】 ' + chapter.subtitle).trim()
+                    title: ((chapter.number || index + 1) + ': 【' + chapter.title + '】 ' + (chapter.subtitle || "")).trim()
                 };
             });
     }

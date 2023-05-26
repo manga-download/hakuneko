@@ -15,7 +15,7 @@ export default class Dm5 extends Connector {
         this.requestOptions.headers.set('x-cookie', 'isAdult=1');
 
         this.queryMangas = 'div.box-body ul li div.mh-item div.mh-item-detali h2.title a';
-        this.queryChapters = 'div#chapterlistload ul#detail-list-select-1 li a';
+        this.queryChapters = 'div#chapterlistload ul[id^="detail-list-select-"] li a';
         this.queryMangaTitle = 'div.banner_detail_form div.info p.title';
     }
 
@@ -48,7 +48,7 @@ export default class Dm5 extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.replace(/（[0-9]+P）/gim, '').replace(manga.title, '').trim()
+                title: (element.text || element.title ).replace(/（[0-9]+P）/gim, '').replace(manga.title, '').trim()
             };
         });
     }
@@ -90,6 +90,7 @@ export default class Dm5 extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitle);
         const id = uri.pathname;
+        data[0].querySelectorAll('span').forEach((elem) => elem.remove());
         const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
