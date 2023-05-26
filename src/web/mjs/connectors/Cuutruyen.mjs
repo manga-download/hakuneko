@@ -119,25 +119,23 @@ export default class Cuutruyen extends Connector {
                 JSON.parse(drm).forEach((part) => {
                     let sx = part[0];
                     let sy = part[1];
-                    let sWidth = part[2];
                     let sHeight = part[3];
                     let dx = part[4];
                     let dy = part[5];
-                    let dWidth = part[6];
                     let dHeight = part[7];
                     ctx.drawImage(
                         bitmap,
                         sx,
                         sy,
-                        sWidth,
+                        imgWidth,
                         sHeight,
                         dx,
                         dy,
-                        dWidth,
+                        imgWidth,
                         dHeight
                     );
                 });
-                return canvas.toDataURL('image/jpeg', 1.0);
+                return canvas.toDataURL('image/jpg', 1.0);
             }
             return null;
         }
