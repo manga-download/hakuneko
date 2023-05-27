@@ -9,6 +9,7 @@ export default class BlogTruyen extends Connector {
         super.label = 'BlogTruyen';
         this.tags = [ 'manga', 'webtoon', 'vietnamese' ];
         this.url = 'https://blogtruyen.vn';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
@@ -32,11 +33,12 @@ export default class BlogTruyen extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL('/ajax/Search/AjaxLoadListManga?key=tatca&orderBy=1&p=4', this.url);
+        let uri = new URL('/ajax/Search/AjaxLoadListManga', this.url);
         uri.searchParams.set('key', 'tatca'); // show all
         uri.searchParams.set('orderBy', 1); // order by title
         uri.searchParams.set('p', page);
         let request = new Request(uri, this.requestOptions);
+        request.headers.set('X-Requested-With', 'XMLHttpRequest');
         let data = await this.fetchDOM(request, 'div.list p span.tiptip a', 3);
         return data.map(element => {
             return {
