@@ -82,8 +82,7 @@ export default class Cuutruyen extends Connector {
         canvas.width = imgWidth;
         canvas.height = imgHeight;
         const context = canvas.getContext('2d');
-        const tranformationArray = scrambleArray;
-        tranformationArray.forEach(tranformationArray =>{
+        scrambleArray.forEach(tranformationArray =>{
             let sx = tranformationArray[0];
             let sy = tranformationArray[1];
             let sHeight = tranformationArray[3];
