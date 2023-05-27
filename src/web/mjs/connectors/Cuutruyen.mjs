@@ -71,12 +71,11 @@ export default class Cuutruyen extends Connector {
         const res = await fetch(request);
         const blob = await res.blob();
         const image = await createImageBitmap(blob);
-        console.log(image);
         const canvas = this._descramble(image, this._decodeScrambleString(payload.scrambleString));
         const blobFinally = await this._canvasToBlob(canvas);
         return this._blobToBuffer(blobFinally);
     }
-    async _descramble(image, scrambleArray) {
+    _descramble(image, scrambleArray) {
         const imgWidth = image.width;
         const imgHeight = image.height;
         let canvas = document.createElement('canvas');
@@ -84,14 +83,15 @@ export default class Cuutruyen extends Connector {
         canvas.height = imgHeight;
         const context = canvas.getContext('2d');
         const tranformationArray = scrambleArray;
-        let sx = tranformationArray[0];
-        let sy = tranformationArray[1];
-        let sHeight = tranformationArray[3];
-        let dx = tranformationArray[4];
-        let dy = tranformationArray[5];
-        let dHeight = tranformationArray[7];
-        context.drawImage(image, sx, sy, imgWidth, sHeight, dx, dy, imgWidth, dHeight);
-        console.log(context);
+        tranformationArray.forEach(tranformationArray =>{
+            let sx = tranformationArray[0];
+            let sy = tranformationArray[1];
+            let sHeight = tranformationArray[3];
+            let dx = tranformationArray[4];
+            let dy = tranformationArray[5];
+            let dHeight = tranformationArray[7];
+            context.drawImage(image, sx, sy, imgWidth, sHeight, dx, dy, imgWidth, dHeight);
+        });
         return canvas;
     }
     _canvasToBlob(canvas) {
