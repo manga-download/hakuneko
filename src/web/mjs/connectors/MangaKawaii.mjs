@@ -6,22 +6,32 @@ export default class MangaKawaii extends MangaReaderCMS {
         super();
         super.id = 'mangakawaii';
         super.label = 'MangaKawaii';
-        this.tags = [ 'manga', 'french' ];
+        this.tags = [ 'manga', 'french', 'english' ];
         this.url = 'https://www.mangakawaii.io';
         this.cdn = 'https://cdn.mangakawaii.pics';
 
         this.queryMangas = 'ul.manga-list-text li a.alpha-link';
         this.queryChapters = 'table.table--manga tbody td.table__chapter a';
-        this.queryPages = 'div.text-center source[loading="lazy"]';
         this.queryTitleForURI = 'h1[itemprop*="name"]';
 
         this.requestOptions.headers.set('x-referer', this.url);
+
     }
 
     async _getMangas() {
-        const mangas = await super._getMangas();
-        mangas.forEach(manga => manga.title = manga.title.replace(/^\//, '').trim());
-        return mangas;
+        const token = await this.getToken();
+        let request = new Request(new URL(this.path + 'changeMangaList?type=text', this.url), this.requestOptions);
+        request.headers.set('X-Requested-With', 'XMLHttpRequest');
+        request.headers.set('X-CSRF-TOKEN', token);
+        let data = await this.fetchDOM(request, this.queryMangas);
+        return data.map(element => {
+            const bloat = element.querySelector('span');
+            if (bloat) element.removeChild(bloat);
+            return {
+                id: this.getRelativeLink(element),
+                title: element.text.trim()
+            };
+        });
     }
 
     async _getChapters(manga) {
@@ -59,14 +69,22 @@ export default class MangaKawaii extends MangaReaderCMS {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const dom = await this.fetchDOM(request, 'script[type="text/javascript"]');
-        const manga_slug = dom[0].textContent.match(/var oeuvre_slug = "([^"]*)";/)[1];
-        const chapter_slug = dom[0].textContent.match(/var chapter_slug = "([^"]*)";/)[1];
-        const language = dom[0].textContent.match(/var applocale = "([^"]*)";/)[1];
-        return [...dom[0].textContent.matchAll(/"page_image":"([^"]*)"/g)].map(file => this.createConnectorURI({
-            url: `${this.cdn}/uploads/manga/${manga_slug}/chapters_${language}/${chapter_slug}/${file[1]}`,
-            referer: this.url
-        }));
+        const script = `
+        new Promise((resolve, reject) => {
+            setTimeout(() => {
+                try {
+                    resolve(pages.map(page => '${this.cdn}/uploads/manga/'+ oeuvre_slug +'/chapters_'+applocale+'/'+chapter_slug+ '/'+page.page_image));
+                }
+                catch(error) {
+                    reject(error);
+                }
+            },
+            500);
+        });
+        `;
+
+        const data = await Engine.Request.fetchUI(request, script, 10000);
+        return data.map(page => this.createConnectorURI({url : page, referer : uri}));
     }
 
     async _handleConnectorURI(payload) {
@@ -76,4 +94,11 @@ export default class MangaKawaii extends MangaReaderCMS {
         let data = await response.blob();
         return this._blobToBuffer(data);
     }
+
+    async getToken() {
+        const request = new Request(this.url, this.requestOptions);
+        const data = await this.fetchDOM(request, 'meta[name="csrf-token"]');
+        return data[0].content;
+    }
+
 }

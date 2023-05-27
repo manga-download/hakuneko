@@ -93,6 +93,7 @@ export default class AnimePahe extends Connector {
     }
 
     async _getPages(chapter) {
+        /*
         let uri = new URL('/api', this.url);
         uri.searchParams.set('m', 'links');
         uri.searchParams.set('id', chapter.id);
@@ -108,7 +109,15 @@ export default class AnimePahe extends Connector {
                 };
             });
             return accumulator.concat(links);
-        }, []);
+        }, []);*/
+
+        const url = new URL(`/play/${chapter.manga.id}/${chapter.id}`, this.url);
+        const request = new Request(url, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#resolutionMenu button');
+        const streams = data.map(entry => {
+            return {resolution : entry.dataset.resolution, url : entry.dataset.src};
+        });
+
         let resolution = parseInt(this.config.resolution.value || 0);
         let stream = streams.find(stream => stream.resolution >= resolution) || streams.shift();
         let kwik = new Kwik(stream.url, this.url);

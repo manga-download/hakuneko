@@ -7,6 +7,6 @@ export default class LilyManga extends WordPressMadara {
         super.id = 'lilymanga';
         super.label = 'Lily Manga';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://lilymanga.com';
+        this.url = 'https://lilymanga.net';
     }
 }

@@ -9,6 +9,10 @@ export default class MangaChan extends Connector {
         super.label = 'Манга-тян (Manga-chan)';
         this.tags = [ 'manga', 'russian' ];
         this.url = 'https://manga-chan.me';
+        this.path = '/catalog';
+        this.queryChapters = 'table.table_cha tr td div.manga2 a';
+        this.queryPages = 'fullimg';
+
     }
 
     async _getMangaFromURI(uri) {
@@ -21,7 +25,7 @@ export default class MangaChan extends Connector {
 
     async _getMangas() {
         const mangaList = [];
-        const request = new Request(new URL('/catalog', this.url), this.requestOptions);
+        const request = new Request(new URL(this.path, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'div#pagination span a:last-of-type');
         const pageCount = parseInt(data[0].text.trim());
         for(let page = 0; page <= pageCount; page++) {
@@ -32,7 +36,7 @@ export default class MangaChan extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/catalog', this.url);
+        const uri = new URL(this.path, this.url);
         uri.searchParams.set('offset', page * 20);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div#content div.content_row div.manga_row1 h2 a.title_link', 3);
@@ -47,7 +51,7 @@ export default class MangaChan extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions );
-        const data = await this.fetchDOM(request, 'table.table_cha tr td div.manga2 a');
+        const data = await this.fetchDOM(request, this.queryChapters );
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -59,7 +63,7 @@ export default class MangaChan extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise(resolve => resolve(fullimg));
+            new Promise(resolve => resolve(${this.queryPages}));
         `;
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions );

@@ -71,4 +71,15 @@ export default class NewToki extends GnuBoard5BootstrapBasic2 {
         }
         return mangaList;
     }
+
+    async _getPages(chapter) {
+        //New toki show pages from others mangas in the chapter.
+        //Its easier to filter after template getPages occured
+        const chapid = chapter.id.match(/(comic|webtoon)\/([\d]+)/)[2];
+        const mangaid = chapter.manga.id.match(/(comic|webtoon)\/([\d]+)/)[2];
+        const path = `/${mangaid}/${chapid}/`; //makes sure image path matches chapter and manga
+        const images = await super._getPages(chapter);
+        return images.filter(image => image.includes(path));
+
+    }
 }

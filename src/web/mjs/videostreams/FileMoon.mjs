@@ -8,7 +8,7 @@ export default class FileMoon {
     async getPlaylist() {
         const script = `
             new Promise(resolve => {
-                  resolve(window.player.hls.url); 
+                  resolve(window.videop.hls.url); 
             });
         `;
         const request = new Request(this._uri);

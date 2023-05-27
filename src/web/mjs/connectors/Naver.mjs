@@ -15,84 +15,46 @@ export default class Naver extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#content div.comicinfo div.detail h2 span.title', 3);
-        uri.searchParams.delete('page');
-        let id = uri.pathname + uri.search;
-        let title = data[0].childNodes[0].nodeValue.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'meta[property="og:title"]');
+        const id = uri.searchParams.get('titleId');
+        const title = data[0].content.trim();
         return new Manga(this, id, title);
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        callback( new Error( msg ), undefined );
+    async _getMangas() {
+        throw new Error('This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.');
     }
 
-    /**
-     *
-     */
-    _getChapterListFromPages( manga, chapterPageLinks, index ) {
-        index = index || 0;
-        let request = new Request( chapterPageLinks[ index ], this.requestOptions );
-        return this.fetchDOM( request, 'div#content table.viewList tbody tr td.title a', 5 )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                if( index < chapterPageLinks.length - 1 ) {
-                    return this._getChapterListFromPages( manga, chapterPageLinks, index + 1 )
-                        .then( chapters => chapterList.concat( chapters ) );
-                } else {
-                    return Promise.resolve( chapterList );
-                }
-            } );
+    async _getChapters(manga) {
+        const chapterList = [];
+        for(let page = 1, run = true; run; page++) {
+            const chapters = await this._getChaptersFromPage(manga.id, page);
+            if(chapters.length > 0 && (chapterList.length === 0 || chapters[chapters.length - 1].id !== chapterList[chapterList.length - 1].id)) {
+                chapterList.push(...chapters);
+            } else {
+                run = false;
+            }
+        }
+        return chapterList;
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let uri = new URL( manga.id, this.url );
-        uri.searchParams.set( 'page', 999 );
-        let request = new Request( uri.href, this.requestOptions );
-        this.fetchDOM( request, 'div#content div.paginate div.page_wrap .page:last-child em.num_page' )
-            .then( data => {
-                let pageCount = parseInt( data[0].innerText.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => {
-                    uri.searchParams.set( 'page', page + 1 );
-                    return uri.href;
-                } );
-                return this._getChapterListFromPages( manga, pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChaptersFromPage(mangaID, page) {
+        const url = new URL(`/api/article/list?titleId=${mangaID}&page=${page}`, this.url);
+        const request = new Request(url, this.requestOptions);
+        const data = await this.fetchJSON(request);
+        return data.articleList.map(element => {
+            return {
+                id : element.no,
+                title : element.subtitle
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'div#comic_view_area div.wt_viewer source[id^="content_image"]' )
-            .then( data => {
-                let pageList = data.map( element => this.getAbsolutePath( element, request.url ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages(chapter) {
+        const uri = new URL(`/webtoon/detail?titleId=${chapter.manga.id}&no=${chapter.id}`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#comic_view_area div.wt_viewer source[id^="content_image"]');
+        return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }

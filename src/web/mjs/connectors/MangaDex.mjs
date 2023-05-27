@@ -69,6 +69,49 @@ export default class MangaDex extends Connector {
     }
 
     async _getMangas() {
+        const mangaList = [];
+        const limit = 100;
+        let lastCreatedAt = '2000-01-01T00:00:00';
+        let throttle = Promise.resolve();
+
+        while(lastCreatedAt) {
+            await throttle;
+            throttle = new Promise(resolve => setTimeout(resolve, 250));
+
+            const uri = new URL('/manga', this.api);
+            uri.searchParams.set('limit', `${limit}`);
+            uri.searchParams.set('order[createdAt]', 'asc');
+            uri.searchParams.set('createdAtSince', lastCreatedAt);
+            uri.searchParams.append('contentRating[]', 'safe');
+            uri.searchParams.append('contentRating[]', 'suggestive');
+            uri.searchParams.append('contentRating[]', 'erotica');
+            uri.searchParams.append('contentRating[]', 'pornographic');
+
+            const request = new Request(uri, {
+                headers: {
+                    'Referer': this.url,
+                }});
+            const { data } = await this.fetchJSON(request);
+
+            lastCreatedAt = data.length === limit ? data.pop().attributes.createdAt.split('+').shift() : null;
+            if(data.length) {
+                const mangas = data.map(manga => {
+                    const title = manga.attributes.title.en || Object.values(manga.attributes.title).shift();
+                    return {
+                        id : manga.id,
+                        title : title,
+                    };
+                });
+                mangaList.push(...mangas);
+            }
+        }
+
+        return mangaList;
+    }
+
+    /*
+    async _getMangas() {
+
         let mangaList = [];
         let first10k = await this._getMangasFromPages(0, 99);
         mangaList = [...mangaList, ...first10k.data];
@@ -90,6 +133,7 @@ export default class MangaDex extends Connector {
                 title: (ele.attributes.title.en || Object.values(ele.attributes.title).shift()).trim()
             };
         });
+
     }
 
     async _getMangasFromPages(start, pages, nextAt) {
@@ -116,7 +160,7 @@ export default class MangaDex extends Connector {
             total: data100.total
         };
     }
-
+*/
     async _getChapters(manga) {
         let chapterList = [];
         for(let page = 0, run = true; run; page++) {

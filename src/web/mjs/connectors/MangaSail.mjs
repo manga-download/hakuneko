@@ -7,7 +7,7 @@ export default class MangaSail extends Connector {
         super.id = 'mangasail';
         super.label = 'MangaSail';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://www.mangasail.co';
+        this.url = 'https://www.mangasail.net';
 
         this.config = {
             username: {
@@ -29,69 +29,61 @@ export default class MangaSail extends Connector {
         Engine.Settings.addEventListener('saved', this._onSettingsChanged.bind(this));
     }
 
-    /**
-     *
-     */
-    _getMangaListFromPages( mangaPageLinks, index ) {
-        if( index === undefined ) {
-            index = 0;
+    async _getMangas() {
+        let mangaList = [];
+        const uri = new URL('/directory', this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'ul.pagination li.pager-last a');
+        const pageCount = parseInt(data[0].href.match(/([\d]+)$/)[1]);
+        for(let page = 0; page <= pageCount; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
-        return this.wait( 0 )
-            .then ( () => this.fetchDOM( mangaPageLinks[ index ], 'table.directory_list tr td:first-of-type a', 5 ) )
-            .then( data => {
-                let mangaList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( /Manga\s*$/, '' ).trim()
-                    };
-                } );
-                if( index < mangaPageLinks.length - 1 ) {
-                    return this._getMangaListFromPages( mangaPageLinks, index + 1 )
-                        .then( mangas => mangas.concat( mangaList ) );
-                } else {
-                    return Promise.resolve( mangaList );
-                }
-            } );
+        return mangaList;
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        this.fetchDOM( this.url + '/directory?page=9999', 'ul.pagination li:last-of-type a' )
-            .then( data => {
-                let pageCount = parseInt( data[0].text.trim() );
-                let pageLinks = [... new Array( pageCount ).keys()].map( page => this.url + '/directory?page=' + page );
-                return this._getMangaListFromPages( pageLinks );
-            } )
-            .then( data => {
-                callback( null, data );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
+    async _getMangasFromPage(page) {
+        const uri = new URL('/directory?page=' + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'table.directory_list tr td:first-of-type a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
     }
 
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        this.fetchDOM( this.url + manga.id, 'table.chlist tr td:first-of-type a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRelativeLink( element ),
-                        title: element.text.replace( manga.title, '' ).trim(),
-                        language: 'en'
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters(manga) {
+
+        let chapterList = [];
+        const uri = new URL (manga.id, this.url );
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'ul.pagination li.pager-last a');
+        const pageCount = data.length > 0 ? parseInt(data[0].href.match(/([\d]+)$/)[1]) : 0;
+        for(let page = 0; page <= pageCount; page++) {
+            const chapters = await this._getChaptersFromPage(manga, page);
+            chapterList.push(...chapters);
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(manga, page) {
+        const uri = new URL (manga.id+'?page='+page, this.url );
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'table.chlist tr td:first-of-type a');
+        return data.map( element => {
+            //escape all special characters used in Javascript regexes (improved from flatmanga : use incensitive case)
+            const bloatRegex = new RegExp(manga.title.replace(/[*^.|$?+\-()[\]{}\\/]/g, '\\$&'), 'i');
+            const title = element.text.replace(bloatRegex, '').trim();
+
+            return {
+                id: this.getRelativeLink( element ),
+                title: title,
+                language: 'en'
+            };
+        });
+
     }
 
     async _getPages(chapter) {
@@ -101,7 +93,20 @@ export default class MangaSail extends Connector {
         let uri = new URL(chapter.id, this.url);
         uri.searchParams.set('page', 'all');
         let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.filter(page => !page.includes('script'))
+            .map(page => this.createConnectorURI({url : page, referer : uri}));
+
+    }
+
+    async _handleConnectorURI(payload) {
+        const request = new Request(payload.url, this.requestOptions);
+        request.headers.set('x-referer', payload.referer);
+        const response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
     }
 
     /**
@@ -109,7 +114,7 @@ export default class MangaSail extends Connector {
      */
     _onSettingsChanged() {
         let user = this.config.username.value;
-        let pass = this.config.username.value;
+        let pass = this.config.password.value;
         let credentials = user + pass;
         if(this._credentials !== credentials && user && pass) {
             this._credentials = credentials;

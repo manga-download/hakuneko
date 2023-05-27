@@ -17,11 +17,21 @@ export default class Pixiv extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const id = uri.pathname.match(/\/series\/(\d+)/)[1];
-        const request = new Request(new URL(`series/${id}?p=1&lang=en`, this.apiURL), this.requestOptions);
-        const data = await this.fetchJSON(request);
-        const title = data.body.illustSeries.filter(s => s.id === id).map(s => s.title.trim()).pop();
-        return new Manga(this, id, title);
+        if(uri.pathname.match(/\/series\/\d+/)) {
+            const id = uri.pathname.match(/\/series\/(\d+)/)[1];
+            const request = new Request(new URL(`series/${id}?p=1&lang=en`, this.apiURL), this.requestOptions);
+            const data = await this.fetchJSON(request);
+            const title = data.body.illustSeries.filter(s => s.id === id).map(s => s.title.trim()).pop();
+            return new Manga(this, id, title);
+        } else if (uri.pathname.match(/\/artworks\/\d+/)) {
+            const id = uri.pathname.match(/\/artworks\/(\d+)/)[1];
+            const request = new Request(new URL(`illust/${id}?lang=en`, this.apiURL), this.requestOptions);
+            const data = await this.fetchJSON(request);
+            const title = data.body.illustTitle.trim();
+            return new Manga(this, `artwork-${id}`, title);
+        } else {
+            throw new Error('Provided link doesn\'t contain manga series or artwork!');
+        }
     }
 
     async _getMangas() {
@@ -31,29 +41,35 @@ export default class Pixiv extends Connector {
 
     async _getChapters(manga) {
         let chapterList = [];
-        for (let page = 1, run = true; run; page++) {
-            const chapters = await this._getChaptersFromPage(manga.id, page);
-            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        if (manga.id.startsWith('artwork-')) {
+            chapterList.push({
+                id: manga.id.match(/artwork-(\d+)/)[1],
+                title: manga.title
+            });
+        } else {
+            for (let page = 1, run = true; run; page++) {
+                const chapters = await this._getChaptersFromPage(manga.id, page);
+                chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+            }
         }
-        return chapterList.filter((chapter, index) => {
-            return index === chapterList.findIndex(item => chapter.id === item.id);
-        });
+        return chapterList;
     }
 
     async _getChaptersFromPage(mangaId, page) {
         const uri = new URL(`series/${mangaId}?p=${page}&lang=en`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        if (data.body.thumbnails.illust.length < 5)
-            return [];
-        return data.body.thumbnails.illust
-            .filter(chapter => chapter.seriesId === mangaId)
-            .map(chapter => {
-                return {
-                    id: chapter.id,
-                    title: chapter.title.trim()
-                };
-            });
+        let chapterListFromPage = [];
+        data.body.page.series.forEach(chapter => {
+            const chapterContents = data.body.thumbnails.illust.find(c => c.id === chapter.workId);
+            if (chapterContents) {
+                chapterListFromPage.push({
+                    id: chapterContents.id,
+                    title: chapterContents.title.trim()
+                });
+            }
+        });
+        return chapterListFromPage;
     }
 
     async _getPages(chapter) {
