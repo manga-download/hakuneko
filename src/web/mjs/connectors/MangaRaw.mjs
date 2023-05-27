@@ -6,9 +6,9 @@ export default class MangaRaw extends Connector {
     constructor() {
         super();
         super.id = 'mangaraw';
-        super.label = 'MangaRaw (Manga Raw Club)';
+        super.label = 'MangaGeko';
         this.tags = ['multi-lingual', 'manga', 'webtoon'];
-        this.url = 'https://www.mreader.co';
+        this.url = 'https://www.mangageko.com';
     }
 
     async _getMangaFromURI(uri) {
