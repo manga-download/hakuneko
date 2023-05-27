@@ -8,4 +8,8 @@ export default class MangaEffect extends WordPressMadara {
         this.tags = [ 'manga', 'scanlation', 'english' ];
         this.url = 'https://mangaeffect.com';
     }
+
+    _createMangaRequest(page) {
+        return new Request(new URL(`/manga/page/${page}/`, this.url), this.requestOptions);
+    }
 }
