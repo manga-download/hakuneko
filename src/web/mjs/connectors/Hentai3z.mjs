@@ -11,4 +11,8 @@ export default class Hentai3z extends WordPressMadara {
 
         this.requestOptions.headers.set('x-referer', this.url);
     }
+
+    _createMangaRequest(page) {
+        return new Request(new URL(`/manga/page/${page}/`, this.url), this.requestOptions);
+    }
 }
