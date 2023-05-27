@@ -12,14 +12,14 @@ export default class YuriISM extends FoolSlide {
     }
 
     async getMangas() {
-        throw new Error('There is no mangas here, please use DynastyScans connector.');
+        throw new Error('This website doesn\'t host anything. Use DynastyScans connector instead.');
     }
 
     async getChapters() {
-        throw new Error('There is no mangas here, please use DynastyScans connector.');
+        throw new Error('This website doesn\'t host anything. Use DynastyScans connector instead.');
     }
 
     async getPages() {
-        throw new Error('There is no mangas here, please use DynastyScans connector.');
+        throw new Error('This website doesn\'t host anything. Use DynastyScans connector instead.');
     }
 }
