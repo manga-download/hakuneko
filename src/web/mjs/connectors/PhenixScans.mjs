@@ -6,7 +6,7 @@ export default class PhenixScans extends WordPressMangastream {
         super();
         super.id = 'phenixscans';
         super.label = 'Phenix Scans';
-        this.tags = [ 'manga', 'french' ];
+        this.tags = [ 'manga', 'french', 'scanlation' ];
         this.url = 'https://phenixscans.fr';
         this.path = '/manga/list-mode';
     }
