@@ -170,7 +170,7 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len));
 }
 
-let stack_pointer = 32;
+let stack_pointer = 128;
 
 function addBorrowedObject(obj) {
     if (stack_pointer == 1) throw new Error('out of js stack');
