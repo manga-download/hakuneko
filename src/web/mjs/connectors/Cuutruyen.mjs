@@ -1,6 +1,6 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-import { render_image, init, mod } from './Cuutruyen_wasm.mjs';
+import { render_image, init } from './Cuutruyen_wasm.mjs';
 
 export default class Cuutruyen extends Connector {
     constructor() {
@@ -11,8 +11,7 @@ export default class Cuutruyen extends Connector {
         this.url = 'https://cuutruyen.net';
         this.api = 'https://kakarot.cuutruyen.net';
 
-        this.wasm = init(mod);
-        this.bestServer = this.getBestServer();
+        this.wasm = init(fetch("https://cuutruyen.net/cb1ede733fa79fc5.module.wasm"));
 
         sessionStorage.setItem("_9421424163", "1284069429");
         sessionStorage.setItem("_3236353668", "6321050717");
@@ -67,42 +66,14 @@ export default class Cuutruyen extends Connector {
         });
     }
 
-    // Mostly to replicate site behavior so we go a bit more under the radar
-    async getBestServer() {
-        async function fetchTimeout(resource, options) {
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), 1e3);
-
-            const response = await fetch(resource, {
-                ...options,
-                signal: controller.signal
-            });
-            clearTimeout(id);
-
-            return response;
-        }
-
-        const servers = ["https://storage-ct.lrclib.net", "https://storage-ct-whiterun.buzz", "https://storage-bravo.cuutruyen.net"];
-        try {
-            const firstServerResponse = await Promise.any(servers.map((server) => {
-                return fetchTimeout(`${server}/cdn-cgi/trace`);
-            }));
-            return new URL(firstServerResponse.url).origin;
-        } catch (_) {
-            return servers[0];
-        }
-    }
-
     async _getPages(chapter) {
-        const bestServer = await this.bestServer;
-
         const uri = new URL('/api/v2/chapters/' + chapter.id, this.api);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         const pages = data.data.pages;
         return pages.map((image) => {
             return this.createConnectorURI({
-                url: new URL(image.image_path, bestServer).toString(),
+                url: image.image_url,
                 scrambleString: image.drm_data,
             });
         });
