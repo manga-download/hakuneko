@@ -11,11 +11,11 @@ export default class Cuutruyen extends Connector {
         this.url = 'https://cuutruyen.net';
         this.api = 'https://kakarot.cuutruyen.net';
 
-        this.wasm = init(fetch("https://cuutruyen.net/cb1ede733fa79fc5.module.wasm"));
+        this.wasm = init(fetch("https://cuutruyen.net/d660d30a7af3c1ad.module.wasm"));
 
         sessionStorage.setItem("_9421424163", "1284069429");
         sessionStorage.setItem("_3236353668", "6321050717");
-        sessionStorage.setItem("_8864459579", "4283056037");
+        sessionStorage.setItem("_8864459579", "\u200B4283056037");
         sessionStorage.setItem("_2038728281", "8111913161");
         sessionStorage.setItem("_3843324144", "4499219618");
     }
@@ -70,7 +70,7 @@ export default class Cuutruyen extends Connector {
         const uri = new URL('/api/v2/chapters/' + chapter.id, this.api);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        const pages = data.data.pages;
+        const pages = data.data.pages.filter((image) => image.status === "processed");
         return pages.map((image) => {
             return this.createConnectorURI({
                 url: image.image_url,
