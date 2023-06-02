@@ -99,6 +99,8 @@ export default class Cuutruyen extends Connector {
         canvas.width = image.width;
         canvas.height = image.height;
         const ctx = canvas.getContext('2d');
+        ctx.textAlign = "right";
+
         render_image(image, ctx, scrambleString);
 
         return canvas;

@@ -343,8 +343,7 @@ function __wbg_innerHTML_32dde7e4f768561a(arg0, arg1) {
 }
 
 function __wbg_textAlign_ccea4a063f2d1a6a(arg0, arg1) {
-    // const ret = getObject(arg1).textAlign;
-    const ret = "right";
+    const ret = getObject(arg1).textAlign;
     const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
     const len1 = WASM_VECTOR_LEN;
     getInt32Memory0()[arg0 / 4 + 1] = len1;
