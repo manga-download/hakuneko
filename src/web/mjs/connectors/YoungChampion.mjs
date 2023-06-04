@@ -53,7 +53,7 @@ export default class YoungChampion extends Connector {
             const titleElement = element.querySelector(this.queryMangaTitle);
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: titleElement ? (titleElement.textContent ||titleElement.text).trim() : element.text.trim()
+                title: titleElement ? (titleElement.textContent || titleElement.text).trim() : element.text.trim()
             };
         });
     }
