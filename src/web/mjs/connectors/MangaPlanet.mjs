@@ -8,9 +8,9 @@ export default class MangaPlanet extends SpeedBinb {
         super.id = 'mangaplanet';
         super.label = 'Manga Planet';
         this.tags = ['manga', 'english'];
-        this.url = 'https://read.mangaplanet.com';
+        this.url = 'https://mangaplanet.com';
         this.requestOptions.headers.set('x-referer', this.url + '/');
-        this.requestOptions.headers.set('x-cookie', 'faconf=' + 18);
+        this.requestOptions.headers.set('x-cookie', 'mpaconf=' + 18);
 
     }
 
@@ -34,9 +34,9 @@ export default class MangaPlanet extends SpeedBinb {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/browse?page=' + page, this.url);
+        const uri = new URL('/browse/title?ttlpage=' + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, '.contents.comics .linkbox');
+        const data = await this.fetchDOM(request, 'div#Title .row.book-list');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a').pathname, this.url),

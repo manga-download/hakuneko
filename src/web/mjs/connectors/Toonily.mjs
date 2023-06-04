@@ -12,6 +12,7 @@ export default class Toonily extends WordPressMadara {
 
         this.queryTitleForURI = 'div.site-content div.post-title';
         this.requestOptions.headers.set('x-cookie', 'toonily-mature=1');
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {

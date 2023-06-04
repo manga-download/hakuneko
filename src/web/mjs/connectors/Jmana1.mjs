@@ -7,7 +7,7 @@ export default class Jmana1 extends Connector {
         super.id = 'jmana1';
         super.label = '제이마나 (Jaymana)';
         this.tags = [ 'manga', 'korean' ];
-        this.url = 'https://jmana1.net';
+        this.url = 'https://kr21.jmana.one';
         this.requestOptions.headers.set('x-referer', this.url);
 
         this.config = {
@@ -24,7 +24,7 @@ export default class Jmana1 extends Connector {
 
     async _getMangaFromURI(uri) {
         const id = uri.pathname + uri.search;
-        const title = uri.searchParams.get('bookname').trim();
+        const title = (await this.fetchDOM(new Request(uri, this.requestOptions), 'div.books-db-detail a.tit')).pop().text.trim();
         return new Manga(this, id, title);
     }
 

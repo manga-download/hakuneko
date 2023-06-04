@@ -7,7 +7,7 @@ export default class LELScanVF extends MangaReaderCMS {
         super.id = 'lelscanvf';
         super.label = 'LELSCAN-VF';
         this.tags = [ 'manga', 'french' ];
-        this.url = 'https://www.lelscanvf.com';
+        this.url = 'https://www.lelscanvf.cc';
     }
 
     async _getPages(chapter) {
