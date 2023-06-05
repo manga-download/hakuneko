@@ -33,7 +33,8 @@ export default class Cuutruyen extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         const pages = data._metadata.total_pages;
-        let mangaList = this._getMangasFromPage(data);
+
+        const mangaList = this._getMangasFromPage(data);
 
         for (let page = 2; page <= pages; page++) {
             const uri = new URL(`/api/v2/mangas/recently_updated?page=${page}&per_page=30`, this.api);
@@ -45,7 +46,7 @@ export default class Cuutruyen extends Connector {
         return mangaList;
     }
 
-    async _getMangasFromPage(data) {
+    _getMangasFromPage(data) {
         return data.data.map((element) => {
             return {
                 id: element.id,
