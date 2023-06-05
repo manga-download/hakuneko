@@ -7,6 +7,6 @@ export default class Mangabaz extends WordPressMadara {
         super.id = 'mangabaz';
         super.label = 'Mangabaz';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://mangabaz.com';
+        this.url = 'https://mangabaz.net';
     }
 }

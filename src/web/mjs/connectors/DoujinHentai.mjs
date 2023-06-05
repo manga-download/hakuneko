@@ -10,6 +10,13 @@ export default class DoujinHentai extends WordPressMadara {
         this.url = 'https://doujinhentai.net';
 
         this.queryPages = 'div#all source';
+        this.queryTitleForURI = 'div.post-title h3';
+    }
+
+    async _getMangaFromURI(uri) {
+        const manga = await super._getMangaFromURI(uri);
+        manga.title = manga.title.replace(/Doujin Hentai:/i, '').trim();
+        return manga;
     }
 
     async _getMangas() {

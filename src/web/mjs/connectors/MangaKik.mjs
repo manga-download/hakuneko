@@ -7,6 +7,6 @@ export default class MangaKik extends WordPressMadara {
         super.id = 'mangakik';
         super.label = 'MangaKik';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://mangakik.net';
+        this.url = 'https://mangakik.biz';
     }
 }

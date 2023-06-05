@@ -7,7 +7,18 @@ export default class TruyenQQ extends Connector {
         super.id = 'truyenqq';
         super.label = 'TruyenQQ';
         this.tags = ['manga', 'webtoon', 'vietnamese'];
-        this.url = 'https://truyenqqq.com';
+        this.url = 'https://truyenqqne.com';
+        this.requestOptions.headers.set('x-referer', this.url);
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests when fetching manga list',
+                input: 'numeric',
+                min: 1000,
+                max: 7500,
+                value: 1250
+            }
+        };
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
@@ -24,6 +35,7 @@ export default class TruyenQQ extends Connector {
         const pageCount = parseInt(data[0].href.match(/-(\d+).html/)[1]);
         for (let page = 1; page <= pageCount; page++) {
             const mangas = await this._getMangasFromPage(page);
+            await this.wait(this.config.throttle.value);
             mangaList.push(...mangas);
         }
         return mangaList;
