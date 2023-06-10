@@ -192,6 +192,9 @@ export default class VizShonenJump extends Connector {
                 if(/javascript:tryReadChapter/i.test(element.href)) {
                     return auth.isVizManga;
                 }
+                else if(/javascript:.*join/i.test(element.href)) {
+                    return auth.isVizManga;
+                }
                 // free
                 return true;
             })
