@@ -7,7 +7,7 @@ export default class MangaKakalot extends MangaNel {
         super.id = 'mangakakalot';
         super.label = 'MangaKakalot';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://mangakakalot.com';
+        this.url = 'https://ww5.mangakakalot.tv/';
 
         this.path = '/manga_list?type=new&category=all&alpha=all&state=all&group=all&page=';
         this.queryMangaTitle = 'div.manga-info-top ul.manga-info-text h1';
