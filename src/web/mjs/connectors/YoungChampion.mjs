@@ -9,6 +9,7 @@ export default class YoungChampion extends Connector {
         super.label = 'YoungChampion';
         this.tags = ['manga', 'japanese'];
         this.url = 'https://youngchampion.jp';
+        this.apiUrl = this.url;
         this.defaultOrder = [];
         this.links = {
             login: 'https://youngchampion.jp/signin'
@@ -18,29 +19,54 @@ export default class YoungChampion extends Connector {
                 this.defaultOrder.push([i, j]);
             }
         }
+
+        this.mangaListPath = '/series/list?page={page}';
+        this.queryMangaTitleURI = 'h1.series-h-title span:not([class])';
+        this.queryManga = 'div.series-box-vertical a';
+        this.queryMangaTitle = 'h2.title-text';
+        this.queryChapter = 'div.series-ep-list a';
+        this.queryChapterTitle = 'span.series-ep-list-item-h-text';
     }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri);
-        const [data] = await this.fetchDOM(request, 'h1.series-h-title span:not([class])');
+        const [data] = await this.fetchDOM(request, this.queryMangaTitleURI);
         const id = uri.pathname;
-        const title = data.textContent.trim();
+        const title = (data.textContent || data.text).trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        let mangaList = [];
+        for (let page = 1, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const uri = new URL( this.mangaListPath.replace('{page}', page), this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryManga);
+        return data.map(element => {
+            const titleElement = element.querySelector(this.queryMangaTitle);
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: titleElement ? (titleElement.textContent || titleElement.text).trim() : element.text.trim()
+            };
+        });
     }
 
     async _getChapters(manga) {
         const uri = new URL(manga.id+'/list', this.url);
         const request = new Request(uri);
-        const data = await this.fetchDOM(request, 'div.series-ep-list a');
-        return data.map(chapter => {
+        const data = await this.fetchDOM(request, this.queryChapter );
+        return data.map(element => {
+            const titleElement = element.querySelector(this.queryChapterTitle);
             return {
-                id : new URL(chapter.dataset['href']).pathname,
-                title : chapter.querySelector('span.series-ep-list-item-h-text').textContent.trim()
+                id : new URL(element.dataset['href']).pathname,
+                title: titleElement ? (titleElement.textContent ||titleElement.text).trim() : element.text.trim()
             };
         });
     }
