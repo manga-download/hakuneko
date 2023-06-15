@@ -7,6 +7,6 @@ export default class SmangavfWS extends MangaReaderCMS {
         super.id = 'smangavfws';
         super.label = 'S-MangaWF.ws';
         this.tags = [ 'manga', 'french' ];
-        this.url = 'https://s-mangavf.ws';
+        this.url = 'https://scan-manga.me';
     }
 }
