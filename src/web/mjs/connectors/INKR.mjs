@@ -63,7 +63,7 @@ export default class INKR extends Connector {
 
         const ikchapter = 'ik-chapter-'+ chapter.id;
         const chap = obj.icd.find(element=> element[0] == ikchapter);
-        return chap[1].chapterPages.map(page => page.url+'/p.jpg');
+        return !chap[1].chapterPages ? [] : chap[1].chapterPages.map(page => page.url+'/p.jpg');
     }
 
     /************
