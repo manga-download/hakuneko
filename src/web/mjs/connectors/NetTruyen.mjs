@@ -18,7 +18,7 @@ export default class NetTruyen extends MojoPortalComic {
         this.links = {
             login: this.url + '/Secure/Login.aspx'
         };
-        
+
     }
     get url() {
         return this.config.url.value;
