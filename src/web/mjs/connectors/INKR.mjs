@@ -63,7 +63,53 @@ export default class INKR extends Connector {
 
         const ikchapter = 'ik-chapter-'+ chapter.id;
         const chap = obj.icd.find(element=> element[0] == ikchapter);
-        return !chap[1].chapterPages ? [] : chap[1].chapterPages.map(page => page.url+'/p.jpg');
+        return !chap[1].chapterPages ? [] : chap[1].chapterPages.map(page => this.createConnectorURI(page));
+    }
+
+    async _handleConnectorURI(payload) {
+        const response = await fetch(new Request(payload.url + '/w1600.ikc'), {
+            headers: {
+                'ikc-platform': 'android',
+                'cf-ipcountry': 'VN',
+                'user-agent': 'okhttp/4.9.1',
+            },
+        });
+        let encryptedData = new Uint8Array(await response.arrayBuffer());
+
+        const iv = CryptoJS.lib.WordArray.create(encryptedData.slice(4, 20));
+        const ciphertext = CryptoJS.lib.WordArray.create(encryptedData.slice(20));
+
+        const key = CryptoJS.enc.Hex.parse('454d514b6377597151746c4832394b7a535a73446f62484c316d48767a6f746c');
+
+        const decrypted = CryptoJS.AES.decrypt({ ciphertext }, key, {
+            iv,
+            mode: CryptoJS.mode.CBC,
+            padding: CryptoJS.pad.NoPadding,
+        });
+
+        const buffer = {
+            mimeType: response.headers.get('content-type'),
+            data :  this.convertWordArrayToUint8Array(decrypted)
+        };
+
+        this._applyRealMime(buffer);
+        return buffer;
+    }
+
+    convertWordArrayToUint8Array (wordArray) {
+        var len = wordArray.words.length,
+            u8_array = new Uint8Array(len << 2),
+            offset = 0,
+            word,
+            i;
+        for (i = 0; i < len; i++) {
+            word = wordArray.words[i];
+            u8_array[offset++] = word >> 24;
+            u8_array[offset++] = word >> 16 & 255;
+            u8_array[offset++] = word >> 8 & 255;
+            u8_array[offset++] = word & 255;
+        }
+        return u8_array;
     }
 
     async _getNextData(request) {
@@ -176,8 +222,10 @@ var unpacker = function() {
             }
             return e;
         },
+
+        s: function() {},
+        /*
         s: function(t) {
-            /*
         let e = BigInt(0);
         let n = BigInt(1);
         const i = BigInt(r);
@@ -188,8 +236,8 @@ var unpacker = function() {
             e += a,
             n *= i;
         }
-        return e;*/
-        },
+        return e;
+        },*/
         decodeNum: function (t) {
             return t = t.replace('n|', ''),
             instanceObj.s_to_num(t);
@@ -230,7 +278,7 @@ var LZString=function() {
                     return o(n, r.charAt(e));
                 });
             }, _decompress:function(o, n, e) {
-                var t, i, s, p, u, c, a, l, f=[], h=4, d=4, m=3, v="", w=[], A={val:e(0), position:n, index:1}; for(i=0; 3>i; i+=1)f[i]=i; for(p=0, c=Math.pow(2, 2), a=1; a!=c;)u=A.val&A.position, A.position>>=1, 0==A.position&&(A.position=n, A.val=e(A.index++)), p|=(u>0?1:0)*a, a<<=1; switch(t=p) {
+                var i, s, p, u, c, a, l, f=[], h=4, d=4, m=3, v="", w=[], A={val:e(0), position:n, index:1}; for(i=0; 3>i; i+=1)f[i]=i; for(p=0, c=Math.pow(2, 2), a=1; a!=c;)u=A.val&A.position, A.position>>=1, 0==A.position&&(A.position=n, A.val=e(A.index++)), p|=(u>0?1:0)*a, a<<=1; switch(t=p) {
                     case 0:for(p=0, c=Math.pow(2, 8), a=1; a!=c;)u=A.val&A.position, A.position>>=1, 0==A.position&&(A.position=n, A.val=e(A.index++)), p|=(u>0?1:0)*a, a<<=1; l=r(p); break; case 1:for(p=0, c=Math.pow(2, 16), a=1; a!=c;)u=A.val&A.position, A.position>>=1, 0==A.position&&(A.position=n, A.val=e(A.index++)), p|=(u>0?1:0)*a, a<<=1; l=r(p); break; case 2:return"";
                 }for(f[3]=l, s=l, w.push(l); ;) {
                     if(A.index>o)return""; for(p=0, c=Math.pow(2, m), a=1; a!=c;)u=A.val&A.position, A.position>>=1, 0==A.position&&(A.position=n, A.val=e(A.index++)), p|=(u>0?1:0)*a, a<<=1; switch(l=p) {
