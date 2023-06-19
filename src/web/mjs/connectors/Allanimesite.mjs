@@ -62,7 +62,7 @@ export default class Allanimesite extends Connector {
         const jsonExtensions = {
             persistedQuery : {
                 version  : 1,
-                sha256Hash : "edbe1fb23e711aa2bf493874a2d656a5438fe9b0b3a549c4b8a831cc2e929bae"
+                sha256Hash : "a27e57ef5de5bae714db701fb7b5cf57e13d57938fc6256f7d5c70a975d11f3d"
             }
         };
 

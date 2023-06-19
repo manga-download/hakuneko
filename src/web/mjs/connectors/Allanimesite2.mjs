@@ -38,7 +38,7 @@ export default class Allanimesite2 extends Allanimesite {
         const jsonExtensions = {
             persistedQuery : {
                 version  : 1,
-                sha256Hash : "b645a686b1988327795e1203867ed24f27c6338b41e5e3412fc1478a8ab6774e"
+                sha256Hash : "06327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a"
             }
         };
 
