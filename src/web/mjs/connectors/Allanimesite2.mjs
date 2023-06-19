@@ -50,7 +50,7 @@ export default class Allanimesite2 extends Allanimesite {
         const data = await this.fetchJSON(request);
         if (!data.data) return [];
         return data.data.shows.edges.map(element => {
-            let id =  '/anime/'+element._id+'/'+element.name.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+            let id = '/anime/'+element._id+'/'+element.name.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
             id += element.slugTime ? '-st-'+element.slugTime : '';
             return {
                 id: id,
@@ -105,7 +105,9 @@ export default class Allanimesite2 extends Allanimesite {
         `;
         let data = await Engine.Request.fetchUI(request, script);
         let sourcesArray = data.fetch['episode:0'].episodeSelections;
-        sourcesArray = sourcesArray.sort(function (a, b) {return b.priority - a.priority});
+        sourcesArray = sourcesArray.sort(function (a, b) {
+            return b.priority - a.priority;
+        });
         const goodSource = sourcesArray.find(source => validSources.includes(source.sourceName));
         if (!goodSource) throw new Error('No source found ! Hakuneko supports only some video source.');
 
