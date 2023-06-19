@@ -124,9 +124,6 @@ export default class Allanimesite2 extends Allanimesite {
                     subtitles: []
                 };
             }
-            case 'xor': {
-                return;
-            }
             default: { //"Default, Luf-hls, Luf-mp4"
                 let decodedurl = goodSource.sourceUrl.replace('#', '');
                 decodedurl = decodedurl.split(/(\w\w)/g).filter(p => !!p).map(c => String.fromCharCode(parseInt(c, 16))).join("");
