@@ -50,20 +50,24 @@ export default class Allanimesite2 extends Allanimesite {
         const data = await this.fetchJSON(request);
         if (!data.data) return [];
         return data.data.shows.edges.map(element => {
+            let id =  '/anime/'+element._id+'/'+element.name.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+            id += element.slugTime ? '-st-'+element.slugTime : '';
+            if (element.slugTime) console.log(element.name);
             return {
-                id: '/anime/'+element._id,
+                id: id,
                 title: element.englishName ? element.englishName : element.name,
             };
         });
     }
     async _getChapters(manga) {
-        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let script = `
         new Promise(resolve => {
             resolve(__NUXT__);
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
+
         let chapterlist = [];
         const mangaid = manga.id.replace('/anime/', '/watch/');
         let subchapters = data.fetch['anime:0'].show.availableEpisodesDetail.sub;
@@ -101,9 +105,10 @@ export default class Allanimesite2 extends Allanimesite {
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
-        const sourcesArray = data.fetch['episode:0'].episodeSelections;
+        let sourcesArray = data.fetch['episode:0'].episodeSelections;
+        sourcesArray = sourcesArray.sort(function (a, b) {return b.priority - a.priority});
         const goodSource = sourcesArray.find(source => validSources.includes(source.sourceName));
-        if (!goodSource) throw new Error('No compatible video source found !');
+        if (!goodSource) throw new Error('No source found ! Hakuneko supports only some video source.');
 
         switch (goodSource.sourceName.toLowerCase()) {
             case 'fm-hls': { //FileMoon
