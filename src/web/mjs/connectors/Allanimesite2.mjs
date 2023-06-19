@@ -52,7 +52,6 @@ export default class Allanimesite2 extends Allanimesite {
         return data.data.shows.edges.map(element => {
             let id =  '/anime/'+element._id+'/'+element.name.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
             id += element.slugTime ? '-st-'+element.slugTime : '';
-            if (element.slugTime) console.log(element.name);
             return {
                 id: id,
                 title: element.englishName ? element.englishName : element.name,
