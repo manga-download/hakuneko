@@ -101,7 +101,11 @@ export default class Allanimesite2 extends Allanimesite {
         const sourcesArray = data.fetch['episode:0'].episodeSelections;
         const goodSource = sourcesArray.find(source => source.sourceName == 'Default');
         if (!goodSource) throw new Error('No Default source found ! Hakuneko supports only default video source.');
-        let uri = new URL(goodSource.sourceUrl.replace('clock', 'clock.json'), 'https://blog.allanime.pro');
+
+        let decodedurl = goodSource.sourceUrl.replace('#', '');
+        decodedurl = decodedurl.split(/(\w\w)/g).filter(p => !!p).map(c => String.fromCharCode(parseInt(c, 16))).join("");
+
+        let uri = new URL(decodedurl.replace('clock', 'clock.json'), 'https://blog.allanime.pro');
         request = new Request(uri, this.requestOptions);
         data = await this.fetchJSON(request);
         let stream = [];
