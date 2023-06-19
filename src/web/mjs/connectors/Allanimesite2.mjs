@@ -103,7 +103,7 @@ export default class Allanimesite2 extends Allanimesite {
         let data = await Engine.Request.fetchUI(request, script);
         const sourcesArray = data.fetch['episode:0'].episodeSelections;
         const goodSource = sourcesArray.find(source => validSources.includes(source.sourceName));
-        if (!goodSource) throw new Error('No Default source found ! Hakuneko supports only default video source.');
+        if (!goodSource) throw new Error('No compatible video source found !');
 
         switch (goodSource.sourceName.toLowerCase()) {
             case 'fm-hls': { //FileMoon
