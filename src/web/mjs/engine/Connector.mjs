@@ -615,7 +615,7 @@ export default class Connector {
             let pages = await this._getPages(chapter);
             callback(null, pages);
         } catch(error) {
-            console.error(error, chapter);
+            console.error = (error, chapter);
             callback(error, undefined);
         }
     }
