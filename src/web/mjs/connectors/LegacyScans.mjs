@@ -10,7 +10,6 @@ export default class LegacyScans extends WordPressMangastream {
         this.url = 'https://legacy-scans.com';
         this.path = '/manga/list-mode/';
 
-        this.queryMangas = 'div.postbody div.soralist ul li a.series';
         this.queryChapters = 'div#chapterlist ul li a';
     }
 }
