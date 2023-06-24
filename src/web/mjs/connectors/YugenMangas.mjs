@@ -14,6 +14,7 @@ export default class YugenMangas extends Connector {
         this.novelWidth = '56em';// parseInt(1200 / window.devicePixelRatio) + 'px';
         this.novelPadding = '1.5em';
     }
+
     async _getMangas() {
         let mangaList = [];
         for(let page = 1, run = true; run; page++) {
@@ -22,6 +23,7 @@ export default class YugenMangas extends Connector {
         }
         return mangaList;
     }
+
     async _getMangasFromPage(page) {
         const uri = new URL('/series/querysearch', this.apiURL);
         const body = {
@@ -46,25 +48,28 @@ export default class YugenMangas extends Connector {
             };
         });
     }
+
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'ul.chapters-list-single.grid a');
-        return data.map(element => {
+        const jsonObj = (await this.getNextData(request)).props.pageProps;
+        return jsonObj.series.chapters.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.querySelector('span.name').textContent.trim()
+                id: JSON.stringify({slug : element.chapter_slug, id : element.id}),
+                title: element.chapter_name.trim()
             };
         });
     }
+
     async _getPages(chapter) {
-        const uri = new URL(chapter.id, this.url);
+        const chapid = JSON.parse(chapter.id);
+        const uri = new URL(chapter.manga.id +'/'+chapid.slug, this.url);
         const request = new Request(uri, this.requestOptions);
         const darkmode = Engine.Settings.NovelColorProfile();
         const script = `
         new Promise(async resolve => {
             //fetch chapter content
-            const response = await fetch('${this.apiURL}'+'/series/chapter/'+ __NEXT_DATA__.props.pageProps.data.id);
+            const response = await fetch('${this.apiURL}/series/chapter/${chapid.id}');
             const obj = await response.json();
             //if its pictures, list pictures
             if (obj.content.images) {
@@ -106,11 +111,17 @@ export default class YugenMangas extends Connector {
         const data = await Engine.Request.fetchUI(request, script, 30000, true);
         return data.pictures ? data.pictures.map(picture => this.getAbsolutePath(picture, this.apiURL)) : [data.rendered];
     }
+
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, 'div.series-title h1');
         const element = [...data].pop();
         const title = (element.content || element.textContent).trim();
         return new Manga(this, uri.pathname, title);
+    }
+
+    async getNextData(request) {
+        const [data] = await this.fetchDOM(request, '#__NEXT_DATA__');
+        return JSON.parse(data.textContent);
     }
 }
