@@ -779,18 +779,20 @@ export default class Storage {
      */
     sanatizePath(path) {
         if (this.platform.indexOf('win') === 0) {
-            // TODO: max. 260 characters per path
+            // Replace forbidden characters for Windows
             path = path.replace(/[\\/:*?"<>|\r\n\t]/g, '');
         }
         if (this.platform.indexOf('linux') === 0) {
-            path = path.replace(/[/\r\n\t]/g, '');
+            // Replace forbidden characters for Linux and replace ":" with "_"
+            path = path.replace(/[/\r\n\t]/g, '').replace(/:/g, '_');
         }
         if (this.platform.indexOf('darwin') === 0) {
-            // TODO: max. 32 chars per part
+            // Replace forbidden characters for macOS
             path = path.replace(/[/:\r\n\t]/g, '');
         }
         return path.replace(/[.\s]+$/g, '').trim();
     }
+    
 
     /**
      * Helper function to generate an entry name for a page (picture) depending on the given number and mime type
