@@ -53,13 +53,17 @@ export default class KissComic extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise(resolve => resolve(lstImages));
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve(lstImages);
+                }, 1000);
+            });
         `;
 
         const uri = new URL(chapter.id, this.url);
         uri.searchParams.set('readType', 1);
         uri.searchParams.set('quality', 'hq');
-        let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script, 60000, true);
     }
 }
