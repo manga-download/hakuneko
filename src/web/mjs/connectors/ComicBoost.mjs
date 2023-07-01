@@ -1,7 +1,7 @@
-import Publus from './templates/Publus.mjs';
+import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-export default class ComicBoost extends Publus {
+export default class ComicBoost extends Connector {
 
     constructor() {
         super();
@@ -53,14 +53,13 @@ export default class ComicBoost extends Publus {
                 title: element.dataset.title.trim(),
                 language: ''
             };
-        });
+        }).filter(el => !el.id.includes('?coin=')); //exclude not accessible chapters
     }
 
     async _getPages(chapter) {
 
         const script = `
         new Promise((resolve) => {
-            const starttime = Date.now();
             setTimeout(async () => {
            
                 //Get Meta Parameters
@@ -106,11 +105,12 @@ export default class ComicBoost extends Publus {
            
                     let mode = 'puzzle';
                     let extension = '.jpeg';
+                    /*
                     if (data.ct && data.et && data.st) {
                         mode = 'RC4+puzzle';
                         extension += '.dat';
-                    }
-           
+                    }*/
+            
                     //let file = page.file + '/0';
                     //for (let d = v = 0; d < file.length; d++) {
                     //    v += file.charCodeAt(d);
@@ -148,6 +148,7 @@ export default class ComicBoost extends Publus {
                         encryption: {
                             //pattern: v % NFBR.a0X.a3h + 1,
                             blocks: blocks,
+                            pagedata : fPage,/*
                             key: {
                                 ct: data.ct,
                                 et: data.et,
@@ -155,19 +156,18 @@ export default class ComicBoost extends Publus {
                                 bs: data.bs || 128,
                                 hs: data.hs || 1024,
                                 useRawContent: undefined
-                            }
+                            }*/
                         }
                     };
                 });
            
-                console.log(Date.now() - starttime / 1000)
-           
+          
                 resolve(pages);
            
             }, 1000);
+         });
         `;
 
-        //FIRST : get real viewer location
         const uri = new URL( chapter.id, this.url );
         const request = new Request( uri, this.requestOptions );
         const data = await Engine.Request.fetchUI(request, script, 60000, true);
@@ -215,6 +215,8 @@ export default class ComicBoost extends Publus {
             canvas.width = bitmap.width;
             canvas.height = bitmap.height;
             var ctx = canvas.getContext('2d');
+
+            //const blocks = NFBR.a6G.a5x.b0Q(pagedata, pagedata.width, pagedata.height);
             for (let q of blocks) {
                 ctx.drawImage(bitmap, q.destX, q.destY, q.width, q.height, q.srcX, q.srcY, q.width, q.height);
             }
@@ -223,5 +225,4 @@ export default class ComicBoost extends Publus {
             }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value)/100);
         } );
     }
-
 }
