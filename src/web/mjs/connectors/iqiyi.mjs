@@ -9,9 +9,9 @@ export default class iqiyi extends MH {
         this.tags = ['manga', 'webtoon', 'chinese'];
         this.url = 'https://www.iqiyi.com';
 
-        this.path = '/manhua/category/%E5%85%A8%E9%83%A8_0_9_%PAGE%';
+        this.path = '/manhua/category/%E5%85%A8%E9%83%A8_-1_-1_9_%PAGE%';
         this.queryMangasPageCount = 'div.mod-page a:nth-last-child(2)';
-        this.pathMatch = /_0_9_(\d+)/;
+        this.pathMatch = /_-1_-1_9_(\d+)/;
         this.queryMangaTitle = '.detail-tit h1';
         this.queryMangas = 'ul.cartoon-hot-ul li.cartoon-hot-list a.cartoon-cover';
         this.queryPages = 'ul.main-container li.main-item source';
