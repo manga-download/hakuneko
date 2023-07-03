@@ -9,8 +9,6 @@ export default class ReaperScansBR extends Connector {
         this.tags = [ 'webtoon', 'portuguese' ];
         this.api = 'https://api.reaperscans.net';
         this.url = 'https://reaperscans.net';
-        this.queryChapters = 'ul.chapters-list-single > a';
-        this.queryPages = 'source.comic-chapter-image';
         this.queryMangaTitle ='div.series-title > h1';
         this.links = {
             login: 'https://reaperscans.net/login'
@@ -54,13 +52,18 @@ export default class ReaperScansBR extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryChapters);
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.querySelector('span.chapter-span.name').textContent.trim(),
-            };
+        const script = `
+        new Promise(resolve => {
+            const pages = __NEXT_DATA__.props.pageProps.series.chapters.map(element => {
+            	const id = '${manga.id}'+ element.chapter_slug;
+            	return {id : id, title : element.chapter_name.trim()};
+            });
+        	
+            resolve(pages);
+
         });
+        `;
+        return await Engine.Request.fetchUI(request, script);
     }
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
