@@ -13,20 +13,13 @@ export default class RealmScans extends WordPressMangastream {
 
     async _getMangas() {
         const request = new Request(new URL(this.path, this.url), this.requestOptions);
-        const script = `
-            new Promise((resolve) => {
-                setTimeout(() => {
-                    let mangalist = [...document.querySelectorAll('div.bsx a')].map(element => {
-                        return {
-                            id: element.pathname,
-                            title: element.querySelector('div.tt').textContent.trim()
-                        };
-                    });
-                   resolve(mangalist);
-                },2500); 
-            });
-        `;
-        return await Engine.Request.fetchUI(request, script);
+        const data = await this.fetchDOM(request, 'div.bsx a');
+        return data.map(element => {
+            return {
+                id: element.pathname,
+                title: element.querySelector('div.tt').textContent.trim()
+            };
+        });
     }
 
     async _getPages(chapter) {
