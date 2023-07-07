@@ -26,12 +26,26 @@ export default class INKR extends Connector {
         return new Manga(this, id, title);
     }
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        const uri = new URL(`/_next/data/${this.nextInstance}/manga/list/all.json`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        let data = await this.fetchJSON(request);
+        data = new LZSTRING().decompressFromBase64(data.pageProps._c);
+        data = JSON.parse(data);
+        const obj = unpacker.unpack(data[0], data[1]);
+        const mangas = obj.icd.filter(element => element[0].startsWith('ik-title'));
+        console.log(mangas);
+        return mangas.map(element => {
+            return {
+                id :  element[0],
+                title : element[1].name.trim()
+            };
+        });
+
     }
     async _getChapters(manga) {
         //https://comics.inkr.com/_next/data/b023df32bc9708e85db0b51983a2e76fce7be924/title/1227-a-sign-of-affection/chapters.json
-        const uri = new URL(`/_next/data/${this.nextInstance}/title/${manga.id}/chapters.json`, this.url);
+        const mangaid = manga.id.match(/ik-title-(\d+)$/)[1];
+        const uri = new URL(`/_next/data/${this.nextInstance}/title/${mangaid}/chapters.json`, this.url);
         const request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
         data = new LZSTRING().decompressFromBase64(data.pageProps._c);
@@ -47,7 +61,7 @@ export default class INKR extends Connector {
             })
             .map(chapter => {
                 return{
-                    id: chapter[1].oid.match(/\d+/),
+                    id: chapter[1].oid.match(/\d+$/),
                     title : chapter[1].name.trim()
                 };
             });
@@ -264,11 +278,11 @@ var unpacker = function() {
 }();
 
 var LZSTRING = function () {
-    var r,
+    var //r,
         o = function () {
             var t = String.fromCharCode,
                 e = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=',
-                n = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$',
+                // n = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-$',
                 r = {};
             function o(t, e) {
                 if (!r[t]) {
@@ -380,7 +394,7 @@ var LZSTRING = function () {
             };
             return i;
         } ();
-        return o
+    return o;
 };
 
 /***************************************************/
