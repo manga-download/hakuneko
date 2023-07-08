@@ -7,7 +7,7 @@ export default class MangaSwat extends WordPressMangastream {
         super.id = 'mangaswat';
         super.label = 'SWAT Manga';
         this.tags = ['webtoon', 'arabic'];
-        this.url = 'https://swatmanga.net';
+        this.url = 'https://swatop.club';
         this.path = '/manga/list-mode';
 
         this.queryChapters = 'div.bxcl ul li span.lchx a';
