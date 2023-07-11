@@ -76,7 +76,7 @@ export default class MangaDex extends Connector {
 
         while(lastCreatedAt) {
             await throttle;
-            throttle = new Promise(resolve => setTimeout(resolve, 250));
+            throttle = new Promise(resolve => setTimeout(resolve, this.config.throttleRequests.value));
 
             const uri = new URL('/manga', this.api);
             uri.searchParams.set('limit', `${limit}`);
