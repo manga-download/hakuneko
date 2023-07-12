@@ -7,6 +7,6 @@ export default class MangaRolls extends WordPressMadara {
         super.id = 'mangarolls';
         super.label = 'MangaRolls';
         this.tags = [ 'webtoon', 'manga', 'english' ];
-        this.url = 'https://mangarolls.com';
+        this.url = 'https://mangarolls.net';
     }
 }
