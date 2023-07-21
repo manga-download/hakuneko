@@ -9,6 +9,7 @@ export default class Mangalek extends WordPressMadara {
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
         this.url = 'https://ww.mangalek.org';
         this.queryTitleForURI = 'div.profile-manga div.post-title h1';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
 }

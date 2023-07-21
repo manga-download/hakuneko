@@ -59,7 +59,7 @@ export default class OmegaScans extends Connector {
         data = await data.json();
         return data.data.map(element => {
             return{
-                id: element.series_slug,
+                id: element.series_slug.replace(/-\d+$/, ''),
                 title : element.title.trim()
             };
         });

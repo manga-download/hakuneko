@@ -123,6 +123,11 @@ export default class Request {
                     return handleAutomaticRedirect();
                 }
 
+                //ReadComicOnline
+                if(document.querySelector('form#formVerify[action*="/Special/AreYouHuman"]')) { // Recaptcha
+                    return handleUserInteractionRequired();
+                }
+                
                 // CloudFlare Checks
                 let cfCode = document.querySelector('.cf-error-code');
                 if(cfCode) {

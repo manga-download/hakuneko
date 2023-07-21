@@ -8,7 +8,7 @@ export default class BlogTruyen extends Connector {
         super.id = 'blogtruyen';
         super.label = 'BlogTruyen';
         this.tags = [ 'manga', 'webtoon', 'vietnamese' ];
-        this.url = 'https://blogtruyen.vn';
+        this.url = 'https://blogtruyenmoi.com';
         this.requestOptions.headers.set('x-referer', this.url);
     }
 
