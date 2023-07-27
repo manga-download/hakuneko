@@ -94,7 +94,7 @@ export default class ComicFuz extends Connector {
         } else {
             buffer = {
                 mimeType: response.headers.get('content-type'),
-                data: buffer
+                data: new Uint8Array(buffer)
             };
         }
         this._applyRealMime(buffer);
