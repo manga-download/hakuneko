@@ -9,7 +9,7 @@ export default class Tempestfansub extends WordPressMangastream {
         this.tags = [ 'webtoon', 'manga', 'turkish' ];
         this.url = 'https://tempestfansub.com';
 
-        this.path = '/manga/list-mode/';
+        this.path = '/manga/';
     }
 
     async _getMangas() {
