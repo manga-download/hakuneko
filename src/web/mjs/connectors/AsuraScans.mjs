@@ -13,10 +13,6 @@ export default class AsuraScans extends WordPressMangastream {
         this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Linux; Android 9; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4026.0 Mobile Safari/537.36');
     }
 
-    canHandleURI(uri) {
-        return this.url.includes(uri.hostname);
-    }
-
     async _getPages(chapter) {
         const excludes = [
             /panda_gif_large/i,
