@@ -47,7 +47,11 @@ export default class Alphapolis extends Connector {
         const data = await this.fetchDOM(request, 'viewer-manga-horizontal');
         try {
             const pages = JSON.parse(data[0].getAttribute('v-bind:pages'));
-            return pages.filter(element => typeof element != 'object' && !element.match('white_page')).map(element => element.replace(/\/[0-9]+x[0-9]+.([\w]+)/, '/1080x1536.$1'));
+            return pages.filter(element => typeof element != 'object' && !element.match('white_page'))
+                .map(element => {
+                    const hiresPicture = element.replace(/\/[0-9]+x[0-9]+.([\w]+)/, '/1080x1536.$1');
+                    return this.createConnectorURI({hiresPicture : hiresPicture, normalpicture : element});
+                });
         } catch (error) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
@@ -63,4 +67,18 @@ export default class Alphapolis extends Connector {
             };
         });
     }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload.hiresPicture, this.requestOptions);
+        let response = await fetch(request);
+        if (response.status != 200) {
+            request = new Request(payload.normalpicture, this.requestOptions);
+            response = await fetch(request);
+        }
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
+        return data;
+    }
+
 }
