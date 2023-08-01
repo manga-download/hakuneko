@@ -1,6 +1,6 @@
-import Genkan from './templates/Genkan.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class LynxScans extends Genkan {
+export default class LynxScans extends WordPressMangastream {
 
     constructor() {
         super();
@@ -8,9 +8,6 @@ export default class LynxScans extends Genkan {
         super.label = 'Lynx Scans';
         this.tags = [ 'webtoon', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://lynxscans.com';
-        this.links = {
-            login: 'https://lynxscans.com/login'
-        };
-        this.path = '/web/comics';
+        this.path = '/comics/list-mode/';
     }
 }
