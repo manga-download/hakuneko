@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 import Manga from '../engine/Manga.mjs';
 
 export default class ComicK extends Connector {
@@ -10,10 +11,14 @@ export default class ComicK extends Connector {
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://comick.app';
         this.apiurl = 'https://api.comick.app';
+        this.requestOptions.headers.set('x-origin', this.url );
+        this.requestOptions.headers.set('x-referer', this.apiurl );
+
     }
 
     async _getEmbeddedJSON(uri) {
         const request = new Request(uri, this.requestOptions);
+        request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
         const scripts = await this.fetchDOM(request, 'script#__NEXT_DATA__');
         const data = JSON.parse(scripts[0].text);
         return data.props.pageProps;
@@ -35,8 +40,10 @@ export default class ComicK extends Connector {
 
     async _getMangasFromPage(page) {
         try {
-            const uri = new URL('/search?page=' + page, this.apiurl);
+            const uri = new URL('/v1.0/search?page=' + page, this.apiurl);
             const request = new Request(uri, this.requestOptions);
+            request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
+            await this.wait(500);
             const data = await this.fetchJSONEx(request);
             return data.message ? [] : data.map(item => {
                 return {
@@ -61,6 +68,7 @@ export default class ComicK extends Connector {
     async _getChaptersFromPage(manga, page) {
         const uri = new URL(`/comic/${manga.id}/chapters?page=${page}`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
+        request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
         const data = await this.fetchJSONEx(request);
         return data.chapters.map(item => {
             let title = '';
@@ -86,6 +94,7 @@ export default class ComicK extends Connector {
     async _getPages(chapter) {
         const uri = new URL('/chapter/' + chapter.id, this.apiurl);
         const request = new Request(uri, this.requestOptions);
+        request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
         const data = await this.fetchJSONEx(request);
         return data.chapter.md_images.map(image => `https://meo.comick.pictures/${image.b2key}`);
     }
