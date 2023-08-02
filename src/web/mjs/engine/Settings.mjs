@@ -125,6 +125,13 @@ export default class Settings extends EventTarget {
             value: extensions.img
         };
 
+        this.includesComicFile = {
+            label: 'Include Comic File',
+            description: 'Include the comic file (.xml) in the chapter archive',
+            input: types.checkbox,
+            value: false
+        };
+
         this.recompressionFormat = {
             label: 'De-Scrambling Format',
             description: [
