@@ -70,6 +70,24 @@
             .hide {
                 display: none;
             }
+            .buttonDisabled {
+                cursor: default;
+                pointer-events: none;
+                color: gray;
+            }
+            .remove-button {
+                cursor: pointer;
+                text-align: center;
+                padding: 0.25em;
+            }
+            .remove-button i {
+                color: var(--job-list-button-failed-color);
+            }
+
+            .remove-button:hover i {
+                color: var(--job-list-button-completed-color);
+            }
+
         </style>
         <div class$="list [[ getListClass(popupVisibility) ]]">
             <table cellpadding="0">
@@ -79,6 +97,9 @@
                         <td class="cell">[[ item.labels.connector ]]</td>
                         <td class="cell">[[ item.labels.manga ]]</td>
                         <td class="cell">[[ item.labels.chapter ]]</td>
+                        <td class="remove-button" on-click="removeFromQueue">
+                            <i class="fas fa-times"></i>
+                        </td>
                         <td class="progress" style$="background: linear-gradient(90deg, var(--job-list-progress-color) [[ item.progress ]]%, var(--job-list-progress-background-color) 0%);"></td>
                     </tr>
                 </template>
@@ -88,7 +109,18 @@
             <div class="expander">
                 <i class$="fas [[ getButtonClass(popupVisibility) ]] button" title="Toggle download list" on-click="toggleJobList"></i>
             </div>
-            <div class="status">[[ jobList.length ]] Download(s)</div>
+            <div class="status">
+                <span>[[ jobList.length ]] Download(s)</span>
+                <span>
+                    <i class$="fas fa-fw button [[ getPlayPauseClass(queuePaused) ]] [[ isQueueEmpty(jobList.length) ]]"
+                       title$="[[ getPlayPauseTooltip(queuePaused) ]]"
+                       on-click="playPauseQueue">
+                    </i>
+                </span>
+                <span>
+                    <i class$="fas fa-times remove-button [[ isQueueEmpty(jobList.length) ]]" title="Clear Job List" on-click="clearJobList"></i>
+                </span>
+            </div>
         </div>
     </template>
 
@@ -113,6 +145,10 @@
                         notify: true, // enable upward data flow,
                         //readOnly: true, // prevent downward data flow
                         //observer: 'onSelectedMangaChanged'
+                    },
+                    queuePaused: {
+                        type: Boolean,
+                        value: false,
                     }
                 };
             }
@@ -130,6 +166,13 @@
                 // register callbacks for events published by download manager
                 Engine.DownloadManager.addEventListener('updated', this.onDownloadStatusUpdated.bind(this));
                 this.ipc.on( 'close', this.onClose.bind( this ) );
+            }
+
+            /**
+             *
+             */
+            isQueueEmpty(length) {
+                return length < 1 ? 'buttonDisabled' : '';
             }
 
             /**
@@ -181,6 +224,41 @@
             /**
              *
              */
+            getPlayPauseTooltip( status ) {
+                if ( status ) {
+                    return 'Resume download queue';
+                } else {
+                    return 'Pause download queue';
+                }
+            }
+
+            /**
+             *
+             */
+            getPlayPauseClass( status ) {
+                if ( status ) {
+                    return 'fa-play';
+                } else {
+                    return 'fa-pause';
+                }
+            }
+
+            /**
+             *
+             */
+            playPauseQueue() {
+                if(this.queuePaused) {
+                    Engine.DownloadManager.startQueue();
+                    this.queuePaused = false;
+                } else {
+                    Engine.DownloadManager.pauseQueue();
+                    this.queuePaused = true;
+                }
+            }
+
+            /**
+             *
+             */
             getErrorTitle( errors ) {
                 return ( errors && errors.length > 0 ? 'Click to re-download\n' : '' ) + errors.map( ( error ) => {
                     return error.toString();
@@ -194,6 +272,29 @@
                 let job = e.model.item;
                 if( job.status === 'failed' || job.status === 'completed' ) {
                     Engine.DownloadManager.addDownload( job.chapter );
+                }
+            }
+
+            /**
+             *
+             */
+            removeFromQueue(e) {
+                const index = e.model.index;
+                const job = this.jobList[index];
+                if (job) {
+                    Engine.DownloadManager.removeFromQueue(job);
+                    this.splice('jobList', index, 1);
+                }
+            }
+
+            /**
+             *
+             */
+            async clearJobList() {
+                if(await confirm( 'Do you really want to clear the download queue?' )) {
+                    Engine.DownloadManager.clearQueue();
+                    this.splice('jobList', 0, this.jobList.length);
+                    this.queuePaused = false;
                 }
             }
 

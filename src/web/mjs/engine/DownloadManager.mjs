@@ -10,6 +10,7 @@ export default class DownloadManager extends EventTarget {
         super();
         this.queue = [];
         this.worker = setInterval( this.processQueue.bind( this ), 250 );
+        this.queuePaused = false;
     }
 
     /**
@@ -37,11 +38,52 @@ export default class DownloadManager extends EventTarget {
     }
 
     /**
+     * Returns true if the download queue is paused.
+     */
+    isQueuePaused() {
+        return this.queuePaused;
+    }
+
+    /**
+     * Pause the download queue processing.
+     */
+    pauseQueue() {
+        this.queuePaused = true;
+    }
+
+    /**
+     * Start the download queue processing if it was paused.
+     */
+    startQueue() {
+        this.queuePaused = false;
+        this.processQueue(); // Start processing the queue again
+    }
+
+    /**
+     * Remove a job from the download queue.
+     * @param job
+     */
+    removeFromQueue(job) {
+        if (!job) return;
+
+        const connectorID = job.chapter.manga.connector.id;
+        const index = this.queue[connectorID].indexOf(job);
+        if (index !== -1) {
+            this.queue[connectorID].splice(index, 1);
+            job.setStatus(job.initialStatus);
+        }
+    }
+
+    /**
      *
      */
     processQueue() {
         // find a connector in queue that has downloads available and is not locked
         for( let connectorID in this.queue ) {
+            if (this.isQueuePaused()) {
+                break;
+            }
+
             // check if queue is not empty, there are no active jobs for this connector and the connector is not locked internally through other requests
             if( this.queue[connectorID].length > 0 && this.queue[connectorID].activeCount < 1 && !this.queue[connectorID][0].chapter.manga.connector.isLocked ) {
                 this.queue[connectorID].activeCount++;
@@ -49,6 +91,20 @@ export default class DownloadManager extends EventTarget {
                 job.downloadPages( '', () => {
                     this.queue[connectorID].activeCount--;
                 });
+            }
+        }
+    }
+
+    /**
+     * Clear the download queue.
+     */
+    clearQueue() {
+        for (let connectorID in this.queue) {
+            const jobs = this.queue[connectorID];
+            for (let i = jobs.length - 1; i >= 0; i--) {
+                const job = jobs[i];
+                job.setStatus(job.initialStatus);
+                jobs.splice(i, 1);
             }
         }
     }
