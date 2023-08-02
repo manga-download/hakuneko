@@ -227,7 +227,7 @@ export default class Lezhin extends Connector {
         request = new Request(imageurl, this.requestOptions);
         response = await fetch(request);
 
-        const scrambled = data.data.extra.comic.metadata.imageShuffle;
+        const scrambled = data.data.extra.comic.metadata?.imageShuffle;
         data = await response.blob();
         if (scrambled) {//if image is scrambled
             data = await this.descrambleimage(data, episode.id);
