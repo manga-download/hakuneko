@@ -208,11 +208,12 @@ describe('UpdateServerManager', function () {
 
         it('should throw error when URL is invalid', async () => {
             let testee = fixture.createTestee();
+            let invalidURL = 'foobar';
             try {
-                await testee.getUpdateArchive({link: 'foobar'});
+                await testee.getUpdateArchive({link: invalidURL});
                 assert.fail('Expected error not thrown!');
             } catch(error) {
-                assert.equal(error.message, 'Invalid URL: foobar');
+                assert.equal(error.message + ':' + invalidURL, 'Invalid URL:'+ invalidURL);
             }
         });
 
