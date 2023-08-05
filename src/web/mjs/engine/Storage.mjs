@@ -1,5 +1,4 @@
 import EbookGenerator from './EbookGenerator.mjs';
-import ComicInfoGenerator from './ComicInfoGenerator.mjs';
 import Chapter from './Chapter.mjs';
 
 const extensions = {
@@ -449,9 +448,7 @@ export default class Storage {
             }
             if (Engine.Settings.chapterFormat.value === extensions.cbz) {
                 this._createDirectoryChain(this.path.dirname(output));
-                let mangaName = chapter.manga.title;
-                let chapterName = chapter.title;
-                promise = this._saveChapterPagesCBZ(output, pageData, mangaName, chapterName)
+                promise = this._saveChapterPagesCBZ(output, pageData, chapter.manga.title, chapter.title)
                     .then(() => this._runPostChapterDownloadCommand(chapter, output));
             }
             if (Engine.Settings.chapterFormat.value === extensions.pdf) {
@@ -554,10 +551,8 @@ export default class Storage {
     _saveChapterPagesCBZ(archive, pageData, mangaName = '', chapterName = '') {
         let zip = new JSZip();
 
-        if (Engine.Settings.includesComicFile.value) {
-            let comicFile = ComicInfoGenerator.createComicInfoXML(mangaName, chapterName, pageData.length);
-            zip.file('ComicInfo.xml', comicFile);
-        }
+        let comicFile = Engine.ComicInfoGenerator.createComicInfoXML(mangaName, chapterName, pageData.length);
+        zip.file('ComicInfo.xml', comicFile);
 
         pageData.forEach(page => {
             zip.file(page.name, page.data);
@@ -901,5 +896,19 @@ export default class Storage {
                 }
             });
         });
+    }
+
+    /**
+     * Convenience function wrapping key value saving for pinned connectors
+     */
+    savePinnedConnectors(pinnedConnectors) {
+        return this.saveConfig('pinnedConnectors', pinnedConnectors);
+    }
+
+    /**
+     * Convenience function wrapping key value loading for pinned connectors
+     */
+    loadPinnedConnectors() {
+        return this.loadConfig('pinnedConnectors');
     }
 }

@@ -125,13 +125,6 @@ export default class Settings extends EventTarget {
             value: extensions.img
         };
 
-        this.includesComicFile = {
-            label: 'Include Comic File in CBZ',
-            description: 'Include a comic file (comicinfo.xml) in the chapter archive',
-            input: types.checkbox,
-            value: false
-        };
-
         this.recompressionFormat = {
             label: 'De-Scrambling Format',
             description: [
