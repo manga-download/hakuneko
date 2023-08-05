@@ -897,18 +897,4 @@ export default class Storage {
             });
         });
     }
-
-    /**
-     * Convenience function wrapping key value saving for pinned connectors
-     */
-    savePinnedConnectors(pinnedConnectors) {
-        return this.saveConfig('pinnedConnectors', pinnedConnectors);
-    }
-
-    /**
-     * Convenience function wrapping key value loading for pinned connectors
-     */
-    loadPinnedConnectors() {
-        return this.loadConfig('pinnedConnectors');
-    }
 }
