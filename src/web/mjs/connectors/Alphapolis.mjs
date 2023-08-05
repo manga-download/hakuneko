@@ -14,8 +14,8 @@ export default class Alphapolis extends Connector {
     async _getMangas() {
         let mangaList = [];
         const request = new Request(new URL('/manga/official/search', this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, 'span:last-child > a');
-        const pageCount = parseInt(data[0].href.match(/(\d)+$/)[1]);
+        const data = await this.fetchDOM(request, 'div.paginator.section span a[rel="last"]');
+        const pageCount = parseInt(data[0].href.match(/(\d+)$/)[1]);
         for(let page = 1; page <= pageCount; page++) {
             let mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
