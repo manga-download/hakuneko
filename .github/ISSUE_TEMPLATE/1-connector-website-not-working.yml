@@ -12,8 +12,8 @@ body:
           required: true
   - type: checkboxes
     attributes:
-      label: Did you read [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/)
-      description: Please check if your issue might not be related to some known cases.
+      label: Did you read the troubleshooting guide ?
+      description: Please check [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/) if your issue might not be related to some known cases.
       options:
         - label: I read it but nothing seems related
           required: true
@@ -22,12 +22,12 @@ body:
       label: Is the website of the connector working properly ?
       description: If the website isn't working, hakuneko will not solve the issue.
       options:
-        - label: Yes i'm ble to see the manga within my standard browser
+        - label: Yes i'm able to see the manga within my standard browser
           required: true
   - type: checkboxes
     attributes:
-      label: Make sure to [try Nightly Build](https://github.com/manga-download/hakuneko/releases)
-      description: Nightly build contains latest fixes, maybe your problem is already solved.
+      label: Make sure to try Nightly Build
+      description: The [nightly build](https://github.com/manga-download/hakuneko/releases) contains latest fixes. Perhaps your problem is already solved.
       options:
         - label: Yes nightly build didn't fix the issue
           required: true
