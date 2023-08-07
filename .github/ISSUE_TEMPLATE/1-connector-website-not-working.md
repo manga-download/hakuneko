@@ -10,12 +10,16 @@ assignees: ''
 **Did you read [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/)**
 Yes/No
 
-**Did you [try Nightly Build](https://github.com/manga-download/hakuneko/releases) ?**
-Yes/No
+**Make sure to [try Nightly Build](https://github.com/manga-download/hakuneko/releases) .**
+Nightly build contains latest fixes, maybe your problem is already solved.
 
-**Is the website of the connector working properly / are you able to see the manga within your browser**
-Yes/No
+**Make sure to [try Nightly Build](https://github.com/manga-download/hakuneko/releases) .**
+Nightly build contains latest fixes, maybe your problem is already solved.
 
+**Did you search if there is not already an issue opened for your problem ?**
+If there is already one then its useless to open another. Please refrain doing so.
+Yes/No
+ 
 **Describe the bug**
 A clear and concise description of what the bug is.
 
