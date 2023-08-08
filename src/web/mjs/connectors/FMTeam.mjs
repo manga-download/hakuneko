@@ -1,5 +1,6 @@
-import FoolSlide from './templates/FoolSlide.mjs';
-export default class FMTeam extends FoolSlide {
+import PizzaReader from './templates/PizzaReader.mjs';
+
+export default class FMTeam extends PizzaReader {
 
     constructor() {
         super();
@@ -7,7 +8,5 @@ export default class FMTeam extends FoolSlide {
         super.label = 'fmteam';
         this.tags = [ 'manga', 'high-quality', 'french', 'scanlation' ];
         this.url = 'https://fmteam.fr';
-        //this.path = '/directory/';
-        this.language = 'french';
     }
 }
