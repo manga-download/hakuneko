@@ -7,7 +7,7 @@ export default class DoujinDesu extends WordPressMangastream {
         super.id = 'doujindesu';
         super.label = 'DoujinDesu';
         this.tags = ['hentai', 'indonesian'];
-        this.url = 'https://212.32.226.234';
+        this.url = 'https://doujindesu.tv/';
         this.path = '/manga/page/%PAGE%/';
 
         this.queryMangas = 'div.entries article.entry a';
@@ -15,10 +15,6 @@ export default class DoujinDesu extends WordPressMangastream {
         this.queryPages = 'div.main div img[src]:not([src=""])';
         this.queryChaptersTitle = undefined;
         this.querMangaTitleFromURI = 'section.metadata h1.title';
-    }
-
-    canHandleURI(uri) {
-        return /doujindesu\.xxx|212\.32\.226\.234/.test(uri.hostname);
     }
 
     async _getMangas() {
