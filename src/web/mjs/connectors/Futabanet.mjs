@@ -9,6 +9,7 @@ export default class Futabanet extends SpeedBinb {
         super.label = 'がうがうモンスター (Futabanet Monster)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://gaugau.futabanet.jp';
+        this.baseURL = 'https://reader.futabanet.jp';
     }
 
     async _getMangaFromURI(uri) {
@@ -41,7 +42,7 @@ export default class Futabanet extends SpeedBinb {
 
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.detail-sec.detail-ex div.detail-ex__btn-item a');
+        let data = await this.fetchDOM(request, 'section.detail-sec.detail-ex div.detail-ex__btn-list-wrap div.detail-ex__btn-item a[href*="reader.futabanet"]');
         return data.map(element => {
             let title = element.querySelector('span:not(.new)');
             return {
@@ -50,5 +51,4 @@ export default class Futabanet extends SpeedBinb {
             };
         });
     }
-
 }

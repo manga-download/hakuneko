@@ -7,9 +7,8 @@ export default class AsuraScans extends WordPressMangastream {
         super.id = 'asurascans';
         super.label = 'Asura Scans';
         this.tags = ['webtoon', 'english'];
-        this.url = 'https://www.asurascans.com';
+        this.url = 'https://asura.gg';
         this.path = '/manga/list-mode/';
-
         this.queryPages = 'div#readerarea p img';
         this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Linux; Android 9; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4026.0 Mobile Safari/537.36');
     }
@@ -18,7 +17,8 @@ export default class AsuraScans extends WordPressMangastream {
         const excludes = [
             /panda_gif_large/i,
             /2021\/04\/page100-10\.jpg/i,
-            /2021\/03\/20-ending-page-\.jpg/i
+            /2021\/03\/20-ending-page-\.jpg/i,
+            /ENDING-PAGE/i
         ];
         const images = await super._getPages(chapter);
         return images.filter(link => !excludes.some(rgx => rgx.test(link)));

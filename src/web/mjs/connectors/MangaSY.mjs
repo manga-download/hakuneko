@@ -23,6 +23,7 @@ export default class MangaSY extends WordPressMadara {
                 resolve(JSON.parse(imgdata));
             });
         `;
-        return await Engine.Request.fetchUI(request, script);
+        const data = await Engine.Request.fetchUI(request, script);
+        return data.map(picture => this.createConnectorURI({url : picture, referer : url}));
     }
 }

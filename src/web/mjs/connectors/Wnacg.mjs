@@ -8,7 +8,7 @@ export default class Wnacg extends Connector {
         super.id = 'wnacg';
         super.label = 'wnacg';
         this.tags = [ 'hentai', 'porn', 'japanese' ];
-        this.url = 'https://www.wnacg.org';
+        this.url = 'https://www.wnacg.com';
     }
 
     async _getMangaFromURI(uri) {

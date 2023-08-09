@@ -10,6 +10,7 @@ export default class Kuaikanmanhua extends Connector {
         this.tags = ['manga', 'chinese'];
         this.url = 'https://www.kuaikanmanhua.com';
         this.list = '/tag/0';
+        this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1');
     }
 
     async _getMangaFromURI(uri) {
@@ -84,7 +85,6 @@ export default class Kuaikanmanhua extends Connector {
         });
         `;
         const request = new Request(this.url + chapter.id, this.requestOptions);
-        request.headers.set('x-user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1');
         return await Engine.Request.fetchUI(request, script);
     }
 }

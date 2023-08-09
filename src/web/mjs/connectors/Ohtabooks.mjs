@@ -46,7 +46,7 @@ export default class Ohtabooks extends SpeedBinb {
             .then( data => {
                 let chapterList = data.map( element => {
                     let partId = element.getAttribute( 'onclick' );
-                    partId = partId.match(/\d+/);
+                    partId = partId.match(/\d+/)[0];
 
                     let title = element.querySelector( '.title' );
                     if( title ) {
@@ -76,11 +76,11 @@ export default class Ohtabooks extends SpeedBinb {
     }
 
     _getPageList( manga, chapter, callback ) {
-        this.fetchDOM( chapter.id, 'script[type="text/javascript"]' )
+        this.fetchDOM( chapter.id, 'body' )
             .then( data => {
-                data = data[0].innerHTML;
+                data = data[0].innerHTML.match(/location.href='(.*)'/)[1];
                 let ch = {
-                    id: data.substring( data.indexOf('\'') + 1, data.lastIndexOf('\'') ),
+                    id: data,
                     title: chapter.title,
                     language: chapter.language
                 };

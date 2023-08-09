@@ -1,0 +1,66 @@
+name: ❗ Connector/Website not working
+description: Notify that a connector is not working
+title: "[<NameOfConnector>] Connector not working"
+labels: ["Website Change"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this connector?
+      description: Do not create duplicate of an existing issue related to the connector
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: checkboxes
+    attributes:
+      label: Did you read the troubleshooting guide ?
+      description: Please check [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/) if your issue might not be related to some known cases.
+      options:
+        - label: I read it but nothing seems related
+          required: true
+  - type: checkboxes
+    attributes:
+      label: Is the website of the connector working properly ?
+      description: If the website isn't working, hakuneko will not solve the issue.
+      options:
+        - label: Yes i'm able to see the manga within my standard browser
+          required: true
+  - type: checkboxes
+    attributes:
+      label: Make sure to try Nightly Build
+      description: The [nightly build](https://github.com/manga-download/hakuneko/releases) contains latest fixes. Perhaps your problem is already solved.
+      options:
+        - label: Yes nightly build didn't fix the issue
+          required: true
+  - type: dropdown
+    attributes:
+      label: What kind of issue are you encountering
+      options:
+        - Manga list isn't refreshing
+        - Chapter list isn't refreshing
+        - Downloads aren't working
+        - Images are missing in the embeded viewer
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Describe the bug
+      description: A clear and concise description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: To Reproduce
+      description: Steps to reproduce the behavior
+      value: |
+        1. Name of connector
+        2. Name of manga (if connector update is working)
+        3. Name of chapter (if manga update is working)
+        4. Copy any relevant error message that appears in a popup or (advanced) within the console (press F12)
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        **Screenshots**
+        If complex to describe, add screenshots to help explain your problem.
