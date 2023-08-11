@@ -448,7 +448,7 @@ export default class Storage {
             }
             if (Engine.Settings.chapterFormat.value === extensions.cbz) {
                 this._createDirectoryChain(this.path.dirname(output));
-                promise = this._saveChapterPagesCBZ(output, pageData)
+                promise = this._saveChapterPagesCBZ(output, pageData, chapter.manga.title, chapter.title)
                     .then(() => this._runPostChapterDownloadCommand(chapter, output));
             }
             if (Engine.Settings.chapterFormat.value === extensions.pdf) {
@@ -548,8 +548,12 @@ export default class Storage {
      * Create and save pages to the given archive file.
      * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
      */
-    _saveChapterPagesCBZ(archive, pageData) {
+    _saveChapterPagesCBZ(archive, pageData, mangaName = '', chapterName = '') {
         let zip = new JSZip();
+
+        let comicFile = Engine.ComicInfoGenerator.createComicInfoXML(mangaName, chapterName, pageData.length);
+        zip.file('ComicInfo.xml', comicFile);
+
         pageData.forEach(page => {
             zip.file(page.name, page.data);
         });
