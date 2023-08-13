@@ -16,7 +16,7 @@ export default class AsuraScansTR extends WordPressMangastream {
     get icon() {
         return '/img/connectors/asurascans';
     }
-    
+
     async _getPages(chapter) {
         const excludes = [
             /panda_gif_large/i,
@@ -27,5 +27,5 @@ export default class AsuraScansTR extends WordPressMangastream {
         const images = await super._getPages(chapter);
         return images.filter(link => !excludes.some(rgx => rgx.test(link)));
     }
-    
+
 }
