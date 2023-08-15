@@ -16,7 +16,7 @@ export default class FirstKiss extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'h1#title-detail-manga');
-        return new Manga(this, uri.pathname, data[0].content.trim());
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     async _getMangas() {
