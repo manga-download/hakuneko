@@ -93,6 +93,13 @@ export default class Settings extends EventTarget {
             value: false
         };
 
+        this.ignore404 = {
+            label: 'Ignore 404 errors',
+            description: 'Download even after getting a 404 error',
+            input: types.checkbox,
+            value: false
+        };
+
         this.chapterTitleFormat = {
             label: 'Chapter Title Format',
             description: [
