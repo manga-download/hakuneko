@@ -10,14 +10,9 @@ export default class Hiperdex extends WordPressMadara {
         this.config = {
             url: {
                 label: 'URL',
-                description: 'This website changes between those two URL regularly.\n Please select the one to use',
-                input: 'select',
-                options: [
-                    { value: 'https://1sthiperdex.com', name: '1sthiperdex.com' },
-                    { value: 'https://hiperdex.com', name: 'hiperdex.com' },
-                ],
-                value: 'https://1sthiperdex.com'
-
+                description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
+                input: 'text',
+                value: 'https://hiperdex.xyz'
             }
         };
     }
