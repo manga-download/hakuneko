@@ -14,7 +14,7 @@ export default class Tapas extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'head title');
+        let data = await this.fetchDOM(request, 'div.info a.title');
         let id = uri.pathname;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
