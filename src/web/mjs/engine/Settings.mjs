@@ -93,8 +93,8 @@ export default class Settings extends EventTarget {
             value: false
         };
 
-        this.ignoreErrors = {
-            label: 'Ignore errors',
+        this.ignoreErrorOnDownload = {
+            label: 'Ignore errors on download',
             description: 'Download pages ignoring errors',
             input: types.checkbox,
             value: false
