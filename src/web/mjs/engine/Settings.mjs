@@ -93,9 +93,9 @@ export default class Settings extends EventTarget {
             value: false
         };
 
-        this.ignore404 = {
-            label: 'Ignore 404 errors',
-            description: 'Download even after getting a 404 error',
+        this.ignoreErrors = {
+            label: 'Ignore errors',
+            description: 'Download pages ignoring errors',
             input: types.checkbox,
             value: false
         };
