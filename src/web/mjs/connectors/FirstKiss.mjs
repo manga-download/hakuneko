@@ -74,15 +74,4 @@ export default class FirstKiss extends Connector {
         const data = await this.fetchDOM(request, 'div.reading-detail div.page-chapter source');
         return data.map(image => this.createConnectorURI(this.getAbsolutePath(image, request.url)));
     }
-
-    async _handleConnectorURI(payload) {
-        const request = new Request(payload, this.requestOptions);
-        request.headers.set('x-referer', this.url);
-        const response = await fetch(request);
-        let data = await response.blob();
-        data = await this._blobToBuffer(data);
-        this._applyRealMime(data);
-        return data;
-    }
-
 }
