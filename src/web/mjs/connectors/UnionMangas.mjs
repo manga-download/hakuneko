@@ -8,9 +8,9 @@ export default class UnionMangas extends Connector {
         super.id = 'unionmangas';
         super.label = 'UnionMangas';
         this.tags = [ 'manga', 'portuguese' ];
-        this.url = 'https://unionleitor.top';
+        this.url = 'https://guimah.com';
         this.links = {
-            login: 'https://unionleitor.top/login'
+            login: 'https://guimah.com/login'
         };
     }
 
