@@ -13,7 +13,7 @@ export default class KomikCast extends WordPressMangastream {
         this.queryMangas = 'div.text-mode_list-items ul li a.series, div.text-mode_list-items ul li a.text-mode_list-item';
         this.queryChapters = 'div.komik_info-chapters ul li.komik_info-chapters-item a.chapter-link-item';
         this.queryChaptersTitle = undefined;
-        this.queryPages = 'div.main-reading-area source[src^="http"], div.separator source[src^="http"]';
+        this.queryPages = 'div.main-reading-area source[src^="http"], div.separator img[src^="http"]';
     }
 
     async _initializeConnector() {
