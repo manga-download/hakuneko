@@ -5,6 +5,9 @@ export default class MangaMe extends WordPressMadara {
         super.id = 'mangame';
         super.label = 'MangaMe';
         this.tags = [ 'webtoon', 'manga', 'english' ];
-        this.url = 'https://mangame.org';
+        this.url = 'https://mangareading.org';
+        this.queryMangas = 'div.card-item-title a';
+        this.queryChapters = 'div.plm-chapters div.plm-grid a';
+        this.queryChaptersTitleBloat = 'span';
     }
 }
