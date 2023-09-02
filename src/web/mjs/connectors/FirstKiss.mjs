@@ -72,6 +72,7 @@ export default class FirstKiss extends Connector {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.reading-detail div.page-chapter source');
-        return data.map(image => this.createConnectorURI(this.getAbsolutePath(image, request.url)));
+        return data.filter(image => !image.src.match(/\/logos\/|pic_999/)).
+            map(image => this.createConnectorURI(this.getAbsolutePath(image, request.url)));
     }
 }
