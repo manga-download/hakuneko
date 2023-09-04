@@ -6,7 +6,7 @@ export default class ManhwaList extends WordPressMangastream {
         super.id = 'manhwalist';
         super.label = 'Manhwa List';
         this.tags = [ 'manga', 'indonesian'];
-        this.url = 'https://manhwalist.xyz';
+        this.url = 'https://manhwalist.com';
         this.path = '/manga/?list';
     }
 }
