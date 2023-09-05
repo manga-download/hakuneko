@@ -7,6 +7,6 @@ export default class GoofFansub extends WordPressMadara {
         super.id = 'gooffansub';
         super.label = 'Goof Fansub';
         this.tags = [ 'hentai', 'high-quality', 'portuguese', 'scanlation' ];
-        this.url = 'https://gooffansub.com.br';
+        this.url = 'https://gooffansub.com';
     }
 }
