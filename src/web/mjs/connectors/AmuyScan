@@ -1,0 +1,12 @@
+import WordPressMadara from './templates/WordPressMadara.mjs';
+
+export default class AmuyScan extends WordPressMadara {
+
+    constructor() {
+        super();
+        super.id = 'amuyscan';
+        super.label = 'AmuyScan';
+        this.tags = [ 'manga', 'portuguese', 'webtoon' ];
+        this.url = 'https://apenasmaisumyaoi.com/';
+    }
+}
