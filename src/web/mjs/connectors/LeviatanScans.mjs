@@ -7,7 +7,7 @@ export default class LeviatanScans extends WordPressMadara {
         super.id = 'leviatanscans';
         super.label = 'LeviatanScans';
         this.tags = [ 'webtoon', 'high-quality', 'english', 'scanlation' ];
-        this.url = 'https://LScomic.com';
+        this.url = 'https://lscomic.com';
         this.requestOptions.headers.set('x-origin', this.url);
         this.requestOptions.headers.set('x-referer', `${this.url}/`);
     }
