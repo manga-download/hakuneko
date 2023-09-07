@@ -8,7 +8,7 @@ body:
       label: Is there an existing issue for this connector?
       description: Do not create duplicate of an existing issue related to the connector
       options:
-        - label: I have searched the existing issues
+        - label: I have searched the existing issues and i made sure there is no opened issue related to this website/problem.
           required: true
   - type: checkboxes
     attributes:
