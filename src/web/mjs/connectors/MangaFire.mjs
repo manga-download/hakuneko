@@ -12,7 +12,7 @@ export default class MangaFire extends Connector {
         this.path = '/az-list?page=';
 
         this.queryMangaTitleFromURI = 'div.info h1[itemprop="name"]';
-        this.queryMangas = 'div.info a';
+        this.queryMangas = 'div.info > a';
         this.idRegex = /manga\/[^.]+\.(\w+)/;
     }
 
@@ -28,20 +28,61 @@ export default class MangaFire extends Connector {
         for(let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangas.length ? mangaList.push(...mangas) : run = false;
+            await this.wait(250);
+            console.log(mangaList.length);
+
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(this.path + page, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangas);
-        return data.map(element => {
-            return {
-                id: element.pathname,
-                title: element.title.trim()
-            };
+        const mangas = [];
+        const script = `
+        new Promise((resolve, reject) => {
+                 setTimeout(() => {
+                    try {
+                        const nodes = [...document.querySelectorAll('${this.queryMangas}')];
+                        const mangas = [];
+                        nodes.map(element => {
+                            mangas.push({
+                                id: element.pathname,
+                                title : element.text.trim()
+                            });   
+                        });
+
+                        resolve(mangas);
+                    }
+                    catch(error) {
+                        reject(error);
+                    }
+                },
+                2500);
+ 
         });
+        `;
+
+        //first try getting mangas normally.
+        const uri = new URL(this.path + page, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.text();
+        if(/waf-js-run/i.test(data)) {
+            console.log(`we got waffed on page ${page}`);
+            request = new Request(uri, this.requestOptions);
+            return await Engine.Request.fetchUI(request, script);
+        } else {
+            const dom = this.createDOM(data);
+            const nodes = [...dom.querySelectorAll(this.queryMangas)];
+            nodes.map(element => {
+                mangas.push({
+                    id: element.pathname,
+                    title : element.text.trim()
+                });
+            });
+
+            return mangas;
+        }
+
     }
 
     async _getChapters(manga) {
