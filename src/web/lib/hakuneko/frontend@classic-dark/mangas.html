@@ -94,6 +94,9 @@
                         <input id="paste" />
                         <i class="fas fa-fw fa-paste button" on-click="onPasteClick" title="Click to paste manga links from the clipboard (CTRL + V)"></i>
                     </td>
+                    <td width="1">
+                        <i class="fas fa-fw fa-download button" on-click="onDownloadMangaClick" title="Click to download all chapters currently available for all mangas shown in the filtered and sorted list"></i>
+                    </td>
                 </tr>
             </table>
         </div>
@@ -246,6 +249,33 @@
                 } );
                 // trigger update for refresh button style (update started)
                 this.notifyPath( 'selectedConnector.isUpdating' );
+            }
+
+            /**
+             * For all visible manga (filtered), add all their availble chapters currently to the download manager
+             */
+            async onDownloadMangaClick( e ) {
+                let mangas = this['mangaList']
+                let filter = this['mangaPattern']
+                let filteredMangas = mangas
+                if (filter != undefined) {
+                    filteredMangas = mangas.filter((manga) => -1 != manga.title.toLowerCase().indexOf(filter.toLowerCase()))
+                }
+                if ( await confirm( "Download all chapters for the " + filteredMangas.length + " filtered mangas ?" )) {
+                    console.log("Download all chapters for the " + filteredMangas.length + " filtered mangas")
+                    for (var index in filteredMangas) {
+                        let manga = filteredMangas[index]
+                        console.log("Download all available chapters of " + manga.title)
+                        await manga.getChapters( () => {
+                            for (var index in manga.chapterCache) {
+                                let chapter = manga.chapterCache[index]
+                                if (chapter.status === "available") {
+                                    this._downloadManager.addDownload( chapter );
+                                }
+                            }
+                        })
+                    }
+                }
             }
 
             /**
