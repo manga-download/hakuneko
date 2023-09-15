@@ -95,7 +95,7 @@
                         <i class="fas fa-fw fa-paste button" on-click="onPasteClick" title="Click to paste manga links from the clipboard (CTRL + V)"></i>
                     </td>
                     <td width="1">
-                        <i class="fas fa-fw fa-download button" on-click="onDownloadMangaClick" title="Click to download all chapters currently available for all mangas shown in the filtered and sorted list"></i>
+                        <i class="fas fa-fw fa-download button" on-click="onDownloadMangasClick" title="Click to download all chapters currently available for all mangas shown in the filtered and sorted list"></i>
                     </td>
                 </tr>
             </table>
@@ -254,7 +254,7 @@
             /**
              * For all visible manga (filtered), add all their availble chapters currently to the download manager
              */
-            async onDownloadMangaClick( e ) {
+            async onDownloadMangasClick( e ) {
                 let mangas = this['mangaList']
                 let filter = this['mangaPattern']
                 let filteredMangas = mangas
