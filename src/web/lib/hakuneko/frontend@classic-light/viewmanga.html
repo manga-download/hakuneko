@@ -1,0 +1,89 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-viewmanga">
+    <template>
+        <style include="theme"></style>
+        <style>
+            #container {
+                width: calc(100% - 2em);
+                height: calc(100% - 2em);
+                padding: 1em;
+                background-color: var(--page-control-background-color);
+                overflow-y: scroll;
+                background-size: cover;
+                background-repeat: no-repeat;
+                background-position: left top;
+                font-size: 1.25em;
+                
+                display: flex;
+                flex-direction: column;
+            }
+
+            .show {
+                display: block ;
+            }
+            .hide {
+                display: none;
+            }
+            h1 {
+                font-size:1.5em;
+                margin-top:0;
+                margin-bottom:0;
+                vertical-align:center;
+            }
+            h3 {
+                margin-bottom:0.1em;
+            }
+            .iframe-sytyle { flex-grow: 1; border: solid; margin: 0; padding: 0; }
+        </style>
+        <div id="container">
+            <h3>[[ selectedManga.title]] from [[ selectedManga.connector.label ]]</h3>
+            <iframe src="[[ getMangaUrl(selectedManga) ]]" class="iframe-sytyle"></iframe>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoViewManga extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-viewmanga';
+            }
+
+            /**
+             *
+             */
+             static get properties() {
+                return {
+                    selectedManga: {
+                        type: Object
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+            }
+
+            /**
+             *
+             */
+             getMangaUrl( manga ) {
+                console.log(manga)
+                return manga.connector.url + manga.id
+            }
+
+        }
+
+        window.customElements.define( HakunekoViewManga.is, HakunekoViewManga );
+    </script>
+
+</dom-module>

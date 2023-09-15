@@ -7,6 +7,7 @@
 <link rel="import" href="jobs.html">
 <link rel="import" href="quotes.html">
 <link rel="import" href="start.html">
+<link rel="import" href="viewmanga.html">
 
 <dom-module id="hakuneko-app">
 
@@ -77,6 +78,11 @@
                 z-index: 0;
                 overflow-x: hidden;
             }
+            hakuneko-manga_presentation {
+                flex: 100;
+                z-index: 0;
+                overflow-x: hidden;
+            }
             #loader {
                 position: fixed;
                 color: var(--app-loading-screen-color);
@@ -130,8 +136,9 @@
             <hakuneko-jobs></hakuneko-jobs>
         </div>
         <div style$="[[ getContentPanelStyle(readerEnabled) ]]" class="content">
-            <hakuneko-start style$="[[ getStartPanelStyle(readerEnabled,chapter) ]]"></hakuneko-start>
-            <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled,chapter) ]]" selected-chapter="[[ chapter ]]" selected-media="{{ selectedMediaIndex }}"></hakuneko-pages>
+            <hakuneko-start style$="[[ getStartPanelStyle(readerEnabled,manga,chapter) ]]"></hakuneko-start>
+            <hakuneko-viewmanga style$="[[ getMangaPresentationPanelStyle(readerEnabled,manga,chapter) ]]" selected-manga="{{ manga }}"></hakuneko-viewmanga>
+            <hakuneko-pages style$="[[ getPagePanelStyle(readerEnabled,manga,chapter) ]]" selected-chapter="[[ chapter ]]" selected-media="{{ selectedMediaIndex }}"></hakuneko-pages>
         </div>
     </template>
 
@@ -187,15 +194,25 @@
             /**
              *
              */
-            getPagePanelStyle(readerEnabled,chapter) {
-                return ( !readerEnabled || chapter===undefined ? 'display: none;' : '' );
+            getPagePanelStyle(readerEnabled,manga,chapter) {
+                let isDisplayed = readerEnabled && manga!==undefined && chapter!==undefined
+                return ( isDisplayed ? '' : 'display: none;');
             }
 
             /**
              *
              */
-             getStartPanelStyle(readerEnabled,chapter) {
-                return ( chapter!==undefined ? 'display: none;' : '' );
+             getMangaPresentationPanelStyle(readerEnabled,manga,chapter) {
+                let isDisplayed = readerEnabled && manga!==undefined && chapter===undefined
+                return ( isDisplayed ? '' : 'display: none;');
+            }
+
+            /**
+             *
+             */
+             getStartPanelStyle(readerEnabled,manga,chapter) {
+                let isDisplayed = readerEnabled && manga===undefined && chapter===undefined
+                return ( isDisplayed ? '' : 'display: none;');
             }
 
             /**
