@@ -270,7 +270,7 @@
                             for (var index in manga.chapterCache) {
                                 let chapter = manga.chapterCache[index]
                                 if (chapter.status === "available") {
-                                    this._downloadManager.addDownload( chapter );
+                                    Engine._downloadManager.addDownload( chapter );
                                 }
                             }
                         })
