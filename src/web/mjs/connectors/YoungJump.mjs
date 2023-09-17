@@ -14,7 +14,7 @@ export default class YoungJump extends SpeedBinb {
     }
 
     async _getMangas() {
-        const request = new Request('https://www.youngjump.world/yj-rest-apis/getBookInfo.php', this.requestOptions);
+        const request = new Request(`${this.url}/yj-rest-apis/getBookInfo.php`, this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.map(magazine => {
             return {
