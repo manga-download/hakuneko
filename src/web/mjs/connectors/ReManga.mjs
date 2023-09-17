@@ -10,6 +10,8 @@ export default class ReManga extends Connector {
         this.tags = [ 'manga', 'webtoon', 'russian' ];
         this.url = 'https://remanga.org';
         this.api = 'https://api.remanga.org';
+        this.requestOptions.headers.set('x-referer', this.url);
+
     }
 
     async _getMangaFromURI(uri) {
