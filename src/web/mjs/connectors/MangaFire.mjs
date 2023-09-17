@@ -29,8 +29,6 @@ export default class MangaFire extends Connector {
             const mangas = await this._getMangasFromPage(page);
             mangas.length ? mangaList.push(...mangas) : run = false;
             await this.wait(250);
-            console.log(mangaList.length);
-
         }
         return mangaList;
     }
@@ -67,7 +65,6 @@ export default class MangaFire extends Connector {
         let response = await fetch(request);
         let data = await response.text();
         if(/waf-js-run/i.test(data)) {
-            console.log(`we got waffed on page ${page}`);
             request = new Request(uri, this.requestOptions);
             return await Engine.Request.fetchUI(request, script);
         } else {
