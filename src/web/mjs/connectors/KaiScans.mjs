@@ -1,6 +1,6 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class FreakScans extends WordPressMangastream {
+export default class KaiScans extends WordPressMangastream {
 
     constructor() {
         super();
