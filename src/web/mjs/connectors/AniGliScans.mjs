@@ -7,7 +7,7 @@ export default class AniGliScans extends WordPressMangastream {
         super.id = 'anigliscans';
         super.label = 'Animated Glitched Scans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
-        this.url = 'https://anigliscans.com';
+        this.url = 'https://anigliscans.xyz';
         this.path = '/series/?list';
     }
     async _getPages(chapter) {
