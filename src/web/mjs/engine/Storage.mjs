@@ -87,6 +87,30 @@ export default class Storage {
     }
 
     /**
+     *
+     */
+    saveMangaDetails(manga, details, chapter) {
+        let file = chapter ? 'chapters.json' : 'details.json';
+        let output = this._mangaOutputPath(manga);
+        this._createDirectoryChain(output),
+        this.fs.writeFileSync(this.path.join(output, file), JSON.stringify(details, undefined, '  '));
+    }
+
+    /**
+     *
+     */
+    saveMangaThumbnail(manga, thumbnail) {
+        let output = this._mangaOutputPath(manga);
+        this._createDirectoryChain(output),
+        console.log(output, thumbnail);
+        let extension = thumbnail.type.split('/')[1];
+        this._blobToBytes(thumbnail)
+            .then(data => {
+                return this._writeFile(this.path.join(output, 'cover.' + extension), data);
+            });
+    }
+
+    /**
      * Convenience function wrapping key value saving for mangas collection
      */
     saveMangaList(connectorID, mangas) {
@@ -205,9 +229,12 @@ export default class Storage {
                  * } );
                  */
                 let titleMap = [];
+                console.log(entries);
                 // use key value pairs instead of plain titles to increase performance when looking up a certain manga title
                 entries.forEach(entry => {
-                    titleMap[entry] = true;
+                    if (!entry.endsWith('.json') && !entry.startsWith('cover')) {
+                        titleMap[entry] = true;
+                    }
                 });
                 return Promise.resolve(titleMap);
             });

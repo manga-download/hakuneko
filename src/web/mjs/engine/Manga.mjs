@@ -105,11 +105,41 @@ export default class Manga extends EventTarget {
                 }
                 callback( null, this.chapterCache );
             } )
+            .then(() => {
+                let chapterDetails = this.chapterCache.map(chapter => {
+                    return {
+                        title: chapter.title,
+                        date: Date.parse(chapter.date)
+                    };
+                });
+                Engine.Storage.saveMangaDetails(this, chapterDetails, true);
+            })
             .catch( error => {
                 // TODO: remove log ... ?
                 console.warn( 'getChapters', error );
                 return callback( error, this.chapterCache );
             } );
+    }
+
+    /**
+     *
+     */
+    getMangaDetails( callback ) {
+        if (this.connector._getMangaDetails) {
+            this.connector.initialize().then(()=> {
+                this.connector._getMangaDetails(this).then(details=>{
+                    Engine.Storage.saveMangaDetails(this, details, false);
+                    fetch(details.thumbnail).then(response => {
+                        response.blob().then(blob => {
+                            Engine.Storage.saveMangaThumbnail(this, blob);
+                        });
+                    });
+                });
+            });
+        }
+        callback();
+        // console.log(this.connector._getMangaDetails);
+        // console.log(this.chapterCache);
     }
 
     /**
@@ -144,7 +174,7 @@ export default class Manga extends EventTarget {
                 let chapterFormat = Engine.Settings.chapterTitleFormat.value;
                 // de-serialize chapters into objects
                 this.chapterCache = chapters.map( chapter => {
-                    return new Chapter( this, chapter.id, this.formatChapterTitle( chapter.title, chapterFormat, this.connector.getFormatRegex() ), chapter.language );
+                    return new Chapter( this, chapter.id, this.formatChapterTitle( chapter.title, chapterFormat, this.connector.getFormatRegex() ), chapter.language, undefined, chapter.date );
                 } );
                 return Promise.resolve( this.chapterCache );
             } )

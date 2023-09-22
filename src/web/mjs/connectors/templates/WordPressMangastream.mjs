@@ -15,6 +15,7 @@ export default class WordPressMangastream extends Connector {
         this.queryMangas = 'div#content div.soralist ul li a.series';
         this.queryChapters = 'div#chapterlist ul li div.eph-num a';
         this.queryChaptersTitle = 'span.chapternum';
+        this.queryChaptersDate = 'span.chapterdate';
         this.queryChaptersTitleBloat = undefined;
         this.queryPages = 'div#readerarea img[src]:not([src=""])';
         this.querMangaTitleFromURI = 'div#content div.postbody article h1';
@@ -34,7 +35,8 @@ export default class WordPressMangastream extends Connector {
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, this.queryChapters);
-        return data.map(element => {
+        // console.log(data);
+        let chapterList = data.map(element => {
             this.adLinkDecrypt(element);
             if (this.queryChaptersTitleBloat) {
                 [...element.querySelectorAll(this.queryChaptersTitleBloat)].forEach(bloat => {
@@ -44,11 +46,15 @@ export default class WordPressMangastream extends Connector {
                 });
             }
             const title = this.queryChaptersTitle ? element.querySelector(this.queryChaptersTitle).textContent : element.text;
+            const date = this.queryChaptersDate ? element.querySelector(this.queryChaptersDate).textContent : undefined;
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.replace(manga.title, '').trim() || manga.title
+                title: title.replace(manga.title, '').trim() || manga.title,
+                date: date ? new Date(date) : undefined
             };
         });
+        // console.log(chapterList);
+        return chapterList;
     }
 
     async _getPages(chapter) {

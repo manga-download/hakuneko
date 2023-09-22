@@ -15,11 +15,12 @@ const statusDefinitions = {
 export default class Chapter extends EventTarget {
 
     // TODO: use dependency injection instead of globals for Engine.Settings, Engine.Storage, all Enums
-    constructor( manga, id, title, language, status ) {
+    constructor( manga, id, title, language, status, date ) {
         super();
         this.manga = manga;
         this.id = id;
         this.title = title;
+        this.date = date;
         this.file = status === statusDefinitions.offline ? this._getRawFileName( title ) : this._getSanatizedFileName( title );
         this.language = language;
         this.status = status;
