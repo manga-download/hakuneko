@@ -6,7 +6,7 @@ export default class OzulScans extends WordPressMangastream {
         super();
         super.id = 'ozulscans';
         super.label = 'Ozul Scans';
-        this.tags = ['webtoon', 'arabic'];
+        this.tags = ['webtoon', 'arabic', 'scanlation'];
         this.url = 'https://ozulscans.net';
         this.path = '/manga/list-mode/';
     }
