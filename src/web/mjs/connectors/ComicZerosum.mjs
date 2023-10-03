@@ -1,37 +1,63 @@
-import SpeedBinb from './templates/SpeedBinb.mjs';
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-export default class ComicZerosum extends SpeedBinb {
+export default class ComicZerosum extends Connector {
 
     constructor() {
         super();
         super.id = 'comiczerosum';
         super.label = 'Comic ゼロサム (Comic ZEROSUM)';
         this.tags = ['manga', 'japanese'];
-        this.url = 'https://online.ichijinsha.co.jp/zerosum';
-        this.data_url = 'https://online.ichijinsha.co.jp/json/zerosum';
+        this.url = 'https://zerosumonline.com';
+        this.api_url = 'https://api.zerosumonline.com/api/v1/';
+        this.protoTypes = '/mjs/connectors/ComicZerosum.proto';
+
+    }
+
+    async _getMangaFromURI(uri) {
+        //'https://api.zerosumonline.com/api/v1/title?tag=
+        const mangaid = uri.href.match(/\/detail\/([\w]+)/)[1];
+        const requri = new URL(`title?tag=${mangaid}`, this.api_url);
+        const responseType = 'ComicZerosum.TitleView';
+        const request = new Request(requri, this.requestOptions);
+        const data = await this.fetchPROTO(request, this.protoTypes, responseType);
+        return new Manga(this, data.title.tag, data.title.name);
     }
 
     async _getMangas() {
-        const request = new Request(`${this.data_url}/list/name.json`, this.requestOptions);
-        const data = await this.fetchJSON(request);
-
-        return data.Stories.map(story => {
+        const uri = new URL('list?category=series&sort=date', this.api_url);
+        const responseType = 'ComicZerosum.Listview';
+        const request = new Request (uri, this.requestOptions);
+        const data = await this.fetchPROTO(request, this.protoTypes, responseType);
+        return data.titles.map(element => {
             return {
-                id: story.Work.Tag,
-                title: story.Work.Name
+                id: element.tag,
+                title : element.name.trim()
             };
         });
     }
 
     async _getChapters(manga) {
-        const request = new Request(`${this.data_url}/works/${manga.id}.json`, this.requestOptions);
-        const data = await this.fetchJSON(request);
-
-        return data.Work.Stories.map(story => {
+        const uri = new URL(`title?tag=${manga.id}`, this.api_url);
+        const responseType = 'ComicZerosum.TitleView';
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchPROTO(request, this.protoTypes, responseType);
+        return data.chapters.map(chapter => {
             return {
-                id: story.Url,
-                title: story.Name
+                id: chapter.id,
+                title: chapter.name.trim()
             };
         });
     }
+
+    async _getPages(chapter) {
+        const uri = new URL(`viewer?chapter_id=${chapter.id}`, this.api_url);
+        const responseType = 'ComicZerosum.MangaViewerView';
+        const request = new Request(uri, {
+            method: 'POST',
+        });
+        const data = await this.fetchPROTO(request, this.protoTypes, responseType);
+        return data.pages.filter(page=> page.imageUrl).map(page => page.imageUrl);
+    }
+
 }
