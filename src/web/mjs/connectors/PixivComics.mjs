@@ -118,8 +118,6 @@ export default class PixivComics extends Connector {
             }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value) / 100);
         });
     }
-
-
 }
 
 class PixivShuffler {
