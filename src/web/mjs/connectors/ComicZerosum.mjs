@@ -38,7 +38,6 @@ export default class ComicZerosum extends Connector {
     }
 
     async _getChapters(manga) {
-        //'https://api.zerosumonline.com/api/v1/title?tag=
         const uri = new URL(`title?tag=${manga.id}`, this.api_url);
         const responseType = 'ComicZerosum.TitleView';
         const request = new Request(uri, this.requestOptions);
@@ -52,7 +51,6 @@ export default class ComicZerosum extends Connector {
     }
 
     async _getPages(chapter) {
-        //https://api.zerosumonline.com/api/v1/viewer?chapter_id=
         const uri = new URL(`viewer?chapter_id=${chapter.id}`, this.api_url);
         const responseType = 'ComicZerosum.MangaViewerView';
         const request = new Request(uri, {
