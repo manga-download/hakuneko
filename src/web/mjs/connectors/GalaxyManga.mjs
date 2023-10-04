@@ -6,7 +6,7 @@ export default class GalaxyManga extends WordPressMangastream {
         super();
         super.id = 'galaxymanga';
         super.label = 'Galaxy Manga';
-        this.tags = ['webtoon', 'arabic'];
+        this.tags = ['webtoon', 'arabic', 'scanlation'];
         this.url = 'https://galaxymanga.org';
         this.path = '/manga/list-mode/';
     }
