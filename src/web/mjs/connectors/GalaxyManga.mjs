@@ -38,7 +38,7 @@ export default class GalaxyManga extends Connector {
                 return {
                     id: manga.id,
                     title: manga.title ? manga.title.trim() : null
-                }                
+                };
             });
         }
         return [];
@@ -53,12 +53,12 @@ export default class GalaxyManga extends Connector {
             return {
                 id: chapter.id,
                 title: chapter.title ? `${chapter.name} ${chapter.title.trim()}` : chapter.name
-            }
+            };
         });
     }
 
     async _getPages(chapter) {
-        const uri = new URL(`/api/v1/webtoon/chapters/chapter/${chapter.id}`, this.api)
+        const uri = new URL(`/api/v1/webtoon/chapters/chapter/${chapter.id}`, this.api);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         const images = data.chapter.chapterData.webtoon;
