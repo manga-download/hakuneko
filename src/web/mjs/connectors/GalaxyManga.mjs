@@ -52,7 +52,7 @@ export default class GalaxyManga extends Connector {
         return data.map((chapter) => {
             return {
                 id: chapter.id,
-                title: chapter.title ? `${chapter.name} ${chapter.title.trim()}` : chapter.name
+                title: `${chapter.name} ${chapter.title || ''}`.trim()
             };
         });
     }
