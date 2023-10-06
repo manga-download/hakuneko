@@ -7,7 +7,7 @@ export default class CocoManHua extends Mangadig {
         super.id = 'cocomanhua';
         super.label = 'Coco漫画';
         this.tags = [ 'webtoon', 'chinese' ];
-        this.url = 'https://www.colamanhua.com';
+        this.url = 'https://www.colamanga.com';
         this.path = '/show?page=';
         this.pathSuffix = '';
         this.queryMangaTitle = 'dl.fed-deta-info dd.fed-deta-content h1.fed-part-eone';
@@ -23,5 +23,4 @@ export default class CocoManHua extends Mangadig {
             value: 250
         };
     }
-
 }
