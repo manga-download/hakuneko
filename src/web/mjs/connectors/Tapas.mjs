@@ -40,7 +40,7 @@ export default class Tapas extends Connector {
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
-                title: element.querySelector('source').attributes.getNamedItem('alt').value.trim()
+                title: element.dataset.tiaraEventMetaSeries.trim()
             };
         });
     }
