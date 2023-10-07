@@ -62,6 +62,10 @@ export default class LineMangaJP extends Connector {
                 });
             });
         }
+        if (option.isPortal) {
+            return Object.values(option.portalPages)
+                .map(pp => this.createConnectorURI({ pp }));
+        }
         if (images.length == 0) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
@@ -71,6 +75,12 @@ export default class LineMangaJP extends Connector {
     }
 
     async _handleConnectorURI(payload) {
+        if (payload.pp != null) {
+            const canvas = await this._descramblePortalPage(payload.pp);
+            const blob = await this._canvasToBlob(canvas);
+            return this._blobToBuffer(blob);
+        }
+
         const canvas = document.createElement('canvas');
         canvas.width = payload.imageData.width;
         canvas.height = payload.imageData.height;
@@ -178,6 +188,30 @@ export default class LineMangaJP extends Connector {
             };
             image.src = imageData.url;
         });
+    }
+
+    async _descramblePortalPage(pp) {
+        const uri = new URL(pp.url);
+        const request = new Request(uri);
+        request.headers.set('x-origin', uri.origin);
+        const res = await fetch(request);
+        const blob = await res.blob();
+        const image = await createImageBitmap(blob);
+        const canvas = document.createElement('canvas');
+        canvas.width = image.width;
+        canvas.height = image.height;
+        const context = canvas.getContext('2d');
+        context.drawImage(image, 0, 0);
+        for (let i = 0; i < pp.metadata.m.length; i++) {
+            const data = pp.metadata.m[i];
+            const o = parseInt(data, 35);
+            const c = o % pp.metadata.hc * pp.metadata.bwd;
+            const s = Math.floor(o / pp.metadata.hc) * pp.metadata.bwd;
+            const l = i % pp.metadata.hc * pp.metadata.bwd;
+            const u = Math.floor(i / pp.metadata.hc) * pp.metadata.bwd;
+            context.drawImage(image, c, s, pp.metadata.bwd, pp.metadata.bwd, l, u, pp.metadata.bwd, pp.metadata.bwd);
+        }
+        return canvas;
     }
 }
 
