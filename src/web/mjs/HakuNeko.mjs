@@ -8,6 +8,7 @@ import BookmarkManager from './engine/BookmarkManager.mjs';
 import ChaptermarkManager from './engine/ChaptermarkManager.mjs';
 import Connectors from './engine/Connectors.mjs';
 import DownloadManager from './engine/DownloadManager.mjs';
+import MangaUpdateManager from './engine/MangaUpdateManager.mjs';
 import ComicInfoGenerator from './engine/ComicInfoGenerator.mjs';
 //import HistoryWorker from './engine/HistoryWorker.mjs'
 import Request from './engine/Request.mjs';
@@ -33,6 +34,7 @@ export default class HakuNeko {
         this._connectors = new Connectors(ipc);
         this._storage = new Storage();
         this._bookmarkManager = new BookmarkManager(this._settings, new BookmarkImporter());
+        this._mangaUpdateManager = new MangaUpdateManager(this._settings, this._downloadManager, this._connectors, this._storage, this._bookmarkManager);
         this._comicInfoGenerator = new ComicInfoGenerator();
         this._chaptermarkManager = new ChaptermarkManager(this._settings);
         this._discordPresence = new DiscordPresence(this._settings);
@@ -83,6 +85,10 @@ export default class HakuNeko {
 
     get Enums() {
         return this._enums;
+    }
+
+    get MangaUpdateManager() {
+        return this._mangaUpdateManager;
     }
 
     get Request() {

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head> 
+<head>
     <meta charset="utf-8">
     <title>HakuNeko</title>
     <link rel="icon" href="./img/logo.png">
@@ -47,13 +47,14 @@
             window.HakuNeko = new HakuNeko(window);
             // TODO: remove backward compatibility alias 'Engine' when all references are set to HakuNeko engine
             window.Engine = window.HakuNeko;
-            
+
             await Engine.initialize();
             // TODO: remove stuff that requires various globals, incl. global HakuNeko engine
             //new HistoryWorker();
             await Engine.Settings.load();
             Engine.BookmarkManager.loadProfile( 'default', undefined );
             Engine.ChaptermarkManager.loadChaptermarks( undefined );
+            Engine.MangaUpdateManager.loadIgnoreUpdateMangas( undefined );
         }
 
         function loadFrontend() {
