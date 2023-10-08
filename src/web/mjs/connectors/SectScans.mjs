@@ -6,6 +6,6 @@ export default class SectScans extends WordPressMadara {
     super.id = "sectscans";
     super.label = "Sect Scans";
     this.tags = ["manga", "english", "webtoon", "scanlation"];
-    this.url = "https://sectscans.com/";
+    this.url = "https://sectscans.com";
   }
 }

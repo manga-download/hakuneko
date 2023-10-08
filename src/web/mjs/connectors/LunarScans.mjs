@@ -6,7 +6,7 @@ export default class LunarScans extends WordPressMangastream {
     super.id = "lunarscans";
     super.label = "Lunar Scans";
     this.tags = ["webtoon", "english", "scanlation", "hentai"];
-    this.url = "https://lunarscan.org/";
-    this.path = "series/list-mode/";
+    this.url = "https://lunarscan.org";
+    this.path = "/series/list-mode/";
   }
 }
