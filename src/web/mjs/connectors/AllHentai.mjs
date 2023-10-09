@@ -15,7 +15,7 @@ export default class AllHentai extends Connector {
         this.config = {
             throttle: {
                 label: 'Throttle Requests [ms]',
-                description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may block you for to many consecuitive requests.',
+                description: 'Enter the timespan in [ms] to delay consecutive HTTP requests.\nThe website may block you for to many consecuitive requests.',
                 input: 'numeric',
                 min: 1000,
                 max: 7500,
