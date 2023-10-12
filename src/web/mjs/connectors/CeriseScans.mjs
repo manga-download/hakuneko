@@ -1,35 +1,13 @@
-import WordPressMadaraNovel from './templates/WordPressMadaraNovel.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class CeriseScans extends WordPressMadaraNovel {
+export default class Cerisescan extends WordPressMadara {
 
     constructor() {
         super();
-        super.id = 'cerisescans';
-        super.label = 'Cerise Scans';
-        this.tags = [ 'webtoon', 'portuguese', 'scanlation' ];
+        super.id = 'CeriseScan';
+        super.label = 'CeriseScan';
+        this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
         this.url = 'https://cerisescan.com';
-    }
 
-    async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        uri.searchParams.set('style', 'list');
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.novelContentQuery);
-        return data.length > 0 ? this._getPagesNovel(request) : this._getWProtectedPages(chapter);
     }
-
-    async _getWProtectedPages(chapter) {
-        const url = new URL(chapter.id, this.url);
-        const request = new Request(url, this.requestOptions);
-        const script = `
-            new Promise((resolve, reject) => {
-                var imgdata = JSON.parse(CryptoJS.AES.decrypt(chapter_data, wpmangaprotectornonce, {
-                    format: CryptoJSAesJson
-                }).toString(CryptoJS.enc.Utf8));
-                resolve(JSON.parse(imgdata));
-            });
-        `;
-        return await Engine.Request.fetchUI(request, script);
-    }
-
 }
