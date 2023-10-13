@@ -15,7 +15,7 @@ export default class AsuraScans extends WordPressMangastream {
                 label: 'URL',
                 description: `This website change domains regularly.\nThis is the default URL which can also be manually set by the user.`,
                 input: 'text',
-                value: 'https://asura.nacm.xyz'
+                value: 'https://asuratoon.com'
             }
         };
     }
@@ -38,7 +38,22 @@ export default class AsuraScans extends WordPressMangastream {
             /2021\/03\/20-ending-page-\.jpg/i,
             /ENDING-PAGE/i
         ];
-        const images = await super._getPages(chapter);
+
+        let images = [];
+
+        try {
+            const uri = new URL(chapter.id, this.url);
+            let request = new Request(uri, this.requestOptions);
+            let data = await fetch(request);
+            data = await data.text();
+
+            let tsrundata = data.match(/"sources":(\[[^;]+\]}\])/m)[1];
+            const ts_reader = JSON.parse(tsrundata);
+            images = ts_reader.shift().images;
+        } catch(error) {
+            images = await super._getPages(chapter); //fallback with corrected queryPages
+        }
+
         return images.filter(link => !excludes.some(rgx => rgx.test(link)));
     }
 }
