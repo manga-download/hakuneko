@@ -64,7 +64,7 @@ export default class LineMangaJP extends Connector {
         }
         if (option.isPortal) {
             return Object.values(option.portalPages)
-                .map(pp => this.createConnectorURI({ pp }));
+                .map(portalPage => this.createConnectorURI({ portalPage }));
         }
         if (images.length == 0) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
@@ -75,8 +75,8 @@ export default class LineMangaJP extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        if (payload.pp != null) {
-            const canvas = await this._descramblePortalPage(payload.pp);
+        if (payload.portalPage != null) {
+            const canvas = await this._descramblePortalPage(payload.portalPage);
             const blob = await this._canvasToBlob(canvas);
             return this._blobToBuffer(blob);
         }
@@ -190,8 +190,8 @@ export default class LineMangaJP extends Connector {
         });
     }
 
-    async _descramblePortalPage(pp) {
-        const uri = new URL(pp.url);
+    async _descramblePortalPage(portalPage) {
+        const uri = new URL(portalPage.url);
         const request = new Request(uri);
         request.headers.set('x-origin', uri.origin);
         const res = await fetch(request);
@@ -202,14 +202,14 @@ export default class LineMangaJP extends Connector {
         canvas.height = image.height;
         const context = canvas.getContext('2d');
         context.drawImage(image, 0, 0);
-        for (let i = 0; i < pp.metadata.m.length; i++) {
-            const data = pp.metadata.m[i];
+        for (let i = 0; i < portalPage.metadata.m.length; i++) {
+            const data = portalPage.metadata.m[i];
             const o = parseInt(data, 35);
-            const c = o % pp.metadata.hc * pp.metadata.bwd;
-            const s = Math.floor(o / pp.metadata.hc) * pp.metadata.bwd;
-            const l = i % pp.metadata.hc * pp.metadata.bwd;
-            const u = Math.floor(i / pp.metadata.hc) * pp.metadata.bwd;
-            context.drawImage(image, c, s, pp.metadata.bwd, pp.metadata.bwd, l, u, pp.metadata.bwd, pp.metadata.bwd);
+            const c = o % portalPage.metadata.hc * portalPage.metadata.bwd;
+            const s = Math.floor(o / portalPage.metadata.hc) * portalPage.metadata.bwd;
+            const l = i % portalPage.metadata.hc * portalPage.metadata.bwd;
+            const u = Math.floor(i / portalPage.metadata.hc) * portalPage.metadata.bwd;
+            context.drawImage(image, c, s, portalPage.metadata.bwd, portalPage.metadata.bwd, l, u, portalPage.metadata.bwd, portalPage.metadata.bwd);
         }
         return canvas;
     }
