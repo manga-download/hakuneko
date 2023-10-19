@@ -14,7 +14,7 @@ export default class PixivComics extends Connector {
         };
         this.apiURL = 'https://comic.pixiv.net/api/app/';
         this.requestOptions.headers.set('x-referer', this.url);
-        this.requestOptions.headers.set('x-requested-with', this.url);
+        this.requestOptions.headers.set('x-requested-with', 'pixivcomic');
     }
 
     async _getMangaFromURI(uri) {
