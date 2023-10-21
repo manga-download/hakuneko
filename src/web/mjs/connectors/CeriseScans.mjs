@@ -1,6 +1,6 @@
-import WordPressMadara from './templates/WordPressMadaraNovel.mjs';
+import WordPressMadaraNovel from './templates/WordPressMadaraNovel.mjs';
 
-export default class CeriseScans  extends WordPressMadaraNovel {
+export default class CeriseScans extends WordPressMadaraNovel {
 
     constructor() {
         super();
