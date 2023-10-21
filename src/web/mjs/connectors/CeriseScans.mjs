@@ -1,13 +1,12 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMadara from './templates/WordPressMadaraNovel.mjs';
 
-export default class Cerisescan extends WordPressMadara {
+export default class CeriseScans  extends WordPressMadaraNovel {
 
     constructor() {
         super();
-        super.id = 'CeriseScan';
-        super.label = 'CeriseScan';
+        super.id = 'cerisescans';
+        super.label = 'CeriseScans';
         this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
         this.url = 'https://cerisescan.com';
-
     }
 }
