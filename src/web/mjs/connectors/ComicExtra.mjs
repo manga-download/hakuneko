@@ -8,7 +8,7 @@ export default class ComicExtra extends Connector {
         super.id = 'comicextra';
         super.label = 'ComicExtra';
         this.tags = ['comic', 'english'];
-        this.url = 'https://comicextra.net';
+        this.url = 'https://comicextra.me';
         this.path = '/comic-list/';
     }
 
@@ -49,35 +49,20 @@ export default class ComicExtra extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapList = [];
-        for(let page = 1, run = true; run; page++) {
-            let chapters = await this._getChaptersFromPage(manga, page);
-            chapList.push(...chapters);
-            run = chapters.continue;
-        }
-        return chapList;
-    }
-
-    async _getChaptersFromPage(manga, page) {
-        const uri = new URL(manga.id + `/${page}/`, this.url);
+        const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const body = (await this.fetchDOM(request, 'body'))[0];
-        const nextLink = body.querySelector('div.episode-list div.general-nav a:last-of-type');
-        const hasNextLink = nextLink ? nextLink.text == "Next" : false;
-        const data = [...body.querySelectorAll('#list tr td a')];
-        const chapters = data.map(element => {
+        const data = await this.fetchDOM(request, '#list tr td a');
+        return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.textContent.trim()
             };
         });
-        chapters['continue'] = hasNextLink;
-        return chapters;
     }
 
     async _getPages(chapter) {
         const request = new Request(this.url + chapter.id + '/full', this.requestOptions);
-        const data = await this.fetchDOM(request, '.chapter_img');
+        const data = await this.fetchDOM(request, 'div.chapter-container source');
         return data.map(element => this.getAbsolutePath(element, request.url));
     }
 }
