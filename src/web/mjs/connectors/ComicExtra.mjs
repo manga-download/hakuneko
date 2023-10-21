@@ -8,7 +8,7 @@ export default class ComicExtra extends Connector {
         super.id = 'comicextra';
         super.label = 'ComicExtra';
         this.tags = ['comic', 'english'];
-        this.url = 'https://comicextra.net';
+        this.url = 'https://comicextra.me/';
         this.path = '/comic-list/';
     }
 
