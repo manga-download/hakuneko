@@ -7,7 +7,7 @@ export default class NightScans extends WordPressMangastream {
         super.id = 'nightscans';
         super.label = 'NightScans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
-        this.url = 'https://nightscans.org';
+        this.url = 'https://nightscans.net';
         this.path = '/manga/list-mode/';
     }
 
