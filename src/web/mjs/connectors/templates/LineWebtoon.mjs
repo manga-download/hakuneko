@@ -18,9 +18,9 @@ export default class LineWebtoon extends Connector {
                 label: 'Throttle Requests [ms]',
                 description: 'Enter the timespan in [ms] to delay consecuitive HTTP requests.\nThe website may reject to many consecuitive requests',
                 input: 'numeric',
-                min: 0,
+                min: 250,
                 max: 5000,
-                value: 250
+                value: 750
             }
         };
     }
@@ -30,6 +30,7 @@ export default class LineWebtoon extends Connector {
     }
 
     async _getMangaFromURI(uri) {
+        await this.wait(this.config.throttle.value);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'head meta[property="og:title"]');
         let id = uri.pathname + uri.search;
@@ -44,6 +45,7 @@ export default class LineWebtoon extends Connector {
 
     async _getChapterListPage(uri) {
         let request = new Request(uri, this.requestOptions);
+        await this.wait(this.config.throttle.value);
         let data = await this.fetchDOM(request, 'div.detail_body div.detail_lst ul li > a');
         return data.map(element => {
             let chapter = element.querySelector('span.tx');
@@ -156,6 +158,9 @@ export default class LineWebtoon extends Connector {
             `;
             let request = new Request(this.baseURL + chapter.id, this.requestOptions);
             // NOTE: `engine/Request.mjs` injects a server cookie to prevent client side age confirmation which is checked on the website
+
+            await this.wait(this.config.throttle.value);
+
             let data = await Engine.Request.fetchUI(request, script);
             let pageList = data.map(payload => this.createConnectorURI(payload));
             callback(null, pageList);
@@ -173,6 +178,8 @@ export default class LineWebtoon extends Connector {
         if(typeof payload === 'string') {
             let uri = new URL(payload);
             uri.searchParams.delete('type');
+            await this.wait(this.config.throttle.value);
+
             let request = new Request(uri, this.requestOptions);
             let response = await fetch(request);
             let data = await response.blob();
@@ -183,6 +190,8 @@ export default class LineWebtoon extends Connector {
             canvas.height = payload.height;
             let ctx = canvas.getContext('2d');
             if(payload.background.image) {
+                await this.wait(this.config.throttle.value);
+
                 let image = await this._loadImage(payload.background.image);
                 canvas.width = image.width;
                 canvas.height = image.height;
@@ -195,6 +204,8 @@ export default class LineWebtoon extends Connector {
             for(let layer of payload.layers) {
                 let type = layer.type.split('|');
                 if(type[0] === 'image') {
+                    await this.wait(this.config.throttle.value);
+
                     let image = await this._loadImage(layer.asset);
                     if(type[1] === 'text') {
                         this._adjustTextLayerVisibility(layer, image, canvas);
