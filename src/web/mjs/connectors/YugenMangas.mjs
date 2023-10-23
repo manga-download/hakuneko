@@ -6,7 +6,7 @@ export default class YugenMangas extends Connector {
         super.id = 'yugenmangas';
         super.label = 'YugenMangas';
         this.tags = [ 'webtoon', 'novel', 'spanish' ];
-        this.url = 'https://yugenmangas.net';
+        this.url = 'https://yugenmangas.lat';
         this.apiURL = 'https://api.yugenmangas.net';
         this.queryChapters = 'ul.chapters-list-single a';
         this.novelContentQuery = 'div#reader-container';
