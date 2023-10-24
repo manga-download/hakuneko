@@ -5,9 +5,9 @@ export default class RealmScans extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'realmscans';
-        super.label = 'RealmScans';
+        super.label = 'Rizz Comics';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://realmscans.to';
+        this.url = 'https://rizzcomic.com';
         this.path = '/series';
     }
 

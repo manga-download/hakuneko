@@ -105,7 +105,7 @@ export default class CyComi extends Connector {
     _mapPages(container, pages) {
         return pages.filter(page => page.type === 'image')
             .sort((self, other) => self.pageNumber - other.pageNumber)
-            .map(page => this.createConnectorURI(page.image));
+            .map(page => page.image.includes('/end_page/') ? page.image : this.createConnectorURI(page.image));
     }
 
     async _handleConnectorURI(payload) {

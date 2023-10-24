@@ -11,17 +11,16 @@ export default class MangaFire extends Connector {
         this.url = 'https://mangafire.to';
         this.path = '/az-list?page=';
 
-        this.queryMangaTitleFromURI = 'main div.top div.info div.name';
-        this.queryMangas = 'div.container div.mangas div.item div.name a';
-        this.idRegex = /manga\/.*\.(\w+)/;
+        this.queryMangaTitleFromURI = 'div.info h1[itemprop="name"]';
+        this.queryMangas = 'div.info > a';
+        this.idRegex = /manga\/[^.]+\.(\w+)/;
     }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitleFromURI);
-        const id = uri.pathname.match(this.idRegex)[1];
         const title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        return new Manga(this, uri.pathname, title);
     }
 
     async _getMangas() {
@@ -29,52 +28,98 @@ export default class MangaFire extends Connector {
         for(let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangas.length ? mangaList.push(...mangas) : run = false;
+            await this.wait(250);
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(this.path + page, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangas);
-        return data.map(element => {
-            return {
-                id: element.pathname.match(this.idRegex)[1],
-                title: element.title.trim()
-            };
+        const mangas = [];
+        const script = `
+        new Promise((resolve, reject) => {
+                 setTimeout(() => {
+                    try {
+                        const nodes = [...document.querySelectorAll('${this.queryMangas}')];
+                        const mangas = [];
+                        nodes.map(element => {
+                            mangas.push({
+                                id: element.pathname,
+                                title : element.text.trim()
+                            });   
+                        });
+
+                        resolve(mangas);
+                    }
+                    catch(error) {
+                        reject(error);
+                    }
+                },
+                2500);
+ 
         });
+        `;
+
+        //first try getting mangas normally.
+        const uri = new URL(this.path + page, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let response = await fetch(request);
+        let data = await response.text();
+        if(/waf-js-run/i.test(data)) {
+            request = new Request(uri, this.requestOptions);
+            return await Engine.Request.fetchUI(request, script);
+        } else {
+            const dom = this.createDOM(data);
+            const nodes = [...dom.querySelectorAll(this.queryMangas)];
+            nodes.map(element => {
+                mangas.push({
+                    id: element.pathname,
+                    title : element.text.trim()
+                });
+            });
+
+            return mangas;
+        }
+
     }
 
     async _getChapters(manga) {
+        //fetch page to get languages available
+        const id = manga.id.match(this.idRegex)[1];
+        const mangauri = new URL(manga.id, this.url);
+        const request = new Request(mangauri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'section.m-list div.dropdown-menu a');
+        let listsByLanguage = data.map(element => element.dataset.code.toLowerCase());
+        listsByLanguage = [...new Set(listsByLanguage)];
+
         let chapterList = [];
         const types = ['chapter', 'volume'];
-        for (const type of types) {
-            const uri = new URL(`ajax/read/${manga.id}/list?viewby=${type}`, this.url);
-            const request = new Request(uri, this.requestOptions);
-            const data = await this.fetchJSON(request);
-            if (!data.result.link_format.includes(`LANG/${type}-NUMBER`)) {
-                continue;
-            }
-
-            const listsByLanguage = this.createDOM(data.result.html).querySelectorAll('div.numberlist-wrap ul.numberlist');
-            for (const list of listsByLanguage) {
-                const lang = list.dataset.lang.toUpperCase();
-                const chapters = [ ...list.querySelectorAll('li a') ]
-                    .map(chapter => {
-                        return {
-                            id: `${type}/${chapter.dataset.id}`,
-                            title: chapter.text.trim().replace(':', '') + ` (${lang})`,
-                            language: lang
-                        };
+        for (const language of listsByLanguage) { //For each language
+            for (const type of types) { //for chapters / volumes
+                //https://mangafire.to/ajax/read/XXXXX/volume/en
+                const uri = new URL(`ajax/read/${id}/${type}/${language}`, this.url);
+                const request = new Request(uri, this.requestOptions);
+                const data = await this.fetchJSON(request);
+                const dom = this.createDOM(data.result.html);
+                const chaptersNodes = [...dom.querySelectorAll('a')];
+                chaptersNodes.map(chapter => {
+                    const id = {itemid : chapter.dataset.id, itemtype : type};
+                    const title = chapter.text.trim();
+                    chapterList.push ({
+                        id : JSON.stringify(id),
+                        title : title,
+                        language : language
                     });
-                chapterList.push(...chapters);
+                });
             }
         }
         return chapterList;
     }
 
     async _getPages(chapter) {
-        const uri = new URL(`ajax/read/${chapter.id}`, this.url);
+        //https://mangafire.to/ajax/read/volume/11111
+        //https://mangafire.to/ajax/read/chapter/123456
+        const chapterid = JSON.parse(chapter.id);
+        const uri = new URL(`ajax/read/${chapterid.itemtype}/${chapterid.itemid}`, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.result.images.map(imageArray => {

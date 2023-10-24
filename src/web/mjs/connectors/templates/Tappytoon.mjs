@@ -68,9 +68,15 @@ export default class Tappytoon extends Connector {
     }
 
     async _getPages(chapter) {
-        let uri = new URL(`/chapters/${chapter.id}?includes=images`, this.apiurl);
+        //check if super quality is supported
+        let uri = new URL(`/comics/${chapter.manga.id}`, this.apiurl);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchJSON(request);
-        return data.images.map(image => image.url);
+        const quality = data.isSuperHighQualitySupported ? 'super_high': 'high';
+        uri = new URL(`/content-delivery/contents?chapterId=${chapter.id}&variant=${quality}&locale=${this.lang}`, this.apiurl);
+        request = new Request(uri, this.requestOptions);
+        data = await this.fetchJSON(request);
+        return data.media.map(image => image.url);
     }
+
 }

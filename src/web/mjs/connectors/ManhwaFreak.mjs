@@ -7,10 +7,14 @@ export default class ManhwaFreak extends WordPressMangastream {
         super.id = 'manhwafreak';
         super.label = 'ManhwaFreak';
         this.tags = [ 'manga', 'english', 'webtoon'];
-        this.url = 'https://manhwafreak.com';
+        this.url = 'https://manhwa-freak.com';
         this.path = '/manga/';
         this.queryMangas = 'div.lastest-serie > a';
         this.queryChapters = 'div.chapter-li > a';
         this.queryChaptersTitle = 'div.chapter-info > p';
+    }
+
+    async _getPages(chapter) {
+        return (await super._getPages(chapter)).filter(page => !page.includes('ajax-loader'));
     }
 }

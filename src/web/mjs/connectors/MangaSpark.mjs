@@ -7,6 +7,6 @@ export default class MangaSpark extends WordPressMadara {
         super.id = 'mangaspark';
         super.label = 'مانجا سبارك (MangaSpark)';
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
-        this.url = 'https://mangaspark.com';
+        this.url = 'https://mangaspark.org';
     }
 }

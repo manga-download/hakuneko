@@ -50,6 +50,7 @@ export default class kakaopage extends Connector {
     }
 
     async _getChaptersFromPage(manga, nextCursor) {
+
         const gql = {
             operationName: 'contentHomeProductList',
             variables: {
@@ -58,56 +59,62 @@ export default class kakaopage extends Connector {
                 sortType : 'asc',
                 after : nextCursor,
             },
-            query: `query contentHomeProductList($after: String, $before: String, $first: Int, $last: Int, $seriesId: Long!, $boughtOnly: Boolean, $sortType: String) {
-                  contentHomeProductList(
-                    seriesId: $seriesId
-                    after: $after
-                    before: $before
-                    first: $first
-                    last: $last
-                    boughtOnly: $boughtOnly
-                    sortType: $sortType
-                  ) {
-                    totalCount
-                    pageInfo {
-                      hasNextPage
-                      endCursor
-                      hasPreviousPage
-                      startCursor
-                      __typename
-                    }
-                    edges {
-                      cursor
-                      node {
-                        ...SingleListViewItem
-                        __typename
-                      }
-                      __typename
-                    }
-                    __typename
-                  }
-                }
-
-                fragment SingleListViewItem on SingleListViewItem {
-                  id
-                  type
-                  thumbnail
-                  isCheckMode
-                  isChecked
-                  scheme
-                  single {
-                    productId
-                    ageGrade
-                    id
-                    isFree
-                    thumbnail
-                    title
-                    slideType
-                    __typename
-                  }
-                  isViewed
-                  purchaseInfoText
-                }
+            query: `query contentHomeProductList(
+                 $after: String
+                 $before: String
+                 $first: Int
+                 $last: Int
+                 $seriesId: Long!
+                 $boughtOnly: Boolean
+                 $sortType: String
+               ) {
+                 contentHomeProductList(
+                   seriesId: $seriesId
+                   after: $after
+                   before: $before
+                   first: $first
+                   last: $last
+                   boughtOnly: $boughtOnly
+                   sortType: $sortType
+                 ) {
+                   totalCount
+                   pageInfo {
+                     hasNextPage
+                     endCursor
+                     hasPreviousPage
+                     startCursor
+                   }
+                   selectedSortOption {
+                     id
+                     name
+                     param
+                   }
+                   sortOptionList {
+                     id
+                     name
+                     param
+                   }
+                   edges {
+                     cursor
+                     node {
+                       ...SingleListViewItem
+                     }
+                   }
+                 }
+               }
+               
+               fragment SingleListViewItem on SingleListViewItem {
+                 id
+                 type
+                 single {
+                   productId
+                   id
+                   isFree
+                   thumbnail
+                   title
+                   slideType
+                 }
+               }            
                 `
         };
         return await this.fetchGraphQL(this.url+'/graphql', gql.operationName, gql.query, gql.variables );

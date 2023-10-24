@@ -1,5 +1,7 @@
 import Allanimesite from './Allanimesite.mjs';
 import Manga from '../engine/Manga.mjs';
+import FileMoon from '../videostreams/FileMoon.mjs';
+import StreamSB from '../videostreams/StreamSB.mjs';
 
 export default class Allanimesite2 extends Allanimesite {
     constructor() {
@@ -38,7 +40,7 @@ export default class Allanimesite2 extends Allanimesite {
         const jsonExtensions = {
             persistedQuery : {
                 version  : 1,
-                sha256Hash : "b645a686b1988327795e1203867ed24f27c6338b41e5e3412fc1478a8ab6774e"
+                sha256Hash : "06327bc10dd682e1ee7e07b6db9c16e9ad2fd56c1b769e47513128cd5c9fc77a"
             }
         };
 
@@ -48,20 +50,23 @@ export default class Allanimesite2 extends Allanimesite {
         const data = await this.fetchJSON(request);
         if (!data.data) return [];
         return data.data.shows.edges.map(element => {
+            let id = '/anime/'+element._id+'/'+element.name.replace(/[^a-zA-Z0-9]+/g, '-').toLowerCase();
+            id += element.slugTime ? '-st-'+element.slugTime : '';
             return {
-                id: '/anime/'+element._id,
+                id: id,
                 title: element.englishName ? element.englishName : element.name,
             };
         });
     }
     async _getChapters(manga) {
-        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
         let script = `
         new Promise(resolve => {
             resolve(__NUXT__);
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
+
         let chapterlist = [];
         const mangaid = manga.id.replace('/anime/', '/watch/');
         let subchapters = data.fetch['anime:0'].show.availableEpisodesDetail.sub;
@@ -91,6 +96,7 @@ export default class Allanimesite2 extends Allanimesite {
         return chapterlist;
     }
     async _getPages(chapter) {
+        const validSources = ['Default', 'Luf-hls', 'Luf-mp4', 'Fm-Hls', 'Ss-Hls'];
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const script = `
         new Promise(resolve => {
@@ -98,19 +104,49 @@ export default class Allanimesite2 extends Allanimesite {
         });
         `;
         let data = await Engine.Request.fetchUI(request, script);
-        const sourcesArray = data.fetch['episode:0'].episodeSelections;
-        const goodSource = sourcesArray.find(source => source.sourceName == 'Default');
-        if (!goodSource) throw new Error('No Default source found ! Hakuneko supports only default video source.');
-        let uri = new URL(goodSource.sourceUrl.replace('clock', 'clock.json'), 'https://blog.allanime.pro');
-        request = new Request(uri, this.requestOptions);
-        data = await this.fetchJSON(request);
-        let stream = [];
-        let link = data.links[0];
-        if (link.hls) {
-            stream = { mirrors: [ link.link ], subtitles: [], referer : 'https://blog.allanime.pro'};
-        } else {
-            stream = {video: [ link.link ], subtitles: []};
+        let sourcesArray = data.fetch['episode:0'].episodeSelections;
+        sourcesArray = sourcesArray.sort(function (a, b) {
+            return b.priority - a.priority;
+        });
+        const goodSource = sourcesArray.find(source => validSources.includes(source.sourceName));
+        if (!goodSource) throw new Error('No source found ! Hakuneko supports only some video source.');
+
+        switch (goodSource.sourceName.toLowerCase()) {
+            case 'fm-hls': { //FileMoon
+                let fMoon = new FileMoon(goodSource.sourceUrl);
+                let playlist = await fMoon.getPlaylist();
+                return {
+                    hash: 'id,language,resolution',
+                    mirrors: [ playlist ],
+                    subtitles: []
+                };
+            }
+            case 'ss-hls': {//StreamSB
+                const SB = new StreamSB(goodSource.sourceUrl);
+                let playlist = await SB.getStream();
+                return {
+                    hash: 'id,language,resolution',
+                    mirrors: [ playlist ],
+                    subtitles: []
+                };
+            }
+            default: { //"Default, Luf-hls, Luf-mp4"
+                let decodedurl = goodSource.sourceUrl.replace('#', '');
+                decodedurl = decodedurl.split(/(\w\w)/g).filter(p => !!p).map(c => String.fromCharCode(parseInt(c, 16))).join("");
+
+                let uri = new URL(decodedurl.replace('clock', 'clock.json'), 'https://blog.allanime.pro');
+                request = new Request(uri, this.requestOptions);
+                data = await this.fetchJSON(request);
+                let stream = [];
+                let link = data.links.pop();
+                if (link.hls) {
+                    stream = { mirrors: [ link.link ], subtitles: [], referer : 'https://blog.allanime.pro'};
+                } else {
+                    stream = {video: [ link.link ], subtitles: []};
+                }
+                return stream;
+            }
         }
-        return stream;
+
     }
 }

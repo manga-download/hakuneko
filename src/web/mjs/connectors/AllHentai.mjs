@@ -8,9 +8,19 @@ export default class AllHentai extends Connector {
         super.id = 'allhentai';
         super.label = 'AllHentai';
         this.tags = ['hentai', 'russian'];
-        this.url = 'https://2023.allhen.online';
+        this.url = 'https://24.allhen.online';
         this.links = {
-            login: 'https://2023.allhen.online/internal/auth'
+            login: 'https://24.allhen.online/internal/auth'
+        };
+        this.config = {
+            throttle: {
+                label: 'Throttle Requests [ms]',
+                description: 'Enter the timespan in [ms] to delay consecutive HTTP requests.\nThe website may block you for to many consecuitive requests.',
+                input: 'numeric',
+                min: 1000,
+                max: 7500,
+                value: 1500
+            }
         };
     }
 
@@ -27,6 +37,7 @@ export default class AllHentai extends Connector {
         for (let page = 0, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            await this.wait(this.config.throttle.value);
         }
         return mangaList;
     }
@@ -46,7 +57,7 @@ export default class AllHentai extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.chapters-link table tr td a[title]');
+        const data = await this.fetchDOM(request, 'div#chapters-list table tr td a[title]');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),

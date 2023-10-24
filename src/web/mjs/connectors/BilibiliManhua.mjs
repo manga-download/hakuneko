@@ -23,24 +23,81 @@ export default class BilibiliManhua extends Connector {
         };
         //default config doesnt need language switch, its fixed to CN
         this.config = {
-            quality:  {
-                label: 'Preferred format',
-                description: 'format of images\nwebp (low)\njpg (medium)\npng (high))',
-                input: 'select',
-                options: [
-                    { value: 'webp', name: 'webp' },
-                    { value: 'jpg', name: 'jpg' },
-                    { value: 'png', name: 'png' },
+            format: {
+                label:'Preferred format',
+                description:'Format of images\nwebp(low)\n jpg(medium)\n png(high))',
+                input:'select',
+                options:[
+                    { value:'webp', name:'webp' },
+                    { value:'jpg', name:'jpg' },
+                    { value:'png', name:'png' },
                 ],
                 value: 'png'
             },
             language: {
                 label: 'Language Settings',
-                description: 'Choose the language to use. This will affect available manga lists',
+                description: 'Choose the language to use. This will affect available manga in list',
                 input: 'disabled',
-                value : 'cn'
+                value: 'cn'
+            },
+            picquality: {
+                label: 'Quality Settings',
+                description: 'Choose the prefered quality',
+                input: 'select',
+                options: [
+                    { value: 'veryhigh', name:'VeryHigh' },
+                    { value: 'good', name:'Good' },
+                    { value: 'normal', name:'Normal' },
+                    { value: 'poor', name:'Poor' },
+                    { value: 'verypoor', name:'VeryPoor' },
+                ],
+                value: 'good'
+            },
+            forcepicturesize: {
+                label: 'Force max quality (Experimental)',
+                description: 'Force server to send pictures with maxsize. Override "quality settings"',
+                input: 'checkbox',
+                value: false
             }
         };
+    }
+
+    getImageSizeByQuality(width) {
+        const ratioArray = { "verypoor":0.4, "poor":0.5, "normal":0.7, "good":0.85, "veryhigh":1 };
+        const widthArray = { verypoor:350, poor:450, normal:800, good:1100, veryhigh:1600 };
+
+        let o = {
+            imgWidth:width,
+            quality:undefined
+        };
+
+        //sometimes pictures size from JSON are 0 in this case Bibili forcea 0.85 ratio ,"Good"quality.
+        if (width < 1) {
+            o.imgWidth = widthArray.good;
+            return o;
+        }
+
+        const choosedQuality = ratioArray[this.config.picquality.value];
+        const calcWidth = Math.floor(width * choosedQuality); //0.85
+        switch(choosedQuality) {
+            case ratioArray.verypoor:
+                calcWidth > widthArray.verypoor && (o.imgWidth = widthArray.verypoor);
+                break;
+            case ratioArray.poor:
+                calcWidth > widthArray.poor && (o.imgWidth = widthArray.poor);
+                break;
+            case ratioArray.normal:
+                calcWidth > widthArray.normal && (o.imgWidth = widthArray.normal);
+                break;
+            case ratioArray.good:
+                calcWidth > widthArray.good && (o.imgWidth = widthArray.good);
+                break;
+            case ratioArray.veryhigh:
+                calcWidth > widthArray.veryhigh && (o.imgWidth = widthArray.veryhigh);
+        }
+
+        if (this.config.forcepicturesize.value) o.imgWidth = Math.max(o.imgWidth, width);
+        return o;
     }
 
     async _initializeConnector() {
@@ -71,7 +128,7 @@ export default class BilibiliManhua extends Connector {
             //if there is no cookie user is disconnected, force cleanup
             if (cooki.length == 0) throw new Error('User is not connected.');
 
-            //if token is not defined, get if from cookies
+            //if token is not defined, get it from cookies
             if (!this.auth.accessToken) {
                 const cookie_value = cooki[0].value;
                 this.auth.area = JSON.parse(decodeURIComponent(cookie_value)).area;
@@ -170,7 +227,7 @@ export default class BilibiliManhua extends Connector {
         let credz = null;
         let data = null;
 
-        //Using access_token from cookies, try to get token for unlocked chapter
+        //Using access_token from cookies, try to get token for unlocked chapters
         if (this.auth.accessToken) {
             credz = await this._fetchWithAccessToken('/GetCredential', {
                 ep_id: chapter.id,
@@ -178,7 +235,7 @@ export default class BilibiliManhua extends Connector {
                 type : 1
             });
         }
-        //if we got chapter credentials, fetch full chapter using it
+        //if we got chapter credentials, fetch full chapter using them
         if (credz && credz.data && credz.data.credential) {
             data = await this._fetchTwirp('/GetImageIndex', {
                 ep_id: chapter.id,
@@ -191,7 +248,13 @@ export default class BilibiliManhua extends Connector {
             });
         }
 
-        let images = data.images.map(image => image.path + '@' + image.x + 'w.' + this.config.quality.value);
+        let images = data.images.map(image => {
+            const qualdata = this.getImageSizeByQuality(image.x);
+            let suffix = qualdata.imgWidth + 'w';
+            suffix += qualdata.quality ? '_' + qualdata.quality + 'q' : '';
+            return image.path + '@' + suffix + '.'+this.config.format.value;
+        });
+
         images = await this._fetchTwirp('/ImageToken', {
             urls: JSON.stringify(images)
         });

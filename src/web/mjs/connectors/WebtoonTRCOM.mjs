@@ -5,9 +5,9 @@ export default class WebtoonTRCOM extends WordPressMadara {
     constructor() {
         super();
         super.id = 'webtoontrcom';
-        super.label = 'Webtoon TR';
+        super.label = 'WebtoonTR.NET';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://webtoon-tr.com';
+        this.url = 'https://webtoontr.net';
 
         this.requestOptions.headers.set('x-referer', this.url);
     }
