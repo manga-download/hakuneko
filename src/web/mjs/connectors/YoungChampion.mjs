@@ -24,7 +24,7 @@ export default class YoungChampion extends Connector {
         this.queryMangaTitleURI = 'h1.series-h-title span:not([class])';
         this.queryManga = 'div.series-box-vertical a';
         this.queryMangaTitle = 'h2.title-text';
-        this.queryChapter = 'div.series-ep-list a';
+        this.queryChapter = 'div.series-ep-list a#null-false';
         this.queryChapterTitle = 'span.series-ep-list-item-h-text';
     }
 
