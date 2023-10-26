@@ -101,15 +101,16 @@ export default class MangaFire extends Connector {
                 const data = await this.fetchJSON(request);
                 const dom = this.createDOM(data.result.html);
                 const chaptersNodes = [...dom.querySelectorAll('a')];
-                chaptersNodes.map(chapter => {
-                    const id = {itemid : chapter.dataset.id, itemtype : type};
-                    const title = chapter.text.trim();
-                    chapterList.push ({
-                        id : JSON.stringify(id),
-                        title : title,
-                        language : language
+                chaptersNodes.filter(anchor=> anchor.pathname.includes(`/${type}-`))
+                    .forEach(chapter => {
+                        const id = {itemid : chapter.dataset.id, itemtype : type};
+                        const title = chapter.text.trim();
+                        chapterList.push ({
+                            id : JSON.stringify(id),
+                            title : title,
+                            language : language
+                        });
                     });
-                });
             }
         }
         return chapterList;
