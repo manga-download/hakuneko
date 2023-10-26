@@ -102,7 +102,7 @@ export default class MangaFire extends Connector {
                 const dom = this.createDOM(data.result.html);
                 const chaptersNodes = [...dom.querySelectorAll('a')];
                 chaptersNodes.filter(anchor=> anchor.pathname.includes(`/${type}-`))
-                    .map(chapter => {
+                    .forEach(chapter => {
                         const id = {itemid : chapter.dataset.id, itemtype : type};
                         const title = chapter.text.trim();
                         chapterList.push ({
