@@ -10,74 +10,57 @@ export default class OmegaScans extends Connector {
         this.tags = [ 'webtoon', 'scanlation', 'english', 'hentai'];
         this.url = 'https://omegascans.org';
         this.api = 'https://api.omegascans.org';
-        this.nextInstance = 'Uzf9L765by7rm6wVbv5Sb';
-    }
-
-    async _initializeConnector() {
-        const uri = new URL(this.url);
-        const request = new Request(uri.href, this.requestOptions);
-        this.nextInstance = await Engine.Request.fetchUI(request, `__NEXT_DATA__.buildId`);
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.series-title h1');
-        const id = uri.pathname.match(/\/series\/(\S+)/)[1];
-        const title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        const id = uri.pathname.match(/\/series\/([^/]+)/)[1];
+        const url = new URL(`/series/${id}/`, this.api);
+        const request = new Request(url, this.requestOptions);
+        const data = await this.fetchJSON(request);
+        return new Manga(this, id, data.title);
     }
 
-    //similar to ReaperScansBR
-
     async _getMangas() {
-        let mangaList = [];
+        const mangaList = [];
         for (let page = 1, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page);
+            const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
+
     async _getMangasFromPage(page) {
-        let uri = new URL('/series/querysearch', this.api);
-        let body = {
-            order : 'asc',
-            order_by : 'latest',
-            series_type : 'Comic',
-            page : page,
-            tagIds : [],
-        };
-        let request = new Request(uri, {
-            method: 'POST',
-            body: JSON.stringify(body),
-            headers: {
-                'Accept': 'text/html, application/xhtml+xml',
-                'Content-Type': 'application/json',
-                'x-referrer': this.url,
-            }
-        });
-        let data = await fetch(request);
-        data = await data.json();
+        const uri = new URL(`/query?page=${page}`, this.api);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSON(request);
         return data.data.map(element => {
             return{
-                id: element.series_slug.replace(/-\d+$/, ''),
+                id: element.series_slug,
                 title : element.title.trim()
             };
         });
     }
+
     async _getChapters(manga) {
-        const uri = new URL(`/_next/data/${this.nextInstance}/pt/series/${manga.id}.json`, this.url);
-        const data = await this.fetchJSON(new Request(uri, this.requestOptions));
-        return data.pageProps.series.chapters.map(element => {
-            return{
-                id: element.id,
-                title : element.chapter_name.trim()
-            };
-        });
+        const uri = new URL(`/series/${manga.id}/`, this.api);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchJSON(request);
+        const chapters = [];
+
+        for (const season of data.seasons) {
+            for (const chapter of season.chapters) {
+                chapters.push({
+                    id : chapter.chapter_slug,
+                    title : chapter.chapter_name
+                });
+            }
+        }
+        return chapters;
     }
 
     async _getPages(chapter) {
-        const uri = new URL(`/series/chapter/${chapter.id}`, this.api);
-        const data = await this.fetchJSON(new Request(uri, this.requestOptions));
-        return data.content.images.map(element => this.createConnectorURI(new URL(element, this.api).href));
+        const uri = new URL(`/chapter/${chapter.manga.id}/${chapter.id}`, this.api);
+        const { data } = await this.fetchJSON(new Request(uri, this.requestOptions));
+        return data.map(element => this.createConnectorURI(new URL(element, this.api).href));
     }
 }
