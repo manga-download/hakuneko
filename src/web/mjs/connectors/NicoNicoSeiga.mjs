@@ -84,27 +84,27 @@ export default class NicoNicoSeiga extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        try {
+        /* try {
             // first try to get high quality image (await promise, otherwise try/catch won't work)
             let data = await super._handleConnectorURI(this.pageTemplateURL + payload.id);
             if(data.mimeType.startsWith('image/')) {
                 return data;
             }
             throw new Error('Failed to get high quality image => downloading low quality image!');
-        } catch(error) {
-            // get low quality DRM image as fallback
-            let uri = new URL(payload.original);
-            let request = new Request(uri, this.requestOptions);
-            let response = await fetch(request);
-            let encrypted = new Uint8Array(await response.arrayBuffer());
-            let key = this._getKeyFromUrl(payload.original);
-            let buffer = {
-                mimeType: 'application/octet-stream',
-                data: this._decrypt(encrypted, key)
-            };
-            this._applyRealMime(buffer);
-            return buffer;
-        }
+        } catch(error) {*/
+        // get low quality DRM image as fallback
+        let uri = new URL(payload.original);
+        let request = new Request(uri, this.requestOptions);
+        let response = await fetch(request);
+        let encrypted = new Uint8Array(await response.arrayBuffer());
+        let key = this._getKeyFromUrl(payload.original);
+        let buffer = {
+            mimeType: 'application/octet-stream',
+            data: this._decrypt(encrypted, key)
+        };
+        this._applyRealMime(buffer);
+        return buffer;
+        //}
     }
 
     /*********************************
