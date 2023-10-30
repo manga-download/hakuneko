@@ -8,7 +8,7 @@ export default class TCBScans extends Connector {
         super.id = 'tcbscans';
         super.label = 'TCB Scans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
-        this.url = 'https://onepiecechapters.com';
+        this.url = 'https://tcbscans.com';
     }
 
     async _getMangaFromURI(uri) {
@@ -45,7 +45,17 @@ export default class TCBScans extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'picture > source');
-        return data.map(x => x.src);
+        const data = await this.fetchDOM(request, 'picture > source');
+
+        //test if image really exists
+        const promiseArray = data.map(page=> new Promise((resolve, reject) =>{
+            const request = new Request(page.src, {
+                method : 'HEAD',
+            });
+            fetch(request)
+                .then(response => response.status == 200 ? resolve(page.src) : reject());
+        }));
+        const promises = await Promise.allSettled(promiseArray);
+        return promises.filter(promise => /fulfilled/i.test(promise.status)).map(promise => promise.value);
     }
 }
