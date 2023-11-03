@@ -7,7 +7,7 @@ export default class WestManga extends WordPressMangastream {
         super.id = 'westmanga';
         super.label = 'WestManga';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://westmanga.info';
+        this.url = 'https://westmanga.org';
         this.path = '/manga/list-mode/';
     }
 }
