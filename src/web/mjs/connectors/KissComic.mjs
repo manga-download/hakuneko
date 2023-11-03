@@ -6,7 +6,7 @@ export default class KissComic extends Connector {
     constructor() {
         super();
         super.id = 'kisscomic';
-        super.label = 'KissComic (ReadComicOnline)';
+        super.label = 'ReadComicOnline.li (KissComic)';
         this.tags = [ 'comic', 'english' ];
         this.url = 'https://readcomiconline.li';
     }
