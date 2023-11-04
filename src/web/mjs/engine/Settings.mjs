@@ -93,6 +93,13 @@ export default class Settings extends EventTarget {
             value: false
         };
 
+        this.ignoreErrorOnDownload = {
+            label: 'Ignore errors on download',
+            description: 'The download will be treated as successful, even if all or some files failed to download and the chapter is in a broken state',
+            input: types.checkbox,
+            value: false
+        };
+
         this.chapterTitleFormat = {
             label: 'Chapter Title Format',
             description: [
