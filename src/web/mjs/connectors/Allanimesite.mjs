@@ -1,13 +1,14 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
+
 export default class Allanimesite extends Connector {
     constructor() {
         super();
         super.id = 'allanimesite';
         super.label = 'AllAnime.site (Mangas)';
         this.tags = ['manga', 'webtoon', 'multi-lingual'];
-        this.url = 'https://allanime.to';
-        this.path = '/allanimeapi';
+        this.url = 'https://allmanga.to';
+        this.api = 'https://api.allanime.day';
         this.queryMangaTitleFromURI = 'ol.breadcrumb li.breadcrumb-item span';
         this.config = {
             throttle: {
@@ -19,17 +20,21 @@ export default class Allanimesite extends Connector {
                 value: 1000
             }
         };
+        this.requestOptions.headers.set('x-origin', this.url);
     }
+
     canHandleURI(uri) {
-        return /(www\.)?allanime\.to\/manga/.test(uri);
+        return /(www\.)?allmanga\.to\/manga/.test(uri);
     }
+
     async _getMangaFromURI(uri) {
         const request = new Request(new URL(uri), this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitleFromURI);
-        const id = uri.pathname.match(/\/manga\/([\S]+)\//)[1];
+        const id = uri.pathname.match(/\/manga\/([^/]+)\//)[1];
         const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
+
     async _getMangas() {
         const mangaList = [];
         for(let page = 1, run = true; run; page++) {
@@ -45,6 +50,7 @@ export default class Allanimesite extends Connector {
         }
         return mangaList;
     }
+
     async _getMangasFromPage(page) {
 
         const jsonVariables = {
@@ -67,7 +73,7 @@ export default class Allanimesite extends Connector {
         };
 
         const params = new URLSearchParams({ variables : JSON.stringify(jsonVariables), extensions : JSON.stringify(jsonExtensions) });
-        const uri = new URL(this.path + '?'+ params.toString(), this.url);
+        const uri = new URL(`/api?${params}`, this.api);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         if (!data.data) return [];
@@ -78,13 +84,14 @@ export default class Allanimesite extends Connector {
             };
         });
     }
+
     async _getChapters(manga) {
 
         const request = new Request(new URL('/manga/'+manga.id, this.url), this.requestOptions);
         const script = `
-        new Promise(resolve => {
-            resolve(__NUXT__);
-        });
+            new Promise(resolve => {
+                resolve(__NUXT__);
+            });
         `;
         const data = await Engine.Request.fetchUI(request, script);
         let chapterlist = [];
@@ -106,12 +113,13 @@ export default class Allanimesite extends Connector {
         });
         return chapterlist;
     }
+
     async _getPages(chapter) {
         const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         const script = `
-        new Promise(resolve => {
-            resolve(__NUXT__);
-        });
+            new Promise(resolve => {
+                resolve(__NUXT__);
+            });
         `;
         const data = await Engine.Request.fetchUI(request, script);
         const sourcename = data.fetch['chapter:0'].selectedSourceName;
