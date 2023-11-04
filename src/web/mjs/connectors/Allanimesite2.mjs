@@ -1,14 +1,14 @@
+import Allanimesite from './Allanimesite.mjs';
 import Manga from '../engine/Manga.mjs';
 import FileMoon from '../videostreams/FileMoon.mjs';
 
-export default class Allanimesite2 extends Connector {
+export default class Allanimesite2 extends Allanimesite {
     constructor() {
         super();
         super.id = 'allanimesite2';
         super.label = 'AllAnime.site (Animes)';
         this.tags = ['anime', 'multi-lingual'];
         this.url = 'https://allanime.to';
-        this.api = 'https://api.allanime.day';
         this.requestOptions.headers.set('x-origin', this.url);
 
     }
