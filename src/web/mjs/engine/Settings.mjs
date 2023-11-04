@@ -95,7 +95,7 @@ export default class Settings extends EventTarget {
 
         this.ignoreErrorOnDownload = {
             label: 'Ignore errors on download',
-            description: 'Download pages ignoring errors',
+            description: 'The download will be treated as successful, even if all or some files failed to download and the chapter is in a broken state',
             input: types.checkbox,
             value: false
         };
