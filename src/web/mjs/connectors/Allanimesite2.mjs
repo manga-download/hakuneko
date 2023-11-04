@@ -81,44 +81,20 @@ export default class Allanimesite2 extends Allanimesite {
     async _getChapters(manga) {
         const { data } = await this._getAnime(manga.id);
         let chapterlist = [];
+        const chaptersArrays = data.show.availableEpisodesDetail;
+        const chapterLanguages = Object.keys(chaptersArrays);
 
-        let subchapters = data.show.availableEpisodesDetail.sub;
-        subchapters.forEach(chapter => {
-            chapterlist.push({
-                id : JSON.stringify({
-                    mangaid : manga.id,
-                    chapternumber : chapter,
-                    language : 'sub',
-                }),
-                title : 'Episode '+ chapter+' [SUB]',
-                language : 'SUB',
-            });
-        });
-
-        let rawchapters = data.show.availableEpisodesDetail.raw;
-        rawchapters.forEach(chapter => {
-            chapterlist.push({
-                id : JSON.stringify({
-                    mangaid : manga.id,
-                    chapternumber : chapter,
-                    language : 'raw',
-                }),
-                title : 'Episode '+ chapter+' [RAW]',
-                language : 'RAW',
-            });
-        });
-
-        let dubchapters = data.show.availableEpisodesDetail.dub;
-        dubchapters.forEach(chapter => {
-            chapterlist.push({
-                id : JSON.stringify({
-                    mangaid : manga.id,
-                    chapternumber : chapter,
-                    language : 'dub',
-
-                }),
-                title : 'Episode '+ chapter+' [DUB]',
-                language : 'DUB',
+        chapterLanguages.forEach(language => { //"sub", "dub", "raw"
+            chaptersArrays[language].forEach(chapter => {
+                chapterlist.push({
+                    id : JSON.stringify({
+                        mangaid : manga.id,
+                        chapternumber : chapter,
+                        language : language,
+                    }),
+                    title : `Episode ${chapter} [${language.toUpperCase()}]`,
+                    language : language.toUpperCase(),
+                });
             });
         });
 
