@@ -27,4 +27,10 @@ export default class ManhwaLatino extends WordPressMadara {
         });
     }
 
+    async _getPages(chapter) {
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.page-break source.img-responsive');
+        return data.map(image => this.getAbsolutePath(image.dataset.src, request.url));
+    }
 }
