@@ -8,6 +8,7 @@ export default class ManhwaLatino extends WordPressMadara {
         super.label = 'Manhwa-Latino';
         this.tags = [ 'webtoon', 'hentai', 'spanish' ];
         this.url = 'https://manhwa-latino.com';
+        this.requestOptions.headers.set('x-referer', this.url);
 
     }
 
@@ -31,6 +32,12 @@ export default class ManhwaLatino extends WordPressMadara {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.page-break source.img-responsive');
-        return data.map(image => this.getAbsolutePath(image.dataset.src, request.url));
+        return data.map(image => {
+            const payload = {
+                url : image.getAttribute('data-src'),
+                referer : request.url
+            };
+            return this.createConnectorURI(payload);
+        });
     }
 }
