@@ -9,7 +9,6 @@ export default class FlameScansORG extends WordPressMangastream {
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://flamecomics.com';
         this.path = '/series/list-mode/';
-
         this.queryMangas = 'div.postbody div.soralist ul li a.series';
         this.queryChapters = 'div#chapterlist ul li a';
     }
@@ -21,7 +20,6 @@ export default class FlameScansORG extends WordPressMangastream {
         if (data.length == 0) return (await super._getPages(chapter)).filter(page => !page.includes('readonflamescans.png'));
 
         //need to combine pictures
-
         return data.map(page => {
             const images = [...page.querySelectorAll('source')].map(image => image.getAttribute('src'));
             return this.createConnectorURI({ images : images });
@@ -44,7 +42,7 @@ export default class FlameScansORG extends WordPressMangastream {
     async composePuzzle(bitmaps) {
         return new Promise(resolve => {
             let canvas = document.createElement('canvas');
-            //combine 2 pictures flipped
+            //combine 2 pictures
             const b1 = bitmaps[0];
             const b2 = bitmaps[1];
             canvas.width = b1.width+b2.width;
