@@ -6,6 +6,11 @@ import Manga from "../engine/Manga.mjs";
  *  id: string,
  *  title: string,
  * }} IManga
+ * 
+ * @typedef {{
+ *  id: string,
+ *  title: string,
+ * }} IChapter
  */
 
 export default class Ridibooks extends Connector {
@@ -23,7 +28,7 @@ export default class Ridibooks extends Connector {
         this.apiUrl = "https://api.ridibooks.com";
     }
 
-    // MANDATORY OVERRIDES
+    // OVERRIDE
 
     /**
      * Get all mangas from a website.
@@ -78,9 +83,23 @@ export default class Ridibooks extends Connector {
     }   
 
     /**
+     * Method to get all chapters for a webtoon.
+     * @param {IManga} manga
+     * @returns {IChapter[]}
      * @override
      */
-    async _getChapters(manga) {}
+    async _getChapters(manga) {
+        let uri = new URL(`/books/${manga.id}`, this.url);
+
+        let request = new Request(uri, this.requestOptions);
+
+        return Engine.Request.fetchUI(request, 'seriesBookListJson')
+            .then(data => data.map(item => ({
+                id: item.id,
+                title: item.title,
+                volume: item.volume
+            })));
+    }
 
     /**
      * @override
@@ -91,4 +110,6 @@ export default class Ridibooks extends Connector {
      * @override
      */
     async _getMangaFromURI(uri) {}
+
+    // -----------------------------
 }
