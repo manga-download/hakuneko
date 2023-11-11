@@ -20,11 +20,7 @@ export default class Ridibooks extends Connector {
             login: `${this.url}/account/login`
         }
 
-        this.path = '/category/books/1600'
-        this.paginationComponentSelector = "#__next > main > div > section > div:nth-child(6) > div > ul > li > a"
-        this.mangaComponentSelector = "#__next > main > div > section > ul:nth-child(5) > li";
-
-        // TODO: add request headers
+        this.apiUrl = "https://api.ridibooks.com";
     }
 
     // MANDATORY OVERRIDES
@@ -36,41 +32,50 @@ export default class Ridibooks extends Connector {
      */
     async _getMangas() {
         let mangaList = [];
-        let currentPage = 0;
-        // finalPage will be updated as we scrape pages
-        let finalPage = 1;
 
-        do {
-            currentPage += 1;
+        let nextPage = new URL(
+            "/v2/category/books",
+            this.apiUrl
+        );
 
-            let uri = new URL(
-                this.path, 
-                this.url
-            );
+        nextPage.search = new URLSearchParams({
+            category_id: 1600,
+            tab: "books",
+            platform: "web",
+            order_by: "popular",
+            limit: 60,
+            // start at first page
+            offset: 0 
+        }).toString();
 
-            uri.searchParams.set("page", currentPage);
+        while(nextPage) {
 
             let request = new Request(
-                uri, 
+                nextPage,
                 this.requestOptions
             );
 
-            let page = await this.fetchDOM(request);
+            let { data } = await this.fetchJSON(request, 3);
 
-            finalPage = this._updateFinalPage(page);
+            let pageMangaList = data.items.map(
+                ({ book }) => ({
+                    id: book.bookId,
+                    title: book.title,
+                })
+            );
 
-            let pageMangaList = 
-                await this._getMangasFromPage(page);
+            mangaList.push(...pageMangaList);
 
-            mangaList = [
-                ...mangaList, 
-                ...pageMangaList
-            ];
+            if (nextPage = data.pagination.nextPage) {
+                nextPage = new URL(
+                    nextPage,
+                    this.apiUrl
+                );
+            }
+        }
 
-        } while(currentPage < finalPage);
-        
         return mangaList;
-    }
+    }   
 
     /**
      * @override
@@ -86,36 +91,4 @@ export default class Ridibooks extends Connector {
      * @override
      */
     async _getMangaFromURI(uri) {}
-
-    // HELPER METHODS
-
-    async _updateFinalPage(page) {
-        let availablePages = [
-            ...page.querySelectorAll(
-                this.paginationComponentSelector
-            )
-        ].map(item => parseInt(item.innerText));
-
-        return Math.max(...availablePages);
-    }
-
-    async _getMangasFromPage(page) {
-        let items = [
-            ...page.querySelectorAll(
-                this.mangaComponentSelector
-            )
-        ];
-
-        return items.map(item => {
-            let a = item.querySelector("a:not(:has(img))");
-
-            let id = a.getAttribute("href")
-                .match(/^\/books\/(?<id>\d+)\?/)
-                ?.groups?.id;
-
-            let title = a.innerText.trim();
-
-            return { id, title };
-        });
-    }
 }
