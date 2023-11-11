@@ -1,5 +1,6 @@
 import Connector from "../engine/Connector.mjs";
 import Manga from "../engine/Manga.mjs";
+import Chapter from "../engine/Chapter.mjs";
 
 /**
  * @typedef {{
@@ -25,7 +26,8 @@ export default class Ridibooks extends Connector {
             login: `${this.url}/account/login`
         }
 
-        this.apiUrl = "https://api.ridibooks.com";
+        this.booksApi = "https://api.ridibooks.com";
+        this.pagesApi = "https://view.ridibooks.com";
     }
 
     // OVERRIDE
@@ -40,7 +42,7 @@ export default class Ridibooks extends Connector {
 
         let nextPage = new URL(
             "/v2/category/books",
-            this.apiUrl
+            this.booksApi
         );
 
         nextPage.search = new URLSearchParams({
@@ -74,7 +76,7 @@ export default class Ridibooks extends Connector {
             if (nextPage = data.pagination.nextPage) {
                 nextPage = new URL(
                     nextPage,
-                    this.apiUrl
+                    this.booksApi
                 );
             }
         }
@@ -102,14 +104,39 @@ export default class Ridibooks extends Connector {
     }
 
     /**
+     * Method to get all pages of a webtoon.
+     * @param {Chapter} chapter
+     * @returns {Promise<(string[]|Object)>}
      * @override
      */
-    async _getPages(chapter) {}
+    async _getPages(chapter) {
+        let uri = new URL(
+            `/generate/${chapter.id}`,
+            this.pagesApi
+        );
+
+        let request = new Request(uri, this.requestOptions);
+
+        // TODO: authorization
+
+        return this.fetchJSON(request, 3)
+            .then(res => {
+                if (!res.success) {
+                    res.login_required && 
+                        alert("Login required.");
+                    return [];
+                }
+
+                return res.pages.map(page => page.src);
+            });
+    }
 
     /**
      * @override
      */
-    async _getMangaFromURI(uri) {}
+    async _getMangaFromURI(uri) {
+        throw new Error('Not Implemented Yet');
+    }
 
     // -----------------------------
 }
