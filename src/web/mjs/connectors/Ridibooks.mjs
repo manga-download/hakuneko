@@ -140,12 +140,45 @@ export default class Ridibooks extends Connector {
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
 
-        return Engine.Request.fetchUI(request, 'bookDetail').then(data => new Manga(
-            this,
-            data.series_id,
-            data.series_title
-        ))
+        return Engine.Request.fetchUI(request, 'bookDetail').then(data => {
+            let manga = new Manga(
+                this,
+                data.series_id,
+                data.series_title
+            );
+
+            this._pushMangaToCache(manga);
+
+            return manga;
+        })
     }
 
     // -----------------------------
+
+    async _pushMangaToCache(manga) {
+        this.getMangas((_, mangas) => {
+            this.isUpdating = true;
+
+            mangas.push(manga);
+
+            Engine.Storage.saveMangaList(this.id, mangas)
+                .catch(err => {
+                    console.error(err);
+                })
+                .finally(() => {
+                    this.isUpdating = false;
+                });
+        });
+    }
+
+    async _clearCache() {
+        this.isUpdating = true;
+        Engine.Storage.saveMangaList(this.id, [])
+            .catch(err => {
+                console.error(err);
+            })
+            .finally(() => {
+                this.isUpdating = false;
+            });
+    }
 }
