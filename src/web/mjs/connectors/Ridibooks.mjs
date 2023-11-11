@@ -132,10 +132,19 @@ export default class Ridibooks extends Connector {
     }
 
     /**
+     * Get the manga from the provided resource.
+     * @param {URL|string} uri
+     * @returns {Promise<Manga>}
      * @override
      */
     async _getMangaFromURI(uri) {
-        throw new Error('Not Implemented Yet');
+        let request = new Request(uri, this.requestOptions);
+
+        return Engine.Request.fetchUI(request, 'bookDetail').then(data => new Manga(
+            this,
+            data.series_id,
+            data.series_title
+        ))
     }
 
     // -----------------------------
