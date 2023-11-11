@@ -28,12 +28,14 @@ export default class Ridibooks extends Connector {
 
         this.booksApi = "https://api.ridibooks.com";
         this.pagesApi = "https://view.ridibooks.com";
+
+        this.bookUrlPattern = /^https:\/\/ridibooks\.com\/books\/(?<id>[a-zA-Z0-9]+)/;
     }
 
     // OVERRIDE
 
     /**
-     * Get all mangas from a website.
+     * Get all mangas from the website.
      * @returns {Promise<IManga[]>}
      * @override
      */
@@ -73,6 +75,7 @@ export default class Ridibooks extends Connector {
 
             mangaList.push(...pageMangaList);
 
+            // ⚠️ below is an assignment expression, not a comparisson
             if (nextPage = data.pagination.nextPage) {
                 nextPage = new URL(
                     nextPage,
@@ -98,13 +101,12 @@ export default class Ridibooks extends Connector {
         return Engine.Request.fetchUI(request, 'seriesBookListJson')
             .then(data => data.map(item => ({
                 id: item.id,
-                title: item.title,
-                volume: item.volume
+                title: item.title
             })));
     }
 
     /**
-     * Method to get all pages of a webtoon.
+     * Method to get all pages of a chapter.
      * @param {Chapter} chapter
      * @returns {Promise<(string[]|Object)>}
      * @override
@@ -116,8 +118,6 @@ export default class Ridibooks extends Connector {
         );
 
         let request = new Request(uri, this.requestOptions);
-
-        // TODO: authorization
 
         return this.fetchJSON(request, 3)
             .then(res => {
@@ -138,6 +138,19 @@ export default class Ridibooks extends Connector {
      * @override
      */
     async _getMangaFromURI(uri) {
+        if (!this.isBookPageURL(uri)) {
+            alert("Not a valid URL.");
+            return;
+        }
+
+        // first check if it already exists in cache
+        let id = this.getIdFromUri(uri);
+
+        let manga = this.findMangaById(id);
+
+        if (manga) return manga;
+
+        // else, try new request
         let request = new Request(uri, this.requestOptions);
 
         return Engine.Request.fetchUI(request, 'bookDetail').then(data => {
@@ -155,6 +168,50 @@ export default class Ridibooks extends Connector {
 
     // -----------------------------
 
+    /** 
+     * Helper function that checks if a given URI is a valid book page URL for the Ridibooks website.
+     * @param {string|URL} uri - The URI from which to extract the ID.
+     * @returns {boolean}
+     */
+    isBookPageURL(uri) {
+        return this.bookUrlPattern.test(String(uri));
+    }
+
+    /**
+     * Extracts the ID from a URI.
+     * 
+     * @param {string|URL} uri - The URI from which to extract the ID.
+     * @returns {string|undefined} The extracted ID, or undefined if no match is found.
+     */
+    getIdFromUri(uri) {
+        let match = String(uri).match(this.bookUrlPattern);
+        
+        if (match) return match.groups.id;
+    }
+
+    /**
+     * Finds a manga by its ID.
+     * 
+     * This method loads the manga list from storage and searches for a manga with the specified ID.
+     * If a matching manga is found, it is returned. Otherwise, undefined is returned.
+     * 
+     * @async
+     * @param {string} id - The ID of the manga to find.
+     * @returns {Promise<Manga|undefined>} A promise that resolves to the matching manga, or undefined if not found.
+     */
+    async findMangaById(id) {
+        return Engine.Storage.loadMangaList(this.id)
+            .then(mangas => mangas.find(manga => manga.id === id))
+            .catch(() => undefined);
+    }
+
+
+    /**
+     * Adds a manga to the existing manga list in the cache.
+     * 
+     * @param {Manga} manga - The manga to push to the cache.
+     * @async
+     */
     async _pushMangaToCache(manga) {
         this.getMangas((_, mangas) => {
             this.isUpdating = true;
@@ -171,14 +228,15 @@ export default class Ridibooks extends Connector {
         });
     }
 
-    async _clearCache() {
-        this.isUpdating = true;
-        Engine.Storage.saveMangaList(this.id, [])
-            .catch(err => {
-                console.error(err);
-            })
-            .finally(() => {
-                this.isUpdating = false;
-            });
-    }
+
+    // async _clearCache() {
+    //     this.isUpdating = true;
+    //     Engine.Storage.saveMangaList(this.id, [])
+    //         .catch(err => {
+    //             console.error(err);
+    //         })
+    //         .finally(() => {
+    //             this.isUpdating = false;
+    //         });
+    // }
 }
