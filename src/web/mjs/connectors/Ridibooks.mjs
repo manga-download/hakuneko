@@ -26,9 +26,10 @@ export default class Ridibooks extends Connector {
             login: `${this.url}/account/login`
         }
 
-        this.booksApi = "https://api.ridibooks.com";
-        this.pagesApi = "https://view.ridibooks.com";
+        this.useLegacyApi = true;
 
+        this.apiUrl = "https://api.ridibooks.com";
+        this.pagesApi = "https://view.ridibooks.com";
         this.bookUrlPattern = /^https:\/\/ridibooks\.com\/books\/(?<id>[a-zA-Z0-9]+)/;
     }
 
@@ -42,47 +43,20 @@ export default class Ridibooks extends Connector {
     async _getMangas() {
         let mangaList = [];
 
-        let nextPage = new URL(
-            "/v2/category/books",
-            this.booksApi
-        );
-
-        nextPage.search = new URLSearchParams({
-            category_id: 1600,
-            tab: "books",
-            platform: "web",
-            order_by: "popular",
-            limit: 60,
-            // start at first page
-            offset: 0 
-        }).toString();
-
-        while(nextPage) {
-
-            let request = new Request(
-                nextPage,
-                this.requestOptions
-            );
-
-            let { data } = await this.fetchJSON(request, 3);
-
-            let pageMangaList = data.items.map(
-                ({ book }) => ({
-                    id: book.bookId,
-                    title: book.title,
-                })
-            );
-
-            mangaList.push(...pageMangaList);
-
-            // ⚠️ below is an assignment expression, not a comparisson
-            if (nextPage = data.pagination.nextPage) {
-                nextPage = new URL(
-                    nextPage,
-                    this.booksApi
-                );
-            }
+        if (this.useLegacyApi) {
+            // legacy takes some time and makes quite a lot of requests
+            // it doesn't return the full catogue, however
+            let legacyList = await this._getMangasLegacy();
+            mangaList.push(...legacyList);
         }
+
+        // TODO: implement graphQL fetch strategy
+        // as of now (11 November 2023), Ridibooks
+        // still uses majoritarily the legacy API
+        // with graphQL used only for a few use cases.
+        // Webtoons not being one of them;
+        let mangaListGql = await this._getMangasGql();
+        mangaList.push(...mangaListGql);
 
         return mangaList;
     }   
@@ -145,9 +119,7 @@ export default class Ridibooks extends Connector {
 
         // first check if it already exists in cache
         let id = this.getIdFromUri(uri);
-
-        let manga = this.findMangaById(id);
-
+        let manga = await this.findMangaById(id);
         if (manga) return manga;
 
         // else, try new request
@@ -239,4 +211,86 @@ export default class Ridibooks extends Connector {
     //             this.isUpdating = false;
     //         });
     // }
+
+    /**
+     * Retrieves the list of new releases using GraphQL.
+     * 
+     * @returns {Promise<IManga[]>} The list of manga items.
+     * @async
+     */
+    async _getMangasGql() {
+        // const url = new URL('/graphql', this.apiUrl);
+
+        // const operation = '';
+
+        // const query = ``;
+
+        // const variables = {};
+
+        // const data = await this.fetchGraphQL(
+        //     url,
+        //     operation,
+        //     query,
+        //     variables
+        // );
+
+        return [];
+    }
+
+    /**
+     * @deprecated
+     * Retrieves a list of manga from a legacy API.
+     * 
+     * This method makes multiple requests to the API to fetch all the manga items.
+     * It starts from the first page and continues until there are no more pages left.
+     * 
+     * @returns {Promise<IManga[]>} The list of manga items.
+     * @async
+     */
+    async _getMangasLegacy() {
+        let mangaList = [];
+
+        let nextPage = new URL(
+            "/v2/category/books",
+            this.apiUrl
+        );
+
+        nextPage.search = new URLSearchParams({
+            category_id: 1600,
+            tab: "books",
+            platform: "web",
+            order_by: "popular",
+            limit: 60,
+            // start at first page
+            offset: 0 
+        }).toString();
+
+        while(nextPage) {
+
+            let request = new Request(
+                nextPage,
+                this.requestOptions
+            );
+
+            let { data } = await this.fetchJSON(request, 3);
+
+            let pageMangaList = data.items.map(
+                ({ book }) => ({
+                    id: book.bookId,
+                    title: book.title,
+                })
+            );
+
+            mangaList.push(...pageMangaList);
+
+            if (nextPage = data.pagination.nextPage) {
+                nextPage = new URL(
+                    nextPage,
+                    this.apiUrl
+                );
+            }
+        }
+
+        return mangaList;
+    } 
 }
