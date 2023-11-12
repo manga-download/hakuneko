@@ -26,8 +26,6 @@ export default class Ridibooks extends Connector {
             login: `${this.url}/account/login`
         }
 
-        this.useLegacyApi = true;
-
         this.apiUrl = "https://api.ridibooks.com";
         this.pagesApi = "https://view.ridibooks.com";
         this.bookUrlPattern = /^https:\/\/ridibooks\.com\/books\/(?<id>[a-zA-Z0-9]+)/;
@@ -43,12 +41,10 @@ export default class Ridibooks extends Connector {
     async _getMangas() {
         let mangaList = [];
 
-        if (this.useLegacyApi) {
-            // legacy takes some time and makes quite a lot of requests
-            // it doesn't return the full catogue, however
-            let legacyList = await this._getMangasLegacy();
-            mangaList.push(...legacyList);
-        }
+        // legacy takes some time and makes quite a lot of requests
+        // and still it doesn't return the full catogue
+        let legacyList = await this._getMangasLegacy();
+        mangaList.push(...legacyList);
 
         // TODO: implement graphQL fetch strategy
         // as of now (11 November 2023), Ridibooks
@@ -82,7 +78,7 @@ export default class Ridibooks extends Connector {
     /**
      * Method to get all pages of a chapter.
      * @param {Chapter} chapter
-     * @returns {Promise<(string[]|Object)>}
+     * @returns {Promise<string[]>}
      * @override
      */
     async _getPages(chapter) {
@@ -125,17 +121,12 @@ export default class Ridibooks extends Connector {
         // else, try new request
         let request = new Request(uri, this.requestOptions);
 
-        return Engine.Request.fetchUI(request, 'bookDetail').then(data => {
-            let manga = new Manga(
+        return Engine.Request.fetchUI(request, "bookDetail")
+            .then(data => new Manga(
                 this,
                 data.series_id,
                 data.series_title
-            );
-
-            this._pushMangaToCache(manga);
-
-            return manga;
-        })
+            ));
     }
 
     // -----------------------------
@@ -164,53 +155,15 @@ export default class Ridibooks extends Connector {
     /**
      * Finds a manga by its ID.
      * 
-     * This method loads the manga list from storage and searches for a manga with the specified ID.
-     * If a matching manga is found, it is returned. Otherwise, undefined is returned.
-     * 
      * @async
      * @param {string} id - The ID of the manga to find.
-     * @returns {Promise<Manga|undefined>} A promise that resolves to the matching manga, or undefined if not found.
+     * @returns {Promise<Manga|undefined>}
      */
     async findMangaById(id) {
         return Engine.Storage.loadMangaList(this.id)
             .then(mangas => mangas.find(manga => manga.id === id))
             .catch(() => undefined);
     }
-
-
-    /**
-     * Adds a manga to the existing manga list in the cache.
-     * 
-     * @param {Manga} manga - The manga to push to the cache.
-     * @async
-     */
-    async _pushMangaToCache(manga) {
-        this.getMangas((_, mangas) => {
-            this.isUpdating = true;
-
-            mangas.push(manga);
-
-            Engine.Storage.saveMangaList(this.id, mangas)
-                .catch(err => {
-                    console.error(err);
-                })
-                .finally(() => {
-                    this.isUpdating = false;
-                });
-        });
-    }
-
-
-    // async _clearCache() {
-    //     this.isUpdating = true;
-    //     Engine.Storage.saveMangaList(this.id, [])
-    //         .catch(err => {
-    //             console.error(err);
-    //         })
-    //         .finally(() => {
-    //             this.isUpdating = false;
-    //         });
-    // }
 
     /**
      * Retrieves the list of new releases using GraphQL.
@@ -238,7 +191,6 @@ export default class Ridibooks extends Connector {
     }
 
     /**
-     * @deprecated
      * Retrieves a list of manga from a legacy API.
      * 
      * This method makes multiple requests to the API to fetch all the manga items.
@@ -261,7 +213,6 @@ export default class Ridibooks extends Connector {
             platform: "web",
             order_by: "popular",
             limit: 60,
-            // start at first page
             offset: 0 
         }).toString();
 
