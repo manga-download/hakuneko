@@ -45,7 +45,7 @@ export default class Ridibooks extends Connector {
     async _getPages(chapter) {
         const uri = new URL(`/generate/${chapter.id}`, this.pagesApi);
         const request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
+        const data = await this.fetchJSON(request);
         if (!data.success) return [];
         return data.pages.map(page => page.src);
     }
