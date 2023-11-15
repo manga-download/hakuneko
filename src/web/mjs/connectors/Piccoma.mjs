@@ -70,7 +70,7 @@ export default class Piccoma extends Connector {
 
     async _handleConnectorURI(payload) {
         if (payload.pdata.isScrambled) {
-   	        const image = await this._loadImage(payload.url);
+            const image = await this._loadImage(payload.url);
             const canvas = this._unscramble(image, 50, payload.key);
             const blob = await this._canvasToBlob(canvas);
             return this._blobToBuffer(blob);
