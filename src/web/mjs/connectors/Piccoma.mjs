@@ -8,7 +8,7 @@ export default class Piccoma extends Connector {
         super.id = 'piccoma';
         super.label = 'Piccoma';
         this.tags = ['manga', 'webtoon', 'japanese'];
-        this.url = 'https://jp.piccoma.com/';
+        this.url = 'https://jp.piccoma.com';
     }
 
     canHandleURI(uri) {
@@ -40,7 +40,7 @@ export default class Piccoma extends Connector {
 
     async _getChapters(manga) {
         const request = new Request(`${this.url}/web/product/${manga.id}/episodes?etype=E`);
-        const data = await this.fetchDOM(request, '.PCM-product_episodeList > a');
+        const data = await this.fetchDOM(request, 'ul#js_episodeList li > a');
         return data.map(element => {
             return {
                 id: `${manga.id}/${element.dataset.episode_id}`,
@@ -69,19 +69,14 @@ export default class Piccoma extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        const image = await this._loadImage(payload.url);
         if (payload.pdata.isScrambled) {
+   	        const image = await this._loadImage(payload.url);
             const canvas = this._unscramble(image, 50, payload.key);
             const blob = await this._canvasToBlob(canvas);
             return this._blobToBuffer(blob);
         }
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext('2d');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
-        const blob = await this._canvasToBlob(canvas);
-        return this._blobToBuffer(blob);
+        return super._handleConnectorURI(payload.url);
+
     }
 
     async _canvasToBlob(canvas) {
