@@ -8,12 +8,12 @@ export default class OremangaNet extends Connector {
         super.id = 'oremanga';
         super.label = 'Oremanga';
         this.tags = [ 'manga', 'webtoon', 'thai' ];
-		this.url = 'https://www.oremanga.net';
-		this.path = '/manga-list'
-		this.queryMangas = 'div.mangalist-blc ul li a.series';
-		this.queryChapters = 'ul.series-chapterlist li div.flexch-infoz a';
-		this.queryPages = 'div.reader-area p source';
-		this.queryMangaTitle = 'div.series-title h2';
+	this.url = 'https://www.oremanga.net';
+	this.path = '/manga-list'
+	this.queryMangas = 'div.mangalist-blc ul li a.series';
+	this.queryChapters = 'ul.series-chapterlist li div.flexch-infoz a';
+	this.queryPages = 'div.reader-area p source';
+	this.queryMangaTitle = 'div.series-title h2';
 	}
 async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
