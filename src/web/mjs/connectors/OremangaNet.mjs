@@ -1,5 +1,5 @@
 import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs'
+import Manga from '../engine/Manga.mjs';
 
 export default class OremangaNet extends Connector {
 
@@ -8,14 +8,15 @@ export default class OremangaNet extends Connector {
         super.id = 'oremanga';
         super.label = 'Oremanga';
         this.tags = [ 'manga', 'webtoon', 'thai' ];
-	this.url = 'https://www.oremanga.net';
-	this.path = '/manga-list'
-	this.queryMangas = 'div.mangalist-blc ul li a.series';
-	this.queryChapters = 'ul.series-chapterlist li div.flexch-infoz a';
-	this.queryPages = 'div.reader-area p source';
-	this.queryMangaTitle = 'div.series-title h2';
-	}
-async _getMangaFromURI(uri) {
+        this.url = 'https://www.oremanga.net';
+        this.path = '/manga-list/';
+        this.queryMangas = 'div.mangalist-blc ul li a.series';
+        this.queryChapters = 'ul.series-chapterlist li div.flexch-infoz a';
+        this.queryPages = 'div.reader-area source';
+        this.queryMangaTitle = 'div.series-title h2';
+    }
+
+    async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitle);
         const id = uri.pathname;
@@ -38,6 +39,9 @@ async _getMangaFromURI(uri) {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, this.queryChapters);
         return data.map(element => {
+            const titleElement = element.querySelector('span');
+            const bloat = titleElement.querySelector('.date');
+            if (bloat) titleElement.removeChild(bloat);
             return{
                 id: this.getRelativeLink( element ),
                 title: element.querySelector('span').textContent.trim()
