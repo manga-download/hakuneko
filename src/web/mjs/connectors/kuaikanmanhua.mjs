@@ -14,7 +14,7 @@ export default class Kuaikanmanhua extends Connector {
     }
 
     canHandleURI(uri) {
-        return /^https?:\/\/(m\.|www\.)?kuaikanmanhua\.com\/(mobile|web\/topic)\/\d+\/.test(uri.hostname);
+        return /^https?:\/\/(m\.|www\.)?kuaikanmanhua\.com\/(mobile|web\/topic)\/\d+/.test(uri.hostname);
     }
 
     async _getMangaFromURI(uri) {
