@@ -7,7 +7,7 @@ export default class CrazyScans extends WordPressMadara {
         super.id = 'crazyscans';
         super.label = 'Crazy Scans';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://mangacultivator.com';
+        this.url = 'https://mangacult.org';
     }
 
     async _getPages(chapter) {
