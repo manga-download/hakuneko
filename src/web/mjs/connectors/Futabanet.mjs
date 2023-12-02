@@ -9,12 +9,11 @@ export default class Futabanet extends SpeedBinb {
         super.label = 'がうがうモンスター (Futabanet Monster)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://gaugau.futabanet.jp';
-        this.baseURL = 'https://reader.futabanet.jp';
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'h1.detail-ex__title');
+        let data = await this.fetchDOM(request, 'div.works__grid div.list__text div.mbOff h1');
         let id = uri.pathname;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
@@ -22,18 +21,18 @@ export default class Futabanet extends SpeedBinb {
 
     async _getMangas() {
         let request = new Request(new URL('/list/works', this.url), this.requestOptions);
-        let pages = await this.fetchDOM(request, 'li.m-pager__last a');
-        pages = Number( new URL(pages[0].href).searchParams.get('page') );
+        let pages = await this.fetchDOM(request, 'ol.pagination li:not([class]) a');
+        pages = Number( new URL(pages.pop().href).searchParams.get('page') );
 
         let data;
         let mangas = [];
         for (let page = 1; page <= pages; page++) {
             request = new Request(this.url + '/list/works?page=' + page);
-            data = await this.fetchDOM(request, 'div.m-result-list__item a');
+            data = await this.fetchDOM(request, 'div.works__grid div.list__box h4 a');
             mangas.push( ...data.map(element => {
                 return {
                     id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: element.querySelector('.m-result-list__title').textContent.trim()
+                    title: element.textContent.trim()
                 };
             }));
         }
@@ -41,13 +40,15 @@ export default class Futabanet extends SpeedBinb {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'section.detail-sec.detail-ex div.detail-ex__btn-list-wrap div.detail-ex__btn-item a[href*="reader.futabanet"]');
+        let request = new Request(new URL(manga.id+'/episodes', this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, 'div.episode__grid a');
         return data.map(element => {
-            let title = element.querySelector('span:not(.new)');
+            const epnum = element.querySelector('.episode__num').textContent.trim();
+            const title = element.querySelector('.episode__title').textContent.trim();
+
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.innerText.replace(/\(\d+\.\d+(.*)\)$/, '').trim(),
+                title: title ? [epnum, title].join(' - ') : epnum,
             };
         });
     }
