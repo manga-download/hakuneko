@@ -5,13 +5,14 @@ export default class MangaSwat extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'mangaswat';
-        super.label = 'SWAT Manga';
+        super.label = 'Goldragon (SWAT Manga)';
         this.tags = ['webtoon', 'arabic'];
-        this.url = 'https://swatop.club';
+        this.url = 'https://goldragon.me';
         this.path = '/manga/list-mode';
 
         this.queryChapters = 'div.bxcl ul li span.lchx a';
         this.queryChaptersTitle = undefined;
+        this.queryMangas = 'div.soralist ul li a.series';
     }
 
     async _getPages(chapter) {
