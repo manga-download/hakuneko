@@ -87,7 +87,7 @@ export default class HeanCms extends Connector {
         ));
     }
 
-    async _getNovel(series, chapter) {
+    async _getNovel(seriesId, chapterId) {
         const darkmode = Engine.Settings.NovelColorProfile();
         const script = `
             new Promise((resolve, reject) => {
@@ -118,7 +118,7 @@ export default class HeanCms extends Connector {
 	            document.body.appendChild(script);
             });
         `;
-        const uri = new URL(`/series/${series}/${chapter}`, this.url);
+        const uri = new URL(`/series/${seriesId}/${chapterId}`, this.url);
         const request = new Request(uri, this.requestOptions);
         return await Engine.Request.fetchUI(request, script, 30000, true);
     }
