@@ -74,7 +74,7 @@ export default class HeanCms extends Connector {
 
         // check for paywall
         if (data.length < 1 && paywall) {
-            throw new Error('This chapter is paywalled. Please login.');
+            throw new Error(`${chapter.title} is paywalled. Please login.`);
         }
 
         // check if novel
