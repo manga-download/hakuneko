@@ -1,7 +1,6 @@
 import HeanCms from './templates/HeanCms.mjs';
 
 export default class OmegaScans extends HeanCms {
-
     constructor() {
         super();
         super.id = 'omegascans';
