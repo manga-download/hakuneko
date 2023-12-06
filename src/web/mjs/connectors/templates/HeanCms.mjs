@@ -59,7 +59,6 @@ export default class HeanCms extends Connector {
                 title: `${seasons.length > 1 ? 'S' + season.index : ''} ${chapter.chapter_name} ${chapter.chapter_title || ''}`.trim()
             });
         }));
-        console.log(chapterList);
         return chapterList;
     }
 
