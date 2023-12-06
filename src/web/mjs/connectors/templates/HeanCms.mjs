@@ -77,8 +77,18 @@ export default class HeanCms extends Connector {
             throw new Error('This chapter is paywalled. Please login.');
         }
 
-        return data.map((image) => this.DeProxifyStatically(new URL(image)).href);
+        return data.map((image) => this.createConnectorURI(
+            this.DeProxifyStatically(new URL(image)).href
+        ));
     }
+
+    async _handleConnectorURI(payload) {
+        let request = new Request(payload, this.requestOptions);
+        request.headers.set('x-referer', this.url);
+        const response = await fetch(request);
+        let data = await response.blob();
+        data = await this._blobToBuffer(data);
+        this._applyRealMime(data);
         return data;
     }
 
