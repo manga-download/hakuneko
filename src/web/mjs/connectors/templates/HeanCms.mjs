@@ -67,7 +67,17 @@ export default class HeanCms extends Connector {
         const id = JSON.parse(chapter.id);
         const uri = new URL(`/chapter/${id.series}/${id.chapter}`, this.api);
         const request = new Request(uri, this.requestOptions);
-        const {data} = await this.fetchJSON(request, this.queryPages);
+        const {chapter_type, data, paywall} = await this.fetchJSON(request, this.queryPages);
+
+        // check if novel
+        if (chapter_type.toLowerCase() === 'novel') {
+            throw new Error('Novel chapters are not supported!');
+        }
+        // check for paywall
+        if (data.length < 1 && paywall) {
+            throw new Error('This chapter is paywalled. Please login.');
+        }
+
         return data;
     }
 }
