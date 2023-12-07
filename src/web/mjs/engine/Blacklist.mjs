@@ -91,6 +91,7 @@ export default class Blacklist {
             '*://*.mineralscreamrobes.com/*',
             '*://*.moatads.com/*',
             '*://*.mobtrks.com/*',
+            '*://*.muses.org/*',
             '*://*.nakamasweb.com/*',
             '*://*.onclasrv.com/*',
             '*://*.onesignal.com/*',
