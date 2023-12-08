@@ -40,7 +40,7 @@ export default class ComicK extends Connector {
 
     async _getMangasFromPage(page) {
         try {
-            const uri = new URL('/v1.0/search?page=' + page, this.apiurl);
+            const uri = new URL('/v1.0/search?limit=49&page=' + page, this.apiurl); //if we keep the limit to 49 we can fetch all 25 pages
             const request = new Request(uri, this.requestOptions);
             request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
             await this.wait(500);
