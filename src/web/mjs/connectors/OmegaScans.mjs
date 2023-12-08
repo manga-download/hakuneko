@@ -8,5 +8,8 @@ export default class OmegaScans extends HeanCms {
         this.tags = [ 'webtoon', 'scanlation', 'english', 'hentai'];
         this.url = 'https://omegascans.org';
         this.api = 'https://api.omegascans.org';
+        this.links = {
+            login: 'https://omegascans.org/login'
+        };
     }
 }

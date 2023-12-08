@@ -8,5 +8,8 @@ export default class YugenMangas extends HeanCms {
         this.tags = [ 'webtoon', 'novel', 'spanish' ];
         this.url = 'https://yugenmangas.lat';
         this.api = 'https://api.yugenmangas.net';
+        this.links = {
+            login: 'https://yugenmangas.lat/login'
+        };
     }
 }

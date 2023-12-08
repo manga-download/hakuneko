@@ -8,5 +8,8 @@ export default class PerfScan extends HeanCms {
         this.tags = [ 'webtoon', 'scanlation', 'french'];
         this.url = 'https://perf-scan.fr/';
         this.api = 'https://api.perf-scan.fr';
+        this.links = {
+            login: 'https://perf-scan.fr/login'
+        };
     }
 }
