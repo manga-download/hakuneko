@@ -41,7 +41,7 @@ export default class HeanCms extends Connector {
             return data.map((manga) => {
                 return {
                     id: manga.series_slug,
-                    title: manga.title ? manga.title.trim() : null
+                    title: manga.title
                 };
             });
         }
