@@ -137,8 +137,6 @@ export default class HeanCms extends Connector {
     // copy pasted from https://github.com/manga-download/haruneko/blob/master/web/src/engine/transformers/ImageLinkDeProxifier.ts
     DeProxifyStatically(uri) {
         const url = uri.href
-            // NOTE: The indonesian developer of statically.io (Frans Allen) seems to be affiliated with BacaKomik
-            //       and added support for some kind of optional URL branding => remove known brands from URL
             .replace(/cdn\.statically\.io\/img\/(bacakomik\/)?/, '')
             .replace(/\/(w=\d+|h=\d+|q=\d+|f=auto)(,(w=\d+|h=\d+|q=\d+|f=auto))*\//, '/');
         return new URL(url);
