@@ -71,8 +71,19 @@ export default class FirstKiss extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.reading-detail div.page-chapter source');
-        return data.filter(image => !image.src.match(/\/logos\/|pic_999/)).
-            map(image => this.createConnectorURI(this.getAbsolutePath(image, request.url)));
+
+        const script = `
+            new Promise(resolve => {
+                const tokenElement = document.querySelector("div.reading input#next_img_token");
+                if (tokenElement != null) {
+                    const imgCdnUrl = document.querySelector("div.reading #currentlink").getAttribute("value");
+                    const imgdata = JSON.parse(atob(parseJwt(tokenElement.getAttribute('value')).data)); 
+                    resolve(imgdata.map(image => new URL(image, imgCdnUrl).href));
+                }
+                const images = [...document.querySelectorAll("div.reading-detail.box_doc img:not(noscript img)")];
+                resolve(images.map(image => image.getAttribute('src')));
+            });
+        `;
+        return (await Engine.Request.fetchUI(request, script)).map(image => this.createConnectorURI(image));
     }
 }
