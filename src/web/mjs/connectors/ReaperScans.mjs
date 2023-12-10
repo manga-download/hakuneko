@@ -7,9 +7,9 @@ export default class ReaperScans extends Connector {
         super.id = 'reaperscans';
         super.label = 'Reaper Scans';
         this.tags = ['webtoon', 'english'];
-        this.url = 'https://reaperscans.com';
+        this.url = 'https://reapercomics.com';
         this.links = {
-            login: 'https://reaperscans.com/login'
+            login: 'https://reapercomics.com/login'
         };
         this.path = '/comics';
         this.queryMangas = 'a.my-2.text-sm.font-medium.text-white.hover\\3A text-blue-700';
