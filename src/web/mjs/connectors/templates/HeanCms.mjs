@@ -9,6 +9,7 @@ export default class HeanCms extends Connector {
         this.url = undefined;
         this.api = undefined;
         this.path = '';
+        this.novelContainer = 'div.container';
         this.novelContentQuery = 'div#reader-container';
         this.novelFormat = 'image/png';
         this.novelWidth = '56em';// parseInt(1200 / window.devicePixelRatio) + 'px';
@@ -92,7 +93,7 @@ export default class HeanCms extends Connector {
         const script = `
             new Promise((resolve, reject) => {
                 document.body.style.width = '${this.novelWidth}';
-	            let container = document.querySelector('div.container');
+	            let container = document.querySelector(${this.novelContainer});
 	            container.style.maxWidth = '${this.novelWidth}';
 	            container.style.padding = '0';
 	            container.style.margin = '0';
