@@ -55,7 +55,7 @@ export default class UzayManga extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise(resolve => {
+            new Promise((resolve, reject) => {
                 __next_f.forEach(element => {
                 const el = element[1];
                 if (el) {
@@ -64,6 +64,7 @@ export default class UzayManga extends Connector {
                    }
                 }
              });
+             reject();
             });
     	  `;
 
