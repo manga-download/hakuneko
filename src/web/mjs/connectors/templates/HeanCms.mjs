@@ -93,7 +93,7 @@ export default class HeanCms extends Connector {
         const script = `
             new Promise((resolve, reject) => {
                 document.body.style.width = '${this.novelWidth}';
-                let container = document.querySelector(${this.novelContainer});
+                let container = document.querySelector('${this.novelContainer}');
                 container.style.maxWidth = '${this.novelWidth}';
                 container.style.padding = '0';
                 container.style.margin = '0';
