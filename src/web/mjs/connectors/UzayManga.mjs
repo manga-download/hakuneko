@@ -72,7 +72,6 @@ export default class UzayManga extends Connector {
         const request = new Request( uri.href, this.requestOptions );
         const data = await Engine.Request.fetchUI(request, script);
         const jsonString = data.match(/(\[{"path":.*}\])}}/)[1];
-        const imagesData = JSON.parse(jsonString);
-        return imagesData.map(image => 'https://cdn1.uzaymanga.com/series/image/'+ image.path);
+        return JSON.parse(jsonString).map(image => 'https://cdn1.uzaymanga.com/series/image/'+ image.path);
     }
 }
