@@ -20,16 +20,13 @@ export default class ComicEarthStar extends CoreView {
                 seriesOneshot: serialGroup(groupName: "連載・読切：読切作品") {
                     seriesSlice {
                         seriesList {
-                            ...Earthstar_SeriesListItem_Series
+                            id
+                            title
+                            firstEpisode {
+                                permalink
+                            }
                         }
                     }
-                }
-            }
-            fragment Earthstar_SeriesListItem_Series on Series {
-                id
-                title
-                firstEpisode {
-                    permalink
                 }
             }
         `;
