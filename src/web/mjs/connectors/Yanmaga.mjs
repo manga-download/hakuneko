@@ -1,19 +1,15 @@
-import YoungChampion from './YoungChampion.mjs';
+import SpeedBinb from './templates/SpeedBinb.mjs';
 
-export default class Yanmaga extends YoungChampion {
+export default class Yanmaga extends SpeedBinb {
     constructor() {
         super();
         super.id = 'yanmaga';
         super.label = 'Yanmaga';
         this.tags = ['manga', 'japanese'];
         this.url = 'https://yanmaga.jp';
-        this.apiUrl = 'https://api2-yanmaga.comici.jp';
         this.links = {
             login: 'https://yanmaga.jp/customers/sign-in'
         };
-
-        this.mangaListPath = '/series/list?page={page}';
-        this.queryMangaTitleURI = '.detailv2-outline-title';
     }
 
     async _getMangas() {
@@ -28,43 +24,45 @@ export default class Yanmaga extends YoungChampion {
     }
 
     async _getChapters(manga) {
+        const chapterScript = `
+            new Promise(resolve => {
+                const interval = setInterval(() => {
+                    let morebtn = document.querySelector('.mod-episode-more-button') ;
+                    if (morebtn) morebtn.click()
+                        else {
+                            clearInterval(interval);
+                            const chapters = [...document.querySelectorAll('a.mod-episode-link')];
+                            resolve(chapters.map(chapter => {
+                                return {
+                                    id: chapter.pathname,
+                                    title: chapter.querySelector('.mod-episode-title').textContent.trim()
+                                }
+                            }));
+                    }
+                 }, 1000);
+            });
+        `;
+
         const uri = new URL(manga.id, this.url);
-        const request = new Request(uri);
-        const dom = await this.fetchDOM(request);
-        const csrfToken = dom.querySelector('meta[name=csrf-token]').content;
-        const contents = dom.querySelector('#contents');
-        const count = contents ? Math.ceil(contents.dataset.count / 50) : 1;
-        const chapters = [];
-        for (let i = 0; i < count; i++) {
-            const epUri = new URL(`${manga.id}/episodes`, this.url);
-            epUri.searchParams.set('offset', String(i * 50));
-            epUri.searchParams.set('cb', Date.now());
-            const epRequest = new Request(epUri);
-            epRequest.headers.set('x-csrf-token', csrfToken);
-            const matches = await this.fetchRegex(epRequest, /'beforeend', "(.*)"/g);
-            for (const value of matches) {
-                if (!value.includes('<a class')) {
-                    continue;
-                }
-                const content = value.replace(/\\'/g, '\'').replace(/\\"/g, '"').replace(/\\\//g, '/');
-                const dom = this.createDOM(content);
-                const anchorElement = dom.querySelector('a.mod-episode-link');
-                chapters.push({
-                    id: this.getRootRelativeOrAbsoluteLink(anchorElement, this.url),
-                    title: dom.querySelector('.mod-episode-title').textContent.trim(),
-                });
-            }
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, chapterScript, 10000);
+    }
+
+    _getPageList( manga, chapter, callback ) {
+        if (chapter.id.includes('/sign-up')) {
+            throw new Error(`You need to login to see ${chapter.title}`);
         }
-        return chapters;
+        const uri = new URL(chapter.id, this.url);
+        fetch(uri)
+            .then(response => {
+                if (response.redirected) {
+                    const newurl = new URL(response.url);
+                    return super._getPageList(manga, { id: newurl.pathname+newurl.search }, callback);
+                }
+                if (!uri.searchParams.get('cid')) {
+                    throw new Error(`You need to login to see ${chapter.title}`);
+                }
+                return super._getPageList(manga, chapter, callback);
+            });
     }
-
-    _fetchCoordInfo(viewer) {
-        const uri = new URL('/book/coordinateInfo', this.apiUrl);
-        uri.searchParams.set('comici-viewer-id', viewer.getAttribute('comici-viewer-id'));
-        const request = new Request(uri);
-        request.headers.set('x-origin', this.url);
-        request.headers.set('x-referer', this.url);
-        return this.fetchJSON(request);
-    }
-
 }
