@@ -6,7 +6,7 @@ export default class Doujinku extends WordPressMangastream {
         super();
         super.id = 'doujinku';
         super.label = 'Doujinku';
-        this.tags = ['hentai', 'indonesian'];
+        this.tags = ['manga', 'hentai', 'indonesian'];
         this.url = 'https://doujinku.xyz';
         this.path = '/manga/list-mode/';
     }
