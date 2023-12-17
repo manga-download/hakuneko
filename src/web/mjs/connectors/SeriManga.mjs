@@ -8,9 +8,9 @@ export default class SeriManga extends Connector {
         super.id = 'serimanga';
         super.label = 'Seri Manga';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://serimanga.com';
+        this.url = 'https://serimangas.com';
         this.links = {
-            login: 'https://serimanga.com/#login'
+            login: 'https://serimangas.com/#login'
         };
     }
 
