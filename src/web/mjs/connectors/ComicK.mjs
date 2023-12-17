@@ -16,6 +16,10 @@ export default class ComicK extends Connector {
 
     }
 
+    canHandleURI(uri) {
+        return /https?:\/\/comick\.(app|ink|cc)/.test(uri.origin);
+    }
+
     async _getEmbeddedJSON(uri) {
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
