@@ -7,6 +7,6 @@ export default class Hayalistic extends WordPressMadara {
         super.id = 'hayalistic';
         super.label = 'Hayalistic';
         this.tags = [ 'webtoon', 'turkish' ];
-        this.url = 'https://hayalistic.com';
+        this.url = 'https://hayalistic.com.tr';
     }
 }
