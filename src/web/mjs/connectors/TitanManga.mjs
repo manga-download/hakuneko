@@ -1,6 +1,6 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class TitanManga extends WordPressMangastream {
+export default class TitanManga extends WordPressMadara {
 
     constructor() {
         super();
@@ -8,6 +8,5 @@ export default class TitanManga extends WordPressMangastream {
         super.label = 'Titan Manga';
         this.tags = [ 'manga', 'turkish', 'webtoon' ];
         this.url = 'https://titanmanga.com';
-        this.path = '/manga/list-mode/';
     }
 }
