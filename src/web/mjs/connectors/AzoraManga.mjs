@@ -1,25 +1,11 @@
-import Connector from '../engine/Connector.mjs';
+import AzoraWorld from './AzoraWorld.mjs';
 
-export default class AzoraManga extends Connector {
+export default class AzoraManga extends AzoraWorld {
 
     constructor() {
         super();
         super.id = 'azoramanga';
         super.label = 'أزورا مانج (AZORA MANGA)';
         this.tags = [ 'webtoon', 'arabic' ];
-        this.url = 'https://azoramanga.com';
     }
-
-    async _getMangas() {
-        throw new Error('Please use AzoraWorld connector instead.');
-    }
-
-    async _getChapters() {
-        throw new Error('Please use AzoraWorld connector instead.');
-    }
-
-    async _getPages() {
-        throw new Error('Please use AzoraWorld connector instead.');
-    }
-
 }
