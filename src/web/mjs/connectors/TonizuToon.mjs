@@ -7,7 +7,7 @@ export default class TonizuToon extends WordPressMadara {
         super.id = 'tonizutoon';
         super.label = 'Tonizu Toon';
         this.tags = [ 'webtoon', 'turkish', 'scanlation' ];
-        this.url = 'https://tonizutoon.com';
+        this.url = 'https://tonizu.com';
         this.requestOptions.headers.set('x-referer', this.url);
     }
 }
