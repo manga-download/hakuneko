@@ -1,12 +1,11 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import AzoraWorld from './AzoraWorld.mjs';
 
-export default class AzoraManga extends WordPressMadara {
+export default class AzoraManga extends AzoraWorld {
 
     constructor() {
         super();
         super.id = 'azoramanga';
         super.label = 'أزورا مانج (AZORA MANGA)';
         this.tags = [ 'webtoon', 'arabic' ];
-        this.url = 'https://azoramanga.com';
     }
 }
