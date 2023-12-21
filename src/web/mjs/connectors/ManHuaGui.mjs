@@ -27,8 +27,8 @@ export default class ManHuaGui extends SinMH {
         this.queryPagesScript =`
             new Promise(resolve => {
                 ${this.api}.imgData = function(data) {
-                    let origin = 'https://' + servs[pVars.curServ].hosts[pVars.curHost].h + '.hamreus.com';
-                    let pageLinks = data.files.map(file => origin + data.path + file + '?cid=' + data.cid + '&md5=' + data.sl.md5);
+                    let origin = pVars.manga.filePath;
+                    let pageLinks = data.files.map(file => origin + file + '?e=' + data.sl.e + '&m=' + data.sl.m);
                     return {
                         preInit: () => resolve(pageLinks)
                     };
