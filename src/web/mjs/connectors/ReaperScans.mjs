@@ -11,6 +11,7 @@ export default class ReaperScans extends Connector {
         this.links = {
             login: 'https://reaperscans.com/login'
         };
+        this.requestOptions.headers.set('x-referer', this.url);
         this.path = '/comics';
         this.queryMangas = 'a.my-2.text-sm.font-medium.text-white.hover\\3A text-blue-700';
         this.queryChapters = 'div[wire\\3A id] ul[role] li a';
