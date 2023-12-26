@@ -14,8 +14,7 @@ export default class NicoNicoSeiga extends Connector {
         };
 
         this.mangaListPage = "/manga/list";
-        this.mangaListEndPoint = "/ajax/manga/list";
-
+        this.queryManga = 'div#comic_list ul li.mg_item div.mg_title div.title a';
         this.querySeriesCount = 'div#main div#mg_main_column';
 
         this.queryMangaTitle = 'div.main_title h1';
@@ -23,7 +22,6 @@ export default class NicoNicoSeiga extends Connector {
         this.queryChapters = 'div.mg_episode_list div.inner ul li.episode_item div.episode div.description div.title a';
 
         this.queryPages = 'div.pages ul#page_contents li.page div.note source.lazyload';
-        this.pageTemplateURL = 'https://seiga.nicovideo.jp/image/source/';
     }
 
     async _getMangaFromURI(uri) {
@@ -36,11 +34,11 @@ export default class NicoNicoSeiga extends Connector {
 
     async _getMangasFromRequest(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        return data.map(series => {
+        let data = await this.fetchDOM(request, this.queryManga);
+        return data.map(anchor => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink('/comic/' + series.id, request.url),
-                title: series.title
+                id: anchor.pathname,
+                title: anchor.text
             };
         });
     }
@@ -50,7 +48,7 @@ export default class NicoNicoSeiga extends Connector {
         let data = await this.fetchDOM(request, this.querySeriesCount);
         let totalPages = Math.ceil(data[0].dataset.count/10);
         let mangaList = [];
-        let uri = new URL(this.mangaListEndPoint, this.url);
+        let uri = new URL(this.mangaListPage, this.url);
         for(let page = 1; page <= totalPages; page++) {
             uri.searchParams.set('page', page);
             let mangas = await this._getMangasFromRequest(uri);
