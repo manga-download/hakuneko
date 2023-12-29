@@ -9,6 +9,7 @@ export default class PiccomaFR extends Piccoma {
         super.label = 'Piccoma (French)';
         this.tags = ['manga', 'webtoon', 'french'];
         this.url = 'https://piccoma.com/fr';
+        this.viewer = '/viewer/';
         this.requestOptions.headers.set('x-referer', 'https://piccoma.com/fr');
     }
 
@@ -65,48 +66,4 @@ export default class PiccomaFR extends Piccoma {
         });
     }
 
-    async _getPages(chapter) {
-
-        const script = `
-    	      new Promise((resolve, reject) => {
-
-    	          function _getSeed(url) {
-                    const uri = new URL(url);
-                    let checksum = uri.searchParams.get('q');
-                    const expires = uri.searchParams.get('expires');
-                    const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
-                    const ch = total % checksum.length;
-                    checksum = checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
-                    return globalThis.dd(checksum);
-                }
-                
-                try {
-                    const pdata = __NEXT_DATA__.props.pageProps.initialState.viewer.pData;
-                    if (!pdata) reject();
-                    if (!pdata.img) reject(); 
-                    
-                    const images = pdata.img
-                        .filter(img => !!img.path)
-                        .map(img => {
-                            	return {
-                            	    url : img.path,
-                            	    key : pdata.isScrambled ? _getSeed(img.path) : null,
-                            	}
-                        });
-                     resolve(images);
-                }
-                catch (error) {
-                }
-                reject();
-      	    });
-      	`;
-
-        const request = new Request(`${this.url}/viewer/${chapter.manga.id}/${chapter.id}`, this.requestOptions);
-        const images = await Engine.Request.fetchUI(request, script, 10000);
-        if (!images) {
-            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
-        }
-        return images.map(image => this.createConnectorURI({...image}));
-
-    }
 }

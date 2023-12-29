@@ -8,7 +8,8 @@ export default class Piccoma extends Connector {
         super.id = 'piccoma';
         super.label = 'Piccoma';
         this.tags = ['manga', 'webtoon', 'japanese'];
-        this.url = 'https://jp.piccoma.com/';
+        this.url = 'https://piccoma.com';
+        this.viewer = '/web/viewer/';
     }
 
     canHandleURI(uri) {
@@ -94,21 +95,48 @@ export default class Piccoma extends Connector {
     }
 
     async _getPages(chapter) {
-        const request = new Request(`${this.url}/web/viewer/${chapter.manga.id}/${chapter.id}`);
-        const pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
-        const images = pdata.img;
-        if (images == null) {
+
+        const script = `
+   	        new Promise((resolve, reject) => {
+
+    	          function _getSeed(url) {
+                    const uri = new URL(url, window.location.href); //fix urls starting with "//"
+                    let checksum = uri.searchParams.get('q') || url.split('/').slice(-2)[0]; //PiccomaFR use q=, JP is the other
+                    const expires = uri.searchParams.get('expires');
+                    const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
+                    const ch = total % checksum.length;
+                    checksum = checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
+                    return globalThis.dd(checksum);
+                }
+                
+                try {
+                    const pdata = window.__NEXT_DATA__ ?  __NEXT_DATA__.props.pageProps.initialState.viewer.pData : window._pdata_; //PiccomaFR VS JP
+                    if (!pdata) reject();
+                    if (!pdata.img) reject(); 
+                    
+                    const images = pdata.img
+                        .filter(img => !!img.path)
+                        .map(img => {
+                            	return {
+                            	    url : new URL(img.path, window.location.href).href,//fix urls starting with "//"
+                            	    key : pdata.isScrambled ? _getSeed(img.path) : null,
+                            	}
+                        });
+                     resolve(images);
+                }
+                catch (error) {
+                }
+                reject();
+      	    });
+      	`;
+
+        const request = new Request(`${this.url}${this.viewer}${chapter.manga.id}/${chapter.id}`, this.requestOptions);
+        const images = await Engine.Request.fetchUI(request, script, 10000);
+        if (!images) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
-        return images
-            .filter(img => !!img.path)
-            .map(img => {
-                const link = img.path.startsWith('http') ? img.path : `https:${img.path}`;
-                return this.createConnectorURI({
-                    url: link,
-                    key: pdata.isScrambled ? this._getSeed(link): null
-                });
-            });
+        return images.map(image => this.createConnectorURI({...image}));
+
     }
 
     async _handleConnectorURI(payload) {
@@ -132,14 +160,6 @@ export default class Piccoma extends Connector {
                 resolve(data);
             }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value) / 100);
         });
-    }
-
-    _getSeed(url) {
-        const checksum = url.split('/').slice(-2)[0];
-        const expires = new URL(url).searchParams.get('expires');
-        const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
-        const ch = total % checksum.length;
-        return checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
     }
 
     _loadImage(url) {
