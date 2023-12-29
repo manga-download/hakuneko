@@ -100,7 +100,7 @@ export default class Piccoma extends Connector {
    	        new Promise((resolve, reject) => {
 
     	          function _getSeed(url) {
-                    const uri = new URL(url, window.location.href); //fix urls starting with "//"
+                    const uri = new URL(url.startsWith('http') ? url : 'https:'+url);
                     let checksum = uri.searchParams.get('q') || url.split('/').slice(-2)[0]; //PiccomaFR use q=, JP is the other
                     const expires = uri.searchParams.get('expires');
                     const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
@@ -118,7 +118,7 @@ export default class Piccoma extends Connector {
                         .filter(img => !!img.path)
                         .map(img => {
                             	return {
-                            	    url : new URL(img.path, window.location.href).href,//fix urls starting with "//"
+                            	    url : img.path.startsWith('http') ? img.path : 'https:' + img.path,
                             	    key : pdata.isScrambled ? _getSeed(img.path) : null,
                             	}
                         });
