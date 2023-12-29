@@ -26,9 +26,10 @@ export default class Cmoa extends SpeedBinb {
 
     async _getChapters(manga) {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        const pages = await this.fetchDOM(request, '#comic_list > .pagination:nth-child(1) li');
+        const pages = await this.fetchDOM(request, '#comic_list > .pagination:nth-child(1) li:nth-last-child(2) a');
         const chapters = [];
-        const totalPage = pages.length == 0 ? 1 : pages.length - 1;
+        const totalPage = pages.length == 0 ? 1 : parseInt(new URL(pages[0].href).searchParams.get('page'));
+
         for (let i = 0; i < totalPage; i++) {
             const uri = new URL(manga.id, this.url);
             uri.searchParams.set('page', i + 1);
