@@ -7,6 +7,6 @@ export default class NinjaScan extends WordPressMadara {
         super.id = 'ninjascan';
         super.label = 'Ninja Scan';
         this.tags = [ 'webtoon', 'portuguese', 'scanlation' ];
-        this.url = 'https://ninjascan.xyz';
+        this.url = 'https://ninjascan.site';
     }
 }
