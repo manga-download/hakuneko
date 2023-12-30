@@ -31,24 +31,24 @@ export default class Luscious extends Connector {
     async _getMangasFromPage(page) {
         const url = new URL(this.apiURL);
         url.searchParams.set('operationName', 'AlbumList');
-        const query = `query AlbumList($input: AlbumListInput!) {
-                  album {
+        const query = `
+            query AlbumList($input: AlbumListInput!) {
+                album {
                     list(input: $input) {
-                      items {
-                          id
-                          title
-                          slug
-                          language {
+                        items {
                             id
                             title
-                            url
-                          }
-                      }
+                            slug
+                            language {
+                                id
+                                title
+                                url
+                            }
+                        }
                     }
-                  }
                 }
-
-`;
+            }
+        `;
         url.searchParams.set('query', query);
         const variables = {
             input: {
