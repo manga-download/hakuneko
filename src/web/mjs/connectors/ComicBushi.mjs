@@ -5,9 +5,9 @@ export default class ComicBushi extends CoreView {
     constructor() {
         super();
         super.id = 'comicbushi';
-        super.label = 'コミックブシロードWEB (Comic Bushiroad WEB)';
+        super.label = 'コミックブシロードWEB (Comic Bushiroad WEB / Growl)';
         this.tags = ['manga', 'japanese'];
-        this.url = 'https://comicbushi-web.com';
+        this.url = 'https://comic-growl.com';
         this.path = ['/'];
         this.queryManga = 'section#lineup ul.lineup-list div.lineup-item a';
         this.queryMangaTitle = 'h5.title';
