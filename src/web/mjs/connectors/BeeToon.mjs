@@ -14,7 +14,7 @@ export default class BeeToon extends WordPressZbulu {
     }
 
     canHandleURI(uri) {
-        return /(ww2\.)?beetoon\.net/.test(uri.hostname);
+        return /(ww\d+\.)?beetoon\.net/.test(uri.hostname);
     }
 
     async _initializeConnector() {
@@ -36,5 +36,16 @@ export default class BeeToon extends WordPressZbulu {
                 language: 'en'
             };
         });
+    }
+
+    async _getPages(chapter) {
+        const pages = await super._getPages(chapter);
+        return pages
+            .map( page => {
+                let link = new URL(page);
+                link = link.searchParams.get('url') || link; //deproxify url if needed
+                return link.href;
+            })
+            .filter(page => !page.includes('/gadgets/proxy?'));//remove fake images (that were not deproxified)
     }
 }
