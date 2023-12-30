@@ -40,12 +40,12 @@ export default class BeeToon extends WordPressZbulu {
 
     async _getPages(chapter) {
         const pages = await super._getPages(chapter);
-        const result = [];
-        pages.forEach(page => {
-            let link = new URL(page);
-            link = link.searchParams.get('url') || link; //deproxify url if needed
-            result.push(link.href);
-        });
-        return result.filter(page => !page.includes('/gadgets/proxy?'));//remove fake images (that were not deproxified)
+        return pages
+            .map( page => {
+                let link = new URL(page);
+                link = link.searchParams.get('url') || link; //deproxify url if needed
+                return link.href;
+            })
+            .filter(page => !page.includes('/gadgets/proxy?'));//remove fake images (that were not deproxified)
     }
 }
