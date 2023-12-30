@@ -16,8 +16,8 @@ export default class GourmetScans extends WordPressMadara {
         const script = `
             new Promise((resolve, reject) => {
                 try {
-                    let t = new RocketLazyLoadScripts;
-                    t._loadEverythingNow();
+                    let rocketscript = new RocketLazyLoadScripts;
+                    rocketscript._loadEverythingNow();
                 } catch (error) {}
            
                 setTimeout(() => {
