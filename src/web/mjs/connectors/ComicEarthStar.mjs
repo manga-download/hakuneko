@@ -1,71 +1,94 @@
-import Publus from './templates/Publus.mjs';
-import Manga from '../engine/Manga.mjs';
+import CoreView from './templates/CoreView.mjs';
 
-export default class ComicEarthStar extends Publus {
+export default class ComicEarthStar extends CoreView {
 
     constructor() {
         super();
         super.id = 'comicearthstar';
         super.label = 'コミック アース・スター (Comic Earth Star)';
         this.tags = [ 'manga', 'japanese' ];
-        this.url = 'https://www.comic-earthstar.jp';
+        this.apiURL = 'https://comic-earthstar.com/graphql';
+        this.url = 'https://comic-earthstar.com';
     }
 
-    async _getMangaFromURI(uri) {
-        let id = uri.pathname.match(/\/([^/]+)\/?$/)[1];
-        let request = new Request(this.url + '/json/contents/detail/' + id + '.json', this.requestOptions);
-        let data = await this.fetchJSON(request);
-        let title = data.categorys.comic_category_title;
-        return new Manga(this, id, title);
+    async _getMangas() {
+        const mangalist = [];
+
+        let operationName = 'Earthstar_Oneshot';
+        let query = `
+            query Earthstar_Oneshot {
+                seriesOneshot: serialGroup(groupName: "連載・読切：読切作品") {
+                    seriesSlice {
+                        seriesList {
+                            id
+                            title
+                            firstEpisode {
+                                permalink
+                            }
+                        }
+                    }
+                }
+            }
+        `;
+        let uri = new URL(this.apiURL);
+        uri.searchParams.set('opname', operationName);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchGraphQL(request, operationName, query, {} );
+        data.seriesOneshot.seriesSlice.seriesList.forEach(manga => {
+            mangalist.push({
+                id: new URL(manga.firstEpisode.permalink).pathname,
+                title: manga.title.trim()
+            });
+        });
+
+        operationName = 'Earthstar_Series';
+        query = `
+            query Earthstar_Series {
+                seriesOngoing: serialGroup(groupName: "連載・読切：連載作品：連載中") {
+                    seriesSlice {
+                        seriesList {
+                            ...Earthstar_SeriesListItem_Series
+                        }
+                    }
+                }
+                seriesFinished: serialGroup(groupName: "連載・読切：連載作品：連載終了") {
+                    seriesSlice {
+                        seriesList {
+                            ...Earthstar_SeriesListItem_Series
+                        }
+                    }
+                }
+            }
+            
+            fragment Earthstar_SeriesListItem_Series on Series {
+                id
+                title
+                firstEpisode {
+                    permalink
+                }
+            }
+        `;
+        uri = new URL(this.apiURL);
+        uri.searchParams.set('opname', operationName);
+        request = new Request(uri, this.requestOptions);
+        data = await this.fetchGraphQL(request, operationName, query, {} );
+
+        data.seriesOngoing.seriesSlice.seriesList.forEach(manga => {
+            mangalist.push({
+                id: new URL(manga.firstEpisode.permalink).pathname,
+                title: manga.title.trim()
+            });
+        });
+
+        data.seriesFinished.seriesSlice.seriesList.forEach(manga => {
+            mangalist.push({
+                id: new URL(manga.firstEpisode.permalink).pathname,
+                title: manga.title.trim()
+            });
+        });
+
+        return mangalist;
+
     }
 
-    /**
-     *
-     */
-    _getMangaList( callback ) {
-        let request = new Request( this.url + '/json/contents/top/default.json', this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                let ongoingList = data.serial_comics.map( comic => {
-                    return {
-                        id: comic.comic_category_code,
-                        title: comic.title
-                    };
-                } );
-                let completedList = data.comple_comics.map( comic => {
-                    return {
-                        id: comic.comic_category_code,
-                        title: comic.comic_category_code.toUpperCase()
-                    };
-                } );
-                let mangaList = ongoingList.concat( completedList );
-                callback( null, mangaList );
-            } )
-            .catch( error => {
-                console.error( error, this );
-                callback( error, undefined );
-            } );
-    }
-
-    /**
-     *
-     */
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + '/json/contents/detail/' + manga.id + '.json', this.requestOptions );
-        this.fetchJSON( request )
-            .then( data => {
-                let chapterList = data.episodes.map( episode => {
-                    return {
-                        id: new URL( episode.page_url, request.url ).href, // episode.cid,
-                        title: episode.comic_episode_title,
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
-    }
 }
