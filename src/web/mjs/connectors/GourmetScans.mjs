@@ -7,7 +7,7 @@ export default class GourmetScans extends WordPressMadara {
         super.id = 'gourmetscans';
         super.label = 'Gourmet Scans';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://gourmetscans.net';
+        this.url = 'https://gourmetsupremacy.com';
     }
 
     async _getPages(chapter) {
@@ -15,10 +15,17 @@ export default class GourmetScans extends WordPressMadara {
         const request = new Request(url, this.requestOptions);
         const script = `
             new Promise((resolve, reject) => {
-                var imgdata = JSON.parse(CryptoJS.AES.decrypt(chapter_data, wpmangaprotectornonce, {
-                    format: CryptoJSAesJson
-                }).toString(CryptoJS.enc.Utf8));
-                resolve(JSON.parse(imgdata));
+                try {
+                    let rocketscript = new RocketLazyLoadScripts;
+                    rocketscript._loadEverythingNow();
+                } catch (error) {}
+           
+                setTimeout(() => {
+                    var imgdata = JSON.parse(CryptoJS.AES.decrypt(chapter_data, wpmangaprotectornonce, {
+                        format: CryptoJSAesJson
+                    }).toString(CryptoJS.enc.Utf8));
+                    resolve(JSON.parse(imgdata));
+                }, 2500);
             });
         `;
         const data = await Engine.Request.fetchUI(request, script);
