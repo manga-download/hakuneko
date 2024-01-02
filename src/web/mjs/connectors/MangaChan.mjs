@@ -12,6 +12,7 @@ export default class MangaChan extends Connector {
         this.path = '/catalog';
         this.queryChapters = 'table.table_cha tr td div.manga2 a';
         this.queryPages = 'fullimg';
+        this.requestOptions.headers.set('x-referer', this.url);
 
     }
 
@@ -68,6 +69,6 @@ export default class MangaChan extends Connector {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions );
         const data = await Engine.Request.fetchUI(request, script);
-        return data.map(link => this.getAbsolutePath(link, request.url));
+        return data.map(link => this.createConnectorURI(this.getAbsolutePath(link, request.url)));
     }
 }

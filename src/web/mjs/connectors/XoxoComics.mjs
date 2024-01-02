@@ -8,7 +8,7 @@ export default class XoxoComics extends Connector {
         super.id = 'xoxocomics';
         super.label = 'XoxoComics';
         this.tags = [ 'comic', 'english' ];
-        this.url = 'https://xoxocomics.com';
+        this.url = 'https://xoxocomics.net';
     }
 
     async _getMangaFromURI(uri) {

@@ -1,17 +1,16 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class ReaperScansTR extends WordPressMadara {
+export default class ReaperScansTR extends WordPressMangastream {
 
     constructor() {
         super();
         super.id = 'reaperscanstr';
         super.label = 'Reaper Scans (Turkish)';
         this.tags = ['webtoon', 'turkish'];
-        this.url = 'https://reaperscanstr.com';
-        this.queryChapters = 'div.chapter-link > a';
-        this.queryChaptersTitleBloat ='span.chapter-release-date';
+        this.url = 'https://reaperscans.com.tr';
+        this.path = '/manga/list-mode/';
         this.links = {
-            login: 'https://reaperscanstr.com/login'
+            login: 'https://reaperscans.com.tr/login'
         };
     }
 }

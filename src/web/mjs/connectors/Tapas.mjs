@@ -14,7 +14,7 @@ export default class Tapas extends Connector {
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'head title');
+        let data = await this.fetchDOM(request, 'div.info a.title');
         let id = uri.pathname;
         let title = data[0].textContent.trim();
         return new Manga(this, id, title);
@@ -30,17 +30,22 @@ export default class Tapas extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL('/comics', this.url);
+        const uri = new URL('/comics', this.url);
         uri.searchParams.set('b', 'ALL');
         uri.searchParams.set('g', 0);
         uri.searchParams.set('pageNumber', page);
         //uri.searchParams.set('pageSize', 20);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.section__body ul.content__list li.list__item a.thumb');
-        return data.map(element => {
+        const request = new Request(uri, this.requestOptions);
+        request.headers.set('Accept', 'application/json, text/javascript, */*;');
+
+        const data = await this.fetchJSON(request, this.requestOptions);
+        const dom = new DOMParser().parseFromString(data.data.body, 'text/html');
+        const nodes = [...dom.querySelectorAll('li.list__item a.thumb')];
+
+        return nodes.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
-                title: element.querySelector('source').attributes.getNamedItem('alt').value.trim()
+                title: element.dataset.tiaraEventMetaSeries.trim()
             };
         });
     }

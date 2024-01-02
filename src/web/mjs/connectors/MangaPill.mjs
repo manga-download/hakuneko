@@ -9,6 +9,7 @@ export default class MangaPill extends Connector {
         super.label = 'Mangapill';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://mangapill.com';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
@@ -54,6 +55,6 @@ export default class MangaPill extends Connector {
     async _getPages(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'source');
-        return data.map(element => this.getAbsolutePath(element.dataset.src, request.url));
+        return data.map(element => this.createConnectorURI(this.getAbsolutePath(element.dataset.src, request.url)));
     }
 }

@@ -67,7 +67,7 @@ export default class MangaTown extends Connector {
 
     async _handleConnectorURI(payload) {
         const pageData = await this.fetchDOM(new Request(payload, this.requestOptions), 'source#image');
-        const imageURL = this.getAbsolutePath(pageData[0].src, 'https//mangahere.com').replace('hakuneko://', 'https://');
+        const imageURL = this.getAbsolutePath(pageData[0].src, 'https://mangahere.com').replace('hakuneko://', 'https://');
         const request = new Request(imageURL, this.requestOptions);
         request.headers.set('x-referer', 'mangahere.com');
         const response = await fetch(request);

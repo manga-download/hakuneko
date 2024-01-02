@@ -8,7 +8,11 @@ export default class Piccoma extends Connector {
         super.id = 'piccoma';
         super.label = 'Piccoma';
         this.tags = ['manga', 'webtoon', 'japanese'];
-        this.url = 'https://piccoma.com';
+        this.url = 'https://jp.piccoma.com/';
+    }
+
+    canHandleURI(uri) {
+        return /https?:\/\/jp\.piccoma\.com/.test(uri);
     }
 
     async _getMangaFromURI(uri) {

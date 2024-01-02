@@ -7,7 +7,7 @@ export default class DuniaKomik extends WordPressMangastream {
         super.id = 'duniakomik';
         super.label = 'Dunia Komik';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://duniakomik.id';
+        this.url = 'https://duniakomik.org';
         this.path = '/manga/list-mode/';
     }
 }

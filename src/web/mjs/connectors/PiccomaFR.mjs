@@ -8,8 +8,12 @@ export default class PiccomaFR extends Piccoma {
         super.id = 'piccoma-fr';
         super.label = 'Piccoma (French)';
         this.tags = ['manga', 'webtoon', 'french'];
-        this.url = 'https://fr.piccoma.com';
-        this.requestOptions.headers.set('x-referer', 'https://fr.piccoma.com/fr');
+        this.url = 'https://piccoma.com/fr';
+        this.requestOptions.headers.set('x-referer', 'https://piccoma.com/fr');
+    }
+
+    canHandleURI(uri) {
+        return /https?:\/\/piccoma\.com\/fr/.test(uri);
     }
 
     async _getMangaFromURI(uri) {
@@ -43,6 +47,10 @@ export default class PiccomaFR extends Piccoma {
 
     async _getPages(chapter) {
         const result = await this._fetchChapterNextData(chapter);
+        if (!result.pageProps.initialState) {
+            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
+        }
+
         const pdata = result.pageProps.initialState.viewer.pData;
         const images = pdata.img;
         if (images == null) {

@@ -8,7 +8,7 @@ export default class ViewComics extends Connector {
         super.id = 'viewcomics';
         super.label = 'ViewComics';
         this.tags = [ 'comic', 'english' ];
-        this.url = 'https://viewcomics.me';
+        this.url = 'https://viewcomics.co';
     }
 
     async _getMangaFromURI(uri) {

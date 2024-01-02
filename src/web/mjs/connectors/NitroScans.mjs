@@ -5,8 +5,8 @@ export default class NitroScans extends WordPressMadara {
     constructor() {
         super();
         super.id = 'nitroscans';
-        super.label = 'Dark Scans';
+        super.label = 'Nitro Manga';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://darkscans.com';
+        this.url = 'https://nitromanga.com';
     }
 }

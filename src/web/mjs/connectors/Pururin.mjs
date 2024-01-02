@@ -7,12 +7,11 @@ export default class Pururin extends Connector {
         super.label = 'Pururin';
         this.tags = ['manga', 'hentai', 'english'];
         this.url = 'https://pururin.to';
-        this.CDN = "https://cdn.pururin.to/assets/images/data/";
         this.path = "/browse/title";
-        this.api = "/api/contribute/gallery/info";
         this.queryMangasPageCount = 'ul.pagination.flex-wrap li:nth-last-of-type(2) a';
         this.queryMangas = 'a.card.card-gallery';
-        this.queryChapters ='div.gallery-action a';
+        this.queryChapters ='div.gallery-action a:first-of-type';
+        this.queryPages ='.img-viewer';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-origin', this.url);
     }
@@ -40,41 +39,27 @@ export default class Pururin extends Connector {
         });
     }
     async _getChapters(manga) {
-        return [{ id: manga.id, title: 'Chapter' }];
+        let uri = new URL(manga.id, this.url);
+        let request = new Request(uri, this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters );
+        return [{title : 'Chapter', id : data[0].pathname}];
+
     }
     async _getPages(chapter) {
-        let mangaID = chapter.id.match(/\/gallery\/([0-9]+)/)[1];
-        const uri = new URL(this.api, this.url);
-        const request = this.getApiRequest(uri, mangaID);
-        const data = await this.fetchJSON(request);
-        let pagesMax = data.gallery.total_pages;
-        let extension = data.gallery.image_extension;
-        //https://cdn.pururin.to/assets/images/data/<mangaid>/<i>.image_extension
-        return new Array(pagesMax).fill().map((_, index) => new URL(`${this.CDN}/${mangaID}/${index + 1}.${extension}`).href);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryPages );
+        const imgdata = JSON.parse(data[0].dataset['img']);
+        const server = data[0].dataset['svr'];
+        const directory = imgdata.directory;
+        return imgdata.images.map(page => new URL(`${directory}/${page.filename}`, server).href);
+
     }
     async _getMangaFromURI(uri) {
-        let mangaID = uri.href.match(/\/gallery\/([0-9]+)/)[1];
-        const req = new URL(this.api, this.url);
-        const request = this.getApiRequest(req, mangaID);
-        const data = await this.fetchJSON(request);
-        const title = data.gallery.title;
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.title h1 span' );
+        const title = data[0].textContent.trim();
         const id = this.getRootRelativeOrAbsoluteLink(uri, this.url);
         return new Manga(this, id, title);
-    }
-    getApiRequest(url, id) {
-        let params = {
-            id: id,
-            type:2
-        };
-        return new Request(url, {
-            method: 'POST',
-            body: JSON.stringify(params),
-            headers: {
-                'x-origin': this.url,
-                'x-referer': this.url,
-                'Content-Type': 'application/json;charset=UTF-8',
-                'X-Requested-With': 'XMLHttpRequest',
-            }
-        });
     }
 }
