@@ -8,7 +8,6 @@ export default class HeanCms extends Connector {
         super.label = undefined;
         this.url = undefined;
         this.api = undefined;
-        this.path = '';
         this.novelContainer = 'div.container';
         this.novelContentQuery = 'div#reader-container';
         this.novelFormat = 'image/png';
@@ -25,10 +24,9 @@ export default class HeanCms extends Connector {
     }
 
     async _getMangas() {
-        let mangaList = [];
-
+        const mangaList = [];
         for (let page = 1, run = true; run; page++) {
-            let list = await this._getMangasFromPage(page);
+            const list = await this._getMangasFromPage(page);
             list.length > 0 ? mangaList.push(...list) : run = false;
         }
         return mangaList;
@@ -38,22 +36,19 @@ export default class HeanCms extends Connector {
         const request = new Request(new URL(`/query?series_type=All&order=asc&perPage=100&page=${page}`, this.api), this.requestOptions);
         const {data} = await this.fetchJSON(request);
 
-        if (data.length) {
-            return data.map((manga) => {
-                return {
-                    id: manga.series_slug,
-                    title: manga.title
-                };
-            });
-        }
-        return [];
+        return !data ? [] : data.map(manga => {
+            return {
+                id: manga.series_slug,
+                title: manga.title
+            };
+        });
     }
 
     async _getChapters(manga) {
         const uri = new URL(`/series/${manga.id}`, this.api);
         const request = new Request(uri, this.requestOptions);
         const {seasons} = await this.fetchJSON(request);
-        let chapterList = [];
+        const chapterList = [];
 
         seasons.map((season) => season.chapters.map((chapter) => {
             chapterList.push({
@@ -71,12 +66,15 @@ export default class HeanCms extends Connector {
         const id = JSON.parse(chapter.id);
         const uri = new URL(`/chapter/${id.series}/${id.chapter}`, this.api);
         const request = new Request(uri, this.requestOptions);
-        const {chapter_type, data, paywall} = await this.fetchJSON(request, this.queryPages);
+        const {chapter_type, data, paywall, chapter: {storage}} = await this.fetchJSON(request, this.queryPages);
 
         // check for paywall
-        if (data.length < 1 && paywall) {
+        if (paywall) {
             throw new Error(`${chapter.title} is paywalled. Please login.`);
         }
+
+        //in case of novel data is the html string, in case of comic its an array of strings (pictures urls or pathnames)
+        if (!data || data.length < 1 ) return [];
 
         // check if novel
         if (chapter_type.toLowerCase() === 'novel') {
@@ -84,8 +82,15 @@ export default class HeanCms extends Connector {
         }
 
         return data.map((image) => this.createConnectorURI(
-            this.DeProxifyStatically(new URL(image)).href
+            this.computeImageUrl(image, storage)
         ));
+    }
+
+    computeImageUrl(image, storage) {
+        switch (storage) {
+            case "s3" : return this.DeProxifyStatically(image);
+            case "local" : return this.DeProxifyStatically(new URL(image, this.api).href);
+        }
     }
 
     async _getNovel(seriesId, chapterId) {
@@ -97,7 +102,7 @@ export default class HeanCms extends Connector {
                 container.style.maxWidth = '${this.novelWidth}';
                 container.style.padding = '0';
                 container.style.margin = '0';
-	            let novel = document.querySelector('${this.novelContentQuery}');
+	              let novel = document.querySelector('${this.novelContentQuery}');
                 novel.style.padding = '${this.novelPadding}';
                 [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
                     ele.style.backgroundColor = '${darkmode.background}'
@@ -134,11 +139,9 @@ export default class HeanCms extends Connector {
         return data;
     }
 
-    // copy pasted from https://github.com/manga-download/haruneko/blob/master/web/src/engine/transformers/ImageLinkDeProxifier.ts
-    DeProxifyStatically(uri) {
-        const url = uri.href
+    DeProxifyStatically(url) {
+        return url
             .replace(/cdn\.statically\.io\/img\/(bacakomik\/)?/, '')
             .replace(/\/(w=\d+|h=\d+|q=\d+|f=auto)(,(w=\d+|h=\d+|q=\d+|f=auto))*\//, '/');
-        return new URL(url);
     }
 }
