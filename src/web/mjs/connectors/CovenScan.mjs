@@ -7,7 +7,7 @@ export default class CovenScan extends WordPressMadara {
         super.id = 'covenscan';
         super.label = 'Coven Scan';
         this.tags = [ 'manga', 'webtoon', 'portuguese', 'scanlation' ];
-        this.url = 'https://cvenscan.com';
+        this.url = 'https://cvnscan.com';
 
     }
 }
