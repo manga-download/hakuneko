@@ -24,7 +24,7 @@ export default class ZeroScans extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const slug = uri.pathname.replace(/[/]+$/, '').split('/').pop();
+        const slug = uri.href.match(/\/comics\/([^/]+)$/)[1];
         const detailsUrl = new URL(`/swordflake/comic/${slug}`, this.url);
         const request = new Request(detailsUrl, this.requestOptions);
         const { data } = await this.fetchJSON(request);
