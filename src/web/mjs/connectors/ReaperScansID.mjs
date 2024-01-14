@@ -13,7 +13,7 @@ export default class ReaperScansID extends WordPressMadara {
             login: 'https://shinigamitoon.com/login'
         };
     }
-    
+
     async _getPages(chapter) {
         const url = new URL(chapter.id, this.url);
         const request = new Request(url, this.requestOptions);
