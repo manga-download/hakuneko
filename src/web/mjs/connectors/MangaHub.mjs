@@ -11,8 +11,8 @@ export default class MangaHub extends Connector {
         super.label = 'MangaHub';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://mangahub.io';
-        this.apiURL = 'https://api.mghubcdn.com/graphql';
-        this.cdnURL = 'https://img.mghubcdn.com/file/imghub/';
+        this.apiURL = 'https://api2.mangahub.io/graphql';
+        this.cdnURL = 'https://imgx.mangahub.io/';
 
         this.path = 'm01';
         this.requestOptions.headers.set('x-origin', this.url);
