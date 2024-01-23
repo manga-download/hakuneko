@@ -12,7 +12,7 @@ export default class LezhinEN extends Lezhin {
             login: this.url + '/login#email'
         };
         this.requestOptions.headers.set( 'x-cookie', 'x-lz-locale=en_US' );
-        this.requestOptions.headers.set( 'x-lz-locale', 'en_US' );
+        this.requestOptions.headers.set( 'x-lz-locale', 'en-US' );
         this.locale = 'en-US';
     }
 }

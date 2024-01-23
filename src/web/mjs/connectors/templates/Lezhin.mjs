@@ -101,14 +101,15 @@ export default class Lezhin extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/lz-api/v2/comics', this.apiURL);
+        const uri = new URL('/lz-api/v2/contents', this.apiURL);
         uri.searchParams.set('menu', 'general');
         uri.searchParams.set('limit', this.mangasPerPage);
         uri.searchParams.set('offset', page * this.mangasPerPage);
         uri.searchParams.set('order', 'popular');
-        uri.searchParams.set('adult_kind', 'all');
-
         const request = new Request(uri, this.requestOptions);
+
+        request.headers.set('X-LZ-Adult', '0');
+        request.headers.set('X-LZ-AllowAdult', 'true');
         const data = await this.fetchJSON(request);
         return data.data.map( manga => {
             return {
