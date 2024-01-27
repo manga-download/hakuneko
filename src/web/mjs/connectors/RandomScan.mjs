@@ -4,8 +4,8 @@ export default class RandomScan extends WordPressMadara {
     constructor() {
         super();
         super.id = 'randomscan';
-        super.label = 'Random Scans';
+        super.label = 'Lura Toon';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://randomscanlators.net';
+        this.url = 'https://luratoon.com';
     }
 }
