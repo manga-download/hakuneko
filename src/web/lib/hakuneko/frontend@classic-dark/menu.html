@@ -130,9 +130,9 @@
         <i class="fas fa-fw fa-bars fa-2x item button" title="Toggle menu" on-click="togglePopup"></i>
         <span class="title">HakuNeko</span>
         <span class="right">
-        <i class="far fa-fw fa-window-minimize item button" title="Minize HakuNeko" onclick="minimizeWindow()"></i>
-        <i class="far fa-fw fa-window-maximize item button" title="Maximize HakuNeko" onclick="maximizeWindow()"></i>
-        <i class="far fa-fw fa-2x fa-window-close item button" title="Close HakuNeko" onclick="closeWindow()"></i>
+            <i class="far fa-fw fa-window-minimize item button" title="Minize HakuNeko" onclick="minimizeWindow()"></i>
+            <i class="far fa-fw fa-window-maximize item button" title="Maximize HakuNeko" onclick="maximizeWindow()"></i>
+            <i class="far fa-fw fa-2x fa-window-close item button" title="Close HakuNeko" onclick="closeWindow()"></i>
         </span>
         <div class$="popup [[ getPopupClass(popupVisibility) ]]">
             <div class="separator">
@@ -200,7 +200,7 @@
                                     <label title="[[ item.description ]]"><i class="fas fa-fw fa-info-circle"></i> [[ item.label ]] </label>
                                 </td>
                                 <td>
-                                    <hakuneko-input item="{{ item }}"></hakuneko-input> 
+                                    <hakuneko-input item="{{ item }}"></hakuneko-input>
                                 </td>
                             </tr>
                         </template>
@@ -309,7 +309,6 @@
                     this.$.importFile.value = null;
                 }
             }
-
         }
         window.customElements.define(HakunekoMenu.is, HakunekoMenu);
     </script>

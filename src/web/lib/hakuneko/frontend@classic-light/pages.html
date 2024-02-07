@@ -145,7 +145,7 @@
         /**
          * Handle image load errors
          */
-         function imgError(image) {
+        function imgError(image) {
             if (!image.hasOwnProperty('retryCount')){
             image.retryCount = 0;
             }
@@ -551,7 +551,7 @@
              * Dynamically change the scrolling to stop at the end of images or skip to the start of the next image
              * Usefull for manga reading but ugly with webtoons
              */
-             scrollMagic(defaultDistance) {
+            scrollMagic(defaultDistance) {
                 let images = this.$.container.querySelectorAll('.image');
                 // Are we at the end of the page
                 if(images[images.length-1].getBoundingClientRect().bottom-window.innerHeight < 1)
@@ -603,7 +603,7 @@
             /**
              *
              */
-             scrollDown( event ) {
+            scrollDown( event ) {
                 this.scrollMagic(window.innerHeight*0.80);
             }
 
