@@ -7,6 +7,6 @@ export default class GekkouScans extends WordPressMadara {
         super.id = 'gekkouscans';
         super.label = 'Gekkou Scans';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://gekkouscans.top';
+        this.url = 'https://gekkou.site';
     }
 }
