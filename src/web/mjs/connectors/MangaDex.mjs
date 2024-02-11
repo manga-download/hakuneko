@@ -73,7 +73,7 @@ export default class MangaDex extends Connector {
             return {
                 id: manga.id,
                 title: manga.title,
-            }
+            };
         });
     }
 
