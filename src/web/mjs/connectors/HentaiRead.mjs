@@ -29,12 +29,13 @@ export default class HentaiRead extends WordPressMadara {
                         const uri = new URL(image.src);
                         uri.searchParams.set('quality', '100');
                         uri.searchParams.delete('w');
-                        return uri.href.replace(/\\\/i\\d+\\.wp\\.com/, '');
+                        return uri.href;
                     }));
                 },
-                1500);
+                500);
             });
         `;
-        return await Engine.Request.fetchUI(request, script);
+        const pages = await Engine.Request.fetchUI(request, script);
+        return pages.map(page => page.replace(/\/i\d+\.wp\.com/, ''));
     }
 }
