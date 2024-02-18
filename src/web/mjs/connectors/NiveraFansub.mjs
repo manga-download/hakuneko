@@ -7,7 +7,7 @@ export default class NiveraFansub extends WordPressMadara {
         super.id = 'niverafansub';
         super.label = 'Nivera Fansub';
         this.tags = [ 'webtoon', 'turkish', 'scanlation' ];
-        this.url = 'https://niverafansub.com';
+        this.url = 'https://niverafansub.co';
         this.requestOptions.headers.set('x-referer', this.url);
     }
 }
