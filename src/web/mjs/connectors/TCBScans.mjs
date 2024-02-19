@@ -44,18 +44,27 @@ export default class TCBScans extends Connector {
 
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'picture > source');
-        for (let run = true; run;) {
-            const currentPage = data[data.length-1];
-            const pageUrl= this.getAbsolutePath(currentPage, request.url);
-            request = new Request(pageUrl, {
-                method : 'HEAD',
-            });
+        const chapterRequest = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(chapterRequest, 'picture > source');
 
-            const response = await fetch(request);
-            response.status != 200 ? data.pop() : run = data.length > 0;
+        const promises = [];
+        for(const image of data) {
+            const promise = new Promise( (resolve, reject) => {
+                const pageUrl= this.getAbsolutePath(image, chapterRequest.url);
+                const request = new Request(pageUrl, {
+                    method : 'HEAD',
+                });
+                try {
+                    fetch(request)
+                        .then(response => response.status == 200 ? resolve(pageUrl) : reject());
+                } catch(error) {
+                    reject();
+                }
+            });
+            promises.push(promise);
         }
-        return data.map(image => this.getAbsolutePath(image, request.url));
+
+        const results = await Promise.allSettled(promises);
+        return results.filter(promise => /fulfilled/i.test(promise.status)).map(promise => promise.value);
     }
 }
