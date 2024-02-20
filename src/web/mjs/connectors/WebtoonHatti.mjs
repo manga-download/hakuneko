@@ -8,5 +8,6 @@ export default class WebtoonHatti extends WordPressMadara {
         super.label = 'Webtoon Hatti';
         this.tags = [ 'webtoon', 'turkish' ];
         this.url = 'https://webtoonhatti.net';
+        this.queryPages = 'div.page-break:not([style*="display:"]) source';
     }
 }
