@@ -1,40 +1,98 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-export default class ManhuaPlus extends WordPressMadara {
+export default class ManhuaPlus extends Connector {
 
     constructor() {
         super();
         super.id = 'manhuaplus';
         super.label = 'ManhuaPlus';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://manhuaplus.com';
+        this.url = 'https://manhuaplus.org';
+        this.path = '/all-manga/';
 
-        this.queryPages = 'figure source, div.page-break source, div.chapter-video-frame source, div.reading-content p source';
-        this.requestOptions.headers.set('x-referer', this.url);
-        this.requestOptions.headers.set('x-origin', this.url);
-        this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Windows NT 10.0; rv:111.0) Gecko/20100101 Firefox/111.0');
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'header h1');
+        return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     async _getMangas() {
         let mangaList = [];
-        let request = new Request(new URL('', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.wp-pagenavi a.last');
-        let pageCount = parseInt(data[0].href.match(/\d+/)[0]);
-        for(let page = 0; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
+        const uri = new URL(this.path, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.blog-pager span:last-of-type a');
+        const pageCount = parseInt(data[0].href.match(/\/(\d)+\//)[1]);
+        for(let page = 1; page <= pageCount; page++) {
+            const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL('/page/' + page+'/', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.item-thumb a');
+        const uri = new URL(this.path + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.grid div.text-center > a');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.title.trim()
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
             };
         });
+    }
+
+    async _getChapters(manga) {
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'li.chapter > a');
+        return data.map(element => {
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim()
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        const script = `
+            new Promise((resolve, reject) => {
+            
+                function parseResults(data) {
+                    const dom = new DOMParser().parseFromString(data, 'text/html');
+                    let nodes = [...dom.querySelectorAll('div.separator')];
+                    if (nodes.length == 0) reject();
+            
+                    //sort if needed
+                    if (nodes[0].hasAttribute('data-index')) {
+                        nodes = nodes.sort(function (a, b) {
+                            const za = parseInt(a.dataset.index);
+                            const zb = parseInt(b.dataset.index);
+                            return za - zb;
+                        });
+                    }
+                    resolve(nodes.map(element => {
+                        const anchorElement = element.querySelector('a.readImg');
+                        return anchorElement.href ;
+                    }));
+                }
+            
+                const ajaxendpoint = new URL('/ajax/image/list/chap/'+ CHAPTER_ID, window.location.href);
+                fetch(ajaxendpoint, {
+                    headers: {
+                        'X-Requested-With' : 'XMLHttpRequest',
+                    }})
+                    .then(response => response.json())
+                    .then(jsonData => {
+                          parseResults(jsonData.html);
+                    });
+            });
+        `;
+
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script);
     }
 }
