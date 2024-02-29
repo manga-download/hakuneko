@@ -5,9 +5,9 @@ export default class KomikAV extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'komikav';
-        super.label = 'KomikAV';
+        super.label = 'APKomik';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://komikav.com';
+        this.url = 'https://apkomic.cc';
         this.path = '/manga/list-mode/';
     }
 }
