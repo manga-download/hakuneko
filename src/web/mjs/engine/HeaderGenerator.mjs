@@ -40,7 +40,7 @@ export default class HeaderGenerator {
 
     static get _browserChrome() {
         let $ = HeaderGenerator;
-        let version = $._rn( 105, 113 ) + '.' + $._rn( 0, 99 ) + '.' + $._rn( 0, 9999 ) + '.' + $._rn( 0, 999 );
+        let version = $._rn( 120, 122 ) + '.' + $._rn( 0, 99 ) + '.' + $._rn( 0, 9999 ) + '.' + $._rn( 0, 999 );
         return 'Mozilla/5.0 (' + $._os + ') AppleWebKit/537.36 (KHTML, like Gecko) Chrome/' + version + ' Safari/537.36';
     }
 
