@@ -24,13 +24,17 @@ export default class HentaiRead extends WordPressMadara {
         const script = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    const pagelist  = (window.chapterImages ?? window.chapter_preloaded_images);
-                    resolve( pagelist.map(image=> {
-                        const uri = new URL(image.src);
-                        uri.searchParams.set('quality', '100');
-                        uri.searchParams.delete('w');
-                        return uri.href;
-                    }));
+                    try {
+                        const pagelist  = (window.chapterImages ?? window.chapter_preloaded_images);
+                        resolve( pagelist.map(image=> {
+                            const uri = new URL(image.src);
+                            uri.searchParams.set('quality', '100');
+                            uri.searchParams.delete('w');
+                            return uri.href;
+                        }));
+                    } catch (error) {
+                        reject(error);
+                    }
                 },
                 500);
             });
