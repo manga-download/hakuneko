@@ -29,7 +29,7 @@ export default class ManhwaClub extends WordPressMadara {
         const links = [...dom.querySelectorAll('li a')];
         return links.map(chapter => {
             return {
-                id: `${manga.id}${chapter.getAttribute('href')}/`,
+                id: `${mangaid.slug}${chapter.pathname.split('/').pop()}`,
                 title: chapter.querySelector('p.truncate').textContent.trim()
             };
         });
