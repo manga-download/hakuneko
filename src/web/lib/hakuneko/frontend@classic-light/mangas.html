@@ -61,6 +61,7 @@
                 overflow-x: hidden;
                 text-overflow: ellipsis;
                 cursor: pointer;
+                overflow-y: hidden;
             }
             .manga:hover {
                 background-color: var(--manga-list-highlighted);
@@ -82,6 +83,22 @@
             }
             .footer {
                 flex: 0;
+            }
+            .exclude-in-update, .include-in-update {
+                padding-right: 0.5em;
+                position: relative;
+            }
+            .exclude-in-update, .exclude-in-update .far, .include-in-update, .include-in-update .far {
+                color: unset !important;
+            }
+            .toggle-bookmark-chapters-update {
+                margin-top: 0.66em !important;
+            }
+            .exclude-in-update .fas.exclude-in-update {
+                color: var(--update-bookmark-chapters-exclude-color) !important;
+            }
+            .include-in-update .fas.include-in-update {
+                color: var(--update-bookmark-chapters-include-color) !important;
             }
         </style>
         <div class="header separator">
@@ -122,7 +139,7 @@
             </tr>
         </table>
         <ul class="list" >
-            <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">                        
+            <template is="dom-if" if="[[ existMangasForValidConnector(selectedConnector, mangaList.length) ]]">
                 <li class="notification">
                     Manga list is loading or empty<br>
                     Click &nbsp;<i class$="fas fa-sync [[ getRefreshClass(selectedConnector.isUpdating) ]] refresh" on-click="onUpdateMangaListClick" title$="Synchronize local manga list with online list from &lt;[[ selectedConnector.label ]]&gt;"></i>&nbsp;
@@ -138,7 +155,13 @@
                 </li>
             </template>
             <template is="dom-repeat" items="[[ mangaList ]]" filter="[[ filterMangas(mangaPattern) ]]" rendered-item-count="{{ mangaFilteredCount }}">
-                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">[[ item.title ]]</li>
+                <li class$="manga [[ item.status ]] [[ getMangaClass(selectedManga, item.id) ]]" title$="[[ item.title ]]&#10;[[ item.connector.label ]]" on-click="onMangaClicked">
+                  <template is="dom-if" if="[[ processShowUpdateMangaStatus(item) ]]">
+                      <span title$="[[ getUpdateBookmarkChaptersTitle(item._updateBookmarkChaptersStatus) ]]" class$="[[ item._updateBookmarkChaptersStatus ]]" on-click="toggleUpdateBookmarkChapters">
+                          <i class="far fa-arrow-alt-circle-down"></i>
+                          <i class$="fas fa-suberlay [[ item._updateBookmarkChaptersStatus ]] [[ getUpdateBookmarkChaptersClass(item._updateBookmarkChaptersStatus) ]] toggle-bookmark-chapters-update"></i>
+                      </span>
+                </template>[[ item.title ]]</li>
             </template>
         </ul>
         <!-- https://github.com/PolymerElements/iron-list/issues/536 -->
@@ -198,6 +221,7 @@
                 // register callbacks for published events
                 document.addEventListener( EventListener.onMangaStatusChanged, this.onMangaStatusChanged.bind( this ) );
                 Engine.BookmarkManager.addEventListener( 'changed', this.onBookmarksChanged.bind( this ) );
+                Engine.MangaUpdateManager.addEventListener( 'changed', this.onMangaUpdateChanged.bind( this ) );
             }
 
             /**
@@ -210,7 +234,7 @@
                     return;
                 }
                 let statusID = this.$.status.addToQueue( 'Loading manga list (' + connector.label + ')' );
-                // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage) 
+                // set to undefined when switching manga list prevents a bug in iron-list (high CPU usage)
                 this.set( 'mangaList', [] );
                 connector.getMangas( ( error, mangas ) => {
                     // check if executing connector is still the selected connector (visible)
@@ -285,6 +309,41 @@
                 return ( isUpdating ? 'fa-pulse disabled' : '' );
             }
 
+            getUpdatingMangasClass( isRunning ) {
+                return ( isRunning ? 'disabled' : '' );
+            }
+
+            processShowUpdateMangaStatus( manga ) {
+              if ( ! this.selectedConnector || this.selectedConnector.id !== this.bookmarkConnectorID ) {
+                  return false;
+              }
+              manga._updateBookmarkChaptersStatus = Engine.MangaUpdateManager.isIgnoreUpdateManga(manga) ? 'exclude-in-update' : 'include-in-update';
+              return true;
+            }
+
+            getUpdateBookmarkChaptersTitle( updateStatus ) {
+              return updateStatus === 'exclude-in-update' ? 'Click to include when updating bookmarked manga chapters' : 'Click to exclude when updating bookmarked manga chapters';
+            }
+
+            getUpdateBookmarkChaptersClass( updateStatus ) {
+                return updateStatus === 'exclude-in-update' ? 'fa-minus-circle' : 'fa-plus-circle';
+            }
+
+            toggleUpdateBookmarkChapters ( e ) {
+
+              let manga = e.target.parentElement.__dataHost.item;
+
+              let isNotUpate =  manga._updateBookmarkChaptersStatus === 'exclude-in-update';
+              if( isNotUpate ) {
+                  Engine.MangaUpdateManager.deleteIgnoreUpdateManga(manga);
+              } else {
+                  Engine.MangaUpdateManager.addIgnoreUpdateManga(manga);
+              }
+
+              e.preventDefault();
+              e.stopPropagation();
+            }
+
             /**
              *
              */
@@ -301,7 +360,7 @@
             }
 
             /**
-             * 
+             *
              */
             onMangaStatusChanged( e ) {
                 let manga = e.detail;
@@ -327,6 +386,22 @@
             onBookmarksChanged( e ) {
                 if( this.selectedConnector.id === this.bookmarkConnectorID ) {
                     this.onSelectedConnectorChanged( this.selectedConnector )
+                }
+            }
+
+            onMangaUpdateChanged( e ) {
+                if( this.selectedConnector.id === this.bookmarkConnectorID ) {
+                    e.detail.forEach( b => {
+                        let index = this.mangaList.findIndex( ( item ) => {
+                            // mangas may be different objects (synchronizing connector list) but still be equivalent
+                            // => comparing ids instead of comparing the objects directly
+                            return ( item.id === b.key.manga );
+                        });
+                        if( index > -1 ) {
+                            this.processShowUpdateMangaStatus( this.mangaList[index] );
+                            this.notifyPath( 'mangaList.' + index + '._updateBookmarkChaptersStatus');
+                        }
+                    } );
                 }
             }
 

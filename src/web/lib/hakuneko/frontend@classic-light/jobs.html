@@ -1,4 +1,5 @@
 <link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="../../polymer/lib/elements/dom-if.html">
 <link rel="import" href="theme.html">
 
 <dom-module id="hakuneko-jobs">
@@ -70,6 +71,20 @@
             .hide {
                 display: none;
             }
+            .update-bookmark-chapters {
+                padding-left: 1em;
+            }
+            .far.update-bookmark-chapters-status.active {
+                color: var(--update-bookmark-chapters-disabled-color) !important;
+            }
+            .toggle-bookmark-chapters-update {
+                margin-top: 1.5em !important;
+                font-size: 0.8em !important;
+                margin-left: 2.2em!important;
+            }
+            .toggle-bookmark-chapters-update.active {
+                color: var(--update-bookmark-chapters-stop-color) !important;
+            }
         </style>
         <div class$="list [[ getListClass(popupVisibility) ]]">
             <table cellpadding="0">
@@ -87,6 +102,18 @@
         <div class="bar">
             <div class="expander">
                 <i class$="fas [[ getButtonClass(popupVisibility) ]] button" title="Toggle download list" on-click="toggleJobList"></i>
+            </div>
+            <div class="update-bookmark-chapters" title$="[[ getUpdateBookmarkChaptersTitle(updateBookmarkChaptersStatus) ]]">
+                <span class="button fa-stack fa-xs" on-click="onUpdateBookmarkChaptersClick">
+                    <i class$="far fa-arrow-alt-circle-down fa-stack-2x update-bookmark-chapters-status [[ getUpdateBookmarkChaptersActiveClass(updateBookmarkChaptersStatus) ]]"></i>
+                    <template is="dom-if" if="[[ updateBookmarkChaptersStatus ]]">
+                        <i class="fas fa-fw fa-circle-notch fa-stack-2x fa-spin"></i>
+                        <i class="fas fa-suberlay fa-stop-circle toggle-bookmark-chapters-update active"></i>
+                    </template>
+                </span>
+                <template is="dom-if" if="[[ updateBookmarkChaptersStatus ]]">
+                    <span class="update-bookmark-chapters-status" title$="[[ updateBookmarkChaptersStatus.details ]]">[[ updateBookmarkChaptersStatus.status ]]</span>
+                </template>
             </div>
             <div class="status">[[ jobList.length ]] Download(s)</div>
         </div>
@@ -113,7 +140,14 @@
                         notify: true, // enable upward data flow,
                         //readOnly: true, // prevent downward data flow
                         //observer: 'onSelectedMangaChanged'
-                    }
+                    },
+                    updateBookmarkChaptersStatus: {
+                        type: Object,
+                        value: undefined,
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                        //observer: 'onSelectedMangaChanged'
+                    },
                 };
             }
 
@@ -129,7 +163,11 @@
                 this.jobList = [];
                 // register callbacks for events published by download manager
                 Engine.DownloadManager.addEventListener('updated', this.onDownloadStatusUpdated.bind(this));
+                Engine.MangaUpdateManager.addEventListener('progress', this.onUpdateBookmarkChaptersProgress.bind( this ));
                 this.ipc.on( 'close', this.onClose.bind( this ) );
+                // HACK force evaluating property updateBookmarkChaptersStatus (to properly update title attributes in HTML)
+                this.notifyPath('updateBookmarkChaptersStatus', {});
+                this.notifyPath('updateBookmarkChaptersStatus', undefined);
             }
 
             /**
@@ -198,7 +236,7 @@
             }
 
             /**
-             * 
+             *
              */
             onDownloadStatusUpdated( e ) {
                 let job = e.detail;
@@ -225,6 +263,82 @@
                     if( job.status === 'queued' || job.status === 'downloading' ) {
                         this.push( 'jobList', job );
                     }
+                }
+            }
+
+            getUpdateBookmarkChaptersTitle( updateBookmarkChaptersStatus ) {
+                return (updateBookmarkChaptersStatus ?
+                          updateBookmarkChaptersStatus.canceled ?
+                              'Canceling...' :
+                              'Click to cancel updating chapters for bookmarked mangas' :
+                          'Start updating new chapters for bookmarked mangas'
+                );
+            }
+
+            getUpdateBookmarkChaptersActiveClass( updateBookmarkChaptersStatus ) {
+                return updateBookmarkChaptersStatus ? 'active' : 'inactive';
+            }
+
+            onUpdateBookmarkChaptersClick() {
+
+                if( Engine.MangaUpdateManager.isUpdating ) {
+
+                    Engine.MangaUpdateManager.cancelUpdate();
+                    let msg = 'Canceling ... ' + (this.updateBookmarkChaptersStatus? this.updateBookmarkChaptersStatus.status : '');
+                    let updateStatus = { canceled: true, status: msg, details: msg };
+                    this.set('updateBookmarkChaptersStatus', updateStatus);
+                    return;
+                }
+
+                Engine.MangaUpdateManager.updateAllMangas().then(() => {
+
+                    console.info('downloaded new chapters!');
+
+                } ).catch( error => {
+
+                    console.error('error while trying to download new chapters: ', error);
+
+                });
+            }
+
+            /**
+             *
+             */
+            onUpdateBookmarkChaptersProgress( e ) {
+
+                let data = e.detail;
+                if( data.complete){
+                   this.set('updateBookmarkChaptersStatus', undefined);
+                } else {
+
+                  let updateStatus = {
+                    status: '',
+                    details: '',
+                  };
+
+                  if ( typeof data.current === 'number' ) {
+                      updateStatus.status = data.current + ' / ' + data.total;
+                      let action = data.state === 'step'? 'Updating bookmarked mangas:' : data.state.toUpperCase();
+                      updateStatus.details += action + ' ' + updateStatus.status + '\n';
+                  }
+
+                  updateStatus.details += data.mangaTitle? data.mangaTitle : '';
+                  if( data.connectorTitle ) {
+                    updateStatus.details += '\n' + data.connectorTitle;
+                  }
+
+                  if ( ! updateStatus.details || data.state === 'error') {
+                    updateStatus.details = `[${data.state}] ` + updateStatus.details;
+                  }
+
+                  if( updateStatus.status ) {
+                    updateStatus.status = updateStatus.status.trim();
+                  }
+                  if ( updateStatus.details ) {
+                    updateStatus.details = updateStatus.details.trim();
+                  }
+
+                  this.set('updateBookmarkChaptersStatus', updateStatus);
                 }
             }
 
