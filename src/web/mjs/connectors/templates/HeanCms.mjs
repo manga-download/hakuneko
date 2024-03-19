@@ -14,34 +14,44 @@ export default class HeanCms extends Connector {
         this.novelFormat = 'image/png';
         this.novelWidth = '56em';// parseInt(1200 / window.devicePixelRatio) + 'px';
         this.novelPadding = '1.5em';
+
     }
 
     async _getMangaFromURI(uri) {
         const slug = uri.pathname.split('/')[2];
-        const url = new URL(`/series/${slug}`, this.api);
+        const url = new URL(`${this.api}/series/${slug}`);
         const request = new Request(url, this.requestOptions);
-        const {title, series_slug} = await this.fetchJSON(request, this.requestOptions);
-        return new Manga(this, series_slug, title);
+        const {title, series_slug, id} = await this.fetchJSON(request, this.requestOptions);
+        return new Manga(this, JSON.stringify({
+             id: id,
+             slug:series_slug
+        }), title);
     }
 
     async _getMangas() {
         let mangaList = [];
 
         for (let page = 1, run = true; run; page++) {
-            let list = await this._getMangasFromPage(page);
+            let list = await this._getMangasFromPage(page, true);
             list.length > 0 ? mangaList.push(...list) : run = false;
         }
+
+        for (let page = 1, run = true; run; page++) {
+            let list = await this._getMangasFromPage(page, false);
+            list.length > 0 ? mangaList.push(...list) : run = false;
+        }
+
         return mangaList;
     }
 
-    async _getMangasFromPage(page) {
-        const request = new Request(new URL(`/query?series_type=All&order=asc&perPage=100&page=${page}`, this.api), this.requestOptions);
+    async _getMangasFromPage(page, adult) {
+        const request = new Request(new URL(`${this.api}/query?perPage=100&page=${page}&adult=${adult}`), this.requestOptions);
         const {data} = await this.fetchJSON(request);
 
         if (data.length) {
             return data.map((manga) => {
                 return {
-                    id: manga.series_slug,
+                    id : JSON.stringify({id : manga.id, slug : manga.series_slug}),
                     title: manga.title
                 };
             });
@@ -50,42 +60,83 @@ export default class HeanCms extends Connector {
     }
 
     async _getChapters(manga) {
-        const uri = new URL(`/series/${manga.id}`, this.api);
-        const request = new Request(uri, this.requestOptions);
-        const {seasons} = await this.fetchJSON(request);
-        let chapterList = [];
-
-        seasons.map((season) => season.chapters.map((chapter) => {
-            chapterList.push({
-                id: JSON.stringify({
-                    series: manga.id,
-                    chapter: chapter.chapter_slug
-                }),
-                title: `${seasons.length > 1 ? 'S' + season.index : ''} ${chapter.chapter_name} ${chapter.chapter_title || ''}`.trim()
-            });
-        }));
+        let chapterList = await this.getchaptersV1(manga);
+        if (chapterList.length == 0 ) chapterList = await this.getchaptersV2(manga);
         return chapterList;
+
+    }
+
+    async getchaptersV1(manga) {
+        try {
+            const slug = JSON.parse(manga.id).slug;
+            const uri = new URL(`${this.api}/series/${slug}`);
+            const request = new Request(uri, this.requestOptions);
+            const {seasons} = await this.fetchJSON(request);
+            const chapterList = [];
+            seasons.map((season) => season.chapters.map((chapter) => {
+                chapterList.push({
+                    id: JSON.stringify({
+                        id: chapter.id,
+                        slug: chapter.chapter_slug
+                    }),
+                    title: `${seasons.length > 1 ? 'S' + season.index : ''} ${chapter.chapter_name} ${chapter.chapter_title || ''}`.trim()
+                });
+            }));
+            return chapterList;
+        } catch (error) {
+            return [];
+        }
+
+    }
+
+    async getchaptersV2(manga) {
+        const mangaid = JSON.parse(manga.id);
+        const uri = new URL(`${this.api}/chapter/query?series_id=${mangaid.id}&perPage=9999&page=1)`);
+        const request = new Request(uri, this.requestOptions);
+        const { data } = await this.fetchJSON(request, this.requestOptions);
+        return data.map( chapter => {
+            return {
+                id: JSON.stringify({
+                    slug: chapter.chapter_slug,
+                    id: chapter.id}),
+                title: `${chapter.chapter_name} ${chapter.chapter_title || ''}`.trim()
+
+            };
+        });
+
     }
 
     async _getPages(chapter) {
-        const id = JSON.parse(chapter.id);
-        const uri = new URL(`/chapter/${id.series}/${id.chapter}`, this.api);
+        const chapterid = JSON.parse(chapter.id);
+        const mangaid = JSON.parse(chapter.manga.id);
+        const uri = new URL(`${this.api}/chapter/${mangaid.slug}/${chapterid.slug}`);
         const request = new Request(uri, this.requestOptions);
-        const {chapter_type, data, paywall} = await this.fetchJSON(request, this.queryPages);
+        const data = await this.fetchJSON(request, this.queryPages);
 
         // check for paywall
-        if (data.length < 1 && paywall) {
+        if (data.paywall) {
             throw new Error(`${chapter.title} is paywalled. Please login.`);
         }
 
         // check if novel
-        if (chapter_type.toLowerCase() === 'novel') {
-            return await this._getNovel(id.series, id.chapter);
+        if (data.chapter.chapter_type.toLowerCase() === 'novel') {
+            return await this._getNovel(mangaid.slug, chapterid.slug);
         }
 
-        return data.map((image) => this.createConnectorURI(
-            this.DeProxifyStatically(new URL(image)).href
-        ));
+        const listImages = data.data || data.chapter.chapter_data.images;
+        return listImages.map(image => {
+            let link = this.computePageUrl(image, data.chapter.storage);
+            link = this.DeProxifyStatically(link);
+            return this.createConnectorURI(link);
+        });
+
+    }
+
+    computePageUrl(image, storage) {
+        switch (storage) {
+            case "s3": return new URL(image).href;
+            case "local": return new URL(image, this.api).href;
+        }
     }
 
     async _getNovel(seriesId, chapterId) {
@@ -125,7 +176,7 @@ export default class HeanCms extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        let request = new Request(payload, this.requestOptions);
+        const request = new Request(payload, this.requestOptions);
         request.headers.set('x-referer', this.url);
         const response = await fetch(request);
         let data = await response.blob();
@@ -136,9 +187,9 @@ export default class HeanCms extends Connector {
 
     // copy pasted from https://github.com/manga-download/haruneko/blob/master/web/src/engine/transformers/ImageLinkDeProxifier.ts
     DeProxifyStatically(uri) {
-        const url = uri.href
+        const url = uri
             .replace(/cdn\.statically\.io\/img\/(bacakomik\/)?/, '')
             .replace(/\/(w=\d+|h=\d+|q=\d+|f=auto)(,(w=\d+|h=\d+|q=\d+|f=auto))*\//, '/');
-        return new URL(url);
+        return new URL(url).href;
     }
 }
