@@ -778,20 +778,25 @@ export default class Storage {
     /**
      * Create a path without forbidden characters.
      * Based on HakuNeko legacy for backward compatibility to detect existing mangas/chapters.
-     * LINUX: wxT("/\r\n\t");
-     * WINDOWS: wxT("\\/:*?\"<>|\r\n\t");
+     * ALL OS : /[\u0000-\u001F\u007F-\u009F]/g https://en.wikipedia.org/wiki/C0_and_C1_control_codes (\r\n\t aka x0D x0A x09 are included)
+     * LINUX: wxT("/")
+     * WINDOWS: wxT("\\/:*?\"<>|");
      */
     sanatizePath(path) {
+
+        //replace C0 && C1 control codes
+        // eslint-disable-next-line no-control-regex
+        path = path.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
         if (this.platform.indexOf('win') === 0) {
             // TODO: max. 260 characters per path
-            path = path.replace(/[\\/:*?"<>|\r\n\t]/g, '');
+            path = path.replace(/[\\/:*?"<>|]/g, '');
         }
         if (this.platform.indexOf('linux') === 0) {
-            path = path.replace(/[/\r\n\t]/g, '');
+            path = path.replace(/[/]/g, '');
         }
         if (this.platform.indexOf('darwin') === 0) {
             // TODO: max. 32 chars per part
-            path = path.replace(/[/:\r\n\t]/g, '');
+            path = path.replace(/[/:]/g, '');
         }
         return path.replace(/[.\s]+$/g, '').trim();
     }
