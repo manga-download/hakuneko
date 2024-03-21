@@ -8,80 +8,150 @@ export default class Piccoma extends Connector {
         super.id = 'piccoma';
         super.label = 'Piccoma';
         this.tags = ['manga', 'webtoon', 'japanese'];
-        this.url = 'https://jp.piccoma.com/';
+        this.url = 'https://piccoma.com';
+        this.viewer = '/web/viewer/';
     }
 
     canHandleURI(uri) {
-        return /https?:\/\/jp\.piccoma\.com/.test(uri);
+        return new RegExp('^https://(jp\\.)?piccoma.com/web/product/\\d+').test(uri);
     }
 
     async _getMangaFromURI(uri) {
         const id = uri.pathname.split('/')[3];
-        const request = new Request(uri.href);
-        const [data] = await this.fetchDOM(request, '.PCM-productTitle');
-        const title = data.textContent.trim();
-        return new Manga(this, id, title);
+        uri.pathname = uri.pathname.split('/').slice(0, 4).join('/');
+        const [ element ] = await this.fetchDOM(new Request(uri, this.requestOptions), 'h1.PCM-productTitle');
+        return new Manga(this, id, element.textContent.trim());
     }
 
     async _getMangas() {
-        const mangas = [];
-        let totalPage = 1;
-        for (let i = 1; i <= totalPage; i++) {
-            const request = new Request(`${this.url}/web/next_page/list?result_id=2&list_type=C&sort_type=N&page_id=${i}`, this.requestOptions);
-            const res = await this.fetchJSON(request);
-            totalPage = res.data.total_page;
-            const products = res.data.products;
-            mangas.push(...products.map(({ id, title }) => {
-                return { id, title };
-            }));
+        const genres = [ 1, 2, 3, 4, 5, 6, 7, 9, 10 ];
+        const mangaList = [];
+        try {
+            for(const genre of genres) {
+                const result = await this.getMangasFromPage(genre, 1);
+                mangaList.push(...result.mangas);
+                for (let page = 2; page <= result.pages; page++) {
+                    const {mangas} = await this.getMangasFromPage(genre, page);
+                    mangaList.push(...mangas);
+                }
+
+            }
+        } catch(error) {
+            //
         }
-        return mangas;
+        return [...new Set(mangaList.map(manga => manga.id))].map(id => mangaList.find(manga => manga.id === id));
+    }
+
+    async getMangasFromPage(genre, page) {
+        const uri = new URL('/web/next_page/list', this.url);
+        uri.searchParams.set('list_type', 'G');
+        uri.searchParams.set('result_id', `${genre}`);
+        uri.searchParams.set('page_id', `${page}`);
+        const { data } = await this.fetchJSON(new Request(uri, this.requestOptions));
+        return {
+            pages: data.total_page,
+            mangas: data.products.map(entry => {
+                return {
+                    id: entry.id,
+                    title : entry.title
+                };
+            })
+        };
     }
 
     async _getChapters(manga) {
-        const request = new Request(`${this.url}/web/product/${manga.id}/episodes?etype=E`);
-        const data = await this.fetchDOM(request, '.PCM-product_episodeList > a');
+        return [
+            ... await this.fetchEpisodes(manga),
+            ... await this.fetchVolumes(manga),
+        ].sort((self, other) => self.title.localeCompare(other.title));
+    }
+
+    async fetchEpisodes(manga) {
+        const request = new Request(`${this.url}/web/product/${manga.id}/episodes?etype=E`, this.requestOptions);
+        const data = await this.fetchDOM(request, 'ul.PCM-epList li a[data-episode_id]');
         return data.map(element => {
             return {
-                id: `${manga.id}/${element.dataset.episode_id}`,
-                title: element.querySelector('.PCM-epList_title').textContent.trim(),
+                id: element.dataset.episode_id,
+                title : element.querySelector('div.PCM-epList_title h2').textContent.trim()
+            };
+        });
+    }
+
+    async fetchVolumes(manga) {
+        const request = new Request(`${this.url}/web/product/${manga.id}/episodes?etype=V`);
+        const data = await this.fetchDOM(request, 'ul.PCM-volList li');
+        return data.map(element => {
+            const volume = [ ...element.querySelectorAll('div.PCM-prdVol_btns > a:not([class*="buyBtn"])') ].pop();
+            const title = [
+                element.querySelector('div.PCM-prdVol_title h2').innerText.trim(),
+                volume.classList.contains('PCM-prdVol_freeBtn') ? ` (${ volume.innerText.trim() })` : '',
+                volume.classList.contains('PCM-prdVol_trialBtn') ? ` (${ volume.innerText.trim() })` : '',
+            ].join('');
+            return {
+                id : volume.dataset.episode_id,
+                title : title
             };
         });
     }
 
     async _getPages(chapter) {
-        const request = new Request(`${this.url}/web/viewer/${chapter.id}`);
-        const pdata = await Engine.Request.fetchUI(request, 'window._pdata_ || {}');
-        const images = pdata.img;
-        if (images == null) {
+
+        const script = `
+   	        new Promise((resolve, reject) => {
+
+    	          function _getSeed(url) {
+                    const uri = new URL(url.startsWith('http') ? url : 'https:'+url);
+                    let checksum = uri.searchParams.get('q') || url.split('/').slice(-2)[0]; //PiccomaFR use q=, JP is the other
+                    const expires = uri.searchParams.get('expires');
+                    const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
+                    const ch = total % checksum.length;
+                    checksum = checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
+                    return globalThis.dd(checksum);
+                }
+                
+                try {
+                    const pdata = window.__NEXT_DATA__ ?  __NEXT_DATA__.props.pageProps.initialState.viewer.pData : window._pdata_; //PiccomaFR VS JP
+                    if (!pdata) reject();
+                    if (!pdata.img) reject(); 
+                    
+                    const images = pdata.img
+                        .filter(img => !!img.path)
+                        .map(img => {
+                            	return {
+                            	    url : img.path.startsWith('http') ? img.path : 'https:' + img.path,
+                            	    key : pdata.isScrambled ? _getSeed(img.path) : null,
+                            	}
+                        });
+                     resolve(images);
+                }
+                catch (error) {
+                }
+                reject();
+      	    });
+      	`;
+
+        const request = new Request(`${this.url}${this.viewer}${chapter.manga.id}/${chapter.id}`, this.requestOptions);
+        const images = await Engine.Request.fetchUI(request, script, 10000);
+        if (!images) {
             throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
         }
-        return images
-            .filter(img => !!img.path)
-            .map(img => {
-                const link = img.path.startsWith('http') ? img.path : `https:${img.path}`;
-                return this.createConnectorURI({
-                    url: link,
-                    key: this._getSeed(link),
-                    pdata
-                });
-            });
+        return images.map(image => this.createConnectorURI({...image}));
+
     }
 
     async _handleConnectorURI(payload) {
-        const image = await this._loadImage(payload.url);
-        if (payload.pdata.isScrambled) {
+        if (payload.key) {
+            const image = await this._loadImage(payload.url);
             const canvas = this._unscramble(image, 50, payload.key);
             const blob = await this._canvasToBlob(canvas);
             return this._blobToBuffer(blob);
+        } else {
+            const uri = new URL(payload.url, this.url);
+            const request = new Request(uri, this.requestOptions);
+            const response = await fetch(request);
+            let data = await response.blob();
+            return this._blobToBuffer(data);
         }
-        const canvas = document.createElement("canvas");
-        const ctx = canvas.getContext('2d');
-        canvas.width = image.width;
-        canvas.height = image.height;
-        ctx.drawImage(image, 0, 0, image.width, image.height, 0, 0, image.width, image.height);
-        const blob = await this._canvasToBlob(canvas);
-        return this._blobToBuffer(blob);
     }
 
     async _canvasToBlob(canvas) {
@@ -90,14 +160,6 @@ export default class Piccoma extends Connector {
                 resolve(data);
             }, Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value) / 100);
         });
-    }
-
-    _getSeed(url) {
-        const checksum = url.split('/').slice(-2)[0];
-        const expires = new URL(url).searchParams.get('expires');
-        const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
-        const ch = total % checksum.length;
-        return checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
     }
 
     _loadImage(url) {
