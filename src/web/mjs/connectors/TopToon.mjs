@@ -15,12 +15,12 @@ export default class TopToon extends Connector {
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.bnr_episode_info p.tit_toon');
+        const data = await this.fetchDOM(request, 'div.ep_comic_info span.comic_tit span');
         return new Manga(this, uri.pathname, data[0].textContent.trim());
     }
 
     async _getMangas() {
-        const req = new Request('https://toptoon.com/hashtag', this.requestOptions);
+        const req = new Request(new URL('/hashtag', this.url), this.requestOptions);
         const api = await this.fetchRegex(req, /fileUrl\s*:\s*'([^']+)'/g);
         const request = new Request(api[0], this.requestOptions);
         const data = await this.fetchJSON(request);
@@ -34,11 +34,11 @@ export default class TopToon extends Connector {
 
     async _getChapters(manga) {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.episode_list ul a.episode-items');
+        const data = await this.fetchDOM(request, 'div.eplist ul a.episode-items');
         return data.map(element => {
-            let title = element.querySelector('p.episode_title').textContent.trim();
-            const subtitle = element.querySelector('p.episode_stitle');
-            title += subtitle ? ' - ' + subtitle.textContent.trim() : '';
+            let title = element.querySelector('p.ep_title').textContent.trim();
+            const subtitle = element.querySelector('p.ep_stitle');
+            title += subtitle && subtitle.textContent.trim() != '' ? ' - ' + subtitle.textContent.trim() : '';
             return {
                 id: `/comic/ep_view/${element.dataset.comicId}/${element.dataset.episodeId}`,
                 title: title
