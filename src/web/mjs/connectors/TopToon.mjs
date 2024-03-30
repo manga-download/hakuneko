@@ -37,8 +37,8 @@ export default class TopToon extends Connector {
         const data = await this.fetchDOM(request, 'div.eplist ul a.episode-items');
         return data.map(element => {
             let title = element.querySelector('p.ep_title').textContent.trim();
-            const subtitle = anchor.querySelector('p.ep_stitle')?.textContent.trim();
-            title += subtitle ? ' - ' + subtitle : '';
+            const subtitle = element.querySelector('p.ep_stitle');
+            title += subtitle && subtitle.textContent.trim() != '' ? ' - ' + subtitle.textContent.trim() : '';
             return {
                 id: `/comic/ep_view/${element.dataset.comicId}/${element.dataset.episodeId}`,
                 title: title
