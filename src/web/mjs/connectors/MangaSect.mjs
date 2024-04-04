@@ -8,7 +8,7 @@ export default class MangaSect extends Connector {
         super.id = 'mangasect';
         super.label = 'MangaSect';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://mangasect.com';
+        this.url = 'https://mangasect.net';
         this.path = '/all-manga/';
     }
 
@@ -27,8 +27,8 @@ export default class MangaSect extends Connector {
         const rawPageCount = paginationInfo.split("/");
         const pageCount = parseInt(rawPageCount[1]);
         for(let page = 1; page <= pageCount; page++) {
-        const mangas = await this._getMangasFromPage(page);
-        mangaList.push(...mangas);
+            const mangas = await this._getMangasFromPage(page);
+            mangaList.push(...mangas);
         }
         return mangaList;
     }
@@ -49,10 +49,10 @@ export default class MangaSect extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, "div.chapter a");
         return data.map((element) => {
-        return {
-            id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-            title: element.text.trim(),
-        };
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.text.trim(),
+            };
         });
     }
 
@@ -73,7 +73,7 @@ export default class MangaSect extends Connector {
         const dom = this.createDOM(ajaxResponse.html);
         const ajaxData = dom.querySelectorAll("source[data-real]");
         return Array.from(ajaxData).map((image) =>
-        this.getAbsolutePath(image.dataset["real"], ajaxReq.url)
+            this.getAbsolutePath(image.dataset["real"], ajaxReq.url)
         );
     }
 }
