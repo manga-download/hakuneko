@@ -45,15 +45,29 @@ export default class ComicBoost extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions );
-        let data = await this.fetchDOM(request, 'a.book-product-list-item');
+        const chapterList = [];
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const [ data ] = await this.fetchDOM(request, 'ul.pagination-list.right li.to-last a');
+        const pageCount = data ?parseInt(new URL(data.href).searchParams.get('p')) : 1;
+        for(let page = 1; page <= pageCount; page++) {
+            const chapters = await this._getChaptersFromPage(manga, page);
+            chapterList.push(...chapters);
+        }
+        return chapterList.filter(el => !el.id.includes('?coin=')); //exclude not accessible chapters
+    }
+
+    async _getChaptersFromPage(manga, page) {
+        const url = new URL(manga.id, this.url);
+        url.searchParams.set('p', page.toString());
+        const request = new Request(url, this.requestOptions );
+        const data = await this.fetchDOM(request, 'a.book-product-list-item');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
                 title: element.dataset.title.trim(),
                 language: ''
             };
-        }).filter(el => !el.id.includes('?coin=')); //exclude not accessible chapters
+        });
     }
 
     async _getPages(chapter) {
@@ -125,7 +139,7 @@ export default class ComicBoost extends Connector {
                         if (fileinfos.BlockHeight) //if we have a block size for the page, its a puzzle !
                         {
                             mode = 'puzzle';
-                            blocks = window.NFBR.a6G.a5x.prototype.b0Q(fPage, fPage.width, fPage.height)
+                            blocks = window.NFBR.a6G.a5x.prototype.g8w(fPage, fPage.width, fPage.height)
                         }
                    
                         return {
