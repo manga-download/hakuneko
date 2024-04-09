@@ -10,10 +10,4 @@ export default class MonzeeKomik extends WordPressMangastream {
         this.url = 'https://monzeekomik.my.id';
         this.path = '/manga/list-mode/';
     }
-
-    async _getMangas() {
-        const mangas = await super._getMangas();
-        mangas.forEach(manga => manga.title = manga.title.replace(/Bahasa Indonesia$/i, '').trim());
-        return mangas;
-    }
 }
