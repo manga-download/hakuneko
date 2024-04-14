@@ -23,24 +23,15 @@ export default class SakuraNovel extends WordPressMangastream {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryChapters);
-        return data.map(element => {
-            this.adLinkDecrypt(element);
-            const title = this.queryChaptersTitle ? [...element.querySelectorAll(this.queryChaptersTitle)].map(ele => ele.textContent).join(' ') : element.text;
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title.replace(manga.title + ' – ', '').replace(/Bahasa Indonesia$/i, '').trim()
-            };
-        });
+        const mangas = await super._getChapters(manga);
+        mangas.forEach(manga => manga.title = manga.title.replace(/Bahasa Indonesia$/i, '').trim());
+        return mangas;
     }
 
     async _getPages(chapter) {
         let uri = new URL(chapter.id, this.url);
-        uri.searchParams.set('style', 'list');
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.novelContentQuery);
-        return data.length > 0 ? this._getPagesNovel(request) : super._getPages(chapter);
+        return this._getPagesNovel(request);
     }
 
     async _getPagesNovel(request) {
