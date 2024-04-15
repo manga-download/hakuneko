@@ -16,16 +16,16 @@ export default class SakuraNovel extends WordPressMangastream {
         this.path = '/daftar-novel/';
 
         this.novelContentQuery = 'div.asdasd';
-        this.novelObstaclesQuery = 'div[class]';
+        this.novelObstaclesQuery = '[data-index]';
         this.novelFormat = 'image/png';
         this.novelWidth = '56em'; // parseInt(1200 / window.devicePixelRatio) + 'px';
         this.novelPadding = '1.5em';
     }
 
-    async _getChapters(manga) {
-        const mangas = await super._getChapters(manga);
-        mangas.forEach(manga => manga.title = manga.title.replace(/Bahasa Indonesia$/i, '').trim());
-        return mangas;
+    async _getChapters(novel) {
+        const novels = await super._getChapters(novel);
+        novels.forEach(novel => novel.title = novel.title.replace(/Bahasa Indonesia$/i, '').trim());
+        return novels;
     }
 
     async _getPages(chapter) {
@@ -40,11 +40,11 @@ export default class SakuraNovel extends WordPressMangastream {
             new Promise((resolve, reject) => {
                 document.body.className = document.body.className.replace('darkmode', 'lightmode')
                 document.body.style.width = '${this.novelWidth}';
-                let container = document.querySelector('div.asdasd');
+                let container = document.querySelector('${this.novelContentQuery}');
                 container.style.maxWidth = '${this.novelWidth}';
                 container.style.padding = '0';
                 container.style.margin = '0';
-                let novel = document.querySelector('div.asdasd');
+                let novel = document.querySelector('${this.novelContentQuery}');
                 novel.style.padding = '${this.novelPadding}';
                 [...novel.querySelectorAll(":not(:empty)")].forEach(ele => {
                     ele.style.backgroundColor = '${darkmode.background}'
