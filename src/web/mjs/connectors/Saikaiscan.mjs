@@ -8,15 +8,15 @@ export default class SaikaiScan extends Connector {
         super.id = 'saikaiscan';
         super.label = 'Saikaiscan';
         this.tags = [ 'manga', 'portuguese', 'webtoon', 'novel' ];
-        this.url = 'https://saikaiscan.com.br';
-        this.api = 'https://api.saikai.com.br/api/stories';
-        this.imagesurl = 'https://s3-alpha.saikai.com.br';
+        this.url = 'https://saikaiscans.net';
+        this.api = 'https://api.saikaiscans.net/api/stories';
+        this.imagesurl = 'https://s3-alpha.saikaiscans.net';
         this.novelContentQuery = 'div#leitor-serie-body';
         this.novelFormat = 'image/png';
         this.novelWidth = '56em';
         this.novelPadding = '1.5em';
         this.links = {
-            login: 'https://saikaiscan.com.br/login'
+            login: 'https://saikaiscan.net/login'
         };
     }
 
