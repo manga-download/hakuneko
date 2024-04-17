@@ -6,112 +6,85 @@ export default class ComicWalker extends Connector {
     constructor() {
         super();
         super.id = 'comicwalker';
-        super.label = 'コミックウォーカー (ComicWalker)';
+        super.label = 'カドコミ (KadoComi)';
         this.tags = [ 'manga', 'japanese' ];
         this.url = 'https://comic-walker.com';
+        this.apiURL = 'https://comic-walker.com/api/';
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#mainContent div#detailIndex div.comicIndex-box h1');
-        let id = uri.pathname + uri.search;
-        let title = data[0].textContent.trim();
-        return Promise.resolve(new Manga(this, id, title));
+        const workCode = uri.pathname.match(/\/detail\/([^/]+)/)[1]; //strip search
+        const apiCallUrl = new URL(`contents/details/work?workCode=${workCode}`, this.apiURL);
+        const { work } = await this.fetchJSON(new Request(apiCallUrl, this.requestOptions));
+        return new Manga(this, workCode, work.title.trim());
     }
 
-    async _getMangaListPage(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.comicPage ul.tileList li a p.tileTitle span');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element.closest('a'), request.url),
-                title: element.textContent.replace(/^[^\s]+\s/, '').trim()
-            };
-        });
-    }
-
-    async _getMangaList(callback) {
-        try {
-            let mangaList = [];
-            for(let language of ['en', 'tw', 'jp']) {
-                let uri = new URL('/contents/list/', this.url);
-                let request = new Request(`${this.url}/set_lang/${language}/`, this.requestOptions);
-                request.headers.set('x-referer', uri.href);
-                let data = await this.fetchDOM(request, 'div.comicPage div.pager ul.clearfix li:nth-last-of-type(2) a');
-                let pageCount = parseInt(data[0].text.trim());
-                for(let page = 1; page <= pageCount; page++) {
-                    uri.searchParams.set('p', page);
-                    let mangas = await this._getMangaListPage(uri);
-                    mangaList.push(...mangas);
-                }
-            }
-            callback(null, mangaList);
-        } catch(error) {
-            console.error(error, this);
-            callback(error, undefined);
+    async _getMangas() {
+        const mangasList = [];
+        const apiCallUrl = new URL(`search/initial`, this.apiURL);
+        const data = await this.fetchJSON(new Request(apiCallUrl, this.requestOptions));
+        for (const entry of data) {
+            mangasList.push(...entry.items.map(manga => {
+                return {
+                    id: manga.code,
+                    title: manga.title.trim()
+                };
+            }));
         }
+        return mangasList;
     }
 
-    _getChapterList( manga, callback ) {
-        let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'div#ulreversible ul#reversible li a' )
-            .then( data => {
-                let chapterList = data.map( element => {
-                    return {
-                        id: this.getRootRelativeOrAbsoluteLink( element, request.url ),
-                        title: element.title.replace( manga.title, '' ).trim(),
-                        language: ''
-                    };
-                } );
-                callback( null, chapterList );
-            } )
-            .catch( error => {
-                console.error( error, manga );
-                callback( error, undefined );
-            } );
+    async _getChapters( manga ) {
+        const chapterList = [];
+        const apiCallUrl = new URL(`contents/details/work?workCode=${manga.id}`, this.apiURL);
+        const data = await this.fetchJSON(new Request(apiCallUrl, this.requestOptions));
+
+        for (const episodeType of ['firstEpisodes', 'latestEpisodes' ]) {
+
+            chapterList.push(...data[episodeType].result.map(episode => {
+                const title = [episode.title, episode.subtitle].join(' ').trim();
+                return { id: episode.id, title :  title};
+            }));
+        }
+
+        for (const comic of data.comics.result) {
+            chapterList.push(...comic.episodes.map(episode => {
+                return {
+                    id: episode.id,
+                    title : episode.title.trim()
+                };
+            }));
+        }
+
+        return chapterList.filter(chapter => chapter === chapterList.find(c => c.id === chapter.id));
+
     }
 
-    _getPageList( manga, chapter, callback ) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        this.fetchDOM( request, 'main#app' )
-            .then( data => {
-                const endpoints = data[0].dataset.apiEndpointUrl ? data[0].dataset.apiEndpointUrl : JSON.parse(data[0].dataset.apiEndpointUrls);
-                let uri = `${endpoints.nc || endpoints.cw || endpoints}/api/v1/comicwalker/episodes/${data[0].dataset.episodeId}/frames`;
-                request = new Request( uri, this.requestOptions );
-                return this.fetchJSON( request );
-            } )
-            .then( data => {
-                let pageList = data.data.result.map( page => this.createConnectorURI( this.getAbsolutePath( page.meta.source_url, this.url ) ) );
-                callback( null, pageList );
-            } )
-            .catch( error => {
-                console.error( error, chapter );
-                callback( error, undefined );
-            } );
+    async _getPages( chapter ) {
+        const apiCallUrl = new URL(`contents/viewer?episodeId=${chapter.id}&imageSizeType=width:1284`, this.apiURL);
+        const { manuscripts } = await this.fetchJSON(new Request(apiCallUrl, this.requestOptions));
+        return manuscripts.map(page => this.createConnectorURI({ ...page }));
     }
 
     async _handleConnectorURI(payload) {
-        /*
-         * TODO: only perform requests when from download manager
-         * or when from browser for preview and selected chapter matches
-         */
-        let passphrase = payload.split('/').find(part => /^[\da-f]{16}/.test(part));
-        if(passphrase) {
-            let request = new Request(payload, this.requestOptions);
-            let response = await fetch(request);
-            return this._decrypt(await response.arrayBuffer(), passphrase);
-        } else {
-            return super._handleConnectorURI(payload);
+        const uri = new URL(payload.drmImageUrl, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const response = await fetch(request);
+        switch (payload.drmMode) {
+            case 'xor': {
+                const encrypted = await response.arrayBuffer();
+                const data = {
+                    mimeType: response.headers.get('content-type'),
+                    data: this._xor(encrypted, this._generateKey(payload.drmHash))
+                };
+                this._applyRealMime(data);
+                return data;
+            }
+            case 'raw': {
+                const data = await response.blob();
+                return this._blobToBuffer(data);
+            }
         }
-    }
-
-    _decrypt(encrypted, passphrase) {
-        let key = this._generateKey(passphrase);
-        let decrypted = this._xor(encrypted, key);
-        return Promise.resolve({
-            mimeType: 'image/jpeg',
-            data: decrypted
-        });
     }
 
     /**

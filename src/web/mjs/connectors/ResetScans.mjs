@@ -7,7 +7,7 @@ export default class ResetScans extends WordPressMadara {
         super.id = 'resetscans';
         super.label = 'Reset Scans';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://reset-scans.us';
+        this.url = 'https://reset-scans.xyz';
         this.queryChapters = 'li.wp-manga-chapter div.li__text > a';
     }
 }
