@@ -10,19 +10,36 @@ export default class HentaiRead extends WordPressMadara {
         this.url = 'https://hentairead.com';
     }
 
-    // very similar to tritiniascans except that this websites uses an array instead of an object
+    async _getChapters(manga) {
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const [ data ] = await this.fetchDOM(request, 'a.btn-read-now');
+        return [{
+            id : data.pathname,
+            title : manga.title
+        }];
+    }
+
     async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-        let response = await fetch(request);
-        let data = await response.text();
-        let chapterImages = data.match(/chapImages\s*=\s*(\[[^\]]+\])/);
-        let preloadedImages = data.match(/chapter_preloaded_images\s*=\s*(\[[^\]]+\])/);
-        let pageList = JSON.parse((chapterImages || preloadedImages)[1]);
-        return pageList.map(link => {
-            let uri = new URL(link);
-            uri.searchParams.set('quality', '100');
-            uri.searchParams.delete('w');
-            return uri.href;
-        });
+        const request = new Request(this.url + chapter.id, this.requestOptions);
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        const pagelist  = (window.chapterImages ?? window.chapter_preloaded_images);
+                        resolve( pagelist.map(image=> {
+                            const uri = new URL(image.src);
+                            uri.searchParams.set('quality', '100');
+                            uri.searchParams.delete('w');
+                            return uri.href;
+                        }));
+                    } catch (error) {
+                        reject(error);
+                    }
+                },
+                500);
+            });
+        `;
+        const pages = await Engine.Request.fetchUI(request, script);
+        return pages.map(page => page.replace(/\/i\d+\.wp\.com/, ''));
     }
 }

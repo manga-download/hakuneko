@@ -7,6 +7,6 @@ export default class MangaTX extends WordPressMadara {
         super.id = 'mangatx';
         super.label = 'Mangatx';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://mangatx.com';
+        this.url = 'https://mangatx.to';
     }
 }

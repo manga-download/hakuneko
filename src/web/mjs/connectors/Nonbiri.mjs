@@ -5,9 +5,9 @@ export default class Nonbiri extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'nonbiri';
-        super.label = 'Nonbiri';
+        super.label = 'Comic21';
         this.tags = ['manga', 'indonesian'];
-        this.url = 'https://nonbiri.space';
+        this.url = 'https://comic21.me';
         this.path = '/manga/list-mode/';
     }
 }

@@ -9,11 +9,15 @@ export default class ComicK extends Connector {
         super.id = 'comick';
         super.label = 'ComicK';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://comick.ink';
-        this.apiurl = 'https://api.comick.ink';
+        this.url = 'https://comick.io';
+        this.apiurl = 'https://api.comick.io';
         this.requestOptions.headers.set('x-origin', this.url );
         this.requestOptions.headers.set('x-referer', this.apiurl );
 
+    }
+
+    canHandleURI(uri) {
+        return /https?:\/\/comick\.(app|ink|cc|io)/.test(uri.origin);
     }
 
     async _getEmbeddedJSON(uri) {

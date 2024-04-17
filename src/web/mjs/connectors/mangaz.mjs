@@ -81,7 +81,7 @@ export default class Mangaz extends Connector {
     async _getChapters(manga) {
         const request = new Request(new URL(manga.id, this.url), this.requestOptions);
         const data = await this.fetchDOM(request, 'body');
-        return data[0].querySelector("li.box") ? [...data[0].querySelectorAll("li.box")].map(ele => {
+        return data[0].querySelector("li.item") ? [...data[0].querySelectorAll("li.item")].map(ele => {
             return{
                 id:ele.querySelector('button').dataset['url'].replace('navi', 'virgo/view'),
                 title:ele.querySelector('span').textContent.trim()
