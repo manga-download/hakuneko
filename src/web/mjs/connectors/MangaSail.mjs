@@ -7,7 +7,7 @@ export default class MangaSail extends Connector {
         super.id = 'mangasail';
         super.label = 'MangaSail';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://www.mangasail.net';
+        this.url = 'https://sailmg.com';
 
         this.config = {
             username: {

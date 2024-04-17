@@ -7,6 +7,6 @@ export default class MangaStarz extends WordPressMadara {
         super.id = 'mangastarz';
         super.label = 'مانجا ستارز (Mangastarz)';
         this.tags = [ 'manga', 'webtoon', 'arabic' ];
-        this.url = 'https://mangastarz.org';
+        this.url = 'https://manga-starz.com';
     }
 }

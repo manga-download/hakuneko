@@ -9,15 +9,14 @@ export default class Luscious extends Connector {
         super.label = 'Luscious';
         this.tags = [ 'hentai', 'multi-lingual' ];
         this.url = 'https://www.luscious.net';
-        this.apiURL = 'https://api.luscious.net/graphql/nobatch/';
+        this.apiURL = 'https://apicdn.luscious.net/graphql/nobatch/';
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'head title');
-        let id = uri.pathname;
-        let title = data[0].textContent.split('|')[0].trim() + ` [${data[0].lang}]`;
-        return new Manga(this, id, title);
+        const id = uri.pathname.match(/_(\d+)\/?$/)[1];
+        const request = new Request(uri);
+        const name = (await this.fetchDOM(request, 'main h1.album-heading')).pop().textContent.trim();
+        return new Manga(this, id, name);
     }
 
     async _getMangas() {
@@ -30,18 +29,49 @@ export default class Luscious extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let gql = `{
-            album {
-                list(input: { display: date_newest, page: ${page} }) {
-                    items { url, title }
+        const url = new URL(this.apiURL);
+        url.searchParams.set('operationName', 'AlbumList');
+        const query = `
+            query AlbumList($input: AlbumListInput!) {
+                album {
+                    list(input: $input) {
+                        items {
+                            id
+                            title
+                            slug
+                            language {
+                                id
+                                title
+                                url
+                            }
+                        }
+                    }
                 }
             }
-        }`;
-        let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
-        return data.album.list.items.map(item => {
+        `;
+        url.searchParams.set('query', query);
+        const variables = {
+            input: {
+                display: 'date_trending',
+                filters: [{ name: 'album_type', value: 'manga' }, { name: 'restrict_genres', value: 'loose' }],
+                page: page,
+                items_per_page: 30//dont change items_per_page to more than 30
+            }
+        };
+
+        url.searchParams.set('variables', JSON.stringify(variables));
+        const request = new Request(url, {
+            headers: {
+                'Accept': '*/*',
+                'Content-Type': 'application/json',
+            },
+        });
+
+        const data = await this.fetchJSON(request);
+        return data.data.album.list.items.map(manga => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(item.url, this.url),
-                title: item.title.trim()
+                id: manga.id,
+                title: manga.title.trim()
             };
         });
     }
@@ -55,36 +85,50 @@ export default class Luscious extends Connector {
     }
 
     async _getPages(chapter) {
-        const query = `
-            query AlbumListOwnPictures($input: PictureListInput!) {
-                picture {
-                    list(input: $input) {
-                        items {
-                            url_to_original
-                        }
-                    }
-                }
+        const pagelist = [];
+        for (let page = 1, run = true; run; page++) {
+            const pagesResults = await this._getPagesFromChapterPage(page, chapter);
+            if (pagesResults.data.picture.list.items.length > 0) {
+                pagesResults.data.picture.list.items.forEach(element => pagelist.push(element.url_to_original));
             }
+            run = pagesResults.data.picture.list.info.has_next_page;
+        }
+        return pagelist;
+    }
+
+    async _getPagesFromChapterPage(page, chapter) {
+        const url = new URL(this.apiURL);
+        url.searchParams.set('operationName', 'AlbumListOwnPictures');
+        const query = `
+                query AlbumListOwnPictures($input: PictureListInput!) {
+                  picture {
+                    list(input: $input) {
+                      info {
+                        has_next_page
+                      }
+                      items {
+                        url_to_original
+                      }
+                    }
+                  }
+                }
         `;
+        url.searchParams.set('query', query);
         const variables = {
             input: {
-                filters: [
-                    {
-                        name: 'album_id',
-                        value: chapter.id.match(/_(\d+)\/?$/)[1]
-                    }
-                ],
-                display : 'date_newest',
-                page: 0
+                filters: [{ name: 'album_id', value: chapter.id }],
+                display: 'position',
+                items_per_page: 50, //dont change items_per_page to more than 50
+                page: page
             }
         };
-        let pageList = [];
-        for(let page = 1, run = true; run; page++) {
-            variables.input.page = page;
-            const data = await this.fetchGraphQL(this.apiURL, 'AlbumListOwnPictures', query, variables);
-            const pages = data.picture.list.items.map(item => item.url_to_original);
-            pages.length > 0 ? pageList.push(...pages) : run = false;
-        }
-        return pageList;
+        url.searchParams.set('variables', JSON.stringify(variables));
+        const request = new Request(url, {
+            headers: {
+                'Accept': '*/*',
+                'Content-Type': 'application/json',
+            },
+        });
+        return this.fetchJSON(request);
     }
 }
