@@ -7,6 +7,6 @@ export default class MoonWitchInLove extends WordPressMadara {
         super.id = 'moonwitchinlove';
         super.label = 'Moon Witch In Love';
         this.tags = [ 'webtoon', 'portuguese', 'scanlation' ];
-        this.url = 'https://moonwitchinlove.com';
+        this.url = 'https://moonwitchinlovescan.com';
     }
 }
