@@ -5,8 +5,8 @@ export default class PrismaScan extends WordPressMadara {
     constructor() {
         super();
         super.id = 'prismascans';
-        super.label = 'Prisma Scan';
+        super.label = 'Demon Scan';
         this.tags = [ 'webtoon', 'portuguese' ];
-        this.url = 'https://prismascans.net';
+        this.url = 'https://demonsect.com.br';
     }
 }

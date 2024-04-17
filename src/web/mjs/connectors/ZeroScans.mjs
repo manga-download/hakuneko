@@ -7,7 +7,7 @@ export default class ZeroScans extends Connector {
         super.id = 'zeroscans';
         super.label = 'ZeroScans';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-        this.url = 'https://zeroscans.com';
+        this.url = 'https://zscans.com';
 
         this.config = {
             quality: {
@@ -24,11 +24,11 @@ export default class ZeroScans extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        const request = new Request(uri, this.requestOptions);
-        const script = `new Promise(resolve => resolve(JSON.stringify(window.__ZEROSCANS__)));`;
-        const { data } = await Engine.Request.fetchUI(request, script);
-        const details = data[0].details;
-        return new Manga(this, `${details.id}_${details.slug}`, details.name.trim());
+        const slug = uri.href.match(/\/comics\/([^/]+)$/)[1];
+        const detailsUrl = new URL(`/swordflake/comic/${slug}`, this.url);
+        const request = new Request(detailsUrl, this.requestOptions);
+        const { data } = await this.fetchJSON(request);
+        return new Manga(this, `${data.id}_${data.slug}`, data.name.trim());
     }
 
     async _getMangas() {

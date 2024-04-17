@@ -69,98 +69,14 @@ export default class MangaDex extends Connector {
     }
 
     async _getMangas() {
-        const mangaList = [];
-        const limit = 100;
-        let lastCreatedAt = '2000-01-01T00:00:00';
-        let throttle = Promise.resolve();
-
-        while(lastCreatedAt) {
-            await throttle;
-            throttle = new Promise(resolve => setTimeout(resolve, this.config.throttleRequests.value));
-
-            const uri = new URL('/manga', this.api);
-            uri.searchParams.set('limit', `${limit}`);
-            uri.searchParams.set('order[createdAt]', 'asc');
-            uri.searchParams.set('createdAtSince', lastCreatedAt);
-            uri.searchParams.append('contentRating[]', 'safe');
-            uri.searchParams.append('contentRating[]', 'suggestive');
-            uri.searchParams.append('contentRating[]', 'erotica');
-            uri.searchParams.append('contentRating[]', 'pornographic');
-
-            const request = new Request(uri, {
-                headers: {
-                    'Referer': this.url,
-                }});
-            const { data } = await this.fetchJSON(request);
-
-            lastCreatedAt = data.length === limit ? data.pop().attributes.createdAt.split('+').shift() : null;
-            if(data.length) {
-                const mangas = data.map(manga => {
-                    const title = manga.attributes.title.en || Object.values(manga.attributes.title).shift();
-                    return {
-                        id : manga.id,
-                        title : title,
-                    };
-                });
-                mangaList.push(...mangas);
-            }
-        }
-
-        return mangaList;
-    }
-
-    /*
-    async _getMangas() {
-
-        let mangaList = [];
-        let first10k = await this._getMangasFromPages(0, 99);
-        mangaList = [...mangaList, ...first10k.data];
-        let nextAt = first10k.nextAt;
-
-        for (let i = 1; i <= first10k.total / 10000; i += 1) {
-            let first100of10k = await this._getMangasFromPages(0, 0, nextAt);
-            mangaList = [...mangaList, ...first100of10k.data.slice(1)];
-            let pages = Math.min(Math.floor(first100of10k.total / 100), 99);
-            if (pages > 0) {
-                let data = await this._getMangasFromPages(1, pages, nextAt);
-                mangaList = [...mangaList, ...data.data];
-                nextAt = data.nextAt;
-            }
-        }
-        return mangaList.map(ele => {
+        return (await this.fetchJSON('https://websites.hakuneko.download/mangadex.json')).map(manga => {
             return {
-                id: ele.id,
-                title: (ele.attributes.title.en || Object.values(ele.attributes.title).shift()).trim()
+                id: manga.id,
+                title: manga.title,
             };
         });
-
     }
 
-    async _getMangasFromPages(start, pages, nextAt) {
-        let tmp = [];
-        let data100;
-        for (let page = start; page <= pages; page += 1) {
-            const uri = new URL('/manga', this.api);
-            uri.searchParams.set('limit', 100);
-            uri.searchParams.set('offset', 100 * page);
-            uri.searchParams.set('order[createdAt]', 'asc');
-            uri.searchParams.append('contentRating[]', 'safe');
-            uri.searchParams.append('contentRating[]', 'suggestive');
-            uri.searchParams.append('contentRating[]', 'erotica');
-            uri.searchParams.append('contentRating[]', 'pornographic');
-            if (nextAt) uri.searchParams.set('createdAtSince', nextAt);
-            const request = new Request(uri, this.requestOptions);
-            data100 = await this.fetchJSON(request, 3);
-            await this.wait(this.config.throttleRequests.value);
-            tmp = [...tmp, ...data100.data];
-        }
-        return {
-            data: tmp,
-            nextAt: data100.data.pop().attributes.createdAt.replace('+00:00', ''),
-            total: data100.total
-        };
-    }
-*/
     async _getChapters(manga) {
         let chapterList = [];
         for(let page = 0, run = true; run; page++) {

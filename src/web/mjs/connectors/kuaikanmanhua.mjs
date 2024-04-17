@@ -13,6 +13,10 @@ export default class Kuaikanmanhua extends Connector {
         this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 11_0 like Mac OS X) AppleWebKit/604.1.38 (KHTML, like Gecko) Version/11.0 Mobile/15A372 Safari/604.1');
     }
 
+    canHandleURI(uri) {
+        return /^https?:\/\/(m\.|www\.)?kuaikanmanhua\.com\/(mobile|web\/topic)\/\d+/.test(uri.hostname);
+    }
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'head title');
