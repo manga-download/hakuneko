@@ -7,6 +7,6 @@ export default class winterscan extends WordPressMadara {
         super.id = 'winterscan';
         super.label = 'Winter Scan';
         this.tags = [ 'webtoon', 'portuguese', 'scanlation' ];
-        this.url = 'https://winterscan.com.br';
+        this.url = 'https://winterscan.com';
     }
 }
