@@ -8,7 +8,7 @@ export default class XoxoComics extends Connector {
         super.id = 'xoxocomics';
         super.label = 'XoxoComics';
         this.tags = [ 'comic', 'english' ];
-        this.url = 'https://xoxocomics.net';
+        this.url = 'https://xoxocomic.com';
     }
 
     async _getMangaFromURI(uri) {
@@ -20,17 +20,19 @@ export default class XoxoComics extends Connector {
 
     async _getMangas() {
         const mangaList = [];
-        for(let page = 1, run = true; run; page++) {
-            const mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        for (const letter of '0abcdefghijklmnopqrstuvwxyz'.split('')) {
+            for(let page = 1, run = true; run; page++) {
+                const mangas = await this._getMangasFromPage(page, letter);
+                mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            }
         }
         return mangaList;
     }
 
-    async _getMangasFromPage(page) {
-        const uri = new URL('/comic-list/alphabet?c=&page=' + page, this.url);
+    async _getMangasFromPage(page, letter) {
+        const uri = new URL(`/comic-list/?c=${letter}&page=${page}`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.chapter > a');
+        const data = await this.fetchDOM(request, 'div.chapter a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),

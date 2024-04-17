@@ -5,9 +5,9 @@ export default class LyraScans extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'lyrascans';
-        super.label = 'Lyra Scans';
+        super.label = 'Quantum Scans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
-        this.url = 'https://lyrascans.com';
-        this.path = '/manga/list-mode/';
+        this.url = 'https://readers-point.space';
+        this.path = '/series/list-mode/';
     }
 }
