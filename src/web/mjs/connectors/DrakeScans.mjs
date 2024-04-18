@@ -1,6 +1,6 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class MonzeeKomik extends WordPressMangastream {
+export default class DrakeScans extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'drakescans';
