@@ -20,18 +20,23 @@ export default class ComicWalker extends Connector {
     }
 
     async _getMangas() {
-        const mangasList = [];
-        const apiCallUrl = new URL(`search/initial`, this.apiURL);
-        const data = await this.fetchJSON(new Request(apiCallUrl, this.requestOptions));
-        for (const entry of data) {
-            mangasList.push(...entry.items.map(manga => {
-                return {
-                    id: manga.code,
-                    title: manga.title.trim()
-                };
-            }));
+        const mangaList = [];
+        for (let page = 0, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
-        return mangasList;
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const apiCallUrl = new URL(`search/keywords?keywords=&limit=100&offset=${ page * 100}`, this.apiURL);
+        const data = await this.fetchJSON(new Request(apiCallUrl, this.requestOptions));
+        return data.result.map(manga => {
+            return {
+                id: manga.code,
+                title: manga.title.trim()
+            };
+        });
     }
 
     async _getChapters( manga ) {
