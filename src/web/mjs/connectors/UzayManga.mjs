@@ -59,12 +59,12 @@ export default class UzayManga extends Connector {
                 __next_f.forEach(element => {
                 const el = element[1];
                 if (el) {
-                  if(el.includes('[{"path":'))  {
-                    resolve(el)
-                   }
-                }
-             });
-             reject();
+                    if(el.includes('[{"path":'))  {
+                        resolve(el);
+                        return;
+                    }
+                }});
+                reject();
             });
     	  `;
 
@@ -72,6 +72,6 @@ export default class UzayManga extends Connector {
         const request = new Request( uri.href, this.requestOptions );
         const data = await Engine.Request.fetchUI(request, script);
         const jsonString = data.match(/(\[{"path":.*}\])}}/)[1];
-        return JSON.parse(jsonString).map(image => 'https://cdn1.uzaymanga.com/series/image/'+ image.path);
+        return JSON.parse(jsonString).map(image => 'https://cdn1.uzaymanga.com/upload/series/'+ image.path);
     }
 }
