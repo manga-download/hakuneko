@@ -38,7 +38,6 @@ export default class SakuraNovel extends WordPressMangastream {
         let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise((resolve, reject) => {
-                document.body.className = document.body.className.replace('darkmode', 'lightmode')
                 document.body.style.width = '${this.novelWidth}';
                 let container = document.querySelector('${this.novelContentQuery}');
                 container.style.maxWidth = '${this.novelWidth}';
