@@ -1,36 +1,69 @@
-import MangaReaderCMS from './templates/MangaReaderCMS.mjs';
+import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
-export default class LELScanVF extends MangaReaderCMS {
+export default class LELScanVF extends Connector {
 
     constructor() {
         super();
         super.id = 'lelscanvf';
         super.label = 'LELSCAN-VF';
         this.tags = [ 'manga', 'french' ];
-        this.url = 'https://www.lelscanvf.cc';
+        this.url = 'https://lelscanfr.com';
     }
 
-    async _getPages(chapter) {
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryPages);
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const [data] = await this.fetchDOM(request, 'section source.object-cover');
+        const id = uri.pathname;
+        const title = data.getAttribute('alt').trim();
+        return new Manga(this, id, title);
+    }
+
+    async _getMangas() {
+        const mangaList = [];
+        for (let page = 1, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+        }
+        return mangaList;
+    }
+
+    async _getMangasFromPage(page) {
+        const uri = new URL(`/manga?page=${page}`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#card-real a');
         return data.map(element => {
-            try {
-                const src = element.dataset['src'].split('://').pop();
-                return this.createConnectorURI(decodeURIComponent(atob(src || undefined)));
-            } catch(error) {
-                let src = (element.dataset['src'] || element.src).trim();
-                return this.createConnectorURI(new URL(src, request.url).href);
-            }
+            return {
+                id: element.pathname,
+                title: element.querySelector('source').getAttribute('alt').trim()
+            };
         });
     }
 
-    async _handleConnectorURI(payload) {
-        let request = new Request(payload, this.requestOptions);
-        request.headers.set('x-referer', this.url);
-        let response = await fetch(request);
-        let data = await response.blob();
-        data = await this._blobToBuffer(data);
-        this._applyRealMime(data);
-        return data;
+    async _getChapters(manga) {
+        const chapterlist = [];
+        for (let page = 1, run = true; run; page++) {
+            const chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length > 0 ? chapterlist.push(...chapters) : run = false;
+        }
+        return chapterlist;
+    }
+
+    async _getChaptersFromPage(manga, page) {
+        const uri = new URL(`${manga.id}?page=${page}`, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#chapters-list a');
+        return data.map(element => {
+            return {
+                id: element.pathname,
+                title: element.querySelector('span').textContent.trim()
+            };
+        });
+    }
+
+    async _getPages(chapter) {
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#chapter-container source.chapter-image');
+        return data.map(element => element.dataset.src);
     }
 }
