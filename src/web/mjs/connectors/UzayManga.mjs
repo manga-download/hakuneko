@@ -13,10 +13,10 @@ export default class UzayManga extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.content-details h1');
-        let id = uri.pathname;
-        let title = data[0].textContent.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.content-details h1');
+        const id = uri.pathname;
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
@@ -55,16 +55,15 @@ export default class UzayManga extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise((resolve, reject) => {
-                __next_f.forEach(element => {
-                const el = element[1];
-                if (el) {
-                    if(el.includes('[{"path":'))  {
-                        resolve(el);
-                        return;
+            new Promise(resolve => {
+                let element = undefined;
+                for (const el of __next_f) {
+                    if (el[1] && el[1].includes('[{"path":')) {
+                        element = el[1];
+                        break;
                     }
-                }});
-                reject();
+                }
+                element ? resolve(element): reject();
             });
     	  `;
 
