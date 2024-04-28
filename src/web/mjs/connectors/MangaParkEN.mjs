@@ -113,7 +113,7 @@ export default class MangaParkEN extends Connector {
         return data.get_searchComic.items.map(manga => {
             return {
                 id: manga.data.id,
-                title: [manga.data.name, `[${manga.data.tranLang}`].join(' '),
+                title: [manga.data.name, `[${manga.data.tranLang}]`].join(' '),
                 language: manga.data.tranLang
             };
         });
