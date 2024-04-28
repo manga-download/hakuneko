@@ -167,7 +167,7 @@ export default class MangaParkEN extends Connector {
         `;
 
         const vars = {
-            "comicId": JSON.stringify(manga.id)
+            "comicId": manga.id.toString()
         };
 
         const data = await this.fetchGraphQL(this.apiURL, 'Get_comicChapterList', gql, vars);
