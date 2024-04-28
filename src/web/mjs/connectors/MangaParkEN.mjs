@@ -15,6 +15,14 @@ export default class MangaParkEN extends Connector {
         this.requestOptions.headers.set('x-referer', `${this.url}/`);
         this.requestOptions.headers.set('x-cookie', 'nsfw=2;');
 
+        this.languages = {
+            'zh_hk': 'zh-Hans',
+            'zh_tw': 'zh-Hant',
+            'pt_br': 'pt-BR',
+            'es_419': 'es-419',
+            '_t': 'other'
+        };
+
     }
 
     async _getMangaFromURI(uri) {
