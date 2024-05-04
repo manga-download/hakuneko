@@ -25,18 +25,19 @@ export default class CyComi extends Connector {
 
     async _getMangas() {
         const mangaList = [];
-        for(let page = 0, run = true; run; page++) {
-            const request = new Request(`${this.apiUrl}/home/paginatedList?limit=${50}&page=${page}`, this.requestOptions);
-            const { data } = await this.fetchJSON(request);
+        for (let page = 0, run = true; run; page++) {
+            const request = new Request(`${this.apiUrl}/home/paginatedList?limit=${50}&page=${page}`);
+            const { data } = await this.fetchJSON(request, this.requestOptions);
             const mangas = data.reduce((accumulator, entry) => {
-                if(entry) {
-                    const titles = entry.titles.map(manga => new Manga(this, manga.titleId.toString(), manga.titleName));
+                if (entry) {
+                    const titles = entry.titles.map(manga => {
+                        return { id: manga.titleId.toString(), title : manga.titleName };
+                    });
                     accumulator.push(...titles);
                 }
                 return accumulator;
             }, []);
             mangas.length ? mangaList.push(...mangas) : run = false;
-
         }
         return mangaList;
     }
@@ -58,9 +59,9 @@ export default class CyComi extends Connector {
     }
 
     async _fetchMangaChapters(manga) {
-        const request = new Request(`${this.apiUrl}/chapter/list?titleId=${manga.id}`, this.requestOptions);
+        const request = new Request(`${this.apiUrl}/chapter/paginatedList?titleId=${manga.id}&sort=1`, this.requestOptions);
         const { data, resultCode } = await this.fetchJSON(request);
-        return resultCode !== 1 || !data.chapters ? [] : data.chapters.map(chapter => {
+        return resultCode !== 1 || !data ? [] : data.map(chapter => {
             const title = [ chapter.name, chapter.subName ].filter(item => item).join(' - ');
             return {id : `/chapter/page/list?titleId=${manga.id}&chapterId=${chapter.id}`, title};
         });
@@ -81,9 +82,10 @@ export default class CyComi extends Connector {
         const { data: { id, chapters } } = await this.fetchJSON(request);
         return !chapters ? [] : chapters.reduce(async (accumulator, chapter) => {
             const url = `${this.apiUrl}/singleBook/page/list?singleBookId=${id}&chapterId=${chapter.id}`;
-            const { data: { pages }, resultCode } = await this.fetchJSON(new Request(url), this.requestOptions);
+            const request = new Request(url, this.requestOptions);
+            const { data: { pages }, resultCode } = await this.fetchJSON(request, this.requestOptions);
             return resultCode !== 1 ? accumulator : (await accumulator).concat(this._mapPages(volume, pages));
-        });
+        }, Promise.resolve([]));
     }
 
     async _fetchChapterPages(chapter) {
