@@ -12,7 +12,7 @@ export default class Lezhin extends Connector {
         this.apiURL = 'https://www.lezhinus.com';
         this.cdnURL = 'https://rcdn.lezhin.com';
         this.token = undefined;
-        this.mangasPerPage = 36;
+        this.mangasPerPage = 500;
         this.config = {
             username: {
                 label: 'E-Mail',
@@ -41,6 +41,7 @@ export default class Lezhin extends Connector {
     }
 
     async _initializeAccount() {
+
         if(this.token) {
             //check if user disconnected
             const data = await this.getLzConfig();
@@ -54,8 +55,8 @@ export default class Lezhin extends Connector {
             return;
         }
         const password = this.config.password.value.replace("'", "\\'"); //escape the password, because if it contains a single quote the script will fail
-        let script = `
-        new Promise((resolve, reject) => {
+        const script = `
+            new Promise((resolve, reject) => {
                 if($('#log-nav-email').length) {
                     return resolve();
                 }
@@ -69,10 +70,14 @@ export default class Lezhin extends Connector {
                     success: resolve,
                     error: reject
                 });
-        });
+            });
         `;
-        let request = new Request(new URL(this.url + '/login'), this.requestOptions);
-        await Engine.Request.fetchUI(request, script);
+        try {
+            const request = new Request(this.links.login, this.requestOptions);
+            await Engine.Request.fetchUI(request, script);
+        } catch( error ) {
+            //
+        }
 
         const data = await this.getLzConfig();
         this.token = data.token;
@@ -80,21 +85,22 @@ export default class Lezhin extends Connector {
 
         // force user locale user setting to be the same as locale from the currently used website ...
         // => prevent a warning webpage that would appear otherwise when loading chapters / pages
-        return fetch(this.url + '/locale/' + this.locale, this.requestOptions);
+        return fetch(`${this.url}/locale/${this.locale}`, this.requestOptions);
+
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.comicInfo__detail h2.comicInfo__title');
-        let id = uri.pathname.match(/comic\/([^/]+)/)[1];
-        let title = data[0].textContent.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.comicInfo__detail h2.comicInfo__title');
+        const id = uri.pathname.match(/comic\/([^/]+)/)[1];
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        let mangaList = [];
+        const mangaList = [];
         for (let page = 0, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page);
+            const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
@@ -102,10 +108,13 @@ export default class Lezhin extends Connector {
 
     async _getMangasFromPage(page) {
         const uri = new URL('/lz-api/v2/contents', this.apiURL);
-        uri.searchParams.set('menu', 'general');
-        uri.searchParams.set('limit', this.mangasPerPage);
-        uri.searchParams.set('offset', page * this.mangasPerPage);
-        uri.searchParams.set('order', 'popular');
+        const params = new URLSearchParams ({
+            'menu': 'general',
+            'limit': this.mangasPerPage,
+            'offset': page * this.mangasPerPage,
+            'order': 'popular'
+        });
+        uri.search = params.toString();
         const request = new Request(uri, this.requestOptions);
 
         request.headers.set('X-LZ-Adult', '0');
@@ -121,38 +130,38 @@ export default class Lezhin extends Connector {
 
     async _getChapters(manga) {
         await this._initializeAccount();
-        let script = `
-        new Promise((resolve, reject) => {
-            // wait until episodes have been updated with purchase info ...
-            setTimeout(() => {
-                    let chapters = __LZ_PRODUCT__.all // __LZ_PRODUCT__.product.episodes
-                    .filter(chapter => {
-                        if(chapter.purchased) {
-                            return true;
-                        }
-                        if(chapter.coin === 0) {
-                            return true;
-                        }
-                        if(chapter.freedAt && chapter.freedAt < Date.now()) {
-                            return true;
-                        }
-                        if(chapter.prefree && chapter.prefree.closeTimer && chapter.prefree.closeTimer.expiredAt > Date.now()) {
-                            return true;
-                        }
-                        return false;
-                    })
-                    .map(chapter => {
-                        return {
-                            id: chapter.name, // chapter.id,
-                            title: chapter.display.displayName + ' - ' + chapter.display.title,
-                            language: '${this.locale}'
-                        };
-                    });
-                    resolve(chapters);
-            }, 2500);
-        });
+        const script = `
+            new Promise((resolve, reject) => {
+                // wait until episodes have been updated with purchase info ...
+                setTimeout(() => {
+                        let chapters = __LZ_PRODUCT__.all // __LZ_PRODUCT__.product.episodes
+                        .filter(chapter => {
+                            if(chapter.purchased) {
+                                return true;
+                            }
+                            if(chapter.coin === 0) {
+                                return true;
+                            }
+                            if(chapter.freedAt && chapter.freedAt < Date.now()) {
+                                return true;
+                            }
+                            if(chapter.prefree && chapter.prefree.closeTimer && chapter.prefree.closeTimer.expiredAt > Date.now()) {
+                                return true;
+                            }
+                            return false;
+                        })
+                        .map(chapter => {
+                            return {
+                                id: chapter.name, // chapter.id,
+                                title: chapter.display.displayName + ' - ' + chapter.display.title,
+                                language: '${this.locale}'
+                            };
+                        });
+                        resolve(chapters);
+                }, 2500);
+            });
         `;
-        let request = new Request(new URL('/comic/' + manga.id, this.url), this.requestOptions);
+        const request = new Request(`${this.url}/comic/${manga.id}`, this.requestOptions);
         return await Engine.Request.fetchUI(request, script);
     }
 
@@ -160,27 +169,30 @@ export default class Lezhin extends Connector {
         await this._initializeAccount();
 
         //check if chapter is purchased
-        let script = `
-        new Promise((resolve, reject) => {
-            // wait until episodes have been updated with purchase info ...
-            setTimeout(() => {
-                    let chapter = __LZ_PRODUCT__.all.filter(chapter => chapter.name == "${chapter.id}");
-                    resolve(chapter[0].purchased);
-            }, 2500);
-        });
+        const script = `
+            new Promise((resolve, reject) => {
+                // wait until episodes have been updated with purchase info ...
+                setTimeout(() => {
+                        let chapter = __LZ_PRODUCT__.all.filter(chapter => chapter.name == "${chapter.id}");
+                        resolve(chapter[0].purchased);
+                }, 2500);
+            });
         `;
-        let request = new Request(new URL('/comic/' + chapter.manga.id, this.url), this.requestOptions);
+        let request = new Request(`${this.url}/comic/${chapter.manga.id}`, this.requestOptions);
         const purchased = await Engine.Request.fetchUI(request, script);
 
-        let uri = new URL('https://www.lezhin.com/lz-api/v2/inventory_groups/comic_viewer');
-        uri.searchParams.set('platform', 'web');
-        uri.searchParams.set('store', 'web');
-        uri.searchParams.set('alias', chapter.manga.id);
-        uri.searchParams.set('name', chapter.id);
-        uri.searchParams.set('preload', false);
-        uri.searchParams.set('type', 'comic_episode');
+        const uri = new URL('https://www.lezhin.com/lz-api/v2/inventory_groups/comic_viewer');
+        const params = new URLSearchParams ({
+            'platform': 'web',
+            'store': 'web',
+            'alias': chapter.manga.id,
+            'name': chapter.id,
+            'preload': false,
+            'type': 'comic_episode'
+        });
+        uri.search = params.toString();
         request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
+        const data = await this.fetchJSON(request);
 
         //default to scrollsInfo if pagesInfo doesnt exists (same structure)
         const content = data.data.extra.episode.pagesInfo ? data.data.extra.episode.pagesInfo : data.data.extra.episode.scrollsInfo;
@@ -202,18 +214,21 @@ export default class Lezhin extends Connector {
         let data = JSON.parse(payload.infos);
         const episode = data.data.extra.episode;
         const extension = this.config.forceJPEG.value ? '.jpg' : '.webp';
-        let imageurl = new URL('/v2' + payload.url + extension, this.cdnURL);
-        let purchased = payload.purchased ? payload.purchased : false;
+        const imageurl = new URL('/v2' + payload.url + extension, this.cdnURL);
+        const purchased = payload.purchased ? payload.purchased : false;
         //purchased = purchased || (episode.freedAt && episode.freedAt < Date.now());
         const subscribed = data.data.extra.subscribed;
         const updatedAt = episode.updatedAt;
 
-        let tokenuri = new URL('/lz-api/v2/cloudfront/signed-url/generate', this.apiURL);
-        tokenuri.searchParams.set('contentId', episode.idComic);
-        tokenuri.searchParams.set('episodeId', episode.id);
-        tokenuri.searchParams.set('purchased', subscribed || purchased);
-        tokenuri.searchParams.set('q', 40);
-        tokenuri.searchParams.set('firstCheckType', 'P');
+        const tokenuri = new URL('/lz-api/v2/cloudfront/signed-url/generate', this.apiURL);
+        const tokenParams = new URLSearchParams({
+            'contentId': episode.idComic,
+            'episodeId': episode.id,
+            'purchased': subscribed || purchased,
+            'q': 40,
+            'firstCheckType': 'P',
+        });
+        tokenuri.search = tokenParams.toString();
 
         //get parameters
         let request = new Request( tokenuri, this.requestOptions );
@@ -221,12 +236,15 @@ export default class Lezhin extends Connector {
         let response = await this.fetchJSON(request);
 
         //update image url
-        imageurl.searchParams.set('purchased', subscribed || purchased);
-        imageurl.searchParams.set('q', 40);
-        imageurl.searchParams.set('updated', updatedAt);
-        imageurl.searchParams.set('Policy', response.data.Policy);
-        imageurl.searchParams.set('Signature', response.data.Signature);
-        imageurl.searchParams.set('Key-Pair-Id', response.data['Key-Pair-Id']);
+        const imageParams = new URLSearchParams({
+            'purchased': subscribed || purchased,
+            'q': 40,
+            'updated': updatedAt,
+            'Policy': response.data.Policy,
+            'Signature': response.data.Signature,
+            'Key-Pair-Id': response.data['Key-Pair-Id']
+        });
+        imageurl.search = imageParams.toString();
         request = new Request(imageurl, this.requestOptions);
         response = await fetch(request);
 
@@ -242,15 +260,18 @@ export default class Lezhin extends Connector {
     }
 
     async getLzConfig() {
-        const uri = new URL(this.url);
+        /*/__LZ_CONFIG__ is not available on frontpage anymore
+        Therefore we get it from the /account page. If we are logged it works.
+        In case we are not logged, /account redirect to /login and __LZ_CONFIG__ is still available.
+        */
         const checkscript = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                         resolve(__LZ_CONFIG__);
                 },2500);
             });
-            `;
-        const request = new Request(uri, this.requestOptions);
+        `;
+        const request = new Request(`${this.url}/account`, this.requestOptions);
         return await Engine.Request.fetchUI(request, checkscript);
     }
 
