@@ -13,7 +13,7 @@ export default class MangaParkEN extends Connector {
 
         this.requestOptions.headers.set('x-origin', this.url);
         this.requestOptions.headers.set('x-referer', `${this.url}/`);
-        this.requestOptions.headers.set('x-cookie', 'set=h=1;');
+        this.requestOptions.headers.set('x-cookie', 'nsfw=2;');
 
         this.languages = {
             'zh_hk': 'zh-Hans',
@@ -22,6 +22,7 @@ export default class MangaParkEN extends Connector {
             'es_419': 'es-419',
             '_t': 'other'
         };
+
     }
 
     async _getMangaFromURI(uri) {
@@ -35,13 +36,13 @@ export default class MangaParkEN extends Connector {
 
     async _getMangas() {
         try {
-            const mangaList = await this._getMangasV3();
+            const mangaList = await this._getMangasV5();
             if (mangaList.length == 0) {
-                throw new Error('Got 0 mangas from site using v3 version! Using v5 version as a fallback!');
+                throw new Error('Got 0 mangas from site using v5 version! Using v3 version as a fallback!');
             }
             return mangaList;
         } catch (error) {
-            return await this._getMangasV5();
+            return await this._getMangasV3();
         }
     }
 
@@ -82,14 +83,16 @@ export default class MangaParkEN extends Connector {
 
     async _getMangasFromPageV5(page) {
         const gql = `
-            query get_content_browse_search($select: ComicSearchSelect) {
-                get_content_browse_search(select: $select) {
+            query get_searchComic($select: SearchComic_Select) {
+                get_searchComic(select: $select) {
                     paging {
                         pages
                     }
                     items {
                         data {
-                            id, name
+                            id
+                            name
+                            tranLang
                         }
                     }
                 }
@@ -98,36 +101,33 @@ export default class MangaParkEN extends Connector {
         const vars = {
             "select": {
                 "word": "",
-                "sort": null,
                 "page": page,
                 "incGenres": [],
                 "excGenres": [],
-                "origLang": null,
-                "oficStatus": null,
-                "chapCount": null
             }
         };
-        const data = await this.fetchGraphQL(this.apiURL, 'get_content_browse_search', gql, vars);
-        if (data.get_content_browse_search.paging.pages < page) {
+        const data = await this.fetchGraphQL(this.apiURL, 'get_searchComic', gql, vars);
+        if (data.get_searchComic.paging.pages < page) {
             return [];
         }
-        return data.get_content_browse_search.items.map(manga => {
+        return data.get_searchComic.items.map(manga => {
             return {
                 id: manga.data.id,
-                title: manga.data.name
+                title: [manga.data.name, `[${manga.data.tranLang}]`].join(' '),
+                language: manga.data.tranLang
             };
         });
     }
 
     async _getChapters(manga) {
         try {
-            const chapterList = await this._getChaptersV3(manga);
+            const chapterList = await this._getChaptersV5(manga);
             if (chapterList.length == 0) {
-                throw new Error('Got 0 chapters from site using v3 version! Using v5 version as a fallback!');
+                throw new Error('Got 0 chapters from site using v5 version! Using v3 version as a fallback!');
             }
             return chapterList;
         } catch (error) {
-            return await this._getChaptersV5(manga);
+            return await this._getChaptersV3(manga);
         }
     }
 
@@ -164,71 +164,44 @@ export default class MangaParkEN extends Connector {
     }
 
     async _getChaptersV5(manga) {
-        let chapterList = [];
-        const chaptersSources = await this._getChaptersSources(manga.id);
-        for (const source of chaptersSources) {
-            const chapters = await this._getChaptersFromSource(source);
-            chapterList.push(...chapters);
-        }
-        return chapterList
-            .sort((a, b) => b.creationDate - a.creationDate)
+        const gql = `
+            query Get_comicChapterList($comicId: ID!) {
+                get_comicChapterList(comicId: $comicId) {
+                    data {
+                    	  id, dateCreate, dname, title
+                    }
+                } 
+            }
+        `;
+
+        const vars = {
+            "comicId": manga.id.toString()
+        };
+
+        const data = await this.fetchGraphQL(this.apiURL, 'Get_comicChapterList', gql, vars);
+        return data.get_comicChapterList
+            .sort((a, b) => b.dateCreate - a.dateCreate)
             .map(chapter => {
                 return {
-                    id: chapter.id,
-                    title: chapter.title,
-                    language: chapter.language
+                    id: chapter.data.id,
+                    title: chapter.data.dname + (chapter.data.title == null || chapter.data.title.length == 0 ? '' : ` - ${chapter.data.title}`),
+                    language: manga.language
                 };
             });
     }
-
-    async _getChaptersSources(mangaId) {
-        const gql = `
-            query get_content_comic_sources($comicId: Int!, $dbStatuss: [String] = [], $userId: Int, $haveChapter: Boolean, $sortFor: String) {
-                get_content_comic_sources(comicId: $comicId, dbStatuss: $dbStatuss, userId: $userId, haveChapter: $haveChapter, sortFor: $sortFor) {
-                    data {
-                        id, lang, srcTitle
-                    }
-                }
-            }
-        `;
-        const vars = {
-            "comicId": parseInt(mangaId),
-            "dbStatuss": ["normal"],
-            "haveChapter": true
-        };
-        const data = await this.fetchGraphQL(this.apiURL, 'get_content_comic_sources', gql, vars);
-        return data.get_content_comic_sources.map(source => {
-            return {
-                id: source.data.id,
-                lang: this.languages[source.data.lang] || source.data.lang,
-                srcTitle: source.data.srcTitle
-            };
-        });
-    }
-
-    async _getChaptersFromSource(source) {
-        const gql = `
-            query get_content_source_chapterList($sourceId: Int!) {
-                get_content_source_chapterList(sourceId: $sourceId) {
-                    data {
-                        id, dateCreate, dname, title, urlPath
-                    }
-                }
-            }
-        `;
-        const vars = {"sourceId": source.id};
-        const data = await this.fetchGraphQL(this.apiURL, 'get_content_source_chapterList', gql, vars);
-        return data.get_content_source_chapterList.map(chapter => {
-            return {
-                id: chapter.data.urlPath,
-                title: chapter.data.dname + (chapter.data.title == null || chapter.data.title.length == 0 ? '' : ` - ${chapter.data.title}`) + ` (${source.lang}) [${source.srcTitle}]`,
-                language: source.lang,
-                creationDate: chapter.data.dateCreate
-            };
-        });
-    }
-
     async _getPages(chapter) {
+        try {
+            const pagelist = await this._getPagesV5(chapter);
+            if (pagelist.length == 0) {
+                throw new Error('Got 0 pages from site using v5 version! Using v3 version as a fallback!');
+            }
+            return pagelist;
+        } catch (error) {
+            return await this._getPagesV3(chapter);
+        }
+    }
+
+    async _getPagesV3(chapter) {
         const script = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
@@ -255,5 +228,27 @@ export default class MangaParkEN extends Connector {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         return Engine.Request.fetchUI(request, script);
+    }
+
+    async _getPagesV5(chapter) {
+        const gql = `
+            query Get_chapterNode($getChapterNodeId: ID!) {
+                get_chapterNode(id: $getChapterNodeId) {
+                    data {
+                        imageFile {
+                            urlList
+                        }
+                    }
+                }
+            }
+        `;
+
+        const vars = {
+            "getChapterNodeId": chapter.id.toString()
+        };
+
+        const data = await this.fetchGraphQL(this.apiURL, 'Get_chapterNode', gql, vars);
+        return data.get_chapterNode.data.imageFile.urlList;
+
     }
 }
