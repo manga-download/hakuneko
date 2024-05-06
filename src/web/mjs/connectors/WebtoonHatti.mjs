@@ -59,6 +59,5 @@ export default class WebtoonHatti extends WordPressMadara {
         request.headers.set('x-referer', pageData.referer);
         await fetch(request);
         return page;
-       
     }
 }
