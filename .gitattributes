@@ -1,0 +1,6 @@
+# Check all text files into the repo with the LF line ending.
+* text=auto eol=lf
+
+# Check out lf incompatible files with the CRLF line ending.
+*.cmd eol=crlf
+*.bat eol=crlf
