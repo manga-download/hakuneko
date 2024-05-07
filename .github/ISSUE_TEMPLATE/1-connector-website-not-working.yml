@@ -31,6 +31,12 @@ body:
       options:
         - label: Yes nightly build didn't fix the issue
           required: true
+  - type: checkboxes
+    attributes:
+      label: Final validation
+      description: This is a test to see if you are properly reading, and not just randomly checking boxes without following the instructions
+      options:
+        - label: I acknowledge i am an idiot because i randomly check boxes without reading. 
   - type: dropdown
     attributes:
       label: What kind of issue are you encountering
