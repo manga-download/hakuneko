@@ -1,6 +1,6 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class CulturedWorksnpm extends WordPressMangastream {
+export default class CulturedWorks extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'culturedworks';
