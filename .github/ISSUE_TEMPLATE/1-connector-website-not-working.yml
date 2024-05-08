@@ -19,7 +19,7 @@ body:
           required: true
   - type: checkboxes
     attributes:
-      label: Is the website of the connector working properly / responsing in your browser 📡? 
+      label: Is the website of the connector working properly / responding in your browser 📡? 
       description: If the website isn't working, hakuneko will not solve the issue.
       options:
         - label: Yes i'm able to see the manga within my standard browser
