@@ -1,0 +1,13 @@
+# file is at the root of the project
+root = true
+
+# enforce lf line ending
+[*]
+end_of_line = lf
+
+# crlf for files that are incompatible with lf
+[*.bat]
+end_of_line = crlf
+
+[*.cmd]
+end_of_line = crlf
