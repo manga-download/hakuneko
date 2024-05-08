@@ -6,46 +6,46 @@ body:
   - type: checkboxes
     attributes:
       label: Is there an existing issue for this connector?
-      description: Do not create duplicate of an existing issue related to the connector
+      description: Do not create duplicate of an existing issue related to the connector. 
       options:
-        - label: I have searched the existing issues
+        - label: 🔎 I have searched the existing issues using Github Search Feature🔎
           required: true
   - type: checkboxes
     attributes:
-      label: Did you read the troubleshooting guide ?
+      label: Did you read [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/) ?
       description: Please check [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/) if your issue might not be related to some known cases.
       options:
         - label: I read it but nothing seems related
           required: true
   - type: checkboxes
     attributes:
-      label: Is the website of the connector working properly ?
+      label: Is the website of the connector working properly / responsing in your browser 📡? 
       description: If the website isn't working, hakuneko will not solve the issue.
       options:
         - label: Yes i'm able to see the manga within my standard browser
           required: true
   - type: checkboxes
     attributes:
-      label: Make sure to try Nightly Build
+      label: ⚠️ Make sure to try Nightly Build, it may fix the problem ⚠️ ====>>> [DOWNLOAD LINK HERE](https://github.com/manga-download/hakuneko/releases) <<<====
       description: The [nightly build](https://github.com/manga-download/hakuneko/releases) contains latest fixes. Perhaps your problem is already solved.
       options:
-        - label: Yes nightly build didn't fix the issue
+        - label: Yes i have tried nightly build and it didn't fix the issue
           required: true
   - type: checkboxes
     attributes:
-      label: Final validation
-      description: This is a test to see if you are properly reading, and not just randomly checking boxes without following the instructions
+      label: Impatient people check
+      description: This is a test to see if you are properly reading, and not just randomly checking boxes without following the instructions.
       options:
-        - label: I acknowledge i am an idiot because i randomly check boxes without reading. 
+        - label: I acknowledge i am an idiot because i randomly check boxes without reading. Feel free to close this ticket then.
   - type: dropdown
     attributes:
-      label: What kind of issue are you encountering
+      label: What kind of issue are you encountering ? 
       options:
         - Manga list isn't refreshing
         - Chapter list isn't refreshing
         - Downloads aren't working
         - Images are missing in the embeded viewer
-        - Other
+        - Other (Like ANY error message)
     validations:
       required: true
   - type: textarea
@@ -59,7 +59,7 @@ body:
       label: To Reproduce
       description: Steps to reproduce the behavior
       value: |
-        1. Name of connector
+        1. Name of connector (website)
         2. Name of manga (if connector update is working)
         3. Name of chapter (if manga update is working)
         4. Copy any relevant error message that appears in a popup or (advanced) within the console (press F12)
