@@ -8,7 +8,7 @@ export default class ComicExtra extends Connector {
         super.id = 'comicextra';
         super.label = 'ComicExtra';
         this.tags = ['comic', 'english'];
-        this.url = 'https://comicextra.org';
+        this.url = 'https://comixextra.com';
         this.path = '/comic-list/';
     }
 
@@ -21,7 +21,7 @@ export default class ComicExtra extends Connector {
             return this.getRootRelativeOrAbsoluteLink(element, request.url);
         });
 
-        for(let page of pages) {
+        for (let page of pages) {
             const mangas = await this._getMangasFromPage(page);
             mangaList.push(...mangas);
         }
