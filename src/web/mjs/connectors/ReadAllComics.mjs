@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ReadAllComics extends Connector {
     constructor() {
@@ -8,6 +9,13 @@ export default class ReadAllComics extends Connector {
         this.tags = ['comics', 'english'];
         this.url = 'https://readallcomics.com';
         this.requestOptions.headers.set('x-referer', this.url);
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const id = uri.pathname;
+        const [title] = await this.fetchDOM(request, 'div.description-archive h1');
+        return new Manga(this, id, title.textContent.trim());
     }
 
     async _getMangas() {
