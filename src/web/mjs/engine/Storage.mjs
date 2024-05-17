@@ -777,11 +777,7 @@ export default class Storage {
 
     /**
      * Create a path without forbidden characters.
-     * Based on HakuNeko legacy for backward compatibility to detect existing mangas/chapters.
-     * ALL OS : /[\u0000-\u001F\u007F-\u009F]/g https://en.wikipedia.org/wiki/C0_and_C1_control_codes (\r\n\t aka x0D x0A x09 are included)
-     * LINUX: wxT("/")
-     * WINDOWS: wxT("\\/:*?\"<>|");
-     */
+    */
     sanatizePath(path) {
 
         //replace C0 && C1 control codes
