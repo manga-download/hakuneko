@@ -16,7 +16,6 @@ export default class WeLoMa extends FlatManga {
         this.queryMangas = 'div.card-body div.series-title a';
         this.queryChapters = 'ul.list-chapters > a';
         this.queryChapterTitle = 'div.chapter-name';
-        this.queryPages = 'div.chapter-content embed';
     }
 
     async _initializeConnector() {
@@ -69,26 +68,5 @@ export default class WeLoMa extends FlatManga {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
         return Engine.Request.fetchUI(request, script);
-    }
-
-    async _getPages(chapter) {
-        const uri = new URL(chapter.id, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryPages);
-        return data.map(element => {
-            const link = [...element.attributes]
-                .filter(attribute => !['src', 'class', 'alt'].includes(attribute.name))
-                .map(attribute => {
-                    try {
-                        return atob(attribute.value.trim());
-                    } catch (_) {
-                        return attribute.value.trim();
-                    }
-                })
-                .find(value => {
-                    return /^http/.test(value);
-                });
-            return this.createConnectorURI(this.getAbsolutePath(link || element, request.url));
-        });
     }
 }
