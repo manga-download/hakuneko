@@ -11,6 +11,10 @@ export default class Futabanet extends SpeedBinb {
         this.url = 'https://gaugau.futabanet.jp';
     }
 
+    canHandleURI(uri) {
+        return uri.origin.replace('futabanex', 'futabanet') === this.url;
+    }
+
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, 'div.works__grid div.list__text div.mbOff h1');
@@ -42,14 +46,16 @@ export default class Futabanet extends SpeedBinb {
     async _getChapters(manga) {
         let request = new Request(new URL(manga.id+'/episodes', this.url), this.requestOptions);
         let data = await this.fetchDOM(request, 'div.episode__grid a');
-        return data.map(element => {
-            const epnum = element.querySelector('.episode__num').textContent.trim();
-            const title = element.querySelector('.episode__title').textContent.trim();
+        return data
+            .filter(element => !element.pathname.endsWith('/app'))
+            .map(element => {
+                const epnum = element.querySelector('.episode__num').textContent.trim();
+                const title = element.querySelector('.episode__title').textContent.trim();
 
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: title ? [epnum, title].join(' - ') : epnum,
-            };
-        });
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: title ? [epnum, title].join(' - ') : epnum,
+                };
+            });
     }
 }
