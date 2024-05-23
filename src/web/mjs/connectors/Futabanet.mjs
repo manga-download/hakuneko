@@ -58,4 +58,21 @@ export default class Futabanet extends SpeedBinb {
                 };
             });
     }
+
+    async _getPageList(manga, chapter, callback) {
+        try {
+            let pages = [];
+            const url = new URL(chapter.id, this.baseURL || this.url);
+            const request = new Request( url, this.requestOptions );
+            const data = await this.fetchDOM( request, 'div.works_tateyomi__img source' );
+            if (data && data.length > 0) {
+                pages = data.map(element => element.getAttribute('src'));
+                callback(null, pages);
+            } else await super._getPageList( manga, chapter, callback );
+
+        } catch(error) {
+            console.error(error, chapter);
+            callback(error, undefined);
+        }
+    }
 }
