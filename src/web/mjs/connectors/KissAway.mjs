@@ -14,17 +14,12 @@ export default class KissAway extends FlatManga {
     async _getChapters(manga) {
         const script = `
             new Promise(async resolve => {
-                const uri = new URL('app/manga/controllers/cont.listChapter.php', window.location.origin);
-                uri.searchParams.set('slug', dataL);
-                const response = await fetch(uri);
-                data = await response.text();
-                const dom = new DOMParser().parseFromString(data, "text/html");
-                const nodes = [...dom.querySelectorAll('a.chapter[title]')];
-                const chapters= nodes.map(chapter => {
+                const nodes = document.querySelectorAll("div#list-chapter a")
+                const chapters = Array.prototype.map.call(nodes, item => {
                     return {
-                        id : chapter.pathname,
-                        title : chapter.title
-                    };
+                        id : item.href,
+                        title : item.title
+                    }
                 });
                 resolve(chapters);
             });
@@ -39,14 +34,8 @@ export default class KissAway extends FlatManga {
         const uri = new URL(chapter.id, this.url);
         const script = `
             new Promise(async resolve => {
-            	const chapId = document.querySelector('input#chapter').value;
-                const uri = new URL('app/manga/controllers/cont.listImg.php', window.location.origin);
-                uri.searchParams.set('cid', chapId);
-                const response = await fetch(uri);
-                const data = await response.text();
-                const dom = new DOMParser().parseFromString(data, "text/html");
-                const nodes = [...dom.querySelectorAll('img.chapter-img')];
-                resolve(nodes.map(picture => picture.src));
+            	const pages = document.querySelectorAll("div#list-imga img.chapter-img");
+                resolve(Array.prototype.map.call(pages, item => item.src));
             });
         `;
         const request = new Request(uri, this.requestOptions);
