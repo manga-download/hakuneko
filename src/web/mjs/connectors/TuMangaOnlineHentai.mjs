@@ -12,11 +12,12 @@ export default class TuMangaOnlineHentai extends Connector {
         this.links = {
             login: 'https://tmohentai.com/login'
         };
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
         let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.panel-title div.panel-heading h3.truncate');
+        let data = await this.fetchDOM(request, 'div.panel-title div.panel-heading h3');
         let id = uri.pathname.split('/').pop();
         let title = data[0].innerText.trim();
         return new Manga(this, id, title);
@@ -51,6 +52,6 @@ export default class TuMangaOnlineHentai extends Connector {
     async _getPages(chapter) {
         let request = new Request(`${this.url}/reader/${chapter.id}/cascade`, this.requestOptions);
         let data = await this.fetchDOM(request, 'div#content-images source.content-image');
-        return data.map(element => this.getAbsolutePath(element.dataset['original'] || element, request.url));
+        return data.map(element => this.createConnectorURI(this.getAbsolutePath(element.dataset['original'] || element, request.url)));
     }
 }
