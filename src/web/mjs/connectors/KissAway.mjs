@@ -9,11 +9,11 @@ export default class KissAway extends FlatManga {
         this.tags = [ 'manga', 'raw', 'japanese' ];
         this.url = 'https://klz9.com';
         this.requestOptions.headers.set('x-referer', this.url);
-        this.TO_PATH_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        this.TO_PATH_CHARACTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
     }
 
     generateRandomStr(length) {
-        let list = [... Array(length).keys()]
+        let list = [... Array(length).keys()];
         return list.map(i => {
             const max = this.TO_PATH_CHARACTERS.length;
             const randomIndex = Math.floor(Math.random() * max);
@@ -22,7 +22,7 @@ export default class KissAway extends FlatManga {
     }
 
     async _getChapters(manga) {
-        const randomStr = this.generateRandomStr(25)
+        const randomStr = this.generateRandomStr(25);
         const script = `
             new Promise(async resolve => {
                 const uri = new URL('${randomStr}.lstc', window.location.origin);
