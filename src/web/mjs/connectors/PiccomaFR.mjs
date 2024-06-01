@@ -22,7 +22,7 @@ export default class PiccomaFR extends Piccoma {
     }
 
     async _getMangaFromURI(uri) {
-        const id = uri.split('/').pop();
+        const id = uri.href.split('/').pop();
         const request = new Request(`${this.url}/product/${id}`, this.requestOptions);
         const [ element ] = await this.fetchDOM(request, 'meta[property="og:title"]');
         return new Manga(this, id, element.content.split('|').shift().trim());

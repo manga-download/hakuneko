@@ -111,10 +111,7 @@ export default class Piccoma extends Connector {
                 
                 try {
                     const pdata = window.__NEXT_DATA__ ?  __NEXT_DATA__.props.pageProps.initialState.viewer.pData : window._pdata_; //PiccomaFR VS JP
-                    if (!pdata) reject();
-                    if (!pdata.img) reject(); 
-                    
-                    const images = pdata.img
+                    const images = (pdata.img ?? pdata.contents)
                         .filter(img => !!img.path)
                         .map(img => {
                             	return {
