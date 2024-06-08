@@ -6,6 +6,6 @@ export default class Fbsquads extends WordPressMadara {
         super.id = 'fbsquads';
         super.label = 'Fleur Blanche Squads';
         this.tags = [ 'webtoon', 'spanish', 'scanlation', 'yaoi' ];
-        this.url = 'https://fbsquads.com';
+        this.url = 'https://fbsscan.com';
     }
 }
