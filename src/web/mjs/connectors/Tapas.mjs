@@ -9,6 +9,7 @@ export default class Tapas extends Connector {
         super.label = 'Tapas';
         this.tags = [ 'webtoon', 'english', 'novel' ];
         this.url = 'https://tapas.io';
+        this.apiUrl = 'https://story-api.tapas.io/cosmos/api/v1/landing';
         this.requestOptions.headers.set('x-cookie', 'adjustedBirthDate=1990-01-01');
     }
 
@@ -30,22 +31,17 @@ export default class Tapas extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/comics', this.url);
-        uri.searchParams.set('b', 'ALL');
-        uri.searchParams.set('g', 0);
-        uri.searchParams.set('pageNumber', page);
-        //uri.searchParams.set('pageSize', 20);
+        
+        const uri = new URL(`${this.apiUrl}/genre?category_type=COMIC&size=200&page=${page}`);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('Accept', 'application/json, text/javascript, */*;');
 
-        const data = await this.fetchJSON(request, this.requestOptions);
-        const dom = new DOMParser().parseFromString(data.data.body, 'text/html');
-        const nodes = [...dom.querySelectorAll('li.list__item a.thumb')];
+        const response = await this.fetchJSON(request, this.requestOptions);
 
-        return nodes.map(element => {
+        return response.data.items.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
-                title: element.dataset.tiaraEventMetaSeries.trim()
+                id: element.seriesId,
+                title: element.title
             };
         });
     }
@@ -53,40 +49,17 @@ export default class Tapas extends Connector {
     async _getChapters(manga) {
         let chapterList = [];
 
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'meta[name="twitter:app:url:iphone"]');
-        const series_id = data[0].content.match(/\/series\/\d+/)[0];
+        let request = new Request(new URL(`${this.url}/series/${manga.id}/episodes?max_limit=9999`), this.requestOptions);
+        let response = await this.fetchJSON(request);
 
-        let has_next = true;
-        const time = Date.now();
-        let page = 1;
-        while (has_next) {
-            request = new Request(new URL(series_id+'/episodes?page='+page+'&sort=OLDEST&init_load=0&since='+time+'&large=true&last_access=0&', this.url), this.requestOptions);
-            request.headers.set('x-referer', this.getRootRelativeOrAbsoluteLink(manga.id, this.url));
-            let response = await this.fetchJSON(request, this.requestOptions);
-            has_next = response.data.pagination.has_next;
-            chapterList.push(...await this._getChaptersFromHtml(response.data.body));
-            page++;
-        }
-
-        return chapterList;
+        return response.data.episodes.map(element => {
+            return {
+                id: `/episode/${element.id}`,
+                title: element.title
+            };
+        });
     }
 
-    async _getChaptersFromHtml(payload) {
-        let data = [...this.createDOM(payload).querySelectorAll('li.episode-list__item  > a')];
-
-        return data
-            .filter(element => !element.querySelector('i.sp-ico-episode-lock, i.sp-ico-schedule-white'))
-            .map(element => {
-                let scene = element.querySelector('div.info p.scene').textContent.trim();
-                let title = element.querySelector('p.title span.title__body').textContent.trim();
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: scene + ' - ' + title,
-                    language: ''
-                };
-            });
-    }
 
     async _getPagesManga(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
@@ -103,6 +76,7 @@ export default class Tapas extends Connector {
     }
 
     async _getPagesNovel(request) {
+        // Not updated since hakuneko doesn't support novels anyways.
         let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise((resolve, reject) => {
