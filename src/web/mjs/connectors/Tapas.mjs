@@ -14,11 +14,16 @@ export default class Tapas extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.info a.title');
-        let id = uri.pathname;
-        let title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        let spliced_url = (await this.fetchDOM(new Request(uri), 'meta[property="al:android:url"]'))[0].content.split('/')
+        // title can be in two formats: tapas/series/<series_name> or tapas/series/<series_name>/info
+        let seriesId = (spliced_url[spliced_url.length - 1] == 'info' ? spliced_url[spliced_url.length-2] : spliced_url.pop())
+        let data = (await this.fetchJSON(new Request(new URL(`${this.url}/series/${seriesId}?`, this.URI), {
+            headers: {
+                Accept: 'application/json, text/javascript, */*;',
+                'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            }
+        }))).data;
+        return new Manga(this, data.id.toString(), data.title.trim());
     }
 
     async _getMangas() {
@@ -76,7 +81,6 @@ export default class Tapas extends Connector {
     }
 
     async _getPagesNovel(request) {
-        // Not updated since hakuneko doesn't support novels anyways.
         let darkmode = Engine.Settings.NovelColorProfile();
         let script = `
             new Promise((resolve, reject) => {
