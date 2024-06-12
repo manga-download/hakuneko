@@ -52,8 +52,6 @@ export default class Tapas extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
-
         let request = new Request(new URL(`${this.url}/series/${manga.id}/episodes?max_limit=9999`), this.requestOptions);
         let response = await this.fetchJSON(request);
 
