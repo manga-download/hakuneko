@@ -9,15 +9,19 @@ export default class Tapas extends Connector {
         super.label = 'Tapas';
         this.tags = [ 'webtoon', 'english', 'novel' ];
         this.url = 'https://tapas.io';
+        this.apiUrl = 'https://story-api.tapas.io/cosmos/api/v1/landing';
         this.requestOptions.headers.set('x-cookie', 'adjustedBirthDate=1990-01-01');
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.info a.title');
-        let id = uri.pathname;
-        let title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        const seriesId = (await this.fetchDOM(new Request(uri), 'meta[property="al:android:url"]'))[0].content.replace(/\/info$/, '').split('/').pop();
+        let data = (await this.fetchJSON(new Request(new URL(`${this.url}/series/${seriesId}?`, this.URI), {
+            headers: {
+                Accept: 'application/json, text/javascript, */*;',
+                'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+            }
+        }))).data;
+        return new Manga(this, data.id.toString(), data.title.trim());
     }
 
     async _getMangas() {
@@ -30,62 +34,31 @@ export default class Tapas extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/comics', this.url);
-        uri.searchParams.set('b', 'ALL');
-        uri.searchParams.set('g', 0);
-        uri.searchParams.set('pageNumber', page);
-        //uri.searchParams.set('pageSize', 20);
+
+        const uri = new URL(`${this.apiUrl}/genre?category_type=COMIC&size=200&page=${page}`);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('Accept', 'application/json, text/javascript, */*;');
 
-        const data = await this.fetchJSON(request, this.requestOptions);
-        const dom = new DOMParser().parseFromString(data.data.body, 'text/html');
-        const nodes = [...dom.querySelectorAll('li.list__item a.thumb')];
+        const response = await this.fetchJSON(request, this.requestOptions);
 
-        return nodes.map(element => {
+        return response.data.items.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element.pathname, this.url),
-                title: element.dataset.tiaraEventMetaSeries.trim()
+                id: element.seriesId,
+                title: element.title
             };
         });
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
+        let request = new Request(new URL(`${this.url}/series/${manga.id}/episodes?max_limit=9999`), this.requestOptions);
+        let response = await this.fetchJSON(request);
 
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'meta[name="twitter:app:url:iphone"]');
-        const series_id = data[0].content.match(/\/series\/\d+/)[0];
-
-        let has_next = true;
-        const time = Date.now();
-        let page = 1;
-        while (has_next) {
-            request = new Request(new URL(series_id+'/episodes?page='+page+'&sort=OLDEST&init_load=0&since='+time+'&large=true&last_access=0&', this.url), this.requestOptions);
-            request.headers.set('x-referer', this.getRootRelativeOrAbsoluteLink(manga.id, this.url));
-            let response = await this.fetchJSON(request, this.requestOptions);
-            has_next = response.data.pagination.has_next;
-            chapterList.push(...await this._getChaptersFromHtml(response.data.body));
-            page++;
-        }
-
-        return chapterList;
-    }
-
-    async _getChaptersFromHtml(payload) {
-        let data = [...this.createDOM(payload).querySelectorAll('li.episode-list__item  > a')];
-
-        return data
-            .filter(element => !element.querySelector('i.sp-ico-episode-lock, i.sp-ico-schedule-white'))
-            .map(element => {
-                let scene = element.querySelector('div.info p.scene').textContent.trim();
-                let title = element.querySelector('p.title span.title__body').textContent.trim();
-                return {
-                    id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                    title: scene + ' - ' + title,
-                    language: ''
-                };
-            });
+        return response.data.episodes.map(element => {
+            return {
+                id: `/episode/${element.id}`,
+                title: element.title
+            };
+        });
     }
 
     async _getPagesManga(chapter) {
@@ -131,5 +104,4 @@ export default class Tapas extends Connector {
         `;
         return [ await Engine.Request.fetchUI(request, script, 30000, true) ];
     }
-
 }
