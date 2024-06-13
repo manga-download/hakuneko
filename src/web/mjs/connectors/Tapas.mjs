@@ -14,9 +14,7 @@ export default class Tapas extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let spliced_url = (await this.fetchDOM(new Request(uri), 'meta[property="al:android:url"]'))[0].content.split('/')
-        // title can be in two formats: tapas/series/<series_name> or tapas/series/<series_name>/info
-        let seriesId = (spliced_url[spliced_url.length - 1] == 'info' ? spliced_url[spliced_url.length-2] : spliced_url.pop())
+        const seriesId = (await this.fetchDOM(new Request(uri), 'meta[property="al:android:url"]'))[0].content.replace(/\/info$/, '').split('/').pop();
         let data = (await this.fetchJSON(new Request(new URL(`${this.url}/series/${seriesId}?`, this.URI), {
             headers: {
                 Accept: 'application/json, text/javascript, */*;',
