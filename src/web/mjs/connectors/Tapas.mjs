@@ -34,7 +34,7 @@ export default class Tapas extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        
+
         const uri = new URL(`${this.apiUrl}/genre?category_type=COMIC&size=200&page=${page}`);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('Accept', 'application/json, text/javascript, */*;');
@@ -60,7 +60,6 @@ export default class Tapas extends Connector {
             };
         });
     }
-
 
     async _getPagesManga(chapter) {
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
@@ -105,5 +104,4 @@ export default class Tapas extends Connector {
         `;
         return [ await Engine.Request.fetchUI(request, script, 30000, true) ];
     }
-
 }
