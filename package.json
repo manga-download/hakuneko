@@ -24,7 +24,7 @@
     "jest-junit": "latest",
     "jszip": "latest",
     "polymer-build": "latest",
-    "puppeteer-core": "21.10.0",
+    "puppeteer-core": "latest",
     "rcedit": "latest",
     "win-7zip": "latest"
   },
