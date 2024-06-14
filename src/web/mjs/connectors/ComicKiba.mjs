@@ -13,8 +13,8 @@ export default class ComicKiba extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const [ data ] = await this.fetchDOM(request, 'div.anisc-detail .manga-name');
-        return new Manga(this, data.pathname, data.textContent.trim());
+        const [ data ] = await this.fetchDOM(request, 'article header h1');
+        return new Manga(this, uri.pathname, data.textContent.trim());
     }
 
     async _getMangas() {
@@ -29,7 +29,7 @@ export default class ComicKiba extends Connector {
     async _getMangasFromPage(page) {
         const uri = new URL(`/all-manga/${page}/`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div.item div.manga-detail .manga-name a');
+        const data = await this.fetchDOM(request, 'div.grid div.text-center a.clamp');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -41,11 +41,11 @@ export default class ComicKiba extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'ul#chapters-list li a.item-link');
+        const data = await this.fetchDOM(request, 'ul#myUL li a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.getAttribute('title').trim()
+                title: element.text.trim()
             };
         });
     }
