@@ -15,15 +15,15 @@ export default class NHentai extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#info-block div#info h1');
-        let id = uri.pathname + uri.search;
-        let title = data[0].innerText.trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#info-block div#info h1');
+        const id = uri.pathname + uri.search;
+        const title = data[0].innerText.trim();
         return new Manga( this, id, title);
     }
 
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
+        const msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
 
@@ -32,8 +32,16 @@ export default class NHentai extends Connector {
     }
 
     async _getPages(chapter) {
-        let request = new Request( this.url + chapter.id, this.requestOptions );
-        const data = await this.fetchDOM(request, 'div#thumbnail-container a.gallerythumb source.lazyload');
-        return data.map(element => element.dataset.src.replace('t.', 'i.').replace(/\/t/g, '/i'));
+        const request = new Request( this.url + chapter.id, this.requestOptions );
+        const script = `
+            new Promise ( resolve => {
+                resolve(_gallery.images.pages.map( (image, index) => {
+                    const extension = image.t === 'p' ? '.png' : image.t === 'j' ? '.jpg' : '.gif';
+                    const url = 'https://i.nhentai.net/galleries/'+_gallery.media_id + '/' + (index+1)+extension;
+                    return _n_app.get_cdn_url(url);
+                }));
+            })
+        `;
+        return Engine.Request.fetchUI(request, script);
     }
 }
