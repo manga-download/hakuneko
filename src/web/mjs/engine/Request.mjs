@@ -146,12 +146,10 @@ export default class Request {
                     return document.querySelector('div#h-captcha') ? handleUserInteractionRequired() : handleAutomaticRedirect();
                 }
 
-                // 9anime WAF re-captcha
-                if(window.location.hostname.includes('9anime')) {
+                // Aniwave WAF
+                if(document.querySelector('title') && document.querySelector('title').text == 'WAF' && document.documentElement.innerHTML.indexOf('/waf-js-run') != -1 ) {
                     await new Promise(resolve => setTimeout(resolve, 5000));
-                    if(document.querySelector('div#episodes form[action*="waf-verify"]')) {
-                        return handleUserInteractionRequired();
-                    }
+                    return handleAutomaticRedirect();
                 }
 
                 // Crunchyscan Re-Captcha
