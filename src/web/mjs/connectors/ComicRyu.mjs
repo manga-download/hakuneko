@@ -12,43 +12,44 @@ export default class ComicRyu extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#detail div.titlepage h2 source');
-        let id = uri.pathname + uri.search;
-        let title = data[0].getAttribute('alt').trim();
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'article.sakuhin-article h1.sakuhin-article-title');
+        const id = uri.pathname;
+        const title = data[0].textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/lineup/', this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#main div.lineuparea div.linkbox');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), request.url),
-                title: element.querySelector('p.title').textContent.trim()
-            };
-        });
+        const categories = ['シリーズ一覧-連載中', '完結作品'];
+        const mangasList = [];
+        for (const category of categories) {
+            const data = await this.fetchDOM(new Request(new URL(category, this.url), this.requestOptions), 'ul.m-series-list li a.m-list-sakuhin-list-item-link');
+            const mangas = data.map(element => {
+                return {
+                    id: element.pathname,
+                    title: element.querySelector('h1.sakuhin-article-title').textContent.trim(),
+                };
+            });
+
+            mangasList.push(...mangas);
+        }
+        return mangasList;
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#read ul.readlist li p.readbtn a');
+        const request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'a.sakuhin-episode-link');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.trim(),
-                language: ''
             };
         });
     }
 
     async _getPages(chapter) {
-        let script = `
-            new Promise(resolve => {
-                resolve(photoArray.map(photo => new URL(photoDir + photo[0], window.location).href));
-            });
-        `;
-        let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'figure.wp-block-image source');
+        return data.map(element => element.src );
     }
 }
