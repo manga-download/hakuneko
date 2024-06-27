@@ -13,7 +13,7 @@ export default class MangaHasu extends Connector {
         super.id = 'mangahasu';
         super.label = 'MangaHasu';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://mangahasu.se';
+        this.url = 'https://mangahasu.me';
         this.requestOptions.headers.set( 'x-referer', this.url );
     }
 
