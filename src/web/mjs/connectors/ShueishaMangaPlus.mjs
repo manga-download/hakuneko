@@ -23,7 +23,7 @@ export default class ShueishaMangaPlus extends Publus {
 
     async _getMangaFromURI(uri) {
         let id = uri.pathname.match(/\/(\d+)$/)[1];
-        uri = new URL('/api/title_detail', this.apiURL);
+        uri = new URL('/api/title_detailV3', this.apiURL);
         uri.searchParams.set('title_id', id);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchPROTO(request, this.protoTypes, this.rootType);
@@ -33,31 +33,32 @@ export default class ShueishaMangaPlus extends Publus {
     }
 
     async _getMangas() {
-        let request = new Request(new URL('/api/title_list/all', this.apiURL), this.requestOptions);
+        let request = new Request(new URL('/api/title_list/allV2', this.apiURL), this.requestOptions);
         let data = await this.fetchPROTO(request, this.protoTypes, this.rootType);
-        return data.success.allTitlesView.titles.map(manga => {
+        return data.success.allTitlesViewV2.allTitlesGroup.flatMap(mangaGroup => mangaGroup.titles.map(manga => {
             return {
                 id: manga.titleId,
                 title: `${manga.name} ${this._getLanguage(manga.language)}`
             };
-        });
+        }));
     }
 
     async _getChapters(manga) {
-        let uri = new URL('/api/title_detail', this.apiURL);
+        let uri = new URL('/api/title_detailV3', this.apiURL);
         uri.searchParams.set('title_id', manga.id);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchPROTO(request, this.protoTypes, this.rootType);
-        return [
-            ...data.success.titleDetailView.firstChapterList || [],
-            ...data.success.titleDetailView.lastChapterList || []
+        return data.success.titleDetailView.chapterListGroup.flatMap(chapterGroup => [
+            ...chapterGroup.firstChapterList || [],
+            ...chapterGroup.midChapterList || [],
+            ...chapterGroup.lastChapterList || []
         ].map(chapter => {
             return {
                 id: chapter.chapterId,
                 title: chapter.subTitle || chapter.name,
                 language: ''
             };
-        }).reverse();
+        })).reverse();
     }
 
     async _getPages(chapter) {
