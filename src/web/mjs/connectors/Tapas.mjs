@@ -50,8 +50,17 @@ export default class Tapas extends Connector {
     }
 
     async _getChapters(manga) {
-        let request = new Request(new URL(`${this.url}/series/${manga.id}/episodes?max_limit=9999`), this.requestOptions);
-        let response = await this.fetchJSON(request);
+        const chapterList = [];
+        for(let page = 1, run = true; run; page++) {
+            const chapters = await this._getChaptersFromPage(manga, page);
+            chapters.length > 0 ? chapterList.push(...chapters) : run = false;
+        }
+        return chapterList;
+    }
+
+    async _getChaptersFromPage(manga, page) {
+        const request = new Request(new URL(`${this.url}/series/${manga.id}/episodes?page=${page}`), this.requestOptions);
+        const response = await this.fetchJSON(request);
 
         return response.data.episodes.map(element => {
             return {
