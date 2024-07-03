@@ -7,44 +7,29 @@ export default class Mikoroku extends Connector {
         super.label = 'Mikoroku';
         this.tags = [ 'manga', 'scanlation', 'indonesian' ];
         this.url = 'https://www.mikoroku.web.id';
-        this.queryChaptersPerPage = 20;
-        this.queryMangasPerPage = 20;
         this.queryMangaTitle = 'header > h1';
     }
+
     async _getMangas() {
         let mangalist = [];
-        for (let page = 0, run = true; run; page++) {
-            let mangas = await this._getMangaListFromPages(page);
-            mangas.length > 0 ? mangalist.push(...mangas) : run = false;
-        }
+        const request = new Request(new URL('/feeds/posts/default/-/Series?orderby=published&alt=json&max-results=999', this.url), this.requestOptions);
+        const { feed } = await this.fetchJSON(request);
+        feed.entry.map(manga => {
+            const goodLink = manga.link.find(link => link.rel === 'alternate');
+            mangalist.push({
+                id: this.getRootRelativeOrAbsoluteLink(goodLink.href, request.url),
+                title: goodLink.title.trim()
+            });
+        });
         return mangalist;
     }
-    async _getMangaListFromPages(page ) {
-        const uri = new URL('/feeds/posts/default/-/Series?orderby=published&alt=json&start-index='+ ( this.queryMangasPerPage * page + 1 )+'&max-results='+this.queryMangasPerPage, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        let parser = new DOMParser();
-        if (!data.feed.entry) return [];
-        return data.feed.entry.map( entry => {
-            let doc = parser.parseFromString(entry.content.$t, 'text/html');
-            let titlediv = doc.querySelector('div#custom-doc-title');
-            let title = !titlediv ? entry.title.$t.trim() : titlediv.textContent.trim();
-            return {
-                id: this.getRootRelativeOrAbsoluteLink( entry.link.find( a => a.rel === 'alternate' ).href, request.url ),
-                title: title
-            };
-        });
-    }
+
     async _getChapters(manga) {
         let uri = new URL(manga.id, this.url);
         let request = new Request(uri, this.requestOptions);
         let dom = (await this.fetchDOM(request, 'body'))[0];
         let data = [...dom.querySelectorAll('script')];
-        // The mangaid to pass to the api is inconsistent, sometimes it can be foundin a script as clwd.run('mangaid'), sometimes its in a <div id = 'epX'>.
-        // There are also script object that are populated with chapters but sometimes they are empty for whatever reasons.
-        // Moreover, the website pass the mangaid to the api without taking care of resolving htlmentities, causing some manga page not displaying chapters list.
-        // Manganame cant be used as sometimes its different (translated or case is different, causing the api to fail again)
-        // TLDR : the website is a fucking mess.
+
         const clwdrun = data.filter(el => el.text.trim().startsWith('clwd.run'));
         let mangaid= '';
         if (clwdrun.length > 0) {
@@ -53,30 +38,29 @@ export default class Mikoroku extends Connector {
             data = dom.querySelector('div#epX');
             mangaid = data.getAttribute('data-label');
         }
-        //HACK : RESOLVE HTMLENTITIES
         let mydiv = document.createElement('div');
         mydiv.innerHTML = mangaid;
         mangaid = mydiv.textContent;
-        //now use the RSS feed api
-        let chapterslist = [];
-        for (let page = 0, run = true; run; page++) {
-            let chapters = await this._getChapterListFromPages(page, manga, mangaid);
-            chapters.length > 0 ? chapterslist.push(...chapters) : run = false;
-        }
+
+        let chapterslist = await this._getChapterListFromPages(manga, mangaid);
         return chapterslist;
     }
-    async _getChapterListFromPages(page, manga, mangaid) {
-        const uri = new URL('/feeds/posts/default/-/'+mangaid+'?orderby=published&alt=json&start-index='+ ( this.queryMangasPerPage * page + 1 )+'&max-results='+this.queryMangasPerPage, this.url);
-        const request = new Request(uri, this.requestOptions);
-        let data = await this.fetchJSON(request);
-        if (!data.feed.entry) return [];
-        return data.feed.entry.map( entry => {
+
+    async _getChapterListFromPages(manga, mangaid) {
+        let chapterslist = [];
+        const request = new Request(new URL('/feeds/posts/default/-/'+mangaid+'?orderby=published&alt=json&max-results=999', this.url), this.requestOptions);
+        const { feed } = await this.fetchJSON(request);
+
+        chapterslist = feed.entry.map(entry => {
+            const goodLink = entry.link.find(link => link.rel === 'alternate');
             return {
-                id: this.getRootRelativeOrAbsoluteLink( entry.link.find( a => a.rel === 'alternate' ).href, request.url ),
-                title: entry.title.$t.replace(manga.title, '').trim()
+                id: this.getRootRelativeOrAbsoluteLink(goodLink.href, request.url),
+                title: goodLink.title.replace(/.*(?=Chapter)/g, '').trim()
             };
-        }).filter(chap => chap.id != manga.id);//We dont want the link to the manga, which is always included
+        }).filter(chap => chap.id != manga.id);
+        return chapterslist;
     }
+
     async _getPages(chapter) {
         let scriptPages = `
         new Promise(resolve => {
@@ -86,6 +70,7 @@ export default class Mikoroku extends Connector {
         let request = new Request(this.url + chapter.id, this.requestOptions);
         return await Engine.Request.fetchUI(request, scriptPages);
     }
+
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const id = uri.pathname;
