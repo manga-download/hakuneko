@@ -96,11 +96,11 @@ export default class ComicK extends Connector {
     }
 
     async _getPages(chapter) {
-        const uri = new URL('/chapter/' + chapter.id, this.apiurl);
+        const uri = new URL('/chapter/' + chapter.id+'?tachiyomi=true', this.apiurl);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
         const data = await this.fetchJSONEx(request);
-        return data.chapter.md_images.map(image => `https://meo.comick.pictures/${image.b2key}`);
+        return data.chapter.images.map(image => image.url);
     }
 
     async fetchJSONEx(request, retries) {
