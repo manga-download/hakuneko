@@ -10,7 +10,7 @@ export default class ComicK extends Connector {
         super.label = 'ComicK';
         this.tags = [ 'manga', 'english' ];
         this.url = 'https://comick.io';
-        this.apiurl = 'https://api.comick.io';
+        this.apiurl = 'https://api.comick.fun';
         this.requestOptions.headers.set('x-origin', this.url );
         this.requestOptions.headers.set('x-referer', this.apiurl );
 
