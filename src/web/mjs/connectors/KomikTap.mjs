@@ -7,7 +7,7 @@ export default class KomikTap extends WordPressMangastream {
         super.id = 'komiktap';
         super.label = 'KomikTap';
         this.tags = [ 'manga', 'webtoon', 'hentai', 'indonesian' ];
-        this.url = 'https://komiktap.me';
+        this.url = 'https://komiktap.info';
         this.path = '/manga/list-mode/';
     }
 }
