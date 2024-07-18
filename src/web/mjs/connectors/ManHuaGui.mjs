@@ -25,7 +25,7 @@ export default class ManHuaGui extends SinMH {
             }
         };
         this.queryPagesScript =`
-            new Promise(resolve => {
+            new Promise( (resolve, reject) => {
                 ${this.api}.imgData = function(data) {
                     let origin = pVars.manga.filePath;
                     let pageLinks = data.files.map(file => origin + file + '?e=' + data.sl.e + '&m=' + data.sl.m);
@@ -33,9 +33,17 @@ export default class ManHuaGui extends SinMH {
                         preInit: () => resolve(pageLinks)
                     };
                 };
-                let script = [...document.querySelectorAll('script:not([src])')].find(script => script.text.trim().startsWith('window[')).text;
-                eval(script);
-            } );
+
+                setTimeout(() => {
+                    try {
+                       let script = [...document.querySelectorAll('script:not([src])')].find(script => script.text.trim().startsWith('window[')).text;
+                       eval(script);
+                    }
+                    catch(error) {
+                        reject(error);
+                    }
+                },1500);
+            });
         `;
     }
 
