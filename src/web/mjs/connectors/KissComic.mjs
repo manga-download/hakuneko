@@ -55,7 +55,11 @@ export default class KissComic extends Connector {
         const script = `
             new Promise((resolve, reject) => {
                 setTimeout(() => {
-                    resolve(lstImages);
+                    try {
+                        resolve(Array.from(document.querySelectorAll('#divImage img')).map(img => img.src));
+                    } catch (err) {
+                        reject(err);
+                    }
                 }, 1000);
             });
         `;
