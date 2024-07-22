@@ -56,7 +56,11 @@ export default class KissComic extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
-                        resolve(Array.from(document.querySelectorAll('#divImage img')).map(img => img.src));
+                        resolve(
+                            Array.from(document.querySelectorAll('#divImage img'))
+                                .map(img => (img.src || '').replace(/=s\d+/, '=s0'))
+                                .filter(Boolean)
+                        )
                     } catch (err) {
                         reject(err);
                     }
