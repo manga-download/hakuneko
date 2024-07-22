@@ -58,7 +58,7 @@ export default class KissComic extends Connector {
                     try {
                         resolve(
                             Array.from(document.querySelectorAll('#divImage img'))
-                                .map(img => (img.src || '').replace(/=s\d+/, '=s0'))
+                                .map(img => (img.src || '').replace(/=s\\d+/, '=s0'))
                                 .filter(Boolean)
                         )
                     } catch (err) {
