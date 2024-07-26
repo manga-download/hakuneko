@@ -31,7 +31,7 @@ export default class SinMH extends Connector {
                 let chapterList = [...document.querySelectorAll('${this.queryChapters}')].map(element => {
                     return {
                         id: new URL(element.href, window.location).pathname,
-                        title: element.text.trim().replace(/\\d+p$/, ''),
+                        title: element.title.trim(),
                         language: ''
                     };
                 });
