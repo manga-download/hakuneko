@@ -56,14 +56,14 @@ export default class Connectors {
             console.warn(`Failed to load connector`, error);
         }
     }
-    
+
     _protocolHandler( request, callback ) {
         let uri = new URL( request.url );
         this._list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
-        .then( buffer => callback( buffer ) )
-        .catch( error => {
-            //console.error( error, payload );
-            callback( undefined );
-        } );
+            .then( buffer => callback( buffer ) )
+            .catch( _ => {
+                //console.error( error, payload );
+                callback( undefined );
+            } );
     }
 }
