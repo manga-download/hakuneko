@@ -16,7 +16,7 @@
     "@logtrine/logtrine": "latest",
     "asar": "latest",
     "electron": "6.1.7",
-    "eslint": "latest",
+    "eslint": "^8.57.0",
     "fs-extra": "latest",
     "innosetup-compiler": "latest",
     "jest": "latest",
