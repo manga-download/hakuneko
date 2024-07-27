@@ -61,7 +61,7 @@ export default class Connectors {
         let uri = new URL( request.url );
         this._list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
             .then( buffer => callback( buffer ) )
-            .catch( _ => {
+            .catch( () => {
                 //console.error( error, payload );
                 callback( undefined );
             } );
