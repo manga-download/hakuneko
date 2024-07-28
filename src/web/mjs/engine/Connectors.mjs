@@ -9,7 +9,7 @@ export default class Connectors {
         try {
             let response = await fetch(uri);
             let data = await response.json();
-            return data.filter(plugin => !plugin.startsWith('.') && plugin.endsWith('.mjs')).map(plugin => uri + plugin)
+            return data.filter(plugin => !plugin.startsWith('.') && plugin.endsWith('.mjs')).map(plugin => uri + plugin);
         } catch(error) {
             //console.warn(error);
             return [];
@@ -50,20 +50,20 @@ export default class Connectors {
                 }
             }
             this._list.sort( ( a, b ) => {
-                return ( a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1 );
+                return a.label.toLowerCase() < b.label.toLowerCase() ? -1 : 1;
             } );
         } catch(error) {
             console.warn(`Failed to load connector`, error);
         }
     }
-    
+
     _protocolHandler( request, callback ) {
         let uri = new URL( request.url );
         this._list.find( connector => connector.id === uri.hostname ).handleConnectorURI( uri )
-        .then( buffer => callback( buffer ) )
-        .catch( error => {
-            //console.error( error, payload );
-            callback( undefined );
-        } );
+            .then( buffer => callback( buffer ) )
+            .catch( () => {
+                //console.error( error, payload );
+                callback( undefined );
+            } );
     }
 }

@@ -7,7 +7,7 @@ export default class NhatTruyen extends MojoPortalComic {
         super.id = 'nhattruyen';
         super.label = 'NhatTruyen';
         this.tags = [ 'manga', 'vietnamese' ];
-        this.url = 'https://nhattruyentop.com';
+        this.url = 'https://nhattruyenss.com';
         this.links = {
             login: this.url + '/Secure/Login.aspx'
         };

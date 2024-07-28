@@ -7,7 +7,7 @@ export default class MangasChan extends WordPressMangastream {
         super.id = 'mangaschan';
         super.label = 'Mangás Chan';
         this.tags = [ 'manga', 'webtoon', 'portuguese' ];
-        this.url = 'https://mangaschan.com';
+        this.url = 'https://mangaschan.net';
         this.path = '/manga/list-mode/';
     }
 }
