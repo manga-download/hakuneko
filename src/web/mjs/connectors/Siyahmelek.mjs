@@ -7,9 +7,9 @@ export default class Siyahmelek extends WordPressMadara {
         super.id = 'siyahmelek';
         super.label = 'Gri Melek (Siyahmelek)';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://grimelek.co';
+        this.url = 'https://grimelek.mom';
         this.links = {
-            login : 'https://grimelek.co'//this website needs login to see content !
+            login : 'https://grimelek.mom'//this website needs login to see content !
         };
     }
 
@@ -19,4 +19,3 @@ export default class Siyahmelek extends WordPressMadara {
             return !pic.url.endsWith('xxxxx/99.jpg');
         });
     }
-}
