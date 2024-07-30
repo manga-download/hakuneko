@@ -25,24 +25,19 @@ export default class Mikoroku extends Connector {
     }
 
     async _getChapters(manga) {
-        let uri = new URL(manga.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let dom = (await this.fetchDOM(request, 'body'))[0];
-        let data = [...dom.querySelectorAll('script')];
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        const mangaid = await Engine.Request.fetchUI(request, 'clwd.settings.cat');
 
-        const clwdrun = data.filter(el => el.text.trim().startsWith('clwd.run'));
-        let mangaid= '';
-        if (clwdrun.length > 0) {
-            mangaid = clwdrun[0].text.split("'")[1];
-        } else {
-            data = dom.querySelector('div#epX');
-            mangaid = data.getAttribute('data-label');
-        }
-        let mydiv = document.createElement('div');
-        mydiv.innerHTML = mangaid;
-        mangaid = mydiv.textContent;
+        request = new Request(new URL('/feeds/posts/default/-/'+mangaid+'?orderby=published&alt=json&max-results=9999', this.url), this.requestOptions);
+        const { feed } = await this.fetchJSON(request);
 
-        let chapterslist = await this._getChapterListFromPages(manga, mangaid);
+        const chapterslist = feed.entry.map(entry => {
+            const goodLink = entry.link.find(link => link.rel === 'alternate');
+            return {
+                id: this.getRootRelativeOrAbsoluteLink(goodLink.href, request.url),
+                title: goodLink.title.replace(manga.title, '').trim()
+            };
+        }).filter(chap => chap.id != manga.id);
         return chapterslist;
     }
 
