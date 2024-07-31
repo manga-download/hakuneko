@@ -7,11 +7,11 @@ export default class Mikoroku extends Connector {
         super.label = 'Mikoroku';
         this.tags = [ 'manga', 'scanlation', 'indonesian' ];
         this.url = 'https://www.mikoroku.web.id';
-        this.queryMangaTitle = 'header > h1';
+        this.queryMangaTitle = 'h1[itemprop="name"]';
     }
 
     async _getMangas() {
-        let mangalist = [];
+        const mangalist = [];
         const request = new Request(new URL('/feeds/posts/default/-/Series?orderby=published&alt=json&max-results=999', this.url), this.requestOptions);
         const { feed } = await this.fetchJSON(request);
         feed.entry.map(manga => {
@@ -42,11 +42,10 @@ export default class Mikoroku extends Connector {
     }
 
     async _getChapterListFromPages(manga, mangaid) {
-        let chapterslist = [];
         const request = new Request(new URL('/feeds/posts/default/-/'+mangaid+'?orderby=published&alt=json&max-results=999', this.url), this.requestOptions);
         const { feed } = await this.fetchJSON(request);
 
-        chapterslist = feed.entry.map(entry => {
+        let chapterslist = feed.entry.map(entry => {
             const goodLink = entry.link.find(link => link.rel === 'alternate');
             return {
                 id: this.getRootRelativeOrAbsoluteLink(goodLink.href, request.url),
@@ -57,12 +56,12 @@ export default class Mikoroku extends Connector {
     }
 
     async _getPages(chapter) {
-        let scriptPages = `
+        const scriptPages = `
         new Promise(resolve => {
             resolve([...document.querySelectorAll('article#reader img')].map(img => img.src));
         });
         `;
-        let request = new Request(this.url + chapter.id, this.requestOptions);
+        const request = new Request(this.url + chapter.id, this.requestOptions);
         return await Engine.Request.fetchUI(request, scriptPages);
     }
 
