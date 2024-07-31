@@ -19,3 +19,4 @@ export default class Siyahmelek extends WordPressMadara {
             return !pic.url.endsWith('xxxxx/99.jpg');
         });
     }
+}
