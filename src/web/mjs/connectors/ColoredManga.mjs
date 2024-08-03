@@ -7,7 +7,7 @@ export default class ColoredManga extends WordPressMadara {
         super.id = 'coloredmanga';
         super.label = 'Colored Manga';
         this.tags = ['manga', 'english'];
-        this.url = 'https://coloredmanga.com';
+        this.url = 'https://coloredmanga.net';
     }
 
     _createMangaRequest(page) {
