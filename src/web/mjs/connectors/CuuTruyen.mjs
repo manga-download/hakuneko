@@ -12,10 +12,10 @@ export default class CuuTruyen extends Connector {
 
     async _getMangaFromURI(uri) {
         const mangaid = uri.href.match(/\/mangas\/([0-9]+)/)[1];
-        const req = new URL('/api/v2/mangas/' + mangaid, this.url);
+        const req = new URL(`/api/v2/mangas/${mangaid}`, this.url);
         const request = new Request(req, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return new Manga(this, mangaid, data.data.name.trim());
+        const { data: { name } } = await this.fetchJSON(request);
+        return new Manga(this, mangaid, name.trim());
     }
 
     async _getMangas() {
@@ -30,7 +30,7 @@ export default class CuuTruyen extends Connector {
             const uri = new URL(`/api/v2/mangas/recently_updated?page=${page}&per_page=30`, this.url);
             const request = new Request(uri, this.requestOptions);
             const data = await this.fetchJSON(request);
-            const mangas = await this._getMangasFromPage(data);
+            const mangas = this._getMangasFromPage(data);
             mangaList.push(...mangas);
         }
         return mangaList;
@@ -44,32 +44,30 @@ export default class CuuTruyen extends Connector {
     }
 
     async _getChapters(manga) {
-        const uri = new URL('/api/v2/mangas/' + manga.id + '/chapters', this.url);
+        const uri = new URL(`/api/v2/mangas/${manga.id}/chapters`, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        return data.data
-            .filter((c) => c.status === 'processed')
-            .map((c) => {
-                let title = `Chapter ${c.number}`;
+        const { data } = await this.fetchJSON(request);
+        return data
+            .filter((chapter) => chapter.status === 'processed')
+            .map((chapter) => {
+                let title = `Chapter ${chapter.number}`;
 
-                if (c.name) {
-                    title += `: ${c.name}`;
+                if (chapter.name) {
+                    title += `: ${chapter.name}`;
                 }
 
-                return { id: c.id, title };
+                return { id: chapter.id, title };
             });
     }
 
     async _getPages(chapter) {
         const uri = new URL('/api/v2/chapters/' + chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
+        const { data: { pages } } = await this.fetchJSON(request);
 
-        if (data.data.pages.some((image) => image.status !== 'processed')) {
+        if (pages.some((image) => image.status !== 'processed')) {
             throw new Error('This chapter is still processing, please try again later.');
         }
-
-        const pages = data.data.pages.filter((image) => image.status === 'processed');
 
         return pages.map((image) => {
             return this.createConnectorURI({
@@ -80,19 +78,16 @@ export default class CuuTruyen extends Connector {
     }
 
     async _handleConnectorURI(payload) {
-        const resp = await fetch(payload.url, {
-            redirect: 'follow',
-            credentials: 'same-origin',
+        const response = await fetch(payload.url, {
             cache: 'no-cache',
             referrer: `${this.url}/`,
             headers: {
                 'accept': 'image/avif,image/webp,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5',
-                'x-referer': `${this.url}/`,
             },
         });
 
         if (!payload.drmData) {
-            return this._blobToBuffer(await resp.blob());
+            return this._blobToBuffer(await response.blob());
         }
 
         const decryptedDrmData = this.decodeXorCipher(atob(payload.drmData), '3141592653589793');
@@ -101,7 +96,7 @@ export default class CuuTruyen extends Connector {
             throw new Error(`Invalid DRM data (does not start with magic bytes): ${decryptedDrmData}`);
         }
 
-        const image = await createImageBitmap(await resp.blob());
+        const image = await createImageBitmap(await response.blob());
         const canvas = document.createElement('canvas');
 
         canvas.width = image.width;
