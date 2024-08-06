@@ -2,7 +2,7 @@
 // Based on: https://mangaplus.shueisha.co.jp/js/app.a3091b24.js
 
 package MangaPlus;
-syntax = "proto3";
+//syntax = "proto3";
 
 message AdNetworkList {
   repeated AdNetwork adNetworks = 1;
@@ -193,6 +193,28 @@ message AllTitlesView {
   repeated Title titles = 1;
 }
 
+message Tag {
+    optional string tag = 1;
+    optional string slug = 2;
+}
+
+message Label {
+    optional int32 label = 1;
+    optional string description = 2;
+}
+
+message AllTitlesGroup {
+  optional string theTitle = 1;
+  repeated Title titles = 2;
+  repeated Tag tags = 3;
+  repeated Label labels = 4;
+  optional uint32 nextChapterStartTimestamp = 5;
+}
+
+message AllTitlesViewV2 {
+  repeated AllTitlesGroup allTitlesGroup = 1;
+}
+
 message CommentListView {
   repeated Comment comments = 1;
   optional bool ifSetUserName = 2;
@@ -274,6 +296,22 @@ message SubscribedTitlesView {
 }
 
 message TitleDetailView {
+  // message PublisherItem {
+    // TODO
+  // }
+  message ChapterGroup {
+    optional string chapterNumbers = 1;
+    repeated Chapter firstChapterList = 2;
+    repeated Chapter midChapterList = 3;
+    repeated Chapter lastChapterList = 4;
+  }
+  // message TitleLanguages {
+    // TODO
+  // }
+  // message TitleLabels {
+    // TODO
+  // }
+
   optional Title title = 1;
   optional string titleImageUrl = 2;
   optional string overview = 3;
@@ -292,6 +330,24 @@ message TitleDetailView {
   optional int32 rating = 16;
   optional bool chaptersDescending = 17;
   optional uint32 numberOfViews = 18;
+  // repeated PublisherItem publisherItems = 19;
+  repeated Banner titleBanners = 20;
+  // optional UserTickets userTickets = 21;
+  repeated Chapter ticketChapterList = 22;
+  repeated Title ticketTitleList = 23;
+  optional bool hasChaptersBetween = 24;
+  optional Banner publisherBanner = 25;
+  optional AdNetworkList advertisement = 26;
+  // repeated TitleLanguages titleLanguages = 27;
+  repeated ChapterGroup chapterListGroup = 28;
+  // optional FreeViewDialogue freeViewDialogue = 29;
+  optional string regionCode = 30;
+  repeated Tag tags = 31;
+  // optional TitleLabels titleLabels = 32;
+  // optional Subscription subscription = 33;
+  optional Label label = 34;
+  optional bool isFirstTimeFree = 35;
+  // optional MetaInfo metaInfo = 36;
 }
 
 message TitleRankingView {
@@ -332,6 +388,7 @@ message SuccessResult {
   optional ServiceAnnouncementsView serviceAnnouncementsView = 15;
   optional InitialView initialView = 16;
   optional FeedbackView feedbackView = 17;
+  optional AllTitlesViewV2 allTitlesViewV2 = 25;
 }
 
 message WebHomeView {
