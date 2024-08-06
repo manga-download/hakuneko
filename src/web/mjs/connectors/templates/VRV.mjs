@@ -354,7 +354,7 @@ export default class VRV extends Connector {
 
     /**
      * oAuth signature is based on method, url and GET/POST parameters
-     * => https://developer.twitter.com/en/docs/basics/authentication/guides/creating-a-signature.html
+     * => https://developer.x.com/en/docs/authentication/oauth-1-0a/creating-a-signature
      */
     _oauthRequest( oauthRequest ) {
         try {
