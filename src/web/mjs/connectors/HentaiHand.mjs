@@ -9,48 +9,27 @@ export default class HentaiHand extends Connector {
         super.label = 'HentaiHand';
         this.tags = [ 'hentai', 'multi-lingual' ];
         this.url = 'https://hentaihand.com';
+        this.requestOptions.headers.set('x-referer', this.url);
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div#info-block div#info h1');
-        let id = uri.pathname + uri.search;
-        let title = data[0].innerText.trim();
-        return new Manga(this, id, title);
+        const slug = uri.href.split('/').pop();
+        const apiUrl = new URL('/api/comics/' + slug, this.url);
+        const data = await this.fetchJSON( new Request(apiUrl));
+        return new Manga(this, data.slug, data.title.trim());
     }
 
-    async _getMangaList(callback) {
-        try {
-            throw new Error('This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.');
-        } catch(error) {
-            console.error(error, this);
-            callback(error, undefined);
-        }
+    async _getMangas() {
+        throw new Error('This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.');
     }
 
-    async _getChapterList(manga, callback) {
-        try {
-            callback(null, [ Object.assign({ language: '' }, manga) ]);
-        } catch(error) {
-            console.error( error, manga );
-            callback( error, undefined );
-        }
+    async _getChapters(manga) {
+        return[ Object.assign({ language: '' }, manga) ];
     }
 
-    async _getPageList(manga, chapter, callback) {
-        try {
-            let request = new Request(this.url + chapter.id, this.requestOptions);
-            let data = await this.fetchDOM(request, 'div#thumbnail-container a.gallerythumb source');
-            let pageList = data.map(element => {
-                let path = element.dataset['src'].split('/');
-                let file = path.pop();
-                path.push('full', file.replace('t.', '.'));
-                return path.join('/');
-            });
-            callback(null, pageList);
-        } catch(error) {
-            console.error( error, chapter );
-            callback( error, undefined );
-        }
+    async _getPages(chapter) {
+        const apiUrl = new URL(`/api/comics/${chapter.id}/images`, this.url);
+        const data = await this.fetchJSON( new Request(apiUrl));
+        return data.images.map(page => this.createConnectorURI(page.source_url));
     }
 }
