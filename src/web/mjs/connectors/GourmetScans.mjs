@@ -15,7 +15,7 @@ export default class GourmetScans extends WordPressMadara {
         const request = new Request(url, this.requestOptions);
         const script = `
             new Promise( (resolve, reject) => {
-                let tries = 0;
+                const start = Date.now();
                 const interval = setInterval(function () {
                     try {
                         if (CryptoJS) {
@@ -29,14 +29,14 @@ export default class GourmetScans extends WordPressMadara {
                         clearInterval(interval);
                         reject(error);
                     } finally {
-                        tries++;
-                        if (tries > 10) {
+                        if(Date.now() - start > 10_000) {
                             clearInterval(interval);
-                            reject(new Error('Unable to get pictures after more than 10 tries !'));
+                            reject(new Error('Unable to get pictures after more than 10 seconds !'));
                         }
-                    }
+                     }
                 }, 1000);
                window.dispatchEvent(new KeyboardEvent('keydown'));
+        
             });
         `;
         const data = await Engine.Request.fetchUI(request, script);
