@@ -36,7 +36,7 @@ export default class GourmetScans extends WordPressMadara {
                         }
                     }
                 }, 1000);
-               window.dispatchEvent(new KeyboardEvent('mousemove'));
+               window.dispatchEvent(new KeyboardEvent('keydown'));
             });
         `;
         const data = await Engine.Request.fetchUI(request, script);
