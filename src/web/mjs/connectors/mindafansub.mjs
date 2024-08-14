@@ -1,13 +1,12 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class MindaFanSub extends WordPressMangastream {
+export default class MindaFanSub extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'mindafansub';
         super.label = 'Minda Fansub';
         this.tags = ['webtoon', 'turkish', 'scanlation'];
-        this.url = 'https://mindafansub.me';
-        this.path = '/manga/list-mode/';
+        this.url = 'https://mindafansub.online';
     }
 }
