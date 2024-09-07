@@ -7,9 +7,9 @@ export default class Siyahmelek extends WordPressMadara {
         super.id = 'siyahmelek';
         super.label = 'Gri Melek (Siyahmelek)';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://grimelek.mom';
+        this.url = 'https://grimelek.pro';
         this.links = {
-            login : 'https://grimelek.mom'//this website needs login to see content !
+            login : 'https://grimelek.pro'//this website needs login to see content !
         };
     }
 
