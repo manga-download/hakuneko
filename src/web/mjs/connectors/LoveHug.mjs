@@ -76,6 +76,6 @@ export default class WeLoveManga extends FlatManga {
         const chapterid = (await this.fetchDOM(request, 'input#chapter'))[0].value;
         request = new Request(new URL(`/app/manga/controllers/cont.listImg.php?cid=${chapterid}`, this.url), this.requestOptions);
         const nodes = await this.fetchDOM(request, 'source.chapter-img:not([alt*="nicoscan"])');
-        return nodes.map(image => this.createConnectorURI(image.dataset.original.replace(/\n/g, '')));
+        return nodes.map(image => this.createConnectorURI(image.dataset.srcset.replace(/\n/g, '')));
     }
 }
