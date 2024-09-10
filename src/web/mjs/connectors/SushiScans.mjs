@@ -9,7 +9,7 @@ export default class SushiScans extends WordPressMangastream {
         super.label = 'Sushi Scans';
         this.tags = [ 'manga', 'french' ];
         this.url = 'https://sushiscan.net';
-        this.path = '/manga/list-mode/';
+        this.path = '/catalogue/list-mode/';
         this.requestOptions.headers.set('x-referer', this.url);
     }
 
