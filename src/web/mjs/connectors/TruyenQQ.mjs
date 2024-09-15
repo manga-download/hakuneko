@@ -7,7 +7,7 @@ export default class TruyenQQ extends Connector {
         super.id = 'truyenqq';
         super.label = 'TruyenQQ';
         this.tags = ['manga', 'webtoon', 'vietnamese'];
-        this.url = 'https://truyenqqviet.com';
+        this.url = 'https://truyenqqto.com';
         this.requestOptions.headers.set('x-referer', this.url);
         this.config = {
             throttle: {
