@@ -76,7 +76,7 @@ export default class PixivComics extends Connector {
 
     async _getPages(chapter) {
         const timestamp = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
-        const hash = CryptoJS.SHA256(timestamp + '4yX5JnooikMsznkIF2Pc1zDCoMmKJdJj27HPrSyEVzgmepcghvumFihiv0LAK0Se').toString(CryptoJS.enc.Hex);
+        const hash = CryptoJS.SHA256(timestamp + '1P-7eSTKnyxRrsxXrvKcng4L68ju8RvuP38OhGAE-gE').toString(CryptoJS.enc.Hex);
         const uri = new URL(`episodes/${chapter.id}/read_v4`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-requested-with', 'pixivcomic');
