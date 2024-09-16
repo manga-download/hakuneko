@@ -19,8 +19,7 @@ export default class PixivComics extends Connector {
     }
 
     async _initializeConnector() {
-        let uri = new URL('viewer/stories/0', this.url);
-        let request = new Request(uri.href, this.requestOptions);
+        const request = new Request(new URL('viewer/stories/0', this.url), this.requestOptions);
         this.salt = await Engine.Request.fetchUI(request, `JSON.parse(document.querySelector('#__NEXT_DATA__').text).props.pageProps.salt`);
     }
 
