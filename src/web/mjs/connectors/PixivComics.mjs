@@ -15,6 +15,12 @@ export default class PixivComics extends Connector {
         this.apiURL = 'https://comic.pixiv.net/api/app/';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-requested-with', 'pixivcomic');
+        this.salt = 'M7w5HORvvX-VP4tRj2CFQOQFPocBqLvHTIbhTU36UCo';
+    }
+
+    async _initializeConnector() {
+        const request = new Request(new URL('viewer/stories/0', this.url), this.requestOptions);
+        this.salt = await Engine.Request.fetchUI(request, `JSON.parse(document.querySelector('#__NEXT_DATA__').text).props.pageProps.salt`);
     }
 
     async _getMangaFromURI(uri) {
@@ -76,7 +82,7 @@ export default class PixivComics extends Connector {
 
     async _getPages(chapter) {
         const timestamp = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
-        const hash = CryptoJS.SHA256(timestamp + '1P-7eSTKnyxRrsxXrvKcng4L68ju8RvuP38OhGAE-gE').toString(CryptoJS.enc.Hex);
+        const hash = CryptoJS.SHA256(timestamp + this.salt).toString(CryptoJS.enc.Hex);
         const uri = new URL(`episodes/${chapter.id}/read_v4`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-requested-with', 'pixivcomic');
