@@ -7,7 +7,7 @@ export default class BacaMangaOrg extends WordPressMangastream {
         super.id = 'bacamangaorg';
         super.label = 'MangaTale';
         this.tags = ['manga', 'webtoon', 'indonesian'];
-        this.url = 'https://mangatale.co';
+        this.url = 'https://mangatale.id';
         this.path = '/manga/list-mode/';
     }
 }
