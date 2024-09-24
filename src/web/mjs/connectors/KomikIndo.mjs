@@ -7,7 +7,7 @@ export default class KomikIndo extends WordPressMangastream {
         super.id = 'komikindo';
         super.label = 'KomikIndo';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://komikindo.co';
-        this.path = '/manga-list/?list';
+        this.url = 'https://komiksin.id';
+        this.path = '/manga/list-mode/';
     }
 }
