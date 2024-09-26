@@ -7,7 +7,7 @@ export default class TenshiID extends WordPressMangastream {
         super.id = 'tenshiid';
         super.label = 'TenshiID';
         this.tags = ['manga', 'indonesian'];
-        this.url = 'https://tenshi.id';
+        this.url = 'https://tenshi.pw';
         this.path = '/komik/?list';
     }
 }
