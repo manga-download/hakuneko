@@ -10,6 +10,6 @@ export default class MangaGalaxy extends Iken {
         this.api = 'https://mangagalaxy.net';
         this.links = {
             login: 'https://mangagalaxy.net/auth/signin',
-        }
+        };
     }
 }

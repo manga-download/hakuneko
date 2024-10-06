@@ -10,6 +10,6 @@ export default class Vortex_Scans extends Iken {
         this.api = 'https://vortexscans.org';
         this.links = {
             login: 'https://vortexscans.org/auth/signin',
-        }
+        };
     }
 }
