@@ -80,7 +80,6 @@ export default class Iken extends Connector {
             new Promise((resolve, reject) => {
                 try {
                     const images = [...document.querySelectorAll('${this.queryPages}')];
-                    console.log(images);
                     resolve(images.map(image => image.src));
                 } catch(error) {
                     reject(error);
