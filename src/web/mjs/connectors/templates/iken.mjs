@@ -28,13 +28,13 @@ export default class Iken extends Connector {
         let request = new Request(new URL(`${this.path}?page=${page}&perPage=1000`, this.api), this.requestOptions);
         let { posts } = await this.fetchJSON(request);
 
-        return posts.map(element => {
+        return posts.map(manga => {
             // need an example of a novel page to add support
-            if (element.isNovel) throw new Error('Novels are not supported');
+            if (manga.isNovel) throw new Error('Novels are not supported');
 
             return {
-                id: element.id,
-                title: element.postTitle
+                id: manga.id,
+                title: manga.postTitle
             };
         });
     }
@@ -53,15 +53,15 @@ export default class Iken extends Connector {
         let request = new Request(new URL(`/api/chapters?postId=${mangaId}&skip=${page * 1000}&take=1000&order=desc&userid=`, this.api), this.requestOptions);
         let { post } = await this.fetchJSON(request);
 
-        return post.chapters.map(element => {
+        return post.chapters.map(chapter => {
             return {
                 id: JSON.stringify({
-                    series: element.mangaPost.slug,
-                    chapter: element.slug,
-                    paywalled: element.isLocked,
-                    accessible: element.isAccessible
+                    series: chapter.mangaPost.slug,
+                    chapter: chapter.slug,
+                    paywalled: chapter.isLocked,
+                    accessible: chapter.isAccessible
                 }),
-                title: `Chapter ${element.number} ${element.title || ''}`.trim()
+                title: `Chapter ${chapter.number} ${chapter.title || ''}`.trim()
             };
         });
     }
