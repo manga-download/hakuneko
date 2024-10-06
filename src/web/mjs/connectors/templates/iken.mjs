@@ -87,7 +87,6 @@ export default class Iken extends Connector {
 
     async _getMangaFromURI(uri) {
         const slug = uri.pathname.split('/')[2];
-
         const request = new Request(new URL(`${this.path}/post?postSlug=${slug}`, this.url), this.requestOptions);
         const { post } = await this.fetchJSON(request);
         return new Manga({
