@@ -9,23 +9,23 @@ export default class Iken extends Connector {
         this.tags = [];
         this.url = undefined;
         this.api = undefined;
-        this.path = '/api/query';
+        this.path = '/api';
 
         this.queryPages = 'main section img[src]:not([src=""])';
     }
 
     async _getMangas() {
-        let mangaList = [];
+        const mangaList = [];
 
         for (let page = 1, run = true; run; page++) {
-            let list = await this._getMangasFromPage(page);
+            const list = await this._getMangasFromPage(page);
             list.length > 0 ? mangaList.push(...list) : run = false;
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        const request = new Request(new URL(`${this.path}?page=${page}&perPage=1000`, this.api), this.requestOptions);
+        const request = new Request(new URL(`${this.path}/query?page=${page}&perPage=1000`, this.url), this.requestOptions);
         const { posts } = await this.fetchJSON(request);
 
         return posts.map(manga => {
@@ -40,17 +40,17 @@ export default class Iken extends Connector {
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
+        const chapterList = [];
 
         for (let page = 0, run = true; run; page++) {
-            let list = await this._getChaptersFromPage(manga.id, page);
+            const list = await this._getChaptersFromPage(manga.id, page);
             list.length > 0 ? chapterList.push(...list) : run = false;
         }
         return chapterList;
     }
 
     async _getChaptersFromPage(mangaId, page) {
-        const request = new Request(new URL(`/api/chapters?postId=${mangaId}&skip=${page * 1000}&take=1000&order=desc&userid=`, this.api), this.requestOptions);
+        const request = new Request(new URL(`${this.path}/chapters?postId=${mangaId}&skip=${page * 1000}&take=1000&order=desc&userid=`, this.url), this.requestOptions);
         const { post } = await this.fetchJSON(request);
 
         return post.chapters.map(chapter => {
@@ -92,35 +92,11 @@ export default class Iken extends Connector {
     async _getMangaFromURI(uri) {
         const slug = uri.pathname.split('/')[2];
 
-        // get all manga until there is a matching slug
-        // if the manga list is empty, simply break the loop
-        for (let page = 1, run = true; run; page++) {
-            let { count, id, title } = await this._getMangaFromURISlugSearch(page, slug);
-
-            if (id) {
-                return new Manga(this, id, title);
-            } else if (count === 0) {
-                run = false;
-            }
-        }
-    }
-
-    async _getMangaFromURISlugSearch(page, slug) {
-        const request = new Request(new URL(`${this.path}?page=${page}&perPage=1000`, this.api), this.requestOptions);
-        const { posts } = await this.fetchJSON(request);
-        const length = posts.length;
-
-        // if the list includes no manga, break loop
-        if (length === 0) return { count: length };
-
-        const post = posts.find(post => {
-            return post.slug === slug;
+        const request = new Request(new URL(`${this.path}/post?postSlug=${slug}`, this.url), this.requestOptions);
+        const { post } = await this.fetchJSON(request);
+        return new Manga({
+            id: post.id,
+            title: post.postTitle
         });
-
-        return {
-            id: post?.id,
-            title: post?.postTitle,
-            count: length
-        };
     }
 }
