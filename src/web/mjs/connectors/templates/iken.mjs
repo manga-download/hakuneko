@@ -25,8 +25,8 @@ export default class Iken extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let request = new Request(new URL(`${this.path}?page=${page}&perPage=1000`, this.api), this.requestOptions);
-        let { posts } = await this.fetchJSON(request);
+        const request = new Request(new URL(`${this.path}?page=${page}&perPage=1000`, this.api), this.requestOptions);
+        const { posts } = await this.fetchJSON(request);
 
         return posts.map(manga => {
             // need an example of a novel page to add support
@@ -50,8 +50,8 @@ export default class Iken extends Connector {
     }
 
     async _getChaptersFromPage(mangaId, page) {
-        let request = new Request(new URL(`/api/chapters?postId=${mangaId}&skip=${page * 1000}&take=1000&order=desc&userid=`, this.api), this.requestOptions);
-        let { post } = await this.fetchJSON(request);
+        const request = new Request(new URL(`/api/chapters?postId=${mangaId}&skip=${page * 1000}&take=1000&order=desc&userid=`, this.api), this.requestOptions);
+        const { post } = await this.fetchJSON(request);
 
         return post.chapters.map(chapter => {
             return {
@@ -67,7 +67,7 @@ export default class Iken extends Connector {
     }
 
     async _getPages(chapter) {
-        let id = JSON.parse(chapter.id);
+        const id = JSON.parse(chapter.id);
 
         // chapter is paywalled
         if (id.paywalled) throw new Error('Chapter is paywalled. Please login.');
@@ -106,9 +106,9 @@ export default class Iken extends Connector {
     }
 
     async _getMangaFromURISlugSearch(page, slug) {
-        let request = new Request(new URL(`${this.path}?page=${page}&perPage=1000`, this.api), this.requestOptions);
-        let { posts } = await this.fetchJSON(request);
-        let length = posts.length;
+        const request = new Request(new URL(`${this.path}?page=${page}&perPage=1000`, this.api), this.requestOptions);
+        const { posts } = await this.fetchJSON(request);
+        const length = posts.length;
 
         // if the list includes no manga, break loop
         if (length === 0) return { count: length };
