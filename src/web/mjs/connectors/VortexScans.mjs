@@ -1,10 +1,10 @@
 import Iken from './templates/Iken.mjs';
 
-export default class Vortex_Scans extends Iken {
+export default class VortexScans extends Iken {
     constructor() {
         super();
-        super.id = 'vortex_scans';
-        super.label = 'Vortex_Scans';
+        super.id = 'vortexscans';
+        super.label = 'VortexScans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
         this.url = 'https://vortexscans.org';
         this.links = {

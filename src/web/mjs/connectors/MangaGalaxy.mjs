@@ -7,7 +7,6 @@ export default class MangaGalaxy extends Iken {
         super.label = 'MangaGalaxy';
         this.tags = [ 'manga', 'english', 'scanlation' ];
         this.url = 'https://mangagalaxy.net';
-        this.api = 'https://mangagalaxy.net';
         this.links = {
             login: 'https://mangagalaxy.net/auth/signin',
         };
