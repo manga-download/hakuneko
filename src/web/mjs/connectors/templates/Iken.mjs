@@ -76,9 +76,15 @@ export default class Iken extends Connector {
 
         const request = new Request(new URL(`/series/${id.series}/${id.chapter}`, this.url), this.requestOptions);
         const script = `
-            new Promise(resolve => {
-                const images = [...document.querySelectorAll('${this.queryPages}')];
-                resolve(images.map(image => image.src));
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        const images = [...document.querySelectorAll('${this.queryPages}')];
+                        resolve(images.map(image => image.src));
+                    } catch (error) {
+                        reject(error);
+                    }
+                }, 1000);
             });
         `;
         return await Engine.Request.fetchUI(request, script);
