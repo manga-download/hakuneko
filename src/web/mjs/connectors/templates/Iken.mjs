@@ -8,8 +8,7 @@ export default class Iken extends Connector {
         super.label = undefined;
         this.tags = [];
         this.url = undefined;
-        this.api = undefined;
-        this.path = '/api';
+        this.apiPath = '/api';
 
         this.queryPages = 'main section img[src]:not([src=""])';
     }
@@ -25,7 +24,7 @@ export default class Iken extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const request = new Request(new URL(`${this.path}/query?page=${page}&perPage=1000`, this.url), this.requestOptions);
+        const request = new Request(new URL(`${this.apiPath}/query?page=${page}&perPage=1000`, this.url), this.requestOptions);
         const { posts } = await this.fetchJSON(request);
 
         return posts.map(manga => {
@@ -50,7 +49,7 @@ export default class Iken extends Connector {
     }
 
     async _getChaptersFromPage(mangaId, page) {
-        const request = new Request(new URL(`${this.path}/chapters?postId=${mangaId}&skip=${page * 1000}&take=1000&order=desc&userid=`, this.url), this.requestOptions);
+        const request = new Request(new URL(`${this.apiPath}/chapters?postId=${mangaId}&skip=${page * 1000}&take=1000&order=desc&userid=`, this.url), this.requestOptions);
         const { post } = await this.fetchJSON(request);
 
         return post.chapters.map(chapter => {
@@ -87,7 +86,7 @@ export default class Iken extends Connector {
 
     async _getMangaFromURI(uri) {
         const slug = uri.pathname.split('/')[2];
-        const request = new Request(new URL(`${this.path}/post?postSlug=${slug}`, this.url), this.requestOptions);
+        const request = new Request(new URL(`${this.apiPath}/post?postSlug=${slug}`, this.url), this.requestOptions);
         const { post } = await this.fetchJSON(request);
         return new Manga({
             id: post.id,
