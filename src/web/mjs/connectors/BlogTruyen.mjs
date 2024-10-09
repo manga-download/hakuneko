@@ -61,11 +61,15 @@ export default class BlogTruyen extends Connector {
     }
 
     async _getPages(chapter) {
+        const script = `new Promise (resolve => {
+            if (window.listImageCaption) resolve (window.listImageCaption.map(image => image.url))
+            else resolve([...document.querySelectorAll('article#content img:not([marginheight])')].map(image => image.src));
+        });`;
         let request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-        let data = await this.fetchDOM(request, 'article#content source');
-        return data.map(element => {
+        let data = await Engine.Request.fetchUI(request, script);
+        return data.map(image => {
             let payload = {
-                url: this.getAbsolutePath(element, request.url),
+                url: image,
                 referer: request.url
             };
             return this.createConnectorURI(payload);
