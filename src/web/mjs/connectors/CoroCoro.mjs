@@ -30,14 +30,23 @@ export default class CoroCoro extends Connector {
         }
         if (uri.pathname.startsWith('/chapter/')) {
             const scripts = await this.fetchDOM(uri, 'script');
-            const script = scripts[scripts.length - 1].innerText;
-            /** @type {string} */
-            const json = eval(script.substring(22, script.length - 2));
-            /** @type {{chapterListSection: {titleName: string}, viewerSection: {titleID: number}}} */
-            const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3];
-            const id = data.viewerSection.titleID.toString();
-            const title = data.chapterListSection.titleName;
-            return new Manga(this, id, title);
+            for (const scriptElem of scripts.reverse()) {
+                const script = scriptElem.innerText;
+                try {
+                    /** @type {string} */
+                    const json = JSON.parse(script.substring(22, script.length - 2));
+                    /** @type {{chapterListSection: {titleName: string}, viewerSection: {titleID: number}}} */
+                    const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3];
+                    const id = data.viewerSection.titleID.toString();
+                    const title = data.chapterListSection.titleName;
+                    return new Manga(this, id, title);
+                } catch (e) {
+                    if (e instanceof SyntaxError || e instanceof TypeError) {
+                        continue;
+                    }
+                    throw e;
+                }
+            }
         }
     }
 
@@ -45,37 +54,64 @@ export default class CoroCoro extends Connector {
     async _getMangas() {
         /** @type {HTMLScriptElement[]} */
         const scripts = await this.fetchDOM(this.url + '/rensai', 'script');
-        const script = scripts[scripts.length - 2].innerText;
-        /** @type {string} */
-        const json = eval(script.substring(22, script.length - 2));
-        /** @type {Object<string, {id: number, name: string}[]>} */
-        const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][3]['weekdays'];
-        return weekdays.flatMap(weekday => data[weekday].map(manga => new Manga(this, manga.id.toString(), manga.name)));
+        for (const scriptElem of scripts.reverse()) {
+            const script = scriptElem.innerText;
+            try {
+                /** @type {string} */
+                const json = JSON.parse(script.substring(22, script.length - 2));
+                /** @type {Object<string, {id: number, name: string}[]>} */
+                const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][3]['weekdays'];
+                return weekdays.flatMap(weekday => data[weekday].map(manga => new Manga(this, manga.id.toString(), manga.name)));
+            } catch (e) {
+                if (e instanceof SyntaxError || e instanceof TypeError) {
+                    continue;
+                }
+                throw e;
+            }
+        }
     }
 
     /** @type {Connector['_getChapters']} */
     async _getChapters(manga) {
         const scripts = await this.fetchDOM(this.url + '/title/' + manga.id, 'script');
-        const script = scripts[scripts.length - 3].innerText;
-        /** @type {string} */
-        const json = eval(script.substring(22, script.length - 2));
-        /** @type {Object<string, {id: number, title: string}[]>} */
-        const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3]['children'][1][3]['section']['chapters'];
-        return ['earlyChapters', 'omittedMiddleChapters', 'latestChapters']
-            .flatMap(key =>
-                data[key].map(chapter => new Chapter(manga, chapter.id.toString(), chapter.title, ''))
-            );
+        for (const scriptElem of scripts.reverse()) {
+            const script = scriptElem.innerText;
+            try {
+                /** @type {string} */
+                const json = JSON.parse(script.substring(22, script.length - 2));
+                /** @type {Object<string, {id: number, title: string}[]>} */
+                const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3]['children'][1][3]['section']['chapters'];
+                return ['earlyChapters', 'omittedMiddleChapters', 'latestChapters']
+                    .flatMap(key =>
+                        data[key].map(chapter => new Chapter(manga, chapter.id.toString(), chapter.title, ''))
+                    );
+            } catch (e) {
+                if (e instanceof SyntaxError || e instanceof TypeError) {
+                    continue;
+                }
+                throw e;
+            }
+        }
     }
 
     /** @type {Connector['_getPages']} */
     async _getPages(chapter) {
         const scripts = await this.fetchDOM(this.url + '/chapter/' + chapter.id, 'script');
-        const script = scripts[scripts.length - 1].innerText;
-        /** @type {string} */
-        const json = eval(script.substring(22, script.length - 2));
-        /** @type {{src: string, crypto: {method: string, key: string, iv: string}}[]} */
-        const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3]['viewerSection']['pages'];
-        return data.map(page => this.createConnectorURI(page));
+        for (const scriptElem of scripts.reverse()) {
+            const script = scriptElem.innerText;
+            try {
+                /** @type {string} */
+                const json = JSON.parse(script.substring(22, script.length - 2));
+                /** @type {{src: string, crypto: {method: string, key: string, iv: string}}[]} */
+                const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3]['viewerSection']['pages'];
+                return data.map(page => this.createConnectorURI(page));
+            } catch (e) {
+                if (e instanceof SyntaxError || e instanceof TypeError) {
+                    continue;
+                }
+                throw e;
+            }
+        }
     }
 
     /**
