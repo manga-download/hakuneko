@@ -2,10 +2,6 @@ import Chapter from '../engine/Chapter.mjs';
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
-function unhex(hex) {
-    return new Uint8Array(hex.match(/../g).map(byte => parseInt(byte, 16)));
-}
-
 export default class CoroCoro extends Connector {
     constructor() {
         super();
@@ -100,17 +96,37 @@ export default class CoroCoro extends Connector {
         if (payload.crypto.method !== 'aes-cbc') {
             throw new Error(`Unsupported encoding method: ${payload.crypto.method}`);
         }
-        const algo = {
-            name: 'AES-CBC',
-            iv: unhex(payload.crypto.iv),
-        };
-        const cryptoKey = await crypto.subtle.importKey('raw', unhex(payload.crypto.key), algo, false, ['decrypt']);
-        const data = await crypto.subtle.decrypt(algo, cryptoKey, encodedData);
+        const key = CryptoJS.enc.Hex.parse(payload.crypto.key);
+        const iv = CryptoJS.enc.Hex.parse(payload.crypto.iv);
+        const ciphertext = CryptoJS.lib.WordArray.create(encodedData);
+        const encryptedCP = CryptoJS.lib.CipherParams.create({
+            ciphertext: ciphertext,
+            formatter: CryptoJS.format.OpenSSL
+        });
+        const decryptedWA = CryptoJS.AES.decrypt(encryptedCP, key, {
+            iv: iv
+        });
         const mimeBuffer = {
             mimeType: undefined,
-            data: new Uint8Array(data),
+            data: this.convertWordArrayToUint8Array(decryptedWA),
         };
         this._applyRealMime(mimeBuffer);
         return mimeBuffer;
+    }
+
+    convertWordArrayToUint8Array(wordArray) {
+        var len = wordArray.words.length,
+            u8_array = new Uint8Array(len << 2),
+            offset = 0,
+            word,
+            i;
+        for (i = 0; i < len; i++) {
+            word = wordArray.words[i];
+            u8_array[offset++] = word >> 24;
+            u8_array[offset++] = word >> 16 & 255;
+            u8_array[offset++] = word >> 8 & 255;
+            u8_array[offset++] = word & 255;
+        }
+        return u8_array;
     }
 }
