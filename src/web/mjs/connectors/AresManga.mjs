@@ -7,7 +7,7 @@ export default class AresManga extends WordPressMangastream {
         super.id = 'aresmanga';
         super.label = 'Ares Manga';
         this.tags = ['webtoon', 'arabic'];
-        this.url = 'https://aresnov.org';
+        this.url = 'https://fl-ares.com';
         this.path = '/series/list-mode/';
     }
 }
