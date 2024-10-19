@@ -23,8 +23,8 @@ export default class HeanCms extends Connector {
         const request = new Request(url, this.requestOptions);
         const {title, series_slug, id} = await this.fetchJSON(request, this.requestOptions);
         return new Manga(this, JSON.stringify({
-             id: id,
-             slug:series_slug
+            id: id,
+            slug:series_slug
         }), title);
     }
 
