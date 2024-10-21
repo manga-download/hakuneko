@@ -1,4 +1,3 @@
-import Chapter from '../engine/Chapter.mjs';
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
 
@@ -34,7 +33,7 @@ export default class CoroCoro extends Connector {
                 /** @type {Object<string, {id: number, name: string}[]>} */
                 const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][3]['weekdays'];
                 return ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-                    .flatMap(weekday => data[weekday].map(manga => new Manga(this, manga.id.toString(), manga.name)));
+                    .flatMap(weekday => data[weekday].map(manga => ({id: manga.id.toString(), title: manga.name})));
             } catch (e) {
                 if (e instanceof SyntaxError || e instanceof TypeError) {
                     continue;
@@ -56,7 +55,7 @@ export default class CoroCoro extends Connector {
                 const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3]['children'][1][3]['section']['chapters'];
                 return ['earlyChapters', 'omittedMiddleChapters', 'latestChapters']
                     .flatMap(key =>
-                        data[key].map(chapter => new Chapter(manga, chapter.id.toString(), chapter.title, ''))
+                        data[key].map(chapter => ({id: chapter.id.toString(), title: chapter.title}))
                     );
             } catch (e) {
                 if (e instanceof SyntaxError || e instanceof TypeError) {
