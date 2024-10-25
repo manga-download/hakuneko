@@ -55,15 +55,28 @@ export default class AllHentai extends Connector {
     }
 
     async _getChapters(manga) {
+        const chapterScript = `
+            new Promise( (resolve, reject) => {
+                try {
+                    setTimeout(() => {
+                        const chapters = [...document.querySelectorAll('div#chapters-list table tr td a[title]')];
+                        resolve(chapters.map(chapter => {
+                            return {
+                                id: chapter.pathname + chapter.search,
+                                title : chapter.text.trim(),
+                            }
+                        }));
+
+                     }, 1500);
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        `;
+
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'div#chapters-list table tr td a[title]');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title : element.text.replace(manga.title, '').trim(),
-            };
-        });
+        return Engine.Request.fetchUI(request, chapterScript, 5000);
     }
 
     async _getPages(chapter) {
