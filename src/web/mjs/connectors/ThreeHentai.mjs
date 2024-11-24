@@ -34,6 +34,6 @@ export default class ThreeHentai extends Connector {
     async _getPages(chapter) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         const data = await this.fetchDOM(request, 'div#thumbnail-gallery div.single-thumb-col div.single-thumb a source.lazy');
-        return data.map(element => element.dataset.src.replace('t.', 'i.'));
+        return data.map(element => element.dataset.src.replace('t.', '.'));
     }
 }

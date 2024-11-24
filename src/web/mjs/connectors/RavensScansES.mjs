@@ -11,6 +11,7 @@ export default class RavensScansES extends ReaderFront {
         this.cdn = 'https://img-cdn1.ravens-scans.com';
         this.apiURL = 'https://api.ravens-scans.com';
         this.language = 'es';
+        this.requestOptions.headers.set('accept', '*/*');
     }
 
     canHandleURI(uri) {

@@ -5,8 +5,8 @@ export default class TopManhua extends WordPressMadara {
     constructor() {
         super();
         super.id = 'topmanhua';
-        super.label = 'Top Manhua';
+        super.label = 'ManhuaTop';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://topmanhua.com';
+        this.url = 'https://manhuatop.org';
     }
 }

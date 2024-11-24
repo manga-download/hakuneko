@@ -7,6 +7,6 @@ export default class RuyaManga extends WordPressMadara {
         super.id = 'ruyamanga';
         super.label = 'Rüya Manga';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://www.ruyamanga.com';
+        this.url = 'https://www.ruya-manga.com';
     }
 }

@@ -6,7 +6,7 @@ export default class MangaLike extends WordPressMadara {
         super();
         super.id = 'mangalike';
         super.label = 'mangalike';
-        this.tags = [ 'manga', 'english' ];
-        this.url = 'https://mangalike.net';
+        this.tags = [ 'manga', 'arabic' ];
+        this.url = 'https://mangalike.org';
     }
 }

@@ -8,5 +8,6 @@ export default class LHTranslation extends WordPressMadara {
         super.label = 'LHTranslation';
         this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
         this.url = 'https://lhtranslation.net';
+        this.queryChapters = 'ul li.wp-manga-chapter > a:first-of-type';
     }
 }

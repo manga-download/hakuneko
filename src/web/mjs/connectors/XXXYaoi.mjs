@@ -7,6 +7,6 @@ export default class XXXYaoi extends WordPressMadara {
         super.id = 'xxxyaoi';
         super.label = 'XXXYaoi';
         this.tags = [ 'hentai', 'high-quality', 'portuguese', 'scanlation' ];
-        this.url = 'https://xxxyaoi.com';
+        this.url = 'https://3xyaoi.com';
     }
 }

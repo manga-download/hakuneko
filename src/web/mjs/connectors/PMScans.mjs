@@ -7,7 +7,7 @@ export default class PMScans extends WordPressMangastream {
         super.id = 'pmscans';
         super.label = 'Rackus';
         this.tags = [ 'manga', 'webtoon', 'scanlation', 'english' ];
-        this.url = 'https://rackusreader.org';
+        this.url = 'https://rackusreads.com';
         this.path = '/manga/list-mode/';
     }
 }

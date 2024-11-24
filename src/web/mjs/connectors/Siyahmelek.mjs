@@ -5,8 +5,18 @@ export default class Siyahmelek extends WordPressMadara {
     constructor() {
         super();
         super.id = 'siyahmelek';
-        super.label = 'Siyahmelek';
+        super.label = 'Gri Melek (Siyahmelek)';
         this.tags = [ 'manga', 'webtoon', 'turkish' ];
-        this.url = 'https://siyahmelek.com';
+        this.url = 'https://grimelek.pro';
+        this.links = {
+            login : 'https://grimelek.pro'//this website needs login to see content !
+        };
+    }
+
+    async _getPages(chapter) {
+        return (await super._getPages(chapter)).filter(picture => {
+            const pic= JSON.parse(atob(new URL(picture).searchParams.get('payload')));
+            return !pic.url.endsWith('xxxxx/99.jpg');
+        });
     }
 }

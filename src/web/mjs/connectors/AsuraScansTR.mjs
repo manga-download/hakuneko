@@ -1,13 +1,13 @@
-import AsuraScans from './AsuraScans.mjs';
+import WordPressMadara from './templates/WordPressMadara.mjs';
 
-export default class AsuraScansTR extends AsuraScans {
+export default class AsuraScansTR extends WordPressMadara {
 
     constructor() {
         super();
         super.id = 'asurascans-tr';
         super.label = 'Asura Scans (TR)';
         this.tags = ['webtoon', 'turkish'];
-        this.url = 'https://asurascanstr.com';
+        this.url = 'https://asurascans.com.tr';
     }
 
     get icon() {

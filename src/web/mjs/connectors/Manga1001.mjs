@@ -1,85 +1,83 @@
-import Connector from '../engine/Connector.mjs';
-import Manga from '../engine/Manga.mjs';
+import MadTheme from './templates/MadTheme.mjs';
 
-export default class Manga1001 extends Connector {
+export default class Manga1001 extends MadTheme {
 
     constructor() {
         super();
         super.id = 'manga1001';
         super.label = 'Manga 1001';
         this.tags = [ 'manga', 'japanese' ];
-        this.url = 'https://manga1001.com';
+        this.url = 'https://manga1001.club';
+        this.path = '/popular';
     }
-
-    canHandleURI(uri) {
-        return /^manga100[01]\.com$/.test(uri.hostname);
-    }
-
-    async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'header.entry-header h1.entry-title');
-        let id = decodeURI(uri.pathname);
-        let title = data[0].textContent.trim();
-        return new Manga(this, id, title);
-    }
-
-    async _getMangas() {
-        let mangaList = [];
-        let uri = new URL(this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'nav.pagination div.nav-links a.page-numbers:nth-last-of-type(2)');
-        let pageCount = parseInt(data[0].text.trim());
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
-        }
-        return mangaList;
-    }
-
-    async _getMangasFromPage(page) {
-        let uri = new URL(`/page/${page}/`, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'main#main header.entry-header h3.entry-title a');
-        return data.map(element => {
-            return {
-                id: decodeURI(element.pathname),
-                title: element.text.trim()
-            };
-        });
-    }
-
     async _getChapters(manga) {
-        let uri = new URL(manga.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.chaplist table.table tbody tr td:first-of-type a');
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'ul#chapter-list li a');
         return data.map(element => {
             return {
-                id: decodeURI(element.pathname),
-                title: element.text.trim(),
-                language: ''
+                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                title: element.querySelector('strong.chapter-title').textContent.trim()
             };
         });
     }
-
     async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.entry-content figure.wp-block-image source');
+        //first : fetch page to read slices (with script execution)
+        let scriptPages = `
+        new Promise(resolve => {
+            setTimeout( () => {
+                resolve(slices);
+            },
+            1000);
+        });
+        `;
+        let request = new Request(this.url + chapter.id, this.requestOptions);
+        const slices = await Engine.Request.fetchUI(request, scriptPages, 5000);
+        //now fetch raw page to get picture elements (which may be full of holes if we let scripts running)
+        request = new Request(this.url + chapter.id, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div#chapter-images source' );
         return data.map(element => {
-            return this.createConnectorURI({
-                url: this.getAbsolutePath(element.dataset.src || element, request.url),
-                referer: request.url
-            });
+            if (element.dataset['src'].includes('scramble')) {
+                return this.createConnectorURI({
+                    url : element.dataset['src'],
+                    slices : slices});
+            } else return element.dataset['src'];
         });
     }
-
     async _handleConnectorURI(payload) {
-        let request = new Request(payload.url, this.requestOptions);
-        request.headers.set('x-referer', payload.referer);
-        let response = await fetch(request);
+        const request = new Request(payload.url, this.requestOptions);
+        const response = await fetch(request);
         let data = await response.blob();
-        data = await this._blobToBuffer(data);
-        this._applyRealMime(data);
-        return data;
+        data = await this.deobfuscate(data, payload.slices);
+        return this._blobToBuffer(data);
+    }
+    async deobfuscate(imgdata, slicedata) {
+        let bitmap = await createImageBitmap(imgdata);
+        return new Promise(resolve => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext('2d');
+            canvas.width = bitmap.width;
+            canvas.height = bitmap.height;
+            const colNum = slicedata.shift();
+            const rowNum = slicedata.shift();
+            const pieceWidth = canvas.width / colNum;
+            const pieceHeight = canvas.height/rowNum;
+            for (var i = 0; i< slicedata.length; i++) {
+                var f = slicedata[i];
+                var b = parseInt(f / colNum);
+                var c = f - b * colNum;
+                var d = c * pieceWidth;
+                var e = b * pieceHeight;
+                var a = parseInt(i / colNum);
+                var g = i - a * colNum;
+                var k = g * pieceWidth;
+                var h = a * pieceHeight;
+                ctx.drawImage(bitmap, k, h, pieceWidth, pieceHeight, d, e, pieceWidth, pieceHeight);
+            }
+            canvas.toBlob(data => {
+                resolve(data);
+            },
+            Engine.Settings.recompressionFormat.value, parseFloat(Engine.Settings.recompressionQuality.value)/100);
+        });
     }
 }

@@ -79,7 +79,7 @@ export default class MangaToon extends Connector {
          * Alternative mobile request (id, token and signature calculations are all handled within the WEEX + VUE application => to much effort to break in):
          * https://sg.mangatoon.mobi/api/content/episodes?sign=e9da6de28b76408e77040935fd221cd3&id=5&_=1557650222&_v=1.3.6&_language=en&_token=4f9b604ed0055dd569105a7b32b6489c10&_udid=1246361632e50c7a9daef1e187471778
          */
-        this.fetchDOM(this.baseURL + manga.id + '/episodes', 'div.episodes-wrap a.episode-item, div.episodes-wrap-new a.episode-item-new')
+        this.fetchDOM(this.baseURL + manga.id + '/episodes', 'div.episode-content-asc div.episodes-wrap a.episode-item, div.episode-content-asc div.episodes-wrap-new a.episode-item-new')
             .then( data => {
                 let chapterList = data.map( element => {
                     let title = element.querySelector('div.episode-title, div.episode-title-new:last-of-type').innerText.replace(/\s+/g, ' ').trim();

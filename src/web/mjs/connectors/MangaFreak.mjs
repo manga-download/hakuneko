@@ -8,11 +8,11 @@ export default class MangaFreak extends Connector {
         super.id = 'mangafreak';
         super.label = 'MangaFreak';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://mangafreak.net';
+        this.url = 'https://mangafreak.me';
     }
 
     canHandleURI(uri) {
-        return /https?:\/\/w+\d*.mangafreak.net/.test(uri.origin);
+        return /https?:\/\/w+\d*.mangafreak.me/.test(uri.origin);
     }
 
     async _initializeConnector() {

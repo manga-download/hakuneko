@@ -25,17 +25,25 @@ export default class ManHuaGui extends SinMH {
             }
         };
         this.queryPagesScript =`
-            new Promise(resolve => {
+            new Promise( (resolve, reject) => {
                 ${this.api}.imgData = function(data) {
-                    let origin = 'https://' + servs[pVars.curServ].hosts[pVars.curHost].h + '.hamreus.com';
-                    let pageLinks = data.files.map(file => origin + data.path + file + '?cid=' + data.cid + '&md5=' + data.sl.md5);
+                    let origin = pVars.manga.filePath;
+                    let pageLinks = data.files.map(file => origin + file + '?e=' + data.sl.e + '&m=' + data.sl.m);
                     return {
                         preInit: () => resolve(pageLinks)
                     };
                 };
-                let script = [...document.querySelectorAll('script:not([src])')].find(script => script.text.trim().startsWith('window[')).text;
-                eval(script);
-            } );
+
+                setTimeout(() => {
+                    try {
+                       let script = [...document.querySelectorAll('script:not([src])')].find(script => script.text.trim().startsWith('window[')).text;
+                       eval(script);
+                    }
+                    catch(error) {
+                        reject(error);
+                    }
+                },1500);
+            });
         `;
     }
 

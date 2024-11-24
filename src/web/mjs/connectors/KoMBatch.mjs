@@ -8,7 +8,7 @@ export default class KoMBatch extends WordPressMangastream {
         super.id = 'kombatch';
         super.label = 'KoMBatch';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://kombatch.com';
+        this.url = 'https://kombatch.cc';
         this.path = '/manga/list-mode/';
     }
 

@@ -32,17 +32,8 @@ export default class NewType extends Connector {
     }
 
     async _getMangas() {
-        let mangaList = [];
-        for (let page = 1, run = true; run; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
-        }
-        return mangaList;
-    }
-
-    async _getMangasFromPage(page) {
-        let request = new Request(new URL(`/contents/all/more/${page}/`, this.url), this.requestOptions);
-        let data = await this._fetchJsonDOM(request, page, 'li a li.detail__txt--ttl h3');
+        const request = new Request(new URL('contents/?refind_search=all/', this.url), this.requestOptions);
+        const data = await this.fetchDOM(request, 'li.detail__txt--ttl');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element.closest('a'), request.url),

@@ -81,7 +81,7 @@ export default class ElevenToon extends Connector {
 
     async _getPages(chapter) {
         let request = new Request(this.url + chapter.id, this.requestOptions);
-        return Engine.Request.fetchUI(request, `new Promise( resolve => resolve( img_list ) )`);
+        const data = await Engine.Request.fetchUI(request, `new Promise( resolve => resolve( img_list ) )`);
+        return data.map(element => this.getRootRelativeOrAbsoluteLink(element, this.url));
     }
-
 }

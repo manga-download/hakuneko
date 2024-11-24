@@ -124,7 +124,7 @@ export default class DownloadJob extends EventTarget {
         for(let page of pages) {
             await this._wait(this.throttle);
             const response = await fetch(page, this.requestOptions);
-            if(response.status !== 200) {
+            if(response.status !== 200 && !Engine.Settings.ignoreErrorOnDownload.value) {
                 throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
             }
             result.push(await response.blob());
@@ -139,7 +139,7 @@ export default class DownloadJob extends EventTarget {
         let promises = pages.map(async (page, index) => {
             await this._wait(index * throttle);
             const response = await fetch(page, this.requestOptions);
-            if(response.status !== 200) {
+            if(response.status !== 200 && !Engine.Settings.ignoreErrorOnDownload.value) {
                 throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
             }
             this.setProgress(this.progress + (pages.length ? 100/pages.length : 0));
@@ -157,7 +157,7 @@ export default class DownloadJob extends EventTarget {
      */
     _downloadPlaylistHLS( episode, directory, callback ) {
         let ffmpeg = {
-            command: ['ffmpeg', '-loglevel', 'error', '-allowed_extensions', 'ALL'],
+            command: ['ffmpeg', '-loglevel', 'error', '-allowed_extensions', 'ALL', '-protocol_whitelist', 'concat,file,http,https,tcp,tls,crypto'],
             inputs: [],
             maps: ['-map', '0:v', '-map', '0:a'],
             metas: []

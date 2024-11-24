@@ -123,6 +123,11 @@ export default class Request {
                     return handleAutomaticRedirect();
                 }
 
+                //ReadComicOnline
+                if(document.querySelector('form#formVerify[action*="/Special/AreYouHuman"]')) { // Recaptcha
+                    return handleUserInteractionRequired();
+                }
+                
                 // CloudFlare Checks
                 let cfCode = document.querySelector('.cf-error-code');
                 if(cfCode) {
@@ -136,17 +141,15 @@ export default class Request {
                 }
 
                 // DDoS Guard Checks
-                if(document.querySelector('div#link-ddg a[href*="ddos-guard"]')) { // Sample => https://manga-tr.com
-                    await new Promise(resolve => setTimeout(resolve, 2500));
+                if(document.querySelector('title') && document.querySelector('title').text == 'DDOS-GUARD') { // Sample => https://manga-tr.com, https://tenshi.moe
+                    await new Promise(resolve => setTimeout(resolve, 7000));
                     return document.querySelector('div#h-captcha') ? handleUserInteractionRequired() : handleAutomaticRedirect();
                 }
 
-                // 9anime WAF re-captcha
-                if(window.location.hostname.includes('9anime')) {
+                // Aniwave WAF
+                if(document.querySelector('title') && document.querySelector('title').text == 'WAF' && document.documentElement.innerHTML.indexOf('/waf-js-run') != -1 ) {
                     await new Promise(resolve => setTimeout(resolve, 5000));
-                    if(document.querySelector('div#episodes form[action*="waf-verify"]')) {
-                        return handleUserInteractionRequired();
-                    }
+                    return handleAutomaticRedirect();
                 }
 
                 // Crunchyscan Re-Captcha

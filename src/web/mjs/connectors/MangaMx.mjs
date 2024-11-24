@@ -8,7 +8,7 @@ export default class MangaMx extends Connector {
         super.id = 'mangamx';
         super.label = 'MangaMx';
         this.tags = ['manga', 'spanish'];
-        this.url = 'https://manga-mx.com';
+        this.url = 'https://manga-oni.com';
     }
 
     async _getMangaFromURI(uri) {

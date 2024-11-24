@@ -10,16 +10,16 @@ export default class NHentaiCom extends Connector {
         this.tags = [ 'hentai' ];
         this.url = 'https://nhentai.com';
     }
-    
+
     async _getMangas() {
         let msg = 'This website provides a manga list that is to large to scrape, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
-    
+
     async _getChapters(manga) {
         return [ Object.assign({language: '' }, manga) ];
     }
-    
+
     async _getPages(chapter) {
         const uri = new URL(`/api/comics/${chapter.id}/images`, this.url);
         const request = new Request(uri, this.requestOptions);
