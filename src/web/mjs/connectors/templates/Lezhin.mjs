@@ -1,8 +1,6 @@
 import Connector from '../../engine/Connector.mjs';
 import Manga from '../../engine/Manga.mjs';
-
 export default class Lezhin extends Connector {
-
     constructor() {
         super();
         super.id = undefined;
@@ -88,7 +86,6 @@ export default class Lezhin extends Connector {
         return fetch(`${this.url}/locale/${this.locale}`, this.requestOptions);
 
     }
-
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.comicInfo__detail h2.comicInfo__title');
@@ -164,7 +161,6 @@ export default class Lezhin extends Connector {
         const request = new Request(`${this.url}/comic/${manga.id}`, this.requestOptions);
         return await Engine.Request.fetchUI(request, script);
     }
-
     async _getPages(chapter) {
         await this._initializeAccount();
 

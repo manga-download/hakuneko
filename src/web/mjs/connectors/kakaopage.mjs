@@ -1,18 +1,16 @@
 import Connector from '../engine/Connector.mjs';
 import Manga from '../engine/Manga.mjs';
-
 export default class kakaopage extends Connector {
-
     constructor() {
         super();
         super.id = 'kakaopage';
         super.label = 'Page Kakao (카카오페이지) ';
         this.tags = [ 'webtoon', 'manga', 'korean' ];
         this.url = 'https://page.kakao.com';
+        this.api = 'https://page.kakao.com/graphql';
         this.requestOptions.headers.set('x-origin', this.url);
         this.requestOptions.headers.set('x-referer', this.url);
     }
-
     async _getMangaFromURI(uri) {
         uri = new URL(uri);
         const request = new Request(uri, this.requestOptions);
@@ -21,12 +19,10 @@ export default class kakaopage extends Connector {
         let title = data[0].content.trim();
         return new Manga(this, id, title);
     }
-
     async _getMangas() {
         let msg = 'This website does not provide a manga list, please copy and paste the URL containing the images directly from your browser into HakuNeko.';
         throw new Error(msg);
     }
-
     async _getChapters(manga) {
         let nextCursor = '';
         const chapterList = [];
