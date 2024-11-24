@@ -14,3 +14,4 @@ cache
 /test/*.log
 junit.xml
 .idea/
+.vs
