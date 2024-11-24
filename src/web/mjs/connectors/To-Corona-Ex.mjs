@@ -10,14 +10,19 @@ export default class ToCoronaEx extends Connector {
         this.url = "https://to-corona-ex.com/";
         this.apiurl = 'https://api.to-corona-ex.com';
         this.cdnurl = 'https://cdn.to-corona-ex.com';
+        this.apikey = 'K4FWy7Iqott9mrw37hDKfZ2gcLOwO-kiLHTwXT8ad1E=';
+        this.requestOptions.headers.set('X-API-Environment-Key', this.apikey);
     }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, ".mi-text-xl.mi-font-semibold"); //title object
-        const id = uri.pathname.split("/")[2];//just the id of the comic.
-        let title = data[0].textContent.trim();
-        return new Manga(this, id, title);
+        const script = `
+        new Promise((resolve, reject) => {
+            resolve({id : __NEXT_DATA__.props.pageProps.comicId,title : __NEXT_DATA__.props.pageProps.fallbackData.comicResponse ?  __NEXT_DATA__.props.pageProps.fallbackData.comicResponse.title :  __NEXT_DATA__.props.pageProps.fallbackData.comic.title});
+        });
+        `;
+        const data = await Engine.Request.fetchUI(request, script, 2500);
+        return new Manga(this, data.id, data.title.replace('@COMIC', '').trim());
     }
 
     async _getMangas() {

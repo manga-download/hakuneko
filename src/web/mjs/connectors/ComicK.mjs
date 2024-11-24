@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import HeaderGenerator from '../engine/HeaderGenerator.mjs';
 import Manga from '../engine/Manga.mjs';
 
 export default class ComicK extends Connector {
@@ -8,12 +9,20 @@ export default class ComicK extends Connector {
         super.id = 'comick';
         super.label = 'ComicK';
         this.tags = [ 'manga', 'english' ];
-        this.url = 'https://comick.fun';
-        this.apiurl = 'https://api.comick.fun';
+        this.url = 'https://comick.io';
+        this.apiurl = 'https://api.comick.io';
+        this.requestOptions.headers.set('x-origin', this.url );
+        this.requestOptions.headers.set('x-referer', this.apiurl );
+
+    }
+
+    canHandleURI(uri) {
+        return /https?:\/\/comick\.(app|ink|cc|io)/.test(uri.origin);
     }
 
     async _getEmbeddedJSON(uri) {
         const request = new Request(uri, this.requestOptions);
+        request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
         const scripts = await this.fetchDOM(request, 'script#__NEXT_DATA__');
         const data = JSON.parse(scripts[0].text);
         return data.props.pageProps;
@@ -21,7 +30,7 @@ export default class ComicK extends Connector {
 
     async _getMangaFromURI(uri) {
         const data = await this._getEmbeddedJSON(uri);
-        return new Manga(this, data.comic.slug, data.comic.title.trim());
+        return new Manga(this, data.comic.hid, data.comic.title.trim());
     }
 
     async _getMangas() {
@@ -34,30 +43,36 @@ export default class ComicK extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL('/search?page=' + page, this.apiurl);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSONEx(request);
-        return data.message ? [] : data.map(item => {
-            return {
-                id: item.slug,
-                title: item.title.trim()
-            };
-        });
+        try {
+            const uri = new URL('/v1.0/search?limit=49&page=' + page, this.apiurl);
+            const request = new Request(uri, this.requestOptions);
+            request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
+            await this.wait(500);
+            const data = await this.fetchJSONEx(request);
+            return data.message ? [] : data.map(item => {
+                return {
+                    id: item.hid,
+                    title: item.title.trim()
+                };
+            });
+        } catch (error) {
+            return [];
+        }
     }
 
     async _getChapters(manga) {
         let chapterList = [];
-        const comicId = await this._getComicId(manga);
         for (let page = 1, run = true; run; page++) {
-            const chapters = await this._getChaptersFromPage(comicId, page);
+            const chapters = await this._getChaptersFromPage(manga, page);
             chapters.length > 0 ? chapterList.push(...chapters) : run = false;
         }
         return chapterList;
     }
 
-    async _getChaptersFromPage(comicId, page) {
-        const uri = new URL(`/comic/${comicId}/chapter?page=${page}`, this.apiurl);
+    async _getChaptersFromPage(manga, page) {
+        const uri = new URL(`/comic/${manga.id}/chapters?page=${page}`, this.apiurl);
         const request = new Request(uri, this.requestOptions);
+        request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
         const data = await this.fetchJSONEx(request);
         return data.chapters.map(item => {
             let title = '';
@@ -83,15 +98,9 @@ export default class ComicK extends Connector {
     async _getPages(chapter) {
         const uri = new URL('/chapter/' + chapter.id, this.apiurl);
         const request = new Request(uri, this.requestOptions);
+        request.headers.set('x-user-agent', HeaderGenerator.randomUA() );
         const data = await this.fetchJSONEx(request);
         return data.chapter.md_images.map(image => `https://meo.comick.pictures/${image.b2key}`);
-    }
-
-    async _getComicId(manga) {
-        const uri = new URL('/comic/' + manga.id, this.apiurl);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSONEx(request);
-        return data.comic.id;
     }
 
     async fetchJSONEx(request, retries) {

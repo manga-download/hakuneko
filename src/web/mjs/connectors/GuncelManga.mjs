@@ -7,6 +7,6 @@ export default class GuncelManga extends WordPressMadara {
         super.id = 'guncelmanga';
         super.label = 'Güncel Manga';
         this.tags = [ 'manga', 'turkish' ];
-        this.url = 'https://guncelmanga.com';
+        this.url = 'https://guncelmanga.net';
     }
 }

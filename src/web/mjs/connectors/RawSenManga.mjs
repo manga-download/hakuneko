@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class RawSenManga extends Connector {
 
@@ -12,6 +13,13 @@ export default class RawSenManga extends Connector {
             login: 'https://raw.senmanga.com/login'
         };
         this.requestOptions.headers.set('x-cookie', 'viewer=1');
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const id = uri.pathname;
+        const title = (await this.fetchDOM(request, 'div.desc h1.series'))[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
@@ -28,10 +36,10 @@ export default class RawSenManga extends Connector {
 
     async _getMangasFromPage(page) {
         let request = new Request(this.url + '/directory?page=' + page, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.content div.upd div.item > a');
+        let data = await this.fetchDOM(request, 'div.content div.mng');
         return data.map(element => {
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
+                id: this.getRootRelativeOrAbsoluteLink(element.querySelector('a'), this.url),
                 title: element.querySelector('div.series-title').textContent.trim()
             };
         });
@@ -50,12 +58,8 @@ export default class RawSenManga extends Connector {
     }
 
     async _getPages(chapter) {
-        let script = `
-            new Promise(resolve => {
-                resolve(imglist.map(img => img.url));
-            });
-        `;
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const request = new Request(this.url + chapter.id, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.reader source.picture');
+        return data.filter(picture => !picture.src.includes('histats') ).map(picture => this.getRootRelativeOrAbsoluteLink(picture, this.url));
     }
 }

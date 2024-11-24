@@ -7,83 +7,63 @@ export default class PiccomaFR extends Piccoma {
         super();
         super.id = 'piccoma-fr';
         super.label = 'Piccoma (French)';
-        this.tags = ['webtoon', 'french'];
-        this.url = 'https://fr.piccoma.com';
-        this.requestOptions.headers.set('x-referer', 'https://fr.piccoma.com/fr');
+        this.tags = ['manga', 'webtoon', 'french'];
+        this.url = 'https://piccoma.com/fr';
+        this.viewer = '/viewer/';
+        this.requestOptions.headers.set('x-referer', 'https://piccoma.com/fr');
+    }
+
+    getAPI(endpoint) {
+        return new URL(this.url + '/api/haribo/api/public/v2' + endpoint);
+    }
+
+    canHandleURI(uri) {
+        return new RegExp('^https://(fr\\.)?piccoma.com/fr/product(/episode)?/\\d+$').test(uri);
     }
 
     async _getMangaFromURI(uri) {
-        const id = uri.pathname;
-        const request = new Request(uri, this.requestOptions);
-        const data = await this._getNextData(request);
-        const title = data.props.pageProps.initialState.productHome.productHome.product.title;
-        return new Manga(this, id, title);
+        const id = uri.href.split('/').pop();
+        const request = new Request(`${this.url}/product/${id}`, this.requestOptions);
+        const [ element ] = await this.fetchDOM(request, 'meta[property="og:title"]');
+        return new Manga(this, id, element.content.split('|').shift().trim());
     }
 
     async _getMangas() {
-        let msg = 'This website does not provide a manga list, please copy and paste the URL containing the chapters directly from your browser into HakuNeko.';
-        throw new Error(msg);
+        const mangaList = [];
+        const vowels = 'aeiou'.split('');
+        for (const word of vowels) {
+            for (let page = 1, run = true; run; page++) {
+                const mangas = await this.getMangasFromPage(word, page);
+                mangas.length > 0 ? mangaList.push(...mangas) : run = false;
+            }
+        }
+        return [...new Set(mangaList.map(manga => manga.id))].map(id => mangaList.find(manga => manga.id === id));
+    }
+
+    async getMangasFromPage(word, page) {
+        const uri = this.getAPI('/search/product');
+        uri.searchParams.set('search_type', 'P');
+        uri.searchParams.set('word', word);
+        uri.searchParams.set('page', `${page}`);
+        const { data: { p_products: entries } } = await this.fetchJSON(new Request(uri, this.requestOptions));
+        return entries.map(entry => {
+            return {
+                id: entry.product_id,
+                title: entry.title,
+            };
+        });
     }
 
     async _getChapters(manga) {
-        const uri = new URL(manga.id, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const nextData = await this._getNextData(request);
-        const episodes = nextData.props.pageProps.initialState.productHome.productHome.episode_list;
-        const productId = manga.id.split('/').pop();
-        return episodes.map(ep => {
+        const request = new Request(`${this.url}/product/episode/${manga.id}`, this.requestOptions);
+        const [ { text: json } ] = await this.fetchDOM(request, 'script#__NEXT_DATA__');
+        const chapters = JSON.parse(json).props.pageProps.initialState.episode.episodeList.episode_list;
+        return chapters.map(chapter => {
             return {
-                id: `${nextData.buildId}/fr/viewer/${productId}/${ep.id}`,
-                title: ep.title,
+                id: chapter.id,
+                title: chapter.title
             };
-        }).reverse();
+        });
     }
 
-    async _getPages(chapter) {
-        const result = await this._fetchChapterNextData(chapter);
-        const pdata = result.pageProps.initialState.viewer.pData;
-        const images = pdata.img;
-        if (images == null) {
-            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
-        }
-        return images
-            .filter(img => !!img.path)
-            .map(img => {
-                return this.createConnectorURI({
-                    url: img.path,
-                    key: this._getSeed(img.path),
-                    pdata
-                });
-            });
-    }
-
-    _getSeed(url) {
-        const uri = new URL(url);
-        const checksum = uri.searchParams.get('q');
-        const expires = uri.searchParams.get('expires');
-        const total = expires.split('').reduce((total, num2) => total + parseInt(num2), 0);
-        const ch = total % checksum.length;
-        return checksum.slice(ch * -1) + checksum.slice(0, ch * -1);
-    }
-
-    async _getNextData(request) {
-        const [data] = await this.fetchDOM(request, '#__NEXT_DATA__');
-        return JSON.parse(data.textContent);
-    }
-
-    async _fetchChapterNextData(chapter) {
-        const parts = chapter.id.split('/');
-        const productId = parts[3];
-        const episodeId = parts[4];
-        const uri = new URL(`fr/_next/data/${chapter.id}.json`, this.url);
-        uri.searchParams.set('productId', productId);
-        uri.searchParams.set('episodeId', episodeId);
-        const request = new Request(uri, this.requestOptions);
-        try {
-            return await this.fetchJSON(request);
-        } catch (error) {
-            console.error(error);
-            throw new Error(`The chapter '${chapter.title}' is neither public, nor purchased!`);
-        }
-    }
 }

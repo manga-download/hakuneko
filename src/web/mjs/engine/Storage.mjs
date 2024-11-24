@@ -448,7 +448,7 @@ export default class Storage {
             }
             if (Engine.Settings.chapterFormat.value === extensions.cbz) {
                 this._createDirectoryChain(this.path.dirname(output));
-                promise = this._saveChapterPagesCBZ(output, pageData)
+                promise = this._saveChapterPagesCBZ(output, pageData, chapter.manga.title, chapter.title)
                     .then(() => this._runPostChapterDownloadCommand(chapter, output));
             }
             if (Engine.Settings.chapterFormat.value === extensions.pdf) {
@@ -516,9 +516,10 @@ export default class Storage {
      * Add a single image as PDF page to the given document.
      */
     async _addImageToPDF(pdfDocument, page) {
-        let bitmap = await new Promise(resolve => {
+        let bitmap = await new Promise((resolve, reject) => {
             let img = new Image();
             img.onload = () => resolve(img);
+            img.onerror = () => reject(new Error('Failed to load image!'));
             img.src = URL.createObjectURL(page.data);
         });
         let pdfImgType = this._pdfImageType(page);
@@ -547,8 +548,12 @@ export default class Storage {
      * Create and save pages to the given archive file.
      * Callback will be executed after completion and provided with an array of errors (or an empty array when no errors occured).
      */
-    _saveChapterPagesCBZ(archive, pageData) {
+    _saveChapterPagesCBZ(archive, pageData, mangaName = '', chapterName = '') {
         let zip = new JSZip();
+
+        let comicFile = Engine.ComicInfoGenerator.createComicInfoXML(mangaName, chapterName, pageData.length);
+        zip.file('ComicInfo.xml', comicFile);
+
         pageData.forEach(page => {
             zip.file(page.name, page.data);
         });
@@ -772,21 +777,22 @@ export default class Storage {
 
     /**
      * Create a path without forbidden characters.
-     * Based on HakuNeko legacy for backward compatibility to detect existing mangas/chapters.
-     * LINUX: wxT("/\r\n\t");
-     * WINDOWS: wxT("\\/:*?\"<>|\r\n\t");
-     */
+    */
     sanatizePath(path) {
+
+        //replace C0 && C1 control codes
+        // eslint-disable-next-line no-control-regex
+        path = path.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
         if (this.platform.indexOf('win') === 0) {
             // TODO: max. 260 characters per path
-            path = path.replace(/[\\/:*?"<>|\r\n\t]/g, '');
+            path = path.replace(/[\\/:*?"<>|]/g, '');
         }
         if (this.platform.indexOf('linux') === 0) {
-            path = path.replace(/[/\r\n\t]/g, '');
+            path = path.replace(/[/]/g, '');
         }
         if (this.platform.indexOf('darwin') === 0) {
             // TODO: max. 32 chars per part
-            path = path.replace(/[/:\r\n\t]/g, '');
+            path = path.replace(/[/:]/g, '');
         }
         return path.replace(/[.\s]+$/g, '').trim();
     }

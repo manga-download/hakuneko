@@ -8,6 +8,7 @@ import BookmarkManager from './engine/BookmarkManager.mjs';
 import ChaptermarkManager from './engine/ChaptermarkManager.mjs';
 import Connectors from './engine/Connectors.mjs';
 import DownloadManager from './engine/DownloadManager.mjs';
+import ComicInfoGenerator from './engine/ComicInfoGenerator.mjs';
 //import HistoryWorker from './engine/HistoryWorker.mjs'
 import Request from './engine/Request.mjs';
 import Settings from './engine/Settings.mjs';
@@ -32,6 +33,7 @@ export default class HakuNeko {
         this._connectors = new Connectors(ipc);
         this._storage = new Storage();
         this._bookmarkManager = new BookmarkManager(this._settings, new BookmarkImporter());
+        this._comicInfoGenerator = new ComicInfoGenerator();
         this._chaptermarkManager = new ChaptermarkManager(this._settings);
         this._discordPresence = new DiscordPresence(this._settings);
     }
@@ -61,6 +63,10 @@ export default class HakuNeko {
 
     get BookmarkManager() {
         return this._bookmarkManager;
+    }
+
+    get ComicInfoGenerator() {
+        return this._comicInfoGenerator;
     }
 
     get ChaptermarkManager() {

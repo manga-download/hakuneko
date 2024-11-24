@@ -7,8 +7,7 @@ export default class PojokManga extends WordPressMadara {
         super.id = 'pojokmanga';
         super.label = 'PojokManga';
         this.tags = [ 'manga', 'webtoon', 'indonesian' ];
-        this.url = 'https://pojokmanga.com';
-
+        this.url = 'https://pojokmanga.id';
         this.queryTitleForURI = 'div.profile-manga div.post-title h1';
     }
 }

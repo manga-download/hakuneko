@@ -7,6 +7,6 @@ export default class SamuraiScan extends WordPressMadara {
         super.id = 'samuraiscan';
         super.label = 'Samurai Scan';
         this.tags = [ 'webtoon', 'spanish' ];
-        this.url = 'https://samuraiscan.com';
+        this.url = 'https://latan.visorsmr.com';
     }
 }

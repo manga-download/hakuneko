@@ -7,11 +7,8 @@ export default class MangaShiro extends WordPressMangastream {
         super.id = 'mangashiro';
         super.label = 'MangaShiro';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://mangashiro.co';
+        this.url = 'https://mangashiro.me';
         this.path = '/manga/?list';
-
-        this.queryChapters = 'div.bxcl ul li span.lchx a';
-        this.queryChaptersTitle = undefined;
         this.queryPages = 'div#readerarea > :not(.kln) img[src]:not([src=""])';
     }
 

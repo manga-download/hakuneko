@@ -66,7 +66,7 @@ export default class ReadManga extends Connector {
         let data = await this.fetchDOM(request, 'div#mangaBox' );
         let content = data[0];
         let mangaTitle = content.querySelector('h1.names span.name').innerText.trim();
-        let chapterList = [...content.querySelectorAll('div.chapters-link table tr td a')];
+        let chapterList = [...content.querySelectorAll('div#chapters-list table tr td a')];
         return chapterList.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, this.url),
@@ -80,7 +80,7 @@ export default class ReadManga extends Connector {
         const script = `
             new Promise(resolve => {
                 const payload = {
-                    pics: rm_h.pics.map(pic => pic.url),
+                    pics: rm_h.pics.map(pic => rm_h.reader.preparePicUrl(pic.url)),
                     servers: rm_h.servers.map(server => server.path)
                 };
                 resolve(payload);

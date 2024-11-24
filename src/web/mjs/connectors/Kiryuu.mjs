@@ -7,7 +7,7 @@ export default class Kiryuu extends WordPressMangastream {
         super.id = 'kiryuu';
         super.label = 'Kiryuu';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://kiryuu.id';
+        this.url = 'https://kiryuu.org';
         this.path = '/manga/list-mode/';
     }
 

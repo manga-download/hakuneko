@@ -59048,10 +59048,10 @@ module.exports = class PNG {
           var text = this.read(chunkSize);
           var index = text.indexOf(0);
           var key = String.fromCharCode.apply(String, text.slice(0, index));
-          this.text[key] = String.fromCharCode.apply(
-            String,
-            text.slice(index + 1)
-          );
+          this.text[key] = '';
+          text.slice(index + 1).forEach(element => {
+            this.text[key] += String.fromCharCode(element);
+          });
           break;
 
         case 'IEND':

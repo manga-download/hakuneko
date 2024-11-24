@@ -6,7 +6,7 @@ export default class KissComic extends Connector {
     constructor() {
         super();
         super.id = 'kisscomic';
-        super.label = 'KissComic (ReadComicOnline)';
+        super.label = 'ReadComicOnline.li (KissComic)';
         this.tags = [ 'comic', 'english' ];
         this.url = 'https://readcomiconline.li';
     }
@@ -53,13 +53,25 @@ export default class KissComic extends Connector {
 
     async _getPages(chapter) {
         const script = `
-            new Promise(resolve => resolve(lstImages));
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        resolve(
+                            Array.from(document.querySelectorAll('#divImage img'))
+                                .map(img => (img.src || '').replace(/=s\\d+/, '=s0'))
+                                .filter(Boolean)
+                        )
+                    } catch (err) {
+                        reject(err);
+                    }
+                }, 1000);
+            });
         `;
 
         const uri = new URL(chapter.id, this.url);
         uri.searchParams.set('readType', 1);
         uri.searchParams.set('quality', 'hq');
-        let request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, script);
+        const request = new Request(uri, this.requestOptions);
+        return Engine.Request.fetchUI(request, script, 60000, true);
     }
 }

@@ -7,7 +7,7 @@ export default class Nekomik extends WordPressMangastream {
         super.id = 'nekomik';
         super.label = 'Nekomik';
         this.tags = ['manga', 'indonesian'];
-        this.url = 'https://nekomik.com/';
+        this.url = 'https://nekomik.me';
         this.path = '/manga/list-mode/';
     }
 }

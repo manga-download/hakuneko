@@ -7,7 +7,7 @@ export default class xianman123 extends MH {
         super.id = 'xianman123';
         super.label = 'XianMan123';
         this.tags = [ 'manga', 'webtoon', 'chinese' ];
-        this.url = 'https://www.xianman123.com';
+        this.url = 'https://www.xianmanwang.com';
 
         this.path = '/f-1-0-0-0-0-2-%PAGE%.html';
         this.queryMangasPageCount = 'div.page-pagination ul.pagination li:nth-last-child(3) a';
