@@ -1,0 +1,391 @@
+message Announcement {
+    optional uint32 id = 1;
+    optional string subject = 2;
+    optional string body = 3;
+    optional uint32 published = 4;
+}
+
+message Author {
+    optional uint32 id = 1;
+    optional string name = 2;
+    optional string nameKana = 3;
+    optional string role = 4;
+    optional Image image = 5;
+    optional bool fanLetterEnabled = 6;
+    optional bool authorPageEnabled = 7;
+    optional bool isFollowing = 8;
+}
+
+message Banner {
+    optional uint32 id = 1;
+    optional uint32 slotId = 2;
+    optional Image image = 3;
+}
+
+message Chapter {
+    optional uint32 id = 1;
+    optional string mainName = 2;
+    optional string subName = 3;
+    optional Image image = 4;
+    optional PointConsumption pointConsumption = 5;
+    optional uint32 endOfRentalPeriod = 6;
+    optional uint32 numberOfComments = 7;
+    optional uint32 numberOfLikes = 8;
+    optional uint32 startTime = 9;
+    optional uint32 endTime = 10;
+    optional int32 badge = 11;
+    optional bool alreadyViewed = 12;
+    optional uint32 nextUpdateTime = 13;
+}
+
+message Comment {
+    optional uint32 id = 1;
+    optional uint32 index = 2;
+    optional bool isMyComment = 3;
+    optional bool alreadyLiked = 4;
+    optional uint32 numberOfLikes = 5;
+    optional string body = 6;
+    optional uint32 created = 7;
+}
+
+message Contact {
+    optional uint32 id = 1;
+    optional bool isReply = 2;
+    optional string body = 3;
+    optional uint32 created = 4;
+}
+
+message Fortune {
+    message FortuneResult {
+        optional uint32 eventPoint = 1;
+        optional string synastryPercentCharacter = 2;
+    }
+
+    optional uint32 id = 1;
+    optional Image image = 2;
+    optional string name = 3;
+    optional string descriptionShort = 4;
+    optional string descriptionLong = 5;
+    optional string hashTags = 6;
+    optional Title title = 7;
+    optional Fortune.FortuneResult result = 8;
+}
+
+message Image {
+    optional string src = 1;
+    optional uint32 height = 2;
+    optional uint32 width = 3;
+    optional string alt = 4;
+    optional string url = 5;
+    optional bool targetBlank = 6;
+}
+
+message LoginValidation {
+    optional string emailErrMsg = 2;
+    optional string passwordErrMsg = 3;
+    optional string otherErrMsg = 4;
+}
+
+message Mission {
+    optional uint32 id = 1;
+    optional string name = 2;
+    optional uint32 eventPoint = 3;
+    optional string description = 4;
+    optional string url = 5;
+    optional string expiration = 6;
+    optional uint32 achievedCount = 7;
+    optional uint32 totalCount = 8;
+    optional string moveButton = 9;
+}
+
+message MyComment {
+    optional uint32 id = 1;
+    optional uint32 index = 2;
+    optional uint32 titleId = 3;
+    optional uint32 chapterId = 4;
+    optional string titleName = 5;
+    optional string chapterName = 6;
+    optional string chapterSubName = 7;
+    optional uint32 numberOfLikes = 8;
+    optional string body = 9;
+    optional uint32 created = 10;
+}
+
+message Pickup {
+    optional uint32 id = 1;
+    optional string name = 2;
+    optional string shortDescription = 3;
+    repeated Image image = 4;
+    optional string moveButton = 5;
+}
+
+message Point {
+    optional uint32 event = 1;
+    optional uint32 paid = 2;
+}
+
+message PointConsumption {
+    optional int32 type = 1;
+    optional uint32 amount = 2;
+}
+
+message Popup {
+    optional uint32 id = 1;
+    optional string popupCode = 2;
+    optional string subject = 3;
+    optional string body = 4;
+    optional Image image = 5;
+    optional string okButton = 6;
+    optional string url = 7;
+    optional bool targetBlank = 8;
+    optional int32 type = 9;
+    optional uint32 start = 10;
+}
+
+message Sns {
+    optional string body = 1;
+    optional string url = 2;
+}
+
+message SpecialBlock {
+    optional uint32 id = 1;
+    optional Image image = 2;
+}
+
+message Tag {
+    optional string id = 1;
+    optional string type = 2;
+    optional string name = 3;
+    optional string url = 4;
+}
+
+message Title {
+    optional uint32 id = 1;
+    optional uint32 chapterId = 2;
+    optional string name = 3;
+    optional string nameKana = 4;
+    optional Image image = 5;
+    optional string shortDescription = 6;
+    optional string campaign = 7;
+    optional uint32 numberOfTotalChapterLikes = 8;
+    optional uint32 numberOfBookmarks = 9;
+    optional int32 badge = 10;
+    optional uint32 ticketRecoveryTime = 11;
+    optional uint32 lastUpdated = 12;
+    optional bool isCommentEnabled = 13;
+    optional bool chapterReversed = 14;
+}
+
+message TitleList {
+    optional Tag tag = 1;
+    repeated Title titles = 2;
+}
+
+message ViewerLastPage {
+    optional Point userPoint = 1;
+    optional bool isFavorite = 2;
+    optional uint32 numberOfFavorites = 3;
+    optional uint32 numberOfLikes = 4;
+    optional uint32 numberOfMyLikes = 5;
+    optional bool isCommentEnabled = 6;
+    optional uint32 numberOfComments = 7;
+    optional Chapter nextChapter = 8;
+    repeated Title recommendedTitles = 9;
+    optional string nextUpdateInfo = 10;
+}
+
+message AnnouncementListView {
+
+}
+
+message AuthScreenMessagesView {
+    optional string loginMessage = 1;
+    optional string registerMessage = 2;
+}
+
+message AuthorDetailView {
+    message Sns {
+        optional int32 type = 1;
+        optional string url = 2;
+    }
+
+    optional Author author = 1;
+    repeated Title relatedTitles = 2;
+    repeated AuthorDetailView.Sns sns = 3;
+    optional string bio = 4;
+    optional string twitterId = 5;
+    optional bool canFanletterPost = 6;
+}
+
+message AuthorListView {
+
+}
+
+message CommentListView {
+    repeated Comment comments = 1;
+    optional bool canPost = 2;
+    optional Title title = 3;
+    optional Chapter chapter = 4;
+}
+
+message ContactListView {
+
+}
+
+message CopyrightListView {
+    message CopyrightNotice {
+        optional string titleName = 1;
+        repeated string copyright = 2;
+    }
+
+}
+
+message FortuneListView {
+    repeated Fortune fortuneList = 1;
+    optional Fortune choiceOfToday = 2;
+}
+
+message FortuneResultView {
+
+}
+
+message GiftConfirmView {
+    optional int32 state = 1;
+    optional uint32 eventPoint = 2;
+}
+
+message HomeView {
+    optional Point userPoint = 1;
+    optional Announcement announcement = 2;
+    repeated Banner topBanners = 3;
+    repeated Title updatedTitles = 4;
+    optional Pickup pickup = 5;
+    repeated TitleList rankings = 6;
+    repeated TitleList tagRelatedTitles = 7;
+    repeated Title oneShots = 8;
+    optional Popup popup = 9;
+    optional bool pushPermission = 10;
+    repeated Banner topSubBanners = 11;
+}
+
+message LoginTeaserView {
+    optional bool result = 1;
+    optional LoginValidation loginValidation = 2;
+}
+
+message LoginView {
+    message TermsOfUseItemsRequiredAgreement {
+        optional bool corocoroComics = 1;
+        optional bool digitalComicsService = 2;
+    }
+
+    optional bool result = 1;
+    optional string url = 2;
+    optional LoginValidation loginValidation = 3;
+    optional LoginView.TermsOfUseItemsRequiredAgreement items = 4;
+}
+
+message MissionListView {
+
+}
+
+message MissionList {
+    optional string name = 1;
+    repeated Mission missions = 2;
+}
+
+message MyCommentListView {
+
+}
+
+message PointView {
+
+}
+
+message RegisterResultView {
+    optional bool result = 1;
+    optional string successMsg = 2;
+    optional string emailErrMsg = 3;
+    optional string passwordErrMsg = 4;
+    optional string birthdayErrMsg = 5;
+    optional string sexErrMsg = 6;
+    optional string otherErrMsg = 7;
+}
+
+message SpecialView {
+    optional string name = 1;
+    repeated SpecialBlock blocks = 2;
+    optional string description = 3;
+}
+
+message TitleDetailView {
+    message ViewButton {
+        optional Chapter chapter = 1;
+        optional string buttonTitle = 2;
+    }
+
+    message MagazineBanner {
+        optional Image image = 1;
+        optional string description = 2;
+    }
+
+    optional Point userPoint = 1;
+    optional Title title = 2;
+    repeated Author authors = 3;
+    repeated Tag tags = 4;
+    optional bool isFavorite = 5;
+    optional string longDescription = 6;
+    optional string nextUpdateInfo = 7;
+    repeated Chapter chapters = 8;
+    repeated Title recommendedTitles = 9;
+    repeated Title relatedTitles = 10;
+    optional string movieUrl = 11;
+    optional string volumeShopUrl = 12;
+    optional TitleDetailView.MagazineBanner magazineBanner = 13;
+    optional TitleDetailView.ViewButton viewButton = 14;
+    optional string rewardUrl = 16;
+    optional Sns sns = 17;
+}
+
+message TitleListListView {
+
+}
+
+message TitleListView {
+
+}
+
+message ViewerSeoView {
+    optional Title title = 1;
+    optional Chapter chapter = 2;
+    repeated Author authors = 3;
+}
+
+message ViewerView {
+    optional Point userPoint = 1;
+    repeated Image pages = 2;
+    repeated Banner beforeBanners = 3;
+    repeated Banner afterBanners = 4;
+    optional Chapter currentChapter = 5;
+    optional Chapter prevChapter = 6;
+    optional Chapter nextChapter = 7;
+    optional int32 pageStart = 8;
+    optional int32 scroll = 9;
+    repeated Chapter chapters = 10;
+    repeated Title recommendedTitles = 11;
+    repeated Title relatedTitles = 12;
+    optional string volumeShopUrl = 13;
+    optional ViewerLastPage lastPage = 14;
+    optional Title title = 15;
+    optional Sns sns = 16;
+    repeated Author authors = 17;
+    repeated Mission missions = 18;
+    optional string aesKey = 19;
+    optional string aesIv = 20;
+    optional int32 result = 21;
+}
+
+message WithdrawalView {
+    optional bool result = 1;
+    optional int32 errorCode = 2;
+}

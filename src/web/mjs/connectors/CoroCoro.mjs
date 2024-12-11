@@ -8,6 +8,10 @@ export default class CoroCoro extends Connector {
         super.label = '週刊コロコロコミック (Shuukan CoroCoro Comic)';
         this.tags = ['manga', 'japanese'];
         this.url = 'https://www.corocoro.jp';
+        this.protoTypes = '/mjs/connectors/CoroCoro.proto';
+    }
+
+    async _initializeConnector() {
     }
 
     /**
@@ -45,58 +49,34 @@ export default class CoroCoro extends Connector {
 
     /** @type {Connector['_getChapters']} */
     async _getChapters(manga) {
-        const scripts = await this.fetchDOM(this.url + '/title/' + manga.id, 'script');
-        for (const scriptElem of scripts.reverse()) {
-            const script = scriptElem.innerText;
-            try {
-                /** @type {string} */
-                const json = JSON.parse(script.substring(22, script.length - 2));
-                /** @type {Object<string, {id: number, title: string}[]>} */
-                const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3]['children'][1][3]['section']['chapters'];
-                return ['earlyChapters', 'omittedMiddleChapters', 'latestChapters']
-                    .flatMap(key =>
-                        data[key].map(chapter => ({id: chapter.id.toString(), title: chapter.title}))
-                    );
-            } catch (e) {
-                if (e instanceof SyntaxError || e instanceof TypeError) {
-                    continue;
-                }
-                throw e;
-            }
-        }
+        const url = new URL('/api/csr', this.url);
+        url.searchParams.set('rq', 'title/detail');
+        url.searchParams.set('title_id', manga.id);
+        const request = new Request(url, this.requestOptions);
+        /** @type { { chapters: { id: string, mainName: string }[] } } */
+        const data = await this.fetchPROTO(request, this.protoTypes, 'TitleDetailView');
+        return data.chapters.map(chapter => ({id: chapter.id, title: chapter.mainName}));
     }
 
     /** @type {Connector['_getPages']} */
     async _getPages(chapter) {
-        const scripts = await this.fetchDOM(this.url + '/chapter/' + chapter.id, 'script');
-        for (const scriptElem of scripts.reverse()) {
-            const script = scriptElem.innerText;
-            try {
-                /** @type {string} */
-                const json = JSON.parse(script.substring(22, script.length - 2));
-                /** @type {{src: string, crypto: {method: string, key: string, iv: string}}[]} */
-                const data = JSON.parse(json.substring(json.indexOf(':') + 1))[3]['children'][0][3]['viewerSection']['pages'];
-                return data.map(page => this.createConnectorURI(page));
-            } catch (e) {
-                if (e instanceof SyntaxError || e instanceof TypeError) {
-                    continue;
-                }
-                throw e;
-            }
-        }
+        const url = new URL('/api/csr', this.url);
+        url.searchParams.set('rq', 'chapter/viewer');
+        url.searchParams.set('chapter_id', chapter.id);
+        const request = new Request(url, {...this.requestOptions, method: 'PUT'});
+        /** @type { { pages: { src: string }[], aesKey: string, aesIv: string } } */
+        const data = await this.fetchPROTO(request, this.protoTypes, 'ViewerView');
+        return data.pages.map(page => this.createConnectorURI({src: page.src, aesKey: data.aesKey, aesIv: data.aesIv}));
     }
 
     /**
-     * @param {{src: string, crypto: {method: string, key: string, iv: string}}} payload
+     * @param {{src: string, aesKey: string, aesIv: string}} payload
      */
     async _handleConnectorURI(payload) {
         const encodedResponse = await fetch(payload.src);
         const encodedData = await encodedResponse.arrayBuffer();
-        if (payload.crypto.method !== 'aes-cbc') {
-            throw new Error(`Unsupported encoding method: ${payload.crypto.method}`);
-        }
-        const key = CryptoJS.enc.Hex.parse(payload.crypto.key);
-        const iv = CryptoJS.enc.Hex.parse(payload.crypto.iv);
+        const key = CryptoJS.enc.Hex.parse(payload.aesKey);
+        const iv = CryptoJS.enc.Hex.parse(payload.aesIv);
         const ciphertext = CryptoJS.lib.WordArray.create(encodedData);
         const encryptedCP = CryptoJS.lib.CipherParams.create({
             ciphertext: ciphertext,
