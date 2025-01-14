@@ -8,7 +8,7 @@ export default class Desu extends Connector {
         super.id = 'desu';
         super.label = 'Desu';
         this.tags = ['manga', 'webtoon', 'russian'];
-        this.url = 'https://desu.me';
+        this.url = 'https://x.desu.win';
     }
 
     async _getMangaFromURI(uri) {
