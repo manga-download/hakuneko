@@ -1,46 +1,31 @@
-import Connector from '../engine/Connector.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class Erosscans extends Connector {
+export default class ErosScan extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'erosscans';
+        super.id = 'erosscan';
         super.label = 'Eros Scan';
-        this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://erosxcomic.xyz/';
+        this.tags = ['webtoon', 'english'];
+        this.path = '/manga/list-mode/';
+        this.config = {
+            url: {
+                label: 'URL',
+                description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
+                input: 'text',
+                value: 'https://erosmanga.xyz/'
+            }
+        };
     }
 
-    async _getMangas() {
-		let request = new Request(this.url + '/manga/list-mode/', this.requestOptions);
-		let data = await this.fetchDOM(request, '.series');
-		return data.map(element => {
-			return {
-				id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-				title: element.textContent.trim()
-			};
-		});
-	}
-
-	
-
-    async _getChapters(manga) {
-        let request = new Request(this.url + manga.id, this.requestOptions);
-		let data = await this.fetchDOM(request, '#chapterlist a');
-		return data.map(element => {
-			return {
-				id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-				title: element.querySelector('span.chapternum').textContent.trim(),
-				language: ''
-			};
-		});
+    get url() {
+        return this.config.url.value;
     }
 
-    async _getPages(chapter) {
-        let request = new Request(this.url + chapter.id, this.requestOptions);
-
-		let data = await this.fetchRegex(request, /(https:\\\/\\\/erosscans.xyz\\\/wp-content\\\/[^\"]+)/g)
-		data = data.map(link => link.replace(/\\/g, ''));
-		console.log(data);
-		return data.map(link => decodeURI(link));
+    set url(value) {
+        if (this.config && value) {
+            this.config.url.value = value;
+            Engine.Settings.save();
+        }
     }
 }
