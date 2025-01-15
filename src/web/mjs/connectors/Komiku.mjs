@@ -50,7 +50,7 @@ export default class Komiku extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, 'section#Baca_Komik source');
+        const data = await this.fetchDOM(request, 'div#Baca_Komik source');
         return data.map(element => this.getAbsolutePath(element.dataset.src || element, this.url));
     }
 }
