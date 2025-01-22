@@ -4,7 +4,7 @@ export default class ErosScan extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'erosscan';
+        super.id = 'erosscans';
         super.label = 'Eros Scan';
         this.tags = ['webtoon', 'english'];
         this.path = '/manga/list-mode/';
