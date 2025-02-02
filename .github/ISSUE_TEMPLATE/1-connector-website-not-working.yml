@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         > [!CAUTION]
-        > Do **NOT** report taht **MangaLife** or **MangaSee** moved to **WeebCentral**, it will not be fixed!  
+        > Do **NOT** report that **MangaLife** or **MangaSee** moved to **WeebCentral**, it will not be fixed!  
         > See: [#7407](https://github.com/manga-download/hakuneko/issues/7407) for info.
   - type: checkboxes
     attributes:
