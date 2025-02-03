@@ -14,7 +14,7 @@ export default class WeebCentral extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const [ title ] = await this.fetchDOM(request, 'meta[property="og:title"]');
-        return new Manga(this, uri.pathname, title.content.trim());
+        return new Manga(this, uri.pathname, title.content.split('|').shift().trim());
     }
 
     async _getMangas() {
