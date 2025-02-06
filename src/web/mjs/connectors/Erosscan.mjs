@@ -13,7 +13,7 @@ export default class ErosScan extends WordPressMangastream {
                 label: 'URL',
                 description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
-                value: 'https://erosmanga.xyz/'
+                value: 'https://sobicscans.xyz'
             }
         };
     }
