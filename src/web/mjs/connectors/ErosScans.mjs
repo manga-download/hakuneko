@@ -1,11 +1,11 @@
 import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class TecnoScan extends WordPressMangastream {
+export default class ErosScan extends WordPressMangastream {
 
     constructor() {
         super();
-        super.id = 'tecnoscan';
-        super.label = 'Tecno Scan';
+        super.id = 'erosscans';
+        super.label = 'Eros Scan';
         this.tags = ['webtoon', 'english'];
         this.path = '/manga/list-mode/';
         this.config = {
@@ -13,7 +13,7 @@ export default class TecnoScan extends WordPressMangastream {
                 label: 'URL',
                 description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
-                value: 'https://tercodoom.xyz'
+                value: 'https://doomcomic.xyz'
             }
         };
     }
