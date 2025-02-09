@@ -7,8 +7,8 @@ export default class Yurineko extends Connector {
         super.id = 'yurineko';
         super.label = 'Yurineko';
         this.tags = ['manga', 'hentai', 'vietnamese'];
-        this.url = 'https://yurineko.net';
-        this.api = 'https://api.yurineko.net';
+        this.url = 'https://yurineko.site';
+        this.api = 'https://api.yurineko.site';
     }
 
     async _getMangaFromURI(uri) {
@@ -47,7 +47,7 @@ export default class Yurineko extends Connector {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, '#__NEXT_DATA__');
         const jsonData = JSON.parse(data[0].text);
-        return jsonData.props.pageProps.chapterData.url.map( element => this.createConnectorURI({url : element}));
+        return jsonData.props.pageProps.chapterData.url.map( element => this.createConnectorURI({url : new URL(element, 'https://storage.yurineko.site').href}));
     }
 
     async _handleConnectorURI(payload) {

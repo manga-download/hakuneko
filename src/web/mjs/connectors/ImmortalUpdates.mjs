@@ -7,6 +7,6 @@ export default class ImmortalUpdates extends WordPressMadara {
         super.id = 'immortalupdates';
         super.label = 'Immortal Updates';
         this.tags = [ 'webtoon', 'english' ];
-        this.url = 'https://immortalupdates.com';
+        this.url = 'https://mortalsgroove.com';
     }
 }

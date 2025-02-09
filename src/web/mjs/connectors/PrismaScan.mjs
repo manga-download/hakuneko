@@ -1,12 +1,13 @@
-import WordPressMadara from './templates/WordPressMadara.mjs';
+import WordPressMangastream from './templates/WordPressMangastream.mjs';
 
-export default class PrismaScan extends WordPressMadara {
+export default class PrismaScan extends WordPressMangastream {
 
     constructor() {
         super();
         super.id = 'prismascans';
         super.label = 'Demon Scan';
         this.tags = [ 'webtoon', 'portuguese' ];
-        this.url = 'https://dsectcomics.org';
+        this.path = '/comics/list-mode/';
+        this.url = 'https://seitacelestial.com';
     }
 }

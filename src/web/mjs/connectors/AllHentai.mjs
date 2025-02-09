@@ -8,9 +8,9 @@ export default class AllHentai extends Connector {
         super.id = 'allhentai';
         super.label = 'AllHentai';
         this.tags = ['hentai', 'russian'];
-        this.url = 'https://20.allhen.online';
+        this.url = 'https://z.ahen.me';
         this.links = {
-            login: 'https://20.allhen.online/internal/auth'
+            login: 'https://z.ahen.me/internal/auth'
         };
         this.config = {
             throttle: {

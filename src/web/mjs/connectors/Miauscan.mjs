@@ -7,7 +7,7 @@ export default class MiauScan extends WordPressMangastream {
         super.id = 'miauscan';
         super.label = 'MiauScan';
         this.tags = [ 'manga', 'spanish', 'portuguese', 'scanlation' ];
-        this.url = 'https://miaucomics.org';
+        this.url = 'https://zonamiau.com';
         this.path = '/manga/list-mode/';
 
         this.novelContainer = 'div.entry-content';
@@ -22,7 +22,7 @@ export default class MiauScan extends WordPressMangastream {
         const data = await this.fetchDOM(request, 'div#readerarea.rdminimal');
         //reader for novel have this class. When its a manga there is no class at all so we call super.
         if (data.length == 0) {
-            return await super._getPages(chapter).filter(image => !/dis2\.jpg/.test(image));
+            return (await super._getPages(chapter)).filter(image => !/dis2\.jpg/.test(image));
         }
         const darkmode = Engine.Settings.NovelColorProfile();
         const script = `

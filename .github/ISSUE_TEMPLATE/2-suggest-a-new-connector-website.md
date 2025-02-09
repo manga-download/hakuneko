@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+> [!CAUTION]
+> Do **NOT** request **WeebCentral**, it will not be added!  
+> See: [#7407](https://github.com/manga-download/hakuneko/issues/7407) for info.
+
 **Name of the website**
 thewebsitename
 

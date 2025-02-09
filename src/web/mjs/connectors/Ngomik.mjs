@@ -7,7 +7,7 @@ export default class Ngomik extends WordPressMangastream {
         super.id = 'ngomik';
         super.label = 'Ngomik';
         this.tags = [ 'manga', 'indonesian' ];
-        this.url = 'https://ngomik.net';
+        this.url = 'https://ngomik.mom';
         this.path = '/manga/list-mode/';
     }
 

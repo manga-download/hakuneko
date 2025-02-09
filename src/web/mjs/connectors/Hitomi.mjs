@@ -13,11 +13,21 @@ export default class Hitomi extends Connector {
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, 'div.gallery h1 a', 3);
-        let id = uri.pathname.match(/(\d+)\.html$/)[1];
-        let title = data[0].text.trim();
-        return new Manga(this, id, title);
+        const request = new Request(uri, this.requestOptions);
+        const script = `
+            new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    try {
+                        resolve(galleryinfo.title);
+                    } catch(error) {
+                        reject(error);
+                    }
+                }, 1000);
+            });
+        `;
+        const title = await Engine.Request.fetchUI(request, script);
+        const id = uri.pathname.match(/(\d+)\.html$/)[1];
+        return new Manga(this, id, title.trim());
     }
 
     async _getMangas() {
@@ -38,7 +48,7 @@ export default class Hitomi extends Connector {
             new Promise((resolve, reject) => {
                 setTimeout(() => {
                     try {
-                        let images = galleryinfo.files.map(info => url_from_url_from_hash(galleryinfo.id, info));
+                        let images = galleryinfo.files.map(image => url_from_url_from_hash(galleryinfo.id, image, 'webp', undefined, 'a'));
                         resolve(images);
                     } catch(error) {
                         reject(error);

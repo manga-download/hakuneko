@@ -12,7 +12,6 @@ export default class Ridibooks extends Connector {
             login: `${this.url}/account/login`
         };
         this.apiUrl = "https://api.ridibooks.com";
-        this.pagesApi = "https://view.ridibooks.com";
     }
 
     async _getMangas() {
@@ -43,11 +42,17 @@ export default class Ridibooks extends Connector {
     }
 
     async _getPages(chapter) {
-        const uri = new URL(`/generate/${chapter.id}`, this.pagesApi);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchJSON(request);
-        if (!data.success) return [];
-        return data.pages.map(page => page.src);
+        const uri = new URL('/api/web-viewer/generate', this.url);
+        const data = await this.fetchJSON(new Request(uri.href, {
+            method: 'POST',
+            body: JSON.stringify({
+                book_id: chapter.id
+            }),
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        }));
+        return data.success ? data.data.pages.map(page =>page.src) : [];
     }
 
     async _getMangaFromURI(uri) {

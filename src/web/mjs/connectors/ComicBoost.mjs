@@ -139,7 +139,7 @@ export default class ComicBoost extends Connector {
                         if (fileinfos.BlockHeight) //if we have a block size for the page, its a puzzle !
                         {
                             mode = 'puzzle';
-                            blocks = window.NFBR.a6G.a5x.prototype.g8w(fPage, fPage.width, fPage.height)
+                            blocks = window.NFBR.a6G.a5x.prototype.C5X(fPage, fPage.width, fPage.height)
                         }
                    
                         return {
