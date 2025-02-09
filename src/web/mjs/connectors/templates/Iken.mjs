@@ -28,9 +28,6 @@ export default class Iken extends Connector {
         const { posts } = await this.fetchJSON(request);
 
         return posts.map(manga => {
-            // need an example of a novel page to add support
-            if (manga.isNovel) throw new Error('Novels are not supported');
-
             return {
                 id: manga.id,
                 title: manga.postTitle
