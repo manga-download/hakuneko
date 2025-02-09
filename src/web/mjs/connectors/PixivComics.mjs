@@ -15,6 +15,13 @@ export default class PixivComics extends Connector {
         this.apiURL = 'https://comic.pixiv.net/api/app/';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-requested-with', 'pixivcomic');
+        this.nextBuild = 'qLzb8dhGOIox-xYNKI0tH';
+    }
+
+    async _initializeConnector() {
+        const request = new Request(new URL(this.url), this.requestOptions);
+        const build = await Engine.Request.fetchUI(request, `__NEXT_DATA__.buildId`);
+        this.nextBuild = build ? build : this.nextBuild; //linter doesnt support ?? syntax
     }
 
     async _getMangaFromURI(uri) {
@@ -75,9 +82,12 @@ export default class PixivComics extends Connector {
     }
 
     async _getPages(chapter) {
+
+        const { pageProps: { salt } } = await this.fetchJSON(new Request(new URL(`/_next/data/${this.nextBuild}/viewer/stories/${chapter.id}.json?id=${chapter.id}`, this.url)));
+
         const timestamp = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
-        const hash = CryptoJS.SHA256(timestamp + 'mAtW1X8SzGS880fsjEXlM73QpS1i4kUMBhyhdaYySk8nWz533nrEunaSplg63fzT').toString(CryptoJS.enc.Hex);
-        const uri = new URL(`episodes/${chapter.id}/read_v3`, this.apiURL);
+        const hash = CryptoJS.SHA256(timestamp + salt).toString(CryptoJS.enc.Hex);
+        const uri = new URL(`episodes/${chapter.id}/read_v4`, this.apiURL);
         const request = new Request(uri, this.requestOptions);
         request.headers.set('x-requested-with', 'pixivcomic');
         request.headers.set('x-client-time', timestamp);

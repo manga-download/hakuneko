@@ -1,20 +1,14 @@
-import FoolSlide from './templates/FoolSlide.mjs';
+import Iken from './templates/Iken.mjs';
 
-/**
- *
- */
-export default class VortexScans extends FoolSlide {
-
-    /**
-     *
-     */
+export default class VortexScans extends Iken {
     constructor() {
         super();
         super.id = 'vortexscans';
         super.label = 'VortexScans';
-        this.tags = [ 'manga', 'high-quality', 'english', 'scanlation' ];
-        this.url = 'https://reader.vortex-scans.com';
-        //this.path        = '/directory/';
-        this.language = 'english';
+        this.tags = [ 'manga', 'english', 'scanlation' ];
+        this.url = 'https://vortexscans.org';
+        this.links = {
+            login: 'https://vortexscans.org/auth/signin',
+        };
     }
 }

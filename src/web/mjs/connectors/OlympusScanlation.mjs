@@ -8,8 +8,8 @@ export default class OlympusScanlation extends Connector {
         super.id = 'olympusscanlation';
         super.label = 'Olympus Scanlation';
         this.tags = [ 'webtoon', 'spanish' ];
-        this.url = 'https://olympusv2.gg';
-        this.apiUrl = 'https://dashboard.olympusv2.gg';
+        this.url = 'https://zonaolympus.com';
+        this.apiUrl = 'https://dashboard.zonaolympus.com';
     }
 
     async _getMangaFromURI(uri) {
@@ -32,7 +32,7 @@ export default class OlympusScanlation extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(`/api/series?page=${page}&direction=asc`, this.apiUrl);
+        const uri = new URL(`/api/series?page=${page}&direction=asc&type=comic`, this.apiUrl);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
         return data.data.series.data.map(element => {

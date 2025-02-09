@@ -8,7 +8,7 @@ export default class FirstKiss extends Connector {
         super.id = 'firstkiss';
         super.label = 'LikeManga.io';
         this.tags = ['webtoon', 'english'];
-        this.url = 'https://likemanga.io';
+        this.url = 'https://likemanga.ink';
         this.requestOptions.headers.set('x-referer', this.url);
         this.requestOptions.headers.set('x-origin', this.url);
     }

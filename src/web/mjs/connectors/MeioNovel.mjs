@@ -6,6 +6,6 @@ export default class MeioNovel extends WordPressMadaraNovel {
         super.id = 'meionovel';
         super.label = 'Meio Novel';
         this.tags = [ 'manga', 'webtoon', 'novel', 'indonesian' ];
-        this.url = 'https://meionovel.id';
+        this.url = 'https://meionovels.com';
     }
 }

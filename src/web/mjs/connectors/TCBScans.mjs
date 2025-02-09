@@ -8,7 +8,7 @@ export default class TCBScans extends Connector {
         super.id = 'tcbscans';
         super.label = 'TCB Scans';
         this.tags = [ 'manga', 'english', 'scanlation' ];
-        this.url = 'https://tcbscans.com';
+        this.url = 'https://tcbscans.me';
     }
 
     async _getMangaFromURI(uri) {

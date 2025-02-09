@@ -1,6 +1,6 @@
-import WordPressMangastream from './templates/WordPressMangastream.mjs';
+import Iken from './templates/Iken.mjs';
 
-export default class InfernalVoidScans extends WordPressMangastream {
+export default class InfernalVoidScans extends Iken {
 
     constructor() {
         super();
@@ -8,7 +8,6 @@ export default class InfernalVoidScans extends WordPressMangastream {
         super.label = 'InfernalVoidScans';
         this.tags = [ 'webtoon', 'scanlation', 'english' ];
         this.url = 'https://hivetoon.com';
-        this.path = '/manga/list-mode/';
         this.requestOptions.headers.set('x-referer', this.url);
     }
 }

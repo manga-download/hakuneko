@@ -7,7 +7,7 @@ export default class TukangKomik extends WordPressMangastream {
         super.id = 'tukangkomik';
         super.label = 'TukangKomik';
         this.tags = ['manga', 'indonesian'];
-        this.url = 'https://tukangkomik.id';
+        this.url = 'https://tukangkomik.co';
         this.path = '/manga/list-mode';
     }
 }
