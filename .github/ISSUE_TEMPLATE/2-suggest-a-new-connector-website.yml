@@ -14,7 +14,7 @@ body:
     id: websitename
     attributes:
       label: Website Name
-      description: The name of the website you want to suggest
+      description: The name of the website you want to suggest. Change it in the issue title as well
       placeholder: name of the website
     validations:
       required: true
