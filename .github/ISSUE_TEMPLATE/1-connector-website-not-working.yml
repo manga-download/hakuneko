@@ -7,7 +7,7 @@ body:
     attributes:
       value: |
         > [!CAUTION]
-        > Do **NOT** report **MangaLife** or **MangaSee** : use their new website/connector  **WeebCentral**.
+        > Do **NOT** report **MangaLife** or **MangaSee**: use their new website/connector **WeebCentral**
   - type: checkboxes
     attributes:
       label: Is there an existing issue for this connector?
