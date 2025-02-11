@@ -1,0 +1,74 @@
+name: ✍ Suggest a new Connector/Website
+description: Want a new website to be added in hakuneko ?
+title: "[Site Request] thewebsitename"
+labels: ["Website Suggestion"]
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing request for this website?
+      description: Do not create duplicate of an existing request related to the website
+      options:
+        - label: I have searched the existing issues
+          required: true
+  - type: input
+    id: websitename
+    attributes:
+      label: Website Name
+      description: The name of the website you want to suggest. Change it in the issue title as well
+      placeholder: name of the website
+    validations:
+      required: true
+  - type: input
+    id: websiteurl
+    attributes:
+      label: Site URL
+      description: The main URL of the website
+      placeholder: https://thewebsiteurl/
+    validations:
+      required: true
+  - type: input
+    id: websitemangalist
+    attributes:
+      label: Series list
+      description: The URL of the page listing all available series
+      placeholder: https://thewebsiteurl/mangalist.html
+    validations:
+      required: false
+  - type: input
+    id: websitemangaexample
+    attributes:
+      label: Manga example
+      description: An example URL of a manga page
+      placeholder: https://thewebsiteurl/manga/themanganame.html
+    validations:
+      required: true
+  - type: input
+    id: websitemangaviewer
+    attributes:
+      label: Manga chapter viewer
+      description: An example URL of a manga viewer page displaying the images to be downloaded
+      placeholder: https://thewebsiteurl/manga/0012/view.html
+    validations:
+      required: true
+  - type: input
+    id: languages
+    attributes:
+      label: Languages
+      description: List of languages supported by the website
+      placeholder: English, Japanese, French, ...
+    validations:
+      required: true
+  - type: input
+    id: relationship
+    attributes:
+      label: Website relationship
+      description: If applicable describe the relation with any other website
+      placeholder: alternative domain, copy of ...
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: Additional details
+      description: Add any other context details that you may have found (like template to reuse)
+    validations:
+      required: false
