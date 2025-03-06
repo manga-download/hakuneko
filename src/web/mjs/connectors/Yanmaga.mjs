@@ -48,21 +48,24 @@ export default class Yanmaga extends SpeedBinb {
         return Engine.Request.fetchUI(request, chapterScript, 10000);
     }
 
-    _getPageList( manga, chapter, callback ) {
-        if (chapter.id.includes('/sign-up')) {
-            throw new Error(`You need to login to see ${chapter.title}`);
+    async _getPageList(manga, chapter, callback) {
+        try {
+            if (chapter.id.includes('/sign-up')) {
+                throw new Error(`You need to login to see ${chapter.title}`);
+            }
+            const uri = new URL(chapter.id, this.url);
+            const response = await fetch(uri);
+            if (response.redirected) {
+                const newurl = new URL(response.url);
+                return super._getPageList(manga, { id: newurl.pathname + newurl.search }, callback);
+            }
+            if (!uri.searchParams.get('cid')) {
+                throw new Error(`You need to login to see ${chapter.title}`);
+            }
+            return super._getPageList(manga, chapter, callback);
+        } catch (error) {
+            console.error(error, chapter);
+            callback(error, undefined);
         }
-        const uri = new URL(chapter.id, this.url);
-        fetch(uri)
-            .then(response => {
-                if (response.redirected) {
-                    const newurl = new URL(response.url);
-                    return super._getPageList(manga, { id: newurl.pathname+newurl.search }, callback);
-                }
-                if (!uri.searchParams.get('cid')) {
-                    throw new Error(`You need to login to see ${chapter.title}`);
-                }
-                return super._getPageList(manga, chapter, callback);
-            });
     }
 }
