@@ -1,4 +1,5 @@
 import SpeedBinb from './templates/SpeedBinb.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class Yanmaga extends SpeedBinb {
     constructor() {
@@ -10,6 +11,14 @@ export default class Yanmaga extends SpeedBinb {
         this.links = {
             login: 'https://yanmaga.jp/customers/sign-in'
         };
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri);
+        const [data] = await this.fetchDOM(request, '.detailv2-outline-title');
+        const id = uri.pathname;
+        const title = data.textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
