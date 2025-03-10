@@ -9,6 +9,7 @@ export default class WeebCentral extends Connector {
         super.label = 'Weeb Central';
         this.tags = [ 'manga', 'manhua', 'manhwa', 'english' ];
         this.url = 'https://weebcentral.com';
+        this.requestOptions.headers.set('x-referer', new URL(this.url).href);
     }
 
     async _getMangaFromURI(uri) {
@@ -72,6 +73,6 @@ export default class WeebCentral extends Connector {
         `;
 
         const data = await Engine.Request.fetchUI(request, pageScript);
-        return data.map(element => this.getAbsolutePath(element, request.url));
+        return data.map(element => this.createConnectorURI(this.getAbsolutePath(element, request.url)));
     }
 }
