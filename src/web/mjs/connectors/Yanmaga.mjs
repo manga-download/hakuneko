@@ -58,9 +58,6 @@ export default class Yanmaga extends SpeedBinb {
     }
 
     _getPageList( manga, chapter, callback ) {
-        if (chapter.id.includes('/sign-up')) {
-            throw new Error(`You need to login to see ${chapter.title}`);
-        }
         const uri = new URL(chapter.id, this.url);
         fetch(uri)
             .then(response => {
