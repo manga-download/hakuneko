@@ -1,4 +1,5 @@
 import SpeedBinb from './templates/SpeedBinb.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class Yanmaga extends SpeedBinb {
     constructor() {
@@ -10,6 +11,14 @@ export default class Yanmaga extends SpeedBinb {
         this.links = {
             login: 'https://yanmaga.jp/customers/sign-in'
         };
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri);
+        const [data] = await this.fetchDOM(request, '.detailv2-outline-title');
+        const id = uri.pathname;
+        const title = data.textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
@@ -49,9 +58,6 @@ export default class Yanmaga extends SpeedBinb {
     }
 
     _getPageList( manga, chapter, callback ) {
-        if (chapter.id.includes('/sign-up')) {
-            throw new Error(`You need to login to see ${chapter.title}`);
-        }
         const uri = new URL(chapter.id, this.url);
         fetch(uri)
             .then(response => {
@@ -63,6 +69,10 @@ export default class Yanmaga extends SpeedBinb {
                     throw new Error(`You need to login to see ${chapter.title}`);
                 }
                 return super._getPageList(manga, chapter, callback);
+            })
+            .catch(error => {
+                console.error(error, chapter);
+                callback(error, undefined);
             });
     }
 }
