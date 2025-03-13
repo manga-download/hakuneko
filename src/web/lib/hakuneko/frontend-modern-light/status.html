@@ -1,0 +1,112 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-status">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                display: flex;
+                flex-direction: row;
+            }
+            .status {
+                flex: 0;
+            }
+            .message {
+                flex: 1;
+            }
+            .popup {
+                padding: 0.5em;
+                background-color: #ffffff;
+            }
+            .show {
+                display: block ;
+            }
+            .hide {
+                display: none;
+            }
+        </style>
+        <div class$="status [[ getStatusClass(queue.length) ]]" title$="[[ getQueueContent(queue.length) ]]">
+            [[ queue.legth ]]
+            <i class="fas fa-spinner fa-pulse fa-fw"></i>
+        </div>
+        <div class="message">
+            [[ message ]]
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoStatus extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-status';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    message: {
+                        type: String,
+                        value: '',
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                        //observer: 'onSelectedMangaChanged'
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                this.queue = [];
+            }
+
+            /**
+             *
+             */
+            getStatusClass( trigger ) {
+                return ( this.queue.length > 0 ? 'show' : 'hide' );
+            }
+
+            /**
+             *
+             */
+            getQueueContent( trigger ) {
+                return this.queue.map( function( item ) {
+                    return item.text;
+                }).join( '\n' );
+            }
+
+            /**
+             *
+             */
+            addToQueue( text ) {
+                let id = Symbol( text );
+                this.push( 'queue', { id: id, text: text } );
+                return id;
+            }
+
+            /**
+             *
+             */
+            removeFromQueue( id ) {
+                let index = this.queue.findIndex( ( item ) => {
+                    return id === item.id;
+                });
+                if( index > -1 ) {
+                    this.splice( 'queue', index, 1 );
+                }
+            }
+        }
+        window.customElements.define(HakunekoStatus.is, HakunekoStatus);
+    </script>
+
+</dom-module>

@@ -1,0 +1,164 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-input">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                display: flex;
+                flex-direction: row;
+                vertical-align: middle;
+            }
+            .item {
+                margin: 0.25em;
+                cursor: pointer;
+            }
+            .stretch {
+                flex: 1;
+            }
+            .shrink {
+                flex: 0;
+            }
+            /* workaround for vertical center of fa icons */
+            .shrink:before {
+                content: "";
+                display: inline-block;
+                height: 100%;
+                vertical-align: middle;
+            }
+        </style>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.disabled) ]]" restamp="false">
+            <div class="stretch">
+                <input type="text" value="[[ item.value ]]" title$="[[ item.value ]]" disabled/>
+            </div>
+        </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.text) ]]" restamp="false">
+            <div class="stretch">
+                <input type="text" value="{{ item.value::change }}" list$="DataList: [[ item.label ]]"/>
+                <datalist id$="DataList: [[ item.label ]]">
+                    <template is="dom-repeat" items="[[ item.options ]]" as="option">
+                        <option value="[[ option.value ]]">[[ option.name ]]</option>
+                    </template>
+                </datalist>
+            </div>
+        </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.password) ]]" restamp="false">
+            <div class="stretch">
+                <input type="password" value="{{ item.value::change }}" title$="[[ item.value ]]"/>
+            </div>
+        </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.numeric) ]]" restamp="false">
+            <div class="stretch">
+                <input type="number" min="[[ item.min ]]" max="[[ item.max ]]" value="{{ item.value::change }}"/>
+            </div>
+        </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.select) ]]" restamp="false">
+            <div class="stretch">
+                <select value="{{ item.value::change }}">
+                    <template is="dom-repeat" items="[[ item.options ]]" as="option">
+                        <option value="[[ option.value ]]" selected$="[[ isSelected(item.value, option.value) ]]">[[ option.name ]]</option>
+                    </template>
+                </select>
+            </div>
+        </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.checkbox) ]]" restamp="false">
+            <div class="stretch">
+                <input type="checkbox" checked="{{ item.value::change }}"/>
+            </div>
+        </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.file) ]]" restamp="false">
+            <div class="stretch">
+                <input type="text" value="{{ item.value }}" disabled title$="[[ item.value ]]"/>
+            </div>
+            <div class="shrink">
+                <i class="fas fa-fw fa-file item" on-click="clickChooseFile"></i>
+            </div>
+        </template>
+        <template is="dom-if" if="[[ isInputType(item.input, inputTypes.directory) ]]" restamp="false">
+            <div class="stretch">
+                <input type="text" value="{{ item.value }}" disabled title$="[[ item.value ]]"/>
+            </div>
+            <div class="shrink">
+                <i class="fas fa-fw fa-folder-open item" title="Browse &hellip;" on-click="clickChooseDirectory"></i>
+            </div>
+        </template>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoInput extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-input';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    item: {
+                        type: Object,
+                        value: undefined,
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                //
+                this.inputTypes = {
+                    disabled: 'disabled',
+                    text: 'text',
+                    password: 'password',
+                    numeric: 'numeric',
+                    select: 'select',
+                    checkbox: 'checkbox',
+                    file: 'file',
+                    directory: 'directory'
+                };
+            }
+
+            /**
+             *
+             */
+            isInputType( inputType, expectedType ) {
+                return ( inputType === expectedType );
+            }
+
+            /**
+             *
+             */
+            isSelected(selected, option){
+                return ( selected === option );
+            }
+            /**
+             *
+             */
+            clickChooseFile( e ) {
+                console.log( this.item );
+            }
+
+            /**
+             *
+             */
+            async clickChooseDirectory(evt) {
+                let path = await Engine.Storage.folderBrowser(this.item.value);
+                if(path) {
+                    this.set('item.value', path);
+                }
+            }
+        }
+        window.customElements.define(HakunekoInput.is, HakunekoInput);
+    </script>
+
+</dom-module>
