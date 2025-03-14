@@ -8,32 +8,28 @@ export default class MangaNel extends Connector {
         super.id = 'manganel';
         super.label = 'Manganato';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://manganato.com';
+        this.url = 'https://www.manganato.gg/';
 
-        this.path = '/genre-all/';
+        this.path = '/genre/all';
         this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
         this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
-        this.queryMangaTitle = 'div.container-main div.panel-story-info div.story-info-right h1';
-        this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
-        this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
+        this.queryMangaTitle = 'div.main-wrapper div.leftCol div.manga-info-top h1';
+        this.queryMangasPageCount = 'div.panel_page_number div.group_page a.page_last:last-of-type';
+        this.queryMangas = 'div.truyen-list div.list-truyen-item-wrap h3 a';
 
         this._queryChapters = [
-            'ul.row-content-chapter li a.chapter-name', // manganato, mangabat
-            'div.chapter_list ul li a', // mangairo
-            'div.chapter-list div.row span a', // mangakakalot(s), kissmangawebsite, manganeloinfo
-            'div.content.mCustomScrollbar div.chapter-list ul li.row div.chapter h4 a.xanh' // MangaPark
+            'section#chapter-list table tbody tr a', // manganeloinfo
+            'div.chapter-list div.row span a', // mangabat, manganato, mangakakalot
         ].join(', ');
 
         this._queryPages = [
-            'div.container-chapter-reader source', // manganato, mangabat
-            'div.chapter-content div.panel-read-story source', // mangairo
-            'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s), kissmangawebsite, manganeloinfo
+            'div.container-chapter-reader source', // manganato, mangabat, mangakakalot
+            'div.my-5 div source', // manganeloinfo
         ].join(', ');
     }
 
     canHandleURI(uri) {
-        // Test: https://regex101.com/r/aPR3zy/3/tests
-        return /^(chap|read)?manganato\.(com|to)$/.test(uri.hostname);
+        return /^(www\.)?manganato\.gg$/.test(uri.hostname);
     }
 
     async _getMangaFromURI(uri) {
@@ -46,7 +42,7 @@ export default class MangaNel extends Connector {
 
     async _getMangas() {
         let mangaList = [];
-        let uri = new URL(this.path + '1', this.url);
+        let uri = new URL(this.path, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangasPageCount);
         let pageCount = parseInt(data[0].href.match(/\d+$/));
@@ -58,7 +54,7 @@ export default class MangaNel extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL(this.path + page, this.url);
+        let uri = new URL(this.path + "?page=" + page, this.url);
         let request = new Request(uri, this.requestOptions);
         let data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
@@ -101,7 +97,7 @@ export default class MangaNel extends Connector {
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set('x-referer', payload.referer);
+        this.requestOptions.headers.set('x-referer', this.url);
         let promise = super._handleConnectorURI(payload.url);
         this.requestOptions.headers.delete('x-referer');
         return promise;
