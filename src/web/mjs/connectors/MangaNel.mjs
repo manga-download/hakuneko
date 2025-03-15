@@ -13,8 +13,8 @@ export default class MangaNel extends Connector {
         this.path = '/genre/all';
         this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
         this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
-        this.queryMangaTitle = 'div.main-wrapper div.leftCol div.manga-info-top h1';
-        this.queryMangas = 'div.truyen-list div.list-truyen-item-wrap h3 a';
+        this.queryMangaTitle = 'div.manga-info-top h1';
+        this.queryMangas = 'div.list-truyen-item-wrap h3 a';
 
         this._queryChapters = 'div.chapter-list div.row span a'; // mangabat, manganato, mangakakalot
         this._queryPages = 'div.container-chapter-reader source'; // manganato, mangabat, mangakakalot
@@ -23,9 +23,8 @@ export default class MangaNel extends Connector {
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, this.queryMangaTitle);
-        const id = uri.href;
         const title = data[0].textContent.replace(this.mangaTitleFilter, '').trim();
-        return new Manga(this, id, title);
+        return new Manga(this, uri.pathname, title);
     }
 
     async _getMangas() {
@@ -77,7 +76,7 @@ export default class MangaNel extends Connector {
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set('x-referer', this.url + '/');
+        this.requestOptions.headers.set('x-referer', new URL(this.url).href);
         let promise = super._handleConnectorURI(payload.url);
         this.requestOptions.headers.delete('x-referer');
         return promise;

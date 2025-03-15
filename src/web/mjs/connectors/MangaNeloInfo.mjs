@@ -9,23 +9,13 @@ export default class MangaNeloInfo extends Connector {
         super.label = 'MangaNeloInfo';
         this.tags = [ 'manga', 'webtoon', 'english' ];
         this.url = 'https://manganelo.info';
-
-        this.path = '/genre';
-        this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
-        this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
-        this.queryMangaTitle = 'section div.flex div.grow h1';
-        this.queryMangas = 'main div.gap-4 div.gap-y-3 div.space-y-3 div.grid div.gap-2 div.overflow-hidden h3 a';
-
-        this._queryChapters = 'section#chapter-list table tbody tr a';
-        this._queryPages = 'div.my-5 div source';
     }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangaTitle);
-        const id = uri.href;
-        const title = data[0].textContent.replace(this.mangaTitleFilter, '').trim();
-        return new Manga(this, id, title);
+        const data = await this.fetchDOM(request, 'section div.flex div.grow h1');
+        const title = data[0].textContent;
+        return new Manga(this, uri.pathname, title);
     }
 
     async _getMangas() {
@@ -38,9 +28,9 @@ export default class MangaNeloInfo extends Connector {
     }
 
     async _getMangasFromPage(page) {
-        const uri = new URL(this.path + "?page=" + page, this.url);
+        const uri = new URL("/genre?page=" + page, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this.queryMangas);
+        const data = await this.fetchDOM(request, 'div.grid h3.truncate a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
@@ -52,11 +42,11 @@ export default class MangaNeloInfo extends Connector {
     async _getChapters(manga) {
         const uri = new URL(manga.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this._queryChapters);
+        const data = await this.fetchDOM(request, 'section#chapter-list table tbody tr a');
         return data.map(element => {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.replace(manga.title, '').replace(this.chapterTitleFilter, '').trim(),
+                title: element.text.replace(manga.title, ''),
                 language: ''
             };
         });
@@ -65,7 +55,7 @@ export default class MangaNeloInfo extends Connector {
     async _getPages(chapter) {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this._queryPages);
+        const data = await this.fetchDOM(request, 'div.my-5 div source');
         return data.map(element => this.createConnectorURI({
             url: this.getRootRelativeOrAbsoluteLink(element.dataset['src'] || element, request.url),
             referer: request.url
@@ -77,7 +67,7 @@ export default class MangaNeloInfo extends Connector {
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set('x-referer', this.url + '/');
+        this.requestOptions.headers.set('x-referer', new URL(this.url).href);
         let promise = super._handleConnectorURI(payload.url);
         this.requestOptions.headers.delete('x-referer');
         return promise;
