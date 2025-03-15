@@ -7,10 +7,6 @@ export default class MangaBat extends MangaNel {
         super.id = 'mangabat';
         super.label = 'MangaBat';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://www.mangabats.com/';
-    }
-
-    canHandleURI(uri) {
-        return /^(www\.)?mangabats\.com$/.test(uri.hostname);
+        this.url = 'https://www.mangabats.com';
     }
 }
