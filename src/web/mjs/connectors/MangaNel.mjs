@@ -8,78 +8,53 @@ export default class MangaNel extends Connector {
         super.id = 'manganel';
         super.label = 'Manganato';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://manganato.com';
+        this.url = 'https://www.manganato.gg';
 
-        this.path = '/genre-all/';
+        this.path = '/genre/all';
         this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
         this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
-        this.queryMangaTitle = 'div.container-main div.panel-story-info div.story-info-right h1';
-        this.queryMangasPageCount = 'div.panel-page-number div.group-page a.page-last:last-of-type';
-        this.queryMangas = 'div.genres-item-info h3 a.genres-item-name';
+        this.queryMangaTitle = 'div.manga-info-top h1';
+        this.queryMangas = 'div.list-truyen-item-wrap h3 a';
 
-        this._queryChapters = [
-            'ul.row-content-chapter li a.chapter-name', // manganato, mangabat
-            'div.chapter_list ul li a', // mangairo
-            'div.chapter-list div.row span a', // mangakakalot(s), kissmangawebsite, manganeloinfo
-            'div.content.mCustomScrollbar div.chapter-list ul li.row div.chapter h4 a.xanh' // MangaPark
-        ].join(', ');
-
-        this._queryPages = [
-            'div.container-chapter-reader source', // manganato, mangabat
-            'div.chapter-content div.panel-read-story source', // mangairo
-            'div#vungdoc source, div.vung-doc source, div.vung_doc source' // mangakakalot(s), kissmangawebsite, manganeloinfo
-        ].join(', ');
-    }
-
-    canHandleURI(uri) {
-        // Test: https://regex101.com/r/aPR3zy/3/tests
-        return /^(chap|read)?manganato\.(com|to)$/.test(uri.hostname);
+        this._queryChapters = 'div.chapter-list div.row span a'; // mangabat, manganato, mangakakalot
+        this._queryPages = 'div.container-chapter-reader source'; // manganato, mangabat, mangakakalot
     }
 
     async _getMangaFromURI(uri) {
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangaTitle);
-        let id = uri.href;
-        let title = data[0].textContent.replace(this.mangaTitleFilter, '').trim();
-        return new Manga(this, id, title);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangaTitle);
+        const title = data[0].textContent.replace(this.mangaTitleFilter, '').trim();
+        return new Manga(this, uri.pathname, title);
     }
 
     async _getMangas() {
-        let mangaList = [];
-        let uri = new URL(this.path + '1', this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangasPageCount);
-        let pageCount = parseInt(data[0].href.match(/\d+$/));
-        for(let page = 1; page <= pageCount; page++) {
-            let mangas = await this._getMangasFromPage(page);
-            mangaList.push(...mangas);
+        const mangaList = [];
+        for (let page = 1, run = true; run; page++) {
+            const mangas = await this._getMangasFromPage(page);
+            mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
         return mangaList;
     }
 
     async _getMangasFromPage(page) {
-        let uri = new URL(this.path + page, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this.queryMangas);
+        const uri = new URL(this.path + "?page=" + page, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this.queryMangas);
         return data.map(element => {
-            this.cfMailDecrypt(element);
             return {
-                // get absolute links to support cross referencing between MangaNato affiliates and sub-domains
-                id: this.getAbsolutePath(element, request.url),
-                title: element.text.replace(this.mangaTitleFilter, '').trim()
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                title: element.text.trim()
             };
         });
     }
 
     async _getChapters(manga) {
-        let uri = new URL(manga.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this._queryChapters);
+        const uri = new URL(manga.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this._queryChapters);
         return data.map(element => {
-            this.cfMailDecrypt(element);
             return {
-                // get absolute links to support cross referencing between MangaNato affiliates and sub-domains
-                id: this.getAbsolutePath(element, request.url),
+                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
                 title: element.text.replace(manga.title, '').replace(this.chapterTitleFilter, '').trim(),
                 language: ''
             };
@@ -87,11 +62,11 @@ export default class MangaNel extends Connector {
     }
 
     async _getPages(chapter) {
-        let uri = new URL(chapter.id, this.url);
-        let request = new Request(uri, this.requestOptions);
-        let data = await this.fetchDOM(request, this._queryPages);
+        const uri = new URL(chapter.id, this.url);
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, this._queryPages);
         return data.map(element => this.createConnectorURI({
-            url: this.getAbsolutePath(element.dataset['src'] || element, request.url),
+            url: this.getRootRelativeOrAbsoluteLink(element.dataset['src'] || element, request.url),
             referer: request.url
         }));
     }
@@ -101,7 +76,7 @@ export default class MangaNel extends Connector {
          * TODO: only perform requests when from download manager
          * or when from browser for preview and selected chapter matches
          */
-        this.requestOptions.headers.set('x-referer', payload.referer);
+        this.requestOptions.headers.set('x-referer', new URL(this.url).href);
         let promise = super._handleConnectorURI(payload.url);
         this.requestOptions.headers.delete('x-referer');
         return promise;
