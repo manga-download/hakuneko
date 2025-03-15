@@ -29,7 +29,7 @@ export default class MangaNel extends Connector {
 
     async _getMangas() {
         const mangaList = [];
-        for (let page = 1, run = true; run; page++){
+        for (let page = 1, run = true; run; page++) {
             const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
