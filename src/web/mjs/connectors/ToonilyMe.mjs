@@ -1,4 +1,5 @@
 import Connector from '../engine/Connector.mjs';
+import Manga from '../engine/Manga.mjs';
 
 export default class ToonilyMe extends Connector {
     constructor() {
@@ -7,6 +8,14 @@ export default class ToonilyMe extends Connector {
         super.label = 'ToonilyMe Manga';
         this.tags = ['webtoon', 'english'];
         this.url = 'https://toonily.me';
+    }
+
+    async _getMangaFromURI(uri) {
+        const request = new Request(uri, this.requestOptions);
+        const data = await this.fetchDOM(request, 'div.name.box > h1');
+        const id = uri.pathname;
+        const title = data[0].textContent.trim();
+        return new Manga(this, id, title);
     }
 
     async _getMangas() {
