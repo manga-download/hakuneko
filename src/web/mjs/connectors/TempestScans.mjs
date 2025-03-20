@@ -7,7 +7,7 @@ export default class TempestScans extends WordPressMangastream {
         super.id = 'tempestscans';
         super.label = 'Tempest Scans';
         this.tags = ['manga', 'turkish'];
-        this.url = 'https://tempestscans.net';
+        this.url = 'https://tempestmangas.com';
         this.path = '/manga/list-mode/';
     }
 }
