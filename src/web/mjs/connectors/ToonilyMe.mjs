@@ -26,6 +26,6 @@ export default class ToonilyMe extends MadTheme {
         const uri = new URL(chapter.id, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchDOM(request, 'div.chapter-image source');
-        return data.map(element => this.createConnectorURI(element.dataset.src || element.getAttribute('data-src')));
+        return data.map(element => this.createConnectorURI(element.dataset.src));
     }
 }
