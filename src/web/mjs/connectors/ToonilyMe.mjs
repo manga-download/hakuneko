@@ -4,7 +4,7 @@ export default class ToonilyMe extends MadTheme {
     constructor() {
         super();
         super.id = 'toonilyme';
-        super.label = 'ToonilyMe Manga';
+        super.label = 'ToonilyMe';
         this.tags = ['webtoon', 'english'];
         this.url = 'https://toonily.me';
     }
