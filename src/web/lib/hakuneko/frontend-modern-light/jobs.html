@@ -1,0 +1,247 @@
+<link rel="import" href="../../polymer/polymer-element.html">
+<link rel="import" href="theme.html">
+
+<dom-module id="hakuneko-jobs">
+
+    <template>
+        <style include="theme"></style>
+        <style>
+            :host {
+                width: 100%;
+                background-color: var(--job-control-background-color);
+            }
+            .bar {
+                display: flex;
+                flex-direction: row;
+                padding: 0.25em;
+            }
+            .expander {
+                flex: 0;
+                padding: 0.25em;
+            }
+            .status {
+                flex: 1;
+                text-align: right;
+                padding: 0.25em;
+            }
+            .button {
+                cursor: pointer;
+            }
+            .buttonQueued {
+                color: var(--job-list-button-queued-color);
+            }
+            .buttonDownloading {
+                color: var(--job-list-button-downloading-color);
+            }
+            .buttonCompleted {
+                color: var(--job-list-button-completed-color);
+            }
+            .buttonFailed {
+                color: var(--job-list-button-failed-color);
+            }
+            .list {
+                height: 8em;
+                background-color: var(--job-list-background-color);
+                overflow-y: scroll;
+            }
+            .list table {
+                width: 100%;
+                table-layout: fixed;
+                border-spacing: 0;
+                border-collapse: collapse;
+            }
+            .list td {
+                cursor: default;
+                border-bottom: var(--job-list-row-border);
+            }
+            .cell {
+                padding-left: 0.25em;
+                padding-right: 0.25em;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+            .progress {
+                width: 4em;
+            }
+            .show {
+                display: block ;
+            }
+            .hide {
+                display: none;
+            }
+        </style>
+        <div class$="list [[ getListClass(popupVisibility) ]]">
+            <table cellpadding="0">
+                <template is="dom-repeat" items="[[ jobList ]]" initial-count="500" target-framerate="5">
+                    <tr title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]">
+                        <td class="fa-fw"><i class$="fas [[ getStatusClass(item.status) ]] fa-fw" title$="[[ getErrorTitle(item.errors) ]]" on-click="restartDownload"></i></td>
+                        <td class="cell">[[ item.labels.connector ]]</td>
+                        <td class="cell">[[ item.labels.manga ]]</td>
+                        <td class="cell">[[ item.labels.chapter ]]</td>
+                        <td class="progress" style$="background: linear-gradient(90deg, var(--job-list-progress-color) [[ item.progress ]]%, var(--job-list-progress-background-color) 0%);"></td>
+                    </tr>
+                </template>
+            </table>
+        </div>
+        <div class="bar">
+            <div class="expander">
+                <i class$="fas [[ getButtonClass(popupVisibility) ]] button" title="Toggle download list" on-click="toggleJobList"></i>
+            </div>
+            <div class="status">[[ jobList.length ]] Download(s)</div>
+        </div>
+    </template>
+
+    <script>
+        /** @polymerElement */
+        class HakunekoJobs extends Polymer.Element {
+            /**
+             *
+             */
+            static get is() {
+                return 'hakuneko-jobs';
+            }
+
+            /**
+             *
+             */
+            static get properties() {
+                return {
+                    settings: {
+                        type: Object,
+                        value: undefined,
+                        notify: true, // enable upward data flow,
+                        //readOnly: true, // prevent downward data flow
+                        //observer: 'onSelectedMangaChanged'
+                    }
+                };
+            }
+
+            /**
+             *
+             */
+            ready() {
+                super.ready();
+                // HACK: electron specific code should not be added to UI elements, but due to the
+                //       close confirmation bug this workaround is currently the best solution...
+                this.ipc = require( 'electron' ).ipcRenderer;
+                this.popupVisibility = false;
+                this.jobList = [];
+                // register callbacks for events published by download manager
+                Engine.DownloadManager.addEventListener('updated', this.onDownloadStatusUpdated.bind(this));
+                this.ipc.on( 'close', this.onClose.bind( this ) );
+            }
+
+            /**
+             *
+             */
+            toggleJobList() {
+                this.set( 'popupVisibility', !this.popupVisibility );
+            }
+
+            /**
+             * CSS class for the job list.
+             * The CSS class depends on the current visibility state.
+             */
+            getListClass( visibility ) {
+                return (visibility ? 'show' : 'hide');
+            }
+
+            /**
+             * CSS class for the show/hide button of the job list.
+             * The CSS class depends on the current visibility state.
+             */
+            getButtonClass( visibility ) {
+                return (visibility ? 'fa-window-close' : 'fa-chart-bar'); // fa-tasks
+            }
+
+            /**
+             * CSS class for the status of a job in the job list.
+             * The CSS class depends on the curent status of the job.
+             */
+            getStatusClass( status ) {
+                switch ( status ) {
+                    //case 'unavailable':
+                    //    return 'fa-exclamation-triangle';
+                    //case 'available':
+                    //    return 'fa-cloud';
+                    case 'queued':
+                        return 'fa-clock buttonQueued';
+                    case 'downloading':
+                        return 'fa-exchange-alt buttonDownloading';
+                    case 'completed':
+                        return 'fa-check button buttonCompleted';
+                    case 'failed':
+                        return 'fa-exclamation-triangle button buttonFailed';
+                    default:
+                        return '';
+                }
+            }
+
+            /**
+             *
+             */
+            getErrorTitle( errors ) {
+                return ( errors && errors.length > 0 ? 'Click to re-download\n' : '' ) + errors.map( ( error ) => {
+                    return error.toString();
+                }).join( '\n' );
+            }
+
+            /**
+             *
+             */
+            restartDownload( e ) {
+                let job = e.model.item;
+                if( job.status === 'failed' || job.status === 'completed' ) {
+                    Engine.DownloadManager.addDownload( job.chapter );
+                }
+            }
+
+            /**
+             * 
+             */
+            onDownloadStatusUpdated( e ) {
+                let job = e.detail;
+                let index = this.jobList.indexOf( job );
+                if( index > -1 )  {
+                    // force an UI update of the changed job
+                    this.notifyPath( 'jobList.' + index + '.status' );
+                    this.notifyPath( 'jobList.' + index + '.progress' );
+                    if( job.status === 'completed' ) {
+                        this.splice( 'jobList', index, 1 );
+                    }
+                    if( job.status === 'failed' && job.errors && job.errors.length > 0 ) {
+                        this.notifyPath( 'jobList.' + index + '.errors' );
+                    }
+                } else {
+                    // remove similar job that failed
+                    let position = this.jobList.findIndex( (item) => {
+                        return job.isSame( item );
+                    });
+                    if( position > -1 && this.jobList[position].status === 'failed' ) {
+                        this.splice( 'jobList', position, 1 );
+                    }
+                    // add new job
+                    if( job.status === 'queued' || job.status === 'downloading' ) {
+                        this.push( 'jobList', job );
+                    }
+                }
+            }
+
+            /**
+             *
+             */
+            async onClose( event ) {
+                // check if any job is running
+                let index = this.jobList.findIndex( job => {
+                    return ( job.status === 'queued' || job.status === 'downloading' );
+                } );
+                if( index < 0 || await confirm( 'Downloads are still in progress.\nClose application anyway?' ) ) {
+                    this.ipc.send( 'quit' );
+                }
+            }
+        }
+        window.customElements.define(HakunekoJobs.is, HakunekoJobs);
+    </script>
+
+</dom-module>
