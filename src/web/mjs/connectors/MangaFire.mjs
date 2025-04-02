@@ -14,6 +14,7 @@ export default class MangaFire extends Connector {
         this.queryMangaTitleFromURI = 'div.info h1[itemprop="name"]';
         this.queryMangas = 'div.info > a';
         this.idRegex = /manga\/[^.]+\.(\w+)/;
+        this.requestOptions.headers.set('x-referer', new URL(this.url).href);
     }
 
     async _getMangaFromURI(uri) {
@@ -123,18 +124,16 @@ export default class MangaFire extends Connector {
         const uri = new URL(`ajax/read/${chapterid.itemtype}/${chapterid.itemid}`, this.url);
         const request = new Request(uri, this.requestOptions);
         const data = await this.fetchJSON(request);
-        return data.result.images.map(imageArray => {
-            if (imageArray[2] < 1) {
-                return imageArray[0];
-            }
-            return this.createConnectorURI(imageArray);
-        });
+        return data.result.images.map(imageArray => this.createConnectorURI(imageArray));
     }
 
     async _handleConnectorURI(payload) {
+        const mimebuffer = await super._handleConnectorURI(payload[0]);
+        if (payload[2] < 1) return mimebuffer;
+
         const type = Engine.Settings.recompressionFormat.value;
         const quality = parseFloat(Engine.Settings.recompressionQuality.value) / 100;
-        let canvas = await this.reverseImage(payload);
+        let canvas = await this.reverseImage(payload, mimebuffer);
         const blob = await new Promise(resolve => {
             canvas.toBlob(resolve, type, quality);
         });
@@ -158,12 +157,11 @@ export default class MangaFire extends Connector {
         });
     }
 
-    async reverseImage(imageArray) {
+    async reverseImage(imageArray, mimebuffer) {
         const e = imageArray[2];
         const canvas = document.createElement('CANVAS');
         const ctx = canvas.getContext('2d');
-        const image = await this._loadImage(imageArray[0]);
-        image.crossOrigin = 'Anonymous';
+        const image = await this._loadImage("data:"+ mimebuffer.mimeType+";base64," + mimebuffer.data.toString("base64"));
 
         canvas.width = image.width;
         canvas.height = image.height;
