@@ -161,7 +161,7 @@ export default class MangaFire extends Connector {
         const e = imageArray[2];
         const canvas = document.createElement('CANVAS');
         const ctx = canvas.getContext('2d');
-        const image = await this._loadImage("data:"+ mimebuffer.mimeType+";base64," + mimebuffer.data.toString("base64"));
+        const image = await this._loadImage('data:'+ mimebuffer.mimeType+';base64,' + mimebuffer.data.toString('base64'));
 
         canvas.width = image.width;
         canvas.height = image.height;
