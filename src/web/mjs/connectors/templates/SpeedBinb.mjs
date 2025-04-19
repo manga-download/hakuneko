@@ -232,6 +232,10 @@ export default class SpeedBinb extends Connector {
         if( configuration['ServerType'] === 0 ) {
             return this._getPageLinksSBC_v016452( configuration, params );
         }
+
+        if( configuration['ServerType'] === 2 ) {
+            return this._getPageLinksContent_v016452( configuration, params );
+        }
         return Promise.reject( new Error( 'Content server type not supported!' ) );
     }
 
@@ -245,6 +249,16 @@ export default class SpeedBinb extends Connector {
         uri.searchParams.set( 'u0', params.u0 );
         uri.searchParams.set( 'u1', params.u1 );
         return this._fetchSBC( uri, configuration );
+    }
+
+    _getPageLinksContent_v016452( configuration, params ) {
+        let uri = new URL( configuration['ContentsServer'] );
+        uri.pathname += uri.pathname.endsWith('/') ? '' : '/';
+        uri.pathname += 'content';
+        uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
+        uri.searchParams.set( 'u0', params.u0 );
+        uri.searchParams.set( 'u1', params.u1 );
+        return this._fetchContent( uri, configuration );
     }
 
     /**
@@ -342,6 +356,10 @@ export default class SpeedBinb extends Connector {
         uri.pathname += uri.pathname.endsWith('/') ? '' : '/';
         uri.pathname += 'content';
         uri.searchParams.set( 'dmytime', configuration['ContentDate'] );
+        return this._fetchContent( uri, configuration );
+    }
+
+    _fetchContent ( uri, configuration ) {
         return fetch( new Request( uri.href, this.requestOptions ) )
             .then( response => response.json() )
             .then( data => {
