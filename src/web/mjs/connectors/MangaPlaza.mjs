@@ -9,14 +9,13 @@ export default class MangaPlaza extends SpeedBinb {
         super.label = 'MangaPlaza';
         this.tags = ['manga', 'english'];
         this.url = 'https://mangaplaza.com';
-        this.apiPath = '/api';
         this.baseURL = 'https://reader.mangaplaza.com/speedreader';
-        this.requestOptions.headers.set('x-cookie', 'mp_over18_agreement=ON');
-        this.pageNoSelector = '.pages>:nth-last-child(2)>a';
-        this.chapLnkTmpl = ['?cid=', '&u0=', '&u1=https%3A%2F%2Fmangaplaza.com%2Ftitle%2F', '%2F%3Forder%3Dup%26content_id%3D'];
         this.links = {
             login: 'https://mangaplaza.com/login'
         };
+        this.apiPath = '/api';
+        this.requestOptions.headers.set('x-cookie', 'mp_over18_agreement=ON');
+        this.pageNoSelector = '.pages>:nth-last-child(2)>a';
     }
 
     async _getMangaFromURI(uri) {
@@ -97,7 +96,7 @@ export default class MangaPlaza extends SpeedBinb {
                 }
 
                 return {
-                    id: `${this.chapLnkTmpl[0]}${contentId}${this.chapLnkTmpl[1]}${u0}${this.chapLnkTmpl[2]}${mangaId}${this.chapLnkTmpl[3]}${contentId}`,
+                    id: `?cid=${contentId}&u0=${u0}&u1=https%3A%2F%2Fmangaplaza.com%2Ftitle%2F${mangaId}%2F%3Forder%3Dup%26content_id%3D${contentId}`,
                     title: title,
                 };
             });
