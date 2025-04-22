@@ -27,49 +27,60 @@ export default class MangaPlaza extends SpeedBinb {
     }
 
     async _getMangas() {
-        let mangaList = [];
-        const uri = new URL('/new', this.url);
+        const uri = new URL('/genre', this.url);
         const req = new Request(uri, this.requestOptions);
-        const res = await this.fetchDOM(req, this.pageNoSelector);
-        let pageCount = parseInt(res[0].text);
-
-        for (let i = 1; i <= pageCount; i++) {
-            mangaList = mangaList.concat(await this._getMangaListFromPage(uri.href, i));
+        
+        // Do not retrieve light novels
+        const genres = await this.fetchDOM(req, 'details:not(:last-child) li:first-child>a');
+        const mangaList = Array.from(new Set());
+        for (const genre of genres) {
+            mangaList.push(...await this._getMangasFromGenre(genre.pathname));
         }
 
         return mangaList;
     }
 
-    async _getMangaListFromPage(uri, page) {
+    async _getMangasFromGenre(path) {
+        const uri = new URL(path, this.url);
+        const req = new Request(uri, this.requestOptions);
+        const res = await this.fetchDOM(req, this.pageNoSelector);
+        const pageCount = res.length != 0 ? parseInt(res[0].text) : 1;
+
+        const mangaList = [];
+        for (let i = 1; i <= pageCount; i++) {
+            mangaList.push(...await this._getMangasFromPage(uri.href, i));
+        }
+
+        return mangaList;
+    }
+
+    async _getMangasFromPage(uri, page) {
         page = page || 1;
         uri = new URL(uri);
         uri.searchParams.set('page', page);
         const req = new Request(uri, this.requestOptions);
-        const res = await this.fetchDOM(req, '.resBox>li>.titleName>a');
+        const res = await this.fetchDOM(req, 'ul.listBox li div.titleName a');
+
         return res.map(e => {
             return {
                 id: e.pathname.split('/')[2],
-                title: this._sanitizeMangaTitleFromNewReleases(e.innerText.trim())
+                title: this._sanitizeMangaTitle(e.innerText.trim())
             };
         });
     }
 
     async _getChapters(manga) {
-        let chapterList = [];
+        const chapterList = Array.from(new Set());
         const uri = new URL(`${this.apiPath}/title/content_list/`, this.url);
         uri.searchParams.set('title_id', manga.id);
 
         const req = new Request(uri, this.requestOptions);
         const res = await this.fetchJSON(req);
-        const pageBtn = this._querySelectorFromHtmlString(res.data.html_page, this.pageNoSelector);
+        const pageBtn = this._querySelectorFromHtmlStr(res.data.html_page, this.pageNoSelector);
 
-        let pageCount = 1;
-        if (pageBtn.length != 0) {
-            pageCount = parseInt(pageBtn[0].text);
-        }
-
+        const pageCount = pageBtn.length != 0 ? parseInt(pageBtn[0].text) : 1;
         for (let i = 1; i <= pageCount; i++) {
-            chapterList = chapterList.concat(await this._getChaptersFromPage(uri.href, i, manga.id));
+            chapterList.push(...await this._getChaptersFromPage(uri.href, i, manga.id));
         }
 
         return chapterList;
@@ -82,7 +93,8 @@ export default class MangaPlaza extends SpeedBinb {
 
         const req = new Request(uri, this.requestOptions);
         const res = await this.fetchJSON(req);
-        return this._querySelectorFromHtmlString(res.data.html_content, '.inner_table')
+        
+        return this._querySelectorFromHtmlStr(res.data.html_content, '.inner_table')
             .filter(e => e.querySelectorAll('a[href*="/reader/"]').length != 0)
             .map(e => {
                 const btnList = e.querySelectorAll('a[href*="/reader/"]');
@@ -103,19 +115,10 @@ export default class MangaPlaza extends SpeedBinb {
     }
 
     _sanitizeMangaTitle(title) {
-        const chapterReleaseStr = '<Chapter release>';
-        return title.replace(chapterReleaseStr, '');
+        return title.replace('<Chapter release>', '').trim();
     }
 
-    _sanitizeMangaTitleFromNewReleases(title) {
-        const splitTitle = title.split(' ');
-        splitTitle.splice(0, 1);
-        return this._sanitizeMangaTitle(splitTitle.join(' '));
-    }
-
-    _querySelectorFromHtmlString(htmlStr, selector) {
-        const dom = document.createElement('html');
-        dom.innerHTML = htmlStr;
-        return Array.from(dom.querySelectorAll(selector));
+    _querySelectorFromHtmlStr(htmlStr, selector) {
+        return Array.from(new DOMParser().parseFromString(htmlStr, 'text/html').querySelectorAll(selector));
     }
 }
