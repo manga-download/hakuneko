@@ -7,6 +7,6 @@ export default class Riwyat extends WordPressMadaraNovel {
         super.id = 'riwyat';
         super.label = 'Riwyat';
         this.tags = [ 'novel', 'arabic' ];
-        this.url = 'https://riwyat.com';
+        this.url = 'https://cenele.com';
     }
 }
