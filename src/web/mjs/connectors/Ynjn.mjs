@@ -28,7 +28,7 @@ export default class YnJn extends Connector {
     async _getChapters(manga) {
         const chapters = [];
         for (let page = 1, hasNext = true; hasNext; page++) {
-            const uri = new URL(`title/${manga.id}/episode`, this.apiUrl);
+            const uri = new URL(`title/${manga.id}/episode?isGetAll=true`, this.apiUrl);
             uri.searchParams.set('id', manga.id);
             uri.searchParams.set('page', page);
             uri.searchParams.set('is_reverse', 'false');
