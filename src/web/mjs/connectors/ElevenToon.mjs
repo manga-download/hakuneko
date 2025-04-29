@@ -8,7 +8,7 @@ export default class ElevenToon extends Connector {
         super.id = '11toon';
         super.label = '11toon';
         this.tags = ['manga', 'korean'];
-        this.url = 'http://www.11toon.com';
+        this.url = 'https://www.11toon.com';
     }
 
     canHandleURI(uri) {
