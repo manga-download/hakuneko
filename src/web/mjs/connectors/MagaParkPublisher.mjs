@@ -64,17 +64,15 @@ export default class MagaParkPublisher extends Connector {
     /**
      *
      */
-    _getChapterList( manga, callback ) {
+     _getChapterList( manga, callback ) {
         let request = new Request( this.url + manga.id, this.requestOptions );
-        this.fetchDOM( request, 'div.chapter ul li div.badge source[src$="mangadetail_badge-free.svg"]' )
+        this.fetchDOM( request, 'div.chapter ul li div.free-badge' )
             .then( data => {
                 let chapterList = data.map( element => {
-                    let id = element.closest( 'li' );
-                    let num = id.querySelector( 'div.chapterNumber span' ).innerText.trim();
-                    let title = id.querySelector( 'div.chapterNumber p.chapterTitle' ).innerText.trim();
+                    const li = element.closest( 'li' );
                     return {
-                        id: id.dataset.chapterId,
-                        title: ( num + ' - ' + title ).trim(),
+                        id: li.dataset.chapterId,
+                        title: li.querySelector( '.chapterTitle' ).innerText.trim(),
                         language: ''
                     };
                 } );
@@ -85,7 +83,6 @@ export default class MagaParkPublisher extends Connector {
                 callback( error, undefined );
             } );
     }
-
     /**
      *
      */
