@@ -13,25 +13,21 @@ export default class MangaPlaza extends SpeedBinb {
         this.links = {
             login: 'https://mangaplaza.com/login'
         };
-        this.apiPath = '/api';
+        this.apiURL = new URL('/api/', this.url);
         this.requestOptions.headers.set('x-cookie', 'mp_over18_agreement=ON');
         this.pageNoSelector = '.pages>:nth-last-child(2)>a';
     }
 
     async _getMangaFromURI(uri) {
-        const req = new Request(uri, this.requestOptions);
-        const res = await this.fetchDOM(req, '#_title_nm');
+        const results = await this.fetchDOM(new Request(uri, this.requestOptions), '#_title_nm');
         const id = uri.pathname.split('/')[2];
-        const title = this._sanitizeMangaTitle(res[0].innerText.trim());
+        const title = results[0].innerText.replace(/^<.*>/, '').trim();
         return new Manga(this, id, title);
     }
 
     async _getMangas() {
-        const uri = new URL('/genre', this.url);
-        const req = new Request(uri, this.requestOptions);
-        
         // Do not retrieve light novels
-        const genres = await this.fetchDOM(req, 'details:not(:last-child) li:first-child>a');
+        const genres = await this.fetchDOM(new Request(new URL('/genre', this.url), this.requestOptions), 'details:not(:last-child) li:first-child>a');
         const mangaList = Array.from(new Set());
         for (const genre of genres) {
             mangaList.push(...await this._getMangasFromGenre(genre.pathname));
@@ -41,68 +37,54 @@ export default class MangaPlaza extends SpeedBinb {
     }
 
     async _getMangasFromGenre(path) {
-        const uri = new URL(path, this.url);
-        const req = new Request(uri, this.requestOptions);
-        const res = await this.fetchDOM(req, this.pageNoSelector);
-        const pageCount = res.length != 0 ? parseInt(res[0].text) : 1;
+        const results = await this.fetchDOM(new Request(new URL(path, this.url), this.requestOptions), this.pageNoSelector);
+        const pageCount = results.length != 0 ? parseInt(results[0].text) : 1;
 
         const mangaList = [];
-        for (let i = 1; i <= pageCount; i++) {
-            mangaList.push(...await this._getMangasFromPage(uri.href, i));
+        for (let page = 1; page <= pageCount; page++) {
+            const results = await this.fetchDOM(new Request(new URL(`${path}?page=${page}`, this.url), this.requestOptions), 'ul.listBox li div.titleName a');
+
+            mangaList.push(
+                ...results.map(e => {
+                    return {
+                        id: e.pathname.split('/')[2],
+                        title: e.innerText.replace(/^<.*>/, '').trim()
+                    };
+                })
+            );
         }
 
         return mangaList;
     }
 
-    async _getMangasFromPage(uri, page) {
-        page = page || 1;
-        uri = new URL(uri);
-        uri.searchParams.set('page', page);
-        const req = new Request(uri, this.requestOptions);
-        const res = await this.fetchDOM(req, 'ul.listBox li div.titleName a');
-
-        return res.map(e => {
-            return {
-                id: e.pathname.split('/')[2],
-                title: this._sanitizeMangaTitle(e.innerText.trim())
-            };
-        });
-    }
-
     async _getChapters(manga) {
-        const chapterList = Array.from(new Set());
-        const uri = new URL(`${this.apiPath}/title/content_list/`, this.url);
-        uri.searchParams.set('title_id', manga.id);
+        const chapterList = [];
+        const uri = new URL(`title/content_list/?title_id=${manga.id}`, this.apiURL);
 
-        const req = new Request(uri, this.requestOptions);
-        const res = await this.fetchJSON(req);
-        const pageBtn = this._querySelectorFromHtmlStr(res.data.html_page, this.pageNoSelector);
+        const { data: { html_page}} = await this.fetchJSON(uri, this.requestOptions);
+        const doc = new DOMParser().parseFromString(html_page, 'text/html');
+        const pageBtn = doc.querySelector(this.pageNoSelector);
 
-        const pageCount = pageBtn.length != 0 ? parseInt(pageBtn[0].text) : 1;
-        for (let i = 1; i <= pageCount; i++) {
-            chapterList.push(...await this._getChaptersFromPage(uri.href, i, manga.id));
+        const pageCount = pageBtn ? parseInt(pageBtn.text) : 1;
+        for (let page = 1; page <= pageCount; page++) {
+            chapterList.push(...await this._getChaptersFromPage(uri, page, manga.id));
         }
 
         return chapterList;
     }
 
     async _getChaptersFromPage(uri, page, mangaId) {
-        page = page || 1;
-        uri = new URL(uri);
-        uri.searchParams.set('page', page);
-
-        const req = new Request(uri, this.requestOptions);
-        const res = await this.fetchJSON(req);
-        
-        return this._querySelectorFromHtmlStr(res.data.html_content, '.inner_table')
-            .filter(e => e.querySelectorAll('a[href*="/reader/"]').length != 0)
+        const { data: { html_content}} = await this.fetchJSON(new Request(new URL(`${uri}&page=${page}`), this.requestOptions));
+        const doc = new DOMParser().parseFromString(html_content, 'text/html');
+        return [...doc.querySelectorAll('.inner_table')]
+            .filter(e => e.querySelector('a[href*="/reader/"]'))
             .map(e => {
-                const btnList = e.querySelectorAll('a[href*="/reader/"]');
-                const contentId = btnList[0].pathname.split('/')[2];
+                const btn = e.querySelector('a[href*="/reader/"]');
+                const contentId = btn.pathname.split('/')[2];
 
-                let title = e.getElementsByClassName('titleName')[0].innerText.trim();
+                let title = e.querySelector('.titleName').innerText.trim();
                 let u0 = 0;
-                if (btnList[0].pathname.includes('/preview/')) {
+                if (btn.pathname.includes('/preview/')) {
                     title += ' (Preview)';
                     u0 = 1;
                 }
@@ -112,13 +94,5 @@ export default class MangaPlaza extends SpeedBinb {
                     title: title,
                 };
             });
-    }
-
-    _sanitizeMangaTitle(title) {
-        return title.replace('<Chapter release>', '').trim();
-    }
-
-    _querySelectorFromHtmlStr(htmlStr, selector) {
-        return Array.from(new DOMParser().parseFromString(htmlStr, 'text/html').querySelectorAll(selector));
     }
 }
