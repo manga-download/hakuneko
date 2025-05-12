@@ -12,7 +12,7 @@ export default class Hiperdex extends WordPressMadara {
                 label: 'URL',
                 description: 'This website changes their URL regularly.\nThis is the last known URL which can also be manually set by the user.',
                 input: 'text',
-                value: 'https://hiperdex.xyz'
+                value: 'https://hiperdex.com'
             }
         };
     }
