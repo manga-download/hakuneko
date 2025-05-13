@@ -64,7 +64,7 @@ export default class MagaParkPublisher extends Connector {
     /**
      *
      */
-     _getChapterList( manga, callback ) {
+    _getChapterList( manga, callback ) {
         let request = new Request( this.url + manga.id, this.requestOptions );
         this.fetchDOM( request, 'div.chapter ul li div.free-badge' )
             .then( data => {
