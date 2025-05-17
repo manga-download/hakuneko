@@ -91,7 +91,7 @@ export default class HentaiNexus extends Connector {
         let request = new Request( this.url + chapter.id, this.requestOptions );
         Engine.Request.fetchUI( request, `pageData;` )
             .then( data => {
-                let pageList = data;
+                let pageList = data.map(page => page.image);
                 callback( null, pageList );
             } )
             .catch( error => {
