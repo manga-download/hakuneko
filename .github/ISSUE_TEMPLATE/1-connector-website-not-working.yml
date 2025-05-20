@@ -34,8 +34,9 @@ body:
       label: Make sure to try Nightly Build
       description: The [nightly build](https://github.com/manga-download/hakuneko/releases) contains latest fixes. Perhaps your problem is already solved.
       options:
-        - label: Yes nightly build didn't fix the issue
-          required: true
+        - label: Yes, the problem cannot be reproduced with Nightly Build
+          required: false
+          default: true
   - type: dropdown
     attributes:
       label: What kind of issue are you encountering
