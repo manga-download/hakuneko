@@ -76,7 +76,7 @@ export default class Tappytoon extends Connector {
         uri = new URL(`/content-delivery/contents?chapterId=${chapter.id}&variant=${quality}&locale=${this.lang}`, this.apiurl);
         request = new Request(uri, this.requestOptions);
         data = await this.fetchJSON(request);
-        return data.media.map(image => image.url);
+        return data.media.map(image => this.createConnectorURI(image.url));
     }
 
 }
