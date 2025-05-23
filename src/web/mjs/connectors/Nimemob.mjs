@@ -66,7 +66,6 @@ export default class Nimemob extends Connector {
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
-        const id = uri.pathname;
         const title = (await this.fetchDOM(request, 'h1[itemprop="name"]'))[0].textContent.trim();
         return new Manga(this, uri.pathname, title);
     }
