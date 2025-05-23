@@ -49,7 +49,7 @@ export default class Reyume extends Connector {
             return {
                 id: this.getRootRelativeOrAbsoluteLink(goodLink.href, request.url),
                 title: goodLink.title.replace(/.*(?=Chapter)/g, "").trim(),
-            }
+            };
         }).filter((chap) => chap.id != manga.id);
         return chapterslist;
     }
