@@ -8,7 +8,7 @@ export default class MangaWorld extends Connector {
         super.id = 'mangaworld';
         super.label = 'Manga World';
         this.tags = [ 'manga', 'webtoon', 'italian'];
-        this.url = 'https://www.mangaworld.bz';
+        this.url = 'https://www.mangaworld.nz';
     }
 
     async _getMangaFromURI(uri) {
