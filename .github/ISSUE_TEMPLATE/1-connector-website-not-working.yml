@@ -36,7 +36,6 @@ body:
       options:
         - label: Yes, the problem cannot be reproduced with Nightly Build
           required: false
-          default: true
   - type: dropdown
     attributes:
       label: What kind of issue are you encountering
