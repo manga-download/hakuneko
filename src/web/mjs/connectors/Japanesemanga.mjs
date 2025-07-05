@@ -4,8 +4,8 @@ export default class Japanesemanga extends WordPressMangastream {
 
     constructor() {
         super();
-        this.id = 'japanesemanga';
-        this.label = 'มังงะญี่ปุ่น';
+        super.id = 'japanesemanga';
+        super.label = 'มังงะญี่ปุ่น';
         this.tags = [ 'webtoon', 'thai', 'manga' ];
         this.url = 'https://xn--72cas2cj6a4hf4b5a8oc.com';
         this.path = '/manga/list-mode/';
