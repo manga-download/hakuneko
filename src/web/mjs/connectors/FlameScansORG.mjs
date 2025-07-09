@@ -7,7 +7,7 @@ export default class FlameScansORG extends WordPressMangastream {
         super.id = 'flamescans-org';
         super.label = 'Flame Comics';
         this.tags = [ 'manga', 'webtoon', 'english' ];
-        this.url = 'https://flamecomics.com';
+        this.url = 'https://flamecomics.xyz';
         this.path = '/series/list-mode/';
         this.queryMangas = 'div.postbody div.soralist ul li a.series';
         this.queryChapters = 'div#chapterlist ul li a';
