@@ -1,45 +1,26 @@
-name: ❗ Connector/Website not working
-description: Notify that a connector is not working
-title: "[<NameOfConnector>] Connector not working"
+name: ❗ Website not working
+description: Report a broken website that stopped working
+title: "[<NameOfWebsite>] is no longer working"
 labels: ["Website Change"]
 body:
-  - type: markdown
-    attributes:
-      value: |
-        > [!CAUTION]
-        > Do **NOT** report **MangaLife** or **MangaSee**: use their new website/connector **WeebCentral**
   - type: checkboxes
     attributes:
-      label: Is there an existing issue for this connector?
-      description: Do not create duplicate of an existing issue related to the connector
+      label: Disclaimer
+      description: >
+        By truthfully answering this questionnaire you are supporting the developers to save precious time.
+        You also agree that this ticket may be closed without any further investigation in case it was answered hasty or untruthfully.
       options:
-        - label: I have searched the existing issues
+        - label: I searched and confirm that the same or a similar issue could not be found in the list of [existing tickets](https://github.com/manga-download/hakuneko/issues?q=)
           required: true
-  - type: checkboxes
-    attributes:
-      label: Did you read the troubleshooting guide ?
-      description: Please check [the troubleshooting guide](https://hakuneko.download/docs/troubleshoot/) if your issue might not be related to some known cases.
-      options:
-        - label: I read it but nothing seems related
+        - label: I read and confirm that the issue could not be addressed by following the topics listed in the [troubleshooting guide](https://hakuneko.download/docs/troubleshoot/)
           required: true
-  - type: checkboxes
-    attributes:
-      label: Is the website of the connector working properly ?
-      description: If the website isn't working, hakuneko will not solve the issue.
-      options:
-        - label: Yes i'm able to see the manga within my standard browser
+        - label: I tested and confirm that the issue is also reproducible with the latest [Nightly Build](https://github.com/manga-download/hakuneko/releases/tag/nightly-20200705.1)
           required: true
-  - type: checkboxes
-    attributes:
-      label: Make sure to try Nightly Build
-      description: The [nightly build](https://github.com/manga-download/hakuneko/releases) contains latest fixes. Perhaps your problem is already solved.
-      options:
-        - label: Yes, the problem cannot be reproduced with Nightly Build
-          required: false
   - type: dropdown
     attributes:
-      label: What kind of issue are you encountering
+      label: What kind of issue are you encountering?
       options:
+        - Please Select ...
         - Manga list isn't refreshing
         - Chapter list isn't refreshing
         - Downloads aren't working
@@ -49,19 +30,25 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: Describe the bug
-      description: A clear and concise description of what the bug is.
+      label: Description
+      description: |
+        A clear and concise description of the issue.
+        Copy any relevant error message that appears in a popup or (advanced) within the console (press `F12`)
     validations:
       required: true
   - type: textarea
     attributes:
-      label: To Reproduce
-      description: Steps to reproduce the behavior
+      label: How can this be reproduced?
+      description: |
+        Provide a simplified list of instructions which caused the issue and can be replayed by a developer.
+        Make sure to include correct names and links to the referenced website, manga(s) and chapter(s).
       value: |
-        1. Name of connector
-        2. Name of manga (if connector update is working)
-        3. Name of chapter (if manga update is working)
-        4. Copy any relevant error message that appears in a popup or (advanced) within the console (press F12)
+        1. Start HakuNeko
+        2. Select the website "MangaDex" (https://mangadex.org)
+        3. Press the button to refresh the manga list
+        4. Select manga "One Piece" (https://mangadex.org/title/a1c7c817-4e59-43b7-9365-09675a149a6f/one-piece)
+        5. Press the button to refresh the chapter list
+        6. Click the download button on chapter "Ch. 1 - Romance Dawn" (https://mangaplus.shueisha.co.jp/viewer/1000486)
     validations:
       required: true
   - type: markdown
