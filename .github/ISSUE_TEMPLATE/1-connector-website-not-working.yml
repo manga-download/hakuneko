@@ -1,6 +1,6 @@
 name: ❗ Website not working
 description: Report a broken website that stopped working
-title: "[<NameOfWebsite>] is no longer working"
+title: "[%WEBSITE-NAME%] is no longer working"
 labels: ["Website Change"]
 body:
   - type: checkboxes
@@ -15,6 +15,8 @@ body:
         - label: I read and confirm that the issue could not be addressed by following the topics listed in the [troubleshooting guide](https://hakuneko.download/docs/troubleshoot/)
           required: true
         - label: I tested and confirm that the issue is also reproducible with the latest [Nightly Build](https://github.com/manga-download/hakuneko/releases/tag/nightly-20200705.1)
+          required: true
+        - label: I confirm that the placeholder `%WEBSITE-NAME%` in this ticket's title was correctly replaced with the name of the broken website
           required: true
   - type: dropdown
     attributes:
@@ -44,11 +46,11 @@ body:
         Make sure to include correct names and links to the referenced website, manga(s) and chapter(s).
       value: |
         1. Start HakuNeko
-        2. Select the website "MangaDex" (https://mangadex.org)
+        2. Select the website [MangaDex](https://mangadex.org)
         3. Press the button to refresh the manga list
-        4. Select manga "One Piece" (https://mangadex.org/title/a1c7c817-4e59-43b7-9365-09675a149a6f/one-piece)
+        4. Select manga [One Piece](https://mangadex.org/title/a1c7c817-4e59-43b7-9365-09675a149a6f/one-piece)
         5. Press the button to refresh the chapter list
-        6. Click the download button on chapter "Ch. 1 - Romance Dawn" (https://mangaplus.shueisha.co.jp/viewer/1000486)
+        6. Click the download button on chapter [Ch. 1 - Romance Dawn](https://mangaplus.shueisha.co.jp/viewer/1000486)
     validations:
       required: true
   - type: markdown
