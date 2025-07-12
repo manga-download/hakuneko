@@ -5,10 +5,10 @@ export default class AGS extends WordPressMangastream {
     constructor() {
         super();
         super.id = 'ags';
-        super.label = 'AGS (Animated Glitched Scans)';
+        super.label = 'AGR Comics (Animated Glitched Runes)';
         this.tags = [ 'manga', 'english', 'scanlation' ];
-        this.url = 'https://agscomics.com';
-        this.path = '/series/?list';
+        this.url = 'https://agrcomics.org';
+        this.path = '/series';
     }
 
     get icon() {
