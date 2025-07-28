@@ -1,68 +1,32 @@
-import Connector from "../engine/Connector.mjs";
-import Manga from '../engine/Manga.mjs';
+import WordPressMangastream from "./templates/WordPressMangastream.mjs";
 
-export default class RokariComics extends Connector {
+export default class RokariComics extends WordPressMangastream {
     constructor() {
         super();
         super.id = "rokaricomics";
         super.label = "Rokari Comics";
         this.tags = ["webtoon", "english"];
+        this.path="/manga/list-mode/";
         this.url = "https://rokaricomics.com";
-    }
-
-    async _getMangas() {
-        let page=1;
-
-        let request = new Request(
-            this.url + `/manga?page=${page++}`,
-            this.requestOptions
-        );
-        let data=[];
-        let tmp=await this.fetchDOM(request, ".listupd .bsx a");
-
-        while(tmp.length>0) {
-            data=[...data, ...tmp];
-            request = new Request(
-                this.url + `/manga?page=${page++}`,
-                this.requestOptions
-            );
-            tmp=await this.fetchDOM(request, ".listupd .bsx a");
-        }
-        return data.map((element) => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim(),
-            };
-        });
+        this.links = {
+            login: 'https://rokaricomics.com/login/'
+        };
     }
 
     async _getChapters(manga) {
-        let request = new Request(this.url + manga.id, this.requestOptions);
-        let data = await this.fetchDOM(request, '#chapterlist li a[href]');
-        return data.map(element => {
-            return {
-                id: this.getRootRelativeOrAbsoluteLink(element, this.url),
-                title: element.text.trim(),
-                language: ''
-            };
-        });
-    }
-
-    async _getPages(chapter) {
-        const scriptPages = `
-            new Promise(resolve => {
-                resolve([...document.querySelectorAll('#readerarea img')].map(img => img.src));
+        let request = new Request(new URL(manga.id, this.url), this.requestOptions);
+        let data = await this.fetchDOM(request, this.queryChapters);
+        return data
+        // filtering out premium chapters
+            .filter(element => element.href)
+            .map(element => {
+                this.adLinkDecrypt(element);
+                const title = this.queryChaptersTitle ? element.querySelector(this.queryChaptersTitle).textContent : element.text;
+                return {
+                    id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+                    title: title.replace(manga.title, '').trim() || manga.title
+                };
             });
-        `;
-
-        const request = new Request(new URL(chapter.id, this.url), this.requestOptions);
-
-        return await Engine.Request.fetchUI(request, scriptPages);
     }
 
-    async _getMangaFromURI(uri) {
-        const request = new Request(uri, this.requestOptions);
-        let title= (await this.fetchDOM(request, "h1.entry-title"))[0].textContent.trim();
-        return new Manga(this, uri.pathname, title);
-    }
 }
