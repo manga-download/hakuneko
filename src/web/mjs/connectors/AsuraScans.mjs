@@ -15,7 +15,7 @@ export default class AsuraScans extends WordPressMangastream {
                 label: 'URL',
                 description: `This website change domains regularly.\nThis is the default URL which can also be manually set by the user.`,
                 input: 'text',
-                value: 'https://asuratoon.com'
+                value: 'https://asuracomic.net'
             }
         };
     }
