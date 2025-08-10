@@ -21,9 +21,9 @@
                 bottom: 0;
                 border: var(--connector-dialog-border);
                 background-color: var(--connector-dialog-background-color);
-                padding: 0em;
-                margin: 1em;
-                border-radius: 0em;
+                padding: 0.5em;
+                margin: 2em;
+                border-radius: 0.5em;
                 -webkit-box-shadow: var(--connector-dialog-shadow);
                    -moz-box-shadow: var(--connector-dialog-shadow);
                         box-shadow: var(--connector-dialog-shadow);
@@ -66,14 +66,14 @@
                 flex: 0;
                 display: flex;
                 flex-direction: column;
-                margin: 0.5em;
+                margin: 1em;
                 max-height: 100%; /* Fixes overflow scrolling issue in flexbox with Chromium 73+ => https://support.google.com/chrome/thread/3101009?msgid=4942418 */
             }
             .connectors {
                 flex: 1;
                 display: flex;
                 flex-direction: column;
-                margin: 0.5em;
+                margin: 1em;
                 max-height: 100%; /* Fixes overflow scrolling issue in flexbox with Chromium 73+ => https://support.google.com/chrome/thread/3101009?msgid=4942418 */
             }
             .pattern {
@@ -108,14 +108,17 @@
                 float: left;
                 background-color: var(--connector-card-background-color);
                 border: var(--connector-card-border);
-                -webkit-box-shadow: var(--connector-card-shadow);
-                   -moz-box-shadow: var(--connector-card-shadow);
-                        box-shadow: var(--connector-card-shadow);
-                margin: 1em;
+                -webkit-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                   -moz-box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                margin: 0.5em;
                 padding: 0.5em;
+                border-radius: 0.5em;
+                transition: transform 0.2s ease-in-out;
             }
             .card:hover {
                 background-color: var(--connector-card-highlighted);
+                transform: translateY(-2px);
             }
             .cardSelected {
                 background-color: var(--connector-card-selected) !important;
@@ -149,9 +152,10 @@
                 color: var(--connector-tag-color);
                 background-color: var(--connector-tag-background-color);
                 /*border: var(--connector-tag-border);*/
-                border-radius: 0.5em;
-                padding-left: 0.3em;
-                padding-right: 0.3em;
+                border-radius: 0.8em;
+                padding: 0.2em 0.5em;
+                font-size: 0.8em;
+                margin-right: 0.5em;
             }
             .tagSelected {
                 background-color: var(--connector-tag-selected) !important;

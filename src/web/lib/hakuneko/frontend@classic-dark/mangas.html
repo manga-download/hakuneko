@@ -346,6 +346,9 @@
              *
              */
             async onAutomationClick(evt) {
+                if (Notification.permission !== 'granted') {
+                    await Notification.requestPermission();
+                }
                 if (!Engine.Settings.baseDirectory.value) {
                     alert('Manga Download Directory not configured!\n\nPlease set the download directory in the settings menu before using the automation feature.');
                     return;
@@ -411,6 +414,9 @@
 
                 this.$.status.removeFromQueue(statusID);
                 this.$.status.addToQueue('Automation complete.');
+                new Notification('HakuNeko', {
+                    body: 'Automatic download process complete.'
+                });
                 evt.target.classList.remove('disabled');
             }
         }
