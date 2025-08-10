@@ -117,6 +117,7 @@
                     <input type="text" value="{{ mangaPattern::input }}"/>
                 </td>
                 <td>
+                    <i class="fas fa-fw fa-cogs button" on-click="onAutomationClick" title="Automate Downloads"></i>
                     <hakuneko-bookmarks selected-manga="{{ selectedManga }}"></hakuneko-bookmarks>
                 </td>
             </tr>
@@ -339,6 +340,56 @@
                     this.set('selectedConnector', clipboardConnector);
                     this.onUpdateMangaListClick(evt);
                 }
+            }
+
+            /**
+             *
+             */
+            async onAutomationClick(evt) {
+                const bookmarks = Engine.BookmarkManager.list;
+                if (!bookmarks || bookmarks.length === 0) {
+                    alert('No bookmarked mangas to automate.');
+                    return;
+                }
+
+                evt.target.classList.add('disabled');
+                let statusID = this.$.status.addToQueue('Starting automation...');
+
+                for (const bookmark of bookmarks) {
+                    try {
+                        this.$.status.addToQueue(`Processing: ${bookmark.title}`, statusID);
+
+                        const chapters = await new Promise((resolve, reject) => {
+                            bookmark.getChapters((error, chapters) => {
+                                if (error) {
+                                    return reject(error);
+                                }
+                                resolve(chapters);
+                            });
+                        });
+
+                        const undownloadedChapters = chapters.filter(chapter => chapter.status !== 'completed');
+
+                        if (undownloadedChapters.length === 0) {
+                            this.$.status.addToQueue(`No new chapters for: ${bookmark.title}`, statusID);
+                            await new Promise(resolve => setTimeout(resolve, 1000)); // wait a bit to show the message
+                            continue;
+                        }
+
+                        this.$.status.addToQueue(`Found ${undownloadedChapters.length} new chapters for: ${bookmark.title}`, statusID);
+                        for (const chapter of undownloadedChapters) {
+                            Engine.DownloadManager.addDownload(chapter);
+                        }
+
+                    } catch (error) {
+                        console.error(`Failed to process manga: ${bookmark.title}`, error);
+                        this.$.status.addToQueue(`Error processing: ${bookmark.title}`, statusID);
+                    }
+                }
+
+                this.$.status.removeFromQueue(statusID);
+                this.$.status.addToQueue('Automation complete.');
+                evt.target.classList.remove('disabled');
             }
         }
         window.customElements.define( HakunekoMangas.is, HakunekoMangas );
