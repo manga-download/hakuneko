@@ -6,7 +6,7 @@ export default class AnimeUnity extends Connector {
         super.id = 'animeunity';
         super.label = 'AnimeUnity';
         this.tags = [ 'anime', 'italian' ];
-        this.url = 'https://www.animeunity.to';
+        this.url = 'https://www.animeunity.so';
     }
     async _getMangaFromURI(uri) {
         const request = new Request(uri, this.requestOptions);
