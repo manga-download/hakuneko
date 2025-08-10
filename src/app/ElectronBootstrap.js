@@ -267,7 +267,7 @@ module.exports = class ElectronBootstrap {
         this._setupHeadersReceived();
         this._setupTray(this._showTray);
         this._window.setMenuBarVisibility(false);
-        this._window.webContents.openDevTools();
+        this._window.webContents.openDevTools({ mode: 'right' });
         this._window.once('ready-to-show', () => this._window.show());
         this._window.on('close', this._mainWindowCloseHandler.bind(this));
         this._window.on('closed', this._mainWindowClosedHandler.bind(this));
