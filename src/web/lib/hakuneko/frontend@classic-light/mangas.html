@@ -391,6 +391,8 @@
                     } catch (error) {
                         console.error(`Failed to process manga: ${manga.title}`, error);
                         this.$.status.addToQueue(`Error processing: ${manga.title}`, statusID);
+                    } finally {
+                        await new Promise(resolve => setTimeout(resolve, 2000)); // wait 2 seconds before processing next manga
                     }
                 }
 
