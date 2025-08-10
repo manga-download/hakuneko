@@ -9,7 +9,8 @@ const statusDefinitions = {
     queued: 'queued', // chapter/manga that is queued for download to the users device
     downloading: 'downloading', // chapter/manga that is currently downloaded to the users device
     completed: 'completed', // chapter/manga that already exist on the users device
-    failed: 'failed' // chapter/manga that failed to be downloaded
+    failed: 'failed', // chapter/manga that failed to be downloaded
+    cancelled: 'cancelled'
 };
 
 export default class DownloadJob extends EventTarget {
@@ -19,6 +20,7 @@ export default class DownloadJob extends EventTarget {
         super();
         this.id = Symbol();
         this.chapter = chapter;
+        this.abortController = new AbortController();
         this.labels = {
             connector: chapter.manga.connector.label,
             manga: chapter.manga.title,
@@ -31,6 +33,15 @@ export default class DownloadJob extends EventTarget {
         this.status = undefined;
         this.progress = 0;
         this.errors = [];
+    }
+
+    /**
+     *
+     */
+    cancel() {
+        this.abortController.abort();
+        this.setStatus(statusDefinitions.cancelled);
+        this.errors.push(new Error('Download was cancelled.'));
     }
 
     /**
@@ -123,7 +134,7 @@ export default class DownloadJob extends EventTarget {
         const result = [];
         for(let page of pages) {
             await this._wait(this.throttle);
-            const response = await fetch(page, this.requestOptions);
+            const response = await fetch(page, { ...this.requestOptions, signal: this.abortController.signal });
             if(response.status !== 200 && !Engine.Settings.ignoreErrorOnDownload.value) {
                 throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
             }
@@ -138,7 +149,7 @@ export default class DownloadJob extends EventTarget {
         // get data for all pages of chapter
         let promises = pages.map(async (page, index) => {
             await this._wait(index * throttle);
-            const response = await fetch(page, this.requestOptions);
+            const response = await fetch(page, { ...this.requestOptions, signal: this.abortController.signal });
             if(response.status !== 200 && !Engine.Settings.ignoreErrorOnDownload.value) {
                 throw new Error(`Page " ${page}" returned status: ${response.status} - ${response.statusText}`);
             }
@@ -168,7 +179,7 @@ export default class DownloadJob extends EventTarget {
             if(episode.referer) {
                 request.headers.set('x-referer', episode.referer);
             }
-            return fetch(request)
+            return fetch(request, { signal: this.abortController.signal })
                 .then( response => {
                     if( response.status !== 200 ) {
                         throw new Error( 'Playlist "' + mirror + '" returned status: ' + response.status + ' - ' + response.statusText );
@@ -222,7 +233,7 @@ export default class DownloadJob extends EventTarget {
                     if(episode.referer) {
                         request.headers.set('x-referer', episode.referer);
                     }
-                    const response = await fetch(request);
+                    const response = await fetch(request, { signal: this.abortController.signal });
                     if(response.status !== 200) {
                         throw new Error(`Packet "${packet.link}" returned status: '${response.status}' - '${response.statusText}`);
                     }
@@ -315,7 +326,7 @@ export default class DownloadJob extends EventTarget {
         let request = new Request( episode.video, this.requestOptions );
         request.headers.set( 'x-referer', episode.referer || episode.video );
         this.requestOptions['method'] = 'GET';
-        fetch( request )
+        fetch( request, { signal: this.abortController.signal } )
             .then( response => {
                 if( response.status !== 200 ) {
                     throw new Error( 'Video "' + episode.video + '" returned status: ' + response.status + ' - ' + response.statusText );
@@ -343,7 +354,7 @@ export default class DownloadJob extends EventTarget {
                             let request = new Request( episode.video, this.requestOptions );
                             request.headers.set( 'Range', 'bytes=' + chunks[index] );
                             request.headers.set( 'x-referer', episode.referer || episode.video );
-                            return fetch( request );
+                            return fetch( request, { signal: this.abortController.signal } );
                         } )
                         .then( response => {
                             if( response.status !== 200 && response.status !== 206 ) {

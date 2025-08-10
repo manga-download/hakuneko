@@ -39,6 +39,32 @@ export default class DownloadManager extends EventTarget {
     /**
      *
      */
+    cancelAllDownloads() {
+        for( let connectorID in this.queue ) {
+            for( let job of this.queue[connectorID] ) {
+                job.cancel();
+            }
+        }
+        this.queue = [];
+    }
+
+    /**
+     *
+     */
+    cancelDownload( job ) {
+        for( let connectorID in this.queue ) {
+            let index = this.queue[connectorID].findIndex( item => item.isSame( job ) );
+            if( index > -1 ) {
+                this.queue[connectorID][index].cancel();
+                this.queue[connectorID].splice( index, 1 );
+                return;
+            }
+        }
+    }
+
+    /**
+     *
+     */
     processQueue() {
         // find a connector in queue that has downloads available and is not locked
         for( let connectorID in this.queue ) {

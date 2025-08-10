@@ -75,7 +75,10 @@
             <table cellpadding="0">
                 <template is="dom-repeat" items="[[ jobList ]]" initial-count="500" target-framerate="5">
                     <tr title$="[[ item.labels.connector ]]&#10;[[ item.labels.manga ]]&#10;[[ item.labels.chapter ]]">
-                        <td class="fa-fw"><i class$="fas [[ getStatusClass(item.status) ]] fa-fw" title$="[[ getErrorTitle(item.errors) ]]" on-click="restartDownload"></i></td>
+                        <td class="fa-fw">
+                            <i class$="fas [[ getStatusClass(item.status) ]] fa-fw" title$="[[ getErrorTitle(item.errors) ]]" on-click="restartDownload"></i>
+                            <i class$="fas fa-times button [[ getCancelButtonClass(item.status) ]]" title="Cancel Download" on-click="cancelDownload"></i>
+                        </td>
                         <td class="cell">[[ item.labels.connector ]]</td>
                         <td class="cell">[[ item.labels.manga ]]</td>
                         <td class="cell">[[ item.labels.chapter ]]</td>
@@ -87,6 +90,7 @@
         <div class="bar">
             <div class="expander">
                 <i class$="fas [[ getButtonClass(popupVisibility) ]] button" title="Toggle download list" on-click="toggleJobList"></i>
+                <i class="fas fa-ban button" title="Cancel All Downloads" on-click="cancelAllDownloads"></i>
             </div>
             <div class="status">[[ jobList.length ]] Download(s)</div>
         </div>
@@ -173,9 +177,18 @@
                         return 'fa-check button buttonCompleted';
                     case 'failed':
                         return 'fa-exclamation-triangle button buttonFailed';
+                    case 'cancelled':
+                        return 'fa-ban buttonFailed';
                     default:
                         return '';
                 }
+            }
+
+            /**
+             *
+             */
+            getCancelButtonClass( status ) {
+                return ( status === 'queued' || status === 'downloading' ? 'show' : 'hide' );
             }
 
             /**
@@ -195,6 +208,21 @@
                 if( job.status === 'failed' || job.status === 'completed' ) {
                     Engine.DownloadManager.addDownload( job.chapter );
                 }
+            }
+
+            /**
+             *
+             */
+            cancelDownload( e ) {
+                let job = e.model.item;
+                Engine.DownloadManager.cancelDownload( job );
+            }
+
+            /**
+             *
+             */
+            cancelAllDownloads() {
+                Engine.DownloadManager.cancelAllDownloads();
             }
 
             /**
