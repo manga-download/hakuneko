@@ -368,7 +368,12 @@
                             });
                         });
 
+                        console.log(`Found ${chapters.length} chapters for manga: ${bookmark.title}`);
+                        chapters.forEach(c => console.log(`- Chapter: ${c.title}, Status: ${c.status}`));
+
                         const undownloadedChapters = chapters.filter(chapter => chapter.status !== 'completed');
+
+                        console.log(`Found ${undownloadedChapters.length} undownloaded chapters.`);
 
                         if (undownloadedChapters.length === 0) {
                             this.$.status.addToQueue(`No new chapters for: ${bookmark.title}`, statusID);
@@ -378,6 +383,7 @@
 
                         this.$.status.addToQueue(`Found ${undownloadedChapters.length} new chapters for: ${bookmark.title}`, statusID);
                         for (const chapter of undownloadedChapters) {
+                            console.log(`Adding chapter to download queue: ${chapter.title}`);
                             Engine.DownloadManager.addDownload(chapter);
                         }
 
