@@ -388,7 +388,7 @@
                             });
                         });
 
-                        const undownloadedChapters = chapters.filter(chapter => chapter.status !== 'completed');
+                        const undownloadedChapters = chapters.filter(chapter => chapter.status !== 'completed' && chapter.status !== 'offline');
 
                         if (undownloadedChapters.length === 0) {
                             this.$.status.addToQueue(`No new chapters for: ${manga.title}`, statusID);
