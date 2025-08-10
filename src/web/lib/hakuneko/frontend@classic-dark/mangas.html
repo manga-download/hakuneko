@@ -346,6 +346,11 @@
              *
              */
             async onAutomationClick(evt) {
+                if (!Engine.Settings.baseDirectory.value) {
+                    alert('The download directory is not configured. Please set it in the settings menu.');
+                    return;
+                }
+
                 const bookmarks = Engine.BookmarkManager.bookmarks;
                 if (!bookmarks || bookmarks.length === 0) {
                     alert('No bookmarked mangas to automate.');
@@ -392,7 +397,7 @@
                         console.error(`Failed to process manga: ${manga.title}`, error);
                         this.$.status.addToQueue(`Error processing: ${manga.title}`, statusID);
                     } finally {
-                        await new Promise(resolve => setTimeout(resolve, 2000)); // wait 2 seconds before processing next manga
+                        await new Promise(resolve => setTimeout(resolve, 5000)); // wait 5 seconds before processing next manga
                     }
                 }
 
