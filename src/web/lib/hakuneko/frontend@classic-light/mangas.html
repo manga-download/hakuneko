@@ -347,7 +347,7 @@
              */
             async onAutomationClick(evt) {
                 if (!Engine.Settings.baseDirectory.value) {
-                    alert('The download directory is not configured. Please set it in the settings menu.');
+                    alert('Manga Download Directory not configured!\n\nPlease set the download directory in the settings menu before using the automation feature.');
                     return;
                 }
 
@@ -365,6 +365,14 @@
                         const connector = Engine.Connectors.find(c => c.id === bookmark.key.connector);
                         if (!connector) {
                             console.warn(`Connector not found for manga: ${bookmark.title.manga}`);
+                            continue;
+                        }
+
+                        try {
+                            await fetch(connector.url);
+                        } catch (error) {
+                            console.warn(`Failed to connect to connector: ${connector.label}`, error);
+                            this.$.status.addToQueue(`Failed to connect to: ${connector.label}`, statusID);
                             continue;
                         }
                         const manga = new Engine.Manga(connector, bookmark.key.manga, bookmark.title.manga);
