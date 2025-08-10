@@ -346,7 +346,7 @@
              *
              */
             async onAutomationClick(evt) {
-                const bookmarks = Engine.BookmarkManager.list;
+                const bookmarks = Engine.BookmarkManager.bookmarks;
                 if (!bookmarks || bookmarks.length === 0) {
                     alert('No bookmarked mangas to automate.');
                     return;
