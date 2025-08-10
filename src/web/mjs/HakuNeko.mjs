@@ -1,6 +1,7 @@
 import InterProcessCommunication from './engine/InterProcessCommunication.mjs';
 import Enums from './engine/Enums.mjs';
 import Connector from './engine/Connector.mjs';
+import Manga from './engine/Manga.mjs';
 
 import Blacklist from './engine/Blacklist.mjs';
 import BookmarkImporter from './engine/BookmarkImporter.mjs';
@@ -83,6 +84,10 @@ export default class HakuNeko {
 
     get Enums() {
         return this._enums;
+    }
+
+    get Manga() {
+        return Manga;
     }
 
     get Request() {

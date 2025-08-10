@@ -357,10 +357,17 @@
 
                 for (const bookmark of bookmarks) {
                     try {
-                        this.$.status.addToQueue(`Processing: ${bookmark.title}`, statusID);
+                        const connector = Engine.Connectors.find(c => c.id === bookmark.key.connector);
+                        if (!connector) {
+                            console.warn(`Connector not found for manga: ${bookmark.title.manga}`);
+                            continue;
+                        }
+                        const manga = new Engine.Manga(connector, bookmark.key.manga, bookmark.title.manga);
+
+                        this.$.status.addToQueue(`Processing: ${manga.title}`, statusID);
 
                         const chapters = await new Promise((resolve, reject) => {
-                            bookmark.getChapters((error, chapters) => {
+                            manga.getChapters((error, chapters) => {
                                 if (error) {
                                     return reject(error);
                                 }
@@ -368,28 +375,22 @@
                             });
                         });
 
-                        console.log(`Found ${chapters.length} chapters for manga: ${bookmark.title}`);
-                        chapters.forEach(c => console.log(`- Chapter: ${c.title}, Status: ${c.status}`));
-
                         const undownloadedChapters = chapters.filter(chapter => chapter.status !== 'completed');
 
-                        console.log(`Found ${undownloadedChapters.length} undownloaded chapters.`);
-
                         if (undownloadedChapters.length === 0) {
-                            this.$.status.addToQueue(`No new chapters for: ${bookmark.title}`, statusID);
+                            this.$.status.addToQueue(`No new chapters for: ${manga.title}`, statusID);
                             await new Promise(resolve => setTimeout(resolve, 1000)); // wait a bit to show the message
                             continue;
                         }
 
-                        this.$.status.addToQueue(`Found ${undownloadedChapters.length} new chapters for: ${bookmark.title}`, statusID);
+                        this.$.status.addToQueue(`Found ${undownloadedChapters.length} new chapters for: ${manga.title}`, statusID);
                         for (const chapter of undownloadedChapters) {
-                            console.log(`Adding chapter to download queue: ${chapter.title}`);
                             Engine.DownloadManager.addDownload(chapter);
                         }
 
                     } catch (error) {
-                        console.error(`Failed to process manga: ${bookmark.title}`, error);
-                        this.$.status.addToQueue(`Error processing: ${bookmark.title}`, statusID);
+                        console.error(`Failed to process manga: ${manga.title}`, error);
+                        this.$.status.addToQueue(`Error processing: ${manga.title}`, statusID);
                     }
                 }
 
