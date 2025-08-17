@@ -28,7 +28,7 @@ export default class Storage {
         this.shell = electron.remote.shell;
         this.exec = electron.remote.require('child_process').exec;
         // TODO: Use fs-extra which provides more convenience functions (e.g. delete recursive)
-        this.fs = require('fs');
+        this.fs = require('fs-extra');
         this.path = require('path');
         this.config = this.path.join(electron.remote.app.getPath('userData'), 'hakuneko.');
         this.temp = this.path.join(require('os').tmpdir(), 'hakuneko');
@@ -217,17 +217,21 @@ export default class Storage {
     /**
      *
      */
-    deleteManga(manga) {
-        return new Promise((resolve, reject) => {
-            let mangaPath = this._mangaOutputPath(manga);
-            if (this.fs.existsSync(mangaPath)) {
-                this.fs.rmSync(mangaPath, { recursive: true, force: true });
+    async deleteManga(manga) {
+        let mangaPath = this._mangaOutputPath(manga);
+        if (this.fs.existsSync(mangaPath)) {
+            try {
+                await this.fs.promises.rm(mangaPath, { recursive: true, force: true });
                 manga.chapters.forEach(chapter => {
-                    chapter.setStatus(statusDefinitions.available);
+                    if (chapter.status === 'completed') {
+                        chapter.setStatus(statusDefinitions.available);
+                    }
                 });
+            } catch (error) {
+                console.error('Failed to delete manga directory:', error);
+                throw error; // Re-throw the error to be caught by the UI handler
             }
-            resolve();
-        });
+        }
     }
 
     /**

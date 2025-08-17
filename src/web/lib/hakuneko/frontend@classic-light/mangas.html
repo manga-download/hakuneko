@@ -119,6 +119,7 @@
                     <input type="text" value="{{ mangaPattern::input }}"/>
                 </td>
                 <td>
+                    <i class="fas fa-fw fa-cogs button" on-click="onAutomationClick" title="Automate Downloads"></i>
                     <hakuneko-bookmarks selected-manga="{{ selectedManga }}"></hakuneko-bookmarks>
                 </td>
             </tr>
@@ -363,6 +364,101 @@
                 if(true/*clipboard seems to have valid manga links*/) {
                     this.set('selectedConnector', clipboardConnector);
                     this.onUpdateMangaListClick(evt);
+                }
+            }
+
+            async onAutomationClick(evt) {
+                if (Notification.permission !== 'granted') {
+                    await Notification.requestPermission();
+                }
+                if (!Engine.Settings.baseDirectory.value) {
+                    alert('Manga Download Directory not configured!\\n\\nPlease set the download directory in the settings menu before using the automation feature.');
+                    return;
+                }
+
+                const bookmarks = Engine.BookmarkManager.bookmarks;
+                if (!bookmarks || bookmarks.length === 0) {
+                    alert('No bookmarked mangas to automate.');
+                    return;
+                }
+
+                evt.target.classList.add('disabled');
+                let statusID = this.$.status.addToQueue('Starting automation...');
+
+                for (const bookmark of bookmarks) {
+                    try {
+                        const connector = Engine.Connectors.find(c => c.id === bookmark.key.connector);
+                        if (!connector) {
+                            console.warn(`Connector not found for manga: ${bookmark.title.manga}`);
+                            continue;
+                        }
+
+                        try {
+                            await fetch(connector.url);
+                        } catch (error) {
+                            console.warn(`Failed to connect to connector: ${connector.label}`, error);
+                            this.$.status.addToQueue(`Failed to connect to: ${connector.label}`, statusID);
+                            continue;
+                        }
+                        const manga = new Engine.Manga(connector, bookmark.key.manga, bookmark.title.manga);
+
+                        this.$.status.addToQueue(`Processing: ${manga.title}`, statusID);
+
+                        const chapters = await new Promise((resolve, reject) => {
+                            manga.getChapters((error, chapters) => {
+                                if (error) {
+                                    return reject(error);
+                                }
+                                resolve(chapters);
+                            });
+                        });
+
+                        const undownloadedChapters = chapters.filter(chapter => chapter.status !== 'completed' && chapter.status !== 'offline');
+
+                        if (undownloadedChapters.length === 0) {
+                            this.$.status.addToQueue(`No new chapters for: ${manga.title}`, statusID);
+                            await new Promise(resolve => setTimeout(resolve, 1000)); // wait a bit to show the message
+                            continue;
+                        }
+
+                        this.$.status.addToQueue(`Found ${undownloadedChapters.length} new chapters for: ${manga.title}`, statusID);
+                        for (const chapter of undownloadedChapters) {
+                            Engine.DownloadManager.addDownload(chapter);
+                        }
+
+                    } catch (error) {
+                        console.error(`Failed to process manga: ${manga.title}`, error);
+                        this.$.status.addToQueue(`Error processing: ${manga.title}`, statusID);
+                    } finally {
+                        await new Promise(resolve => setTimeout(resolve, 5000)); // wait 5 seconds before processing next manga
+                    }
+                }
+
+                this.$.status.removeFromQueue(statusID);
+                this.$.status.addToQueue('Automation complete.');
+                new Notification('HakuNeko', {
+                    body: 'Automatic download process complete.'
+                });
+                evt.target.classList.remove('disabled');
+            }
+
+            getDeleteButtonClass( manga ) {
+                if(!manga || !manga.chapters) {
+                    return 'hide';
+                }
+                let downloaded = manga.chapters.some( chapter => chapter.status === 'completed' );
+                return downloaded ? 'show' : 'hide';
+            }
+
+            async onDeleteMangaClick( e ) {
+                let manga = e.model.item;
+                if( confirm(`Delete all downloaded chapters for "${manga.title}"?`) ) {
+                    try {
+                        await Engine.Storage.deleteManga(manga);
+                    } catch(error) {
+                        console.error(error);
+                        alert(`Failed to delete all downloaded chapters for "${manga.title}"!`);
+                    }
                 }
             }
         }
