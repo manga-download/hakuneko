@@ -15,6 +15,7 @@ const extensions = {
 
 const statusDefinitions = {
     offline: 'offline', // chapter/manga that cannot be downloaded, but exist in manga directory
+    available: 'available'
 };
 
 export default class Storage {
@@ -211,6 +212,22 @@ export default class Storage {
                 });
                 return Promise.resolve(titleMap);
             });
+    }
+
+    /**
+     *
+     */
+    deleteManga(manga) {
+        return new Promise((resolve, reject) => {
+            let mangaPath = this._mangaOutputPath(manga);
+            if (this.fs.existsSync(mangaPath)) {
+                this.fs.rmSync(mangaPath, { recursive: true, force: true });
+                manga.chapters.forEach(chapter => {
+                    chapter.setStatus(statusDefinitions.available);
+                });
+            }
+            resolve();
+        });
     }
 
     /**
