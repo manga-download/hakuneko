@@ -68,7 +68,7 @@ export default class MangaPlanet extends SpeedBinb {
                 }
                 chapters.push({
                     id: url,
-                    title: title + chapter.querySelector('span').innerText.trim()
+                    title: title + chapter.querySelector('h3 span').innerText.trim()
                 });
             }
         }
