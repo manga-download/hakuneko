@@ -221,7 +221,7 @@ export default class Storage {
         let mangaPath = this._mangaOutputPath(manga);
         if (this.fs.existsSync(mangaPath)) {
             try {
-                await this.fs.promises.rm(mangaPath, { recursive: true, force: true });
+                await this.fs.remove(mangaPath);
                 manga.chapters.forEach(chapter => {
                     if (chapter.status === 'completed') {
                         chapter.setStatus(statusDefinitions.available);
