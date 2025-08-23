@@ -7,7 +7,7 @@ export default class MangaSusuku extends WordPressMangastream {
         super.id = 'mangasusuku';
         super.label = 'MangaSusuku';
         this.tags = ['manga', 'indonesian'];
-        this.url = 'https://mangasusuku.xyz ';
+        this.url = 'https://mangasusuku.com ';
         this.path = '/komik/list-mode/';
     }
 }
