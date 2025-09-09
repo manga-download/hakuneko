@@ -7,7 +7,7 @@ export default class AsuraScans extends WordPressMangastream {
         super.id = 'asurascans';
         super.label = 'Asura Scans';
         this.tags = ['webtoon', 'english'];
-        this.path = '/manga/list-mode/';
+        this.path = '/series';
         this.queryPages = 'div#readerarea p img';
         this.requestOptions.headers.set('x-user-agent', 'Mozilla/5.0 (Linux; Android 9; Pixel) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4026.0 Mobile Safari/537.36');
         this.config = {
@@ -15,7 +15,7 @@ export default class AsuraScans extends WordPressMangastream {
                 label: 'URL',
                 description: `This website change domains regularly.\nThis is the default URL which can also be manually set by the user.`,
                 input: 'text',
-                value: 'https://asuratoon.com'
+                value: 'https://asuracomic.net'
             }
         };
     }
