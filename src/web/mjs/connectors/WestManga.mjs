@@ -34,22 +34,17 @@ export default class WestManga extends Connector {
     }
 
     async getMangasFromPage(page) {
-        try {
-            const { data } = await this.fetchAPI(`./contents?page=${page}`);
-            return data
-                ? data.map(({ slug, title }) => ({
-                      id: slug,
-                      title: "Chapter" + this.cleanTitle(title),
-                  }))
-                : [];
-        } catch (error) {
-            return [];
-        }
+        const { data } = await this.fetchAPI(`./contents?page=${page}`);
+        return data
+            ? data.map(({ slug, title }) => ({
+                    id: slug,
+                    title: this.cleanTitle(title),
+                }))
+            : [];
     }
 
     async _getChapters(manga) {
-        try {
-            const {
+        const {
                 data: { chapters },
             } = await this.fetchAPI(`./comic/${manga.id}`);
             return chapters.map(({ slug, number }) => {
@@ -63,32 +58,21 @@ export default class WestManga extends Connector {
                     title: title,
                 };
             });
-        } catch (error) {
-            return [];
-        }
     }
 
     async _getPages(chapter) {
-        try {
-            const {
-                data: { images },
-            } = await this.fetchAPI(`./v/${chapter.id}`);
-            return images;
-        } catch (error) {
-            return [];
-        }
+        const {
+            data: { images },
+        } = await this.fetchAPI(`./v/${chapter.id}`);
+        return images;
     }
 
     async _getMangaFromURI(uri) {
         const slug = uri.pathname.split("/").pop();
-        try {
-            const {
-                data: { title },
-            } = await this.fetchAPI(`./comic/${slug}`);
-            return new Manga(this, slug, this.cleanTitle(title));
-        } catch (error) {
-            return null;
-        }
+        const {
+            data: { title },
+        } = await this.fetchAPI(`./comic/${slug}`);
+        return new Manga(this, slug, this.cleanTitle(title));
     }
 
     async fetchAPI(endpoint) {
@@ -119,23 +103,9 @@ export default class WestManga extends Connector {
     }
 
     async generateHMAC256(data, ...keyData) {
-        const algorithm = { name: "HMAC", hash: { name: "SHA-256" } };
-        const encoder = new TextEncoder();
-        const keyBytes = encoder.encode(keyData.join(""));
-        const dataBytes = encoder.encode(data);
-
-        const key = await crypto.subtle.importKey(
-            "raw",
-            keyBytes,
-            algorithm,
-            false,
-            ["sign"],
-        );
-        const signature = await crypto.subtle.sign(algorithm, key, dataBytes);
-
-        return Array.from(new Uint8Array(signature))
-            .map((b) => b.toString(16).padStart(2, "0"))
-            .join("");
+        const key = keyData.join("");
+        const hash = CryptoJS.HmacSHA256(data, key);
+        return CryptoJS.enc.Hex.stringify(hash);
     }
 
     canHandleURI(uri) {
