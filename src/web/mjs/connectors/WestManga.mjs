@@ -64,7 +64,14 @@ export default class WestManga extends Connector {
         const {
             data: { images },
         } = await this.fetchAPI(`./v/${chapter.id}`);
-        return images;
+
+        return images.map(img => {
+            let url = typeof img === "string" ? img : img.url || img.source;
+            if (url && !url.match(/\.(jpe?g|png|webp)$/i)) {
+                url += "#.jpg";
+            }
+            return url;
+        });
     }
 
     async _getMangaFromURI(uri) {
