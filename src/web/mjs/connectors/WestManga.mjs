@@ -37,27 +37,27 @@ export default class WestManga extends Connector {
         const { data } = await this.fetchAPI(`./contents?page=${page}`);
         return data
             ? data.map(({ slug, title }) => ({
-                    id: slug,
-                    title: this.cleanTitle(title),
-                }))
+                id: slug,
+                title: this.cleanTitle(title),
+            }))
             : [];
     }
 
     async _getChapters(manga) {
         const {
-                data: { chapters },
-            } = await this.fetchAPI(`./comic/${manga.id}`);
-            return chapters.map(({ slug, number }) => {
-                let title = number.toString().trim();
-                if (/^\d+(\.\d+)?$/.test(title)) {
-                    title = `Chapter ${title}`;
-                }
+            data: { chapters },
+        } = await this.fetchAPI(`./comic/${manga.id}`);
+        return chapters.map(({ slug, number }) => {
+            let title = number.toString().trim();
+            if (/^\d+(\.\d+)?$/.test(title)) {
+                title = `Chapter ${title}`;
+            }
 
-                return {
-                    id: slug,
-                    title: title,
-                };
-            });
+            return {
+                id: slug,
+                title: title,
+            };
+        });
     }
 
     async _getPages(chapter) {
@@ -65,7 +65,7 @@ export default class WestManga extends Connector {
             data: { images },
         } = await this.fetchAPI(`./v/${chapter.id}`);
 
-        return images.map(img => {
+        return images.map((img) => {
             let url = typeof img === "string" ? img : img.url || img.source;
             if (url && !url.match(/\.(jpe?g|png|webp)$/i)) {
                 url += "#.jpg";
