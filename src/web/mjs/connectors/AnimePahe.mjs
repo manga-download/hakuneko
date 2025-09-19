@@ -9,7 +9,7 @@ export default class AnimePahe extends Connector {
         super.id = 'animepahe';
         super.label = 'animepahe';
         this.tags = [ 'anime', 'subbed' ];
-        this.url = 'https://animepahe.ru';
+        this.url = 'https://animepahe.si';
 
         this.config = {
             resolution:  {
