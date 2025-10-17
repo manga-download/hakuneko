@@ -4,45 +4,40 @@ import Manga from '../engine/Manga.mjs';
 export default class YoungChampion extends Comici {
     constructor() {
         super();
-        super.id = 'youngchampion';
-        super.label = 'YoungChampion';
+        super.id = 'takecomic';
+        super.label = 'Take Comic';
         this.tags = ['manga', 'japanese'];
-        this.url = 'https://youngchampion.jp';
+        this.url = 'https://takecomic.jp';
         this.apiUrl = this.url;
         this.links = {
-            login: 'https://youngchampion.jp/signin'
+            login: 'https://takecomic.jp/auth/signin'
         };
 
-        this.queryMangaTitleURI = 'h1.series-h-title span:not([class])';
-        this.queryChapter = 'div.series-ep-list a[data-href]';
-        this.queryChapterTitle = 'span.series-ep-list-item-h-text';
+        this.queryMangaTitleURI = 'h1.series-h-title';
+        this.apiPath = '/api/';
     }
 
     async _getMangaFromURI(uri) {
         const request = new Request(uri);
         const [data] = await this.fetchDOM(request, this.queryMangaTitleURI);
         const id = uri.pathname.replace('/series/', '');
-        const title = (data.textContent || data.text).trim();
+        const title = data.lastChild.textContent.trim();
         return new Manga(this, id, title);
     }
 
     async _getChapters(manga) {
-        const uri = new URL('/series/'+manga.id+'/list', this.url);
+        const uri = new URL('/api/episodes', this.url);
+        uri.searchParams.append('seriesHash', manga.id);
+        uri.searchParams.append('episodeTo', 999);
         const request = new Request(uri);
-        const data = await this.fetchDOM(request, this.queryChapter );
-        return data.map(element => {
-            const titleElement = element.querySelector(this.queryChapterTitle);
-            return {
-                id : new URL(element.dataset['href']).pathname.replace('/series/', ''),
-                title: titleElement ? (titleElement.textContent ||titleElement.text).trim() : element.text.trim()
-            };
-        });
+        const data = await this.fetchJSON(request);
+        return data.series.episodes;
     }
 
     async _fetchCoordInfo(viewer) {
         //first request get page count
         let uri = new URL(this.apiPath+'book/contentsInfo', this.url);
-        uri.searchParams.set('comici-viewer-id', viewer.getAttribute('comici-viewer-id'));
+        uri.searchParams.set('comici-viewer-id', viewer.dataset['comiciViewerId']);
         uri.searchParams.set('user-id', viewer.dataset['memberJwt']);
         uri.searchParams.set('page-from', '0');
         uri.searchParams.set('page-to', '1');
@@ -54,7 +49,7 @@ export default class YoungChampion extends Comici {
         //second request fetch actual pages data
         const numbers = data.totalPages;
         uri = new URL(this.apiPath+'book/contentsInfo', this.url);
-        uri.searchParams.set('comici-viewer-id', viewer.getAttribute('comici-viewer-id'));
+        uri.searchParams.set('comici-viewer-id', viewer.dataset['comiciViewerId']);
         uri.searchParams.set('user-id', viewer.dataset['memberJwt']);
         uri.searchParams.set('page-from', '0');
         uri.searchParams.set('page-to', numbers);
