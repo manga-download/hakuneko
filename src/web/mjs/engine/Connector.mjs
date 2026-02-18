@@ -418,6 +418,26 @@ export default class Connector {
         return dom;
     }
 
+    createDOM2(content, replaceImageTags, clearIframettributes) {
+        replaceImageTags = replaceImageTags !== undefined ? replaceImageTags : true;
+        clearIframettributes = clearIframettributes !== undefined ? clearIframettributes : true;
+
+        if (replaceImageTags) {
+            content = content.replace(/<img/g, '<source')
+            content = content.replace(/<\/img/g, '</source')
+            content = content.replace(/<use/g, '<source')
+            content = content.replace(/<\/use/g, '</source');
+        }
+        if (clearIframettributes) {
+            content = content.replace(/<iframe[^<]*?>/g, '<iframe>');
+        }
+
+        // Create a new DOMParser
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(content, 'text/html');
+        return doc;
+    }
+
     /**
      * Get the content for the given Request
      * and get all elements matching the given CSS selector.
@@ -438,8 +458,41 @@ export default class Connector {
         }
         const content = response.headers.get('content-type');
         if(response.status === 200 || content.includes('text/html')) {
-            const data = await response.arrayBuffer();
-            const dom = this.createDOM(new TextDecoder(encoding || 'utf8').decode(data));
+            // const data = await response.arrayBuffer();
+            // const dom = this.createDOM(new TextDecoder(encoding || 'utf8').decode(data));
+            const buffer = await response.arrayBuffer();
+            const htmlString = new TextDecoder(encoding || 'utf8').decode(buffer);
+            console.log('Fetched HTML content:', htmlString);
+            const dom = this.createDOM(htmlString);
+            return Promise.resolve(!selector ? dom : [...dom.querySelectorAll(selector)]);
+        }
+        throw new Error(`Failed to receive content from "${request.url}" (type: ${content}, status: ${response.status}) - ${response.statusText}`);
+    }
+
+    async fetchDOM2(request, selector, retries, encoding) {
+        retries = retries || 0;
+        if(typeof request === 'string') {
+            request = new Request(request, this.requestOptions);
+        }
+        // TODO: check if this will affect (replace) the input parameter?
+        if(request instanceof URL) {
+            request = new Request(request.href, this.requestOptions);
+        }
+        const response = await fetch(request.clone());
+        if(response.status >= 500 && retries > 0) {
+            await this.wait(2500);
+            return this.fetchDOM2(request, selector, retries - 1);
+        }
+        const content = response.headers.get('content-type');
+        if(response.status === 200 || content.includes('text/html')) {
+            // const data = await response.arrayBuffer();
+            // const dom = this.createDOM(new TextDecoder(encoding || 'utf8').decode(data));
+            const buffer = await response.arrayBuffer();
+            const htmlString = new TextDecoder(encoding || 'utf8').decode(buffer);
+            console.log('Fetched HTML content:', htmlString);
+            const dom = this.createDOM2(htmlString);
+            console.log("dom instanceof Document:", dom instanceof Document);
+            console.log("dom:", dom);
             return Promise.resolve(!selector ? dom : [...dom.querySelectorAll(selector)]);
         }
         throw new Error(`Failed to receive content from "${request.url}" (type: ${content}, status: ${response.status}) - ${response.statusText}`);

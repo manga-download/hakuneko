@@ -13,11 +13,15 @@ export default class MangaNel extends Connector {
         this.path = '/genre/all';
         this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
         this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
-        this.queryMangaTitle = 'div.manga-info-top h1';
-        this.queryMangas = 'div.list-truyen-item-wrap h3 a';
+        // this.queryMangaTitle = 'div.manga-info-top h1';
+        this.queryMangaTitle = "div.manga-info-top h1";
+        // this.queryMangas = 'div.list-truyen-item-wrap h3 a';
+        this.queryMangas = "div.list-comic-item-wrap h3 a";
 
         this._queryChapters = 'div.chapter-list div.row span a'; // mangabat, manganato, mangakakalot
+        // this._queryChapters = 'div.chapter-list div.row';
         this._queryPages = 'div.container-chapter-reader source'; // manganato, mangabat, mangakakalot
+        // this._queryPages = 'div.container-chapter-reader img';
     }
 
     async _getMangaFromURI(uri) {
@@ -30,9 +34,20 @@ export default class MangaNel extends Connector {
     async _getMangas() {
         const mangaList = [];
         for (let page = 1, run = true; run; page++) {
+            /**
+             * To stop the 429 error (too many requests), we will wait 5 seconds before each page request.
+             * Any wait time shorter than 5 seconds will eventually lead to a 429 error (too many requests).
+             * 
+             * THIS WILL TAKE A LONG TIME TO RUN & TO TRY GETTING ALL THE MANGAS
+             * 
+             * As of February 12, 2026 (2/12/2026), there are around 74,000 mangas. A maximum of 24 mangas
+             * per page, and there are 3076 pages.
+             */
+            await this.wait(5000);
             const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
+        console.log("MANGALIST ------------------> ", mangaList);   //DEBUGGING
         return mangaList;
     }
 
@@ -48,28 +63,92 @@ export default class MangaNel extends Connector {
         });
     }
 
+    // //ORIGINAL
+    // async _getChapters(manga) {
+    //     const uri = new URL(manga.id, this.url);
+    //     console.log("URI ------------> ", uri);   //DEBUGGING
+    //     console.log("Fetching chapters from URI:", uri.href);
+    //     const request = new Request(uri, this.requestOptions);
+    //     console.log("REQUEST ------------> ", request);   //DEBUGGING
+
+    //     const data = await this.fetchDOM(request, this._queryChapters);
+    //     console.log("DATA fetched for chapters ------------> ", data);   //DEBUGGING
+    //     // Log details of each element
+    //     data.forEach((el, index) => {
+    //         console.log(`Chapter element ${index}:`, el);
+    //     });
+    //     return data.map(element => {
+    //         return {
+    //             id: this.getRootRelativeOrAbsoluteLink(element, request.url),
+    //             title: element.text.replace(manga.title, '').replace(this.chapterTitleFilter, '').trim(),
+    //             language: ''
+    //         };
+    //     });
+    // }
+
+    /**
+     * Version 2 using manganato API URL and the manga chapters keys/values
+     * 
+     * The general API is not available, but we can get the info of the specific
+     * mangas we need following this format:
+     *      https://www.manganato.gg/api${manga.id}/chapters
+     * For example:
+     *      https://www.manganato.gg/api/manga/i-used-high-level-medicine-to-counter-magic/chapters
+     * Note that ${manga.id} starts with "/manga":
+     *      /manga/i-used-high-level-medicine-to-counter-magic
+     */
     async _getChapters(manga) {
-        const uri = new URL(manga.id, this.url);
-        const request = new Request(uri, this.requestOptions);
-        const data = await this.fetchDOM(request, this._queryChapters);
-        return data.map(element => {
+        const apiUrl = `https://www.manganato.gg/api${manga.id}/chapters`;
+        const response = await this.fetchJSON(apiUrl);
+        if (!response.success) return [];
+        const chapters = response.data.chapters;
+
+        console.log("CHAPTER -----------> ", chapters);   //DEBUGGING
+
+        return chapters.map(chapter => {
+            //Building the chapter URL (i.e., https://www.manganato.gg/manga/i-used-high-level-medicine-to-counter-magic/chapter-1)
+            const chapterUrl = `${this.url}${manga.id}/${chapter.chapter_slug}`;
             return {
-                id: this.getRootRelativeOrAbsoluteLink(element, request.url),
-                title: element.text.replace(manga.title, '').replace(this.chapterTitleFilter, '').trim(),
-                language: ''
+                id: chapterUrl,
+                title: chapter.chapter_name,         //"chapter_name": "Chapter 1",
+                chapterSlug: chapter.chapter_slug,   //"chapter_slug": "chapter-1",
+                chapterNum: chapter.chapter_num,     //"chapter_num": 1,
             };
         });
     }
 
     async _getPages(chapter) {
+        console.log("getPages -- this.url ----------> ", this.url);   //DEBUGGING
+        console.log("getPages -- chapter.id ----------> ", chapter.id);   //DEBUGGING
         const uri = new URL(chapter.id, this.url);
+        console.log("getPages -- uri ----------> ", uri);   //DEBUGGING
         const request = new Request(uri, this.requestOptions);
+        console.log("getPages -- request ----------> ", request);   //DEBUGGING
         const data = await this.fetchDOM(request, this._queryPages);
+        console.log("getPages -- data ------------> ", data);   //DEBUGGING
         return data.map(element => this.createConnectorURI({
             url: this.getRootRelativeOrAbsoluteLink(element.dataset['src'] || element, request.url),
             referer: request.url
         }));
     }
+
+    // //TESTING IDEA  |  WILL DELETE
+    // async _getPages(chapter) {
+    //     console.log("getPages -- this.url ----------> ", this.url);
+    //     console.log("getPages -- chapter.id ----------> ", chapter.id);
+    //     const uri = new URL(chapter.id, this.url);
+    //     console.log("getPages -- uri ----------> ", uri);
+    //     const request = new Request(uri, this.requestOptions);
+    //     console.log("getPages -- request ----------> ", request);
+    //     const dom = await this.fetchDOM2(request, this._queryPages);
+    //     // const chapterUrl = chapter.id; // constructed as above
+    //     // const dom = await this.fetchDOM2(new Request(chapterUrl), this._queryPages);
+    //     // For example, if images are in <img> tags:
+    //     console.log("getPages -- dom ------------> ", dom);
+    //     const images = [...dom.querySelectorAll('div.container-chapter-reader img')];
+    //     console.log("getPages -- images -----------> ", images);
+    //     return images.map(img => this.getRootRelativeOrAbsoluteLink(img, chapter.id));
+    // }
 
     async _handleConnectorURI(payload) {
         /*
