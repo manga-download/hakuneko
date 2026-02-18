@@ -33,9 +33,7 @@ export default class MangaNel extends Connector {
             /**
              * To stop the 429 error (too many requests), we will wait 5 seconds before each page request.
              * Any wait time shorter than 5 seconds will eventually lead to a 429 error (too many requests).
-             * 
              * THIS WILL TAKE A LONG TIME TO RUN & TO TRY GETTING ALL THE MANGAS
-             * 
              * As of February 12, 2026 (2/12/2026), there are around 74,000 mangas. A maximum of 24 mangas
              * per page, and there are 3076 pages.
              */
@@ -84,7 +82,6 @@ export default class MangaNel extends Connector {
 
     /**
      * Version 2 using manganato API URL and the manga chapters keys/values
-     * 
      * The general API is not available, but we can get the info of the specific
      * mangas we need following this format:
      *      https://www.manganato.gg/api${manga.id}/chapters
@@ -106,9 +103,9 @@ export default class MangaNel extends Connector {
             const chapterUrl = `${this.url}${manga.id}/${chapter.chapter_slug}`;
             return {
                 id: chapterUrl,
-                title: chapter.chapter_name,         //"chapter_name": "Chapter 1",
-                chapterSlug: chapter.chapter_slug,   //"chapter_slug": "chapter-1",
-                chapterNum: chapter.chapter_num,     //"chapter_num": 1,
+                title: chapter.chapter_name, //"chapter_name": "Chapter 1",
+                chapterSlug: chapter.chapter_slug, //"chapter_slug": "chapter-1",
+                chapterNum: chapter.chapter_num, //"chapter_num": 1,
             };
         });
     }
