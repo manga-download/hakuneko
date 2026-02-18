@@ -14,7 +14,7 @@ export default class MangaNel extends Connector {
         this.mangaTitleFilter = /(\s+manga|\s+webtoon|\s+others)+\s*$/gi;
         this.chapterTitleFilter = /^\s*(\s+manga|\s+webtoon|\s+others)+/gi;
         this.queryMangaTitle = 'div.manga-info-top h1';
-        this.queryMangas = "div.list-comic-item-wrap h3 a";
+        this.queryMangas = 'div.list-comic-item-wrap h3 a';
 
         this._queryChapters = 'div.chapter-list div.row span a'; // mangabat, manganato, mangakakalot
         this._queryPages = 'div.container-chapter-reader source'; // manganato, mangabat, mangakakalot
@@ -41,7 +41,6 @@ export default class MangaNel extends Connector {
             const mangas = await this._getMangasFromPage(page);
             mangas.length > 0 ? mangaList.push(...mangas) : run = false;
         }
-        // console.log("MANGALIST ------------------> ", mangaList);   //DEBUGGING
         return mangaList;
     }
 
@@ -96,8 +95,6 @@ export default class MangaNel extends Connector {
         if (!response.success) return [];
         const chapters = response.data.chapters;
 
-        // console.log("CHAPTER -----------> ", chapters);   //DEBUGGING
-
         return chapters.map(chapter => {
             //Building the chapter URL (i.e., https://www.manganato.gg/manga/i-used-high-level-medicine-to-counter-magic/chapter-1)
             const chapterUrl = `${this.url}${manga.id}/${chapter.chapter_slug}`;
@@ -111,14 +108,9 @@ export default class MangaNel extends Connector {
     }
 
     async _getPages(chapter) {
-        // console.log("getPages -- this.url ----------> ", this.url);   //DEBUGGING
-        // console.log("getPages -- chapter.id ----------> ", chapter.id);   //DEBUGGING
         const uri = new URL(chapter.id, this.url);
-        // console.log("getPages -- uri ----------> ", uri);   //DEBUGGING
         const request = new Request(uri, this.requestOptions);
-        // console.log("getPages -- request ----------> ", request);   //DEBUGGING
         const data = await this.fetchDOM(request, this._queryPages);
-        // console.log("getPages -- data ------------> ", data);   //DEBUGGING
         return data.map(element => this.createConnectorURI({
             url: this.getRootRelativeOrAbsoluteLink(element.dataset['src'] || element, request.url),
             referer: request.url

@@ -41,15 +41,10 @@ export default class NHentai extends Connector {
     //VERSION 2
     async _getPages(chapter) {
         let request = new Request( this.url + chapter.id, this.requestOptions );
-        // console.log("this.url ----------> ", this.url);   //DEBUGGING
-        // console.log("chapter.id ----------> ", chapter.id);   //DEBUGGING
-        // console.log("this.requestOptions ----------> ", this.requestOptions);   //DEBUGGING
         const data = await this.fetchDOM(request, 'div#thumbnail-container a.gallerythumb source.lazyload');
-        // console.log("data ----------> ", data);   //DEBUGGING
 
         return data.map(element => {
             let src = element.dataset.src;
-            // console.log('Original dataset.src:', src);   //DEBUGGING
 
             //Handle relative URLs
             if (src.startsWith('//')) {
