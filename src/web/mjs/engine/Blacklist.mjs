@@ -1,7 +1,7 @@
 export default class Blacklist {
     /*
      * https://developer.chrome.com/extensions/match_patterns
-     * https://developer.mozilla.org/en-US/Add-ons/WebExtensions/Match_patterns
+     * https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Match_patterns
      */
     constructor() {
         this.patterns = [
