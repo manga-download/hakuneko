@@ -428,10 +428,11 @@ export default class Storage {
      *
      * content is an array of blobs
      */
-    saveChapterPages(chapter, content) {
+    async saveChapterPages(chapter, content) {
         try {
-            let leadingZeroes = String(content.length).length;
-            let pageData = content.map((page, index) => {
+            let corrected = await Promise.all(content.map(page => this._correctBlobMime(page)));
+            let leadingZeroes = String(corrected.length).length;
+            let pageData = corrected.map((page, index) => {
                 return {
                     name: this._pageFileName(index + 1, page.type, leadingZeroes),
                     type: page.type,
@@ -524,6 +525,21 @@ export default class Storage {
         });
         let pdfImgType = this._pdfImageType(page);
         let blob;
+
+        // Verify magic bytes match the claimed type before trusting it
+        if (pdfImgType) {
+            let checkBytes = new Uint8Array(await page.data.slice(0, 4).arrayBuffer());
+            let bytesMatchClaim = false;
+            if (pdfImgType === 'JPEG' && checkBytes[0] === 0xFF && checkBytes[1] === 0xD8) {
+                bytesMatchClaim = true;
+            } else if (pdfImgType === 'PNG' && checkBytes[1] === 0x50 && checkBytes[2] === 0x4E && checkBytes[3] === 0x47) {
+                bytesMatchClaim = true;
+            }
+            if (!bytesMatchClaim) {
+                pdfImgType = null;
+            }
+        }
+
         if (!pdfImgType) {
             pdfImgType = 'JPEG';
             let canvas = document.createElement('canvas');
@@ -850,6 +866,39 @@ export default class Storage {
             return 'image/';
         }
         return 'application/octet-stream';
+    }
+
+    /**
+     * Correct the MIME type of a blob by inspecting its magic bytes.
+     * Servers/CDNs sometimes lie about Content-Type (e.g. serving webp as image/jpeg).
+     * This mirrors the logic in Connector._applyRealMime but works on Blob objects.
+     */
+    async _correctBlobMime(blob) {
+        let header = new Uint8Array(await blob.slice(0, 12).arrayBuffer());
+        let detectedType = null;
+
+        // WEBP: bytes 8-11 = "WEBP"
+        if (header[8] === 0x57 && header[9] === 0x45 && header[10] === 0x42 && header[11] === 0x50) {
+            detectedType = 'image/webp';
+        // JPEG: bytes 0-2 = FF D8 FF
+        } else if (header[0] === 0xFF && header[1] === 0xD8 && header[2] === 0xFF) {
+            detectedType = 'image/jpeg';
+        // PNG: bytes 1-3 = "PNG"
+        } else if (header[1] === 0x50 && header[2] === 0x4E && header[3] === 0x47) {
+            detectedType = 'image/png';
+        // GIF: bytes 0-2 = "GIF"
+        } else if (header[0] === 0x47 && header[1] === 0x49 && header[2] === 0x46) {
+            detectedType = 'image/gif';
+        // BMP: bytes 0-1 = "BM"
+        } else if (header[0] === 0x42 && header[1] === 0x4D) {
+            detectedType = 'image/bmp';
+        }
+
+        if (detectedType && detectedType !== blob.type) {
+            console.warn(`Blob MIME type "${blob.type}" does not match file signature, corrected to "${detectedType}"`);
+            return new Blob([blob], { type: detectedType });
+        }
+        return blob;
     }
 
     /**
