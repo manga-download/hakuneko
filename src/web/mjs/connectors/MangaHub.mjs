@@ -43,20 +43,19 @@ export default class MangaHub extends Connector {
     }
 
     async _getMangas() {
-        const gql = `{
-            search(x: ${this.path}, q: "", genre: "all", mod: ALPHABET, limit: 99999) {
-                rows {
-                    id, slug, title
+        const mangaList = [];
+        for (let offset = 0, run = true; run; offset += 50) {
+            const gql = `{
+                search(x: ${this.path}, q: "", genre: "all", mod: ALPHABET, limit: 50, offset: ${offset}) {
+                    rows {
+                        id, slug, title
+                    }
                 }
-            }
-        }`;
-        const data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
-        return data.search.rows.map(manga => {
-            return {
-                id: manga.slug, // manga.id
-                title: manga.title
-            };
-        });
+            }`;
+            const { search: { rows } } = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
+            rows.length > 0 ? mangaList.push(...rows.map(manga => ({ id: manga.slug, title: manga.title }))) : run = false;
+        }
+        return mangaList;
     }
 
     async _getChapters(manga) {
@@ -84,9 +83,11 @@ export default class MangaHub extends Connector {
                 pages
             }
         }`;
-        let data = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
-        data = JSON.parse(data.chapter.pages);
-        return data.i.map(page => this.createConnectorURI(new URL(data.p + page, this.cdnURL).href));
+        const { chapter: { pages } } = await this.fetchGraphQL(this.apiURL, undefined, gql, undefined);
+        const data = JSON.parse(pages);
+        const images = data.i ? data.i : Object.values(data);
+        const prefix = data.p || '';
+        return images.map(page => this.createConnectorURI(new URL(prefix + page, this.cdnURL).href));
     }
 
     async _handleConnectorURI(payload) {
