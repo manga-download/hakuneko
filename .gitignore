@@ -1,6 +1,4 @@
 CNAME
-yarn.lock
-package-lock.json
 node_modules
 *.tar.bz2
 *.key
@@ -14,3 +12,5 @@ cache
 /test/*.log
 junit.xml
 .idea/
+/.claude/
+/.claude-flow/

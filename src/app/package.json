@@ -10,9 +10,9 @@
   },
   "main": "main.js",
   "dependencies": {
-    "@logtrine/logtrine": "latest",
+    "@logtrine/logtrine": "1.1.2",
     "discord-rpc": "^3.2.0",
-    "fs-extra": "latest",
-    "jszip": "latest"
+    "fs-extra": "11.3.4",
+    "jszip": "3.10.1"
   }
 }
