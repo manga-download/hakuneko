@@ -1,0 +1,80 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2017 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-list test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+
+  <link rel="import" href="fixtures/helpers.html">
+  <link rel="import" href="../iron-list.html">
+</head>
+<body>
+
+  <test-fixture id="trivialList">
+    <template>
+      <event-list></event-list>
+    </template>
+  </test-fixture>
+
+  <dom-module id="event-list">
+    <template>
+      <iron-list id="list">
+        <template>
+          <div on-tap="tapHandler">[[item.index]]</div>
+        </template>
+      </iron-list>
+    </template>
+
+    <script>
+      window.addEventListener('WebComponentsReady', function() {
+        Polymer({
+          is: 'event-list',
+
+          created: function() {
+            this.tapHandler = sinon.spy();
+          }
+        });
+      });
+    </script>
+  </dom-module>
+
+<script>
+  'use strict';
+  suite('basic features', function() {
+    var list, container;
+
+    setup(function() {
+      container = fixture('trivialList');
+      list = container.$.list;
+    });
+
+    test('event.model property is passed to declarative event handlers', function() {
+      list.items = buildDataSet(100);
+      PolymerFlush();
+      MockInteractions.tap(getFirstItemFromList(list));
+
+      var model = container.tapHandler.firstCall.args[0].model;
+      assert.isDefined(model);
+      assert.equal(model.item, list.items[0]);
+      assert.equal(model.index, 0);
+    });
+  });
+
+</script>
+
+</body>
+</html>

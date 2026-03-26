@@ -1,0 +1,39 @@
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+# https://help.github.com/en/articles/contexts-and-expression-syntax-for-github-actions
+
+name: Continuous Deployment
+
+on:
+  push:
+    branches:
+      - master
+      - '*.*.*'
+
+jobs:
+  linux:
+    #if: github.actor && secrets['HAKUNEKO_PASSPHRASE']
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ${{ github.repository }} @ ${{ github.ref }}
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20
+      - name: Install NPM Packages
+        run: npm install
+      - name: Lint
+        run: npm run lint
+      # Tests are currently disabled, because they do not work properly (unreliable)
+      #- name: Test
+      #  run: npm run test
+      - name: Deploy (web)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HAKUNEKO_TOKEN: ${{ secrets.HAKUNEKO_ACCESS_TOKEN }}
+          HAKUNEKO_PASSPHRASE: ${{ secrets.HAKUNEKO_PASSPHRASE }}
+          # set variable with branch that triggered the action (e.g. GITHUB_BRANCH = ${{ github.ref }})
+        run: npm run deploy:web
