@@ -1,0 +1,16 @@
+CNAME
+yarn.lock
+package-lock.json
+node_modules
+*.tar.bz2
+*.key
+*.pem
+*.log
+build
+cache
+.vscode
+.helper
+/redist/*.zip
+/test/*.log
+junit.xml
+.idea/

@@ -1,0 +1,85 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-list test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+  <script src="../../iron-test-helpers/mock-interactions.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="fixtures/helpers.html">
+  <link rel="import" href="fixtures/x-grid.html">
+
+</head>
+<body>
+
+  <test-fixture id="trivialList">
+    <template>
+      <x-grid></x-grid>
+    </template>
+  </test-fixture>
+
+<script>
+  'use strict';
+  suite('basic features', function() {
+    var list, container;
+
+    setup(function() {
+      container = fixture('trivialList');
+      list = container.list;
+    });
+
+    test('check from grid=true to grid=false and back', function() {
+      // Physical scroll bar causes there to be less columns than expected.
+      // Force list to be wide enough to allow for 3 columns and the scroller.
+      list.style.width = '320px';
+      container.data = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 8);
+      assert.equal(list._scrollHeight, 3400);
+      list.grid = false;
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 2);
+      assert.equal(list._scrollHeight, 10000);
+      list.grid = true;
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 8);
+      assert.equal(list._scrollHeight, 3400);
+    });
+
+    test('check from grid=false to grid=true and back', function() {
+      // Physical scroll bar causes there to be less columns than expected.
+      // Force list to be wide enough to allow for 3 columns and the scroller.
+      list.style.width = '320px';
+      list.grid = false;
+      container.data = buildDataSet(100);
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 2);
+      assert.equal(list._scrollHeight, 10000);
+      list.grid = true;
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 8, 'Grid should show more items.');
+      assert.equal(list._scrollHeight, 3400);
+      list.grid = false;
+      PolymerFlush();
+      assert.equal(list.lastVisibleIndex, 2);
+      assert.equal(list._scrollHeight, 10000);
+    });
+
+  });
+</script>
+
+</body>
+</html>
