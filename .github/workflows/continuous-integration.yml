@@ -1,0 +1,39 @@
+# https://help.github.com/en/articles/workflow-syntax-for-github-actions
+# https://help.github.com/en/articles/contexts-and-expression-syntax-for-github-actions
+
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - DISABLED
+
+jobs:
+  linux:
+    name: Ubuntu
+    runs-on: ubuntu-latest
+    steps:
+      - name: Starting X Virtual Frame Buffer (Port 99)
+        env:
+          DISPLAY: ':99'
+        run: |
+          #sudo apt-get update
+          #sudo apt-get install -y libxkbfile-dev pkg-config libsecret-1-dev libxss1 dbus xvfb libgtk-3-0 libgconf-2-4
+          sudo /usr/bin/Xvfb 99 -ac -screen 0 1920x1080x24 &> /tmp/Xvfb.out &
+          disown -ar # remove all running jobs (e.g. xvfb) from the job table of this bash process
+      - name: Checkout ${{ github.repository }} @ ${{ github.ref }}
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+      - name: Install NodeJS
+        uses: actions/setup-node@v1
+        with:
+          node-version: 20
+      - name: Install NPM Packages
+        run: npm install
+      - name: Lint
+        run: npm run lint
+      - name: Build (web)
+        run: npm run build:web
+      - name: Test
+        run: npm run test

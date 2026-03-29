@@ -1,0 +1,58 @@
+{
+  "name": "iron-resizable-behavior",
+  "version": "2.1.1",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "description": "Coordinates the flow of resizeable elements",
+  "private": true,
+  "main": "iron-resizable-behavior.html",
+  "authors": [
+    "The Polymer Authors"
+  ],
+  "keywords": [
+    "web-components",
+    "polymer",
+    "iron",
+    "behavior"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PolymerElements/iron-resizable-behavior.git"
+  },
+  "dependencies": {
+    "polymer": "Polymer/polymer#1.9 - 2"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#1 - 2",
+    "web-component-tester": "^6.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^1.0.0"
+  },
+  "variants": {
+    "1.x": {
+      "dependencies": {
+        "polymer": "Polymer/polymer#^1.9"
+      },
+      "devDependencies": {
+        "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+        "web-component-tester": "^4.0.0",
+        "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+      },
+      "resolutions": {
+        "webcomponentsjs": "^0.7"
+      }
+    }
+  },
+  "ignore": [],
+  "resolutions": {
+    "webcomponentsjs": "^1.0.0"
+  },
+  "homepage": "https://github.com/PolymerElements/iron-resizable-behavior",
+  "_release": "2.1.1",
+  "_resolution": {
+    "type": "version",
+    "tag": "v2.1.1",
+    "commit": "719d68affd8293b026c6456e754773b31a27712f"
+  },
+  "_source": "https://github.com/PolymerElements/iron-resizable-behavior.git",
+  "_target": "1 - 2",
+  "_originalSource": "PolymerElements/iron-resizable-behavior"
+}
