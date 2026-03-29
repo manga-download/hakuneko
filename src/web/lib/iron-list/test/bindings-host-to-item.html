@@ -1,0 +1,91 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>iron-list test</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+    <script src="../../web-component-tester/browser.js"></script>
+    <link rel="import" href="fixtures/helpers.html">
+    <link rel="import" href="fixtures/x-list-with-bindings.html">
+
+</head>
+<body>
+
+<test-fixture id="listWithBindings">
+    <template>
+        <x-list-with-bindings></x-list-with-bindings>
+    </template>
+</test-fixture>
+
+<script>
+    'use strict';
+    suite('host property and sub-property bindings to list items', function() {
+        var list, container,
+            propertyText="propertyText",
+            anotherPropertyText="anotherPropertyText",
+            subPropertyText="subPropertyText",
+            anotherSubPropertyText="anotherSubpropertyText",
+            getItemScopedBinding= function(){
+                return getFirstItemFromList(list).parentElement.querySelector('[item-scope-binding]').textContent
+            },
+            getHostScopedPropertyBinding = function(){
+                return getFirstItemFromList(list).parentElement.querySelector('[host-scope-property-binding]').textContent;
+            },
+            getHostScopedSubpropertyBinding = function(){
+                return getFirstItemFromList(list).parentElement.querySelector('[host-scope-subproperty-binding]').textContent
+            };
+
+        setup(function() {
+            container = fixture('listWithBindings');
+            list = container.list;
+        });
+
+        test('changes are forwarded to the off screen focused item', function() {
+            list.items = buildDataSet(100);
+            var firstItem = list.items[0],
+                lastItem = list.items[list.items.length-1];
+
+            list.scrollToItem(firstItem);
+            list.selectItem(firstItem);
+
+            var topItemMarker=getItemScopedBinding();
+
+            container.set('propertyForReassignmentForwarding', propertyText);
+            container.set('propertyForPathChangeForwarding.text', subPropertyText);
+
+            assert.equal(getHostScopedPropertyBinding(),propertyText);
+            assert.equal(getHostScopedSubpropertyBinding(),subPropertyText);
+
+            list.scrollToItem(lastItem);
+
+            assert.notEqual(getItemScopedBinding(),
+                  topItemMarker,"selected item became invisible");
+
+            container.set('propertyForReassignmentForwarding', anotherPropertyText);
+            container.set('propertyForPathChangeForwarding.text', anotherSubPropertyText);
+
+            list.scrollToItem(firstItem);
+
+            assert.equal(getItemScopedBinding(),
+                     topItemMarker,"selected item became again visible");
+
+            assert.equal(getHostScopedPropertyBinding(),anotherPropertyText);
+            assert.equal(getHostScopedSubpropertyBinding(),anotherSubPropertyText);
+        });
+    });
+</script>
+
+</body>
+</html>

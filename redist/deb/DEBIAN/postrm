@@ -1,0 +1,5 @@
+#!/bin/sh
+set -e
+#if [ -x /usr/bin/update-menus ] ; then update-menus ; fi
+#if [ -x /usr/bin/update-mime ] ; then update-mime ; fi
+if [ -f /usr/bin/hakuneko-desktop ] ; then rm -f /usr/bin/hakuneko-desktop ; fi

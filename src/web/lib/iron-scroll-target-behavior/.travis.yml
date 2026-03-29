@@ -1,0 +1,33 @@
+language: node_js
+node_js: stable
+addons:
+  firefox: latest
+  sauce_connect: true
+  apt:
+    sources:
+      - google-chrome
+    packages:
+      - google-chrome-stable
+before_script:
+  - npm install -g polymer-cli
+  - polymer install --variants
+  - >-
+    npm run update-types && git diff --exit-code || (echo -e
+    '\n\033[31mERROR:\033[0m Typings are stale. Please run "npm run
+    update-types".' && false)
+  - >-
+    npm run format && git diff --exit-code || (echo -e '\n\033[31mERROR:\033[0m
+    Project is not formatted. Please run "npm run format".' && false)
+script:
+  - xvfb-run polymer test
+  - >-
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then polymer test -s 'default';
+    fi
+env:
+  global:
+    - secure: >-
+        XVL/8kp3Mec8cVExKXhFaWVK/LRdxcXlqG/C9nwo+BZoVww+4yyI849mRxYui2s/Y9eOk8ymIMi/LK/p9XEkGjupag5dPDZ1m2LfwQ6RItBAftF4sMZQbJ6CoNuTTYoc1sSANMZD3NjbMXGTdShncUoYGvuF9EART6BYcmCulxFit4P9W9iY10TyEkzNpi/CHtudhbMrw0kquie7jYzeROS1Ko1z+RlqMEHc1+aVYVWKrAwONzMI8XpNYO+F2RE/5zdzxMC3gB6+KMaX6k0s971vpdMydjbkoLTOvYrL8/ah+v134hkBM90F1ilkbIm115zJCdMwHLO23WsOyOjFSQXwH/ZvzAAyGxAxAbG+dQw7xYwXVGL4S0bOuL721+frv0CtvwNGyhg7opGNiJzEMKZyRnZH0jIvznzxGJt0Z7g4YcM/E/lmFUmeIXUkmyjQ7Hi7HQiWOCBGpdQIbsLKQgOOeWM8t3bJGmO1f6Qel8fwtoO03MgAbq8H1gqchDaa/r4UHNvx8z3VYXlIUpjdbqZTuA4Jws5rOYcN0QO/LLthgs+Rc7lTDtbCS9yY54kg/OLtfyX7kKFh2apXBG5kMBf0pxfPF2CvnBzxUGff5PhcfIA0XBMjrpq2D5+40gNBwqaJrDY1Hlxj3YuDQIRkCTMimilOiu7R7rGokMdC5G0=
+    - secure: >-
+        gT1TAwHroUpQiQC5m+Le7TAybLn6ULv9coCsXxVEinvddcwXGksJoSSh7zMrKn0uiEj+9LGhb+clUZ2fILUWYfkiIhsoNuwGF5oqAHvbsl4ACF2dBewy2F9PnBtUM9u78I7iJEDYwJoAiGmAOzSe1MShZVzgua3V8WA+A7jfI9VlczcK8Bbc5zTB+j56//Pfx7rWmaMHfs+iGRobdER7AJkywwFxGpPcWIiwtjbzBrDTOkd98hR5DuHN8R8tb7earrhXk2jax6OUrVizo0owg35LpSSUtehOap5FvnM1BHXGeJa4PIU9leXOOFNiVPyzXstDfmt4C4ZavTlS8ZPus9yLktJnEqiEXCd2wdzOX7IDqnGcVlsQqq5BdQirglv6oMrFKSZyRX3Jcex089x2RmPXB+GYbsI5Dg+P+WgbxdkcFCfxiAYStrkZDyECYuOVkCCquZ/nfilMun+FzaOjQxRF0dAorT3CCCs7pytZc5dRMMYEFjOebidacMOSBzJgHu9VFijxb45SoU6GL9/iBAwksbR/bljpBdQPJZBNwDiQz63cJ7Jug6Y3PaXd2zdL9/Uvu7215mYHQFRDjHBm+0ldCS4L9LGDyEtpipX/uQaUYCtHNWzlhmhwj/5DLCSvzRfGzz8pLix93kssb5Tc7cYD+JBLW+jb8aKewZLhBQc=
+dist: trusty
+sudo: required
