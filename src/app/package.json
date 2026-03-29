@@ -1,0 +1,17 @@
+{
+  "name": "hakuneko-desktop",
+  "version": "1.0.0",
+  "description": "Desktop Client for HakuNeko Web-Application",
+  "author": "Ronny Wegener <wegener.ronny@gmail.com>",
+  "license": "Unlicense",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/manga-download/hakuneko"
+  },
+  "main": "main.js",
+  "dependencies": {
+    "@logtrine/logtrine": "latest",
+    "fs-extra": "latest",
+    "jszip": "latest"
+  }
+}

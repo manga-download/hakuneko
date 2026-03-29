@@ -1,0 +1,49 @@
+{
+  "name": "hakuneko-dev",
+  "version": "1.0.0",
+  "description": "HakuNeko",
+  "author": "Ronny Wegener <wegener.ronny@gmail.com>",
+  "license": "Unlicense",
+  "main": "src/app/main.js",
+  "repository": {
+    "type": "git",
+    "url": "https://git.io/hakuneko"
+  },
+  "devDependencies": {
+    "@hakuneko/ffmpeg-binaries": "latest",
+    "@hakuneko/imagemagick-binaries": "latest",
+    "@hakuneko/kindlegen-binaries": "latest",
+    "@logtrine/logtrine": "latest",
+    "asar": "latest",
+    "electron": "6.1.7",
+    "eslint": "^8.57.0",
+    "fs-extra": "latest",
+    "innosetup-compiler": "latest",
+    "jest": "latest",
+    "jest-junit": "latest",
+    "jszip": "latest",
+    "polymer-build": "latest",
+    "puppeteer-core": "latest",
+    "rcedit": "latest",
+    "win-7zip": "latest"
+  },
+  "scripts": {
+    "postinstall": "cd src/app && npm install",
+    "start": "npm run start:dev",
+    "start:dev": "electron . --update-url=DISABLED --cache-directory=./src/web",
+    "start:build": "npm run build:web && electron . --update-url=DISABLED --cache-directory=./build/latest",
+    "lint": "npm run lint:app && npm run lint:web",
+    "lint:app": "eslint ./src/app --ignore-path .gitignore",
+    "lint:web": "eslint ./src/web/mjs/**/*.mjs --ignore-path .gitignore --parser-options ecmaVersion:2020",
+    "format": "npm run format:app && npm run format:web",
+    "format:app": "npm run lint:app -- --fix",
+    "format:web": "npm run lint:web -- --fix",
+    "build:app": "node build-app.js",
+    "build:web": "node build-web.js",
+    "deploy:web": "npm run build:web && node deploy-web.js",
+    "test": "jest --color --reporters=default --reporters=jest-junit",
+    "test:app": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/app",
+    "test:web": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/web",
+    "test:e2e": "jest --color --reporters=default --reporters=jest-junit --testPathPattern=/src/__tests__"
+  }
+}

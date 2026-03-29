@@ -1,0 +1,184 @@
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+
+<!doctype html>
+<html>
+<head>
+
+  <title>debugging</title>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <script src="../../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../../polymer/polymer.html">
+  <link rel="import" href="../../../paper-button/paper-button.html">
+
+  <link rel="import" href="../../iron-list.html">
+
+  <custom-style>
+    <style is="custom-style">
+      body {
+        @apply --layout-fullbleed;
+      }
+    </style>
+  </custom-style>
+
+</head>
+<body unresolved>
+
+  <dom-module id="x-demo">
+    <template>
+      <style>
+        .item {
+          background-color: green;
+          border-bottom: 1px solid white;
+          overflow:hidden;
+        }
+
+        .wrapper {
+          position: absolute;
+          top: calc(50vh - 150px);
+          left: calc(50vw - 150px);
+          width: 300px;
+          height: 300px;
+        }
+
+        #scroller {
+          width: 300px;
+          height: 300px;
+          overflow-y: auto;
+          overflow-x: hidden;
+          background-color: rgba(255, 0, 0, 0.5);
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 1;
+        }
+
+        .header {
+          height: 100px;
+          background-color: blue;
+        }
+
+        .wrapper .count {
+          background-color: red;
+          position: absolute;
+          top: 0;
+          right: 0;
+          z-index: 1;
+        }
+        .wrapper .stats {
+          background-color: red;
+          position: absolute;
+          top: 20px;
+          right: 0;
+          z-index: 1;
+        }
+
+        .wrapper iron-list {
+          position: absolute;
+          top: 100px;
+          left: 0;
+          right: 0;
+          bottom: 0;
+        }
+
+        iron-list::before {
+          position: absolute;
+          top: -100px;
+          left: 0px;
+          right: 0px;
+          background-color: blue;
+          height: 100px;
+          color: white;
+          content: 'HEADER';
+        }
+
+        .group {
+          float: left;
+        }
+
+        .fake-content {
+          height: 1000vh;
+        }
+      </style>
+
+      <h1>debuging</h1>
+      <div class="group">
+        <p>100 items, 50px tall</p>
+        <div class="wrapper">
+            <div id="scroller">
+              <div class="fake-content"></div>
+            </div>
+            <iron-list id="list1" as="item" scroll-target="scroller" scroll-offset="100">
+              <template>
+                <div class="item" style$="[[_getStyle(item)]]"><span>[[index]]</span> height: <span>[[item]]</span>
+                <div>
+                  <paper-button raised>Test</paper-button>
+                  <paper-button raised>Test</paper-button>
+                  <paper-button raised>Test</paper-button>
+                  <paper-button raised>Test</paper-button>
+                </div>
+                </div>
+              </template>
+            </iron-list>
+        </div>
+      </div>
+    </template>
+
+    <script>
+    function arrayFill(size, value) {
+      return (new Array(size)).fill(value, 0, size);
+    }
+
+    function randomArrayFill(size, min, max) {
+      var a = [];
+      while (a.length < size) {
+        a.push(parseInt(Math.random() * (max-min+1)) + min);
+      }
+      return a;
+    }
+
+    function asyncJob(fn) {
+      if (fn()) {
+        setTimeout(asyncJob.bind(null, fn));
+      }
+    }
+
+    window.addEventListener('WebComponentsReady', function() {
+      Polymer({
+        is: 'x-demo',
+
+        _getStyle: function(item) {
+          return 'height:' + item + 'px; ';
+        },
+
+        attached: function() {
+          this.$.list1.items = arrayFill(100, 50);
+
+          this.$.scroller.addEventListener('scroll', function() {
+            this.$.list1.style.top = (-this.$.scroller.scrollTop+100) + 'px';
+          }.bind(this));
+        }
+      });
+    });
+    </script>
+  </dom-module>
+
+  <x-demo></x-demo>
+
+</body>
+</html>

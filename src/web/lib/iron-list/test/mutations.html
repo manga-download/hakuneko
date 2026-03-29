@@ -1,0 +1,424 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE
+The complete set of authors may be found at http://polymer.github.io/AUTHORS
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS
+-->
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>iron-list test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <script src="../../web-component-tester/browser.js"></script>
+  <script src="../../test-fixture/test-fixture-mocha.js"></script>
+
+  <link rel="import" href="fixtures/helpers.html">
+  <link rel="import" href="fixtures/mutable-list.html">
+  <link rel="import" href="fixtures/x-list.html">
+
+</head>
+<body>
+
+  <test-fixture id="trivialList">
+    <template>
+      <x-list></x-list>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="mutableList">
+    <template>
+      <mutable-list></mutable-list>
+    </template>
+  </test-fixture>
+
+  <test-fixture id="trivialListPrimitiveItem">
+    <template>
+      <x-list primitive></x-list>
+    </template>
+  </test-fixture>
+
+  <script>
+    'use strict';
+    suite('mutations to the collection of items', function() {
+      var list, container;
+
+      setup(function() {
+        container = fixture('trivialList');
+        list = container.list;
+      });
+
+      test('update physical item', function() {
+        var setSize = 100;
+        var phrase = 'It works!';
+
+        list.items = buildDataSet(setSize);
+        list.set('items.0.index', phrase);
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, phrase);
+      });
+
+      test('update virtual item', function(done) {
+        var setSize = 100;
+        var phrase = 'It works!';
+
+        list.items = buildDataSet(setSize);
+
+        function scrollBackUp() {
+          simulateScroll({
+            list: list,
+            contribution: 200,
+            target: 0,
+            onScrollEnd: function() {
+             assert.isTrue(getFirstItemFromList(list).textContent.indexOf(phrase) >= 0);
+             done();
+            }
+          });
+        }
+
+        PolymerFlush();
+        var rowHeight = getFirstItemFromList(list).offsetHeight;
+        // scroll down
+        simulateScroll({
+          list: list,
+          contribution: 200,
+          target: setSize*rowHeight,
+          onScrollEnd: function() {
+            list.set('items.0.index', phrase);
+            scrollBackUp();
+          }
+        });
+      });
+
+      test('push', function(done) {
+        var setSize = 100;
+        list.items = buildDataSet(setSize);
+        setSize = list.items.length;
+        list.push('items', buildItem(setSize));
+        assert.equal(list.items.length, setSize + 1);
+
+        PolymerFlush();
+
+        var rowHeight = list._physicalItems[0].offsetHeight;
+        var viewportHeight = list.offsetHeight;
+        var itemsPerViewport = Math.floor(viewportHeight/rowHeight);
+
+        assert.equal(getFirstItemFromList(list).textContent, 0);
+
+        simulateScroll({
+          list: list,
+          contribution: 200,
+          target: list.items.length*rowHeight,
+          onScrollEnd: function() {
+            assert.equal(getFirstItemFromList(list).textContent,
+              list.items.length - itemsPerViewport);
+            done();
+          }
+        });
+      });
+
+      test('push and scroll to bottom', function() {
+        list.items = [buildItem(0)];
+
+        PolymerFlush();
+        var rowHeight = getFirstItemFromList(list).offsetHeight;
+        var viewportHeight = list.offsetHeight;
+        var itemsPerViewport = Math.floor(viewportHeight/rowHeight);
+
+        while (list.items.length < 200) {
+          list.push('items', buildItem(list.items.length));
+        }
+
+        list.scrollToIndex(list.items.length - 1);
+        PolymerFlush();
+        assert.isTrue(isFullOfItems(list));
+        assert.equal(getFirstItemFromList(list).textContent.trim(),
+            list.items.length - itemsPerViewport);
+      });
+
+      test('pop', function(done) {
+        var setSize = 100;
+        list.items = buildDataSet(setSize);
+        PolymerFlush();
+        var rowHeight = getFirstItemFromList(list).offsetHeight;
+        simulateScroll({
+          list: list,
+          contribution: 200,
+          target: setSize*rowHeight,
+          onScrollEnd: function() {
+            var viewportHeight = list.offsetHeight;
+            var itemsPerViewport = Math.floor(viewportHeight/rowHeight);
+            list.pop('items');
+            PolymerFlush();
+            assert.equal(list.items.length, setSize-1);
+            assert.equal(getFirstItemFromList(list).textContent, setSize - 3 - 1);
+            done();
+          }
+        });
+      });
+
+      test('splice', function() {
+        var setSize = 45;
+        var phrase = 'It works!'
+        list.items = buildDataSet(setSize);
+        list.splice('items', 0, setSize, buildItem(phrase));
+        PolymerFlush();
+        assert.equal(list.items.length, 1);
+        assert.equal(getFirstItemFromList(list).textContent, phrase);
+      });
+
+      test('Issue #496: handle addedCount of splice', function() {
+        var phrase = 'It works!'
+        list.items = buildDataSet(100);
+        list.scrollToIndex(45);
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, '45');
+        var spliceItems = new Array(50);
+        var item = buildItem(phrase);
+        for (var i = 0; i < 50; ++i) {
+          spliceItems[i] = item;
+        }
+        list.splice.apply(list, ['items', 0, 50].concat(spliceItems));
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, phrase);
+      });
+
+      test('delete item and scroll to bottom', function() {
+        var setSize = 100, index;
+        list.items = buildDataSet(setSize);
+        while (list.items.length > 10) {
+          index = parseInt(list.items.length * Math.random());
+          list.arrayDelete('items',  list.items[index]);
+          list.scrollToIndex(list.items.length - 1);
+          PolymerFlush();
+          assert.isTrue(/^[0-9]*$/.test(getFirstItemFromList(list).textContent));
+        }
+      });
+
+      test('Issue #389: delete some items from the top and scroll back to the top', function(done) {
+        list.items = buildDataSet(64);
+        Polymer.dom.flush();
+        list.scrollToIndex(63);
+
+        for (var i = 0; i < 16; i++ ) {
+          list.shift('items');
+        }
+        Polymer.dom.flush();
+        list.scroll(0, 100);
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            assert.equal(list.firstVisibleIndex, 1);
+            done();
+          });
+        });
+      });
+
+      test('Issue #389: delete some items from the top and scroll to index', function(done) {
+        list.items = buildDataSet(64);
+        Polymer.dom.flush();
+        list.scrollToIndex(63);
+        for (var i = 0; i < 16; i++ ) {
+          list.shift('items');
+        }
+        Polymer.dom.flush();
+        list.scrollToIndex(1);
+        requestAnimationFrame(function() {
+          setTimeout(function() {
+            assert.equal(list.firstVisibleIndex, 1);
+            done();
+          });
+        });
+      });
+
+      test('reassign items', function(done) {
+        list.items = buildDataSet(100);
+        container.itemHeight = 'auto';
+        PolymerFlush();
+        var itemHeight = getFirstItemFromList(list).offsetHeight;
+        var hasRepeatedItems = checkRepeatedItems(list);
+
+        simulateScroll({
+          list: list,
+          contribution: 200,
+          target: itemHeight * list.items.length,
+          onScrollEnd: function() {
+            list.items = list.items.slice(0);
+            // NOTE(keanulee): you shouldn't need to call Polymer.flush() here (#475).
+            requestAnimationFrame(function() {
+              assert.equal(getFirstItemFromList(list).textContent, '0');
+
+              simulateScroll({
+                list: list,
+                contribution: itemHeight,
+                target: itemHeight * list.items.length,
+                onScroll: function() {
+                  assert.isFalse(hasRepeatedItems(), 'List should not have repeated items');
+                },
+                onScrollEnd: done
+              });
+            });
+          }
+        });
+      });
+
+      test('Issue #468: forwardItemPath updates correct item', function(done) {
+        list.items = buildDataSet(100);
+        container.itemHeight = 'auto';
+        PolymerFlush();
+        var itemHeight = getFirstItemFromList(list).offsetHeight;
+        var hasRepeatedItems = checkRepeatedItems(list);
+
+        simulateScroll({
+          list: list,
+          target: itemHeight * 40,
+          onScrollEnd: function() {
+            assert.doesNotThrow(function() {
+              list.set('items.43.index', '43a');
+            });
+            done();
+          }
+        });
+      });
+
+      test('Issue #463: scroller size is updated', function() {
+        list.items = buildDataSet(2);
+        PolymerFlush();
+
+        assert.equal(list.$.items.style.height, '200px');
+
+        list.items = buildDataSet(7);
+        PolymerFlush();
+
+        assert.equal(list.$.items.style.height, '700px');
+
+        list.items = buildDataSet(11);
+        PolymerFlush();
+
+        assert.equal(list.$.items.style.height, '1100px');
+      });
+
+      test('empty items array', function() {
+        list.items = buildDataSet(100);
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, '0');
+        list.items = [];
+        PolymerFlush();
+        assert.notEqual(getFirstItemFromList(list).textContent, '0');
+      });
+
+      test('should notify path to the right physical item', function() {
+        list.items = buildDataSet(100);
+        PolymerFlush();
+        var idx = list._physicalCount + 1;
+        list.scrollToIndex(idx);
+        PolymerFlush();
+        list.notifyPath('items.1.index', 'bad');
+        assert.equal(getFirstItemFromList(list).textContent, idx);
+      });
+
+      test('should update items off the screen', function() {
+        container.listHeight = 50;
+        list.items = buildDataSet(100);
+        PolymerFlush();
+        list.scrollToIndex(40);
+        PolymerFlush();
+        container.listHeight = 300;
+        container.fire('iron-resize');
+        PolymerFlush();
+        list._didFocus({target: list._physicalItems[list._getPhysicalIndex(40)]});
+        list.scrollToIndex(80);
+        PolymerFlush();
+        list.set('items.40.index', 'correct');
+        list.scrollToIndex(40);
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, 'correct');
+      });
+
+      test('should update correct item on screen', function() {
+        container.set('data', buildDataSet(3));
+        PolymerFlush();
+        container.splice('data', 0, 1);
+        PolymerFlush();
+        container.set('data.0.index', 'correct');
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, 'correct');
+        container.splice('data', 0, 1);
+        PolymerFlush();
+        container.set('data.0.index', 'correct again');
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, 'correct again');
+      });
+
+    });
+
+    suite('mutableData', function() {
+      var container, list;
+
+      setup(function() {
+        container = fixture('mutableList');
+        list = container.list;
+      });
+
+      test('should not use dirty checking if mutableData is true', function() {
+        /**
+         * This feature and Polymer.OptionalMutableDataBehavior is only available
+         * with Polymer 2.0.
+         */
+        if (!Polymer.OptionalMutableDataBehavior.properties) {
+          return;
+        }
+
+        list.items = buildDataSet(100);
+        PolymerFlush();
+
+        assert.equal(getFirstItemFromList(list).textContent, '0');
+
+        var phrase = 'It works!';
+        list.items[0].index = phrase;
+        list.items = list.items;
+        PolymerFlush();
+
+        assert.equal(getFirstItemFromList(list).textContent, phrase);
+      });
+    });
+
+    suite('mutations of primitive type items', function() {
+      var container, list;
+
+      setup(function() {
+        container = fixture('trivialListPrimitiveItem');
+        list = container.list;
+      });
+
+      test('push item = polymer', function() {
+        list.items = [];
+        list.push('items', 'polymer');
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, 'polymer');
+      });
+
+      test('push item = 0', function() {
+        list.items = [];
+        list.push('items', 0);
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, '0');
+      });
+
+      test('push item = false', function() {
+        list.items = [];
+        list.push('items', false);
+        PolymerFlush();
+        assert.equal(getFirstItemFromList(list).textContent, 'false');
+      });
+    });
+
+  </script>
+
+</body>
+</html>
