@@ -33,28 +33,66 @@ export default class Yanmaga extends SpeedBinb {
     }
 
     async _getChapters(manga) {
-        const chapterScript = `
-            new Promise(resolve => {
-                const interval = setInterval(() => {
-                    let morebtn = document.querySelector('.mod-episode-more-button') ;
-                    if (morebtn) morebtn.click()
-                        else {
-                            clearInterval(interval);
-                            const chapters = [...document.querySelectorAll('a.mod-episode-link')];
-                            resolve(chapters.map(chapter => {
-                                return {
-                                    id: chapter.pathname,
-                                    title: chapter.querySelector('.mod-episode-title').textContent.trim()
-                                }
-                            }));
-                    }
-                 }, 1000);
-            });
-        `;
+        const baseUri = new URL(manga.id, this.url);
 
-        const uri = new URL(manga.id, this.url);
-        const request = new Request(uri, this.requestOptions);
-        return Engine.Request.fetchUI(request, chapterScript, 10000);
+        const initialLinks = await this.fetchDOM(new Request(baseUri, this.requestOptions), '.mod-episode > ul.mod-episode-list:first-of-type a.mod-episode-link');
+        const chapters = initialLinks.map(a => ({
+            id: new URL(a.getAttribute('href'), this.url).pathname,
+            title: a.querySelector('.mod-episode-title').textContent.trim(),
+            language: ''
+        }));
+
+        const buttons = await this.fetchDOM(new Request(baseUri, this.requestOptions), 'button.mod-episode-more-button');
+        if (buttons.length === 0) {
+            return chapters;
+        }
+
+        const btn = buttons[0];
+        const limit = parseInt(btn.getAttribute('data-limit')) || 54;
+        const sort = btn.getAttribute('data-sort') || 'older';
+        const path = btn.getAttribute('data-path');
+        let offset = parseInt(btn.getAttribute('data-offset')) || chapters.length;
+
+        const itemRe = /data-episode-title=\\"([^"]+?)\\"[\s\S]*?data-original-url=\\"([^"]+?)\\"/g;
+        const seen = new Set(chapters.map(c => c.id));
+
+        for (let safety = 0; safety < 50; safety++) {
+            const moreUri = new URL(path, this.url);
+            moreUri.searchParams.set('offset', offset);
+            moreUri.searchParams.set('limit', limit);
+            moreUri.searchParams.set('sort', sort);
+
+            const moreReq = new Request(moreUri, this.requestOptions);
+            moreReq.headers.set('X-Requested-With', 'XMLHttpRequest');
+            moreReq.headers.set('Accept', '*/*');
+
+            let text;
+            try {
+                const response = await fetch(moreReq);
+                text = await response.text();
+            } catch (e) {
+                console.error('[Yanmaga] AJAX fetch failed', e);
+                break;
+            }
+
+            const found = [];
+            itemRe.lastIndex = 0;
+            let m;
+            while ((m = itemRe.exec(text)) !== null) {
+                const id = m[2];
+                const title = m[1];
+                if (seen.has(id)) continue;
+                seen.add(id);
+                found.push({ id, title, language: '' });
+            }
+
+            if (found.length === 0) break;
+            chapters.push(...found);
+            offset += found.length;
+            if (found.length < limit) break;
+        }
+
+        return chapters;
     }
 
     _getPageList( manga, chapter, callback ) {
