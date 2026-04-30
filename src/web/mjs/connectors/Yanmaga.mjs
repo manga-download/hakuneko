@@ -35,26 +35,39 @@ export default class Yanmaga extends SpeedBinb {
     async _getChapters(manga) {
         const baseUri = new URL(manga.id, this.url);
 
-        const initialLinks = await this.fetchDOM(new Request(baseUri, this.requestOptions), '.mod-episode > ul.mod-episode-list:first-of-type a.mod-episode-link');
-        const chapters = initialLinks.map(a => ({
-            id: new URL(a.getAttribute('href'), this.url).pathname,
-            title: a.querySelector('.mod-episode-title').textContent.trim(),
-            language: ''
-        }));
-
         const buttons = await this.fetchDOM(new Request(baseUri, this.requestOptions), 'button.mod-episode-more-button');
-        if (buttons.length === 0) {
-            return chapters;
+
+        if (buttons.length > 0) {
+            const btn = buttons[0];
+            const limit = parseInt(btn.getAttribute('data-limit')) || 100;
+            const sort = btn.getAttribute('data-sort') || 'older';
+            const path = btn.getAttribute('data-path');
+
+            const chapters = await this._fetchChaptersFromAjax(path, limit, sort);
+            if (chapters.length > 0) return chapters;
         }
 
-        const btn = buttons[0];
-        const limit = parseInt(btn.getAttribute('data-limit')) || 54;
-        const sort = btn.getAttribute('data-sort') || 'older';
-        const path = btn.getAttribute('data-path');
-        let offset = parseInt(btn.getAttribute('data-offset')) || chapters.length;
+        const links = await this.fetchDOM(new Request(baseUri, this.requestOptions), '.mod-episode ul.mod-episode-list a.mod-episode-link');
+        const seen = new Set();
+        const chapters = [];
+        for (const a of links) {
+            const id = new URL(a.getAttribute('href'), this.url).pathname;
+            if (seen.has(id)) continue;
+            seen.add(id);
+            chapters.push({
+                id,
+                title: a.querySelector('.mod-episode-title').textContent.trim(),
+                language: ''
+            });
+        }
+        return chapters;
+    }
 
+    async _fetchChaptersFromAjax(path, limit, sort) {
         const itemRe = /data-episode-title=\\"([^"]+?)\\"[\s\S]*?data-original-url=\\"([^"]+?)\\"/g;
-        const seen = new Set(chapters.map(c => c.id));
+        const chapters = [];
+        const seen = new Set();
+        let offset = 0;
 
         for (let safety = 0; safety < 50; safety++) {
             const moreUri = new URL(path, this.url);
@@ -80,10 +93,9 @@ export default class Yanmaga extends SpeedBinb {
             let m;
             while ((m = itemRe.exec(text)) !== null) {
                 const id = m[2];
-                const title = m[1];
                 if (seen.has(id)) continue;
                 seen.add(id);
-                found.push({ id, title, language: '' });
+                found.push({ id, title: m[1], language: '' });
             }
 
             if (found.length === 0) break;
