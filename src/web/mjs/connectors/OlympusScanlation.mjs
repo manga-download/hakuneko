@@ -8,8 +8,8 @@ export default class OlympusScanlation extends Connector {
         super.id = 'olympusscanlation';
         super.label = 'Olympus Scanlation';
         this.tags = [ 'webtoon', 'spanish' ];
-        this.url = 'https://olympusbiblioteca.com';
-        this.apiUrl = 'https://dashboard.olympusbiblioteca.com';
+        this.url = 'https://olympusxyz.com/';
+        this.apiUrl = 'https://dashboard.olympusxyz.com/';
     }
 
     async _getMangaFromURI(uri) {
