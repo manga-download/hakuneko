@@ -1,33 +1,79 @@
-import FoolSlide from './templates/FoolSlide.mjs';
+import Connector from '../engine/Connector.mjs';
 
-export default class HastaTeam extends FoolSlide {
+export default class HastaTeam extends Connector {
 
     constructor() {
         super();
+
         super.id = 'hastateam';
         super.label = 'Hasta Team';
-        this.tags = [ 'manga', 'high-quality', 'italian', 'scanlation' ];
-        this.url = 'https://hastareader.com';
 
-        this.path = '/slide/directory/';
+        this.tags = [ 'manga', 'high-quality', 'italian', 'scanlation' ];
+
+        this.url = 'https://reader.hastateam.com/';
 
         this.language = 'italian';
     }
 
-    async _getPages(chapter) {
-        let referer = new URL(chapter.id, this.url).href;
-        let imageLinks = await super._getPages(chapter);
-        return imageLinks.map(link => this.createConnectorURI({
-            url: link,
-            referer: referer
+    async _getMangas() {
+        const uri = new URL('/api/comics', this.url);
+        const request = new Request(uri, this.requestOptions);
+
+        const response = await fetch(request);
+        const data = await response.json();
+
+        return data.comics.map(comic => ({
+            id: comic.url,
+            title: comic.title
         }));
     }
 
+    async _getChapters(manga) {
+        const comicUrl = new URL(manga.id, this.url);
+        const apiUrl = new URL(
+            `/api${comicUrl.pathname}`,
+            this.url
+        );
+
+        const request = new Request(apiUrl, this.requestOptions);
+        const response = await fetch(request);
+        const data = await response.json();
+
+        return data.comic.chapters.map(chapter => ({
+            id: chapter.url,
+            title: chapter.full_title
+        }));
+    }
+
+    async _getPages(chapter) {
+        const chapterUrl = new URL(chapter.id, this.url);
+        const apiUrl = new URL(
+            `/api${chapterUrl.pathname}`,
+            this.url
+        );
+
+        const request = new Request(apiUrl, this.requestOptions);
+        const response = await fetch(request);
+        const data = await response.json();
+
+        const referer = chapterUrl.href;
+
+        return data.chapter.pages.map(page => {
+            return this.createConnectorURI({
+                url: page,
+                referer
+            });
+        });
+    }
+
     async _handleConnectorURI(payload) {
-        let request = new Request(payload.url, this.requestOptions);
+        const request = new Request(payload.url, this.requestOptions);
+
         request.headers.set('x-referer', payload.referer);
-        let response = await fetch(request);
-        let data = await response.blob();
+
+        const response = await fetch(request);
+        const data = await response.blob();
+
         return this._blobToBuffer(data);
     }
 }
